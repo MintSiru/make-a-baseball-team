@@ -6,6 +6,7 @@
    change as it signs. Decisions the user owes afterwards (a protected list when the user signed an
    A/B free agent, a compensation pick when an AI club signed one of the user's) wait in a queue on the
    offseason state. Money in 만 원. */
+import { iga, ro } from './josa';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { KBO_2026, salaryCapFor } from '../rules/kbo2026';
 import { renewSalary, salaryIn } from './contracts';
@@ -176,7 +177,7 @@ export function runFreeAgency(s: LeagueState, next: number, r: () => number, use
     }
     sign(s, p, best.teamId, next, best.offer);
     if (best.teamId === user) (s.user!.log ??= []).push({ year: next - 1, text: `FA ${p.name} ${from === user ? '재계약' : `영입 (${shortOf(s, from)}에서)`} · ${best.offer.years}년 연 ${Math.round(best.offer.annual / 1000) / 10}억` });
-    else if (from === user) (s.user!.log ??= []).push({ year: next - 1, text: `FA ${p.name} ${shortOf(s, best.teamId)}로 이적` });
+    else if (from === user) (s.user!.log ??= []).push({ year: next - 1, text: `FA ${p.name} ${ro(shortOf(s, best.teamId))} 이적` });
     if (best.teamId === from) continue;
     signed[best.teamId] = (signed[best.teamId] ?? 0) + 1;
     const grade = grades[p.id] ?? 'C';
@@ -244,7 +245,7 @@ export function aiCompensation(s: LeagueState, item: FaQueueItem, protectedIds: 
   if (pick && keepValue(pick, next) >= MARKET.compensationPickValue) {
     movePlayer(s, pick, item.from);
     moneyFor(s, item.to, item.from, cash.withPlayer!, `FA ${name} 보상금 (${item.grade}등급, 보상선수 ${pick.name})`, next - 1);
-    if (s.user?.teamId === item.to) (s.user.log ??= []).push({ year: next - 1, text: `FA ${name} 보상선수로 ${pick.name}이(가) ${shortOf(s, item.from)}로 이적` });
+    if (s.user?.teamId === item.to) (s.user.log ??= []).push({ year: next - 1, text: `FA ${name} 보상선수로 ${iga(pick.name)} ${ro(shortOf(s, item.from))} 이적` });
   } else moneyFor(s, item.to, item.from, cash.cashOnly, `FA ${name} 보상금 (${item.grade}등급, 보상선수 없이)`, next - 1);
 }
 

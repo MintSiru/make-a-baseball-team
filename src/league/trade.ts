@@ -4,6 +4,7 @@
 
    AI clubs judge every move by public grades only: a player is worth his keep value above a
    replacement level, more the longer he is under club control, less the more he is paid. */
+import { ro } from './josa';
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { KBO_2026, minimumSalaryFor } from '../rules/kbo2026';
@@ -213,7 +214,7 @@ export function processWaivers(s: LeagueState, date: string) {
       // The claiming club takes the contract: the releasing club no longer owes it.
       if (s.user && w.from === s.user.teamId) s.user.deadMoney = (s.user.deadMoney ?? []).filter((x) => x.label !== `${p.name} 잔여 연봉`);
       logTransaction(s, `웨이버 영입: ${shortOf(s, claimer)} ${p.name} (${shortOf(s, w.from)}에서)`);
-      if (w.from === s.user?.teamId) (s.user.log ??= []).push({ year: s.year, text: `${p.name} 웨이버로 ${shortOf(s, claimer)} 이적` });
+      if (w.from === s.user?.teamId) (s.user.log ??= []).push({ year: s.year, text: `${p.name} 웨이버로 ${ro(shortOf(s, claimer))} 이적` });
     } else {
       p.contract = null;
       (s.pool ??= []).push(p.id);

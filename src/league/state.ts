@@ -82,7 +82,10 @@ export type Decision =
   | { kind: 'faMarket'; candidates: PlayerId[]; grades: Record<PlayerId, 'A' | 'B' | 'C'>; limit: number }
   | { kind: 'faProtect'; fa: PlayerId; grade: 'A' | 'B'; from: TeamId; protect: number; candidates: PlayerId[] }
   | { kind: 'faCompensation'; fa: PlayerId; grade: 'A' | 'B'; to: TeamId; list: PlayerId[]; withPlayer: number; cashOnly: number }
-  | { kind: 'salaries'; rows: SalaryRow[] };
+  | { kind: 'salaries'; rows: SalaryRow[] }
+  | { kind: 'secondProtect'; candidates: PlayerId[]; protect: number }
+  | { kind: 'secondPick'; round: number; fee: number; candidates: PlayerId[] }
+  | { kind: 'foreignRenew'; rows: { id: PlayerId; ask: number; war: number; leaving: boolean }[] };
 
 /** One player in the winter's salary talks (만 원). */
 export interface SalaryRow {
@@ -127,6 +130,8 @@ export interface OffseasonState {
   faOffers?: Record<PlayerId, { annual: number; years: number }>;
   faDone?: boolean;
   faQueue?: import('./market').FaQueueItem[];
+  /** The second draft in progress (odd winters). */
+  second?: import('./seconddraft').SecondDraftState | null;
 }
 
 /** The club the user runs (V0.3: an expansion club). Money in 만 원. */
@@ -206,6 +211,9 @@ export interface LeagueState {
   transactions?: { date: string; text: string }[];
   /** One-off market events already run this season ("2027-trades-06"). */
   marketDone?: string[];
+  /** Competitive balance tax records by club, and clubs whose first-round pick drops, by draft year. */
+  cap?: Record<TeamId, import('./cap').CapRecord[]>;
+  pickDrop?: Record<number, TeamId[]>;
   /** Last date registered days were counted for. */
   countedThrough: string | null;
   postseason: SeriesResult[];

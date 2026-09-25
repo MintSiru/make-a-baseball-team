@@ -4,6 +4,7 @@ import type { Action } from '../league/actions';
 import { usdTotal } from '../league/contracts';
 import { usd } from '../league/foreign';
 import { deadMoney, projectedPayroll } from '../league/market';
+import { eulreul } from '../league/josa';
 import { ageIn, isForeign } from '../league/players';
 import { orgPlayers, registeredIds, type LeagueState } from '../league/state';
 import {
@@ -225,7 +226,7 @@ function Release({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
   const release = (p: Player) => {
     const cost = releaseCost(league, p);
     const later = cost.later.reduce((a, x) => a + x.amount, 0);
-    const text = `${p.name}을(를) 방출할까요? ${league.phase === 'regular' ? '7일 동안 웨이버에 오르고, 데려가는 구단이 없으면 자유계약선수가 됩니다. ' : ''}남은 연봉 ${money(cost.now + later)}은 계속 우리 연봉 예산에 잡힙니다 (다른 구단이 데려가면 없어짐).`;
+    const text = `${eulreul(p.name)} 방출할까요? ${league.phase === 'regular' ? '7일 동안 웨이버에 오르고, 데려가는 구단이 없으면 자유계약선수가 됩니다. ' : ''}남은 연봉 ${money(cost.now + later)}은 계속 우리 연봉 예산에 잡힙니다 (다른 구단이 데려가면 없어짐).`;
     if (window.confirm(text)) onAct({ kind: 'release', id: p.id });
   };
   return (

@@ -37,6 +37,7 @@ export const KBO_2026 = {
 
   // §3 Competitive balance tax, on each club's top-40 total pay
   salaryCap: {
+    from: 2023, // the cap began with the 2023 season
     topPlayers: 40,
     years: [
       { year: 2025, cap: 1371165 },

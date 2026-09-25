@@ -21,7 +21,9 @@ import {
   freeAgentsFor,
   makePick,
   removeFromRoster,
-  renewForeigners,
+  foreignLeaves,
+  foreignRenewalAsk,
+  lastRecord,
   rosterLimit,
   setOffseasonHooks,
   sign,
@@ -246,17 +248,34 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
     }
     case 'foreign': {
       if (next < u.firstTeamYear) return null; // no foreign players in the futures year (NC precedent)
-      renewForeigners(s, u.teamId, next, rng(`${s.seed}|foreign-renew|${o.year}`));
-      const slots = foreignSlots(s, u.teamId, next);
-      const have = foreignOn(s, u.teamId);
-      const regular = slots.regular - have.filter((p) => !p.origin.asiaQuota).length;
-      const asia = slots.asia - have.filter((p) => p.origin.asiaQuota).length;
-      if (regular <= 0 && asia <= 0) return null;
-      return { kind: 'foreign', candidates: foreignCandidates(s, next).map((p) => p.id), regular, asia };
+      // First our own: re-sign or let go (V0.5); the signing decision follows.
+      return foreignRenewDecision(s, next) ?? foreignSigningDecision(s, next);
     }
     default:
       return null;
   }
+}
+
+/** The user's foreign players whose contracts end: what each asks to stay, and who is leaving anyway. */
+export function foreignRenewDecision(s: LeagueState, next: number): Decision | null {
+  const u = user(s);
+  const ending = foreignOn(s, u.teamId).filter((p) => !p.contract?.salaries.some((x) => x.season >= next));
+  if (!ending.length) return null;
+  return {
+    kind: 'foreignRenew',
+    rows: ending.map((p) => ({ id: p.id, ask: foreignRenewalAsk(p, next), war: lastRecord(p, next - 1)?.war ?? 0, leaving: foreignLeaves(s, p, next) })),
+  };
+}
+
+/** New foreign signings for the open slots, or null when every slot is filled. */
+export function foreignSigningDecision(s: LeagueState, next: number): Decision | null {
+  const u = user(s);
+  const slots = foreignSlots(s, u.teamId, next);
+  const have = foreignOn(s, u.teamId);
+  const regular = slots.regular - have.filter((p) => !p.origin.asiaQuota).length;
+  const asia = slots.asia - have.filter((p) => p.origin.asiaQuota).length;
+  if (regular <= 0 && asia <= 0) return null;
+  return { kind: 'foreign', candidates: foreignCandidates(s, next).map((p) => p.id), regular, asia };
 }
 
 setOffseasonHooks({ begin: yearlyGrant, draftSlots, decide, rookies: rookieBonusDecision, development: developmentDecision });

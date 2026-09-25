@@ -31,6 +31,8 @@ export function migrateState(raw: unknown, from: string): LeagueState {
     d.bonusDone = true;
     d.userDevelopmentDone = true;
   }
+  // 0.5 added the second draft after 'special' (step 7): later offseason steps move one on.
+  if (s.offseason && ['0.2', '0.3', '0.4', '0.4.1'].includes(from) && s.offseason.step >= 8) s.offseason.step += 1;
   s.sim = SIM_VERSION;
   return s;
 }

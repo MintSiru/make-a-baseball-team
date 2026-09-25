@@ -17,6 +17,8 @@ import { ageIn, currentValue, draftClass, futureValue, isForeign, isPitcher, kee
 import { currentStandings } from './season';
 import { queuedDecision, runFreeAgency } from './market';
 import { aiTrades, clearPool } from './trade';
+import { applyPickDrop, settleCap } from './cap';
+import { isSecondDraftYear, openSecondDraft, runSecondDraft, secondProtectDecision } from './seconddraft';
 import { standings } from './standings';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, orgIds, orgPlayers, registeredIds, type Decision, type DraftSlot, type DraftState, type LeagueState, type SeasonSummary } from './state';
 import { batterWar, leagueContext, pitcherWar } from './stats';
@@ -78,6 +80,7 @@ export function closeSeason(s: LeagueState) {
     }
   }
   s.futures = null;
+  settleCap(s, s.year);
   clearPool(s);
   aiTrades(s, rng(`${s.seed}|ai-trades-winter|${s.year}`));
   s.history.push({
@@ -521,18 +524,28 @@ export function enforceLimits(s: LeagueState, next: number, r: () => number) {
 }
 
 /** Keeps or lets go of a club's foreign players after the season. */
+/** A foreign player's asking total to re-sign (US dollars): last year's total plus a raise for his season (Asia quota: at most +10만 달러). */
+export function foreignRenewalAsk(p: Player, next: number) {
+  const war = lastRecord(p, next - 1)?.war ?? 0;
+  const prevUsd = usdTotal(p.contract) || salaryIn(p, next - 1) / MANWON_PER_USD;
+  const raise = Math.max(0, war - 2) * 150_000 + 50_000;
+  return Math.round(Math.min(1_800_000, prevUsd + (p.origin.asiaQuota ? Math.min(KBO_2026.foreign.asiaQuotaRaisePerYearUSD, raise) : raise)) / 10_000) * 10_000;
+}
+
+/** A star foreign player may leave for MLB or NPB whatever the club offers (chance by his season). */
+export function foreignLeaves(s: LeagueState, p: Player, next: number) {
+  const war = lastRecord(p, next - 1)?.war ?? 0;
+  const chance = ageIn(p, next) > 35 ? 1 : war >= 6 ? 0.5 : war >= 4 ? 0.2 : 0.03;
+  return rng(`${s.seed}|foreign-abroad|${next}|${p.id}`)() < chance;
+}
+
 export function renewForeigners(s: LeagueState, teamId: TeamId, next: number, r: () => number) {
   const current = orgPlayers(s, teamId).filter(isForeign);
   for (const p of current) {
     const last = lastRecord(p, next - 1);
     const keep = last && ageIn(p, next) <= 35 && last.war >= (isPitcher(p) ? O.foreign.keepWarPitcher : O.foreign.keepWarHitter) && r() < O.foreign.keepChance;
-    if (keep) {
-      // Re-signing: last year's total plus a raise for the season he had (Asia quota: at most +10만 달러 a year).
-      const prevUsd = usdTotal(p.contract) || salaryIn(p, next - 1) / MANWON_PER_USD;
-      const raise = Math.max(0, last.war - 2) * 150_000 + 50_000;
-      const usd = Math.min(1_800_000, prevUsd + (p.origin.asiaQuota ? Math.min(KBO_2026.foreign.asiaQuotaRaisePerYearUSD, raise) : raise));
-      p.contract = foreignContract(teamId, next, splitContract(usd, r), !!p.origin.asiaQuota);
-    } else leaveLeague(s, p, 'overseas');
+    if (keep) p.contract = foreignContract(teamId, next, splitContract(foreignRenewalAsk(p, next), r), !!p.origin.asiaQuota);
+    else leaveLeague(s, p, 'overseas');
   }
 }
 
@@ -576,7 +589,7 @@ export interface OffseasonHooks {
 const hooks: OffseasonHooks = {};
 export const setOffseasonHooks = (h: OffseasonHooks) => Object.assign(hooks, h);
 
-export const OFFSEASON_STEPS = ['international', 'develop', 'retire', 'military', 'freeAgency', 'renew', 'draft', 'special', 'limits', 'released', 'foreign', 'check', 'camp'] as const;
+export const OFFSEASON_STEPS = ['international', 'develop', 'retire', 'military', 'freeAgency', 'renew', 'draft', 'special', 'secondDraft', 'limits', 'released', 'foreign', 'check', 'camp'] as const;
 export type OffseasonStep = (typeof OFFSEASON_STEPS)[number];
 
 export function beginOffseason(s: LeagueState) {
@@ -656,7 +669,7 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         if (!o.draft) {
           const table = s.history[s.history.length - 1]?.table ?? [];
           const order = table.length ? [...table].reverse().map((row) => row.teamId) : firstTeamIds(s, year);
-          const slots = hooks.draftSlots?.(s, year, order) ?? standardSlots(order);
+          const slots = applyPickDrop(s, year, hooks.draftSlots?.(s, year, order) ?? standardSlots(order));
           o.draft = openDraft(s, year, slots);
         }
         if (runDraft(s, o.draft) === 'wait') return 'waiting';
@@ -664,6 +677,18 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
       }
       case 'special':
         break; // expansion special draft: entirely a user decision (see expansion.ts)
+      case 'secondDraft': {
+        if (!isSecondDraftYear(year)) break;
+        if (!o.second) o.second = openSecondDraft(s, year);
+        const u = s.user;
+        // The user's club protects its 35 before anyone picks (not in the winter it joins the first team).
+        if (u && u.firstTeamYear <= year && !o.second.protected[u.teamId]) {
+          s.pending = secondProtectDecision(s, o.second);
+          return 'waiting';
+        }
+        if (runSecondDraft(s, o.second) === 'wait') return 'waiting';
+        break;
+      }
       case 'limits':
         o.released = cutToLimits(s, next).map((p) => p.id);
         break;

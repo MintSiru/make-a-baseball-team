@@ -9,6 +9,7 @@ import { ageIn, isPitcher, keepValue } from '../league/players';
 import type { Decision as DecisionT, LeagueState } from '../league/state';
 import { faAsk as ownAsk, focusOptions, payrollWithout, salaryOffer, type CampPlan, type MilitaryOrder, type SalaryChoice } from '../league/userclub';
 import { marketValue } from '../league/market';
+import { eulreul, iga, ro } from '../league/josa';
 import { positionLabel, shortName } from '../league/views';
 import type { Position } from '../model/position';
 import type { Player, PlayerId, TeamId } from '../model/types';
@@ -38,6 +39,9 @@ const TITLES: Record<DecisionT['kind'], string> = {
   faProtect: 'FA 보상 · 보호선수 명단',
   faCompensation: 'FA 보상 · 보상선수 지명',
   salaries: '연봉 협상',
+  secondProtect: '2차 드래프트 · 보호선수 명단',
+  secondPick: '2차 드래프트',
+  foreignRenew: '외국인 선수 재계약',
 };
 
 const SALARY_CHOICES: [SalaryChoice, string][] = [
@@ -225,7 +229,16 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
   const [develop, setDevelop] = useState<Set<PlayerId>>(new Set());
   const [plans, setPlans] = useState<Record<PlayerId, CampPlan>>({});
   // Consecutive decisions of one kind (draft picks, compensation per free agent) start from a clean slate.
-  const stage = d.kind === 'draftPick' ? String(d.overall) : d.kind === 'rookieBonus' ? String(d.final) : d.kind === 'faProtect' || d.kind === 'faCompensation' ? d.fa : '';
+  const stage =
+    d.kind === 'draftPick'
+      ? String(d.overall)
+      : d.kind === 'rookieBonus'
+        ? String(d.final)
+        : d.kind === 'faProtect' || d.kind === 'faCompensation'
+          ? d.fa
+          : d.kind === 'secondPick'
+            ? `${d.round}-${d.candidates.length}`
+            : '';
   useEffect(() => {
     setSelected(new Set());
     setSpecial({});
@@ -274,6 +287,12 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         return { kind: 'faProtect', ids: [...selected] };
       case 'salaries':
         return { kind: 'salaries', choices: choices as Record<PlayerId, SalaryChoice> };
+      case 'secondProtect':
+        return { kind: 'secondProtect', ids: [...selected] };
+      case 'secondPick':
+        return null;
+      case 'foreignRenew':
+        return { kind: 'foreignRenew', keep: [...selected] };
       case 'faCompensation':
         return { kind: 'faCompensation', player: choices.pick && choices.pick !== 'cash' ? choices.pick : null };
       case 'roster':
@@ -310,6 +329,9 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         break;
       case 'salaries':
         setChoices(a.choices);
+        break;
+      case 'foreignRenew':
+        setSelected(new Set(a.keep));
         break;
       default:
         if ('ids' in a) setSelected(new Set(a.ids));
@@ -655,12 +677,68 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       );
       break;
     }
+    case 'secondProtect':
+      body = (
+        <>
+          <p>
+            {league.offseason?.year} 2차 드래프트입니다. 보호할 선수 {d.protect}명을 고르세요 (지금 {selected.size}명). 보호하지 않은 선수는 다른 구단이 지명할 수 있고, 지명되면 라운드별 양도금(4억·3억·2억·1억)을
+            받습니다. 입단 3년 차까지의 선수, 올겨울 FA 계약 선수, 외국인은 저절로 빠집니다. 군 복무 중인 선수도 대상입니다.
+          </p>
+          <PlayerTable league={league} players={d.candidates.map((id) => league.players[id]!)} selected={selected} toggle={toggle} onPlayer={onPlayer} />
+        </>
+      );
+      break;
+    case 'secondPick':
+      body = (
+        <>
+          <p>
+            2차 드래프트 {d.round}라운드, 우리 차례입니다. 다른 구단 보호선수 밖의 선수를 지명하면 원소속 구단에 {money(d.fee)}을 냅니다. 지명하지 않으면 이번 2차 드래프트에서 빠집니다.
+          </p>
+          <PlayerTable
+            league={league}
+            players={d.candidates.map((id) => league.players[id]!)}
+            onPlayer={onPlayer}
+            extra={{ title: '연봉', value: (p) => money(salaryIn(p, next) || salaryIn(p, next - 1)), sort: (p) => salaryIn(p, next - 1) }}
+            control={(p) => (
+              <button type="button" class="pick" onClick={() => onSubmit({ kind: 'secondPick', id: p.id })}>
+                지명
+              </button>
+            )}
+          />
+        </>
+      );
+      break;
+    case 'foreignRenew': {
+      const byId = Object.fromEntries(d.rows.map((r) => [r.id, r]));
+      body = (
+        <>
+          <p>
+            계약이 끝나는 외국인 선수입니다. 재계약할 선수를 고르세요. 좋은 시즌을 보낸 선수는 더 많이 요구하고, 몇몇은 MLB·일본으로 떠나기로 해서 붙잡을 수 없습니다. 재계약하지 않으면 새
+            외국인 선수를 뽑습니다.
+          </p>
+          {budgetLine}
+          <PlayerTable
+            league={league}
+            players={d.rows.map((r) => league.players[r.id]!)}
+            selected={selected}
+            toggle={(id) => !byId[id]!.leaving && toggle(id)}
+            onPlayer={onPlayer}
+            extra={{
+              title: 'WAR · 요구 총액',
+              value: (p) => (byId[p.id]!.leaving ? `${byId[p.id]!.war.toFixed(1)} · 해외 진출` : `${byId[p.id]!.war.toFixed(1)} · ${usd(byId[p.id]!.ask)}`),
+              sort: (p) => byId[p.id]!.war,
+            }}
+          />
+        </>
+      );
+      break;
+    }
     case 'faProtect': {
       const fa = league.players[d.fa]!;
       body = (
         <>
           <p>
-            {shortName(league, d.from)}에서 {d.grade}등급 FA {fa.name}을(를) 데려왔습니다. 보호할 선수 {d.protect}명을 고르세요 (지금 {selected.size}명). {shortName(league, d.from)}는 나머지 선수 중 1명과
+            {shortName(league, d.from)}에서 {d.grade}등급 FA {eulreul(fa.name)} 데려왔습니다. 보호할 선수 {d.protect}명을 고르세요 (지금 {selected.size}명). {shortName(league, d.from)} 쪽은 나머지 선수 중 1명과
             보상금을 받거나, 보상금만 받습니다. 외국인, 올겨울 영입한 FA, 올해 뽑은 신인은 저절로 보호됩니다.
           </p>
           <PlayerTable league={league} players={d.candidates.map((id) => league.players[id]!)} selected={selected} toggle={toggle} onPlayer={onPlayer} />
@@ -674,7 +752,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       body = (
         <>
           <p>
-            우리 {d.grade}등급 FA {fa.name}이(가) {shortName(league, d.to)}로 떠났습니다. {shortName(league, d.to)}의 보호선수 밖에서 1명을 데려오고 보상금 {money(d.withPlayer)}을 받거나, 보상금만{' '}
+            우리 {d.grade}등급 FA {iga(fa.name)} {ro(shortName(league, d.to))} 떠났습니다. {shortName(league, d.to)}의 보호선수 밖에서 1명을 데려오고 보상금 {money(d.withPlayer)}을 받거나, 보상금만{' '}
             {money(d.cashOnly)} 받을 수 있습니다.
           </p>
           <label class="check">
@@ -752,6 +830,15 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
           <button type="button" onClick={() => onSubmit({ kind: 'draftPick', id: null })}>
             스카우트에게 맡기기
           </button>
+        ) : d.kind === 'secondPick' ? (
+          <>
+            <button type="button" onClick={() => onSubmit({ kind: 'secondPick', id: null })}>
+              지명 안 함
+            </button>
+            <button type="button" onClick={() => onSubmit(autoDecision(league) as DecisionInput)}>
+              스카우트에게 맡기기
+            </button>
+          </>
         ) : (
           <>
             <button type="button" class="primary" disabled={!!problem} onClick={() => input && onSubmit(input)}>

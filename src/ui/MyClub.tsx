@@ -13,6 +13,8 @@ import { developmentIds, registeredIds, type LeagueState, type Squad as SquadNam
 import { OFFSEASON } from '../league/tuning';
 import { checkStadiumName, STADIUM_NAME_MAX } from '../league/userclub';
 import { rates, shortName, standingsView } from '../league/views';
+import { capFloorFor, capTotal } from '../league/cap';
+import { salaryCapFor } from '../rules/kbo2026';
 import { money } from './format';
 import { Squad, type Row, type SquadKey } from './Squad';
 
@@ -336,6 +338,15 @@ function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: (a: Act
           <p class="card-label">{payYear}년 연봉 / 예산</p>
           <p class="card-value">{money(projectedPayroll(league, u.teamId, payYear))}</p>
           <p class="card-sub">예산 {money(u.payrollBudget)}</p>
+        </div>
+        <div class="card">
+          <p class="card-label">경쟁균형세 · 상위 40명 ({league.year})</p>
+          <p class="card-value">{money(capTotal(league, u.teamId, league.year))}</p>
+          <p class="card-sub">
+            상한 {money(salaryCapFor(league.year))}
+            {capFloorFor(league.year) ? ` · 하한 ${money(capFloorFor(league.year)!)}` : ''}
+            {(league.cap?.[u.teamId] ?? []).at(-1)?.over ? ` · 지난 시즌 초과 ${(league.cap?.[u.teamId] ?? []).at(-1)!.streak}년째` : ''}
+          </p>
         </div>
         <div class="card">
           <p class="card-label">홈구장</p>

@@ -200,3 +200,6 @@ export const TRADES = {
   foreign: { badEra: 6.2, badOps: 0.66, chance: 0.6 },
   logSize: 300,
 } as const;
+
+/** The second draft (V0.5): an AI club picks only players at least this good (keep value), else passes. */
+export const SECOND = { minValue: 49 } as const;
