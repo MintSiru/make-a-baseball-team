@@ -11,7 +11,10 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:browser": "node tests/browser/smoke.mjs",
-    "port:draftroom": "python3 scripts/port-draftroom.py"
+    "port:draftroom": "python3 scripts/port-draftroom.py",
+    "golden:write": "tsx scripts/write-league-golden.ts",
+    "calibrate": "tsx scripts/calibrate.ts",
+    "report": "tsx scripts/league-report.ts"
   },
   "dependencies": {
     "preact": "^10.29.8"

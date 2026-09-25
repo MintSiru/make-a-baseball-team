@@ -37,4 +37,4 @@
 
 ## 이식 후 변경
 
-(아직 없음)
+`src/draftroom/*.js`는 그대로입니다. 이 게임 쪽에서 붙인 것은 타입 창구 `src/draftroom/index.ts`뿐이며, 리그 계층은 이 창구를 통해 `developTools`(성장·노화), `observe`(스카우트 관측), 선수 풀 생성 등을 호출합니다. 노화는 35세 이상 베테랑용 하락을 리그 쪽(`src/league/offseason.ts`)에서 덧붙였습니다.

@@ -25,3 +25,12 @@ export const toolKeysFor = (role: Role) =>
   isPitcherRole(role) ? (['stuff', 'command', 'breaking', 'stamina'] as const) : (['contact', 'power', 'speed', 'defense', 'eye'] as const);
 
 export const militaryLabel = { pending: '미필', serving: '복무 중', served: '군필', exempt: '면제' } as const;
+
+/** 만 원 amounts as "1억 7,500만" / "3,000만". */
+export function money(manwon: number) {
+  if (!manwon) return '-';
+  const eok = Math.floor(manwon / 10000),
+    rest = manwon % 10000;
+  if (!eok) return `${rest.toLocaleString('ko-KR')}만`;
+  return rest ? `${eok}억 ${rest.toLocaleString('ko-KR')}만` : `${eok}억`;
+}
