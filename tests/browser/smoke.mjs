@@ -99,7 +99,8 @@ try {
 
   // 2. The rest of 2026, the first draft, then the futures year.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
-  check((await page.locator('.roster tbody tr').count()) > 0, 'tryout signings on the roster');
+  await page.getByRole('button', { name: '선수단', exact: true }).click();
+  check((await page.locator('.squad-table tbody tr').count()) > 0, 'tryout signings on the roster');
   await playSeason(page);
   await decideAll(page, log);
   check(log.filter((t) => t === '신인 드래프트').length >= 15, `first draft gives many picks (${log.filter((t) => t === '신인 드래프트').length})`);
@@ -107,7 +108,8 @@ try {
   await page.getByRole('button', { name: '1주', exact: true }).click();
   await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled);
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
-  check((await page.locator('.club-facts').textContent())?.includes('퓨처스'), 'futures record shown in 2027');
+  await page.getByRole('button', { name: '개요', exact: true }).click();
+  check((await page.locator('.cards').first().textContent())?.includes('퓨처스'), 'futures record shown in 2027');
   await page.screenshot({ path: join(shots, 'my-club-futures.png'), fullPage: false });
 
   // 3. Into the first team: free agents, special draft, foreign players.
@@ -125,25 +127,29 @@ try {
 
   // 4. Sorting and running the first team by hand.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
-  const firstTeam = page.locator('.roster').first();
+  await page.screenshot({ path: join(shots, 'overview.png'), fullPage: false });
+  await page.getByRole('button', { name: '선수단', exact: true }).click();
+  const firstTeam = page.locator('.squad-table').first();
   await firstTeam.getByRole('button', { name: /^현재/ }).click();
-  const grades = (await firstTeam.locator('tbody tr td:nth-child(5)').allTextContents()).map(Number);
+  const grades = (await firstTeam.locator('tbody tr td:nth-child(4)').allTextContents()).map(Number);
   check(grades.every((g, i) => i === 0 || grades[i - 1] >= g), `현재 heading sorts high to low (${grades.join(',')})`);
   await firstTeam.getByRole('button', { name: /^나이/ }).click();
   const ages = (await firstTeam.locator('tbody tr td:nth-child(3)').allTextContents()).map(Number);
   check(ages.every((a, i) => i === 0 || ages[i - 1] <= a), `나이 heading sorts young to old (${ages.join(',')})`);
   await page.getByRole('button', { name: '직접 관리' }).click();
   await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled);
-  const before1 = await page.locator('.roster').first().locator('tbody tr').count();
-  await page.locator('.roster').first().getByRole('button', { name: '말소' }).first().click();
-  await page.waitForFunction((n) => document.querySelector('.roster')?.querySelectorAll('tbody tr').length === n - 1, before1);
-  // The same player cannot come straight back (ten-day rule).
-  await page.locator('.roster').nth(1).getByRole('button', { name: '1군 등록' }).first().click();
+  const rowsNow = () => page.evaluate(() => document.querySelectorAll('.squad-table tbody tr').length);
+  const before1 = await rowsNow();
+  await page.locator('.squad-table').first().getByRole('button', { name: '말소' }).first().click();
+  await page.waitForFunction((n) => document.querySelectorAll('.squad-table tbody tr').length === n - 1, before1);
+  await page.getByRole('button', { name: /^퓨처스/ }).click();
+  await page.locator('.squad-table').first().getByRole('button', { name: '1군 등록' }).first().click();
   await page.screenshot({ path: join(shots, 'manual-entry.png'), fullPage: false });
 
   // 5. Every screen, the player dialog, reload.
   for (const tab of ['기록', '구단', '역대', '드래프트 후보', '우리 구단']) await page.getByRole('button', { name: tab, exact: true }).click();
-  await page.locator('.roster .link').first().click();
+  await page.getByRole('button', { name: '선수단', exact: true }).click();
+  await page.locator('.squad-table .link').first().click();
   await page.getByRole('dialog').waitFor();
   await page.screenshot({ path: join(shots, 'player.png') });
   await page.keyboard.press('Escape');

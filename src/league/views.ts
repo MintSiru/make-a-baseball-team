@@ -78,6 +78,13 @@ export function pitLine(p: PitTotals | null) {
   return `${p.g}경기 ${p.w}승 ${p.l}패${extra} ${ip(p.outs)}이닝 평균자책점 ${era(p).toFixed(2)}`;
 }
 
+function statsFor(s: LeagueState, id: PlayerId, group: RosterGroup): { bat: BatTotals | null; pit: PitTotals | null; futures: boolean } {
+  const first = s.lines[id];
+  const minor = s.futures?.lines[id];
+  if (group === 'active' || (!minor && first)) return { bat: first?.bat ?? null, pit: first?.pit ?? null, futures: false };
+  return { bat: minor?.bat ?? null, pit: minor?.pit ?? null, futures: !!minor };
+}
+
 /** This season's futures line, marked as such. */
 function futuresLine(s: LeagueState, id: PlayerId) {
   const f = s.futures?.lines[id];
@@ -113,6 +120,8 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
       grade: p.scouting.current,
       future: p.scouting.futureValue,
       line: group === 'military' || group === 'active' ? (isPitcher(p) ? pitLine(line?.pit ?? null) : batLine(line?.bat ?? null)) : futuresLine(s, id) || (isPitcher(p) ? pitLine(line?.pit ?? null) : batLine(line?.bat ?? null)),
+      /** This season's numbers: first team for the first team, futures (or 상무) below it. */
+      stats: statsFor(s, id, group),
       salary: salaryIn(p, s.year),
       /** Foreign players: the contract total in US dollars (bonus + salary + options). */
       usd: usdTotal(p.contract),

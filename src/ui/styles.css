@@ -753,3 +753,376 @@ button.pick {
   padding: 0 8px;
   max-width: 100%;
 }
+
+/* ── V0.4.1 redesign: centred page, summary cards, calmer tables ───────────────────────────────── */
+:root {
+  --card: #fbf9f4;
+  --zebra: #f1ede4;
+  --good: #1f7a4a;
+  --bad: #b3261e;
+  --page: 1240px;
+  --gutter: max(16px, calc((100vw - var(--page)) / 2));
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --card: #1c1f23;
+    --zebra: #23272c;
+    --good: #6cc58f;
+    --bad: #f08a80;
+  }
+}
+.masthead,
+.progress-bar,
+.tabs,
+.page,
+.footer {
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+.notice {
+  margin-left: var(--gutter);
+  margin-right: var(--gutter);
+}
+.masthead {
+  border-bottom: 1px solid var(--rule);
+  padding-top: 14px;
+  padding-bottom: 12px;
+}
+.progress-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--rule);
+}
+.tabs {
+  border-bottom: 1px solid var(--rule);
+}
+.page {
+  padding-top: 20px;
+  padding-bottom: 40px;
+}
+h2 {
+  font-size: 20px;
+}
+h3 {
+  font-size: 16px;
+  margin-top: 28px;
+  margin-bottom: 8px;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+/* Page header: title on the left, view switch on the right. */
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.page-head p {
+  margin: 4px 0 0;
+}
+.head-stat {
+  margin: 0;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+/* Segmented controls read as one group. */
+.segmented {
+  gap: 0;
+}
+.segmented button {
+  margin-right: -1px;
+  padding: 6px 12px;
+}
+.segmented button:first-child {
+  border-radius: 6px 0 0 6px;
+}
+.segmented button:last-child {
+  border-radius: 0 6px 6px 0;
+  margin-right: 0;
+}
+.segmented .count {
+  font-size: 12px;
+  opacity: 0.75;
+  margin-left: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Summary cards. */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin: 8px 0 4px;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.card p {
+  margin: 0;
+}
+.card-label {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.card-value {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 4px 0 2px !important;
+  font-variant-numeric: tabular-nums;
+}
+.card-value.small {
+  font-size: 18px;
+}
+.card-unit {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--ink-2);
+}
+.card-sub {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.bar {
+  height: 6px;
+  background: var(--zebra);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 6px 0 4px;
+}
+.bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.bar span.over {
+  background: var(--bad);
+}
+
+/* Founding steps as one line. */
+.stepper {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 0;
+  padding: 0;
+  margin: 16px 0 0;
+  font-size: 14px;
+}
+.stepper li {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding-right: 22px;
+  color: var(--ink-2);
+  position: relative;
+}
+.stepper li::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--rule);
+  flex: none;
+}
+.stepper li.done {
+  color: var(--ink);
+}
+.stepper li.done::before {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.stepper .num {
+  font-weight: 600;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 32px;
+}
+@media (max-width: 800px) {
+  .two-col {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.results {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.results li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.result {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 22px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--ink-2);
+}
+.result.W {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.result.T {
+  background: var(--rule);
+  color: var(--ink);
+}
+.score {
+  min-width: 3.2em;
+  font-weight: 600;
+}
+.leaders-mini {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+  margin: 0;
+}
+.leaders-mini div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.leaders-mini dt {
+  color: var(--ink-2);
+  font-size: 13px;
+}
+.leaders-mini dd {
+  margin: 0;
+  text-align: right;
+}
+.empty {
+  color: var(--ink-2);
+  padding: 8px 0;
+}
+.club-log li {
+  display: flex;
+  gap: 10px;
+}
+
+/* Tables: a framed card, zebra rows, more room per row. */
+.table-wrap {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--card);
+  margin: 8px 0 16px;
+}
+.record-table th,
+.record-table td {
+  padding: 8px 12px;
+}
+.record-table thead th {
+  background: var(--card);
+  border-bottom: 1px solid var(--rule);
+  font-size: 12px;
+}
+.record-table tbody tr:nth-child(even) td {
+  background: var(--zebra);
+}
+.record-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent) 10%, var(--card));
+}
+.record-table tbody td {
+  border-bottom: 0;
+}
+.record-table .strong {
+  font-weight: 700;
+}
+.squad-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 8px 0;
+}
+/* The name column stays in view while a wide table scrolls sideways. */
+.squad-table td.name-cell,
+.squad-table th:first-child,
+.stats-table td:first-child,
+.stats-table th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--card);
+}
+.squad-table tbody tr:nth-child(even) td.name-cell,
+.stats-table tbody tr:nth-child(even) td:first-child {
+  background: var(--zebra);
+}
+.tag.warn {
+  color: var(--bad);
+  border-color: var(--bad);
+}
+.plus {
+  color: var(--good);
+}
+.row-actions button {
+  border-radius: 4px;
+}
+
+/* Decisions: the confirm bar stays in reach at the bottom of the screen. */
+.decision .actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
+  padding: 12px 0;
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.decision > p:first-of-type {
+  font-size: 15px;
+}
+@media (max-width: 600px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .card {
+    padding: 10px 12px;
+  }
+  .card-value {
+    font-size: 19px;
+  }
+  .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs button {
+    flex: none;
+  }
+  .page-head .segmented {
+    width: 100%;
+  }
+}
+@media (max-width: 360px) {
+  .card-value {
+    font-size: 17px;
+  }
+}
