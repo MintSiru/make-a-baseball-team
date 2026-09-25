@@ -1,0 +1,41 @@
+{
+  "sim": "1.0",
+  "hashes": {
+    "pool:pool-a": {
+      "sim": "4efd2a251fd20058a042b8c344eb032d5dd957f511f7ca0b8501aa933a64926a",
+      "full": "a9f4efbf1cfee8082667669d7c16072652d76a1852f80e66f9966c8d6dc8cb76"
+    },
+    "pool:pool-b": {
+      "sim": "c0fe055a74471a6e73ae11d37890b175b0f88a0f3411eeb30ad56551696990c9",
+      "full": "2c2c214fce9a42f7e52939cf30b44031231743e03733d1d44da0e1e58e10d5ff"
+    },
+    "pool:pool-c": {
+      "sim": "892227a7c71e99ed12c0455258983a1bcbfd5c418a7160b74f81063605e48248",
+      "full": "0c187dd6b2d6ce8a90e2c24b9b51c8288871c83d85a40674a90ffa0df2736765"
+    },
+    "game:lg/true/golden-a/normal/development": {
+      "sim": "fc134a35f2fc6d96bf49efc4a748ee29df1698a948876c508b044667849f60de",
+      "full": "a2d62d5c0f4a9da6459ef693ac6dc21358b2dee2559da4a931c7f1a8990c40fb"
+    },
+    "game:kiwoom/false/golden-b/hard/immediate": {
+      "sim": "8bd903ef7f5dba3b8f526263b18d0ca13f91bdc7377e472acccdeb6931aa6875",
+      "full": "d7073d50df9d54e384498ed1ad74871a032706f15bf8437874e914ef0fcd161c"
+    },
+    "game:samsung/true/golden-c/easy/needs": {
+      "sim": "d6fd94cb4d166450841eeaa931c7c215622e062ceafed2438cd1d93960c055fc",
+      "full": "59513b9af6e9fd1682d8e7dfcb17768c8fa857f59877d845a6b55650a87cc149"
+    },
+    "game:kia/false/golden-d/normal/needs": {
+      "sim": "53bd7ceba75e552d0b5121651d8e1fea947571076f78f580f83ee2ab7b2a065f",
+      "full": "415bb4b234825033e0134ee802bf23897e1da96444bea2176c6de31a7d1e40a7"
+    },
+    "game:hanwha/true/golden-e/hard/development": {
+      "sim": "bcca2b3e5348442cf0a18309b8f79d6826267200f694afa5c0b3391f62d03c3b",
+      "full": "deda2fda9c7f0e97e2d55b13616d70a59c86c1524b7853c6bb9b1274a7cf6d8c"
+    },
+    "game:nc/false/golden-f/easy/immediate": {
+      "sim": "92f7f288ba815ceb4fb09afb98f3d7c7c7113e581790572848e27a32cac82afd",
+      "full": "6895cbd134e9cf36203a84e18acadd32714535c86bc77cb8f924714e3b3905af"
+    }
+  }
+}
