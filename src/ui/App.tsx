@@ -14,7 +14,7 @@ import { BoxScore } from './BoxScore';
 import { StorySettings } from './StorySettings';
 import { hasKey, loadSettings, saveSettings, type StorySettings as StorySettingsT } from '../story/settings';
 import { PROVIDERS, rewrite } from '../story/writer';
-import type { NewsItem } from '../league/news';
+import { detailFor, type NewsItem } from '../league/news';
 import { Decision } from './Decision';
 import { Games } from './Games';
 import { DraftBoard } from './DraftBoard';
@@ -159,7 +159,9 @@ export function App() {
     const provider = storySettings.provider;
     const model = storySettings.models[provider] || PROVIDERS[provider].defaultModel;
     setStoryBusy(item.id);
-    const out = await rewrite(item, { provider, key: storySettings.keys[provider]!, model });
+    // Articles written before the fact lines existed get them rebuilt while the game is still kept.
+    const detail = latest.current ? detailFor(latest.current, item) : item.detail;
+    const out = await rewrite(detail ? { ...item, detail } : item, { provider, key: storySettings.keys[provider]!, model });
     setStoryBusy(null);
     if (!out.ok) {
       setNotice(`AI 기사: ${out.message} (원래 기사를 씁니다)`);
@@ -373,7 +375,19 @@ export function App() {
           </main>
         </>
       )}
-      {boxId && league && <BoxScore league={league} id={boxId} onClose={() => setBoxId(null)} onPlayer={(pid) => { setBoxId(null); setPlayerId(pid); }} />}
+      {boxId && league && (
+        <BoxScore
+          league={league}
+          id={boxId}
+          onClose={() => setBoxId(null)}
+          onPlayer={(pid) => {
+            setBoxId(null);
+            setPlayerId(pid);
+          }}
+          onAct={(a) => act(a, '기사 쓰는 중', false)}
+          story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }}
+        />
+      )}
       {playerId && league && <PlayerPanel league={league} id={playerId} onClose={() => setPlayerId(null)} onInterview={(pid) => act({ kind: 'interview', id: pid }, '인터뷰 중', false)} />}
       <footer class="footer">
         <div class="save-actions">

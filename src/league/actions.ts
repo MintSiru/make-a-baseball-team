@@ -10,7 +10,7 @@ import { ensureNumbers } from './numbers';
 import { startProject, type ProjectKind } from './ballpark';
 import { clubState } from './fans';
 import { FANS } from './tuning';
-import { interviewNews, type NewsItem } from './news';
+import { gameRecap, interviewNews, type NewsItem } from './news';
 import { renameStadium } from './userclub';
 import type { ExpansionSettings, LeagueState, Squad } from './state';
 import { foundClub, FOUNDING_DATE, resolveDecision, type DecisionInput } from './expansion';
@@ -37,6 +37,7 @@ export type Action =
   | { kind: 'stadiumProject'; project: ProjectKind }
   // Stories (V0.7)
   | { kind: 'interview'; id: PlayerId }
+  | { kind: 'gameStory'; id: string }
   | { kind: 'storyText'; id: string; ai: NonNullable<NewsItem['ai']> | null }
   // The market (V0.5)
   | { kind: 'trade'; teamId: TeamId; give: PlayerId[]; get: PlayerId[] }
@@ -119,6 +120,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'interview':
       if (s.players[action.id]?.teamId === s.user?.teamId) interviewNews(s, action.id, s.phase === 'regular' ? (s.schedule[Math.max(0, s.next - 1)]?.date ?? `${s.year}-03-01`) : `${s.year}-11-15`);
+      break;
+    case 'gameStory':
+      gameRecap(s, action.id);
       break;
     case 'storyText': {
       // A language model's version of an article, or null to go back to the template.

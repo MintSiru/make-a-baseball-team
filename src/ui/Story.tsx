@@ -24,9 +24,14 @@ export function NewsCard({ item, onRewrite, onRevert, busy }: { item: NewsItem; 
         )}
       </p>
       <h4>{text.title}</h4>
-      {text.body.split('\n').map((line, i) => (
-        <p key={i}>{line}</p>
-      ))}
+      {text.body
+        .split('\n')
+        .filter((line) => line.trim())
+        .map((line, i) => (
+          <p key={i} class={line.startsWith('— ') ? 'question' : undefined}>
+            {line}
+          </p>
+        ))}
       {text.quotes.length > 0 && (
         <ul class="quotes">
           {text.quotes.map((q, i) => (
@@ -35,6 +40,16 @@ export function NewsCard({ item, onRewrite, onRevert, busy }: { item: NewsItem; 
             </li>
           ))}
         </ul>
+      )}
+      {!!item.detail?.length && (
+        <details class="news-facts">
+          <summary>기사에 쓴 기록 ({item.detail.length})</summary>
+          <ul>
+            {item.detail.map((d, i) => (
+              <li key={i}>{d}</li>
+            ))}
+          </ul>
+        </details>
       )}
       <div class="row-actions">
         {item.ai && (

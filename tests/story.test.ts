@@ -23,7 +23,9 @@ const fakeFetch = (status: number, json: unknown) =>
 describe('number check', () => {
   it('accepts the facts and rejects invented numbers', () => {
     expect(numbersCheck(JSON.parse(story('고래가 KT를 5-4로 이겼다. 10회말이었다.')), item)).toBe(true);
-    expect(numbersCheck(JSON.parse(story('고래가 KT를 5-4로 이겼다. 7연승이다.')), item)).toBe(false);
+    expect(numbersCheck(JSON.parse(story('고래가 KT를 5-4로 이겼다. 17연승이다.')), item)).toBe(false);
+    // Numbers from the game log's fact lines are facts too.
+    expect(numbersCheck(JSON.parse(story('고래는 안타 13개를 쳤다.')), { ...item, detail: ['안타 고래 13개, KT 8개'] })).toBe(true);
   });
 });
 

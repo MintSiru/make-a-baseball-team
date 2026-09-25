@@ -9,6 +9,8 @@ import type { Player, PlayerId, TeamId } from '../model/types';
 import { eulreul, eunneun, iga, wagwa } from './josa';
 import { isPitcher } from './players';
 import type { LeagueState } from './state';
+import type { PlayEvent } from './engine/types';
+import { gameDetail, monthDetail, seasonDetail } from './gamedetail';
 
 export type NewsKind = 'game' | 'milestone' | 'month' | 'season' | 'award' | 'interview' | 'move';
 
@@ -27,6 +29,8 @@ export interface NewsItem {
   quotes: Quote[];
   /** Public facts the article was written from (numbers and names only). */
   facts: Record<string, string | number>;
+  /** Longer fact lines (V0.7.1): a game's scoring plays and lines, a month's results, a season's leaders. */
+  detail?: string[];
   players: PlayerId[];
   /** A language model's version, when one wrote it (the template stays as the fallback). */
   ai?: { title: string; body: string; quotes: Quote[]; provider: string; model: string };
@@ -81,8 +85,11 @@ const fanQuotes = (won: boolean, key: string): Quote[] => {
 
 // ── Game stories ─────────────────────────────────────────────────────────────────────────────────
 
-/** The most notable thing about the user's game, if anything (one article per game at most). */
-export function gameNews(s: LeagueState, box: StoredBox) {
+/**
+ * The most notable thing about the user's game, if anything (one article per game at most). With
+ * `recap`, an ordinary game gets a plain recap too (the box score's "기사로 쓰기").
+ */
+export function gameNews(s: LeagueState, box: StoredBox, log?: PlayEvent[] | null, recap = false) {
   const u = s.user;
   if (!u || (box.home !== u.teamId && box.away !== u.teamId)) return;
   const us = box.home === u.teamId ? 1 : 0;
@@ -134,12 +141,33 @@ export function gameNews(s: LeagueState, box: StoredBox) {
     title = `${me}, 연장 ${box.innings}회 끝에 승리`;
     body = `${iga(me)} ${opp}전에서 ${box.innings}회까지 가는 접전 끝에 ${rs}-${rt}로 이겼다.`;
     star = hero?.[0] ?? null;
+  } else if (recap) {
+    const sp = pit[0];
+    title = `${me}, ${opp}에 ${rs}-${rt} ${won ? '승리' : rs < rt ? '패배' : '무승부'}`;
+    body = `${iga(me)} ${box.date} ${opp}전에서 ${rs}-${rt}로 ${won ? '이겼다' : rs < rt ? '졌다' : '비겼다'}. ${sp ? `선발 ${iga(name(sp[0]))} ${Math.floor(sp[1] / 3)}이닝 ${sp[3]}실점했다.` : ''} ${hero && hero[4] > 0 ? `타선에서는 ${iga(name(hero[0]))} ${hero[4]}안타 ${hero[5]}타점을 기록했다.` : ''}`.trim();
+    star = won ? (hero?.[0] ?? null) : null;
   } else return;
   const quotes: Quote[] = [];
   if (star && s.players[star]) quotes.push(playerQuote(s.players[star]!, `${key}-p`));
   quotes.push(managerQuote(s, u.teamId, won, `${key}-m`), ...fanQuotes(won, `${key}-f`));
   if (star) facts.star = name(star);
-  addNews(s, { id: `g-${box.id}`, date: box.date, kind: 'game', title, body, quotes, facts, players: star ? [star] : [] });
+  addNews(s, { id: `g-${box.id}`, date: box.date, kind: 'game', title, body, quotes, facts, detail: gameDetail(s, box, log), players: star ? [star] : [] });
+}
+
+/** The box score's "기사로 쓰기": the game's article, written now if it had none. */
+export function gameRecap(s: LeagueState, boxId: string) {
+  const box = s.boxes?.[boxId];
+  if (box) gameNews(s, box, s.pbp?.[boxId], true);
+}
+
+/** Fact lines for an article written before V0.7.1, rebuilt while its game is still kept. */
+export function detailFor(s: LeagueState, item: NewsItem): string[] | undefined {
+  if (item.detail) return item.detail;
+  if (item.kind === 'game' && item.id.startsWith('g-')) {
+    const box = s.boxes?.[item.id.slice(2)];
+    if (box) return gameDetail(s, box, s.pbp?.[box.id]);
+  }
+  return undefined;
 }
 
 
@@ -216,6 +244,7 @@ export function monthNews(s: LeagueState, date: string) {
     body: `${iga(me)} ${prev}월 ${games.length}경기에서 ${w}승 ${l}패를 거뒀다. ${rate >= 0.5 ? '다음 달에도 이 흐름을 이어 가는 게 과제다.' : '반등의 실마리를 찾아야 한다.'}`,
     quotes: fanQuotes(rate >= 0.5, id),
     facts: { month: prev, wins: w, losses: l, club: me },
+    detail: monthDetail(s, u.teamId, s.year, prev),
     players: [],
   });
 }
@@ -255,6 +284,7 @@ export function seasonNews(s: LeagueState, year: number) {
     body: `${iga(me)} ${year} 시즌을 ${row.w}승 ${row.l}패 ${row.t}무, ${row.rank}위로 마쳤다. ${champ ? '한국시리즈 정상에 올랐다.' : row.rank <= 5 ? '가을야구에 나갔다.' : '가을야구에는 닿지 못했다.'}${report?.homeGames ? ` 홈 관중은 경기당 ${Math.round(report.fans / report.homeGames).toLocaleString('ko-KR')}명.` : ''}`,
     quotes: [managerQuote(s, u.teamId, row.pct >= 0.5, `season-${year}`), ...fanQuotes(row.pct >= 0.5, `season-${year}`)],
     facts: { year, club: me, rank: row.rank, wins: row.w, losses: row.l, champion: champ ? '예' : '아니오' },
+    detail: seasonDetail(s, u.teamId, year),
     players: [],
   });
 }
@@ -278,6 +308,33 @@ export function interviewNews(s: LeagueState, id: PlayerId, date: string) {
     body: `— ${q1}\n${a1}\n— 팬들에게 한마디.\n${pick(['늘 응원해 주셔서 감사합니다. 그라운드에서 보답하겠습니다.', '야구장 많이 찾아와 주세요. 더 좋은 경기 보여 드리겠습니다.', '끝까지 믿어 주시면 결과로 말씀드리겠습니다.'], `${key}-2`)}`,
     quotes: [],
     facts: { player: p.name, personality: p.personality, ...(line?.bat ? { pa: line.bat.pa, h: line.bat.h, hr: line.bat.hr } : {}), ...(line?.pit ? { outs: line.pit.outs, er: line.pit.er, k: line.pit.k } : {}) },
+    detail: interviewDetail(s, p, date),
     players: [id],
   });
+}
+
+/** An interview's facts: the season so far, the last five games from the kept box scores, the record. */
+function interviewDetail(s: LeagueState, p: Player, date: string): string[] {
+  const out: string[] = [];
+  const line = s.lines[p.id];
+  const team = p.teamId ? short(s, p.teamId) : '';
+  out.push(`${team} ${p.name}, ${p.personality}, ${p.proSince}년 데뷔`);
+  const b = line?.bat,
+    q = line?.pit;
+  if (b?.pa) out.push(`올 시즌 ${b.g}경기 ${b.pa}타석 타율 ${(b.ab ? b.h / b.ab : 0).toFixed(3).replace(/^0/, '')} 홈런 ${b.hr}개 ${b.rbi}타점 도루 ${b.sb}개`);
+  if (q?.outs) out.push(`올 시즌 ${q.g}경기 ${q.w}승 ${q.l}패 ${q.sv}세이브 ${q.hld}홀드 ${Math.floor(q.outs / 3)}이닝 평균자책점 ${((27 * q.er) / q.outs).toFixed(2)} 삼진 ${q.k}개`);
+  const games = Object.values(s.boxes ?? {})
+    .filter((x) => x.date <= date && (x.bat[0].some((r) => r[0] === p.id) || x.bat[1].some((r) => r[0] === p.id) || x.pit[0].some((r) => r[0] === p.id) || x.pit[1].some((r) => r[0] === p.id)))
+    .sort((a, c) => c.date.localeCompare(a.date))
+    .slice(0, 5);
+  for (const g of games) {
+    const side = g.bat[0].some((r) => r[0] === p.id) || g.pit[0].some((r) => r[0] === p.id) ? 0 : 1;
+    const opp = short(s, side ? g.away : g.home);
+    const br = g.bat[side].find((r) => r[0] === p.id);
+    const pr = g.pit[side].find((r) => r[0] === p.id);
+    if (br) out.push(`${g.date.slice(5)} ${opp}전 ${br[2]}타수 ${br[4]}안타 ${br[5]}타점${br[6] ? ` 홈런 ${br[6]}개` : ''}`);
+    if (pr) out.push(`${g.date.slice(5)} ${opp}전 ${Math.floor(pr[1] / 3)}이닝 ${pr[3]}실점 삼진 ${pr[6]}개${pr[9] ? ` (${{ W: '승', L: '패', S: '세이브', H: '홀드' }[pr[9]]})` : ''}`);
+  }
+  for (const h of (p.honors ?? []).slice(-3)) out.push(`수상: ${h}`);
+  return out;
 }

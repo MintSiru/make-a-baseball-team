@@ -276,7 +276,7 @@ export function playDay(s: LeagueState): boolean {
     keepBox(s, box, log);
     if (log) {
       gameMoments(s, box);
-      gameNews(s, box);
+      gameNews(s, box, log);
       milestoneNews(s, date, [...out.home.batting, ...out.home.pitching, ...out.away.batting, ...out.away.pitching].map((x) => x.id));
     }
     const r = rng(`${s.seed}|injury|${g.id}`);

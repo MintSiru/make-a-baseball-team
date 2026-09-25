@@ -1565,3 +1565,16 @@ ul.plain li {
   display: grid;
   gap: 4px;
 }
+.news-card p.question {
+  font-weight: 600;
+  margin-top: 10px;
+}
+.news-facts {
+  margin: 6px 0;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.news-facts ul {
+  margin: 4px 0;
+  padding-left: 18px;
+}

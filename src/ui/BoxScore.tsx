@@ -3,15 +3,32 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { LeagueState } from '../league/state';
 import { boxView } from '../league/views';
+import type { Action } from '../league/actions';
+import { NewsCard } from './Story';
+import type { StoryHooks } from './MyClub';
 
-type Tab = 'box' | 'pbp';
+type Tab = 'box' | 'pbp' | 'story';
 const SPEEDS: [string, number][] = [
   ['느리게', 2200],
   ['보통', 1100],
   ['빠르게', 450],
 ];
 
-export function BoxScore({ league, id, onClose, onPlayer }: { league: LeagueState; id: string; onClose: () => void; onPlayer: (id: string) => void }) {
+export function BoxScore({
+  league,
+  id,
+  onClose,
+  onPlayer,
+  onAct,
+  story = {},
+}: {
+  league: LeagueState;
+  id: string;
+  onClose: () => void;
+  onPlayer: (id: string) => void;
+  onAct?: (a: Action) => void;
+  story?: StoryHooks;
+}) {
   const v = useMemo(() => boxView(league, id), [league, id]);
   const [tab, setTab] = useState<Tab>('box');
   const [shown, setShown] = useState<number | null>(null);
@@ -30,6 +47,8 @@ export function BoxScore({ league, id, onClose, onPlayer }: { league: LeagueStat
     return () => clearTimeout(t);
   }, [shown, speed, v]);
   if (!v) return null;
+  const mine = !!league.user && (v.home.teamId === league.user.teamId || v.away.teamId === league.user.teamId);
+  const article = league.news?.find((n) => n.id === `g-${id}`);
   const innings = Math.max(v.away.line.length, v.home.line.length, 9);
   const plays = v.plays ? (shown === null ? v.plays : v.plays.slice(0, shown)) : null;
   const live = shown !== null && v.plays && shown < v.plays.length;
@@ -102,7 +121,25 @@ export function BoxScore({ league, id, onClose, onPlayer }: { league: LeagueStat
           <button type="button" role="tab" aria-selected={tab === 'pbp'} aria-pressed={tab === 'pbp'} disabled={!v.plays} onClick={() => setTab('pbp')}>
             문자중계
           </button>
+          {mine && (
+            <button type="button" role="tab" aria-selected={tab === 'story'} aria-pressed={tab === 'story'} onClick={() => setTab('story')}>
+              기사
+            </button>
+          )}
         </div>
+
+        {tab === 'story' &&
+          (article ? (
+            <NewsCard item={article} onRewrite={story.onRewrite} onRevert={story.onRevert} busy={story.busyId === article.id} />
+          ) : (
+            <p>
+              이 경기의 기사가 아직 없습니다.{' '}
+              <button type="button" onClick={() => onAct?.({ kind: 'gameStory', id })}>
+                기사로 쓰기
+              </button>{' '}
+              <span class="muted small">기록지와 문자중계의 득점 장면을 바탕으로 씁니다. AI 기사를 켜 두었다면 "AI로 쓰기"로 길게 다시 쓸 수 있습니다.</span>
+            </p>
+          ))}
 
         {tab === 'box' &&
           [v.away, v.home].map((t) => (
