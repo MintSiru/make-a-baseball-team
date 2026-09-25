@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'preact/hooks';
 import { draftContracts, TOOL_LABELS, type Difficulty } from '../draftroom';
 import { salaryIn, usdTotal } from '../league/contracts';
 import { usd } from '../league/foreign';
+import { kboLine, poolEntry } from '../league/foreignpool';
 import { autoDecision, checkDecision, faAsk, projectedPayroll, type DecisionInput } from '../league/expansion';
 import { sangmuChance } from '../league/offseason';
 import { ageIn, isPitcher, keepValue } from '../league/players';
@@ -44,6 +45,7 @@ const TITLES: Record<DecisionT['kind'], string> = {
   secondPick: '2차 드래프트',
   foreignRenew: '외국인 선수 재계약',
   posting: '포스팅 (메이저리그 진출)',
+  returnee: '해외 복귀 선수',
   sponsor: '명명권 스폰서 계약',
   staff: '코칭스태프 · 프런트',
 };
@@ -148,7 +150,19 @@ function PlayerTable({
               </td>
               <td>{positionLabel(p)}</td>
               <td class="num">{ageIn(p, year)}</td>
-              <td class="muted">{p.teamId ? shortName(league, p.teamId) : p.origin.kind === 'foreign' ? p.education.pathText : p.career.length ? '방출' : p.origin.pathway}</td>
+              <td class="muted">
+                {p.teamId
+                  ? shortName(league, p.teamId)
+                  : poolEntry(league, p.id)
+                    ? kboLine(league, p)
+                    : p.service.postedIn !== undefined
+                      ? `메이저리그 (${p.service.postedIn}년 포스팅)`
+                      : p.origin.kind === 'foreign'
+                        ? p.education.pathText
+                        : p.career.length
+                          ? '방출'
+                          : p.origin.pathway}
+              </td>
               <td class="num">{p.scouting.current}</td>
               <td class="num strong">{p.scouting.futureValue}</td>
               {extra && <td class="num">{extra.value(p)}</td>}
@@ -476,7 +490,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         <>
           <p>
             외국인 {d.regular}명{d.asia ? `, 아시아쿼터 ${d.asia}명` : ''}을 더 계약할 수 있습니다. 신규 외국인은 총액 100만 달러, 아시아쿼터는 20만 달러까지입니다. 경력 칸에
-            MLB·트리플A·일본·독립리그 이력이 있습니다.
+            MLB·트리플A·일본·독립리그 이력이 있고, 다른 구단이 방출하거나 재계약하지 않은 KBO 경력 외국인은 KBO 기록이 나옵니다 (방출 뒤 재취업도 신규 계약이라 같은 상한).
           </p>
           {budgetLine}
           {groups.map(([title, test]) => (
@@ -844,6 +858,30 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
               </tbody>
             </table>
           </div>
+        </>
+      );
+      break;
+    }
+    case 'returnee': {
+      const rows = new Map(d.rows.map((r) => [r.id, r]));
+      const cost = d.rows.filter((r) => selected.has(r.id)).reduce((a, r) => a + r.annual, 0);
+      body = (
+        <>
+          <p>
+            우리 구단이 포스팅으로 메이저리그에 보낸 선수가 KBO 복귀를 원합니다. 포스팅한 구단이 보류권을 갖고 있어 다른 구단과는 계약할 수 없습니다. 데려올 선수를 고르세요. 고르지 않은
+            선수는 보류권을 풀어 주며, 다른 구단이 데려갈 수 있습니다. 조건은 KBO 시절 기록과 나이로 정한 다년 계약이고, 해외에서 보낸 시간만큼 나이를 먹었습니다.
+          </p>
+          <p class="muted">
+            {next}년 연봉 {money(projectedPayroll(league, u.teamId, next))} + 복귀 {money(cost)} / 예산 {money(u.payrollBudget)}
+          </p>
+          <PlayerTable
+            league={league}
+            players={d.rows.map((r) => league.players[r.id]!)}
+            selected={selected}
+            toggle={toggle}
+            onPlayer={onPlayer}
+            extra={{ title: '조건 · 해외', value: (p) => `${rows.get(p.id)!.years}년 연 ${money(rows.get(p.id)!.annual)} · ${rows.get(p.id)!.abroad}년`, sort: (p) => rows.get(p.id)!.annual }}
+          />
         </>
       );
       break;

@@ -31,6 +31,8 @@ import { seasonFans } from './fans';
 import { aiStaffWinter } from './staff';
 import { runAiPosting } from './posting';
 import { FUTURES, OFFSEASON as O, STAFF } from './tuning';
+import { aiTakesKnown, expireForeignPool, foreignPoolAsk, leavePool, poolChoice, toForeignPool } from './foreignpool';
+import { draftReturnees } from './returnees';
 import { staffEdge, staffRating } from './staff';
 
 type Develop = (p: object, tools: Tools, yearIndex: number, age: number, daysLost: number, r: () => number, boost?: number, focus?: string, scale?: number) => Tools;
@@ -396,7 +398,10 @@ export const standardSlots = (order: TeamId[]): DraftSlot[] =>
 export function openDraft(s: LeagueState, draftYear: number, slots: DraftSlot[]): DraftState {
   const pool = draftClass(s.seed, draftYear);
   for (const p of pool) s.players[p.id] = p;
-  return { year: draftYear, slots, next: 0, pool: pool.map((p) => p.id), developmentDone: false };
+  // Draftees who went abroad and are back after the two-year wait (V0.7.3), ranked among this class.
+  const back = draftReturnees(s, draftYear);
+  for (const p of back) p.amateur.draftRank = 1 + pool.filter((q) => futureValue(q) > futureValue(p)).length;
+  return { year: draftYear, slots, next: 0, pool: [...pool, ...back].map((p) => p.id), developmentDone: false };
 }
 
 function draftScore(s: LeagueState, p: Player, counts: Record<string, number>, r: () => number) {
@@ -595,8 +600,23 @@ export function renewForeigners(s: LeagueState, teamId: TeamId, next: number, r:
     const last = lastRecord(p, next - 1);
     const keep = last && ageIn(p, next) <= 35 && last.war >= (isPitcher(p) ? O.foreign.keepWarPitcher : O.foreign.keepWarHitter) && r() < O.foreign.keepChance;
     if (keep) p.contract = foreignContract(teamId, next, splitContract(foreignRenewalAsk(p, next), r), !!p.origin.asiaQuota);
-    else leaveLeague(s, p, 'overseas');
+    // Not kept: a star may go to MLB or Japan; the others join the market of KBO-experienced foreigners.
+    else if (!(s.user && !foreignLeaves(s, p, next) && toForeignPool(s, p, next - 1))) leaveLeague(s, p, 'overseas');
   }
+}
+
+/** With the player's club in the league, every AI club decides whom to keep before the user's foreign
+    signings, so the players let go are on the market in time (the real order: reserve lists at the end
+    of November, new signings over the winter). */
+export function aiForeignRenewals(s: LeagueState, next: number) {
+  const o = s.offseason;
+  if (!s.user || !o || o.foreignRenewed) return;
+  const r = rng(`${s.seed}|foreign-renew|${o.year}`);
+  for (const t of s.teams) {
+    if (t.firstTeamFrom === null || t.firstTeamFrom > next || t.id === s.user.teamId) continue;
+    renewForeigners(s, t.id, next, r);
+  }
+  o.foreignRenewed = true;
 }
 
 export const foreignOn = (s: LeagueState, teamId: TeamId) => orgPlayers(s, teamId).filter(isForeign);
@@ -606,7 +626,7 @@ export function refreshForeigners(s: LeagueState, next: number, r: () => number)
   for (const t of s.teams) {
     if (t.firstTeamFrom === null || t.firstTeamFrom > next) continue; // no foreign players in a futures-only season
     if (t.id === s.user?.teamId) continue; // the user's club renews and signs in its own foreign decision
-    renewForeigners(s, t.id, next, r);
+    if (!s.offseason?.foreignRenewed) renewForeigners(s, t.id, next, r);
     const slots = foreignSlots(s, t.id, next);
     const staying = foreignOn(s, t.id);
     const regular = staying.filter((p) => !p.origin.asiaQuota);
@@ -614,6 +634,13 @@ export function refreshForeigners(s: LeagueState, next: number, r: () => number)
     let k = 0;
     const add = (kind: 'pitcher' | 'hitter', asia: boolean) => {
       const id = `f${next}-${t.id}-${k++}`;
+      // Now and then a proven KBO foreigner another club let go (foreignpool.ts, own stream).
+      const known = poolChoice(s, kind, asia);
+      if (known && aiTakesKnown(`${s.seed}|foreign-pool|${next}|${id}`)) {
+        leavePool(s, known.id);
+        sign(s, known, t.id, foreignContract(t.id, next, splitContract(foreignPoolAsk(s, known), rng(`${s.seed}|foreign-pool-terms|${next}|${id}`)), asia));
+        return;
+      }
       const p = makeForeign(s.seed, id, next, { kind, asiaQuota: asia });
       sign(s, p, t.id, foreignContract(t.id, next, splitContract(p.origin.background!.ask, r), asia));
     };
@@ -755,6 +782,7 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         break;
       case 'foreign':
         refreshForeigners(s, next, rng(`${s.seed}|foreign|${year}`));
+        expireForeignPool(s, year);
         break;
       case 'check':
         break; // the user's club over the limit after foreign signings: a user decision (expansion.ts)

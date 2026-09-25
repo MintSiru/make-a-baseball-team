@@ -147,7 +147,11 @@ export function App() {
 
   // The draft class of this September (it fills next season's rosters): the 2027 draft is Draft Room's own pool.
   const draftYear = league ? (league.phase === 'offseason' && league.offseason ? league.offseason.year : league.year) : 2026;
-  const draftPool = useMemo(() => (league ? draftClass(league.seed, draftYear) : []), [league?.seed, draftYear]);
+  // The class, plus draftees who went abroad and come back through this draft (V0.7.3).
+  const draftPool = useMemo(
+    () => (league ? [...draftClass(league.seed, draftYear), ...Object.values(league.players).filter((p) => p.status === 'overseas' && p.abroad?.draft === draftYear)] : []),
+    [league?.seed, draftYear, version],
+  );
   const prospect = useMemo(() => draftPool.find((p) => p.id === prospectId) ?? draftPool[0] ?? null, [draftPool, prospectId]);
   const prospectAge = (p: Player) => ageOn(p.birthday, `${draftYear}${DRAFT_ROOM_DRAFT_DATE.slice(4)}`);
 

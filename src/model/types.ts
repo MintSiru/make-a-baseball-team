@@ -187,6 +187,9 @@ export interface Player {
   numberTeam?: TeamId;
   /** The club's development plan from spring camp (absent: balanced growth, no change). */
   plan?: PlayerPlan;
+  /** A draftee who refused to sign and went abroad (V0.7.3): when, and the draft he comes back through
+      after the KBO's two-year wait (null: he stays abroad). */
+  abroad?: { left: number; draft: number | null };
 }
 
 export interface InjuryRecord {

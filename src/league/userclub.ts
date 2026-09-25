@@ -27,6 +27,8 @@ import { makeSecondPick } from './seconddraft';
 import { baseSupport, evaluate, nextBudget, ownerEvents, signSponsor, sponsorDue, sponsorOffers } from './parent';
 import { STAFF_LABELS, STAFF_ROLES, staffCandidates, staffOf } from './staff';
 import { post, postingCandidates, postingNote } from './posting';
+import { toForeignPool } from './foreignpool';
+import { goAbroad, releaseReturnee, signReturnee } from './returnees';
 import { splitContract } from './foreign';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type SalaryRow, type StaffRole, type UserClub } from './state';
@@ -62,6 +64,7 @@ export type AnnualInput =
   | { kind: 'secondPick'; id: PlayerId | null }
   | { kind: 'foreignRenew'; keep: PlayerId[] }
   | { kind: 'posting'; id: PlayerId | null }
+  | { kind: 'returnee'; ids: PlayerId[] }
   | { kind: 'sponsor'; index: number }
   | { kind: 'staff'; hires: Partial<Record<StaffRole, string>> };
 
@@ -286,6 +289,13 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
       if (input.id && !dd.candidates.includes(input.id)) return '포스팅할 수 없는 선수입니다.';
       return null;
     }
+    case 'returnee': {
+      const dd = d as Extract<Decision, { kind: 'returnee' }>;
+      if (input.ids.some((id) => !dd.rows.some((r) => r.id === id))) return '명단에 없는 선수입니다.';
+      const cost = dd.rows.filter((r) => input.ids.includes(r.id)).reduce((a, r) => a + r.annual, 0);
+      if (cost > 0 && projectedPayroll(s, u.teamId, next) + cost > u.payrollBudget) return '연봉 예산을 넘습니다.';
+      return null;
+    }
     case 'sponsor': {
       const dd = d as Extract<Decision, { kind: 'sponsor' }>;
       return dd.offers[input.index] ? null : '제안을 고르세요.';
@@ -423,9 +433,13 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           u.fund -= amount;
           u.ledger.push({ year, label: `신인 계약금 · ${p.name}`, amount: -amount });
         } else if (!counters.some((c) => c.id === p.id)) {
-          removeFromRoster(s, p);
-          delete s.players[p.id];
           note(u, year, `${p.origin.overallPick}순위 ${p.name} 계약 거부 (${p.amateur.intent === 'college' ? '대학 진학' : p.amateur.intent === 'abroad' ? '해외 진출' : '독립리그행'})`);
+          // One who goes abroad may come back years later through the draft (returnees.ts); the others leave the game.
+          if (p.amateur.intent === 'abroad') goAbroad(s, p, year);
+          else {
+            removeFromRoster(s, p);
+            delete s.players[p.id];
+          }
         }
       }
       return counters.length ? { kind: 'rookieBonus', picks: counters, final: true } : null;
@@ -483,6 +497,21 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
       }
       return null;
     }
+    case 'returnee': {
+      const dd = d as Extract<Decision, { kind: 'returnee' }>;
+      for (const row of dd.rows) {
+        const p = s.players[row.id]!;
+        if (input.ids.includes(row.id)) {
+          signReturnee(s, p, u.teamId, row, next);
+          note(u, year, `${p.name} ${row.abroad}년 만에 복귀 (${row.years}년, 연 ${money(row.annual)})`);
+        } else {
+          note(u, year, `${p.name}의 보류권을 풀어 줌`);
+          releaseReturnee(s, p, row, next);
+        }
+      }
+      // This winter's postings come next.
+      return postingDecision(s, next);
+    }
     case 'secondProtect': {
       const sd = s.offseason?.second;
       if (sd) sd.protected[u.teamId] = input.ids;
@@ -502,7 +531,8 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           note(u, year, `외국인 ${p.name} 재계약 (${usd(row.ask)})`);
         } else {
           note(u, year, `외국인 ${p.name} ${row.leaving ? '해외 진출로 이별' : '재계약 안 함'}`);
-          leaveLeague(s, p, 'overseas');
+          // Not re-signed: other clubs may sign him (the market of KBO-experienced foreigners).
+          if (row.leaving || !toForeignPool(s, p, year)) leaveLeague(s, p, 'overseas');
         }
       }
       // New signings for the open slots come next.
@@ -616,6 +646,13 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
       }
       return { kind: 'staff', hires };
     }
+    case 'returnee': {
+      // Bring back whoever the budget allows, best first.
+      const ids: PlayerId[] = [];
+      for (const r of [...d.rows].sort((a, b) => keepValue(s.players[b.id]!, next) - keepValue(s.players[a.id]!, next)))
+        if (keepValue(s.players[r.id]!, next) >= 45 && checkAnnual(s, d, { kind: 'returnee', ids: [...ids, r.id] }) === null) ids.push(r.id);
+      return { kind: 'returnee', ids };
+    }
     case 'posting':
       // The scouts keep a player under 27 and let an older one chase his dream (and bring in the fee).
       return { kind: 'posting', id: d.candidates.find((id) => ageIn(s.players[id]!, next) >= 27) ?? null };
@@ -639,7 +676,7 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
 }
 
 export const isAnnual = (kind: Decision['kind']) =>
-  ['military', 'ownFreeAgents', 'rookieBonus', 'development', 'camp', 'faMarket', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting', 'sponsor', 'staff'].includes(kind);
+  ['military', 'ownFreeAgents', 'rookieBonus', 'development', 'camp', 'faMarket', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting', 'returnee', 'sponsor', 'staff'].includes(kind);
 
 // ── Salary talks ─────────────────────────────────────────────────────────────────────────────────
 

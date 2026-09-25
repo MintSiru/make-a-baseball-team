@@ -18,6 +18,7 @@ import { currentStandings } from './season';
 import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from './state';
 import { TRADES } from './tuning';
 import { moveNews } from './movenews';
+import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry, toForeignPool } from './foreignpool';
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 const shortOf = (s: LeagueState, id: TeamId | null) => s.teams.find((t) => t.id === id)?.short ?? '-';
@@ -187,13 +188,15 @@ export function releasePlayer(s: LeagueState, id: PlayerId) {
     (u.log ??= []).push({ year: s.year, text: `${p.name} 방출 (자유계약선수)` });
   }
   moveNews(s, { type: 'release', teamId: u.teamId, id, waiver: s.phase === 'regular', owed: owed.reduce((a, x) => a + x.amount, 0) });
-  if (isForeign(p)) leaveForeign(s, p);
+  if (isForeign(p)) leaveForeign(s, p, u.teamId);
 }
 
-function leaveForeign(s: LeagueState, p: Player) {
+/** A foreign player his club lets go: onto the market of KBO-experienced foreigners, or home. */
+function leaveForeign(s: LeagueState, p: Player, from: TeamId | null = p.teamId) {
   s.pool = (s.pool ?? []).filter((x) => x !== p.id);
   s.waivers = (s.waivers ?? []).filter((w) => w.id !== p.id);
-  leaveLeague(s, p, 'overseas');
+  if (from) p.teamId = from;
+  if (!toForeignPool(s, p, s.year)) leaveLeague(s, p, 'overseas');
 }
 
 /** Waivers that run out today: the weakest club by record that wants him claims him (and his contract); else he is free. */
@@ -277,7 +280,8 @@ export function foreignWindow(s: LeagueState, teamId: TeamId): string | null {
   return null;
 }
 
-/** Candidates for a mid-season signing (the same list until the club uses a replacement). */
+/** Candidates for a mid-season signing (the same list until the club uses a replacement), and the
+    foreign players with KBO experience other clubs let go (foreignpool.ts). */
 export function foreignMarket(s: LeagueState, teamId: TeamId): Player[] {
   const used = s.foreignChanges?.[teamId] ?? 0;
   const out: Player[] = [];
@@ -294,13 +298,14 @@ export function foreignMarket(s: LeagueState, teamId: TeamId): Player[] {
       p.status = 'amateur';
       out.push(p);
     }
-  return out;
+  return [...foreignPoolPlayers(s), ...out];
 }
 
 /** The prorated asking price now (US dollars): new signings are capped at the full-season cap times the share left. */
 export function foreignPriceNow(s: LeagueState, p: Player) {
   const share = Math.max(0.2, seasonShareLeft(s));
-  return Math.round((p.origin.background!.ask * share) / 10_000) * 10_000;
+  const full = poolEntry(s, p.id) ? foreignPoolAsk(s, p) : p.origin.background!.ask;
+  return Math.round((full * share) / 10_000) * 10_000;
 }
 
 export function canReplaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, inId: string): string | null {
@@ -325,16 +330,18 @@ export function replaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, in
     if (owed) (s.user.deadMoney ??= []).push({ season: s.year, amount: owed, label: `${old.name} 잔여 연봉` });
   }
   const wasActive = s.rosters[teamId]!.active.includes(out);
+  const price = foreignPriceNow(s, p);
   leaveForeign(s, old);
+  leavePool(s, p.id);
   p.status = 'active';
   p.teamId = teamId;
-  p.contract = foreignContract(teamId, s.year, splitContract(foreignPriceNow(s, p), r), !!p.origin.asiaQuota);
+  p.contract = foreignContract(teamId, s.year, splitContract(price, r), !!p.origin.asiaQuota);
   s.players[p.id] = p;
   s.rosters[teamId]![wasActive ? 'active' : 'futures'].push(p.id);
   (s.foreignChanges ??= {})[teamId] = (s.foreignChanges[teamId] ?? 0) + 1;
   const text = `외국인 교체: ${shortOf(s, teamId)} ${old.name} → ${p.name} (${p.origin.background!.text})`;
   logTransaction(s, text);
-  moveNews(s, { type: 'foreign', teamId, out: old, in: p.id, price: foreignPriceNow(s, p) });
+  moveNews(s, { type: 'foreign', teamId, out: old, in: p.id, price });
   if (s.user?.teamId === teamId) (s.user.log ??= []).push({ year: s.year, text });
 }
 

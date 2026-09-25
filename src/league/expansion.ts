@@ -18,6 +18,7 @@ import { foreignSlots } from './manager';
 import {
   advanceOffseason,
   aiDraftChoice,
+  aiForeignRenewals,
   developmentContract,
   foreignOn,
   freeAgentsFor,
@@ -35,6 +36,8 @@ import {
 } from './offseason';
 import { ageIn, isForeign, isPitcher, keepValue, makeForeign } from './players';
 import { OFFSEASON, PARENT } from './tuning';
+import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './foreignpool';
+import { homecomings } from './returnees';
 import {
   autoAnnual,
   campDecision,
@@ -216,6 +219,11 @@ function foreignCandidates(s: LeagueState, next: number): Player[] {
       s.players[p.id] = p;
       out.push(p);
     }
+  // Foreign players with KBO experience other clubs let go (V0.7.3): the same cap, priced by their KBO record.
+  for (const p of foreignPoolPlayers(s)) {
+    p.contract = foreignContract(EXPANSION_ID, next, splitContract(foreignPoolAsk(s, p), rng(`${s.seed}|foreign-pool-offer|${next}|${p.id}`)), !!p.origin.asiaQuota);
+    out.push(p);
+  }
   return out;
 }
 
@@ -233,8 +241,11 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       return sponsorDecision(s, o.year);
     case 'retire':
       return staffDecision(s, o.year);
-    case 'posting':
-      return postingDecision(s, next);
+    case 'posting': {
+      // Posted players coming home first (their clubs hold the rights), then this winter's postings.
+      const back = homecomings(s, next);
+      return back.length ? { kind: 'returnee', rows: back } : postingDecision(s, next);
+    }
     case 'renew':
       return salariesDecision(s);
     case 'camp':
@@ -261,6 +272,8 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       return candidates.length ? { kind: 'released', candidates: candidates.map((p) => p.id), max: space } : null;
     }
     case 'foreign': {
+      // The AI clubs settle their own foreign players first, so the ones they let go can be signed.
+      aiForeignRenewals(s, next);
       if (next < u.firstTeamYear) return null; // no foreign players in the futures year (NC precedent)
       // First our own: re-sign or let go (V0.5); the signing decision follows.
       return foreignRenewDecision(s, next) ?? foreignSigningDecision(s, next);
@@ -446,9 +459,15 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
     case 'foreign': {
       for (const id of input.ids) {
         const p = s.players[id]!;
+        leavePool(s, id);
         sign(s, p, u.teamId, p.contract);
       }
-      for (const id of (d as Extract<Decision, { kind: 'foreign' }>).candidates) if (!input.ids.includes(id)) delete s.players[id];
+      for (const id of (d as Extract<Decision, { kind: 'foreign' }>).candidates) {
+        if (input.ids.includes(id)) continue;
+        // New faces go away; KBO-experienced players stay on the market for the other clubs.
+        if (poolEntry(s, id)) s.players[id]!.contract = null;
+        else delete s.players[id];
+      }
       break;
     }
   }
