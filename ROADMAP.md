@@ -1,6 +1,6 @@
 # KBO 신구단 운영 게임 — 로드맵 (v0.3)
 
-> 상태: **주요 방향 확정** (2026-09-25). 다음 단계는 V0.1 착수입니다.
+> 상태: **V0.1 완료** (2026-09-25). 다음 단계는 V0.2(살아있는 리그)입니다.
 >
 > 기준 코드: `MintSiru/KBO-Draft-Room`의 `claude/kbo-draft-game-refactor-wngav3` 브랜치 **1.0.1** (커밋 `df4faad`).
 
@@ -139,9 +139,9 @@
 
 ```
 src/
-  core/     난수, 수학, ID
-  player/   ← Draft Room 이식: grades, prospects, biography, catalog, names, ko, 성장, 병역, 은퇴, WAR
-  draft/    ← Draft Room 이식: 지명 흐름, draft-ai, scouting, 계약금 협상, 육성선수
+  draftroom/ ← Draft Room 1.0.1 코어 이식본 그대로 + 타입 창구(index.ts). 리그 계층에서 고칠 때 필요한 부분만 나눔
+  core/     시뮬레이션 버전, 공용 유틸
+  model/    리그 선수·구단·계약 모델
   rules/    현실 규정 설정값 (엔트리, 외국인, FA, 샐러리캡, 신생구단 특례, 일정)
   tuning/   밸런스 숫자
   league/   리그 생성, 일정, 경기 엔진, 순위, 포스트시즌, 부상, 기록
@@ -164,13 +164,13 @@ docs/
 각 단계는 **실제로 실행해 볼 수 있는 결과물**로 끝납니다. 첫 "게임다운" 버전은 **V0.3(창단)** 입니다.
 
 ### V0.1 — 기반과 이식 (Foundation)
-- [ ] 프로젝트 스캐폴딩: Vite 단일 HTML 빌드, TS(`allowJs`), Preact, Vitest, Playwright, CI
-- [ ] Draft Room 1.0.1 코어를 ES 모듈로 복사·이식, `docs/UPSTREAM.md` 기록
-- [ ] **이식 검증**: Draft Room golden fixture와 같은 선수 풀·지명·10시즌 결과
-- [ ] **현실 규정 조사표** `docs/RULES.md`: 엔트리, 보류선수 상한, 외국인·아시아쿼터, FA 자격·등급·보상, 샐러리캡, 2차 드래프트, 육성선수, 부상자 명단, 연봉 조정, 신생구단 특례(NC·KT 선례). 항목마다 값·기준 연도·출처·확인 여부, 게임용 가정은 따로 표시
-- [ ] **리그 지표 목표값** `docs/CALIBRATION.md`: 최근 KBO 리그 타율·OPS·ERA·홈런·도루, 연봉 분포, 관중 규모
-- [ ] 리그용 데이터 모델: `Player`(이식 모델 확장), `Team`, `Roster`, `Contract`, `Staff`, `League`, `Season`, `Game`, `Finance`
-- [ ] 저장 계층 골격: 스냅샷 + 입력 로그, `SIM_VERSION`
+- [x] 프로젝트 스캐폴딩: Vite 단일 HTML 빌드, TS(`allowJs`), Preact, Vitest, Playwright, CI
+- [x] Draft Room 1.0.1 코어를 ES 모듈로 복사·이식, `docs/UPSTREAM.md` 기록
+- [x] **이식 검증**: Draft Room golden fixture와 같은 선수 풀·지명·10시즌 결과
+- [x] **현실 규정 조사표** `docs/RULES.md`: 엔트리, 보류선수 상한, 외국인·아시아쿼터, FA 자격·등급·보상, 샐러리캡, 2차 드래프트, 육성선수, 부상자 명단, 연봉 조정, 신생구단 특례(NC·KT 선례). 항목마다 값·기준 연도·출처·확인 여부, 게임용 가정은 따로 표시
+- [x] **리그 지표 목표값** `docs/CALIBRATION.md`: 관중·연봉·순위 기준 확인. 경기 기록(타율·OPS·ERA 등)은 조사 환경에서 열람이 막혀 V0.2 착수 전에 채움
+- [x] 리그용 데이터 모델: `Player`(숨은 능력 / 스카우팅 분리), `Team`, `Roster`, `Contract`, 병역·등록일수. `Staff`·`Game`·`Finance`는 해당 기능과 함께 추가
+- [x] 저장 계층 골격: 스냅샷 + 입력 로그, `SIM_VERSION`, IndexedDB
 - **결과물**: 이식한 코어로 Draft Room과 같은 선수 풀을 만들어 선수 프로필 화면에 띄우기 + 이식 검증 테스트
 
 ### V0.2 — 살아있는 리그 (Living League)
