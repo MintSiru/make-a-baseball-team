@@ -21,7 +21,7 @@ import {
   signFreeAgent,
 } from './offseason';
 import { ageIn, futureValue, isForeign, isPitcher, keepValue } from './players';
-import { aiCompensation, marketValue, movePlayer, type FaOffer } from './market';
+import { aiCompensation, marketValue, movePlayer, projectedPayroll, type FaOffer } from './market';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type SalaryRow, type UserClub } from './state';
 import { OFFSEASON as O, TALKS } from './tuning';
@@ -135,14 +135,7 @@ export function yearlyGrant(s: LeagueState) {
 }
 
 /** Next season's payroll without some players (whose deals are being decided), renewal estimates included. */
-export function payrollWithout(s: LeagueState, teamId: string, season: number, without: PlayerId[] = []) {
-  return orgIds(s, teamId)
-    .filter((id) => !without.includes(id))
-    .reduce((sum, id) => {
-      const p = s.players[id]!;
-      return sum + (salaryIn(p, season) || (isForeign(p) ? 0 : renewSalary(p, season)));
-    }, 0);
-}
+export const payrollWithout = (s: LeagueState, teamId: string, season: number, without: PlayerId[] = []) => projectedPayroll(s, teamId, season, without);
 
 // ── Decisions raised during the offseason ────────────────────────────────────────────────────────
 

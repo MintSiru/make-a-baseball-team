@@ -16,6 +16,7 @@ import { champion } from './postseason';
 import { ageIn, currentValue, draftClass, futureValue, isForeign, isPitcher, keepValue, makeForeign } from './players';
 import { currentStandings } from './season';
 import { queuedDecision, runFreeAgency } from './market';
+import { aiTrades, clearPool } from './trade';
 import { standings } from './standings';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, orgIds, orgPlayers, registeredIds, type Decision, type DraftSlot, type DraftState, type LeagueState, type SeasonSummary } from './state';
 import { batterWar, leagueContext, pitcherWar } from './stats';
@@ -77,6 +78,8 @@ export function closeSeason(s: LeagueState) {
     }
   }
   s.futures = null;
+  clearPool(s);
+  aiTrades(s, rng(`${s.seed}|ai-trades-winter|${s.year}`));
   s.history.push({
     year: s.year,
     table: currentStandings(s),
@@ -181,7 +184,10 @@ export function leaveLeague(s: LeagueState, p: Player, status: 'retired' | 'over
   p.teamId = null;
   p.contract = null;
   p.status = status;
-  if (!p.career.some((c) => !c.level)) delete s.players[p.id];
+  // A player leaving during the season (released, replaced) takes his injury and absence with him.
+  delete s.injuries[p.id];
+  delete s.away?.[p.id];
+  if (!p.career.some((c) => !c.level) && !s.lines[p.id]) delete s.players[p.id];
 }
 
 export function retirementChance(p: Player, season: number, knownRecords = true): number {

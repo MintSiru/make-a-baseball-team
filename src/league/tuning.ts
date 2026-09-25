@@ -185,3 +185,18 @@ export const TALKS = {
   /** Multi-year deals before free agency: offered up to this many seasons before it, at this share of his market value. */
   extension: { seasonsBefore: 2, share: 0.9, years: 4, accept: 0.7, maxAge: 33, minValue: 50 },
 } as const;
+
+/** Trades, waivers and mid-season foreign changes (V0.5; game assumptions). */
+export const TRADES = {
+  /** Trade value: (keep value − replacement)^power × control share × age factor − salary (억) × perEok. */
+  value: { replacement: 44, power: 1.35, controlBase: 0.4, controlPerYear: 0.15, oldFrom: 33, oldFactor: 0.7, perEok: 0.6 },
+  /** An AI club says yes when what it gets beats what it gives × premium + fixed. */
+  accept: { premium: 1.1, fixed: 1 },
+  /** AI-to-AI trades: tries per season and the chance each goes ahead. */
+  ai: { perSeason: 6, chance: 0.5 },
+  /** A club claims a waived player who is this much better than its weakest registered player. */
+  waiverMargin: 3,
+  /** AI clubs replace a foreign player with an ERA or OPS this bad by July (or out six weeks), with this chance. */
+  foreign: { badEra: 6.2, badOps: 0.66, chance: 0.6 },
+  logSize: 300,
+} as const;

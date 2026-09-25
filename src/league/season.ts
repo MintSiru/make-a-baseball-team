@@ -7,6 +7,7 @@ import { parkFactor } from './clubs';
 import { assignSquads, futuresPreference, futuresSquad, makeFuturesLeague } from './futures';
 import { chooseActive, teamInput } from './manager';
 import { manualReplacements } from './entry';
+import { aiForeignChanges, aiTrades, processWaivers } from './trade';
 import { INTERNATIONAL } from './international';
 import { rosterLimit, selectNationalTeam } from './offseason';
 import { currentValue, isForeign, isPitcher } from './players';
@@ -29,6 +30,9 @@ export function startSeason(s: LeagueState) {
   s.injuries = {};
   s.away = {};
   s.demoted = {};
+  s.waivers = [];
+  s.foreignChanges = {};
+  s.marketDone = [];
   s.postseason = [];
   s.countedThrough = null;
   for (const id of firstTeamIds(s)) setActive(s, id, chooseActive(s, id));
@@ -103,7 +107,7 @@ function countDays(s: LeagueState, date: string) {
   const days = daysBetween(from, date);
   if (days <= 0) return;
   for (const teamId of firstTeamIds(s)) for (const id of s.rosters[teamId]!.active) lineOf(s, id, teamId).days += days;
-  for (const [id, inj] of Object.entries(s.injuries)) if (inj.onList) lineOf(s, id, s.players[id]!.teamId!).days += days;
+  for (const [id, inj] of Object.entries(s.injuries)) if (inj.onList && s.players[id]?.teamId) lineOf(s, id, s.players[id]!.teamId!).days += days;
   for (const id of Object.keys(s.away)) if (s.players[id]?.teamId) lineOf(s, id, s.players[id]!.teamId!).days += days;
   if (s.futures) for (const t of s.teams) for (const id of s.rosters[t.id]?.third ?? []) s.futures.training[id] = (s.futures.training[id] ?? 0) + days;
   s.countedThrough = date;
@@ -194,6 +198,8 @@ export function playDay(s: LeagueState): boolean {
   countDays(s, date);
   returnFromService(s, date);
   nationalTeamLeaves(s, date);
+  processWaivers(s, date);
+  marketEvents(s, date);
   const day = s.next;
   while (s.next < s.schedule.length && s.schedule[s.next]!.date === date) {
     const g = s.schedule[s.next]!;
@@ -211,6 +217,18 @@ export function playDay(s: LeagueState): boolean {
   // Every ten game days the manager looks at the whole roster again; otherwise only injuries force moves.
   maintainRosters(s, date, day > 0 && Math.floor(s.next / (firstTeamIds(s).length / 2)) % 10 === 0);
   return s.next < s.schedule.length;
+}
+
+/** AI clubs' own moves: a round of trades in mid-June, foreign replacements in July. */
+function marketEvents(s: LeagueState, date: string) {
+  const once = (key: string, from: string, run: () => void) => {
+    const id = `${s.year}-${key}`;
+    if (date < `${s.year}-${from}` || s.marketDone?.includes(id)) return;
+    (s.marketDone ??= []).push(id);
+    run();
+  };
+  once('trades', '06-15', () => aiTrades(s, rng(`${s.seed}|ai-trades|${s.year}`)));
+  once('foreign', '07-01', () => aiForeignChanges(s, date, rng(`${s.seed}|ai-foreign|${s.year}`)));
 }
 
 /** An in-season national team leaves its clubs on its date; clubs call up replacements (maintainRosters). */

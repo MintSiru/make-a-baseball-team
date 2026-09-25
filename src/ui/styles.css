@@ -1174,3 +1174,17 @@ h3 {
     font-size: 17px;
   }
 }
+.trade-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  margin: 12px 0;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+}
+.trade-bar .primary {
+  margin-left: auto;
+}

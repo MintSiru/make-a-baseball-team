@@ -14,6 +14,7 @@ import { DraftBoard } from './DraftBoard';
 import { History } from './History';
 import { Leaders } from './Leaders';
 import { applyHere, applyInWorker, createInWorker } from './leagueClient';
+import { Market } from './Market';
 import { MyClub } from './MyClub';
 import { NewGame } from './NewGame';
 import { PlayerPanel } from './PlayerPanel';
@@ -24,9 +25,10 @@ import { TeamRoster } from './TeamRoster';
 const AUTO_SLOT = 'auto';
 const newSeed = () => `kbo-${Math.floor(Math.random() * 36 ** 6).toString(36)}`;
 
-type Tab = 'club' | 'standings' | 'leaders' | 'team' | 'history' | 'draft';
+type Tab = 'club' | 'market' | 'standings' | 'leaders' | 'team' | 'history' | 'draft';
 const TABS: { id: Tab; label: string; userOnly?: boolean }[] = [
   { id: 'club', label: '우리 구단', userOnly: true },
+  { id: 'market', label: '이적시장', userOnly: true },
   { id: 'standings', label: '순위' },
   { id: 'leaders', label: '기록' },
   { id: 'team', label: '구단' },
@@ -279,6 +281,7 @@ export function App() {
           </nav>
           <main class="page" data-version={version}>
             {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
+            {tab === 'market' && league.user && <Market league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
             {tab === 'standings' && <Standings league={league} onTeam={openTeam} />}
             {tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} />}
             {tab === 'team' && <TeamRoster league={league} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />}

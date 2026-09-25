@@ -141,6 +141,8 @@ export interface UserClub {
   ledger: { year: number; label: string; amount: number }[];
   /** First-team registrations: the manager's (auto) or the general manager's own (manual). */
   entry?: 'auto' | 'manual';
+  /** Guaranteed salary still owed to players the club released (counts against the payroll budget). */
+  deadMoney?: { season: number; amount: number; label: string }[];
   /** Name for the new ballpark when it opens (STADIUM_PLANS); default "<city> 신구장". */
   newStadiumName?: string;
   /** Club news: military results, re-signings, refusals, position changes. */
@@ -195,6 +197,15 @@ export interface LeagueState {
   away: Record<PlayerId, string>;
   /** When the user's players were last sent down from the first team (ten days before re-registering). */
   demoted?: Record<PlayerId, string>;
+  /** Players on waivers (seven days) and unattached players any club may sign (V0.5). */
+  waivers?: { id: PlayerId; from: TeamId; until: string }[];
+  pool?: PlayerId[];
+  /** Foreign replacements used this season, by club. */
+  foreignChanges?: Record<TeamId, number>;
+  /** League moves for the news feed: trades, waiver claims, foreign changes. */
+  transactions?: { date: string; text: string }[];
+  /** One-off market events already run this season ("2027-trades-06"). */
+  marketDone?: string[];
   /** Last date registered days were counted for. */
   countedThrough: string | null;
   postseason: SeriesResult[];

@@ -11,7 +11,7 @@ import type { Player, PlayerId, Team, TeamId } from '../model/types';
 import { EXPANSION_DEFAULTS, minimumSalaryFor } from '../rules/kbo2026';
 import { foreignContract, freeAgentContract, renewSalary, salaryIn } from './contracts';
 import { splitContract } from './foreign';
-import { marketDecision } from './market';
+import { marketDecision, projectedPayroll as marketPayroll } from './market';
 import { foreignSlots } from './manager';
 import {
   advanceOffseason,
@@ -239,7 +239,8 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       return { kind: 'roster', candidates, release: size - rosterLimit(next), limit: rosterLimit(next) };
     }
     case 'released': {
-      if (!inFoundingPeriod(s, next) || space <= 0) return null;
+      // Every winter the user's club gets the first look at players the other clubs let go.
+      if (space <= 0) return null;
       const candidates = o.released.map((id) => s.players[id]!).filter((p) => p && keepValue(p, next) >= 40);
       return candidates.length ? { kind: 'released', candidates: candidates.map((p) => p.id), max: space } : null;
     }
@@ -276,12 +277,7 @@ const isAnnualInput = (input: DecisionInput): input is AnnualInput => isAnnual(i
 const nextSeasonOf = (s: LeagueState) => (s.offseason ? s.offseason.year + 1 : s.year + 1);
 
 /** Next season's payroll, counting the renewal estimate for players whose salary is not set yet. */
-export function projectedPayroll(s: LeagueState, teamId: TeamId, season: number) {
-  return orgIds(s, teamId).reduce((sum, id) => {
-    const p = s.players[id]!;
-    return sum + (salaryIn(p, season) || (isForeign(p) ? 0 : renewSalary(p, season)));
-  }, 0);
-}
+export const projectedPayroll = (s: LeagueState, teamId: TeamId, season: number) => marketPayroll(s, teamId, season);
 
 /** Checks a decision against the rules and the budget. Returns a message for the player, or null when it is fine. */
 export function checkDecision(s: LeagueState, input: DecisionInput): string | null {

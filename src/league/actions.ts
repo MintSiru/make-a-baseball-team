@@ -2,7 +2,8 @@
 import { closeSeason, advanceOffseason, beginOffseason } from './offseason';
 import { playPostseason } from './postseason';
 import { playDay, startSeason } from './season';
-import type { PlayerId } from '../model/types';
+import type { PlayerId, TeamId } from '../model/types';
+import { makeTrade, releasePlayer, replaceForeign, signFromPool } from './trade';
 import { movePlayer, registerPlayer, setRole } from './entry';
 import { renameStadium } from './userclub';
 import type { ExpansionSettings, LeagueState, Squad } from './state';
@@ -21,7 +22,12 @@ export type Action =
   | { kind: 'move'; id: PlayerId; to: Squad }
   | { kind: 'register'; id: PlayerId }
   | { kind: 'setRole'; id: PlayerId; role: 'SP' | 'RP' }
-  | { kind: 'renameStadium'; name: string; which: 'current' | 'new' };
+  | { kind: 'renameStadium'; name: string; which: 'current' | 'new' }
+  // The market (V0.5)
+  | { kind: 'trade'; teamId: TeamId; give: PlayerId[]; get: PlayerId[] }
+  | { kind: 'release'; id: PlayerId }
+  | { kind: 'signPool'; id: PlayerId }
+  | { kind: 'foreignSwap'; out: PlayerId; in: string };
 
 export const regularOver = (s: LeagueState) => s.phase === 'regular' && s.next >= s.schedule.length;
 
@@ -74,6 +80,18 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'renameStadium':
       renameStadium(s, action.name, action.which);
+      break;
+    case 'trade':
+      makeTrade(s, action.teamId, action.give, action.get);
+      break;
+    case 'release':
+      releasePlayer(s, action.id);
+      break;
+    case 'signPool':
+      signFromPool(s, action.id);
+      break;
+    case 'foreignSwap':
+      if (s.user) replaceForeign(s, s.user.teamId, action.out, action.in);
       break;
   }
   return s;

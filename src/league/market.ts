@@ -78,15 +78,22 @@ export function marketValue(p: Player, next: number): FaOffer {
   return { annual: Math.round(yearly / 1000) * 1000, years };
 }
 
-/** Next season's payroll with renewal estimates for salaries not set yet. */
+/**
+ * A season's payroll: salaries set for that season, renewal estimates where they are not set yet, and
+ * (the user's club) money still owed to players it let go. `without` leaves players out (deals being decided).
+ */
 export function projectedPayroll(s: LeagueState, teamId: TeamId, season: number, without: PlayerId[] = []) {
-  return orgIds(s, teamId)
+  const players = orgIds(s, teamId)
     .filter((id) => !without.includes(id))
     .reduce((sum, id) => {
       const p = s.players[id]!;
       return sum + (salaryIn(p, season) || (isForeign(p) ? 0 : renewSalary(p, season)));
     }, 0);
+  return players + (teamId === s.user?.teamId ? deadMoney(s, season) : 0);
 }
+
+/** Salary the user's club still pays players it released (released players' guaranteed money). */
+export const deadMoney = (s: LeagueState, season: number) => (s.user?.deadMoney ?? []).filter((x) => x.season === season).reduce((a, x) => a + x.amount, 0);
 
 export function faContract(teamId: TeamId, next: number, offer: FaOffer): Player['contract'] {
   return { teamId, kind: 'freeAgent', signedIn: next - 1, signingBonus: 0, salaries: Array.from({ length: offer.years }, (_, i) => ({ season: next + i, amount: offer.annual })) };
