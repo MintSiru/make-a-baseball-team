@@ -21,6 +21,8 @@ import {
   signFreeAgent,
 } from './offseason';
 import { ageIn, futureValue, isForeign, isPitcher, keepValue } from './players';
+import { aiCompensation, marketValue, movePlayer, type FaOffer } from './market';
+import { minimumSalaryFor } from '../rules/kbo2026';
 import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type UserClub } from './state';
 import { OFFSEASON as O } from './tuning';
 
@@ -46,7 +48,10 @@ export type AnnualInput =
   | { kind: 'ownFreeAgents'; ids: PlayerId[] }
   | { kind: 'rookieBonus'; offers: Record<PlayerId, number> }
   | { kind: 'development'; ids: PlayerId[] }
-  | { kind: 'camp'; plans: Record<PlayerId, CampPlan> };
+  | { kind: 'camp'; plans: Record<PlayerId, CampPlan> }
+  | { kind: 'faMarket'; offers: Record<PlayerId, FaOffer> }
+  | { kind: 'faProtect'; ids: PlayerId[] }
+  | { kind: 'faCompensation'; player: PlayerId | null };
 
 const note = (u: UserClub, year: number, text: string) => (u.log ??= []).push({ year, text });
 const nextSeason = (s: LeagueState) => (s.offseason ? s.offseason.year + 1 : s.year + 1);
@@ -220,6 +225,32 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
       if (input.ids.length > dd.max) return `육성선수는 ${dd.max}명까지 더 계약할 수 있습니다.`;
       return null;
     }
+    case 'faMarket': {
+      const dd = d as Extract<Decision, { kind: 'faMarket' }>;
+      const ids = Object.keys(input.offers);
+      if (ids.some((id) => !dd.candidates.includes(id))) return 'FA 명단에 없는 선수입니다.';
+      const outside = ids.filter((id) => s.players[id]!.teamId !== u.teamId);
+      if (outside.length > dd.limit) return `다른 구단 FA는 올겨울 ${dd.limit}명까지 영입할 수 있습니다.`;
+      for (const [id, o] of Object.entries(input.offers)) {
+        if (!Number.isInteger(o.years) || o.years < 1 || o.years > 6) return `${s.players[id]!.name}: 계약 기간은 1~6년입니다.`;
+        if (o.annual < minimumSalaryFor(next)) return `${s.players[id]!.name}: 최저연봉보다 적습니다.`;
+      }
+      const own = dd.candidates.filter((id) => s.players[id]!.teamId === u.teamId);
+      const cost = Object.values(input.offers).reduce((a, o) => a + o.annual, 0);
+      if (cost > 0 && payrollWithout(s, u.teamId, next, own) + cost > u.payrollBudget) return '제시액을 모두 합치면 연봉 예산을 넘습니다.';
+      return null;
+    }
+    case 'faProtect': {
+      const dd = d as Extract<Decision, { kind: 'faProtect' }>;
+      if (input.ids.some((id) => !dd.candidates.includes(id))) return '보호할 수 없는 선수입니다.';
+      if (input.ids.length > dd.protect) return `보호선수는 ${dd.protect}명까지입니다.`;
+      return null;
+    }
+    case 'faCompensation': {
+      const dd = d as Extract<Decision, { kind: 'faCompensation' }>;
+      if (input.player && !dd.list.includes(input.player)) return '보상선수로 고를 수 없는 선수입니다.';
+      return null;
+    }
     case 'camp': {
       const dd = d as Extract<Decision, { kind: 'camp' }>;
       for (const [id, plan] of Object.entries(input.plans)) {
@@ -304,6 +335,29 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
       }
       return null;
     }
+    case 'faMarket':
+      if (s.offseason) s.offseason.faOffers = input.offers;
+      return null;
+    case 'faProtect': {
+      const item = s.offseason?.faQueue?.shift();
+      if (item) aiCompensation(s, item, new Set(input.ids), next);
+      return null;
+    }
+    case 'faCompensation': {
+      const item = s.offseason?.faQueue?.shift();
+      if (!item) return null;
+      const dd = d as Extract<Decision, { kind: 'faCompensation' }>;
+      const fa = s.players[item.fa]?.name ?? '';
+      const amount = input.player ? dd.withPlayer : dd.cashOnly;
+      if (input.player) {
+        const p = s.players[input.player]!;
+        movePlayer(s, p, u.teamId);
+        note(u, year, `FA ${fa} 보상선수로 ${p.name} 영입`);
+      }
+      u.fund += amount;
+      u.ledger.push({ year, label: `FA ${fa} 보상금 (${item.grade}등급${input.player ? ', 보상선수 포함' : ''})`, amount });
+      return null;
+    }
     case 'camp': {
       for (const [id, plan] of Object.entries(input.plans)) {
         const p = s.players[id]!;
@@ -362,10 +416,27 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
     }
     case 'camp':
       return { kind: 'camp', plans: {} };
+    case 'faMarket': {
+      // Keep our own free agents who are worth it and not too old, as far as the budget goes.
+      const offers: Record<PlayerId, FaOffer> = {};
+      const own = d.candidates.map((id) => s.players[id]!).filter((p) => p.teamId === u.teamId);
+      for (const p of own.sort((a, b) => keepValue(b, next) - keepValue(a, next))) {
+        if (ageIn(p, next) > 34 || keepValue(p, next) < 48) continue;
+        const trial = { ...offers, [p.id]: marketValue(p, next) };
+        if (checkAnnual(s, d, { kind: 'faMarket', offers: trial }) === null) Object.assign(offers, { [p.id]: trial[p.id] });
+      }
+      return { kind: 'faMarket', offers };
+    }
+    case 'faProtect':
+      return { kind: 'faProtect', ids: d.candidates.slice(0, d.protect) };
+    case 'faCompensation': {
+      const best = d.list[0];
+      return { kind: 'faCompensation', player: best && keepValue(s.players[best]!, next) >= 50 ? best : null };
+    }
     default:
       return null;
   }
 }
 
-export const isAnnual = (kind: Decision['kind']) => ['military', 'ownFreeAgents', 'rookieBonus', 'development', 'camp'].includes(kind);
+export const isAnnual = (kind: Decision['kind']) => ['military', 'ownFreeAgents', 'rookieBonus', 'development', 'camp', 'faMarket', 'faProtect', 'faCompensation'].includes(kind);
 export { focusOptions, POSITION_ROLE };

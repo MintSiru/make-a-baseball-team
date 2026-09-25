@@ -15,6 +15,7 @@ import { foreignSlots } from './manager';
 import { champion } from './postseason';
 import { ageIn, currentValue, draftClass, futureValue, isForeign, isPitcher, keepValue, makeForeign } from './players';
 import { currentStandings } from './season';
+import { queuedDecision, runFreeAgency } from './market';
 import { standings } from './standings';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, orgIds, orgPlayers, registeredIds, type Decision, type DraftSlot, type DraftState, type LeagueState, type SeasonSummary } from './state';
 import { batterWar, leagueContext, pitcherWar } from './stats';
@@ -306,21 +307,6 @@ export function signFreeAgent(s: LeagueState, p: Player, to: TeamId, next: numbe
   p.service.lastFreeAgencyAt = p.service.creditedSeasons;
 }
 
-function freeAgency(s: LeagueState, next: number, r: () => number) {
-  // The user's club signs its own free agents in its own decisions; AI clubs never sign for it.
-  const userTeam = s.user?.teamId;
-  const clubs = firstTeamIds(s, next).filter((id) => id !== userTeam);
-  for (const p of freeAgentsFor(s, next)) {
-    const from = p.teamId!;
-    let to = from;
-    if (r() > O.freeAgency.stayChance || from === userTeam) {
-      const others = clubs.filter((id) => id !== from);
-      const room = others.map((id) => Math.max(1, salaryCapFor(next) - payroll(s, id, next)) * (0.5 + r()));
-      to = others[room.indexOf(Math.max(...room))]!;
-    }
-    signFreeAgent(s, p, to, next);
-  }
-}
 
 function renewContracts(s: LeagueState, next: number) {
   for (const p of Object.values(s.players)) {
@@ -638,9 +624,19 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         }
         break;
       }
-      case 'freeAgency':
-        freeAgency(s, next, rng(`${s.seed}|fa|${year}`));
+      case 'freeAgency': {
+        if (!o.faDone) {
+          o.faQueue = runFreeAgency(s, next, rng(`${s.seed}|fa|${year}`), o.faOffers ?? {});
+          o.faDone = true;
+        }
+        // Protected lists and compensation picks the user owes, one at a time.
+        const item = o.faQueue?.[0];
+        if (item) {
+          s.pending = queuedDecision(s, item, next);
+          return 'waiting';
+        }
         break;
+      }
       case 'renew':
         renewContracts(s, next);
         break;

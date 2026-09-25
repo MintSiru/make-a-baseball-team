@@ -11,6 +11,7 @@ import type { Player, PlayerId, Team, TeamId } from '../model/types';
 import { EXPANSION_DEFAULTS, minimumSalaryFor } from '../rules/kbo2026';
 import { foreignContract, freeAgentContract, renewSalary, salaryIn } from './contracts';
 import { splitContract } from './foreign';
+import { marketDecision } from './market';
 import { foreignSlots } from './manager';
 import {
   advanceOffseason,
@@ -37,7 +38,6 @@ import {
   developmentDecision,
   isAnnual,
   militaryDecision,
-  ownFreeAgentsDecision,
   resolveAnnual,
   rookieBonusDecision,
   yearlyGrant,
@@ -221,7 +221,7 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
     case 'camp':
       return campDecision(s);
     case 'freeAgency': {
-      if (!entering) return ownFreeAgentsDecision(s);
+      if (!entering) return marketDecision(s, next);
       const candidates = freeAgentsFor(s, next).filter((p) => p.teamId !== u.teamId);
       return candidates.length ? { kind: 'freeAgents', candidates: candidates.map((p) => p.id), max: EXPANSION_DEFAULTS.freeAgentSigns } : null;
     }

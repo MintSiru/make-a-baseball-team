@@ -6,7 +6,7 @@ import { SIM_VERSION } from '../core/version';
 import type { LeagueState } from '../league/state';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1'];
 
 type Loose = Record<string, unknown>;
 

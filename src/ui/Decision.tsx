@@ -8,6 +8,7 @@ import { sangmuChance } from '../league/offseason';
 import { ageIn, isPitcher, keepValue } from '../league/players';
 import type { Decision as DecisionT, LeagueState } from '../league/state';
 import { faAsk as ownAsk, focusOptions, payrollWithout, type CampPlan, type MilitaryOrder } from '../league/userclub';
+import { marketValue } from '../league/market';
 import { positionLabel, shortName } from '../league/views';
 import type { Position } from '../model/position';
 import type { Player, PlayerId, TeamId } from '../model/types';
@@ -33,7 +34,17 @@ const TITLES: Record<DecisionT['kind'], string> = {
   rookieBonus: '신인 계약금 협상',
   development: '육성선수 계약',
   camp: '스프링캠프',
+  faMarket: 'FA 시장',
+  faProtect: 'FA 보상 · 보호선수 명단',
+  faCompensation: 'FA 보상 · 보상선수 지명',
 };
+
+const FA_BIDS: [string, string, number][] = [
+  ['none', '제시 안 함', 0],
+  ['base', '시장가', 1],
+  ['p10', '시장가 +10%', 1.1],
+  ['p20', '시장가 +20%', 1.2],
+];
 
 const lastWar = (p: Player) => p.career.filter((c) => !c.level).at(-1)?.war;
 const POSITIONS: Position[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
@@ -205,7 +216,8 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
   const [choices, setChoices] = useState<Record<PlayerId, string>>({});
   const [develop, setDevelop] = useState<Set<PlayerId>>(new Set());
   const [plans, setPlans] = useState<Record<PlayerId, CampPlan>>({});
-  const stage = d.kind === 'draftPick' ? d.overall : d.kind === 'rookieBonus' ? Number(d.final) : 0;
+  // Consecutive decisions of one kind (draft picks, compensation per free agent) start from a clean slate.
+  const stage = d.kind === 'draftPick' ? String(d.overall) : d.kind === 'rookieBonus' ? String(d.final) : d.kind === 'faProtect' || d.kind === 'faCompensation' ? d.fa : '';
   useEffect(() => {
     setSelected(new Set());
     setSpecial({});
@@ -240,6 +252,20 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         return { kind: 'rookieBonus', offers: Object.fromEntries(d.picks.map((pk) => [pk.id, bonusOffer(pk.id, pk)])) };
       case 'camp':
         return { kind: 'camp', plans };
+      case 'faMarket': {
+        const offers: Record<PlayerId, { annual: number; years: number }> = {};
+        for (const [id, c] of Object.entries(choices)) {
+          const k = FA_BIDS.find((b) => b[0] === c)?.[2] ?? 0;
+          if (!k) continue;
+          const base = marketValue(league.players[id]!, next);
+          offers[id] = { annual: Math.round((base.annual * k) / 1000) * 1000, years: base.years };
+        }
+        return { kind: 'faMarket', offers };
+      }
+      case 'faProtect':
+        return { kind: 'faProtect', ids: [...selected] };
+      case 'faCompensation':
+        return { kind: 'faCompensation', player: choices.pick && choices.pick !== 'cash' ? choices.pick : null };
       case 'roster':
         return { kind: 'roster', ids: [...selected], develop: [...develop].filter((id) => selected.has(id)) };
       default:
@@ -265,6 +291,12 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       }
       case 'camp':
         setPlans(a.plans);
+        break;
+      case 'faMarket':
+        setChoices(Object.fromEntries(Object.keys(a.offers).map((id) => [id, 'base'])));
+        break;
+      case 'faCompensation':
+        setChoices({ pick: a.player ?? 'cash' });
         break;
       default:
         if ('ids' in a) setSelected(new Set(a.ids));
@@ -524,6 +556,85 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         </>
       );
       break;
+    case 'faMarket': {
+      const players = d.candidates.map((id) => league.players[id]!);
+      const outside = Object.entries(choices).filter(([id, c]) => c !== 'none' && league.players[id]!.teamId !== u.teamId).length;
+      const cost = input && input.kind === 'faMarket' ? Object.values(input.offers).reduce((a, o) => a + o.annual, 0) : 0;
+      body = (
+        <>
+          <p>
+            올겨울 FA {players.length}명입니다. 다른 구단 FA는 {d.limit}명까지 영입할 수 있고 (지금 {outside}명), 우리 FA를 붙잡으려면 우리도 제시해야 합니다. 선수는 받은 제안 중 가장 좋은 곳과 계약하고
+            (원소속 구단을 조금 더 선호), A·B등급 FA를 데려오면 원소속 구단에 보상선수와 보상금을 줍니다.
+          </p>
+          <p class="muted">
+            {next}년 연봉 (FA 제외) {money(payrollWithout(league, u.teamId, next, players.filter((p) => p.teamId === u.teamId).map((p) => p.id)))} + 제시 합계 {money(cost)} / 예산 {money(u.payrollBudget)} · 등급 A: 보상선수(보호 20명 외)+연봉 200% 또는 300%, B: 보상선수(보호 25명 외)+100% 또는 200%, C: 150%
+          </p>
+          <PlayerTable
+            league={league}
+            players={players.sort((a, b) => Number(b.teamId === u.teamId) - Number(a.teamId === u.teamId) || b.scouting.current - a.scouting.current)}
+            onPlayer={onPlayer}
+            extra={{
+              title: '등급 · 최근 WAR · 시장가',
+              value: (p) => {
+                const m = marketValue(p, next);
+                return `${d.grades[p.id]} · ${lastWar(p)?.toFixed(1) ?? '-'} · ${m.years}년 연 ${money(m.annual)}`;
+              },
+              sort: (p) => marketValue(p, next).annual,
+            }}
+            control={(p) => (
+              <select value={choices[p.id] ?? 'none'} onChange={(e) => choose(p.id, (e.currentTarget as HTMLSelectElement).value)} aria-label={`${p.name} 제시`}>
+                {FA_BIDS.map(([k, label]) => (
+                  <option key={k} value={k}>
+                    {label}
+                    {p.teamId === u.teamId && k === 'base' ? ' (재계약)' : ''}
+                  </option>
+                ))}
+              </select>
+            )}
+          />
+        </>
+      );
+      break;
+    }
+    case 'faProtect': {
+      const fa = league.players[d.fa]!;
+      body = (
+        <>
+          <p>
+            {shortName(league, d.from)}에서 {d.grade}등급 FA {fa.name}을(를) 데려왔습니다. 보호할 선수 {d.protect}명을 고르세요 (지금 {selected.size}명). {shortName(league, d.from)}는 나머지 선수 중 1명과
+            보상금을 받거나, 보상금만 받습니다. 외국인, 올겨울 영입한 FA, 올해 뽑은 신인은 저절로 보호됩니다.
+          </p>
+          <PlayerTable league={league} players={d.candidates.map((id) => league.players[id]!)} selected={selected} toggle={toggle} onPlayer={onPlayer} />
+        </>
+      );
+      break;
+    }
+    case 'faCompensation': {
+      const fa = league.players[d.fa]!;
+      const pick = choices.pick ?? 'cash';
+      body = (
+        <>
+          <p>
+            우리 {d.grade}등급 FA {fa.name}이(가) {shortName(league, d.to)}로 떠났습니다. {shortName(league, d.to)}의 보호선수 밖에서 1명을 데려오고 보상금 {money(d.withPlayer)}을 받거나, 보상금만{' '}
+            {money(d.cashOnly)} 받을 수 있습니다.
+          </p>
+          <label class="check">
+            <input type="radio" name="comp" checked={pick === 'cash'} onChange={() => choose('pick', 'cash')} /> 보상금만 {money(d.cashOnly)}
+          </label>
+          <PlayerTable
+            league={league}
+            name="comp"
+            radio
+            players={d.list.map((id) => league.players[id]!).slice(0, 40)}
+            selected={new Set(pick !== 'cash' ? [pick] : [])}
+            toggle={(id) => choose('pick', id)}
+            onPlayer={onPlayer}
+            extra={{ title: '연봉', value: (p) => money(salaryIn(p, next) || salaryIn(p, next - 1)), sort: (p) => salaryIn(p, next - 1) }}
+          />
+        </>
+      );
+      break;
+    }
     case 'camp': {
       const players = d.players.map((id) => league.players[id]!).sort((a, b) => ageIn(a, next) - ageIn(b, next));
       const plan = (p: Player) => ({ focus: p.plan?.focus ?? 'balanced', role: p.role, position: p.position, ...plans[p.id] });

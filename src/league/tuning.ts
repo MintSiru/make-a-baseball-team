@@ -156,3 +156,18 @@ export const FUTURES = {
    */
   growth: { maxAge: 27, base: 0.83, play: 0.3, train: 0.15, max: 1.15, fullPA: 300, fullInnings: 60, futuresWeight: 0.8, trainDays: 180 },
 } as const;
+
+/** The free-agent market (V0.5; game assumptions measured against how often KBO free agents stay). */
+export const MARKET = {
+  /** Yearly pay: 4,000만 + WAR^1.5 × perWar, between these bounds (만 원). */
+  perWar: 13000,
+  minAnnual: 6000,
+  maxAnnual: 250000,
+  /** An AI club bids with base + perGain × (grade points over its current player at his spot), up to max; a third of that over the cap. */
+  interest: { base: 0.03, perGain: 0.035, max: 0.6, overCap: 0.3 },
+  /** Chance his own club makes an offer, and how much he prefers staying. */
+  stay: 0.8,
+  loyalty: 1.12,
+  /** An AI club takes a compensation player only if he is at least this good (keep value). */
+  compensationPickValue: 50,
+} as const;

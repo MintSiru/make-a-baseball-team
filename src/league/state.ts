@@ -77,7 +77,11 @@ export type Decision =
   | { kind: 'ownFreeAgents'; candidates: PlayerId[] }
   | { kind: 'rookieBonus'; picks: { id: PlayerId; slot: number; ask: number }[]; final: boolean }
   | { kind: 'development'; candidates: PlayerId[]; max: number }
-  | { kind: 'camp'; players: PlayerId[] };
+  | { kind: 'camp'; players: PlayerId[] }
+  // The market (V0.5)
+  | { kind: 'faMarket'; candidates: PlayerId[]; grades: Record<PlayerId, 'A' | 'B' | 'C'>; limit: number }
+  | { kind: 'faProtect'; fa: PlayerId; grade: 'A' | 'B'; from: TeamId; protect: number; candidates: PlayerId[] }
+  | { kind: 'faCompensation'; fa: PlayerId; grade: 'A' | 'B'; to: TeamId; list: PlayerId[]; withPlayer: number; cashOnly: number };
 
 export interface DraftSlot {
   teamId: TeamId;
@@ -104,6 +108,10 @@ export interface OffseasonState {
   released: PlayerId[];
   /** Sub-steps already settled by the user this offseason. */
   done: string[];
+  /** The free-agent market: the user's offers, whether it has run, and the decisions it left for the user. */
+  faOffers?: Record<PlayerId, { annual: number; years: number }>;
+  faDone?: boolean;
+  faQueue?: import('./market').FaQueueItem[];
 }
 
 /** The club the user runs (V0.3: an expansion club). Money in 만 원. */
