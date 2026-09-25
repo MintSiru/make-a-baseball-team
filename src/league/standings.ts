@@ -7,6 +7,8 @@ export interface GameScore {
   away: string;
   hs: number;
   as: number;
+  /** Attendance (regular season, V0.6). */
+  att?: number;
 }
 
 export interface StandingRow {

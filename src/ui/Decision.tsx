@@ -11,6 +11,7 @@ import { faAsk as ownAsk, focusOptions, payrollWithout, salaryOffer, type CampPl
 import { marketValue } from '../league/market';
 import { eulreul, iga, ro } from '../league/josa';
 import { positionLabel, shortName } from '../league/views';
+import { MANAGER_STYLES, STAFF_EFFECTS, STAFF_LABELS } from '../league/staff';
 import type { Position } from '../model/position';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { money } from './format';
@@ -43,6 +44,8 @@ const TITLES: Record<DecisionT['kind'], string> = {
   secondPick: '2차 드래프트',
   foreignRenew: '외국인 선수 재계약',
   posting: '포스팅 (메이저리그 진출)',
+  sponsor: '명명권 스폰서 계약',
+  staff: '코칭스태프 · 프런트',
 };
 
 /** What the scouts hear about major league interest, from the public grade. */
@@ -299,6 +302,10 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         return { kind: 'foreignRenew', keep: [...selected] };
       case 'posting':
         return { kind: 'posting', id: choices.pick && choices.pick !== 'none' ? choices.pick : null };
+      case 'sponsor':
+        return { kind: 'sponsor', index: Number(choices.pick ?? 0) };
+      case 'staff':
+        return { kind: 'staff', hires: Object.fromEntries(Object.entries(choices).filter(([, v]) => v)) };
       case 'faCompensation':
         return { kind: 'faCompensation', player: choices.pick && choices.pick !== 'cash' ? choices.pick : null };
       case 'roster':
@@ -341,6 +348,12 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         break;
       case 'posting':
         setChoices({ pick: a.id ?? 'none' });
+        break;
+      case 'sponsor':
+        setChoices({ pick: String(a.index) });
+        break;
+      case 'staff':
+        setChoices(a.hires as Record<string, string>);
         break;
       default:
         if ('ids' in a) setSelected(new Set(a.ids));
@@ -738,6 +751,99 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
               sort: (p) => byId[p.id]!.war,
             }}
           />
+        </>
+      );
+      break;
+    }
+    case 'sponsor': {
+      const pick = choices.pick ?? '0';
+      body = (
+        <>
+          <p>
+            명명권 계약이 끝났습니다. 지금 스폰서와 재계약하거나 새 스폰서를 받을 수 있습니다. 새 스폰서를 받으면 구단명과 약칭이 스폰서 이름으로 바뀝니다 (키움 히어로즈 방식). 명명권료는 구단 인기와 성적을
+            따라갑니다.
+          </p>
+          <div class="table-wrap">
+            <table class="record-table">
+              <thead>
+                <tr>
+                  <th />
+                  <th>스폰서</th>
+                  <th class="num">연간</th>
+                  <th class="num">기간</th>
+                </tr>
+              </thead>
+              <tbody>
+                {d.offers.map((o, i) => (
+                  <tr key={o.name}>
+                    <td>
+                      <input type="radio" name="sponsor" checked={pick === String(i)} onChange={() => choose('pick', String(i))} aria-label={`${o.name} 선택`} />
+                    </td>
+                    <td>
+                      {o.name}
+                      {i === 0 && <span class="tag">재계약</span>}
+                    </td>
+                    <td class="num">{money(o.annual)}</td>
+                    <td class="num">{o.years}년</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      );
+      break;
+    }
+    case 'staff': {
+      body = (
+        <>
+          <p>
+            감독과 코치, 프런트 팀장을 정합니다. 계약이 끝난 사람은 바꾸지 않으면 2년 재계약합니다. 계약 기간이 남은 사람을 바꾸면 남은 연봉을 위약금으로 냅니다. 등급 50이 리그 평균입니다.
+          </p>
+          <p class="muted">구단 자금 {money(u.fund)}</p>
+          <div class="table-wrap" tabIndex={0}>
+            <table class="record-table staff-table">
+              <thead>
+                <tr>
+                  <th>자리</th>
+                  <th>지금</th>
+                  <th class="num">등급</th>
+                  <th class="num">연봉</th>
+                  <th>계약</th>
+                  <th>선택</th>
+                </tr>
+              </thead>
+              <tbody>
+                {d.rows.map((row) => (
+                  <tr key={row.role}>
+                    <th scope="row">
+                      {STAFF_LABELS[row.role]}
+                      <div class="muted small">{STAFF_EFFECTS[row.role]}</div>
+                    </th>
+                    <td>
+                      {row.current.name}
+                      {row.current.style && <span class="muted"> · {MANAGER_STYLES[row.current.style].label}</span>}
+                    </td>
+                    <td class="num strong">{row.current.rating}</td>
+                    <td class="num">{money(row.current.salary)}</td>
+                    <td>{row.expiring ? <span class="tag warn">만료</span> : `${row.current.until}년까지`}</td>
+                    <td>
+                      <select value={choices[row.role] ?? ''} onChange={(e) => choose(row.role, (e.currentTarget as HTMLSelectElement).value)} aria-label={`${STAFF_LABELS[row.role]} 선택`}>
+                        <option value="">{row.expiring ? '재계약' : '유지'}</option>
+                        {row.candidates.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name} · 등급 {c.rating} · 연 {money(c.salary)}
+                            {c.style ? ` · ${MANAGER_STYLES[c.style].label}` : ''}
+                            {row.buyout ? ` (위약금 ${money(row.buyout)})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       );
       break;

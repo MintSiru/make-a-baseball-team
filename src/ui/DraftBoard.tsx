@@ -23,9 +23,11 @@ interface Props {
   ageOf: (p: Player) => number;
   selectedId: PlayerId | null;
   onSelect: (id: PlayerId) => void;
+  /** The user's own scouts' future grade (V0.6), when there is a club. */
+  ourView?: (p: Player) => number | null;
 }
 
-export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect }: Props) {
+export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect, ourView }: Props) {
   const [role, setRole] = useState<RoleFilter>('all');
   const filtered = useMemo(() => players.filter((p) => role === 'all' || p.role === role).sort((a, b) => a.amateur.draftRank - b.amateur.draftRank), [players, role]);
   const { sorted: rows, th } = useSort(filtered, {
@@ -38,13 +40,16 @@ export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect }: 
     current: { value: (p) => p.scouting.current },
     future: { value: (p) => p.scouting.futureValue },
     velocity: { value: (p) => p.velocity ?? 0 },
+    ours: { value: (p) => ourView?.(p) ?? 0 },
   });
 
   return (
     <section class="board" aria-labelledby="board-title">
       <div class="board-head">
         <h2 id="board-title">{draftYear + 1} 신인 드래프트 후보</h2>
-        <p class="muted">{rows.length}명</p>
+        <p class="muted">
+          {rows.length}명{ourView && ' · 우리 평가는 우리 스카우트 팀장이 본 미래 등급입니다 (팀장 등급이 높을수록 정확)'}
+        </p>
       </div>
       <div class="controls">
         <div class="segmented" role="group" aria-label="포지션">
@@ -68,6 +73,7 @@ export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect }: 
               {th('current', '현재', true)}
               {th('future', '미래', true)}
               {th('velocity', '구속', true)}
+              {ourView && th('ours', '우리 평가', true)}
             </tr>
           </thead>
           <tbody>
@@ -87,6 +93,7 @@ export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect }: 
                 <td class="num">{p.scouting.current}</td>
                 <td class="num strong">{p.scouting.futureValue}</td>
                 <td class="num">{p.velocity ?? '-'}</td>
+                {ourView && <td class="num strong">{ourView(p) ?? '-'}</td>}
               </tr>
             ))}
           </tbody>

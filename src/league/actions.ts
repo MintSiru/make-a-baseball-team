@@ -7,6 +7,9 @@ import { makeTrade, releasePlayer, replaceForeign, signFromPool } from './trade'
 import { movePlayer, registerPlayer, setRole } from './entry';
 import type { BullpenRole } from './engine/types';
 import { ensureNumbers } from './numbers';
+import { startProject, type ProjectKind } from './ballpark';
+import { clubState } from './fans';
+import { FANS } from './tuning';
 import { renameStadium } from './userclub';
 import type { ExpansionSettings, LeagueState, Squad } from './state';
 import { foundClub, FOUNDING_DATE, resolveDecision, type DecisionInput } from './expansion';
@@ -27,6 +30,10 @@ export type Action =
   | { kind: 'penRole'; id: PlayerId; role: BullpenRole | null }
   | { kind: 'platoon'; id: PlayerId; side: 'L' | 'R' | null }
   | { kind: 'renameStadium'; name: string; which: 'current' | 'new' }
+  // The business side (V0.6)
+  | { kind: 'ticketPrice'; level: number }
+  | { kind: 'marketing'; amount: number }
+  | { kind: 'stadiumProject'; project: ProjectKind }
   // The market (V0.5)
   | { kind: 'trade'; teamId: TeamId; give: PlayerId[]; get: PlayerId[] }
   | { kind: 'release'; id: PlayerId }
@@ -94,6 +101,17 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'renameStadium':
       renameStadium(s, action.name, action.which);
+      break;
+    case 'ticketPrice':
+    case 'marketing': {
+      if (!s.user) break;
+      const c = clubState(s, s.user.teamId);
+      if (action.kind === 'ticketPrice') c.price = Math.round(Math.max(FANS.priceMin, Math.min(FANS.priceMax, action.level)) * 100) / 100;
+      else c.marketing = Math.round(Math.max(FANS.marketing.min, Math.min(FANS.marketing.max, action.amount)) / 10_000) * 10_000;
+      break;
+    }
+    case 'stadiumProject':
+      startProject(s, action.project);
       break;
     case 'trade':
       makeTrade(s, action.teamId, action.give, action.get);

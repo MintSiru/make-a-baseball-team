@@ -42,6 +42,10 @@ export interface TeamIn {
   lineup: BatterIn[]; // nine batters in batting order
   starter: PitcherIn;
   bullpen: RelieverIn[]; // available arms, best first within each role
+  /** Analytics: positioning adds to team fielding (z units). */
+  fieldBonus?: number;
+  /** The manager bunts and steals more. */
+  smallBall?: boolean;
 }
 
 export interface GameIn {

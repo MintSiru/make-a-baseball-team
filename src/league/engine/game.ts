@@ -73,7 +73,7 @@ function makeSide(team: TeamIn): Side {
     apps: [],
     pen: [...team.bullpen],
     next: 0,
-    fieldZ: w ? sum / w : 0,
+    fieldZ: (w ? sum / w : 0) + (team.fieldBonus ?? 0),
     catcherZ: catcher ? Z(catcher.defense) : 0,
   };
   side.apps.push({ arm: team.starter, role: 'SP', line: emptyPitching(team.starter.id, true), entryLead: 0, entryRunners: 0, minLead: 0, exitLead: 0 });
@@ -199,7 +199,7 @@ export function simulateGame(game: GameIn, r: R): GameOut {
       const runner1 = bases[0];
       if (runner1 && !bases[1] && outs < 3) {
         const rs = game[isHome ? 'home' : 'away'].lineup[runner1.bat]!;
-        if (rs.speed >= E.steal.minSpeed && r() < inv(logit(E.steal.attempt.base) + E.steal.attempt.speed * Z(rs.speed))) {
+        if (rs.speed >= E.steal.minSpeed && r() < inv(logit(E.steal.attempt.base) + E.steal.attempt.speed * Z(rs.speed) + (bat.team.smallBall ? E.smallBall.steal : 0))) {
           const ok = r() < inv(logit(E.steal.success.base) + E.steal.success.speed * Z(rs.speed) + E.steal.success.catcher * field.catcherZ);
           bases[0] = null;
           if (ok) {
@@ -227,7 +227,7 @@ export function simulateGame(game: GameIn, r: R): GameOut {
 
       // Sacrifice bunt: weak hitter, nobody out, runner on first or second, close game.
       const weak = (batter.contact + batter.power) / 2 < E.sacBunt.maxBatterGrade;
-      if (outs === 0 && (bases[0] || bases[1]) && !bases[2] && weak && Math.abs(lead(bat)) <= 2 && r() < E.sacBunt.rate) {
+      if (outs === 0 && (bases[0] || bases[1]) && !bases[2] && weak && Math.abs(lead(bat)) <= 2 && r() < E.sacBunt.rate * (bat.team.smallBall ? E.smallBall.bunt : 1)) {
         bl.pa++;
         bl.sh++;
         pl.bf++;

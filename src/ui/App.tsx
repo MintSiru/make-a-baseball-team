@@ -5,6 +5,7 @@ import { draftClass } from '../league/players';
 import { nextDate, regularOver, type Action } from '../league/actions';
 import type { ExpansionSettings, LeagueState } from '../league/state';
 import { shortName } from '../league/views';
+import { scoutView } from '../league/staff';
 import { ageOn, publicView } from '../model/player';
 import type { CalendarPhase, Player, PlayerId } from '../model/types';
 import { makeSave, parseSave, SaveError, serializeSave } from '../save/format';
@@ -288,7 +289,7 @@ export function App() {
             {tab === 'history' && <History league={league} />}
             {tab === 'draft' && (
               <div class="layout">
-                <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} />
+                <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} ourView={league?.user ? (p) => scoutView(league!, p) : undefined} />
                 <PlayerProfile player={prospect && publicView(prospect)} age={prospect && prospectAge(prospect)} />
               </div>
             )}

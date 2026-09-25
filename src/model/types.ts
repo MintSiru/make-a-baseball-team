@@ -206,6 +206,8 @@ export interface Stadium {
   size: StadiumSize;
   capacity: number;
   ownership: StadiumOwnership;
+  /** Run factor when it differs from the club's default (fences moved, V0.6). */
+  park?: number;
 }
 
 export interface Team {

@@ -24,14 +24,16 @@ import {
 import { ageIn, futureValue, isForeign, isPitcher, keepValue } from './players';
 import { aiCompensation, marketValue, movePlayer, projectedPayroll, type FaOffer } from './market';
 import { makeSecondPick } from './seconddraft';
+import { openProjects } from './ballpark';
+import { baseSupport, evaluate, nextBudget, ownerEvents, signSponsor, sponsorDue, sponsorOffers } from './parent';
+import { STAFF_LABELS, STAFF_ROLES, staffCandidates, staffOf } from './staff';
 import { post, postingCandidates, postingNote } from './posting';
 import { splitContract } from './foreign';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
-import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type SalaryRow, type UserClub } from './state';
+import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type SalaryRow, type StaffRole, type UserClub } from './state';
 import { OFFSEASON as O, TALKS } from './tuning';
 
-/** What the owner puts in every winter for signing bonuses and other one-off costs (game assumption, until V0.6). */
-export const YEARLY_GRANT = { conglomerate: 200_000, midsize: 150_000, namingRights: 120_000, citizen: 100_000 } as const;
+/** Difficulty scales the owner's money. */
 const DIFFICULTY_MONEY = { easy: 1.1, normal: 1, hard: 0.9 } as const;
 
 export const FOCUS_KEYS: Record<'pitcher' | 'hitter', ToolKey[]> = {
@@ -60,7 +62,9 @@ export type AnnualInput =
   | { kind: 'secondProtect'; ids: PlayerId[] }
   | { kind: 'secondPick'; id: PlayerId | null }
   | { kind: 'foreignRenew'; keep: PlayerId[] }
-  | { kind: 'posting'; id: PlayerId | null };
+  | { kind: 'posting'; id: PlayerId | null }
+  | { kind: 'sponsor'; index: number }
+  | { kind: 'staff'; hires: Partial<Record<StaffRole, string>> };
 
 /** The club's answer to each player: his ask, the club's merit figure, last year's pay, or a multi-year deal. */
 export type SalaryChoice = 'ask' | 'merit' | 'freeze' | 'extension';
@@ -129,17 +133,32 @@ function payForeignOptions(s: LeagueState) {
   }
 }
 
+/**
+ * The winter's money: the owner judges the season (goals), this year's owner events happen, and next
+ * year's support and payroll budget are set (base × difficulty × the owner's running scale; the
+ * payroll budget also follows the league's salary cap).
+ */
 export function yearlyGrant(s: LeagueState) {
   openNewStadium(s);
   payForeignOptions(s);
   const u = s.user;
-  if (!u || !s.offseason || s.offseason.year < 2027) return; // the founding fund covers the first winter
-  const amount = Math.round(YEARLY_GRANT[u.settings.parentType] * DIFFICULTY_MONEY[u.settings.difficulty]);
-  u.fund += amount;
-  u.ledger.push({ year: s.offseason.year, label: '모기업 지원금 (계약금·영입비)', amount });
-  // The payroll budget grows with the league's salary cap (salaries rise every year).
-  const next = s.offseason.year + 1;
-  u.payrollBudget = Math.round((budgetFor(u.settings).payrollBudget * salaryCapFor(next)) / salaryCapFor(2027) / 1000) * 1000;
+  if (!u || !s.offseason) return;
+  const year = s.offseason.year,
+    next = year + 1;
+  openProjects(s, next);
+  if (sponsorDue(s, year)) u.sponsorPending = true;
+  const ev = evaluate(s, year);
+  if (ev) note(u, year, `모기업 평가: ${ev.lines.map((l) => `${l.label} ${l.ok ? '달성' : '미달'}`).join(' · ')} → 내년 예산 ${ev.change >= 0 ? '+' : ''}${Math.round(ev.change * 100)}%, 신뢰도 ${Math.round(ev.trust)}`);
+  if (year < 2027) return; // the founding fund covers the first winter
+  const event = ownerEvents(s, year);
+  const k = DIFFICULTY_MONEY[u.settings.difficulty];
+  const b = nextBudget(
+    { support: baseSupport(u.settings.parentType) * k, payroll: (budgetFor(u.settings).payrollBudget * salaryCapFor(next)) / salaryCapFor(2027) },
+    u.budgetScale ?? 1,
+    event,
+  );
+  u.support = b.support;
+  u.payrollBudget = b.payroll;
 }
 
 /** Next season's payroll without some players (whose deals are being decided), renewal estimates included. */
@@ -191,6 +210,26 @@ export function developmentDecision(s: LeagueState, d: DraftState): Decision | n
     .sort((a, b) => a.amateur.draftRank - b.amateur.draftRank)
     .slice(0, 40);
   return { kind: 'development', candidates: candidates.map((p) => p.id), max: room };
+}
+
+/** Staff under contract, who is out of contract, and three candidates for every post. */
+export function staffDecision(s: LeagueState, year: number): Decision | null {
+  const u = s.user!;
+  const staff = staffOf(s, u.teamId);
+  const first = !u.staffSeen;
+  const rows = STAFF_ROLES.map((role) => {
+    const current = staff[role];
+    const expiring = current.until <= year;
+    return { role, current, expiring, buyout: expiring ? 0 : (current.until - year) * current.salary, candidates: staffCandidates(s, role, year) };
+  });
+  if (!first && !rows.some((r) => r.expiring)) return null;
+  return { kind: 'staff', rows };
+}
+
+export function sponsorDecision(s: LeagueState, year: number): Decision | null {
+  const u = s.user!;
+  if (!u.sponsorPending) return null;
+  return { kind: 'sponsor', offers: sponsorOffers(s, year) };
 }
 
 /** Players who ask to be posted to the majors this winter (the club may post one). */
@@ -247,6 +286,21 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
     case 'posting': {
       const dd = d as Extract<Decision, { kind: 'posting' }>;
       if (input.id && !dd.candidates.includes(input.id)) return '포스팅할 수 없는 선수입니다.';
+      return null;
+    }
+    case 'sponsor': {
+      const dd = d as Extract<Decision, { kind: 'sponsor' }>;
+      return dd.offers[input.index] ? null : '제안을 고르세요.';
+    }
+    case 'staff': {
+      const dd = d as Extract<Decision, { kind: 'staff' }>;
+      let buyouts = 0;
+      for (const [role, id] of Object.entries(input.hires)) {
+        const row = dd.rows.find((r) => r.role === role);
+        if (!row?.candidates.some((c) => c.id === id)) return '후보 명단에 없는 사람입니다.';
+        buyouts += row.buyout;
+      }
+      if (buyouts > 0 && buyouts > u.fund) return `잔여 연봉(위약금) ${Math.round(buyouts / 10000)}억을 낼 자금이 없습니다.`;
       return null;
     }
     case 'faMarket': {
@@ -393,6 +447,35 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
     case 'salaries':
       settleSalaries(s, d as Extract<Decision, { kind: 'salaries' }>, input.choices);
       return null;
+    case 'sponsor': {
+      const dd = d as Extract<Decision, { kind: 'sponsor' }>;
+      signSponsor(s, dd.offers[input.index]!, year);
+      u.sponsorPending = false;
+      return null;
+    }
+    case 'staff': {
+      const dd = d as Extract<Decision, { kind: 'staff' }>;
+      const club = s.clubs![u.teamId]!;
+      u.staffSeen = true;
+      for (const row of dd.rows) {
+        const id = input.hires[row.role];
+        const hire = id ? row.candidates.find((c) => c.id === id) : undefined;
+        if (hire) {
+          if (row.buyout) {
+            u.fund -= row.buyout;
+            u.ledger.push({ year, label: `${STAFF_LABELS[row.role]} ${row.current.name} 계약 해지 (잔여 연봉)`, amount: -row.buyout });
+          }
+          club.staff![row.role] = { ...hire, id: `st-${u.teamId}-${row.role}-${year}`, until: year + (row.role === 'manager' ? 3 : 2) };
+          note(u, year, `${STAFF_LABELS[row.role]} ${hire.name} 선임 (등급 ${hire.rating}, 연 ${money(hire.salary)})`);
+        } else if (row.expiring) {
+          const m = club.staff![row.role]!;
+          m.until = year + 2;
+          m.salary = Math.round((m.salary * 1.05) / 1000) * 1000;
+          note(u, year, `${STAFF_LABELS[row.role]} ${m.name} 재계약 (2년, 연 ${money(m.salary)})`);
+        }
+      }
+      return null;
+    }
     case 'posting': {
       const dd = d as Extract<Decision, { kind: 'posting' }>;
       for (const id of dd.candidates) {
@@ -522,6 +605,19 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
       return { kind: 'salaries', choices: Object.fromEntries(d.rows.map((r) => [r.id, 'merit' as SalaryChoice])) };
     case 'secondProtect':
       return { kind: 'secondProtect', ids: d.candidates.slice(0, d.protect) };
+    case 'sponsor': {
+      const best = d.offers.reduce((bi, o, i) => (o.annual > d.offers[bi]!.annual ? i : bi), 0);
+      return { kind: 'sponsor', index: best };
+    }
+    case 'staff': {
+      // Replace someone out of contract when a candidate is clearly better.
+      const hires: Partial<Record<StaffRole, string>> = {};
+      for (const row of d.rows) {
+        const best = [...row.candidates].sort((a, b) => b.rating - a.rating)[0]!;
+        if ((row.expiring || !u.staffSeen) && best.rating >= row.current.rating + 10 && row.buyout === 0) hires[row.role] = best.id;
+      }
+      return { kind: 'staff', hires };
+    }
     case 'posting':
       // The scouts keep a player under 27 and let an older one chase his dream (and bring in the fee).
       return { kind: 'posting', id: d.candidates.find((id) => ageIn(s.players[id]!, next) >= 27) ?? null };
@@ -545,7 +641,7 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
 }
 
 export const isAnnual = (kind: Decision['kind']) =>
-  ['military', 'ownFreeAgents', 'rookieBonus', 'development', 'camp', 'faMarket', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting'].includes(kind);
+  ['military', 'ownFreeAgents', 'rookieBonus', 'development', 'camp', 'faMarket', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting', 'sponsor', 'staff'].includes(kind);
 
 // ── Salary talks ─────────────────────────────────────────────────────────────────────────────────
 

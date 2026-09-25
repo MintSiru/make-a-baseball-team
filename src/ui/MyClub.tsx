@@ -5,19 +5,17 @@ import { cityById } from '../club/cities';
 import { PARENT_COMPANY_TYPES } from '../club/types';
 import type { Action } from '../league/actions';
 import { canMove, canRegister } from '../league/entry';
-import { projectedPayroll, STADIUM_PLANS } from '../league/expansion';
+import { projectedPayroll } from '../league/expansion';
 import { firstTeamSize, PEN_ROLE_LABELS, PEN_ROLES } from '../league/manager';
 import type { BullpenRole } from '../league/engine/types';
 import { rosterLimit } from '../league/offseason';
 import { isPitcher } from '../league/players';
 import { developmentIds, registeredIds, type LeagueState, type Squad as SquadName } from '../league/state';
 import { OFFSEASON } from '../league/tuning';
-import { checkStadiumName, STADIUM_NAME_MAX } from '../league/userclub';
 import { rates, shortName, standingsView } from '../league/views';
-import { capFloorFor, capTotal } from '../league/cap';
-import { salaryCapFor } from '../rules/kbo2026';
 import { money } from './format';
 import { Squad, type Row, type SquadKey } from './Squad';
+import { Office } from './Office';
 
 type View = 'overview' | 'squad' | 'office';
 
@@ -334,85 +332,3 @@ function Management({ league, onPlayer, onAct, setMsg }: { league: LeagueState; 
 
 // ── Front office ─────────────────────────────────────────────────────────────────────────────────
 
-function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: (a: Action) => void; setMsg: (m: string) => void }) {
-  const u = league.user!;
-  const team = league.teams.find((t) => t.id === u.teamId)!;
-  const plan = STADIUM_PLANS[u.settings.stadium];
-  const building = !!plan.opens && league.year < plan.opens;
-  const [current, setCurrent] = useState(team.stadium.name);
-  const [future, setFuture] = useState(u.newStadiumName ?? '');
-  const submit = (name: string, which: 'current' | 'new') => (e: Event) => {
-    e.preventDefault();
-    const problem = checkStadiumName(name);
-    setMsg(problem ?? '');
-    if (!problem) onAct({ kind: 'renameStadium', name, which });
-  };
-  const payYear = league.phase === 'offseason' && league.offseason ? league.offseason.year + 1 : league.year;
-  return (
-    <>
-      <div class="cards">
-        <div class="card">
-          <p class="card-label">구단 자금</p>
-          <p class="card-value">{money(u.fund)}</p>
-        </div>
-        <div class="card">
-          <p class="card-label">{payYear}년 연봉 / 예산</p>
-          <p class="card-value">{money(projectedPayroll(league, u.teamId, payYear))}</p>
-          <p class="card-sub">예산 {money(u.payrollBudget)}</p>
-        </div>
-        <div class="card">
-          <p class="card-label">경쟁균형세 · 상위 40명 ({league.year})</p>
-          <p class="card-value">{money(capTotal(league, u.teamId, league.year))}</p>
-          <p class="card-sub">
-            상한 {money(salaryCapFor(league.year))}
-            {capFloorFor(league.year) ? ` · 하한 ${money(capFloorFor(league.year)!)}` : ''}
-            {(league.cap?.[u.teamId] ?? []).at(-1)?.over ? ` · 지난 시즌 초과 ${(league.cap?.[u.teamId] ?? []).at(-1)!.streak}년째` : ''}
-          </p>
-        </div>
-        <div class="card">
-          <p class="card-label">홈구장</p>
-          <p class="card-value small">{team.stadium.name}</p>
-          <p class="card-sub">
-            {team.stadium.capacity.toLocaleString('ko-KR')}석{building ? ` · ${plan.opens}년 새 구장 ${plan.seats?.toLocaleString('ko-KR')}석` : ''}
-          </p>
-        </div>
-      </div>
-
-      <h3>구장 이름</h3>
-      <form class="inline-form" onSubmit={submit(current, 'current')}>
-        <label>
-          지금 홈구장
-          <input value={current} maxLength={STADIUM_NAME_MAX} onInput={(e) => setCurrent((e.currentTarget as HTMLInputElement).value)} />
-        </label>
-        <button type="submit">바꾸기</button>
-      </form>
-      {building && (
-        <form class="inline-form" onSubmit={submit(future, 'new')}>
-          <label>
-            {plan.opens}년 개장할 새 구장
-            <input value={future} placeholder={`${cityById(u.settings.cityId)?.name ?? ''} 신구장`} maxLength={STADIUM_NAME_MAX} onInput={(e) => setFuture((e.currentTarget as HTMLInputElement).value)} />
-          </label>
-          <button type="submit">정하기</button>
-        </form>
-      )}
-
-      <h3>자금 내역</h3>
-      <div class="table-wrap" tabIndex={0}>
-        <table class="record-table ledger">
-          <tbody>
-            {[...u.ledger]
-              .reverse()
-              .slice(0, 40)
-              .map((l, i) => (
-                <tr key={i}>
-                  <td class="num">{l.year}</td>
-                  <td>{l.label}</td>
-                  <td class={`num ${l.amount > 0 ? 'plus' : ''}`}>{l.amount ? `${l.amount > 0 ? '+' : '−'}${money(Math.abs(l.amount))}` : ''}</td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
-    </>
-  );
-}

@@ -1354,3 +1354,41 @@ h3 {
 .squad-table td {
   padding: 8px 9px;
 }
+
+/* Front office (V0.6) */
+.office-tabs {
+  margin: 4px 0 14px;
+}
+.minus {
+  color: var(--bad, #b3261e);
+}
+.notice.warn {
+  border-left-color: var(--bad, #b3261e);
+}
+ul.plain {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 12px;
+}
+ul.plain li {
+  padding: 3px 0;
+  border-bottom: 1px dotted var(--rule);
+}
+.report-table th[scope='row'] {
+  font-weight: 400;
+  text-align: left;
+  white-space: nowrap;
+}
+.report-table .report-head th {
+  background: var(--paper-2);
+  font-weight: 600;
+  text-align: left;
+}
+.report-table .report-sum th,
+.report-table .report-sum td {
+  border-top: 1px solid var(--rule);
+  font-weight: 600;
+}
+.staff-table select {
+  max-width: 340px;
+}

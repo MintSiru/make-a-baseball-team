@@ -41,6 +41,85 @@ export interface SeasonLine {
   pit: PitTotals | null;
 }
 
+// ── Front office (V0.6) ───────────────────────────────────────────────────────────────────────────
+
+export type StaffRole = 'manager' | 'hitting' | 'pitching' | 'fielding' | 'farm' | 'scouting' | 'medical' | 'analytics';
+export type ManagerStyle = 'balanced' | 'smallBall' | 'youth' | 'quickHook' | 'patient';
+
+export interface StaffMember {
+  id: string;
+  name: string;
+  role: StaffRole;
+  /** 20–80 in five-point steps (public). */
+  rating: number;
+  age: number;
+  /** 만 원 a year. */
+  salary: number;
+  /** Last season under contract. */
+  until: number;
+  style?: ManagerStyle;
+}
+
+/** One season's accounts (만 원). */
+export interface ClubReport {
+  year: number;
+  fans: number;
+  homeGames: number;
+  price: number;
+  revenue: { gate: number; broadcast: number; sponsors: number; naming: number; merchandise: number; concessions: number; postseason: number };
+  expenses: { players: number; staff: number; frontOffice: number; gameDays: number; ballpark: number; farm: number; marketing: number };
+  operating: number;
+  /** Paid by the parent (or city, or investor) to cover the deficit. */
+  support: number;
+  /** The user's club: other cash in or out of the fund during the year. */
+  cashFlows?: number;
+}
+
+/** A club's business side: fans, prices, staff and accounts. */
+export interface ClubState {
+  /** Fans who would come to an ordinary game at the average price in 2025 terms. */
+  popularity: number;
+  /** Mood from −0.6 to +0.8. */
+  interest: number;
+  /** Ticket price as a multiple of the league average. */
+  price: number;
+  /** Marketing spend per year (만 원). */
+  marketing: number;
+  staff?: Partial<Record<StaffRole, StaffMember>>;
+  reports: ClubReport[];
+  /** Naming-rights clubs: the sponsor, its fee and the last season of the deal. */
+  sponsor?: { name: string; annual: number; until: number };
+}
+
+export interface SeasonGoals {
+  year: number;
+  /** Finish at or above this rank. */
+  rank: number;
+  /** Average attendance to reach. */
+  fans: number;
+  /** Largest deficit (operating result plus spending) the parent accepts (만 원, negative). */
+  result: number;
+}
+
+export interface Evaluation {
+  year: number;
+  score: number;
+  lines: { label: string; ok: boolean; text: string }[];
+  /** Change to next year's support and payroll budget (fraction). */
+  change: number;
+  trust: number;
+}
+
+export interface StadiumProject {
+  kind: 'expand' | 'fences' | 'newPark';
+  label: string;
+  /** Opens before this season. */
+  opens: number;
+  cost: number;
+  seats?: number;
+  park?: number;
+}
+
 export interface SeriesResult {
   round: 'wildcard' | 'semipo' | 'po' | 'ks';
   high: TeamId;
@@ -87,7 +166,9 @@ export type Decision =
   | { kind: 'secondProtect'; candidates: PlayerId[]; protect: number }
   | { kind: 'secondPick'; round: number; fee: number; candidates: PlayerId[] }
   | { kind: 'foreignRenew'; rows: { id: PlayerId; ask: number; war: number; leaving: boolean }[] }
-  | { kind: 'posting'; candidates: PlayerId[]; max: number };
+  | { kind: 'posting'; candidates: PlayerId[]; max: number }
+  | { kind: 'sponsor'; offers: { name: string; annual: number; years: number }[] }
+  | { kind: 'staff'; rows: { role: StaffRole; current: StaffMember; expiring: boolean; buyout: number; candidates: StaffMember[] }[] };
 
 /** One player in the winter's salary talks (만 원). */
 export interface SalaryRow {
@@ -145,13 +226,33 @@ export interface UserClub {
   /** Yearly limit on the club's player payroll. */
   payrollBudget: number;
   firstTeamYear: number;
-  ledger: { year: number; label: string; amount: number }[];
-  /** First-team registrations: the manager's (auto) or the general manager's own (manual). */
+  /** Cash in and out of the fund; `settlement` marks the year-end operating result and parent support. */
+  ledger: { year: number; label: string; amount: number; settlement?: boolean; capital?: boolean }[];
   /** Bullpen roles the general manager set (the manager fills the rest). */
   penRoles?: Record<PlayerId, BullpenRole>;
   /** Platoon halves: players who start only against left- ('L') or right-handed ('R') starters. */
   platoon?: Record<PlayerId, 'L' | 'R'>;
+  /** First-team registrations: the manager's (auto) or the general manager's own (manual). */
   entry?: 'auto' | 'manual';
+  /** Most the parent will pay this year to cover a deficit (V0.6; 만 원). */
+  support?: number;
+  /** The parent's goals for the season and its trust in the general manager (0–100). */
+  goals?: SeasonGoals;
+  trust?: number;
+  /** Year-end evaluations. */
+  evaluations?: Evaluation[];
+  /** Ballpark works under way. */
+  projects?: StadiumProject[];
+  /** Relieved of duty (only when firing is on). */
+  fired?: number;
+  /** The owner's running multiplier on support and payroll budget (evaluations, events). */
+  budgetScale?: number;
+  /** The naming deal ended: a sponsor decision comes this winter. */
+  sponsorPending?: boolean;
+  /** Ledger length at the last settlement: later entries go into the next one. */
+  settledAt?: number;
+  /** The general manager has picked staff once (the first winter always asks). */
+  staffSeen?: boolean;
   /** Guaranteed salary still owed to players the club released (counts against the payroll budget). */
   deadMoney?: { season: number; amount: number; label: string }[];
   /** Name for the new ballpark when it opens (STADIUM_PLANS); default "<city> 신구장". */
@@ -175,6 +276,8 @@ export interface ExpansionSettings {
   difficulty: Difficulty;
   /** Scenario hook for later versions (V0.3 always null: sandbox). */
   scenario: string | null;
+  /** The owner may fire the general manager after bad evaluations (V0.6; off in the sandbox). */
+  firing?: boolean;
 }
 
 /** The season's futures league (from 2026): every club's futures squad plus 상무. */
@@ -225,6 +328,11 @@ export interface LeagueState {
   postseason: SeriesResult[];
   history: SeasonSummary[];
   international: { year: number; name: string; medal: boolean; squad: PlayerId[] }[];
+  /** Fans, prices, staff and accounts of every club (V0.6). */
+  clubs?: Record<TeamId, ClubState>;
+  /** This season's home gates, and the postseason ticket money. */
+  gate?: Record<TeamId, import('./fans').GateLine>;
+  postseasonGate?: number;
   /** Null in a spectator league. */
   user: UserClub | null;
   pending: Decision | null;

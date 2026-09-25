@@ -4,6 +4,8 @@
 import type { TeamId } from '../model/types';
 import { playGame, currentStandings } from './season';
 import type { LeagueState, SeriesResult } from './state';
+import { leaguePrice } from './fans';
+import { FANS } from './tuning';
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 
@@ -24,7 +26,11 @@ function series(s: LeagueState, round: SeriesResult['round'], high: TeamId, low:
           const streak = arm && Date.parse(date) - Date.parse(arm.lastDate) === 86400000 ? arm.streak + 1 : 1;
           s.arms[p.id] = { lastDate: date, lastPitches: p.pitches, streak };
         }
-      games.push({ id, date, home, away, hs: out.home.runs, as: out.away.runs });
+      // Postseason games sell out; the ticket money goes to the league's pool (RULES.md §13).
+      const seats = s.teams.find((t) => t.id === home)!.stadium.capacity;
+      const att = Math.round(seats * (0.97 + (i % 3) * 0.01));
+      s.postseasonGate = (s.postseasonGate ?? 0) + Math.round(att * leaguePrice(s.year) * FANS.postseasonPrice);
+      games.push({ id, date, home, away, hs: out.home.runs, as: out.away.runs, att });
       const highRuns = highHome ? out.home.runs : out.away.runs,
         lowRuns = highHome ? out.away.runs : out.home.runs;
       if (highRuns > lowRuns) hw++;

@@ -3,11 +3,12 @@
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { outOfPosition, type Position } from '../model/position';
 import type { BatterIn, BullpenRole, FieldPos, Hand, PitcherIn, RelieverIn, TeamIn } from './engine/types';
-import { batValue, currentValue, isForeign, isPitcher, keepValue, starterValue } from './players';
+import { ageIn, batValue, currentValue, isForeign, isPitcher, keepValue, starterValue } from './players';
+import { staffEdge, staffRating } from './staff';
 import { hasBenefits, registeredIds, type LeagueState } from './state';
 import { EXPANSION_DEFAULTS, KBO_2026 } from '../rules/kbo2026';
 import { platoonFactor } from './pitches';
-import { ENGINE } from './tuning';
+import { ENGINE, STAFF } from './tuning';
 
 const STARTER_LIMIT = ENGINE.starterLimit;
 
@@ -79,9 +80,11 @@ export function platoonEdge(s: LeagueState, p: Player, vs: 'L' | 'R' | undefined
   if (!vs) return 0;
   const half = p.teamId === s.user?.teamId ? s.user.platoon?.[p.id] : undefined;
   if (half) return half === vs ? ENGINE.platoonLineup.half : -ENGINE.platoonLineup.half;
-  if (p.bats === '양') return ENGINE.platoonLineup.edge / 2;
+  // Analytics sharpens the platoon picks.
+  const edge = ENGINE.platoonLineup.edge * (1 + 0.5 * staffEdge(staffRating(s, p.teamId, 'analytics')));
+  if (p.bats === '양') return edge / 2;
   const opposite = (p.bats === '좌') !== (vs === 'L');
-  return opposite ? ENGINE.platoonLineup.edge : -ENGINE.platoonLineup.edge;
+  return opposite ? edge : -edge;
 }
 
 export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none, pitchersBat = false, vs?: 'L' | 'R'): BatterIn[] {
@@ -92,7 +95,10 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
   }
   const used = new Set<PlayerId>();
   const slots: { p: Player; pos: FieldPos }[] = [];
-  const hitScore = (p: Player) => batValue(p.scouting.tools) + performanceNudge(s, p) + (isForeign(p) ? 4 : 0) + prefer(p) + platoonEdge(s, p, vs);
+  // A better manager reads his hitters beyond the scouting report (STAFF.managerInsight at 80).
+  const insight = STAFF.managerInsight * Math.max(0, (staffEdge(staffRating(s, hitters[0]?.teamId, 'manager')) + 1) / 2);
+  const hitScore = (p: Player) =>
+    batValue(p.scouting.tools) * (1 - insight) + batValue(p.hidden.current) * insight + performanceNudge(s, p) + (isForeign(p) ? 4 : 0) + prefer(p) + platoonEdge(s, p, vs);
   for (const pos of LINEUP_ORDER) {
     let best: Player | null = null,
       bestScore = -Infinity;
@@ -153,7 +159,7 @@ export function rotationFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = no
   return pitchers.sort((a, b) => rotationScore(b, prefer) - rotationScore(a, prefer) || a.id.localeCompare(b.id)).slice(0, 5);
 }
 
-export function starterFor(s: LeagueState, key: string, date: string, rotation: Player[]): { p: Player; limit: number } | null {
+export function starterFor(s: LeagueState, key: string, date: string, rotation: Player[], hook = 0): { p: Player; limit: number } | null {
   if (!rotation.length) return null;
   const n = rotation.length;
   const start = s.rotation[key] ?? 0;
@@ -179,7 +185,7 @@ export function starterFor(s: LeagueState, key: string, date: string, rotation: 
   }
   const stamina = t(pick, 'stamina');
   const month = Number(date.slice(5, 7));
-  const limit = Math.round(STARTER_LIMIT.base + (stamina - 50) * STARTER_LIMIT.perStamina - (rest < 5 ? 18 : 0) - (month <= 4 ? 5 : 0));
+  const limit = Math.round(STARTER_LIMIT.base + (stamina - 50) * STARTER_LIMIT.perStamina - (rest < 5 ? 18 : 0) - (month <= 4 ? 5 : 0) + hook);
   return { p: pick, limit: Math.max(55, Math.min(118, limit)) };
 }
 
@@ -254,9 +260,13 @@ export interface SquadSpec {
 export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away: SquadSpec): { home: TeamIn | null; away: TeamIn | null } {
   const plan = (x: SquadSpec) => {
     const ids = x.ids ?? s.rosters[x.teamId]!.active;
-    const prefer = x.prefer ?? none;
+    const style = s.clubs?.[x.teamId]?.staff?.manager?.style;
+    // A youth-minded manager gives young players a little more.
+    const base = x.prefer ?? none;
+    const prefer: Prefer = style === 'youth' ? (p) => base(p) + (ageIn(p, s.year) <= 25 ? 3 : 0) : base;
     const rotation = rotationFor(s, ids, prefer);
-    return { x, ids, prefer, rotation, sp: starterFor(s, x.rotationKey ?? x.teamId, date, rotation) };
+    const hook = style === 'quickHook' ? ENGINE.hook.quickHook : style === 'patient' ? ENGINE.hook.patient : 0;
+    return { x, ids, prefer, rotation, style, sp: starterFor(s, x.rotationKey ?? x.teamId, date, rotation, hook) };
   };
   const h = plan(home),
     a = plan(away);
@@ -266,7 +276,14 @@ export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away:
     const lineup = lineupFor(s, me.ids, me.prefer, me.prefer !== none, vs);
     if (lineup.length < 9) return null;
     const exclude = new Set(me.rotation.map((p) => p.id));
-    return { teamId: me.x.teamId, lineup, starter: armIn(me.sp.p, me.sp.limit), bullpen: bullpenFor(s, me.x.teamId, me.ids, date, exclude, me.prefer) };
+    return {
+      teamId: me.x.teamId,
+      lineup,
+      starter: armIn(me.sp.p, me.sp.limit),
+      bullpen: bullpenFor(s, me.x.teamId, me.ids, date, exclude, me.prefer),
+      fieldBonus: STAFF.fielding * staffEdge(staffRating(s, me.x.teamId, 'analytics')),
+      ...(me.style === 'smallBall' ? { smallBall: true } : {}),
+    };
   };
   return { home: build(h, a), away: build(a, h) };
 }

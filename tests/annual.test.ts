@@ -47,7 +47,8 @@ describe('the user club every winter', () => {
     expect(developmentIds(s, EXPANSION_ID).length).toBeLessThanOrEqual(OFFSEASON.development.cap);
     expect(developmentIds(s, EXPANSION_ID).length).toBeGreaterThan(0);
     expect(s.user!.fund).toBeGreaterThan(0);
-    expect(s.user!.ledger.some((l) => l.label.startsWith('모기업 지원금'))).toBe(true);
+    expect(s.user!.ledger.some((l) => l.label.includes('운영 결산'))).toBe(true);
+    expect(s.user!.ledger.some((l) => l.label.startsWith('모기업 지원'))).toBe(true);
     expect(s.user!.ledger.some((l) => l.label.startsWith('신인 계약금'))).toBe(true);
   });
 
