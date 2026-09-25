@@ -8,6 +8,10 @@ import { freeAgentsFor } from '../src/league/offseason';
 import { isForeign } from '../src/league/players';
 import { orgPlayers, registeredIds, type LeagueState } from '../src/league/state';
 import { checkTrade, foreignMarket, tradeValue, tradeWindow } from '../src/league/trade';
+import { numbersCheck } from '../src/story/writer';
+
+/** The latest transaction article about `id` (V0.7.2). */
+const moveAbout = (id: string) => [...(s.news ?? [])].reverse().find((n) => n.kind === 'move' && n.players.includes(id));
 
 let s: LeagueState;
 const decideAll = () => {
@@ -45,6 +49,14 @@ describe('trades', () => {
     apply(s, { kind: 'trade', teamId: 'kia', give: [ourBest.id], get: [cheaper.id] });
     expect(s.players[ourBest.id]!.teamId).toBe('kia');
     expect(s.players[cheaper.id]!.teamId).toBe(EXPANSION_ID);
+    // The trade is news, with both players' records as fact lines.
+    const n = moveAbout(ourBest.id)!;
+    expect(n.mine).toBe(true);
+    expect(n.title).toContain(ourBest.name);
+    expect(n.title).toContain(cheaper.name);
+    expect(n.detail!.some((l) => l.startsWith(`${cheaper.name}:`))).toBe(true);
+    expect(n.detail!.some((l) => l.startsWith('KIA') || l.includes('현재'))).toBe(true);
+    expect(numbersCheck({ title: n.title, body: n.body, quotes: n.quotes }, n)).toBe(true);
   });
 
   it('refuses foreign players and closes after July 31', () => {
@@ -59,6 +71,7 @@ describe('releases and waivers', () => {
     const p = orgPlayers(s, EXPANSION_ID).find((x) => !isForeign(x) && !s.rosters[EXPANSION_ID]!.active.includes(x.id))!;
     apply(s, { kind: 'release', id: p.id });
     expect(s.waivers?.some((w) => w.id === p.id)).toBe(true);
+    expect(moveAbout(p.id)?.title).toContain('웨이버 공시');
     expect(s.user!.deadMoney?.length ?? 0).toBeGreaterThanOrEqual(0);
     apply(s, { kind: 'days', days: 9 });
     const claimed = !!s.players[p.id]?.teamId;
@@ -66,7 +79,8 @@ describe('releases and waivers', () => {
     if (!claimed) {
       apply(s, { kind: 'signPool', id: p.id });
       expect(s.players[p.id]!.teamId).toBe(EXPANSION_ID);
-    }
+      expect(moveAbout(p.id)?.title).toContain('자유계약선수');
+    } else expect(moveAbout(p.id)?.title).toContain('웨이버로');
   }, 60_000);
 });
 
@@ -78,12 +92,18 @@ describe('foreign replacement', () => {
     expect(s.players[cand.id]!.teamId).toBe(EXPANSION_ID);
     expect(s.players[old.id]?.teamId ?? null).toBeNull();
     expect(s.foreignChanges?.[EXPANSION_ID]).toBe(1);
+    const n = moveAbout(cand.id)!;
+    expect(n.title).toContain(old.name);
+    expect(n.detail!.some((l) => l.startsWith(`${old.name}:`))).toBe(true);
   });
 
   it('closes trades after the deadline', () => {
     while (s.phase === 'regular' && (s.schedule[s.next]?.date ?? '9999') <= `${s.year}-08-01`) apply(s, { kind: 'days', days: 7 });
     expect(tradeWindow(s)).toMatch(/마감/);
     expect(s.transactions?.some((t) => t.text.startsWith('트레이드') || t.text.startsWith('외국인'))).toBe(true);
+    // Moves between other clubs are news too; the history before the club (no user) has none.
+    expect(s.news?.some((n) => n.kind === 'move' && !n.mine)).toBe(true);
+    expect(s.news?.filter((n) => n.kind === 'move').every((n) => n.date >= `${s.year - 1}`)).toBe(true);
   }, 120_000);
 });
 

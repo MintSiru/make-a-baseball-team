@@ -10,6 +10,7 @@ import { movePlayer } from './market';
 import { isForeign, keepValue } from './players';
 import { firstTeamIds, orgPlayers, type Decision, type LeagueState } from './state';
 import { logTransaction } from './trade';
+import { moveNews } from './movenews';
 import { SECOND } from './tuning';
 
 const R = KBO_2026.secondaryDraft;
@@ -99,6 +100,7 @@ export function makeSecondPick(s: LeagueState, sd: SecondDraftState, id: PlayerI
     (u.log ??= []).push({ year: sd.year, text: `2차 드래프트로 ${iga(p.name)} ${ro(short(slot.teamId))} 이적` });
   }
   logTransaction(s, `2차 드래프트 ${slot.round}R: ${short(slot.teamId)} ${p.name} (${short(from)}에서)`);
+  moveNews(s, { type: 'secondDraft', teamId: slot.teamId, from, id, round: slot.round }, `${sd.year}-11-20`);
 }
 
 /** Runs AI picks until the user is on the clock or the draft is over. */

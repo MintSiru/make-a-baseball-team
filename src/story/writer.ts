@@ -26,9 +26,24 @@ export interface RewriteSettings {
   model: string;
 }
 
-export async function rewrite(item: NewsItem, settings: RewriteSettings, fetchImpl?: typeof fetch): Promise<StoryOutcome> {
+/** One retry for a rate limit or a busy server, after the wait the server asked for (or a short default)
+    when that wait is short; a longer wait is left to the caller (automatic mode pauses). */
+export const RETRY = { maxWaitSec: 20, rateWaitSec: 10, busyWaitSec: 3 };
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+export async function rewrite(item: NewsItem, settings: RewriteSettings, fetchImpl?: typeof fetch, wait: (ms: number) => Promise<void> = sleep): Promise<StoryOutcome> {
   const provider = PROVIDERS[settings.provider];
-  const out = await provider.generate({ system: STORY_SYSTEM, user: storyPrompt(item), schema: STORY_SCHEMA as unknown as Record<string, unknown>, maxTokens: 8000 }, settings.key, settings.model || provider.defaultModel, fetchImpl);
+  const call = () => provider.generate({ system: STORY_SYSTEM, user: storyPrompt(item), schema: STORY_SCHEMA as unknown as Record<string, unknown>, maxTokens: 8000 }, settings.key, settings.model || provider.defaultModel, fetchImpl);
+  let out = await call();
+  if (!out.ok && (out.error === 'rate' || out.error === 'busy')) {
+    const sec = out.retryAfter ?? (out.error === 'rate' ? RETRY.rateWaitSec : RETRY.busyWaitSec);
+    if (sec <= RETRY.maxWaitSec) {
+      await wait(sec * 1000);
+      out = await call();
+      if (!out.ok) out = { ...out, message: `${out.message} (한 번 더 시도함)` };
+    }
+  }
   if (out.ok && !numbersCheck(out.text, item)) return { ok: false, error: 'invalid', message: '기사에 사실에 없는 숫자가 있어 원래 기사를 유지합니다.' };
   return out;
 }

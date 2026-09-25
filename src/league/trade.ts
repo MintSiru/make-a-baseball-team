@@ -17,6 +17,7 @@ import { ageIn, currentValue, isForeign, isPitcher, keepValue, makeForeign } fro
 import { currentStandings } from './season';
 import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from './state';
 import { TRADES } from './tuning';
+import { moveNews } from './movenews';
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 const shortOf = (s: LeagueState, id: TeamId | null) => s.teams.find((t) => t.id === id)?.short ?? '-';
@@ -104,6 +105,7 @@ export function makeTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get:
   const text = `트레이드: ${shortOf(s, u.teamId)} ${names(give)} ↔ ${shortOf(s, teamId)} ${names(get)}`;
   (u.log ??= []).push({ year: s.year, text });
   logTransaction(s, text);
+  moveNews(s, { type: 'trade', a: u.teamId, b: teamId, fromA: give, fromB: get });
   return true;
 }
 
@@ -137,6 +139,7 @@ export function aiTrades(s: LeagueState, r: () => number) {
     movePlayer(s, fromA, b);
     movePlayer(s, fromB, a);
     logTransaction(s, `트레이드: ${shortOf(s, a)} ${fromA.name} ↔ ${shortOf(s, b)} ${fromB.name}`);
+    moveNews(s, { type: 'trade', a, b, fromA: [fromA.id], fromB: [fromB.id] });
   }
 }
 
@@ -183,6 +186,7 @@ export function releasePlayer(s: LeagueState, id: PlayerId) {
     (s.pool ??= []).push(id);
     (u.log ??= []).push({ year: s.year, text: `${p.name} 방출 (자유계약선수)` });
   }
+  moveNews(s, { type: 'release', teamId: u.teamId, id, waiver: s.phase === 'regular', owed: owed.reduce((a, x) => a + x.amount, 0) });
   if (isForeign(p)) leaveForeign(s, p);
 }
 
@@ -214,6 +218,7 @@ export function processWaivers(s: LeagueState, date: string) {
       // The claiming club takes the contract: the releasing club no longer owes it.
       if (s.user && w.from === s.user.teamId) s.user.deadMoney = (s.user.deadMoney ?? []).filter((x) => x.label !== `${p.name} 잔여 연봉`);
       logTransaction(s, `웨이버 영입: ${shortOf(s, claimer)} ${p.name} (${shortOf(s, w.from)}에서)`);
+      moveNews(s, { type: 'claim', teamId: claimer, from: w.from, id: p.id }, date);
       if (w.from === s.user?.teamId) (s.user.log ??= []).push({ year: s.year, text: `${p.name} 웨이버로 ${ro(shortOf(s, claimer))} 이적` });
     } else {
       p.contract = null;
@@ -250,6 +255,7 @@ export function signFromPool(s: LeagueState, id: PlayerId) {
   s.pool = (s.pool ?? []).filter((x) => x !== id);
   (u.log ??= []).push({ year: s.year, text: `자유계약선수 ${p.name} 영입` });
   logTransaction(s, `자유계약선수 영입: ${shortOf(s, u.teamId)} ${p.name}`);
+  moveNews(s, { type: 'pool', teamId: u.teamId, id, salary: p.contract.salaries[0]!.amount });
 }
 
 /** At the end of the season unattached players who were not signed leave the league. */
@@ -328,6 +334,7 @@ export function replaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, in
   (s.foreignChanges ??= {})[teamId] = (s.foreignChanges[teamId] ?? 0) + 1;
   const text = `외국인 교체: ${shortOf(s, teamId)} ${old.name} → ${p.name} (${p.origin.background!.text})`;
   logTransaction(s, text);
+  moveNews(s, { type: 'foreign', teamId, out: old, in: p.id, price: foreignPriceNow(s, p) });
   if (s.user?.teamId === teamId) (s.user.log ??= []).push({ year: s.year, text });
 }
 

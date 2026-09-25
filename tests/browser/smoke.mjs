@@ -196,6 +196,7 @@ try {
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
   await page.getByRole('button', { name: '소식', exact: true }).click();
   for (const v of ['연표', '업적', '뉴스']) await page.getByRole('group', { name: '이야기' }).getByRole('button', { name: v, exact: true }).click();
+  for (const v of ['이적', '경기', '전체']) await page.getByRole('group', { name: '기사 종류' }).getByRole('button', { name: v, exact: true }).click();
   await page.screenshot({ path: join(shots, 'story.png'), fullPage: false });
   await page.getByRole('button', { name: /^AI 기사 설정/ }).click();
   await page.getByRole('dialog').waitFor();

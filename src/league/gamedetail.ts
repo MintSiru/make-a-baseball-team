@@ -20,7 +20,7 @@ const basesText = (b: [boolean, boolean, boolean]) => {
 };
 
 /** A club's record through `date` (wins, losses, ties). */
-function recordThrough(s: LeagueState, teamId: TeamId, date: string) {
+export function recordThrough(s: LeagueState, teamId: TeamId, date: string) {
   let w = 0,
     l = 0,
     t = 0;
