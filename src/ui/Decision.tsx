@@ -1,7 +1,8 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { draftContracts, TOOL_LABELS, type Difficulty } from '../draftroom';
-import { salaryIn } from '../league/contracts';
+import { salaryIn, usdTotal } from '../league/contracts';
+import { usd } from '../league/foreign';
 import { autoDecision, checkDecision, faAsk, projectedPayroll, type DecisionInput } from '../league/expansion';
 import { sangmuChance } from '../league/offseason';
 import { ageIn, isPitcher, keepValue } from '../league/players';
@@ -385,7 +386,8 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       body = (
         <>
           <p>
-            외국인 {d.regular}명{d.asia ? `, 아시아쿼터 ${d.asia}명` : ''}을 더 계약할 수 있습니다. 신규 외국인은 총액 100만 달러, 아시아쿼터는 20만 달러까지입니다.
+            외국인 {d.regular}명{d.asia ? `, 아시아쿼터 ${d.asia}명` : ''}을 더 계약할 수 있습니다. 신규 외국인은 총액 100만 달러, 아시아쿼터는 20만 달러까지입니다. 경력 칸에
+            MLB·트리플A·일본·독립리그 이력이 있습니다.
           </p>
           {budgetLine}
           {groups.map(([title, test]) => (
@@ -397,10 +399,15 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
                 selected={selected}
                 toggle={toggle}
                 onPlayer={onPlayer}
-                extra={{ title: '연봉', value: (p) => money(salaryIn(p, next)), sort: (p) => salaryIn(p, next) }}
+                extra={{
+                  title: '총액 (계약금·연봉·옵션)',
+                  value: (p) => (p.contract?.usd ? `${usd(usdTotal(p.contract))} (${usd(p.contract.usd.bonus)}·${usd(p.contract.usd.salary)}·${usd(p.contract.usd.options)})` : '-'),
+                  sort: (p) => usdTotal(p.contract),
+                }}
               />
             </div>
           ))}
+          <p class="muted">계약금과 연봉은 보장액이고, 옵션은 좋은 시즌(투수 WAR 2.5, 타자 2.0 이상)을 보내면 시즌 뒤 구단 자금에서 나갑니다. 연봉 예산에는 보장액이 원화로 잡힙니다.</p>
         </>
       );
       break;

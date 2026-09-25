@@ -53,12 +53,21 @@ export function freeAgentContract(p: Player, teamId: TeamId, season: number): Co
   return { teamId, kind: 'freeAgent', signedIn: season - 1, signingBonus: 0, salaries: Array.from({ length: years }, (_, i) => ({ season: season + i, amount })) };
 }
 
-/** Foreign contracts are one year; new signings are capped at 100만 달러, Asia quota at 20만 달러 (RULES.md §5). */
-export function foreignContract(teamId: TeamId, season: number, usd: number, asia: boolean): Contract {
+/**
+ * Foreign contracts are one year, in US dollars: signing bonus + salary (guaranteed) + options. New signings
+ * are capped at 100만 달러 in total, the Asia quota at 20만 달러 (RULES.md §5). The salary line in 만 원 is the
+ * guaranteed part; options are paid after a good season.
+ */
+export function foreignContract(teamId: TeamId, season: number, parts: { bonus: number; salary: number; options: number }, asia: boolean): Contract {
   const cap = asia ? 200_000 : 1_800_000;
-  const amount = Math.round(Math.min(cap, usd) * MANWON_PER_USD);
-  return { teamId, kind: asia ? 'asiaQuota' : 'foreign', signedIn: season - 1, signingBonus: 0, salaries: [{ season, amount }] };
+  const total = parts.bonus + parts.salary + parts.options;
+  const k = total > cap ? cap / total : 1;
+  const usd = { bonus: Math.round(parts.bonus * k), salary: Math.round(parts.salary * k), options: Math.round(parts.options * k) };
+  const amount = Math.round((usd.bonus + usd.salary) * MANWON_PER_USD);
+  return { teamId, kind: asia ? 'asiaQuota' : 'foreign', signedIn: season - 1, signingBonus: 0, salaries: [{ season, amount }], usd };
 }
+
+export const usdTotal = (c: Contract | null) => (c?.usd ? c.usd.bonus + c.usd.salary + c.usd.options : 0);
 
 /** Salary for a veteran who enters the league through the pre-history bootstrap (no earlier records). */
 export function estimatedSalary(p: Player, season: number): number {

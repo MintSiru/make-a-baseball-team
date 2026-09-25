@@ -10,6 +10,7 @@ import { fromDraftProspect } from '../model/player';
 import type { Player, PlayerId, Team, TeamId } from '../model/types';
 import { EXPANSION_DEFAULTS, minimumSalaryFor } from '../rules/kbo2026';
 import { foreignContract, freeAgentContract, renewSalary, salaryIn } from './contracts';
+import { splitContract } from './foreign';
 import { foreignSlots } from './manager';
 import {
   advanceOffseason,
@@ -188,10 +189,10 @@ export function protectedLists(s: LeagueState, next: number) {
 function foreignCandidates(s: LeagueState, next: number): Player[] {
   const out: Player[] = [];
   const specs: ['pitcher' | 'hitter', boolean, number][] = [
-    ['pitcher', false, 6],
-    ['hitter', false, 4],
-    ['pitcher', true, 3],
-    ['hitter', true, 1],
+    ['pitcher', false, 8],
+    ['hitter', false, 6],
+    ['pitcher', true, 4],
+    ['hitter', true, 2],
   ];
   let k = 0;
   const r = rng(`${s.seed}|foreign-offer|${next}`);
@@ -199,9 +200,8 @@ function foreignCandidates(s: LeagueState, next: number): Player[] {
     for (let i = 0; i < n; i++) {
       const p = makeForeign(s.seed, `fc${next}-${k++}`, next, { kind, asiaQuota: asia });
       p.status = 'amateur';
-      // Asking price follows the scout's grade; new signings are capped at 100만 달러 (20만 for the Asia quota).
-      const usd = asia ? Math.min(200_000, 120_000 + (p.scouting.current - 45) * 6_000) : Math.min(1_000_000, 450_000 + (p.scouting.current - 50) * 45_000 + Math.floor(r() * 80_000));
-      p.contract = foreignContract(EXPANSION_ID, next, usd, asia);
+      // Asking price from the scout's grade and his background; new signings are capped at 100만 달러 (20만 for the Asia quota).
+      p.contract = foreignContract(EXPANSION_ID, next, splitContract(p.origin.background!.ask, r), asia);
       s.players[p.id] = p;
       out.push(p);
     }

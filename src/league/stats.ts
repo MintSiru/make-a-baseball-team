@@ -56,3 +56,38 @@ export function pitcherWar(p: PitTotals, lg: LeagueContext): number {
   const ra9 = (27 * p.r) / p.outs;
   return Math.round((((replacement - ra9) * p.outs) / 27 / RUNS_PER_WIN) * 10) / 10;
 }
+
+// ── Detailed stats (V0.4.1) ─────────────────────────────────────────────────────────────────────
+
+/** Batting average on balls in play. */
+export const babip = (b: BatTotals) => {
+  const d = b.ab - b.k - b.hr + b.sf;
+  return d > 0 ? (b.h - b.hr) / d : 0;
+};
+/** BABIP allowed by a pitcher (balls in play estimated from batters faced). */
+export const babipAllowed = (p: PitTotals) => {
+  const d = p.bf - p.k - p.bb - p.hbp - p.hr;
+  return d > 0 ? (p.h - p.hr) / d : 0;
+};
+export const per9 = (n: number, outs: number) => (outs ? (27 * n) / outs : 0);
+
+/** League constants for FIP and wRC+ from a season's totals. */
+export interface RateContext {
+  fipConstant: number;
+  woba: number;
+  wobaScale: number;
+  runsPerPa: number;
+}
+
+export function rateContext(bat: BatTotals, pit: PitTotals): RateContext {
+  const innings = pit.outs / 3 || 1;
+  const raw = (13 * pit.hr + 3 * (pit.bb + pit.hbp) - 2 * pit.k) / innings;
+  return { fipConstant: era(pit) - raw, woba: woba(bat) || 0.33, wobaScale: 1.2, runsPerPa: bat.pa ? bat.r / bat.pa : 0.12 };
+}
+
+/** Fielding-independent pitching: home runs, walks and strikeouts only, on the ERA scale. */
+export const fip = (p: PitTotals, c: RateContext) => (p.outs ? (13 * p.hr + 3 * (p.bb + p.hbp) - 2 * p.k) / (p.outs / 3) + c.fipConstant : 0);
+
+/** Runs created per plate appearance against the league, 100 = average (no park adjustment). */
+export const wrcPlus = (b: BatTotals, c: RateContext) =>
+  b.pa ? Math.round((100 * ((woba(b) - c.woba) / c.wobaScale + c.runsPerPa)) / c.runsPerPa) : 0;

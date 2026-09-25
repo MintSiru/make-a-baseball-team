@@ -7,8 +7,10 @@ import { draftContracts, rng, type Difficulty, type Role, type ToolKey } from '.
 import type { Player, PlayerId } from '../model/types';
 import type { Position } from '../model/position';
 import { salaryCapFor } from '../rules/kbo2026';
-import { freeAgentContract, renewSalary, salaryIn, slotBonus } from './contracts';
-import { budgetFor } from './expansion';
+import { freeAgentContract, MANWON_PER_USD, renewSalary, salaryIn, slotBonus } from './contracts';
+import { usd } from './foreign';
+import { cityById } from '../club/cities';
+import { budgetFor, STADIUM_PLANS } from './expansion';
 import {
   developmentContract,
   enlistAs,
@@ -51,7 +53,62 @@ const nextSeason = (s: LeagueState) => (s.offseason ? s.offseason.year + 1 : s.y
 
 // ── Money ────────────────────────────────────────────────────────────────────────────────────────
 
+/** The planned ballpark opens before its first season. */
+function openNewStadium(s: LeagueState) {
+  const u = s.user;
+  if (!u || !s.offseason) return;
+  const plan = STADIUM_PLANS[u.settings.stadium];
+  const next = s.offseason.year + 1;
+  if (!plan.opens || plan.opens !== next || !plan.seats) return;
+  const team = s.teams.find((t) => t.id === u.teamId)!;
+  const name = u.newStadiumName?.trim() || `${cityById(u.settings.cityId)?.name ?? ''} 신구장`;
+  team.stadium = { ...team.stadium, name, capacity: plan.seats, size: u.settings.stadium === 'dome' ? 'dome' : plan.seats >= 20_000 ? 'large' : 'medium' };
+  note(u, s.offseason.year, `${name} 개장 (${plan.seats.toLocaleString('ko-KR')}석), ${next} 시즌부터 홈구장`);
+}
+
+export const STADIUM_NAME_MAX = 20;
+export function checkStadiumName(name: string): string | null {
+  const n = name.trim();
+  if (n.length < 2) return '구장 이름은 두 글자 이상이어야 합니다.';
+  if (n.length > STADIUM_NAME_MAX) return `구장 이름은 ${STADIUM_NAME_MAX}자까지입니다.`;
+  return null;
+}
+
+/** Renames the current home ballpark, or names the one being built. */
+export function renameStadium(s: LeagueState, name: string, which: 'current' | 'new') {
+  const u = s.user;
+  if (!u) throw new Error('구단이 없습니다.');
+  const problem = checkStadiumName(name);
+  if (problem) throw new Error(problem);
+  const n = name.trim();
+  if (which === 'new') {
+    u.newStadiumName = n;
+    return;
+  }
+  const team = s.teams.find((t) => t.id === u.teamId)!;
+  note(u, s.year, `홈구장 이름 변경: ${team.stadium.name} → ${n}`);
+  team.stadium = { ...team.stadium, name: n };
+}
+
+/** Foreign players' options: paid after a good season (WAR 2.5 for pitchers, 2.0 for hitters; game assumption). */
+function payForeignOptions(s: LeagueState) {
+  const u = s.user;
+  if (!u || !s.offseason) return;
+  const year = s.offseason.year;
+  for (const p of orgPlayers(s, u.teamId)) {
+    const opt = p.contract?.usd?.options;
+    if (!isForeign(p) || !opt || !p.contract?.salaries.some((x) => x.season === year)) continue;
+    const war = p.career.find((c) => c.year === year && !c.level)?.war ?? 0;
+    if (war < (isPitcher(p) ? O.foreign.keepWarPitcher : O.foreign.keepWarHitter)) continue;
+    const amount = Math.round(opt * MANWON_PER_USD);
+    u.fund -= amount;
+    u.ledger.push({ year, label: `외국인 옵션 · ${p.name} (${usd(opt)})`, amount: -amount });
+  }
+}
+
 export function yearlyGrant(s: LeagueState) {
+  openNewStadium(s);
+  payForeignOptions(s);
   const u = s.user;
   if (!u || !s.offseason || s.offseason.year < 2027) return; // the founding fund covers the first winter
   const amount = Math.round(YEARLY_GRANT[u.settings.parentType] * DIFFICULTY_MONEY[u.settings.difficulty]);

@@ -78,3 +78,23 @@ export function manualReplacements(s: LeagueState, pick: (candidates: PlayerId[]
     moveTo(s, next, 'active');
   }
 }
+
+/** Starter or reliever, any time in manual mode (the rotation takes starters first). */
+export function canSetRole(s: LeagueState, id: PlayerId, role: 'SP' | 'RP'): string | null {
+  const u = s.user;
+  const p = s.players[id];
+  if (!u || !p || p.teamId !== u.teamId) return '우리 선수가 아닙니다.';
+  if (p.role !== 'SP' && p.role !== 'RP') return '투수만 보직을 바꿀 수 있습니다.';
+  if ((u.entry ?? 'auto') !== 'manual') return '직접 관리로 바꾸면 보직을 바꿀 수 있습니다.';
+  if (p.role === role) return null;
+  return null;
+}
+
+export function setRole(s: LeagueState, id: PlayerId, role: 'SP' | 'RP') {
+  const problem = canSetRole(s, id, role);
+  if (problem) throw new Error(problem);
+  const p = s.players[id]!;
+  if (p.role === role) return;
+  p.role = role;
+  (s.user!.log ??= []).push({ year: s.year, text: `${p.name} ${role === 'SP' ? '선발' : '불펜'}으로 보직 변경` });
+}

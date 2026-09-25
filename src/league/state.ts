@@ -118,6 +118,8 @@ export interface UserClub {
   ledger: { year: number; label: string; amount: number }[];
   /** First-team registrations: the manager's (auto) or the general manager's own (manual). */
   entry?: 'auto' | 'manual';
+  /** Name for the new ballpark when it opens (STADIUM_PLANS); default "<city> 신구장". */
+  newStadiumName?: string;
   /** Club news: military results, re-signings, refusals, position changes. */
   log?: { year: number; text: string }[];
 }

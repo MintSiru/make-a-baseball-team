@@ -3,12 +3,14 @@
 import { ROLE_LABELS } from '../draftroom';
 import { publicView, type PublicPlayer } from '../model/player';
 import type { BatTotals, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
-import { salaryIn } from './contracts';
+import { salaryIn, usdTotal } from './contracts';
 import { ageIn, isForeign, isPitcher } from './players';
 import { currentStandings } from './season';
 import { SANGMU } from './futures';
+import { rotationFor } from './manager';
 import { isDevelopment, type LeagueState } from './state';
-import { avg, era, ip, obp, ops, slg } from './stats';
+import { avg, babip, babipAllowed, batterWar, era, fip, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
+import { addInto, emptyBat, emptyPit } from './state';
 
 export const teamOf = (s: LeagueState, id: TeamId | null) => s.teams.find((t) => t.id === id);
 export const shortName = (s: LeagueState, id: TeamId | null) => (id === SANGMU ? '상무' : (teamOf(s, id)?.short ?? '-'));
@@ -42,16 +44,21 @@ export function leaders(s: LeagueState) {
       .map((x) => ({ id: x.p.id, name: x.p.name, team: shortName(s, x.line.teamId), value: show(x) }));
   const qualifiedBat = bats.filter((x) => x.line.bat.pa >= teamGames * 3.1);
   const qualifiedPit = pits.filter((x) => x.line.pit.outs >= teamGames * 3);
+  const totals = seasonTotals(s);
+  const rc = rateContext(totals.bat, totals.pit);
   return {
     batting: [
       { title: '타율', rows: top(qualifiedBat, (x) => avg(x.line.bat), (x) => fmt3(avg(x.line.bat))) },
       { title: '홈런', rows: top(bats, (x) => x.line.bat.hr, (x) => String(x.line.bat.hr)) },
       { title: '타점', rows: top(bats, (x) => x.line.bat.rbi, (x) => String(x.line.bat.rbi)) },
       { title: 'OPS', rows: top(qualifiedBat, (x) => ops(x.line.bat), (x) => fmt3(ops(x.line.bat))) },
+      { title: 'wRC+', rows: top(qualifiedBat, (x) => wrcPlus(x.line.bat, rc), (x) => String(wrcPlus(x.line.bat, rc))) },
       { title: '도루', rows: top(bats, (x) => x.line.bat.sb, (x) => String(x.line.bat.sb)) },
     ],
     pitching: [
       { title: '평균자책점', rows: top(qualifiedPit, (x) => era(x.line.pit), (x) => era(x.line.pit).toFixed(2), true) },
+      { title: 'WHIP', rows: top(qualifiedPit, (x) => whip(x.line.pit), (x) => whip(x.line.pit).toFixed(2), true) },
+      { title: 'FIP', rows: top(qualifiedPit, (x) => fip(x.line.pit, rc), (x) => fip(x.line.pit, rc).toFixed(2), true) },
       { title: '승리', rows: top(pits, (x) => x.line.pit.w, (x) => String(x.line.pit.w)) },
       { title: '세이브', rows: top(pits, (x) => x.line.pit.sv, (x) => String(x.line.pit.sv)) },
       { title: '홀드', rows: top(pits, (x) => x.line.pit.hld, (x) => String(x.line.pit.hld)) },
@@ -84,9 +91,12 @@ export type RosterGroup = 'active' | 'futures' | 'third' | 'military';
 
 export function rosterView(s: LeagueState, teamId: TeamId) {
   const r = s.rosters[teamId]!;
+  // On the first team only five pitchers start; the rest pitch in relief whatever their role.
+  const rotation = new Set(rotationFor(s, r.active).map((p) => p.id));
   const row = (id: PlayerId, group: RosterGroup) => {
     const p = s.players[id]!;
     const line = s.lines[id];
+    const usage = group === 'active' && isPitcher(p) ? (rotation.has(id) ? '선발투수' : '불펜투수') : null;
     return {
       id,
       group,
@@ -94,13 +104,18 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
       foreign: isForeign(p),
       development: isDevelopment(p),
       pitcher: isPitcher(p),
-      pos: positionLabel(p),
+      pos: usage ?? positionLabel(p),
+      /** A starter by role who pitches in relief on the first team. */
+      starterInPen: usage === '불펜투수' && p.role === 'SP',
+      role: p.role,
       age: ageIn(p, s.year),
       hand: `${p.throws}투${p.bats}타`,
       grade: p.scouting.current,
       future: p.scouting.futureValue,
       line: group === 'military' || group === 'active' ? (isPitcher(p) ? pitLine(line?.pit ?? null) : batLine(line?.bat ?? null)) : futuresLine(s, id) || (isPitcher(p) ? pitLine(line?.pit ?? null) : batLine(line?.bat ?? null)),
       salary: salaryIn(p, s.year),
+      /** Foreign players: the contract total in US dollars (bonus + salary + options). */
+      usd: usdTotal(p.contract),
       injured: !!s.injuries[id],
       away: !!s.away?.[id],
     };
@@ -157,4 +172,54 @@ export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
   return { player: publicView(p), team: teamOf(s, p.teamId)?.name ?? '-', age: ageIn(p, s.year), salary: salaryIn(p, s.year), status, career: careerView(s, p) };
 }
 
-export const rates = { avg, obp, slg, ops, era, ip, fmt3 };
+export const rates = { avg, obp, slg, ops, era, ip, fmt3, whip, fip, babip, babipAllowed, wrcPlus, per9, woba };
+
+/** League totals of the season being played (first team). */
+export function seasonTotals(s: LeagueState) {
+  const bat = emptyBat(),
+    pit = emptyPit();
+  for (const line of Object.values(s.lines)) {
+    if (line.bat) addInto(bat, line.bat);
+    if (line.pit) addInto(pit, line.pit);
+  }
+  return { bat, pit };
+}
+
+/** FIP and wRC+ constants for a season: this season's running totals, or a finished season's. */
+export function rateContextFor(s: LeagueState, year: number): RateContext | null {
+  const h = s.history.find((x) => x.year === year);
+  if (h) return rateContext(h.totals.bat, h.totals.pit);
+  if (year !== s.year) return null;
+  const t = seasonTotals(s);
+  return t.bat.pa ? rateContext(t.bat, t.pit) : null;
+}
+
+/** Every first-team player's line this season with detailed stats, for the sortable record table. */
+export function seasonStats(s: LeagueState) {
+  const t = seasonTotals(s);
+  const rc = rateContext(t.bat, t.pit);
+  const lg = leagueContext(t.bat, t.pit);
+  const teamGames = Math.max(1, ...standingsView(s).map((r) => r.games));
+  const batters = [],
+    pitchers = [];
+  for (const [id, line] of Object.entries(s.lines)) {
+    const p = s.players[id];
+    if (!p) continue;
+    const base = { id, name: p.name, team: shortName(s, line.teamId), pos: positionLabel(p), age: ageIn(p, s.year) };
+    const b = line.bat;
+    if (b && b.pa > 0 && !isPitcher(p))
+      batters.push({
+        ...base,
+        g: b.g, pa: b.pa, avg: avg(b), obp: obp(b), slg: slg(b), ops: ops(b), hr: b.hr, rbi: b.rbi, r: b.r, sb: b.sb, bb: b.bb, k: b.k,
+        babip: babip(b), wrc: wrcPlus(b, rc), war: batterWar(b, p.position ?? 'DH', lg), qualified: b.pa >= teamGames * 3.1,
+      });
+    const q = line.pit;
+    if (q && q.g > 0)
+      pitchers.push({
+        ...base,
+        g: q.g, gs: q.gs, w: q.w, l: q.l, sv: q.sv, hld: q.hld, outs: q.outs, era: era(q), whip: whip(q), fip: fip(q, rc), k: q.k, bb: q.bb,
+        k9: per9(q.k, q.outs), bb9: per9(q.bb, q.outs), babip: babipAllowed(q), war: pitcherWar(q, lg), qualified: q.outs >= teamGames * 3,
+      });
+  }
+  return { batters, pitchers, qualifying: { pa: Math.ceil(teamGames * 3.1), innings: teamGames } };
+}

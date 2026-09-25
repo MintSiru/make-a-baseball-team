@@ -8,7 +8,8 @@ import { observe, overall, rng, toGrade, type Tools } from '../draftroom';
 import DraftSeason from '../draftroom/season.js';
 import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
-import { foreignContract, freeAgentContract, MANWON_PER_USD, renewSalary, rookieContract, salaryIn, slotBonus } from './contracts';
+import { foreignContract, freeAgentContract, MANWON_PER_USD, renewSalary, rookieContract, salaryIn, slotBonus, usdTotal } from './contracts';
+import { splitContract } from './foreign';
 import { INTERNATIONAL } from './international';
 import { foreignSlots } from './manager';
 import { champion } from './postseason';
@@ -528,9 +529,11 @@ export function renewForeigners(s: LeagueState, teamId: TeamId, next: number, r:
     const last = lastRecord(p, next - 1);
     const keep = last && ageIn(p, next) <= 35 && last.war >= (isPitcher(p) ? O.foreign.keepWarPitcher : O.foreign.keepWarHitter) && r() < O.foreign.keepChance;
     if (keep) {
-      const prevUsd = salaryIn(p, next - 1) / MANWON_PER_USD;
-      const usd = Math.min(1_800_000, prevUsd + Math.max(0, last.war - 2) * 150_000 + 50_000);
-      p.contract = foreignContract(teamId, next, usd, !!p.origin.asiaQuota);
+      // Re-signing: last year's total plus a raise for the season he had (Asia quota: at most +10만 달러 a year).
+      const prevUsd = usdTotal(p.contract) || salaryIn(p, next - 1) / MANWON_PER_USD;
+      const raise = Math.max(0, last.war - 2) * 150_000 + 50_000;
+      const usd = Math.min(1_800_000, prevUsd + (p.origin.asiaQuota ? Math.min(KBO_2026.foreign.asiaQuotaRaisePerYearUSD, raise) : raise));
+      p.contract = foreignContract(teamId, next, splitContract(usd, r), !!p.origin.asiaQuota);
     } else leaveLeague(s, p, 'overseas');
   }
 }
@@ -551,8 +554,7 @@ export function refreshForeigners(s: LeagueState, next: number, r: () => number)
     const add = (kind: 'pitcher' | 'hitter', asia: boolean) => {
       const id = `f${next}-${t.id}-${k++}`;
       const p = makeForeign(s.seed, id, next, { kind, asiaQuota: asia });
-      const usd = asia ? 150_000 + Math.floor(r() * 50_000) : 550_000 + Math.floor(r() * 450_000);
-      sign(s, p, t.id, foreignContract(t.id, next, usd, asia));
+      sign(s, p, t.id, foreignContract(t.id, next, splitContract(p.origin.background!.ask, r), asia));
     };
     for (let i = pitchers; i < 2 && regular.length + k < slots.regular; i++) add('pitcher', false);
     while (regular.length + k < slots.regular) add('hitter', false);

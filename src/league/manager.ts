@@ -41,7 +41,7 @@ export function chooseActive(s: LeagueState, teamId: TeamId): PlayerId[] {
   const pitchers = pool.filter(isPitcher).sort((a, b) => val(b) - val(a));
   const hitters = pool.filter((p) => !isPitcher(p)).sort((a, b) => val(b) - val(a));
   const chosen: Player[] = [];
-  const starters = [...pitchers].sort((a, b) => starterValue(b.scouting.tools) + (isForeign(b) ? 30 : 0) - (starterValue(a.scouting.tools) + (isForeign(a) ? 30 : 0))).slice(0, 5);
+  const starters = [...pitchers].sort((a, b) => rotationScore(b, none) - rotationScore(a, none)).slice(0, 5);
   chosen.push(...starters);
   for (const p of pitchers) if (chosen.length < pitchersWanted && !chosen.includes(p)) chosen.push(p);
   const catchers = hitters.filter((p) => p.position === 'C').slice(0, 2);
@@ -129,11 +129,14 @@ function armIn(p: Player, pitchLimit: number): PitcherIn {
   return { id: p.id, throws: p.throws === '좌' ? 'L' : 'R', stuff: t(p, 'stuff'), command: t(p, 'command'), breaking: t(p, 'breaking'), stamina: t(p, 'stamina'), pitchLimit };
 }
 
-/** The five-man rotation in order of public starter value. */
+/** Pitchers set as starters come first: a reliever only starts when there are not five starters. */
+const STARTER_ROLE_BONUS = 100;
+const rotationScore = (p: Player, prefer: Prefer) => starterValue(p.scouting.tools) + (isForeign(p) ? 30 : 0) + (p.role === 'SP' ? STARTER_ROLE_BONUS : 0) + prefer(p);
+
+/** The five-man rotation: starters (role SP) by public starter value; everyone else pitches from the bullpen. */
 export function rotationFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none): Player[] {
   const pitchers = ids.map((id) => s.players[id]!).filter((p) => isPitcher(p));
-  const score = (p: Player) => starterValue(p.scouting.tools) + (isForeign(p) ? 30 : 0) + prefer(p);
-  return pitchers.sort((a, b) => score(b) - score(a)).slice(0, 5);
+  return pitchers.sort((a, b) => rotationScore(b, prefer) - rotationScore(a, prefer) || a.id.localeCompare(b.id)).slice(0, 5);
 }
 
 export function starterFor(s: LeagueState, key: string, date: string, rotation: Player[]): { p: Player; limit: number } | null {

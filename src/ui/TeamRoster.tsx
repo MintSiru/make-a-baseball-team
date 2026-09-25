@@ -1,6 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import type { LeagueState } from '../league/state';
 import { rosterView, standingsView, teamOf } from '../league/views';
+import { usd } from '../league/foreign';
 import { money } from './format';
 import { positionKey, useSort } from './sort';
 
@@ -27,7 +28,7 @@ export function RosterTable({
     hand: { value: (r) => r.hand },
     grade: { value: (r) => r.grade },
     future: { value: (r) => r.future },
-    salary: { value: (r) => r.salary },
+    salary: { value: (r) => r.salary + r.usd * 0.14 },
   });
   if (!rows.length) return null;
   return (
@@ -63,13 +64,16 @@ export function RosterTable({
                   {r.injured && <span class="tag">부상</span>}
                   {r.away && <span class="tag">대표팀</span>}
                 </td>
-                <td>{r.pos}</td>
+                <td>
+                  {r.pos}
+                  {r.starterInPen && <span class="muted"> (선발형)</span>}
+                </td>
                 <td class="num">{r.age}</td>
                 <td>{r.hand}</td>
                 <td class="num">{r.grade}</td>
                 <td class="num strong">{r.future}</td>
                 <td class="line">{r.line || <span class="muted">-</span>}</td>
-                <td class="num">{money(r.salary)}</td>
+                <td class="num">{r.usd ? usd(r.usd) : money(r.salary)}</td>
                 {actions && <td>{actions(r)}</td>}
               </tr>
             ))}

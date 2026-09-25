@@ -16,7 +16,7 @@ const compare = (a: Value, b: Value) => (typeof a === 'number' && typeof b === '
 export const POSITION_ORDER: Record<string, number> = { 포수: 1, '1루수': 2, '2루수': 3, '3루수': 4, 유격수: 5, 좌익수: 6, 중견수: 7, 우익수: 8, 내야수: 9, 외야수: 10, 선발투수: 11, 불펜투수: 12 };
 export const positionKey = (label: string) => POSITION_ORDER[label] ?? 99;
 
-export function useSort<T, K extends string>(rows: T[], columns: Record<K, SortColumn<T>>, initial?: { key: K; dir: 1 | -1 }) {
+export function useSort<T, K extends string>(rows: T[], columns: Record<K, SortColumn<T>>, initial?: { key: NoInfer<K>; dir: 1 | -1 }) {
   const [sort, setSort] = useState<{ key: K; dir: 1 | -1 } | null>(initial ?? null);
   const sorted = useMemo(() => {
     if (!sort) return rows;

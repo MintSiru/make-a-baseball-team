@@ -7,6 +7,8 @@ import { rosterLimit } from '../league/offseason';
 import { developmentIds, registeredIds, type Squad } from '../league/state';
 import { OFFSEASON } from '../league/tuning';
 import { rosterView } from '../league/views';
+import { STADIUM_PLANS } from '../league/expansion';
+import { checkStadiumName, STADIUM_NAME_MAX } from '../league/userclub';
 import { PARENT_COMPANY_TYPES } from '../club/types';
 import { projectedPayroll } from '../league/expansion';
 import type { LeagueState } from '../league/state';
@@ -94,6 +96,8 @@ export function MyClub({ league, onPlayer, onAct }: { league: LeagueState; onPla
 
       <Management league={league} onPlayer={onPlayer} onAct={onAct} msg={msg} setMsg={setMsg} />
 
+      <StadiumNames league={league} onAct={onAct} setMsg={setMsg} />
+
       {!!u.log?.length && (
         <>
           <h3>구단 소식</h3>
@@ -180,6 +184,11 @@ function Management({
           정식 등록
         </button>
       )}
+      {(r.role === 'SP' || r.role === 'RP') && (
+        <button type="button" onClick={() => onAct({ kind: 'setRole', id: r.id, role: r.role === 'SP' ? 'RP' : 'SP' })}>
+          {r.role === 'SP' ? '불펜으로' : '선발로'}
+        </button>
+      )}
     </div>
   );
   const act = manual && inSeason;
@@ -222,5 +231,42 @@ function Management({
       />
       <RosterTable title="군 복무" rows={roster.military} onPlayer={onPlayer} />
     </>
+  );
+}
+
+/** Names for the home ballpark and, while it is being built, the new one. */
+function StadiumNames({ league, onAct, setMsg }: { league: LeagueState; onAct: (a: Action) => void; setMsg: (m: string) => void }) {
+  const u = league.user!;
+  const team = league.teams.find((t) => t.id === u.teamId)!;
+  const plan = STADIUM_PLANS[u.settings.stadium];
+  const building = !!plan.opens && league.year < plan.opens;
+  const [current, setCurrent] = useState(team.stadium.name);
+  const [future, setFuture] = useState(u.newStadiumName ?? '');
+  const submit = (name: string, which: 'current' | 'new') => (e: Event) => {
+    e.preventDefault();
+    const problem = checkStadiumName(name);
+    setMsg(problem ?? '');
+    if (!problem) onAct({ kind: 'renameStadium', name, which });
+  };
+  return (
+    <details class="settings">
+      <summary>구장 이름</summary>
+      <form class="inline-form" onSubmit={submit(current, 'current')}>
+        <label>
+          지금 홈구장
+          <input value={current} maxLength={STADIUM_NAME_MAX} onInput={(e) => setCurrent((e.currentTarget as HTMLInputElement).value)} />
+        </label>
+        <button type="submit">바꾸기</button>
+      </form>
+      {building && (
+        <form class="inline-form" onSubmit={submit(future, 'new')}>
+          <label>
+            {plan.opens}년 개장할 새 구장 ({plan.seats?.toLocaleString('ko-KR')}석)
+            <input value={future} placeholder={`${cityById(u.settings.cityId)?.name ?? ''} 신구장`} maxLength={STADIUM_NAME_MAX} onInput={(e) => setFuture((e.currentTarget as HTMLInputElement).value)} />
+          </label>
+          <button type="submit">정하기</button>
+        </form>
+      )}
+    </details>
   );
 }

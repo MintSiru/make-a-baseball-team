@@ -61,6 +61,8 @@ export interface Contract {
   signedIn: number;
   signingBonus: number;
   salaries: { season: number; amount: number }[];
+  /** Foreign contracts in US dollars: guaranteed bonus and salary, and options paid for a good season. */
+  usd?: { bonus: number; salary: number; options: number };
 }
 
 export interface PlayerOrigin {
@@ -76,7 +78,11 @@ export interface PlayerOrigin {
   /** Nationality for foreign players. */
   nationality?: string;
   asiaQuota?: boolean;
+  /** Foreign players: where he played before and what he asked for when he came (US dollars). */
+  background?: { level: ForeignLevel; text: string; ask: number };
 }
+
+export type ForeignLevel = 'mlb' | 'mlbCup' | 'aaa' | 'npb' | 'npbFarm' | 'jpIndie' | 'cpbl' | 'abl' | 'indie';
 
 /** Counting stats for one season at the first-team level. */
 export interface BatTotals {
