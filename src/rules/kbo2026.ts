@@ -16,7 +16,7 @@ export const KBO_2026 = {
     clubs: 10,
     gamesPerClub: 144,
     postseasonClubs: 5,
-    firstTeam: { registered: 29, active: 27 },
+    firstTeam: { registered: 29, active: 28 },
     rosterLimit: 68,
   },
 
