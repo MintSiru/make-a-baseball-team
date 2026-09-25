@@ -13,7 +13,7 @@ export interface SortColumn<T> {
 const compare = (a: Value, b: Value) => (typeof a === 'number' && typeof b === 'number' ? a - b : String(a).localeCompare(String(b), 'ko'));
 
 /** Position order used when sorting by position: catcher, infield, outfield, then pitchers. */
-export const POSITION_ORDER: Record<string, number> = { 포수: 1, '1루수': 2, '2루수': 3, '3루수': 4, 유격수: 5, 좌익수: 6, 중견수: 7, 우익수: 8, 내야수: 9, 외야수: 10, 선발투수: 11, 불펜투수: 12 };
+export const POSITION_ORDER: Record<string, number> = { 포수: 1, '1루수': 2, '2루수': 3, '3루수': 4, 유격수: 5, 좌익수: 6, 중견수: 7, 우익수: 8, 내야수: 9, 외야수: 10, 선발투수: 11, 불펜투수: 12, 선발: 11, 마무리: 12, 셋업맨: 13, 필승조: 14, '원 포인트': 15, 롱릴리프: 16, 추격조: 17 };
 export const positionKey = (label: string) => POSITION_ORDER[label] ?? 99;
 
 export function useSort<T, K extends string>(rows: T[], columns: Record<K, SortColumn<T>>, initial?: { key: NoInfer<K>; dir: 1 | -1 }) {

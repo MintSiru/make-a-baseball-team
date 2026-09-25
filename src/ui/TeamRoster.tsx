@@ -33,6 +33,11 @@ export function TeamRoster({
           <p class="muted">
             {team.stadium.name} ({team.stadium.capacity.toLocaleString('ko-KR')}석) · {team.parent.name}
           </p>
+          {!!team.retiredNumbers?.length && (
+            <p class="muted">
+              영구결번: {team.retiredNumbers.map((x) => `${x.number} ${x.name}(${x.year})`).join(', ')}
+            </p>
+          )}
         </div>
         {row && (
           <p class="head-stat">

@@ -3,6 +3,7 @@
 import type { BatTotals, PitTotals, Player, PlayerId, Team, TeamId } from '../model/types';
 import type { ScheduledGame } from './schedule';
 import type { GameScore, StandingRow } from './standings';
+import type { BullpenRole } from './engine/types';
 
 export type LeaguePhase = 'regular' | 'postseason' | 'offseason';
 
@@ -85,7 +86,8 @@ export type Decision =
   | { kind: 'salaries'; rows: SalaryRow[] }
   | { kind: 'secondProtect'; candidates: PlayerId[]; protect: number }
   | { kind: 'secondPick'; round: number; fee: number; candidates: PlayerId[] }
-  | { kind: 'foreignRenew'; rows: { id: PlayerId; ask: number; war: number; leaving: boolean }[] };
+  | { kind: 'foreignRenew'; rows: { id: PlayerId; ask: number; war: number; leaving: boolean }[] }
+  | { kind: 'posting'; candidates: PlayerId[]; max: number };
 
 /** One player in the winter's salary talks (만 원). */
 export interface SalaryRow {
@@ -145,6 +147,10 @@ export interface UserClub {
   firstTeamYear: number;
   ledger: { year: number; label: string; amount: number }[];
   /** First-team registrations: the manager's (auto) or the general manager's own (manual). */
+  /** Bullpen roles the general manager set (the manager fills the rest). */
+  penRoles?: Record<PlayerId, BullpenRole>;
+  /** Platoon halves: players who start only against left- ('L') or right-handed ('R') starters. */
+  platoon?: Record<PlayerId, 'L' | 'R'>;
   entry?: 'auto' | 'manual';
   /** Guaranteed salary still owed to players the club released (counts against the payroll budget). */
   deadMoney?: { season: number; amount: number; label: string }[];

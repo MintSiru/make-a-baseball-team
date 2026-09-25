@@ -2,11 +2,12 @@
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { simulateGame } from './engine/game';
-import type { GameOut, TeamBox } from './engine/types';
+import { emptySplit, type GameOut, type Splits, type TeamBox } from './engine/types';
 import { parkFactor } from './clubs';
 import { assignSquads, futuresPreference, futuresSquad, makeFuturesLeague } from './futures';
-import { chooseActive, teamInput } from './manager';
+import { chooseActive, matchInputs } from './manager';
 import { manualReplacements } from './entry';
+import { ensureNumbers } from './numbers';
 import { aiForeignChanges, aiTrades, processWaivers } from './trade';
 import { INTERNATIONAL } from './international';
 import { rosterLimit, selectNationalTeam } from './offseason';
@@ -38,6 +39,7 @@ export function startSeason(s: LeagueState) {
   for (const id of firstTeamIds(s)) setActive(s, id, chooseActive(s, id));
   s.futures = makeFuturesLeague(s);
   for (const t of s.teams) if (s.rosters[t.id]) assignSquads(s, t.id);
+  ensureNumbers(s);
 }
 
 // ── Futures league ──────────────────────────────────────────────────────────────────────────────
@@ -49,8 +51,12 @@ function playFuturesDay(s: LeagueState, date: string) {
   while (f.next < f.schedule.length && f.schedule[f.next]!.date <= date) {
     const g = f.schedule[f.next]!;
     f.next++;
-    const home = teamInput(s, g.home, g.date, futuresSquad(s, g.home), `${g.home}:futures`, prefer),
-      away = teamInput(s, g.away, g.date, futuresSquad(s, g.away), `${g.away}:futures`, prefer);
+    const { home, away } = matchInputs(
+      s,
+      g.date,
+      { teamId: g.home, ids: futuresSquad(s, g.home), rotationKey: `${g.home}:futures`, prefer },
+      { teamId: g.away, ids: futuresSquad(s, g.away), rotationKey: `${g.away}:futures`, prefer },
+    );
     if (!home || !away) continue;
     const out = simulateGame({ gameId: g.id, home, away, maxInnings: ENGINE.maxInnings, park: 1 }, gameRng(s, g.id));
     f.scores.push({ id: g.id, date: g.date, home: g.home, away: g.away, hs: out.home.runs, as: out.away.runs });
@@ -114,28 +120,46 @@ function countDays(s: LeagueState, date: string) {
 }
 
 /** Adds a box score to season lines (`lines`; null records only pitcher rest) and updates rest days. */
+function addSplits(into: { split?: Splits }, from: Splits) {
+  into.split ??= { L: emptySplit(), R: emptySplit() };
+  addInto(into.split.L, from.L);
+  addInto(into.split.R, from.R);
+}
+
 function record(s: LeagueState, box: TeamBox, date: string, lines: Record<PlayerId, SeasonLine> | null = s.lines) {
   const lineOf = (id: PlayerId, teamId: TeamId) => (lines ? (lines[id] ??= { teamId, days: 0, lost: 0, bat: null, pit: null }) : null);
   for (const b of box.batting) {
     const line = lineOf(b.id, box.teamId);
     if (!line) continue;
     const bat = (line.bat ??= emptyBat());
-    const { id: _id, pos: _pos, ...counts } = b;
+    const { id: _id, pos: _pos, split, ...counts } = b;
     addInto(bat, counts);
+    if (split && lines === s.lines) addSplits(bat, split);
     if (b.pa > 0) bat.g++;
   }
   for (const p of box.pitching) {
     const line = lineOf(p.id, box.teamId);
     if (line) {
       const pit = (line.pit ??= emptyPit());
-      const { id: _id, ...counts } = p;
+      const { id: _id, split, ...counts } = p;
       addInto(pit, counts);
+      if (split && lines === s.lines) addSplits(pit, split);
       pit.g++;
     }
     const arm = s.arms[p.id];
     const consecutive = arm && daysBetween(arm.lastDate, date) === 1 ? arm.streak + 1 : 1;
     s.arms[p.id] = { lastDate: date, lastPitches: p.pitches, streak: consecutive };
   }
+}
+
+const INJURY_PARTS = {
+  pitcher: { short: ['팔꿈치 염증', '어깨 염증', '옆구리 근육', '허리 통증', '손가락 물집', '햄스트링', '종아리 근육'], long: ['팔꿈치 인대 손상', '어깨 회전근개 손상', '팔꿈치 뼛조각', '옆구리 근육 파열', '허리 디스크'] },
+  hitter: { short: ['햄스트링', '옆구리 근육', '손목 염좌', '발목 염좌', '허리 통증', '손가락 타박상', '종아리 근육', '무릎 타박상'], long: ['손가락 골절', '손목 골절', '햄스트링 파열', '무릎 인대 손상', '발목 골절', '어깨 탈구'] },
+};
+
+function injuryPart(p: Player, long: boolean, r: () => number): string {
+  const list = INJURY_PARTS[isPitcher(p) ? 'pitcher' : 'hitter'][long ? 'long' : 'short'];
+  return list[Math.floor(r() * list.length)]!;
 }
 
 /**
@@ -153,6 +177,7 @@ function rollInjuries(s: LeagueState, box: TeamBox, date: string, r: () => numbe
       const long = r() < 0.22;
       const days = long ? 65 + Math.floor(r() * 66) : 7 + Math.floor(r() * 28);
       s.injuries[id] = { until: addDays(date, days), days, onList: factor === 1 };
+      (p.injuries ??= []).push({ date, days, part: injuryPart(p, long, rng(`${s.seed}|injury-part|${id}|${date}`)), ...(factor === 1 ? {} : { futures: true }) });
       lineOf(s, id, p.teamId!).lost += days;
     }
   }
@@ -160,12 +185,24 @@ function rollInjuries(s: LeagueState, box: TeamBox, date: string, r: () => numbe
 
 /** Injured players leave the first team; recovered ones come back when they are better than the weakest. */
 function maintainRosters(s: LeagueState, date: string, reshuffle: boolean) {
-  for (const [id, inj] of Object.entries(s.injuries)) if (inj.until <= date) delete s.injuries[id];
-  for (const [id, until] of Object.entries(s.away)) if (until < date) delete s.away[id];
+  // A first-team player back from the injured list or the national team is recalled at once.
+  const back = new Set<TeamId>();
+  for (const [id, inj] of Object.entries(s.injuries))
+    if (inj.until <= date) {
+      delete s.injuries[id];
+      const p = s.players[id];
+      if (inj.onList && p?.teamId) back.add(p.teamId);
+    }
+  for (const [id, until] of Object.entries(s.away))
+    if (until < date) {
+      delete s.away[id];
+      const p = s.players[id];
+      if (p?.teamId) back.add(p.teamId);
+    }
   const manual = s.user?.entry === 'manual' ? s.user.teamId : null;
   for (const teamId of firstTeamIds(s)) {
     const r = s.rosters[teamId]!;
-    const hurt = r.active.some((id) => s.injuries[id] || s.away[id]);
+    const hurt = r.active.some((id) => s.injuries[id] || s.away[id]) || back.has(teamId);
     if (teamId === manual) {
       // The general manager's roster stands; only players who cannot play are replaced.
       if (hurt) {
@@ -185,8 +222,7 @@ function gameRng(s: LeagueState, id: string) {
 }
 
 export function playGame(s: LeagueState, homeId: TeamId, awayId: TeamId, id: string, date: string, maxInnings: number | null): GameOut | null {
-  const home = teamInput(s, homeId, date),
-    away = teamInput(s, awayId, date);
+  const { home, away } = matchInputs(s, date, { teamId: homeId }, { teamId: awayId });
   if (!home || !away) return null;
   return simulateGame({ gameId: id, home, away, maxInnings, park: parkFactor(homeId) }, gameRng(s, id));
 }

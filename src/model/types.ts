@@ -4,7 +4,7 @@
    kept apart. UI, AI clubs and news may read `scouting` and public facts only (see publicView). */
 import type { ParentCompanyType, StadiumOwnership, StadiumSize } from '../club/types';
 import type { AmateurRecord, HistoryEntry, Intent, Role, Tools } from '../draftroom';
-import type { FieldPos } from '../league/engine/types';
+import type { FieldPos, Splits } from '../league/engine/types';
 
 export type PlayerId = string;
 export type TeamId = string;
@@ -48,6 +48,8 @@ export interface Service {
   /** While serving: the route and the discharge date. */
   route?: ServiceRoute;
   returnsOn?: string;
+  /** The winter he was posted to the major leagues (a player is posted once). */
+  postedIn?: number;
   /** Credited seasons when he last became a free agent (re-qualifies four seasons later). */
   lastFreeAgencyAt?: number;
 }
@@ -103,6 +105,8 @@ export interface BatTotals {
   sf: number;
   sh: number;
   gdp: number;
+  /** First team only: against left- and right-handed pitchers. */
+  split?: Splits;
 }
 
 export interface PitTotals {
@@ -123,6 +127,8 @@ export interface PitTotals {
   hld: number;
   qs: number;
   pitches: number;
+  /** First team only: against left- and right-handed batters. */
+  split?: Splits;
 }
 
 export interface SeasonRecord {
@@ -154,7 +160,9 @@ export interface Player {
   position: Exclude<FieldPos, 'DH'> | null;
   archetype: string;
   personality: string;
+  /** Top velocity when he was drafted or signed (km/h); `velocityStuff` is his hidden 구위 then. */
   velocity: number | null;
+  velocityStuff?: number;
   twoWay: boolean;
   origin: PlayerOrigin;
   education: { qualification: string; school: string; schoolTier: string; region: string; pathText: string; history: HistoryEntry[] };
@@ -168,8 +176,21 @@ export interface Player {
   /** First professional season in the league. */
   proSince: number;
   career: SeasonRecord[];
+  /** Injuries so far (first team and futures). */
+  injuries?: InjuryRecord[];
+  /** Uniform number and the club it belongs to (a player who moves gets a new one). */
+  number?: number;
+  numberTeam?: TeamId;
   /** The club's development plan from spring camp (absent: balanced growth, no change). */
   plan?: PlayerPlan;
+}
+
+export interface InjuryRecord {
+  date: string;
+  days: number;
+  part: string;
+  /** Hurt in a futures game. */
+  futures?: boolean;
 }
 
 /** Spring-camp plan (Draft Room planStep, V0.4). */
@@ -200,6 +221,8 @@ export interface Team {
   /** Expansion benefits (extra first-team spot and foreign player) last through this season. */
   benefitsUntil?: number;
   parent: { type: ParentCompanyType; name: string };
+  /** Numbers the club no longer issues, and whose they were. */
+  retiredNumbers?: { number: number; playerId: PlayerId; name: string; year: number }[];
   stadium: Stadium;
 }
 

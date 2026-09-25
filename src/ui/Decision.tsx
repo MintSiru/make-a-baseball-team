@@ -42,7 +42,11 @@ const TITLES: Record<DecisionT['kind'], string> = {
   secondProtect: '2차 드래프트 · 보호선수 명단',
   secondPick: '2차 드래프트',
   foreignRenew: '외국인 선수 재계약',
+  posting: '포스팅 (메이저리그 진출)',
 };
+
+/** What the scouts hear about major league interest, from the public grade. */
+const mlbInterest = (p: Player) => (p.scouting.current >= 68 ? '매우 높음' : p.scouting.current >= 63 ? '높음' : p.scouting.current >= 60 ? '보통' : '낮음');
 
 const SALARY_CHOICES: [SalaryChoice, string][] = [
   ['merit', '고과대로'],
@@ -293,6 +297,8 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         return null;
       case 'foreignRenew':
         return { kind: 'foreignRenew', keep: [...selected] };
+      case 'posting':
+        return { kind: 'posting', id: choices.pick && choices.pick !== 'none' ? choices.pick : null };
       case 'faCompensation':
         return { kind: 'faCompensation', player: choices.pick && choices.pick !== 'cash' ? choices.pick : null };
       case 'roster':
@@ -332,6 +338,9 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         break;
       case 'foreignRenew':
         setSelected(new Set(a.keep));
+        break;
+      case 'posting':
+        setChoices({ pick: a.id ?? 'none' });
         break;
       default:
         if ('ids' in a) setSelected(new Set(a.ids));
@@ -728,6 +737,32 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
               value: (p) => (byId[p.id]!.leaving ? `${byId[p.id]!.war.toFixed(1)} · 해외 진출` : `${byId[p.id]!.war.toFixed(1)} · ${usd(byId[p.id]!.ask)}`),
               sort: (p) => byId[p.id]!.war,
             }}
+          />
+        </>
+      );
+      break;
+    }
+    case 'posting': {
+      const pick = choices.pick ?? 'none';
+      body = (
+        <>
+          <p>
+            7시즌을 채운 선수가 메이저리그 진출을 위해 포스팅을 요청했습니다. 한 겨울에 1명만 포스팅할 수 있습니다. 메이저리그 구단과 30일 안에 계약하면 보장 금액의 20%(2,500만 달러 초과분은
+            17.5%, 5,000만 달러 초과분은 15%)를 이적료로 받고, 계약하지 못하면 선수는 팀에 남습니다.
+          </p>
+          <label class="check">
+            <input type="radio" name="posting" checked={pick === 'none'} onChange={() => choose('pick', 'none')} /> 아무도 포스팅하지 않음
+          </label>
+          <PlayerTable
+            league={league}
+            players={d.candidates.map((id) => league.players[id]!)}
+            onPlayer={onPlayer}
+            extra={{ title: 'MLB 관심 · 연봉', value: (p) => `${mlbInterest(p)} · ${money(salaryIn(p, next - 1))}`, sort: (p) => p.scouting.current }}
+            control={(p) => (
+              <label class="check">
+                <input type="radio" name="posting" checked={pick === p.id} onChange={() => choose('pick', p.id)} aria-label={`${p.name} 포스팅`} /> 포스팅
+              </label>
+            )}
           />
         </>
       );

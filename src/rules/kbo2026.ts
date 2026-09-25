@@ -106,6 +106,17 @@ export const KBO_2026 = {
     month: 9,
     order: 'reverse-standings' as const,
   },
+  /** KBO–MLB posting (2018 agreement): seven seasons, one player per club a winter, fee tiers on the guaranteed value (S39, S40). */
+  posting: {
+    seasons: 7,
+    perClubPerWinter: 1,
+    windowDays: 30,
+    feeTiers: [
+      { upTo: 25_000_000, rate: 0.2 },
+      { upTo: 50_000_000, rate: 0.175 },
+      { upTo: null, rate: 0.15 },
+    ] as { upTo: number | null; rate: number }[],
+  },
   secondaryDraft: {
     protected: 35,
     rounds: 3,

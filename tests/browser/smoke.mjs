@@ -142,10 +142,14 @@ try {
   await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled);
   const rowsNow = () => page.evaluate(() => document.querySelectorAll('.squad-table tbody tr').length);
   const before1 = await rowsNow();
-  await page.locator('.squad-table').first().getByRole('button', { name: '말소' }).first().click();
+  await page.locator('.squad-table').first().getByLabel(/관리$/).first().selectOption('futures');
   await page.waitForFunction((n) => document.querySelectorAll('.squad-table tbody tr').length === n - 1, before1);
   await page.getByRole('button', { name: /^퓨처스/ }).click();
-  await page.locator('.squad-table').first().getByRole('button', { name: '1군 등록' }).first().click();
+  await page.locator('.squad-table').first().getByLabel(/관리$/).first().selectOption('active');
+  await page.getByRole('group', { name: '선수단' }).getByRole('button', { name: /^1군/ }).click();
+  await page.getByLabel(/불펜 보직$/).first().selectOption('CL');
+  await page.waitForFunction(() => [...document.querySelectorAll('.squad-table td')].some((td) => (td.querySelector('select')?.value === 'CL')));
+  await page.getByLabel(/플래툰$/).first().selectOption('L');
   await page.screenshot({ path: join(shots, 'manual-entry.png'), fullPage: false });
 
   // 5. The market: trade screen with a live verdict, the other views.
@@ -161,7 +165,15 @@ try {
   await page.getByRole('button', { name: '선수단', exact: true }).click();
   await page.locator('.squad-table .link').first().click();
   await page.getByRole('dialog').waitFor();
+  check((await page.locator('.velocity').count()) === 1, 'pitcher profile shows velocity');
   await page.screenshot({ path: join(shots, 'player.png') });
+  for (const t of ['통산 · 커리어 하이', '좌우 기록', '부상 이력', '연도별 기록']) await page.getByRole('tab', { name: t }).click();
+  await page.keyboard.press('Escape');
+  // A hitter's profile, and the bullpen role / platoon controls under manual entry.
+  await page.locator('.squad-table').nth(1).locator('.link').first().click();
+  await page.getByRole('dialog').waitFor();
+  await page.getByRole('tab', { name: '통산 · 커리어 하이' }).click();
+  await page.screenshot({ path: join(shots, 'hitter.png') });
   await page.keyboard.press('Escape');
   const saved = await status(page);
   await page.reload();

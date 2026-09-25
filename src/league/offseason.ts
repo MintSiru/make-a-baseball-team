@@ -1,7 +1,7 @@
 /* Between seasons: close the books, then age every player a year and rebuild the rosters.
 
    Order (fixed; each step has its own random stream): close season, then OFFSEASON_STEPS —
-   national-team exemptions → development → retirement → military service → free agency → salaries →
+   national-team exemptions → development → retirement → military service → posting → free agency → salaries →
    rookie draft → (expansion special draft) → roster limits → released players → foreign players.
    The user's club can make the game wait at a step for a decision (see OffseasonHooks). */
 import { observe, overall, rng, toGrade, type Tools } from '../draftroom';
@@ -22,6 +22,8 @@ import { isSecondDraftYear, openSecondDraft, runSecondDraft, secondProtectDecisi
 import { standings } from './standings';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, orgIds, orgPlayers, registeredIds, type Decision, type DraftSlot, type DraftState, type LeagueState, type SeasonSummary } from './state';
 import { batterWar, leagueContext, pitcherWar } from './stats';
+import { maybeRetireNumber } from './numbers';
+import { runAiPosting } from './posting';
 import { FUTURES, OFFSEASON as O } from './tuning';
 
 type Develop = (p: object, tools: Tools, yearIndex: number, age: number, daysLost: number, r: () => number, boost?: number, focus?: string, scale?: number) => Tools;
@@ -120,6 +122,7 @@ export function developPlayer(p: Player, year: number, lostDays: number, r: () =
   const age = ageIn(p, year);
   const yearIndex = Math.max(0, year - p.proSince);
   const h = p.hidden;
+  if (p.velocity != null && h.current.stuff != null) p.velocityStuff ??= h.current.stuff;
   let next: Tools;
   const route = p.status === 'military' ? p.service.route : undefined;
   if (route === 'army' || route === 'social') {
@@ -183,6 +186,7 @@ function removeFromRoster(s: LeagueState, p: Player) {
 
 /** Retire or drop a player. Players who never reached the first team are forgotten to keep saves small. */
 export function leaveLeague(s: LeagueState, p: Player, status: 'retired' | 'overseas') {
+  if (status === 'retired' && p.teamId) maybeRetireNumber(s, p, p.teamId, s.year);
   removeFromRoster(s, p);
   p.teamId = null;
   p.contract = null;
@@ -589,7 +593,7 @@ export interface OffseasonHooks {
 const hooks: OffseasonHooks = {};
 export const setOffseasonHooks = (h: OffseasonHooks) => Object.assign(hooks, h);
 
-export const OFFSEASON_STEPS = ['international', 'develop', 'retire', 'military', 'freeAgency', 'renew', 'draft', 'special', 'secondDraft', 'limits', 'released', 'foreign', 'check', 'camp'] as const;
+export const OFFSEASON_STEPS = ['international', 'develop', 'retire', 'military', 'posting', 'freeAgency', 'renew', 'draft', 'special', 'secondDraft', 'limits', 'released', 'foreign', 'check', 'camp'] as const;
 export type OffseasonStep = (typeof OFFSEASON_STEPS)[number];
 
 export function beginOffseason(s: LeagueState) {
@@ -649,6 +653,9 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         }
         break;
       }
+      case 'posting':
+        runAiPosting(s, next);
+        break;
       case 'freeAgency': {
         if (!o.faDone) {
           o.faQueue = runFreeAgency(s, next, rng(`${s.seed}|fa|${year}`), o.faOffers ?? {});

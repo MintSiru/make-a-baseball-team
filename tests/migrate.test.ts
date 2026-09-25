@@ -23,6 +23,24 @@ describe('carrying older saves forward', () => {
     expect(state.scores.length).toBeGreaterThan(100);
   }, 120_000);
 
+  it('loads a 0.5 snapshot: numbers, hands and splits follow', () => {
+    const s = createLeague('migrate-05');
+    const old = JSON.parse(JSON.stringify(s)) as typeof s;
+    const lefty = Object.values(old.players).find((p) => p.throws === '좌' && p.status === 'active')!;
+    lefty.bats = '우';
+    for (const p of Object.values(old.players)) {
+      delete p.number;
+      delete p.numberTeam;
+    }
+    const text = serializeSave({ ...makeSave(s.seed, [], { at: { year: 2026, phase: 'regularSeason' }, state: old }), sim: '0.5' });
+    const state = parseSave(text).snapshot!.state as typeof s;
+    expect(['좌', '우']).toContain(state.players[lefty.id]!.bats);
+    apply(state, { kind: 'days', days: 10 });
+    const org = state.rosters.kia!.active.map((id) => state.players[id]!);
+    expect(org.every((p) => p.number != null)).toBe(true);
+    expect(org.some((p) => p.career.length === 0 || state.lines[p.id]?.bat?.split || state.lines[p.id]?.pit?.split)).toBe(true);
+  }, 120_000);
+
   it('still refuses versions it cannot carry', () => {
     const text = serializeSave({ ...makeSave('x', [], { at: { year: 2026, phase: 'regularSeason' }, state: { teams: [] } }), sim: '0.1' });
     expect(() => parseSave(text)).toThrow(SaveError);

@@ -6,7 +6,8 @@ import { PARENT_COMPANY_TYPES } from '../club/types';
 import type { Action } from '../league/actions';
 import { canMove, canRegister } from '../league/entry';
 import { projectedPayroll, STADIUM_PLANS } from '../league/expansion';
-import { firstTeamSize } from '../league/manager';
+import { firstTeamSize, PEN_ROLE_LABELS, PEN_ROLES } from '../league/manager';
+import type { BullpenRole } from '../league/engine/types';
 import { rosterLimit } from '../league/offseason';
 import { isPitcher } from '../league/players';
 import { developmentIds, registeredIds, type LeagueState, type Squad as SquadName } from '../league/state';
@@ -253,40 +254,60 @@ function Management({ league, onPlayer, onAct, setMsg }: { league: LeagueState; 
   };
   const buttons = (squad: SquadKey) =>
     manual && inSeason && squad !== 'military'
-      ? (r: Row) => (
-          <div class="row-actions">
-            {squad !== 'active' && !r.development && (
-              <button type="button" onClick={() => move(r.id, 'active')}>
-                1군 등록
-              </button>
-            )}
-            {squad === 'active' && (
-              <button type="button" onClick={() => move(r.id, 'futures')}>
-                말소
-              </button>
-            )}
-            {squad === 'third' && (
-              <button type="button" onClick={() => move(r.id, 'futures')}>
-                퓨처스
-              </button>
-            )}
-            {squad !== 'third' && (
-              <button type="button" onClick={() => move(r.id, 'third')}>
-                잔류군
-              </button>
-            )}
-            {r.development && (
-              <button type="button" onClick={() => register(r.id)}>
-                정식 등록
-              </button>
-            )}
-            {(r.role === 'SP' || r.role === 'RP') && (
-              <button type="button" onClick={() => onAct({ kind: 'setRole', id: r.id, role: r.role === 'SP' ? 'RP' : 'SP' })}>
-                {r.role === 'SP' ? '불펜으로' : '선발로'}
-              </button>
-            )}
-          </div>
-        )
+      ? (r: Row) => {
+          const options: [string, string][] = [];
+          if (squad !== 'active' && !r.development) options.push(['active', '1군 등록']);
+          if (squad === 'active') options.push(['futures', '말소 (퓨처스로)']);
+          if (squad === 'third') options.push(['futures', '퓨처스로']);
+          if (squad !== 'third') options.push(['third', '잔류군으로']);
+          if (r.development) options.push(['register', '정식 등록']);
+          if (r.role === 'SP' || r.role === 'RP') options.push(['role', r.role === 'SP' ? '불펜 투수로' : '선발 투수로']);
+          const run = (v: string) => {
+            if (v === 'register') register(r.id);
+            else if (v === 'role') onAct({ kind: 'setRole', id: r.id, role: r.role === 'SP' ? 'RP' : 'SP' });
+            else if (v) move(r.id, v as SquadName);
+          };
+          return (
+            <select class="cell-select" aria-label={`${r.name} 관리`} value="" onChange={(e) => run((e.target as HTMLSelectElement).value)}>
+              <option value="">이동·보직…</option>
+              {options.map(([v, label]) => (
+                <option key={v + label} value={v}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          );
+        }
+      : undefined;
+  const roleControl = (squad: SquadKey) =>
+    manual && squad === 'active'
+      ? (r: Row) =>
+          r.penRole ? (
+            <select
+              class="cell-select"
+              aria-label={`${r.name} 불펜 보직`}
+              value={r.penRoleSet ? r.penRole : ''}
+              onChange={(e) => onAct({ kind: 'penRole', id: r.id, role: ((e.target as HTMLSelectElement).value || null) as BullpenRole | null })}
+            >
+              <option value="">감독: {PEN_ROLE_LABELS[r.penRole]}</option>
+              {PEN_ROLES.map((x) => (
+                <option key={x} value={x}>
+                  {PEN_ROLE_LABELS[x]}
+                </option>
+              ))}
+            </select>
+          ) : !r.pitcher ? (
+            <select
+              class="cell-select"
+              aria-label={`${r.name} 플래툰`}
+              value={r.platoon ?? ''}
+              onChange={(e) => onAct({ kind: 'platoon', id: r.id, side: ((e.target as HTMLSelectElement).value || null) as 'L' | 'R' | null })}
+            >
+              <option value="">매일 출전 후보</option>
+              <option value="L">좌완 상대만</option>
+              <option value="R">우완 상대만</option>
+            </select>
+          ) : undefined
       : undefined;
   const toolbar = (
     <div class="segmented" role="group" aria-label="엔트리 관리">
@@ -302,11 +323,11 @@ function Management({ league, onPlayer, onAct, setMsg }: { league: LeagueState; 
     <>
       <p class="muted">
         {manual
-          ? '직접 관리: 1군 등록·말소, 퓨처스·잔류군 배치, 선발·불펜 보직을 정합니다. 말소한 선수는 10일 뒤 다시 등록할 수 있고, 부상·대표팀으로 빠진 자리만 감독이 채웁니다.'
+          ? '직접 관리: 1군 등록·말소, 퓨처스·잔류군 배치, 선발·불펜 보직(마무리·셋업맨·필승조·추격조·롱릴리프·원 포인트), 플래툰(좌완·우완 상대 선발)을 정합니다. 정하지 않은 자리는 감독이 채웁니다. 말소한 선수는 10일 뒤 다시 등록할 수 있습니다.'
           : '감독에게 맡기기: 감독이 열흘마다 1군을 다시 짜고, 퓨처스 출전조와 잔류군을 나눕니다.'}
         {manual && !inSeason && ' 선수 이동은 정규시즌 중에 할 수 있습니다.'}
       </p>
-      <Squad league={league} teamId={u.teamId} onPlayer={onPlayer} actions={buttons} toolbar={toolbar} />
+      <Squad league={league} teamId={u.teamId} onPlayer={onPlayer} actions={buttons} posControl={roleControl} toolbar={toolbar} />
     </>
   );
 }

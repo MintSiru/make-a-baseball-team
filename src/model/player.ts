@@ -3,6 +3,14 @@ import { hashUnit, servedBeforeDraft, type DraftProspect } from '../draftroom';
 import { assignPosition } from './position';
 import type { Player, PlayerId } from './types';
 
+/**
+ * Left-handed throwers almost always bat left in the KBO (좌투우타 is a handful of players). Draft Room
+ * draws the two hands independently, so most of its left-handed throwers bat right; this corrects it.
+ */
+export function batsFor(id: string, throws: '좌' | '우', bats: '좌' | '우' | '양'): '좌' | '우' | '양' {
+  return throws === '좌' && bats === '우' && hashUnit(`${id}-bats`) < 0.97 ? '좌' : bats;
+}
+
 export const draftPlayerId = (draftYear: number, sourceId: string): PlayerId => `d${draftYear}-${sourceId}`;
 
 /** Turns a Draft Room prospect into an amateur league player, splitting hidden and public ability. */
@@ -15,7 +23,7 @@ export function fromDraftProspect(p: DraftProspect, draftYear: number, poolSeed:
     height: p.height,
     weight: p.weight,
     throws: p.throwHand,
-    bats: p.batHand,
+    bats: batsFor(draftPlayerId(draftYear, p.id), p.throwHand, p.batHand),
     role: p.role,
     position: assignPosition(p.role, p.futureTools, hashUnit(p.id + p.name)),
     archetype: p.archetype,

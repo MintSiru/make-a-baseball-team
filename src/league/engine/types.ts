@@ -17,7 +17,8 @@ export interface BatterIn {
   pos: FieldPos;
 }
 
-export type BullpenRole = 'CL' | 'SU' | 'MR' | 'LR';
+/** 마무리 · 셋업맨 · 필승조 · 추격조 · 롱릴리프 · 원 포인트 (left-handed specialist). */
+export type BullpenRole = 'CL' | 'SU' | 'HL' | 'MU' | 'LR' | 'LO';
 
 export interface PitcherIn {
   id: string;
@@ -28,6 +29,8 @@ export interface PitcherIn {
   stamina: number;
   /** Pitch count at which the manager starts looking to pull him today (fatigue already applied). */
   pitchLimit: number;
+  /** Size of his same-side advantage (1 = league norm; his repertoire decides it). */
+  platoon?: number;
 }
 
 export interface RelieverIn extends PitcherIn {
@@ -51,9 +54,32 @@ export interface GameIn {
   park: number;
 }
 
+/** One side of a platoon split: plate appearances against left- or right-handers. */
+export interface Split {
+  pa: number;
+  ab: number;
+  h: number;
+  /** Total bases. */
+  tb: number;
+  hr: number;
+  bb: number;
+  hbp: number;
+  k: number;
+  sf: number;
+}
+
+/** Batters: by the pitcher's hand. Pitchers: by the hand the batter hit from. */
+export interface Splits {
+  L: Split;
+  R: Split;
+}
+
+export const emptySplit = (): Split => ({ pa: 0, ab: 0, h: 0, tb: 0, hr: 0, bb: 0, hbp: 0, k: 0, sf: 0 });
+
 export interface BattingLine {
   id: string;
   pos: FieldPos;
+  split?: Splits;
   pa: number;
   ab: number;
   h: number;
@@ -74,6 +100,7 @@ export interface BattingLine {
 
 export interface PitchingLine {
   id: string;
+  split?: Splits;
   gs: 0 | 1;
   outs: number;
   bf: number;

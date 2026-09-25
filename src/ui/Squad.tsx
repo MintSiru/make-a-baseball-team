@@ -25,6 +25,7 @@ const salaryText = (r: Row) => (r.usd ? usd(r.usd) : money(r.salary));
 function Name({ r, onPlayer }: { r: Row; onPlayer: (id: string) => void }) {
   return (
     <td class="name-cell">
+      <span class="uniform">{r.number ?? ''}</span>
       <button type="button" class="link" onClick={() => onPlayer(r.id)}>
         {r.name}
       </button>
@@ -36,7 +37,7 @@ function Name({ r, onPlayer }: { r: Row; onPlayer: (id: string) => void }) {
   );
 }
 
-function PitcherTable({ rows, onPlayer, actions }: { rows: Row[]; onPlayer: (id: string) => void; actions?: (r: Row) => ComponentChildren }) {
+function PitcherTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; onPlayer: (id: string) => void; actions?: (r: Row) => ComponentChildren; posControl?: (r: Row) => ComponentChildren }) {
   const p = (r: Row) => r.stats.pit;
   const { sorted, th } = useSort(
     rows,
@@ -86,7 +87,12 @@ function PitcherTable({ rows, onPlayer, actions }: { rows: Row[]; onPlayer: (id:
               <tr key={r.id} class="player-row">
                 <Name r={r} onPlayer={onPlayer} />
                 <td>
-                  {r.pos.replace('투수', '')}
+                  {posControl?.(r) ?? (
+                    <>
+                      {r.pos.replace('투수', '')}
+                      {r.penRoleSet && <span class="muted"> (지정)</span>}
+                    </>
+                  )}
                   {r.starterInPen && <span class="muted"> (선발형)</span>}
                 </td>
                 <td class="num">{r.age}</td>
@@ -110,7 +116,7 @@ function PitcherTable({ rows, onPlayer, actions }: { rows: Row[]; onPlayer: (id:
   );
 }
 
-function HitterTable({ rows, onPlayer, actions }: { rows: Row[]; onPlayer: (id: string) => void; actions?: (r: Row) => ComponentChildren }) {
+function HitterTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; onPlayer: (id: string) => void; actions?: (r: Row) => ComponentChildren; posControl?: (r: Row) => ComponentChildren }) {
   const b = (r: Row) => r.stats.bat;
   const { sorted, th } = useSort(
     rows,
@@ -157,7 +163,10 @@ function HitterTable({ rows, onPlayer, actions }: { rows: Row[]; onPlayer: (id: 
             return (
               <tr key={r.id} class="player-row">
                 <Name r={r} onPlayer={onPlayer} />
-                <td>{r.pos}</td>
+                <td>
+                  {r.pos}
+                  {posControl?.(r) ?? (r.platoon && <span class="muted"> ({r.platoon === 'L' ? '좌완 상대' : '우완 상대'})</span>)}
+                </td>
                 <td class="num">{r.age}</td>
                 <td class="num">{r.grade}</td>
                 <td class="num strong">{r.future}</td>
@@ -184,12 +193,15 @@ export function Squad({
   teamId,
   onPlayer,
   actions,
+  posControl,
   toolbar,
 }: {
   league: LeagueState;
   teamId: string;
   onPlayer: (id: string) => void;
   actions?: (squad: SquadKey) => ((r: Row) => ComponentChildren) | undefined;
+  /** Replaces the role / position cell (bullpen role and platoon pickers). */
+  posControl?: (squad: SquadKey) => ((r: Row) => ComponentChildren) | undefined;
   toolbar?: ComponentChildren;
 }) {
   const roster = rosterView(league, teamId);
@@ -213,8 +225,8 @@ export function Squad({
       {note && <p class="muted">{note}</p>}
       {futuresNumbers && <p class="muted">기록은 올해 퓨처스리그(상무 포함) 성적입니다.</p>}
       {!rows.length && <p class="empty">선수가 없습니다.</p>}
-      <PitcherTable rows={rows.filter((r) => r.pitcher)} onPlayer={onPlayer} actions={actions?.(key)} />
-      <HitterTable rows={rows.filter((r) => !r.pitcher)} onPlayer={onPlayer} actions={actions?.(key)} />
+      <PitcherTable rows={rows.filter((r) => r.pitcher)} onPlayer={onPlayer} actions={actions?.(key)} posControl={posControl?.(key)} />
+      <HitterTable rows={rows.filter((r) => !r.pitcher)} onPlayer={onPlayer} actions={actions?.(key)} posControl={posControl?.(key)} />
     </div>
   );
 }

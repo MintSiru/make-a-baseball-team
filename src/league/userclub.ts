@@ -24,6 +24,7 @@ import {
 import { ageIn, futureValue, isForeign, isPitcher, keepValue } from './players';
 import { aiCompensation, marketValue, movePlayer, projectedPayroll, type FaOffer } from './market';
 import { makeSecondPick } from './seconddraft';
+import { post, postingCandidates, postingNote } from './posting';
 import { splitContract } from './foreign';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type SalaryRow, type UserClub } from './state';
@@ -58,7 +59,8 @@ export type AnnualInput =
   | { kind: 'salaries'; choices: Record<PlayerId, SalaryChoice> }
   | { kind: 'secondProtect'; ids: PlayerId[] }
   | { kind: 'secondPick'; id: PlayerId | null }
-  | { kind: 'foreignRenew'; keep: PlayerId[] };
+  | { kind: 'foreignRenew'; keep: PlayerId[] }
+  | { kind: 'posting'; id: PlayerId | null };
 
 /** The club's answer to each player: his ask, the club's merit figure, last year's pay, or a multi-year deal. */
 export type SalaryChoice = 'ask' | 'merit' | 'freeze' | 'extension';
@@ -191,6 +193,14 @@ export function developmentDecision(s: LeagueState, d: DraftState): Decision | n
   return { kind: 'development', candidates: candidates.map((p) => p.id), max: room };
 }
 
+/** Players who ask to be posted to the majors this winter (the club may post one). */
+export function postingDecision(s: LeagueState, next: number): Decision | null {
+  const u = s.user!;
+  if (next <= u.firstTeamYear) return null;
+  const candidates = postingCandidates(s, u.teamId, next).map((p) => p.id);
+  return candidates.length ? { kind: 'posting', candidates, max: KBO_2026.posting.perClubPerWinter } : null;
+}
+
 export function campDecision(s: LeagueState): Decision | null {
   const u = s.user!;
   const players = orgPlayers(s, u.teamId).filter((p) => p.status === 'active');
@@ -232,6 +242,11 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
       const dd = d as Extract<Decision, { kind: 'development' }>;
       if (input.ids.some((id) => !dd.candidates.includes(id))) return '명단에 없는 선수입니다.';
       if (input.ids.length > dd.max) return `육성선수는 ${dd.max}명까지 더 계약할 수 있습니다.`;
+      return null;
+    }
+    case 'posting': {
+      const dd = d as Extract<Decision, { kind: 'posting' }>;
+      if (input.id && !dd.candidates.includes(input.id)) return '포스팅할 수 없는 선수입니다.';
       return null;
     }
     case 'faMarket': {
@@ -378,6 +393,15 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
     case 'salaries':
       settleSalaries(s, d as Extract<Decision, { kind: 'salaries' }>, input.choices);
       return null;
+    case 'posting': {
+      const dd = d as Extract<Decision, { kind: 'posting' }>;
+      for (const id of dd.candidates) {
+        const name = s.players[id]!.name;
+        if (id === input.id) note(u, year, postingNote(s, post(s, id, next), name));
+        else note(u, year, `${name}의 포스팅 요청을 받아들이지 않았습니다`);
+      }
+      return null;
+    }
     case 'secondProtect': {
       const sd = s.offseason?.second;
       if (sd) sd.protected[u.teamId] = input.ids;
@@ -498,6 +522,9 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
       return { kind: 'salaries', choices: Object.fromEntries(d.rows.map((r) => [r.id, 'merit' as SalaryChoice])) };
     case 'secondProtect':
       return { kind: 'secondProtect', ids: d.candidates.slice(0, d.protect) };
+    case 'posting':
+      // The scouts keep a player under 27 and let an older one chase his dream (and bring in the fee).
+      return { kind: 'posting', id: d.candidates.find((id) => ageIn(s.players[id]!, next) >= 27) ?? null };
     case 'secondPick': {
       const best = d.candidates[0];
       return { kind: 'secondPick', id: best && keepValue(s.players[best]!, next) >= 50 && d.fee <= u.fund ? best : null };
@@ -518,7 +545,7 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
 }
 
 export const isAnnual = (kind: Decision['kind']) =>
-  ['military', 'ownFreeAgents', 'rookieBonus', 'development', 'camp', 'faMarket', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew'].includes(kind);
+  ['military', 'ownFreeAgents', 'rookieBonus', 'development', 'camp', 'faMarket', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting'].includes(kind);
 
 // ── Salary talks ─────────────────────────────────────────────────────────────────────────────────
 

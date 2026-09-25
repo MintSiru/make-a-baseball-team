@@ -34,7 +34,7 @@ export const ENGINE = {
   /** Team fielding (average of the fielders' defense, weighted by position). */
   fielding: { babip: -0.1, error: -0.35 },
   /** Batter against a pitcher of the same hand (switch hitters never). */
-  platoon: { k: 0.08, bb: -0.04, hr: -0.1, babip: -0.03 },
+  platoon: { k: 0.12, bb: -0.06, hr: -0.15, babip: -0.045 },
   home: { babip: 0.012, hr: 0.03 },
   /** Extra-base share of non-HR hits: logit(base) + power/speed z. */
   hitTypes: {
@@ -75,7 +75,9 @@ export const ENGINE = {
     /** Starters rarely finish: hook in the 9th unless dominant. */
     completeGameChance: 0.12,
   },
-  reliever: { maxOutsShort: 4, maxOutsLong: 9, pitchLimitShort: 28, pitchLimitLong: 55 },
+  /** Lineup score for the platoon side (batValue points); `half` for a player the GM set as a platoon half. */
+  platoonLineup: { edge: 2.5, half: 40 },
+  reliever: { maxOutsShort: 4, maxOutsMopUp: 6, maxOutsLong: 9, pitchLimitShort: 28, pitchLimitMopUp: 40, pitchLimitLong: 55, lefty: { starterPitches: 85 } },
   /** The manager's pitch count for a starter: base + (stamina − 50) × perStamina, less on short rest and in April. */
   starterLimit: { base: 78, perStamina: 1.2 },
   /** Most innings in a regular-season game before a tie (RULES.md §1, 2025~). */
@@ -141,6 +143,8 @@ export const SALARY = {
 
 /** Futures league and development by playing time (V0.4; game assumptions, docs/CALIBRATION.md). */
 export const FUTURES = {
+  /** Regulars who stay out of futures games: this much first-team work last season (half of it this season). */
+  established: { pa: 350, outs: 270 },
   /** Squad kept for futures games; the rest of the club is in the third squad. */
   squad: { pitchers: 16, catchers: 3, hitters: 17 },
   /** Prospects get playing time: the gap between future and current value counts this much, up to this age. */
@@ -203,3 +207,10 @@ export const TRADES = {
 
 /** The second draft (V0.5): an AI club picks only players at least this good (keep value), else passes. */
 export const SECOND = { minValue: 49 } as const;
+
+/**
+ * Posting (game assumptions): who asks to go, and how the majors value him from his public grade and
+ * age. Average salary at grade 60 is $2.5M and grows 22% per grade point (grade 65 ≈ $7.5M, 70 ≈ $22M),
+ * close to recent Korean signings.
+ */
+export const POSTING = { minGrade: 62, maxAge: 30, wants: 0.5, baseChance: 0.45, chancePerGrade: 0.07, agePenalty: 0.1, aavAt60: 2_500_000, aavGrowth: 0.22, aiAllows: 0.55 } as const;

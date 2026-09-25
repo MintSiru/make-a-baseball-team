@@ -2,10 +2,11 @@
    the engine input it builds carries true ability, because the engine plays the actual players. */
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { outOfPosition, type Position } from '../model/position';
-import type { BatterIn, FieldPos, Hand, PitcherIn, RelieverIn, TeamIn } from './engine/types';
+import type { BatterIn, BullpenRole, FieldPos, Hand, PitcherIn, RelieverIn, TeamIn } from './engine/types';
 import { batValue, currentValue, isForeign, isPitcher, keepValue, starterValue } from './players';
 import { hasBenefits, registeredIds, type LeagueState } from './state';
 import { EXPANSION_DEFAULTS, KBO_2026 } from '../rules/kbo2026';
+import { platoonFactor } from './pitches';
 import { ENGINE } from './tuning';
 
 const STARTER_LIMIT = ENGINE.starterLimit;
@@ -70,7 +71,20 @@ const ADAPTING_PENALTY = 5;
 const LINEUP_ORDER: Position[] = ['C', 'SS', 'CF', '2B', '3B', 'RF', 'LF', '1B'];
 
 /** Fill the field positions, then the designated hitter, then set the batting order. */
-export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none, pitchersBat = false): BatterIn[] {
+/**
+ * Platoon: against a left-hander (vs 'L') right-handed hitters get a small edge, and the other way round.
+ * A player the general manager marked as a platoon half starts only against his side.
+ */
+export function platoonEdge(s: LeagueState, p: Player, vs: 'L' | 'R' | undefined): number {
+  if (!vs) return 0;
+  const half = p.teamId === s.user?.teamId ? s.user.platoon?.[p.id] : undefined;
+  if (half) return half === vs ? ENGINE.platoonLineup.half : -ENGINE.platoonLineup.half;
+  if (p.bats === '양') return ENGINE.platoonLineup.edge / 2;
+  const opposite = (p.bats === '좌') !== (vs === 'L');
+  return opposite ? ENGINE.platoonLineup.edge : -ENGINE.platoonLineup.edge;
+}
+
+export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none, pitchersBat = false, vs?: 'L' | 'R'): BatterIn[] {
   let hitters = ids.map((id) => s.players[id]!).filter((p) => !isPitcher(p) && available(s, p.id));
   if (pitchersBat && hitters.length < 9) {
     const spare = ids.map((id) => s.players[id]!).filter((p) => isPitcher(p) && available(s, p.id)).sort((a, b) => a.scouting.current - b.scouting.current);
@@ -78,7 +92,7 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
   }
   const used = new Set<PlayerId>();
   const slots: { p: Player; pos: FieldPos }[] = [];
-  const hitScore = (p: Player) => batValue(p.scouting.tools) + performanceNudge(s, p) + (isForeign(p) ? 4 : 0) + prefer(p);
+  const hitScore = (p: Player) => batValue(p.scouting.tools) + performanceNudge(s, p) + (isForeign(p) ? 4 : 0) + prefer(p) + platoonEdge(s, p, vs);
   for (const pos of LINEUP_ORDER) {
     let best: Player | null = null,
       bestScore = -Infinity;
@@ -126,7 +140,7 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 
 function armIn(p: Player, pitchLimit: number): PitcherIn {
-  return { id: p.id, throws: p.throws === '좌' ? 'L' : 'R', stuff: t(p, 'stuff'), command: t(p, 'command'), breaking: t(p, 'breaking'), stamina: t(p, 'stamina'), pitchLimit };
+  return { id: p.id, throws: p.throws === '좌' ? 'L' : 'R', stuff: t(p, 'stuff'), command: t(p, 'command'), breaking: t(p, 'breaking'), stamina: t(p, 'stamina'), pitchLimit, platoon: platoonFactor(p) };
 }
 
 /** Pitchers set as starters come first: a reliever only starts when there are not five starters. */
@@ -169,9 +183,45 @@ export function starterFor(s: LeagueState, key: string, date: string, rotation: 
   return { p: pick, limit: Math.max(55, Math.min(118, limit)) };
 }
 
-/** Relievers who can pitch today, with roles: closer, two setup men, long men, the rest middle relief. */
-export function bullpenFor(s: LeagueState, ids: PlayerId[], date: string, exclude: Set<PlayerId>, prefer: Prefer = none): RelieverIn[] {
-  const arms = ids.map((id) => s.players[id]!).filter((p) => isPitcher(p) && !exclude.has(p.id) && available(s, p.id));
+export const PEN_ROLE_LABELS: Record<BullpenRole, string> = { CL: '마무리', SU: '셋업맨', HL: '필승조', MU: '추격조', LR: '롱릴리프', LO: '원 포인트' };
+export const PEN_ROLES: BullpenRole[] = ['CL', 'SU', 'HL', 'MU', 'LR', 'LO'];
+
+/**
+ * The bullpen depth chart: the best reliever closes, the next sets up, two more hold leads (필승조), the
+ * best remaining lefty with a same-side pitch faces lefties, the most durable arms go long and the rest
+ * pitch when behind (추격조). The general manager's own assignments come first for the user's club.
+ */
+export function penRoles(s: LeagueState, teamId: TeamId, relievers: Player[], prefer: Prefer = none): Record<PlayerId, BullpenRole> {
+  const own = teamId === s.user?.teamId ? (s.user.penRoles ?? {}) : {};
+  const relief = (p: Player) => p.scouting.current + performanceNudge(s, p) + (p.role === 'RP' ? 2 : 0) + prefer(p);
+  const out: Record<PlayerId, BullpenRole> = {};
+  const free = relievers.filter((p) => {
+    const set = own[p.id];
+    if (set) out[p.id] = set;
+    return !set;
+  });
+  const sorted = [...free].sort((a, b) => relief(b) - relief(a) || a.id.localeCompare(b.id));
+  const taken = new Set(Object.values(out));
+  const give = (role: BullpenRole, p: Player | undefined) => {
+    if (!p) return;
+    out[p.id] = role;
+    sorted.splice(sorted.indexOf(p), 1);
+  };
+  if (!taken.has('CL')) give('CL', sorted[0]);
+  if (!taken.has('SU')) give('SU', sorted[0]);
+  const holds = Object.values(out).filter((r) => r === 'HL').length;
+  for (let i = holds; i < 2; i++) give('HL', sorted[0]);
+  if (!taken.has('LO') && sorted.length >= 3) give('LO', sorted.find((p) => p.throws === '좌' && platoonFactor(p) >= 1));
+  if (!taken.has('LR')) give('LR', [...sorted].sort((a, b) => pub(b, 'stamina') - pub(a, 'stamina'))[0]);
+  for (const p of sorted) out[p.id] = 'MU';
+  return out;
+}
+
+/** Relievers who can pitch today, with their bullpen roles. */
+export function bullpenFor(s: LeagueState, teamId: TeamId, ids: PlayerId[], date: string, exclude: Set<PlayerId>, prefer: Prefer = none): RelieverIn[] {
+  const pen = ids.map((id) => s.players[id]!).filter((p) => isPitcher(p) && !exclude.has(p.id));
+  const roles = penRoles(s, teamId, pen, prefer);
+  const arms = pen.filter((p) => available(s, p.id));
   const rested = arms.filter((p) => {
     const a = s.arms[p.id];
     if (!a) return true;
@@ -183,25 +233,40 @@ export function bullpenFor(s: LeagueState, ids: PlayerId[], date: string, exclud
   });
   const relief = (p: Player) => p.scouting.current + performanceNudge(s, p) + (p.role === 'RP' ? 2 : 0) + prefer(p);
   const sorted = rested.sort((a, b) => relief(b) - relief(a));
-  const out: RelieverIn[] = [];
-  const longMen = [...sorted].sort((a, b) => pub(b, 'stamina') - pub(a, 'stamina')).slice(0, 2);
-  sorted.forEach((p, i) => {
-    const role = i === 0 ? 'CL' : i <= 2 ? 'SU' : longMen.includes(p) ? 'LR' : 'MR';
-    out.push({ ...armIn(p, role === 'LR' ? 55 : 30), role });
+  return sorted.map((p) => {
+    const role = roles[p.id] ?? 'MU';
+    return { ...armIn(p, role === 'LR' ? 55 : 30), role };
   });
-  return out;
 }
 
 /**
  * The engine input for one game. `ids` is the squad (the first team by default, or a futures squad);
  * `prefer` adds to every selection score (futures games favour prospects).
  */
-export function teamInput(s: LeagueState, teamId: TeamId, date: string, ids = s.rosters[teamId]!.active, rotationKey: string = teamId, prefer: Prefer = none): TeamIn | null {
-  const rotation = rotationFor(s, ids, prefer);
-  const sp = starterFor(s, rotationKey, date, rotation);
-  if (!sp) return null;
-  const lineup = lineupFor(s, ids, prefer, prefer !== none);
-  if (lineup.length < 9) return null;
-  const exclude = new Set(rotation.map((p) => p.id));
-  return { teamId, lineup, starter: armIn(sp.p, sp.limit), bullpen: bullpenFor(s, ids, date, exclude, prefer) };
+export interface SquadSpec {
+  teamId: TeamId;
+  ids?: PlayerId[];
+  rotationKey?: string;
+  prefer?: Prefer;
+}
+
+/** Both clubs' engine inputs for one game: starters first, so each lineup can be set against the other starter. */
+export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away: SquadSpec): { home: TeamIn | null; away: TeamIn | null } {
+  const plan = (x: SquadSpec) => {
+    const ids = x.ids ?? s.rosters[x.teamId]!.active;
+    const prefer = x.prefer ?? none;
+    const rotation = rotationFor(s, ids, prefer);
+    return { x, ids, prefer, rotation, sp: starterFor(s, x.rotationKey ?? x.teamId, date, rotation) };
+  };
+  const h = plan(home),
+    a = plan(away);
+  const build = (me: typeof h, them: typeof h): TeamIn | null => {
+    if (!me.sp) return null;
+    const vs = them.sp ? (them.sp.p.throws === '좌' ? 'L' : 'R') : undefined;
+    const lineup = lineupFor(s, me.ids, me.prefer, me.prefer !== none, vs);
+    if (lineup.length < 9) return null;
+    const exclude = new Set(me.rotation.map((p) => p.id));
+    return { teamId: me.x.teamId, lineup, starter: armIn(me.sp.p, me.sp.limit), bullpen: bullpenFor(s, me.x.teamId, me.ids, date, exclude, me.prefer) };
+  };
+  return { home: build(h, a), away: build(a, h) };
 }
