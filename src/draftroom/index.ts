@@ -23,7 +23,7 @@ export interface HistoryEntry {
   kind: string;
   region: string;
   start: string;
-  end: string;
+  end: string | null;
   status: string;
   note: string;
 }
@@ -84,8 +84,15 @@ export interface DraftPool {
   byId: Record<string, DraftProspect>;
 }
 
-const P = Prospects as unknown as { generatePool(seed: string): DraftPool; POOL_SIZE: number; rng(seed: string): () => number };
-const G = Grades as unknown as { LABELS: Record<ToolKey, string>; ROLES: Record<Role, string>; WEIGHTS: Record<Role, Partial<Record<ToolKey, number>>> };
+const P = Prospects as unknown as { generatePool(seed: string): DraftPool; POOL_SIZE: number; rng(seed: string): () => number; hash(s: string): number };
+const G = Grades as unknown as {
+  LABELS: Record<ToolKey, string>;
+  ROLES: Record<Role, string>;
+  WEIGHTS: Record<Role, Partial<Record<ToolKey, number>>>;
+  overall(tools: Tools, role: Role): number;
+  grade(n: number): number;
+  observe(trueTools: Tools, role: Role, p: { observerBias: number }, yearIndex: number, r: () => number): { tools: Tools; ready: number };
+};
 
 const B = Biography as unknown as { DRAFT_DATE: string; DRAFT_YEAR: number };
 
@@ -96,6 +103,8 @@ export const DRAFT_ROOM_DRAFT_DATE = B.DRAFT_DATE;
 export const generateDraftPool = (seed: string): DraftPool => P.generatePool(seed);
 /** Draft Room's seeded PRNG: string seed → FNV-1a → mulberry32. */
 export const rng = (seed: string): (() => number) => P.rng(seed);
+/** FNV-1a hash of a string mapped to [0, 1). */
+export const hashUnit = (s: string): number => P.hash(s) / 4294967296;
 
 const SERVED_AT_DRAFT = (Tuning as unknown as { TUNING: { service: { servedAtDraft: Record<string, number> } } }).TUNING.service.servedAtDraft;
 /** Whether the prospect finished military service before the draft, decided as Draft Room's career.create does. */
@@ -107,3 +116,9 @@ export const ROLE_LABELS = G.ROLES;
 export const PITCHING_TOOLS: PitchingTool[] = ['stuff', 'command', 'breaking', 'stamina'];
 export const HITTING_TOOLS: HittingTool[] = ['contact', 'power', 'speed', 'defense', 'eye'];
 export const isPitcherRole = (role: Role) => role === 'SP' || role === 'RP';
+/** Draft Room's weighted overall for a role (continuous). */
+export const overall = (tools: Tools, role: Role): number => G.overall(tools, role);
+/** Rounds to a five-point public grade, 20–80. */
+export const toGrade = (n: number): number => G.grade(n);
+/** A scout's look at true ability: observer bias and noise shrink with pro years. */
+export const observe = G.observe;

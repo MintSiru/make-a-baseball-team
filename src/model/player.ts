@@ -1,5 +1,6 @@
 /* Building league players and the public view of them. */
-import { servedBeforeDraft, type DraftProspect } from '../draftroom';
+import { hashUnit, servedBeforeDraft, type DraftProspect } from '../draftroom';
+import { assignPosition } from './position';
 import type { Player, PlayerId } from './types';
 
 export const draftPlayerId = (draftYear: number, sourceId: string): PlayerId => `d${draftYear}-${sourceId}`;
@@ -16,6 +17,7 @@ export function fromDraftProspect(p: DraftProspect, draftYear: number, poolSeed:
     throws: p.throwHand,
     bats: p.batHand,
     role: p.role,
+    position: assignPosition(p.role, p.futureTools, hashUnit(p.id + p.name)),
     archetype: p.archetype,
     personality: p.personality,
     velocity: p.velocity,
@@ -55,6 +57,8 @@ export function fromDraftProspect(p: DraftProspect, draftYear: number, poolSeed:
       strength: p.strength,
       weakness: p.weakness,
     },
+    proSince: draftYear + 1,
+    career: [],
   };
 }
 

@@ -4,6 +4,7 @@
    kept apart. UI, AI clubs and news may read `scouting` and public facts only (see publicView). */
 import type { ParentCompanyType, StadiumOwnership, StadiumSize } from '../club/types';
 import type { AmateurRecord, HistoryEntry, Role, Tools } from '../draftroom';
+import type { FieldPos } from '../league/engine/types';
 
 export type PlayerId = string;
 export type TeamId = string;
@@ -35,7 +36,8 @@ export interface ScoutingReport {
 
 export type PlayerStatus = 'amateur' | 'active' | 'military' | 'freeAgent' | 'overseas' | 'retired';
 
-export type MilitaryStatus = 'pending' | 'served' | 'exempt';
+export type MilitaryStatus = 'pending' | 'serving' | 'served' | 'exempt';
+export type ServiceRoute = 'sangmu' | 'army' | 'social';
 
 export interface Service {
   /** Full seasons credited toward free agency (a season = rules.freeAgency.daysPerSeason first-team days). */
@@ -43,6 +45,11 @@ export interface Service {
   /** First-team days not yet rolled into a credited season. */
   carriedDays: number;
   military: MilitaryStatus;
+  /** While serving: the route and the discharge date. */
+  route?: ServiceRoute;
+  returnsOn?: string;
+  /** Credited seasons when he last became a free agent (re-qualifies four seasons later). */
+  lastFreeAgencyAt?: number;
 }
 
 export type ContractKind = 'rookie' | 'standard' | 'multiYear' | 'freeAgent' | 'foreign' | 'asiaQuota' | 'development';
@@ -57,13 +64,70 @@ export interface Contract {
 }
 
 export interface PlayerOrigin {
-  kind: 'draftClass' | 'generatedVeteran' | 'foreign';
+  kind: 'draftClass' | 'foreign';
   /** Calendar year of the draft the player entered (a September draft of year Y fills the Y+1 roster). */
   draftYear?: number;
   /** Id inside the source Draft Room pool. */
   sourceId?: string;
   pathway: string;
   entryCategory: string;
+  /** Draft pick in the league draft (overall), when drafted by a club. */
+  overallPick?: number;
+  /** Nationality for foreign players. */
+  nationality?: string;
+  asiaQuota?: boolean;
+}
+
+/** Counting stats for one season at the first-team level. */
+export interface BatTotals {
+  g: number;
+  pa: number;
+  ab: number;
+  h: number;
+  d: number;
+  t: number;
+  hr: number;
+  bb: number;
+  hbp: number;
+  k: number;
+  r: number;
+  rbi: number;
+  sb: number;
+  cs: number;
+  sf: number;
+  sh: number;
+  gdp: number;
+}
+
+export interface PitTotals {
+  g: number;
+  gs: number;
+  outs: number;
+  bf: number;
+  h: number;
+  hr: number;
+  bb: number;
+  hbp: number;
+  k: number;
+  r: number;
+  er: number;
+  w: number;
+  l: number;
+  sv: number;
+  hld: number;
+  qs: number;
+  pitches: number;
+}
+
+export interface SeasonRecord {
+  year: number;
+  teamId: TeamId;
+  age: number;
+  /** First-team registered days this season. */
+  days: number;
+  bat: BatTotals | null;
+  pit: PitTotals | null;
+  war: number;
 }
 
 export interface Player {
@@ -76,6 +140,8 @@ export interface Player {
   throws: '좌' | '우';
   bats: '좌' | '우' | '양';
   role: Role;
+  /** Everyday position for hitters; pitchers use `role` (SP/RP). */
+  position: Exclude<FieldPos, 'DH'> | null;
   archetype: string;
   personality: string;
   velocity: number | null;
@@ -89,6 +155,9 @@ export interface Player {
   service: Service;
   hidden: HiddenAbility;
   scouting: ScoutingReport;
+  /** First professional season in the league. */
+  proSince: number;
+  career: SeasonRecord[];
 }
 
 export interface Stadium {

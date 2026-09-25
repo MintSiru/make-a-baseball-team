@@ -24,4 +24,4 @@ export function recordLine(r: AmateurRecord) {
 export const toolKeysFor = (role: Role) =>
   isPitcherRole(role) ? (['stuff', 'command', 'breaking', 'stamina'] as const) : (['contact', 'power', 'speed', 'defense', 'eye'] as const);
 
-export const militaryLabel = { pending: '미필', served: '군필', exempt: '면제' } as const;
+export const militaryLabel = { pending: '미필', serving: '복무 중', served: '군필', exempt: '면제' } as const;
