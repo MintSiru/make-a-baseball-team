@@ -7,12 +7,14 @@
    logit(p) = logit(base) + Σ coefficient × z. */
 
 export const ENGINE = {
+  /** Diminishing returns past this z (see Zr). */
+  extremes: { knee: 1, slope: 0.5 },
   /** Per plate appearance, for an average (50) batter against an average pitcher. */
   base: {
-    bb: 0.07,
+    bb: 0.074,
     hbp: 0.016,
-    k: 0.17,
-    hr: 0.0133,
+    k: 0.181,
+    hr: 0.0162,
     /** Hits on balls in play (excludes home runs). */
     babip: 0.316,
   },
@@ -25,7 +27,7 @@ export const ENGINE = {
   pitcher: {
     bb: { command: -0.42, stuff: 0.04 },
     hbp: { command: -0.18 },
-    k: { stuff: 0.32, breaking: 0.24, command: 0.04 },
+    k: { stuff: 0.28, breaking: 0.21, command: 0.04 },
     hr: { stuff: -0.26, command: -0.12, breaking: -0.06 },
     babip: { stuff: -0.07, breaking: -0.04 },
   },
@@ -82,6 +84,18 @@ export const ENGINE = {
 
 /** Scale factor turning a 20–80 grade into a z-score. */
 export const Z = (grade: number) => (grade - 50) / 10;
+
+/**
+ * The z-score the rate models use for batting and pitching tools: full effect up to `knee`, then
+ * diminishing returns (a 70→80 step counts `slope` of a 50→60 step). Keeps the averages and trims the
+ * extremes (V0.4: 60-homer hitters and 250-strikeout pitchers every year).
+ */
+export const Zr = (grade: number) => {
+  const z = Z(grade);
+  const { knee, slope } = ENGINE.extremes;
+  const a = Math.abs(z);
+  return a <= knee ? z : Math.sign(z) * (knee + (a - knee) * slope);
+};
 
 /** Offseason: development, careers and roster turnover. Military numbers follow Draft Room's tuning. */
 export const OFFSEASON = {

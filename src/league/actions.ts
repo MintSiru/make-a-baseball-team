@@ -2,7 +2,9 @@
 import { closeSeason, advanceOffseason, beginOffseason } from './offseason';
 import { playPostseason } from './postseason';
 import { playDay, startSeason } from './season';
-import type { ExpansionSettings, LeagueState } from './state';
+import type { PlayerId } from '../model/types';
+import { movePlayer, registerPlayer } from './entry';
+import type { ExpansionSettings, LeagueState, Squad } from './state';
 import { foundClub, FOUNDING_DATE, resolveDecision, type DecisionInput } from './expansion';
 
 export type Action =
@@ -12,7 +14,11 @@ export type Action =
   | { kind: 'nextSeason' }
   | { kind: 'toFounding' }
   | { kind: 'found'; settings: ExpansionSettings }
-  | { kind: 'decide'; input: DecisionInput };
+  | { kind: 'decide'; input: DecisionInput }
+  // The general manager's roster (V0.4)
+  | { kind: 'entryMode'; mode: 'auto' | 'manual' }
+  | { kind: 'move'; id: PlayerId; to: Squad }
+  | { kind: 'register'; id: PlayerId };
 
 export const regularOver = (s: LeagueState) => s.phase === 'regular' && s.next >= s.schedule.length;
 
@@ -50,6 +56,15 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     case 'decide':
       resolveDecision(s, action.input);
       finishOffseason(s);
+      break;
+    case 'entryMode':
+      if (s.user) s.user.entry = action.mode;
+      break;
+    case 'move':
+      movePlayer(s, action.id, action.to);
+      break;
+    case 'register':
+      registerPlayer(s, action.id);
       break;
   }
   return s;

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { RELEASE } from '../core/version';
 import { DRAFT_ROOM_DRAFT_DATE } from '../draftroom';
+import { draftClass } from '../league/players';
 import { nextDate, regularOver, type Action } from '../league/actions';
 import type { ExpansionSettings, LeagueState } from '../league/state';
 import { shortName } from '../league/views';
@@ -8,7 +9,6 @@ import { ageOn, publicView } from '../model/player';
 import type { CalendarPhase, Player, PlayerId } from '../model/types';
 import { makeSave, parseSave, SaveError, serializeSave } from '../save/format';
 import { openStore, type SaveStore } from '../save/store';
-import { createWorld } from '../world/world';
 import { Decision } from './Decision';
 import { DraftBoard } from './DraftBoard';
 import { History } from './History';
@@ -23,7 +23,6 @@ import { TeamRoster } from './TeamRoster';
 
 const AUTO_SLOT = 'auto';
 const newSeed = () => `kbo-${Math.floor(Math.random() * 36 ** 6).toString(36)}`;
-const prospectAge = (p: Player) => ageOn(p.birthday, DRAFT_ROOM_DRAFT_DATE);
 
 type Tab = 'club' | 'standings' | 'leaders' | 'team' | 'history' | 'draft';
 const TABS: { id: Tab; label: string; userOnly?: boolean }[] = [
@@ -106,8 +105,11 @@ export function App() {
     if (!loading && !league) void build(seed).catch(() => undefined);
   }, [loading, league]);
 
-  const world = useMemo(() => (league ? createWorld(league.seed) : null), [league?.seed]);
-  const prospect = useMemo(() => world?.draftClass.find((p) => p.id === prospectId) ?? world?.draftClass[0] ?? null, [world, prospectId]);
+  // The draft class of this September (it fills next season's rosters): the 2027 draft is Draft Room's own pool.
+  const draftYear = league ? (league.phase === 'offseason' && league.offseason ? league.offseason.year : league.year) : 2026;
+  const draftPool = useMemo(() => (league ? draftClass(league.seed, draftYear) : []), [league?.seed, draftYear]);
+  const prospect = useMemo(() => draftPool.find((p) => p.id === prospectId) ?? draftPool[0] ?? null, [draftPool, prospectId]);
+  const prospectAge = (p: Player) => ageOn(p.birthday, `${draftYear}${DRAFT_ROOM_DRAFT_DATE.slice(4)}`);
 
   if (loading || !store) return <main class="loading">불러오는 중</main>;
 
@@ -271,14 +273,14 @@ export function App() {
             ))}
           </nav>
           <main class="page" data-version={version}>
-            {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onTeam={openTeam} />}
+            {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
             {tab === 'standings' && <Standings league={league} onTeam={openTeam} />}
             {tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} />}
             {tab === 'team' && <TeamRoster league={league} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />}
             {tab === 'history' && <History league={league} />}
-            {tab === 'draft' && world && (
+            {tab === 'draft' && (
               <div class="layout">
-                <DraftBoard players={world.draftClass} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} />
+                <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} />
                 <PlayerProfile player={prospect && publicView(prospect)} age={prospect && prospectAge(prospect)} />
               </div>
             )}

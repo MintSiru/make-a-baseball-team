@@ -642,3 +642,80 @@ button.pick {
 .ledger td:nth-child(2) {
   white-space: normal;
 }
+
+/* V0.4: sortable columns, roster management, yearly decisions */
+.sort-head {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 2px;
+  align-items: baseline;
+  min-height: 24px;
+}
+.sort-head:focus-visible {
+  outline: 2px solid var(--accent, currentColor);
+  outline-offset: 2px;
+}
+.sort-mark {
+  font-size: 10px;
+  min-width: 10px;
+}
+.row-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+.row-actions button {
+  padding: 2px 8px;
+  font-size: 12px;
+  min-height: 28px;
+}
+.entry-mode {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+.club-log {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+}
+.club-log li {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.decision select,
+.decision input[type='number'] {
+  font: inherit;
+  min-height: 28px;
+}
+.toast {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  margin: 0 auto;
+  max-width: 520px;
+  padding: 10px 14px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--ink);
+  color: var(--paper, #fff);
+  border-radius: 6px;
+  z-index: 20;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
+}
+.toast .link {
+  color: inherit;
+}
+.develop-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 12px 0;
+}

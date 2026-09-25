@@ -48,7 +48,7 @@ async function decideAll(page, log) {
         await page.waitForFunction((n) => !document.querySelector('.pick-table .link') || document.querySelector('.decision')?.textContent?.includes(n), name);
       } else await page.getByRole('button', { name: '스카우트에게 맡기기' }).click();
     } else {
-      await page.getByRole('button', { name: '스카우트 추천으로 채우기' }).click();
+      await page.getByRole('button', { name: /추천으로 채우기/ }).click();
       const confirm = page.getByRole('button', { name: '확정' });
       if (await confirm.isDisabled()) {
         failures.push(`${title}: scout recommendation is not a valid decision (${await page.locator('.notice.inline').textContent()})`);
@@ -117,12 +117,31 @@ try {
   await decideAll(page, log);
   const winter = log.slice(before);
   for (const t of ['특별지명', '외국인 선수 계약']) check(winter.includes(t), `winter before the first team includes ${t} (${winter.filter((x) => x !== '신인 드래프트').join(', ')})`);
+  for (const t of ['신인 계약금 협상', '스프링캠프']) check(log.includes(t), `yearly decisions include ${t}`);
   await waitStatus(page, '2028 정규시즌');
   await page.getByRole('button', { name: '순위', exact: true }).click();
   check((await page.locator('.standings tbody tr').count()) === 11, 'eleven clubs in 2028');
   check((await page.locator('.standings').textContent())?.includes('울산 고래단'), 'our club in the standings');
 
-  // 4. Every screen, the player dialog, reload.
+  // 4. Sorting and running the first team by hand.
+  await page.getByRole('button', { name: '우리 구단', exact: true }).click();
+  const firstTeam = page.locator('.roster').first();
+  await firstTeam.getByRole('button', { name: /^현재/ }).click();
+  const grades = (await firstTeam.locator('tbody tr td:nth-child(5)').allTextContents()).map(Number);
+  check(grades.every((g, i) => i === 0 || grades[i - 1] >= g), `현재 heading sorts high to low (${grades.join(',')})`);
+  await firstTeam.getByRole('button', { name: /^나이/ }).click();
+  const ages = (await firstTeam.locator('tbody tr td:nth-child(3)').allTextContents()).map(Number);
+  check(ages.every((a, i) => i === 0 || ages[i - 1] <= a), `나이 heading sorts young to old (${ages.join(',')})`);
+  await page.getByRole('button', { name: '직접 관리' }).click();
+  await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled);
+  const before1 = await page.locator('.roster').first().locator('tbody tr').count();
+  await page.locator('.roster').first().getByRole('button', { name: '말소' }).first().click();
+  await page.waitForFunction((n) => document.querySelector('.roster')?.querySelectorAll('tbody tr').length === n - 1, before1);
+  // The same player cannot come straight back (ten-day rule).
+  await page.locator('.roster').nth(1).getByRole('button', { name: '1군 등록' }).first().click();
+  await page.screenshot({ path: join(shots, 'manual-entry.png'), fullPage: false });
+
+  // 5. Every screen, the player dialog, reload.
   for (const tab of ['기록', '구단', '역대', '드래프트 후보', '우리 구단']) await page.getByRole('button', { name: tab, exact: true }).click();
   await page.locator('.roster .link').first().click();
   await page.getByRole('dialog').waitFor();
@@ -134,7 +153,7 @@ try {
   const autosave = (await page.locator('.save-actions .muted').textContent()) ?? '';
   if (autosave.includes('자동 저장됨')) check((await status(page)) === saved, `reload restores the game (${saved} → ${await status(page)})`);
 
-  // 5. Layouts.
+  // 6. Layouts.
   for (const [width, height] of SIZES) {
     await page.setViewportSize({ width, height });
     for (const tab of ['우리 구단', '순위', '기록', '구단', '역대', '드래프트 후보']) {
@@ -148,7 +167,7 @@ try {
   check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
   await context.close();
 
-  // 6. Phone: the founding form fits, and the spectator path works.
+  // 7. Phone: the founding form fits, and the spectator path works.
   const phone = await browser.newContext({ viewport: { width: 320, height: 740 } });
   const p2 = await phone.newPage();
   await p2.goto(url);

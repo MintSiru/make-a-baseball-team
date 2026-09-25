@@ -71,6 +71,15 @@ export function pitLine(p: PitTotals | null) {
   return `${p.g}경기 ${p.w}승 ${p.l}패${extra} ${ip(p.outs)}이닝 평균자책점 ${era(p).toFixed(2)}`;
 }
 
+/** This season's futures line, marked as such. */
+function futuresLine(s: LeagueState, id: PlayerId) {
+  const f = s.futures?.lines[id];
+  if (!f) return '';
+  const p = s.players[id]!;
+  const text = isPitcher(p) ? pitLine(f.pit) : batLine(f.bat);
+  return text ? `퓨처스 ${text}` : '';
+}
+
 export type RosterGroup = 'active' | 'futures' | 'third' | 'military';
 
 export function rosterView(s: LeagueState, teamId: TeamId) {
@@ -90,9 +99,10 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
       hand: `${p.throws}투${p.bats}타`,
       grade: p.scouting.current,
       future: p.scouting.futureValue,
-      line: isPitcher(p) ? pitLine(line?.pit ?? null) : batLine(line?.bat ?? null),
+      line: group === 'military' || group === 'active' ? (isPitcher(p) ? pitLine(line?.pit ?? null) : batLine(line?.bat ?? null)) : futuresLine(s, id) || (isPitcher(p) ? pitLine(line?.pit ?? null) : batLine(line?.bat ?? null)),
       salary: salaryIn(p, s.year),
       injured: !!s.injuries[id],
+      away: !!s.away?.[id],
     };
   };
   const military = Object.values(s.players)

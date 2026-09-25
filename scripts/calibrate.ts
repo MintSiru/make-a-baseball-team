@@ -3,6 +3,7 @@
    Usage: npx tsx scripts/calibrate.ts [overrides.json] [seasons]
    Overrides are deep-merged into ENGINE, e.g. {"base":{"k":0.17}}. */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { SIM_VERSION } from '../src/core/version';
 import { createLeague } from '../src/league/history';
 import { playPostseason } from '../src/league/postseason';
 import { playRegularSeason, startSeason } from '../src/league/season';
@@ -11,7 +12,7 @@ import type { LeagueState } from '../src/league/state';
 import { era, obp, slg } from '../src/league/stats';
 import { ENGINE } from '../src/league/tuning';
 
-const cache = process.env.LEAGUE_CACHE ?? '/tmp/league-2026.json';
+const cache = process.env.LEAGUE_CACHE ?? `/tmp/league-2026-${SIM_VERSION}.json`;
 const merge = (into: Record<string, unknown>, from: Record<string, unknown>) => {
   for (const [k, v] of Object.entries(from)) {
     if (v && typeof v === 'object' && !Array.isArray(v)) merge(into[k] as Record<string, unknown>, v as Record<string, unknown>);

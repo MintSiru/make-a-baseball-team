@@ -168,6 +168,8 @@ export interface LeagueState {
   injuries: Record<PlayerId, Injury>;
   /** Away with the national team until this date (registered days still count). */
   away: Record<PlayerId, string>;
+  /** When the user's players were last sent down from the first team (ten days before re-registering). */
+  demoted?: Record<PlayerId, string>;
   /** Last date registered days were counted for. */
   countedThrough: string | null;
   postseason: SeriesResult[];

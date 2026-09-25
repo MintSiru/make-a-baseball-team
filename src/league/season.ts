@@ -6,6 +6,7 @@ import type { GameOut, TeamBox } from './engine/types';
 import { parkFactor } from './clubs';
 import { assignSquads, futuresPreference, futuresSquad, makeFuturesLeague } from './futures';
 import { chooseActive, teamInput } from './manager';
+import { manualReplacements } from './entry';
 import { INTERNATIONAL } from './international';
 import { rosterLimit, selectNationalTeam } from './offseason';
 import { currentValue, isForeign, isPitcher } from './players';
@@ -27,6 +28,7 @@ export function startSeason(s: LeagueState) {
   s.rotation = {};
   s.injuries = {};
   s.away = {};
+  s.demoted = {};
   s.postseason = [];
   s.countedThrough = null;
   for (const id of firstTeamIds(s)) setActive(s, id, chooseActive(s, id));
@@ -156,13 +158,22 @@ function rollInjuries(s: LeagueState, box: TeamBox, date: string, r: () => numbe
 function maintainRosters(s: LeagueState, date: string, reshuffle: boolean) {
   for (const [id, inj] of Object.entries(s.injuries)) if (inj.until <= date) delete s.injuries[id];
   for (const [id, until] of Object.entries(s.away)) if (until < date) delete s.away[id];
+  const manual = s.user?.entry === 'manual' ? s.user.teamId : null;
   for (const teamId of firstTeamIds(s)) {
     const r = s.rosters[teamId]!;
     const hurt = r.active.some((id) => s.injuries[id] || s.away[id]);
+    if (teamId === manual) {
+      // The general manager's roster stands; only players who cannot play are replaced.
+      if (hurt) {
+        const ideal = chooseActive(s, teamId);
+        manualReplacements(s, (candidates) => ideal.find((id) => candidates.includes(id)) ?? candidates[0]);
+      }
+      continue;
+    }
     if (reshuffle) convertDevelopment(s, teamId, date);
     if (hurt || reshuffle) setActive(s, teamId, chooseActive(s, teamId));
   }
-  if (reshuffle) for (const t of s.teams) if (s.rosters[t.id]) assignSquads(s, t.id);
+  if (reshuffle) for (const t of s.teams) if (s.rosters[t.id] && t.id !== manual) assignSquads(s, t.id);
 }
 
 function gameRng(s: LeagueState, id: string) {
