@@ -2,12 +2,14 @@
    and contracts, never hidden ability. */
 import { ROLE_LABELS } from '../draftroom';
 import { publicView, type PublicPlayer } from '../model/player';
-import type { BatTotals, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
+import type { BatTotals, InjuryRecord, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
+import { emptySplit, type Splits } from './engine/types';
+import { averageVelocity, pitchGrades, topVelocity } from './pitches';
 import { salaryIn, usdTotal } from './contracts';
 import { ageIn, isForeign, isPitcher } from './players';
 import { currentStandings } from './season';
 import { SANGMU } from './futures';
-import { rotationFor } from './manager';
+import { penRoles, PEN_ROLE_LABELS, rotationFor } from './manager';
 import { isDevelopment, type LeagueState } from './state';
 import { avg, babip, babipAllowed, batterWar, era, fip, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
 import { addInto, emptyBat, emptyPit } from './state';
@@ -99,21 +101,30 @@ export type RosterGroup = 'active' | 'futures' | 'third' | 'military';
 export function rosterView(s: LeagueState, teamId: TeamId) {
   const r = s.rosters[teamId]!;
   // On the first team only five pitchers start; the rest pitch in relief whatever their role.
-  const rotation = new Set(rotationFor(s, r.active).map((p) => p.id));
+  const rotationList = rotationFor(s, r.active);
+  const rotation = new Set(rotationList.map((p) => p.id));
+  const pen = penRoles(s, teamId, r.active.map((id) => s.players[id]!).filter((p) => isPitcher(p) && !rotation.has(p.id)));
+  const u = s.user?.teamId === teamId ? s.user : null;
   const row = (id: PlayerId, group: RosterGroup) => {
     const p = s.players[id]!;
     const line = s.lines[id];
-    const usage = group === 'active' && isPitcher(p) ? (rotation.has(id) ? '선발투수' : '불펜투수') : null;
+    const penRole = group === 'active' && isPitcher(p) && !rotation.has(id) ? pen[id] ?? 'MU' : null;
+    const usage = group === 'active' && isPitcher(p) ? (rotation.has(id) ? '선발' : PEN_ROLE_LABELS[penRole!]) : null;
     return {
       id,
       group,
       name: p.name,
+      number: p.numberTeam === teamId ? (p.number ?? null) : null,
       foreign: isForeign(p),
       development: isDevelopment(p),
       pitcher: isPitcher(p),
       pos: usage ?? positionLabel(p),
       /** A starter by role who pitches in relief on the first team. */
-      starterInPen: usage === '불펜투수' && p.role === 'SP',
+      starterInPen: !!penRole && p.role === 'SP',
+      /** First-team relievers: the role in the bullpen, and whether the general manager set it. */
+      penRole,
+      penRoleSet: !!u?.penRoles?.[id],
+      platoon: u?.platoon?.[id] ?? null,
       role: p.role,
       age: ageIn(p, s.year),
       hand: `${p.throws}투${p.bats}타`,
@@ -172,13 +183,93 @@ export interface PlayerCard {
   salary: number;
   status: string;
   career: CareerRow[];
+  /** First-team career totals (this season included) and seasons played. */
+  totals: { bat: BatTotals | null; pit: PitTotals | null; war: number; seasons: number };
+  highs: { label: string; value: string; year: number }[];
+  /** Platoon splits: this season and career (first team). */
+  splits: { season: Splits | null; career: Splits | null };
+  velocity: { top: number; average: number } | null;
+  pitches: ReturnType<typeof pitchGrades>;
+  injuries: InjuryRecord[];
+}
+
+const QUALIFY = { pa: 446, outs: 432 };
+
+function careerHighs(rows: CareerRow[], pitcher: boolean) {
+  const done = rows.filter((r) => !r.futures);
+  const best = <T,>(label: string, pick: (r: CareerRow) => T | null, key: (x: T) => number, text: (x: T) => string, low = false) => {
+    let top: { x: T; year: number } | null = null;
+    for (const r of done) {
+      const x = pick(r);
+      if (x == null) continue;
+      if (!top || (low ? key(x) < key(top.x) : key(x) > key(top.x))) top = { x, year: r.year };
+    }
+    return top && key(top.x) > 0 ? { label, value: text(top.x), year: top.year } : null;
+  };
+  const n = (x: number) => String(x);
+  const out = pitcher
+    ? [
+        best('승', (r) => r.pit?.w ?? null, (x) => x, n),
+        best('세이브', (r) => r.pit?.sv ?? null, (x) => x, n),
+        best('홀드', (r) => r.pit?.hld ?? null, (x) => x, n),
+        best('탈삼진', (r) => r.pit?.k ?? null, (x) => x, n),
+        best('이닝', (r) => r.pit?.outs ?? null, (x) => x, ip),
+        best('ERA (규정이닝)', (r) => (r.pit && !r.current && r.pit.outs >= QUALIFY.outs ? r.pit : null), (x) => era(x), (x) => era(x).toFixed(2), true),
+        best('WAR', (r) => (r.current ? null : r.war), (x) => x, (x) => x.toFixed(1)),
+      ]
+    : [
+        best('안타', (r) => r.bat?.h ?? null, (x) => x, n),
+        best('홈런', (r) => r.bat?.hr ?? null, (x) => x, n),
+        best('타점', (r) => r.bat?.rbi ?? null, (x) => x, n),
+        best('도루', (r) => r.bat?.sb ?? null, (x) => x, n),
+        best('타율 (규정타석)', (r) => (r.bat && !r.current && r.bat.pa >= QUALIFY.pa ? r.bat : null), (x) => avg(x), (x) => fmt3(avg(x))),
+        best('OPS (규정타석)', (r) => (r.bat && !r.current && r.bat.pa >= QUALIFY.pa ? r.bat : null), (x) => ops(x), (x) => fmt3(ops(x))),
+        best('WAR', (r) => (r.current ? null : r.war), (x) => x, (x) => x.toFixed(1)),
+      ];
+  return out.filter((x): x is NonNullable<typeof x> => !!x);
+}
+
+function sumSplits(list: (Splits | undefined)[]): Splits | null {
+  const have = list.filter((x): x is Splits => !!x);
+  if (!have.length) return null;
+  const out: Splits = { L: emptySplit(), R: emptySplit() };
+  for (const x of have) {
+    addInto(out.L, x.L);
+    addInto(out.R, x.R);
+  }
+  return out;
 }
 
 export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
   const p = s.players[id];
   if (!p) return null;
   const status = p.status === 'military' ? `군 복무 중 (${p.service.route === 'sangmu' ? '상무' : p.service.route === 'social' ? '사회복무' : '현역'}, ${p.service.returnsOn} 전역)` : s.injuries[id] ? `부상 (${s.injuries[id]!.until} 복귀 예정)` : p.status === 'retired' ? '은퇴' : p.status === 'overseas' ? '해외 이적' : '';
-  return { player: publicView(p), team: teamOf(s, p.teamId)?.name ?? '-', age: ageIn(p, s.year), salary: salaryIn(p, s.year), status, career: careerView(s, p) };
+  const career = careerView(s, p);
+  const pitcher = isPitcher(p);
+  const major = career.filter((r) => !r.futures);
+  const bat = major.some((r) => r.bat) ? emptyBat() : null,
+    pit = major.some((r) => r.pit) ? emptyPit() : null;
+  for (const r of major) {
+    if (bat && r.bat) addInto(bat, r.bat);
+    if (pit && r.pit) addInto(pit, r.pit);
+  }
+  const side = (r: { bat: BatTotals | null; pit: PitTotals | null }) => (pitcher ? r.pit?.split : r.bat?.split);
+  const line = s.lines[id];
+  const top = topVelocity(p);
+  return {
+    player: publicView(p),
+    team: teamOf(s, p.teamId)?.name ?? '-',
+    age: ageIn(p, s.year),
+    salary: salaryIn(p, s.year),
+    status,
+    career,
+    totals: { bat, pit, war: Math.round(major.filter((r) => !r.current).reduce((a, r) => a + r.war, 0) * 10) / 10, seasons: new Set(major.map((r) => r.year)).size },
+    highs: careerHighs(career, pitcher),
+    splits: { season: line ? (side(line) ?? null) : null, career: sumSplits(major.map(side)) },
+    velocity: top == null ? null : { top, average: averageVelocity(p)! },
+    pitches: pitchGrades(p),
+    injuries: [...(p.injuries ?? [])].reverse(),
+  };
 }
 
 export const rates = { avg, obp, slg, ops, era, ip, fmt3, whip, fip, babip, babipAllowed, wrcPlus, per9, woba };

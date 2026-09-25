@@ -108,7 +108,7 @@ export function makeForeign(seed: string, id: string, season: number, spec: Fore
   const graded = Object.fromEntries(Object.entries(tools).map(([k, v]) => [k, toGrade(v! + normal(r) * 3)])) as Tools;
   const current = toGrade(overall(graded, role));
   const throwsLeft = r() < 0.3,
-    bats = r() < 0.3 ? '좌' : r() < 0.05 ? '양' : '우';
+    bats = throwsLeft ? (r() < 0.95 ? '좌' : '우') : r() < 0.3 ? '좌' : r() < 0.05 ? '양' : '우';
   const level = LEVEL_LABELS[bg.level];
   const text = careerText(bg.level, spec.kind === 'pitcher', age, current, r);
   const ask = foreignAsk(current, spec.asiaQuota, bg.premium, r);

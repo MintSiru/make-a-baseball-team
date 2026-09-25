@@ -2,8 +2,11 @@
 import { closeSeason, advanceOffseason, beginOffseason } from './offseason';
 import { playPostseason } from './postseason';
 import { playDay, startSeason } from './season';
-import type { PlayerId } from '../model/types';
+import type { PlayerId, TeamId } from '../model/types';
+import { makeTrade, releasePlayer, replaceForeign, signFromPool } from './trade';
 import { movePlayer, registerPlayer, setRole } from './entry';
+import type { BullpenRole } from './engine/types';
+import { ensureNumbers } from './numbers';
 import { renameStadium } from './userclub';
 import type { ExpansionSettings, LeagueState, Squad } from './state';
 import { foundClub, FOUNDING_DATE, resolveDecision, type DecisionInput } from './expansion';
@@ -21,7 +24,14 @@ export type Action =
   | { kind: 'move'; id: PlayerId; to: Squad }
   | { kind: 'register'; id: PlayerId }
   | { kind: 'setRole'; id: PlayerId; role: 'SP' | 'RP' }
-  | { kind: 'renameStadium'; name: string; which: 'current' | 'new' };
+  | { kind: 'penRole'; id: PlayerId; role: BullpenRole | null }
+  | { kind: 'platoon'; id: PlayerId; side: 'L' | 'R' | null }
+  | { kind: 'renameStadium'; name: string; which: 'current' | 'new' }
+  // The market (V0.5)
+  | { kind: 'trade'; teamId: TeamId; give: PlayerId[]; get: PlayerId[] }
+  | { kind: 'release'; id: PlayerId }
+  | { kind: 'signPool'; id: PlayerId }
+  | { kind: 'foreignSwap'; out: PlayerId; in: string };
 
 export const regularOver = (s: LeagueState) => s.phase === 'regular' && s.next >= s.schedule.length;
 
@@ -69,13 +79,37 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     case 'register':
       registerPlayer(s, action.id);
       break;
+    case 'penRole':
+    case 'platoon': {
+      const u = s.user;
+      if (!u || s.players[action.id]?.teamId !== u.teamId) break;
+      const map = action.kind === 'penRole' ? (u.penRoles ??= {}) : (u.platoon ??= {});
+      const value = action.kind === 'penRole' ? action.role : action.side;
+      if (value) (map as Record<string, string>)[action.id] = value;
+      else delete map[action.id];
+      break;
+    }
     case 'setRole':
       setRole(s, action.id, action.role);
       break;
     case 'renameStadium':
       renameStadium(s, action.name, action.which);
       break;
+    case 'trade':
+      makeTrade(s, action.teamId, action.give, action.get);
+      break;
+    case 'release':
+      releasePlayer(s, action.id);
+      break;
+    case 'signPool':
+      signFromPool(s, action.id);
+      break;
+    case 'foreignSwap':
+      if (s.user) replaceForeign(s, s.user.teamId, action.out, action.in);
+      break;
   }
+  // Anyone who joined a club (or became a registered player) gets his number.
+  ensureNumbers(s);
   return s;
 }
 

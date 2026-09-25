@@ -3,6 +3,7 @@
 import type { BatTotals, PitTotals, Player, PlayerId, Team, TeamId } from '../model/types';
 import type { ScheduledGame } from './schedule';
 import type { GameScore, StandingRow } from './standings';
+import type { BullpenRole } from './engine/types';
 
 export type LeaguePhase = 'regular' | 'postseason' | 'offseason';
 
@@ -77,7 +78,30 @@ export type Decision =
   | { kind: 'ownFreeAgents'; candidates: PlayerId[] }
   | { kind: 'rookieBonus'; picks: { id: PlayerId; slot: number; ask: number }[]; final: boolean }
   | { kind: 'development'; candidates: PlayerId[]; max: number }
-  | { kind: 'camp'; players: PlayerId[] };
+  | { kind: 'camp'; players: PlayerId[] }
+  // The market (V0.5)
+  | { kind: 'faMarket'; candidates: PlayerId[]; grades: Record<PlayerId, 'A' | 'B' | 'C'>; limit: number }
+  | { kind: 'faProtect'; fa: PlayerId; grade: 'A' | 'B'; from: TeamId; protect: number; candidates: PlayerId[] }
+  | { kind: 'faCompensation'; fa: PlayerId; grade: 'A' | 'B'; to: TeamId; list: PlayerId[]; withPlayer: number; cashOnly: number }
+  | { kind: 'salaries'; rows: SalaryRow[] }
+  | { kind: 'secondProtect'; candidates: PlayerId[]; protect: number }
+  | { kind: 'secondPick'; round: number; fee: number; candidates: PlayerId[] }
+  | { kind: 'foreignRenew'; rows: { id: PlayerId; ask: number; war: number; leaving: boolean }[] }
+  | { kind: 'posting'; candidates: PlayerId[]; max: number };
+
+/** One player in the winter's salary talks (만 원). */
+export interface SalaryRow {
+  id: PlayerId;
+  prev: number;
+  /** The club's figure from last season's record (고과). */
+  merit: number;
+  /** What the player asks for. */
+  ask: number;
+  /** Three pro years or more: he may take a disagreement to salary arbitration (RULES.md §2). */
+  arbitration: boolean;
+  /** A multi-year deal before free agency the club can offer (비FA 다년계약), or null. */
+  extension: { annual: number; years: number } | null;
+}
 
 export interface DraftSlot {
   teamId: TeamId;
@@ -104,6 +128,12 @@ export interface OffseasonState {
   released: PlayerId[];
   /** Sub-steps already settled by the user this offseason. */
   done: string[];
+  /** The free-agent market: the user's offers, whether it has run, and the decisions it left for the user. */
+  faOffers?: Record<PlayerId, { annual: number; years: number }>;
+  faDone?: boolean;
+  faQueue?: import('./market').FaQueueItem[];
+  /** The second draft in progress (odd winters). */
+  second?: import('./seconddraft').SecondDraftState | null;
 }
 
 /** The club the user runs (V0.3: an expansion club). Money in 만 원. */
@@ -117,7 +147,13 @@ export interface UserClub {
   firstTeamYear: number;
   ledger: { year: number; label: string; amount: number }[];
   /** First-team registrations: the manager's (auto) or the general manager's own (manual). */
+  /** Bullpen roles the general manager set (the manager fills the rest). */
+  penRoles?: Record<PlayerId, BullpenRole>;
+  /** Platoon halves: players who start only against left- ('L') or right-handed ('R') starters. */
+  platoon?: Record<PlayerId, 'L' | 'R'>;
   entry?: 'auto' | 'manual';
+  /** Guaranteed salary still owed to players the club released (counts against the payroll budget). */
+  deadMoney?: { season: number; amount: number; label: string }[];
   /** Name for the new ballpark when it opens (STADIUM_PLANS); default "<city> 신구장". */
   newStadiumName?: string;
   /** Club news: military results, re-signings, refusals, position changes. */
@@ -172,6 +208,18 @@ export interface LeagueState {
   away: Record<PlayerId, string>;
   /** When the user's players were last sent down from the first team (ten days before re-registering). */
   demoted?: Record<PlayerId, string>;
+  /** Players on waivers (seven days) and unattached players any club may sign (V0.5). */
+  waivers?: { id: PlayerId; from: TeamId; until: string }[];
+  pool?: PlayerId[];
+  /** Foreign replacements used this season, by club. */
+  foreignChanges?: Record<TeamId, number>;
+  /** League moves for the news feed: trades, waiver claims, foreign changes. */
+  transactions?: { date: string; text: string }[];
+  /** One-off market events already run this season ("2027-trades-06"). */
+  marketDone?: string[];
+  /** Competitive balance tax records by club, and clubs whose first-round pick drops, by draft year. */
+  cap?: Record<TeamId, import('./cap').CapRecord[]>;
+  pickDrop?: Record<number, TeamId[]>;
   /** Last date registered days were counted for. */
   countedThrough: string | null;
   postseason: SeriesResult[];

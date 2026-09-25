@@ -106,3 +106,9 @@ KBO 기록실 팀 기록(`scripts/fetch-kbo-stats.py` → `data/kbo-league-stats
 - C3. 2025 KBO League season (Wikipedia 검색 요약) — https://en.wikipedia.org/wiki/2025_KBO_League_season
 - C4. KBO 보도자료, 2026 KBO 리그 평균 연봉 1억 7,536만원 (2026-03-18) — https://www.koreabaseball.com/MediaNews/Notice/View.aspx?bdSe=11861
 - C5. KBO 기록실 팀 기록 (타자 기본 1·2, 투수 기본 1·2, 주루, 수비) — https://www.koreabaseball.com/Record/Team/Hitter/Basic1.aspx
+
+## 7. V0.5.1 조정
+
+**불펜 보직**: 마무리·셋업맨·필승조(2명)·원 포인트(좌완)·롱릴리프·추격조로 나눴습니다. 9회 1~3점 앞서면 마무리, 8회 박빙이면 셋업맨, 6~7회 박빙이면 필승조, 1~3점 뒤지면 추격조, 5회 이전은 롱릴리프가 나옵니다. 6회 이후 2점 차 이내에 좌타자가 나오면 원 포인트가 올라오고 우타자가 나오면 내려갑니다. 시드 하나로 본 2025 시즌: 세이브 1위 35개, 홀드 1위 31개 (실제 최근 5년 세이브왕 33~42, 홀드왕 27~38).
+
+**플래툰**: 같은 손 상대 효과를 1.5배로 키우고(`ENGINE.platoon`), 투수 주무기에 따라 차이를 달리했습니다. 감독은 상대 선발이 좌완이면 우타자를, 우완이면 좌타자를 조금 더 씁니다(`ENGINE.platoonLineup`). 결과: 좌타자 OPS 좌투수 상대 .677 / 우투수 상대 .724, 우타자 좌투수 상대 .741 / 우투수 상대 .715 (MLB 평균 차이 약 .030~.050). 리그 평균은 R/G 4.4~4.8로 그대로입니다.

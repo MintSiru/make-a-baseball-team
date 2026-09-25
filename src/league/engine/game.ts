@@ -9,7 +9,7 @@
    Determinism: every draw comes from the `r` passed in, in a fixed order. Changing the order of draws
    changes results and needs a SIM_VERSION bump. */
 import { ENGINE as E, Z, Zr } from '../tuning';
-import type { BattingLine, BatterIn, BullpenRole, GameIn, GameOut, PitcherIn, PitchingLine, RelieverIn, TeamBox, TeamIn } from './types';
+import { emptySplit, type BattingLine, type BatterIn, type BullpenRole, type GameIn, type GameOut, type PitcherIn, type PitchingLine, type RelieverIn, type Split, type TeamBox, type TeamIn } from './types';
 
 type R = () => number;
 
@@ -49,11 +49,11 @@ interface Side {
 const FIELD_WEIGHT: Record<string, number> = { C: 0.6, '1B': 0.5, '2B': 1.1, '3B': 0.9, SS: 1.3, LF: 0.7, CF: 1.1, RF: 0.8, DH: 0 };
 
 function emptyBatting(b: BatterIn): BattingLine {
-  return { id: b.id, pos: b.pos, pa: 0, ab: 0, h: 0, d: 0, t: 0, hr: 0, bb: 0, hbp: 0, k: 0, r: 0, rbi: 0, sb: 0, cs: 0, sf: 0, sh: 0, gdp: 0 };
+  return { id: b.id, pos: b.pos, split: { L: emptySplit(), R: emptySplit() }, pa: 0, ab: 0, h: 0, d: 0, t: 0, hr: 0, bb: 0, hbp: 0, k: 0, r: 0, rbi: 0, sb: 0, cs: 0, sf: 0, sh: 0, gdp: 0 };
 }
 
 function emptyPitching(id: string, starter: boolean): PitchingLine {
-  return { id, gs: starter ? 1 : 0, outs: 0, bf: 0, h: 0, hr: 0, bb: 0, hbp: 0, k: 0, r: 0, er: 0, pitches: 0, w: 0, l: 0, sv: 0, hld: 0, qs: 0 };
+  return { id, split: { L: emptySplit(), R: emptySplit() }, gs: starter ? 1 : 0, outs: 0, bf: 0, h: 0, hr: 0, bb: 0, hbp: 0, k: 0, r: 0, er: 0, pitches: 0, w: 0, l: 0, sv: 0, hld: 0, qs: 0 };
 }
 
 function makeSide(team: TeamIn): Side {
@@ -102,6 +102,17 @@ export function simulateGame(game: GameIn, r: R): GameOut {
     const runnersOn = () => (bases[0] ? 1 : 0) + (bases[1] ? 1 : 0) + (bases[2] ? 1 : 0);
     const current = () => field.apps[field.apps.length - 1]!;
 
+    // The plate appearance in progress, credited to both players' platoon splits once it is over.
+    let open: { bl: BattingLine; pl: PitchingLine; vsPitcher: 'L' | 'R'; vsBatter: 'L' | 'R'; before: Split } | null = null;
+    const counts = (l: BattingLine): Split => ({ pa: l.pa, ab: l.ab, h: l.h, tb: l.h + l.d + 2 * l.t + 3 * l.hr, hr: l.hr, bb: l.bb, hbp: l.hbp, k: l.k, sf: l.sf });
+    const closePA = () => {
+      if (!open) return;
+      const now = counts(open.bl);
+      const into = [open.bl.split![open.vsPitcher], open.pl.split![open.vsBatter]];
+      for (const k of Object.keys(now) as (keyof Split)[]) for (const s of into) s[k] += now[k] - open.before[k];
+      open = null;
+    };
+
     const score = (runner: Runner, rbiTo: BattingLine | null) => {
       const before = lead(bat);
       bat.box.runs++;
@@ -123,31 +134,43 @@ export function simulateGame(game: GameIn, r: R): GameOut {
       const line = app.line;
       const myLead = lead(field);
       let pull = false;
+      const upNext = game[isHome ? 'home' : 'away'].lineup[bat.next]!;
+      // A left-handed hitter up late in a close game: the lefty specialist comes in for him.
+      const lefty =
+        inning >= 6 && Math.abs(myLead) <= 2 && upNext.bats === 'L' && app.arm.throws === 'R' && app.role !== 'CL' && app.role !== 'LO' && field.pen.some((p) => p.role === 'LO');
       if (app.role === 'SP') {
         const limit = app.arm.pitchLimit;
         if (line.pitches >= limit) pull = true;
         else if (line.r >= E.starter.runsBeforeHook) pull = true;
         else if (inning <= E.starter.earlyHookInning && line.r >= E.starter.earlyHookRuns && line.pitches > 50 && runnersOn() > 0) pull = true;
         else if (inning >= 9 && outs === 0 && runnersOn() === 0 && r() > E.starter.completeGameChance) pull = true;
+        else if (lefty && line.pitches >= E.reliever.lefty.starterPitches && runnersOn() > 0) pull = true;
       } else {
         const long = app.role === 'LR';
-        const maxOuts = long ? E.reliever.maxOutsLong : E.reliever.maxOutsShort;
-        const pitchLimit = long ? E.reliever.pitchLimitLong : E.reliever.pitchLimitShort;
+        const mopUp = app.role === 'MU';
+        const maxOuts = long ? E.reliever.maxOutsLong : mopUp ? E.reliever.maxOutsMopUp : E.reliever.maxOutsShort;
+        const pitchLimit = long ? E.reliever.pitchLimitLong : mopUp ? E.reliever.pitchLimitMopUp : E.reliever.pitchLimitShort;
         const fresh = outs === 0 && runnersOn() === 0;
         if (line.pitches >= pitchLimit || line.outs >= maxOuts) pull = true;
+        // The specialist's job ends when the lefties do.
+        else if (app.role === 'LO' && line.bf >= 1 && upNext.bats !== 'L') pull = true;
+        else if (lefty && line.bf >= 1) pull = true;
         else if (fresh && line.outs >= 3 && !(app.role === 'CL' && myLead > 0 && inning >= 9)) pull = true;
         // Trouble late in a close game: two on and already a run in → the next arm.
-        else if (inning >= 6 && !long && runnersOn() >= 2 && line.r >= 1 && Math.abs(myLead) <= 3 && line.bf >= 3) pull = true;
+        else if (inning >= 6 && !long && !mopUp && runnersOn() >= 2 && line.r >= 1 && Math.abs(myLead) <= 3 && line.bf >= 3) pull = true;
       }
       if (!pull || field.pen.length === 0) return;
       const want: BullpenRole[] = [];
       const close = myLead >= 0 && myLead <= 3;
-      if (inning >= 9 && myLead > 0 && myLead <= 3) want.push('CL', 'SU');
-      else if (inning >= 9 && myLead === 0) want.push('CL', 'SU', 'MR');
-      else if (inning >= 7 && close) want.push('SU', 'MR');
-      else if (inning <= 5) want.push('LR', 'MR');
-      else want.push('MR', 'LR');
-      want.push('MR', 'LR', 'SU', 'CL');
+      if (lefty) want.push('LO');
+      if (inning >= 9 && myLead > 0 && myLead <= 3) want.push('CL', 'SU', 'HL');
+      else if (inning >= 9 && myLead === 0) want.push('CL', 'SU', 'HL');
+      else if (inning === 8 && close) want.push('SU', 'HL');
+      else if (inning >= 6 && close) want.push('HL', 'SU');
+      else if (inning <= 5) want.push('LR', 'MU');
+      else if (myLead < 0 && myLead >= -3) want.push('MU', 'HL');
+      else want.push('MU', 'LR');
+      want.push('MU', 'LR', 'HL', 'SU', 'LO', 'CL');
       let pick = -1;
       for (const role of want) {
         pick = field.pen.findIndex((p) => p.role === role);
@@ -160,6 +183,7 @@ export function simulateGame(game: GameIn, r: R): GameOut {
     };
 
     while (outs < 3 && !over) {
+      closePA();
       pitchChange();
       const app = current();
       const p = app.arm,
@@ -217,7 +241,7 @@ export function simulateGame(game: GameIn, r: R): GameOut {
         continue;
       }
 
-      const same = batter.bats !== 'S' && batter.bats === p.throws ? 1 : 0;
+      const same = batter.bats !== 'S' && batter.bats === p.throws ? (p.platoon ?? 1) : 0;
       const hb = isHome ? 1 : 0;
       const b = E.batter,
         q = E.pitcher;
@@ -232,6 +256,8 @@ export function simulateGame(game: GameIn, r: R): GameOut {
         logit(E.base.hr) + b.hr.power * zp + b.hr.contact * zc + q.hr.stuff * stuff + q.hr.command * command + q.hr.breaking * breaking + E.platoon.hr * same + E.home.hr * hb + parkHr,
       );
 
+      const hitsFrom = batter.bats === 'S' ? (p.throws === 'L' ? 'R' : 'L') : batter.bats;
+      open = { bl, pl, vsPitcher: p.throws, vsBatter: hitsFrom, before: counts(bl) };
       bl.pa++;
       pl.bf++;
       const u = r();
@@ -404,6 +430,7 @@ export function simulateGame(game: GameIn, r: R): GameOut {
       }
       pl.pitches += Math.max(1, Math.round(pitches));
     }
+    closePA();
     return runsThisHalf;
   }
 

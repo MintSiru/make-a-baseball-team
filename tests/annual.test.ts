@@ -38,7 +38,7 @@ beforeAll(() => {
 describe('the user club every winter', () => {
   it('asks about rookies, development players, military service and spring camp', () => {
     const kinds = new Set(seen.map((d) => d.kind));
-    for (const k of ['rookieBonus', 'development', 'military', 'camp', 'draftPick'] as const) expect(kinds, k).toContain(k);
+    for (const k of ['rookieBonus', 'development', 'military', 'camp', 'draftPick', 'salaries', 'foreignRenew', 'secondProtect'] as const) expect(kinds, k).toContain(k);
     expect(seen.filter((d) => d.kind === 'camp').length).toBeGreaterThanOrEqual(4);
   });
 

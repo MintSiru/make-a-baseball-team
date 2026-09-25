@@ -11,6 +11,7 @@ import type { Player, PlayerId, Team, TeamId } from '../model/types';
 import { EXPANSION_DEFAULTS, minimumSalaryFor } from '../rules/kbo2026';
 import { foreignContract, freeAgentContract, renewSalary, salaryIn } from './contracts';
 import { splitContract } from './foreign';
+import { marketDecision, projectedPayroll as marketPayroll } from './market';
 import { foreignSlots } from './manager';
 import {
   advanceOffseason,
@@ -20,7 +21,9 @@ import {
   freeAgentsFor,
   makePick,
   removeFromRoster,
-  renewForeigners,
+  foreignLeaves,
+  foreignRenewalAsk,
+  lastRecord,
   rosterLimit,
   setOffseasonHooks,
   sign,
@@ -37,9 +40,10 @@ import {
   developmentDecision,
   isAnnual,
   militaryDecision,
-  ownFreeAgentsDecision,
   resolveAnnual,
   rookieBonusDecision,
+  salariesDecision,
+  postingDecision,
   yearlyGrant,
   type AnnualInput,
 } from './userclub';
@@ -218,10 +222,14 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
   switch (step) {
     case 'military':
       return militaryDecision(s);
+    case 'posting':
+      return postingDecision(s, next);
+    case 'renew':
+      return salariesDecision(s);
     case 'camp':
       return campDecision(s);
     case 'freeAgency': {
-      if (!entering) return ownFreeAgentsDecision(s);
+      if (!entering) return marketDecision(s, next);
       const candidates = freeAgentsFor(s, next).filter((p) => p.teamId !== u.teamId);
       return candidates.length ? { kind: 'freeAgents', candidates: candidates.map((p) => p.id), max: EXPANSION_DEFAULTS.freeAgentSigns } : null;
     }
@@ -236,23 +244,41 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       return { kind: 'roster', candidates, release: size - rosterLimit(next), limit: rosterLimit(next) };
     }
     case 'released': {
-      if (!inFoundingPeriod(s, next) || space <= 0) return null;
+      // Every winter the user's club gets the first look at players the other clubs let go.
+      if (space <= 0) return null;
       const candidates = o.released.map((id) => s.players[id]!).filter((p) => p && keepValue(p, next) >= 40);
       return candidates.length ? { kind: 'released', candidates: candidates.map((p) => p.id), max: space } : null;
     }
     case 'foreign': {
       if (next < u.firstTeamYear) return null; // no foreign players in the futures year (NC precedent)
-      renewForeigners(s, u.teamId, next, rng(`${s.seed}|foreign-renew|${o.year}`));
-      const slots = foreignSlots(s, u.teamId, next);
-      const have = foreignOn(s, u.teamId);
-      const regular = slots.regular - have.filter((p) => !p.origin.asiaQuota).length;
-      const asia = slots.asia - have.filter((p) => p.origin.asiaQuota).length;
-      if (regular <= 0 && asia <= 0) return null;
-      return { kind: 'foreign', candidates: foreignCandidates(s, next).map((p) => p.id), regular, asia };
+      // First our own: re-sign or let go (V0.5); the signing decision follows.
+      return foreignRenewDecision(s, next) ?? foreignSigningDecision(s, next);
     }
     default:
       return null;
   }
+}
+
+/** The user's foreign players whose contracts end: what each asks to stay, and who is leaving anyway. */
+export function foreignRenewDecision(s: LeagueState, next: number): Decision | null {
+  const u = user(s);
+  const ending = foreignOn(s, u.teamId).filter((p) => !p.contract?.salaries.some((x) => x.season >= next));
+  if (!ending.length) return null;
+  return {
+    kind: 'foreignRenew',
+    rows: ending.map((p) => ({ id: p.id, ask: foreignRenewalAsk(p, next), war: lastRecord(p, next - 1)?.war ?? 0, leaving: foreignLeaves(s, p, next) })),
+  };
+}
+
+/** New foreign signings for the open slots, or null when every slot is filled. */
+export function foreignSigningDecision(s: LeagueState, next: number): Decision | null {
+  const u = user(s);
+  const slots = foreignSlots(s, u.teamId, next);
+  const have = foreignOn(s, u.teamId);
+  const regular = slots.regular - have.filter((p) => !p.origin.asiaQuota).length;
+  const asia = slots.asia - have.filter((p) => p.origin.asiaQuota).length;
+  if (regular <= 0 && asia <= 0) return null;
+  return { kind: 'foreign', candidates: foreignCandidates(s, next).map((p) => p.id), regular, asia };
 }
 
 setOffseasonHooks({ begin: yearlyGrant, draftSlots, decide, rookies: rookieBonusDecision, development: developmentDecision });
@@ -273,12 +299,7 @@ const isAnnualInput = (input: DecisionInput): input is AnnualInput => isAnnual(i
 const nextSeasonOf = (s: LeagueState) => (s.offseason ? s.offseason.year + 1 : s.year + 1);
 
 /** Next season's payroll, counting the renewal estimate for players whose salary is not set yet. */
-export function projectedPayroll(s: LeagueState, teamId: TeamId, season: number) {
-  return orgIds(s, teamId).reduce((sum, id) => {
-    const p = s.players[id]!;
-    return sum + (salaryIn(p, season) || (isForeign(p) ? 0 : renewSalary(p, season)));
-  }, 0);
-}
+export const projectedPayroll = (s: LeagueState, teamId: TeamId, season: number) => marketPayroll(s, teamId, season);
 
 /** Checks a decision against the rules and the budget. Returns a message for the player, or null when it is fine. */
 export function checkDecision(s: LeagueState, input: DecisionInput): string | null {
@@ -324,7 +345,8 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       if (input.ids.length < dd.release) return `소속선수 한도 ${dd.limit}명을 맞추려면 ${dd.release}명을 정리해야 합니다.`;
       const develop = input.develop ?? [];
       if (develop.some((id) => !input.ids.includes(id))) return '육성 전환은 정리할 선수 중에서 고릅니다.';
-      if (developmentIds(s, u.teamId).length + develop.length > OFFSEASON.development.cap) return `육성선수는 ${OFFSEASON.development.cap}명까지입니다.`;
+      // Only new conversions count: a club can already be over the cap through trades or the second draft.
+      if (develop.length && developmentIds(s, u.teamId).length + develop.length > OFFSEASON.development.cap) return `육성선수는 ${OFFSEASON.development.cap}명까지입니다.`;
       return null;
     }
     case 'foreign': {

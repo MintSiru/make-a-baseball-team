@@ -37,6 +37,7 @@ export const KBO_2026 = {
 
   // §3 Competitive balance tax, on each club's top-40 total pay
   salaryCap: {
+    from: 2023, // the cap began with the 2023 season
     topPlayers: 40,
     years: [
       { year: 2025, cap: 1371165 },
@@ -46,6 +47,10 @@ export const KBO_2026 = {
     ] satisfies SalaryCapYear[],
     growthAfter2028: 0.05, // assumed: the announced 5% steps continue
     firstOverageLevy: 0.3,
+    /** Levy by consecutive seasons over the cap (1st, 2nd, 3rd+), and the 1st-round pick drop from the 3rd (S37). */
+    levies: [0.3, 0.5, 1.0],
+    pickDropFrom: 3,
+    pickDrop: 9,
     floor: { from: 2027, amount: 606538, growth: 0.05 },
     exceptionPlayerShare: 0.5,
   },
@@ -62,7 +67,23 @@ export const KBO_2026 = {
       B: { protected: 25, withPlayer: 1.0, cashOnly: 2.0 },
       C: { protected: null, withPlayer: null, cashOnly: 1.5 },
     },
+    // Grades from the last three seasons' salary rank (S34): A = club top 3 and league top 30, B = club top 10 and league top 60.
+    grade: { clubTop: [3, 10], leagueTop: [30, 60], cFromAge: 35 },
+    /** Outside free agents a club may sign, by the number of free agents that winter (S35). */
+    externalLimit: [
+      { upTo: 10, signs: 1 },
+      { upTo: 20, signs: 2 },
+      { upTo: 30, signs: 3 },
+      { upTo: Infinity, signs: 4 },
+    ],
   },
+
+  // §2 Salary arbitration (S33)
+  arbitration: { minProYears: 3, deadline: '01-10' },
+
+  // §6 Trades and waivers (S36)
+  trade: { deadline: '07-31' },
+  waiver: { days: 7 },
 
   // §5 Foreign players
   foreign: {
@@ -75,6 +96,8 @@ export const KBO_2026 = {
     asiaQuotaCapUSD: 200_000,
     asiaQuotaRaisePerYearUSD: 100_000,
     asiaQuotaReplacementsPerYear: 1,
+    replacementsPerSeason: 2, // S38 (practice)
+    replacementDeadline: '08-15', // game assumption
   },
 
   // §6 Draft and player movement
@@ -83,6 +106,17 @@ export const KBO_2026 = {
     month: 9,
     order: 'reverse-standings' as const,
   },
+  /** KBO–MLB posting (2018 agreement): seven seasons, one player per club a winter, fee tiers on the guaranteed value (S39, S40). */
+  posting: {
+    seasons: 7,
+    perClubPerWinter: 1,
+    windowDays: 30,
+    feeTiers: [
+      { upTo: 25_000_000, rate: 0.2 },
+      { upTo: 50_000_000, rate: 0.175 },
+      { upTo: null, rate: 0.15 },
+    ] as { upTo: number | null; rate: number }[],
+  },
   secondaryDraft: {
     protected: 35,
     rounds: 3,
@@ -90,6 +124,8 @@ export const KBO_2026 = {
     fees: [40000, 30000, 20000], // then 10000 from round 4
     laterRoundFee: 10000,
     exemptProYears: 3,
+    maxLossPerClub: 4, // game assumption
+    firstYear: 2023, // held every other year since 2023
   },
 
   // §7 Injured list

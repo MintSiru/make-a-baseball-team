@@ -40,7 +40,9 @@ async function decideAll(page, log) {
     if (!(await decision.count())) return;
     const title = (await decision.textContent()) ?? '';
     log.push(title);
-    if (title === '신인 드래프트') {
+    if (title === '2차 드래프트') {
+      await page.getByRole('button', { name: '스카우트에게 맡기기' }).click();
+    } else if (title === '신인 드래프트') {
       if (!handPicked) {
         const name = await page.locator('.pick-table .link').first().textContent();
         await page.locator('button.pick').first().click();
@@ -140,18 +142,38 @@ try {
   await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled);
   const rowsNow = () => page.evaluate(() => document.querySelectorAll('.squad-table tbody tr').length);
   const before1 = await rowsNow();
-  await page.locator('.squad-table').first().getByRole('button', { name: '말소' }).first().click();
+  await page.locator('.squad-table').first().getByLabel(/관리$/).first().selectOption('futures');
   await page.waitForFunction((n) => document.querySelectorAll('.squad-table tbody tr').length === n - 1, before1);
   await page.getByRole('button', { name: /^퓨처스/ }).click();
-  await page.locator('.squad-table').first().getByRole('button', { name: '1군 등록' }).first().click();
+  await page.locator('.squad-table select[aria-label$="관리"]:has(option[value="active"])').first().selectOption('active');
+  await page.getByRole('group', { name: '선수단' }).getByRole('button', { name: /^1군/ }).click();
+  await page.getByLabel(/불펜 보직$/).first().selectOption('CL');
+  await page.waitForFunction(() => [...document.querySelectorAll('.squad-table td')].some((td) => (td.querySelector('select')?.value === 'CL')));
+  await page.getByLabel(/플래툰$/).first().selectOption('L');
   await page.screenshot({ path: join(shots, 'manual-entry.png'), fullPage: false });
 
-  // 5. Every screen, the player dialog, reload.
+  // 5. The market: trade screen with a live verdict, the other views.
+  await page.getByRole('button', { name: '이적시장', exact: true }).click();
+  await page.locator('.pick-table').first().locator('input[type=checkbox]').first().check();
+  await page.locator('.pick-table').nth(1).locator('input[type=checkbox]').first().check();
+  check((await page.locator('.trade-bar').textContent())?.includes('상대 구단'), 'trade verdict shown');
+  await page.screenshot({ path: join(shots, 'market.png'), fullPage: false });
+  for (const v of ['방출 · 자유계약', '외국인 교체', '이적 소식']) await page.getByRole('button', { name: v, exact: true }).click();
+
+  // 6. Every screen, the player dialog, reload.
   for (const tab of ['기록', '구단', '역대', '드래프트 후보', '우리 구단']) await page.getByRole('button', { name: tab, exact: true }).click();
   await page.getByRole('button', { name: '선수단', exact: true }).click();
   await page.locator('.squad-table .link').first().click();
   await page.getByRole('dialog').waitFor();
+  check((await page.locator('.velocity').count()) === 1, 'pitcher profile shows velocity');
   await page.screenshot({ path: join(shots, 'player.png') });
+  for (const t of ['통산 · 커리어 하이', '좌우 기록', '부상 이력', '연도별 기록']) await page.getByRole('tab', { name: t }).click();
+  await page.keyboard.press('Escape');
+  // A hitter's profile, and the bullpen role / platoon controls under manual entry.
+  await page.locator('.squad-table').nth(1).locator('.link').first().click();
+  await page.getByRole('dialog').waitFor();
+  await page.getByRole('tab', { name: '통산 · 커리어 하이' }).click();
+  await page.screenshot({ path: join(shots, 'hitter.png') });
   await page.keyboard.press('Escape');
   const saved = await status(page);
   await page.reload();
@@ -159,10 +181,10 @@ try {
   const autosave = (await page.locator('.save-actions .muted').textContent()) ?? '';
   if (autosave.includes('자동 저장됨')) check((await status(page)) === saved, `reload restores the game (${saved} → ${await status(page)})`);
 
-  // 6. Layouts.
+  // 7. Layouts.
   for (const [width, height] of SIZES) {
     await page.setViewportSize({ width, height });
-    for (const tab of ['우리 구단', '순위', '기록', '구단', '역대', '드래프트 후보']) {
+    for (const tab of ['우리 구단', '이적시장', '순위', '기록', '구단', '역대', '드래프트 후보']) {
       await page.getByRole('button', { name: tab, exact: true }).click();
       await noOverflow(page, `${width}x${height} ${tab}`);
     }
@@ -173,7 +195,7 @@ try {
   check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
   await context.close();
 
-  // 7. Phone: the founding form fits, and the spectator path works.
+  // 8. Phone: the founding form fits, and the spectator path works.
   const phone = await browser.newContext({ viewport: { width: 320, height: 740 } });
   const p2 = await phone.newPage();
   await p2.goto(url);

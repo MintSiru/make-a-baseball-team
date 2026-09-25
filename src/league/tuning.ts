@@ -34,7 +34,7 @@ export const ENGINE = {
   /** Team fielding (average of the fielders' defense, weighted by position). */
   fielding: { babip: -0.1, error: -0.35 },
   /** Batter against a pitcher of the same hand (switch hitters never). */
-  platoon: { k: 0.08, bb: -0.04, hr: -0.1, babip: -0.03 },
+  platoon: { k: 0.12, bb: -0.06, hr: -0.15, babip: -0.045 },
   home: { babip: 0.012, hr: 0.03 },
   /** Extra-base share of non-HR hits: logit(base) + power/speed z. */
   hitTypes: {
@@ -75,7 +75,9 @@ export const ENGINE = {
     /** Starters rarely finish: hook in the 9th unless dominant. */
     completeGameChance: 0.12,
   },
-  reliever: { maxOutsShort: 4, maxOutsLong: 9, pitchLimitShort: 28, pitchLimitLong: 55 },
+  /** Lineup score for the platoon side (batValue points); `half` for a player the GM set as a platoon half. */
+  platoonLineup: { edge: 2.5, half: 40 },
+  reliever: { maxOutsShort: 4, maxOutsMopUp: 6, maxOutsLong: 9, pitchLimitShort: 28, pitchLimitMopUp: 40, pitchLimitLong: 55, lefty: { starterPitches: 85 } },
   /** The manager's pitch count for a starter: base + (stamina − 50) × perStamina, less on short rest and in April. */
   starterLimit: { base: 78, perStamina: 1.2 },
   /** Most innings in a regular-season game before a tie (RULES.md §1, 2025~). */
@@ -141,6 +143,8 @@ export const SALARY = {
 
 /** Futures league and development by playing time (V0.4; game assumptions, docs/CALIBRATION.md). */
 export const FUTURES = {
+  /** Regulars who stay out of futures games: this much first-team work last season (half of it this season). */
+  established: { pa: 350, outs: 270 },
   /** Squad kept for futures games; the rest of the club is in the third squad. */
   squad: { pitchers: 16, catchers: 3, hitters: 17 },
   /** Prospects get playing time: the gap between future and current value counts this much, up to this age. */
@@ -156,3 +160,57 @@ export const FUTURES = {
    */
   growth: { maxAge: 27, base: 0.83, play: 0.3, train: 0.15, max: 1.15, fullPA: 300, fullInnings: 60, futuresWeight: 0.8, trainDays: 180 },
 } as const;
+
+/** The free-agent market (V0.5; game assumptions measured against how often KBO free agents stay). */
+export const MARKET = {
+  /** Yearly pay: 4,000만 + WAR^1.5 × perWar, between these bounds (만 원). */
+  perWar: 13000,
+  minAnnual: 6000,
+  maxAnnual: 250000,
+  /** An AI club bids with base + perGain × (grade points over its current player at his spot), up to max; a third of that over the cap. */
+  interest: { base: 0.03, perGain: 0.035, max: 0.6, overCap: 0.3 },
+  /** Chance his own club makes an offer, and how much he prefers staying. */
+  stay: 0.8,
+  loyalty: 1.12,
+  /** An AI club takes a compensation player only if he is at least this good (keep value). */
+  compensationPickValue: 50,
+} as const;
+
+/** Winter salary talks for the user's club (V0.5; game assumptions). */
+export const TALKS = {
+  /** A player asks for his merit figure plus base + perWar × WAR (up to max). */
+  ask: { base: 0.05, perWar: 0.03, max: 0.3 },
+  /** Chance he signs for less than he asked (merit), and for last year's salary. */
+  acceptMerit: 0.75,
+  acceptFreeze: 0.3,
+  /** Chance a player still unhappy files for arbitration; the committee takes his figure when it is within this of the club's. */
+  arbitrationChance: 0.12,
+  arbitrationWithin: 0.08,
+  /** Multi-year deals before free agency: offered up to this many seasons before it, at this share of his market value. */
+  extension: { seasonsBefore: 2, share: 0.9, years: 4, accept: 0.7, maxAge: 33, minValue: 50 },
+} as const;
+
+/** Trades, waivers and mid-season foreign changes (V0.5; game assumptions). */
+export const TRADES = {
+  /** Trade value: (keep value − replacement)^power × control share × age factor − salary (억) × perEok. */
+  value: { replacement: 44, power: 1.35, controlBase: 0.4, controlPerYear: 0.15, oldFrom: 33, oldFactor: 0.7, perEok: 0.6 },
+  /** An AI club says yes when what it gets beats what it gives × premium + fixed. */
+  accept: { premium: 1.1, fixed: 1 },
+  /** AI-to-AI trades: tries per season and the chance each goes ahead. */
+  ai: { perSeason: 6, chance: 0.5 },
+  /** A club claims a waived player who is this much better than its weakest registered player. */
+  waiverMargin: 3,
+  /** AI clubs replace a foreign player with an ERA or OPS this bad by July (or out six weeks), with this chance. */
+  foreign: { badEra: 6.2, badOps: 0.66, chance: 0.6 },
+  logSize: 300,
+} as const;
+
+/** The second draft (V0.5): an AI club picks only players at least this good (keep value), else passes. */
+export const SECOND = { minValue: 49 } as const;
+
+/**
+ * Posting (game assumptions): who asks to go, and how the majors value him from his public grade and
+ * age. Average salary at grade 60 is $2.5M and grows 22% per grade point (grade 65 ≈ $7.5M, 70 ≈ $22M),
+ * close to recent Korean signings.
+ */
+export const POSTING = { minGrade: 62, maxAge: 30, wants: 0.5, baseChance: 0.45, chancePerGrade: 0.07, agePenalty: 0.1, aavAt60: 2_500_000, aavGrowth: 0.22, aiAllows: 0.55 } as const;

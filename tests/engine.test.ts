@@ -8,7 +8,7 @@ const team = (id: string, g: number): TeamIn => ({
   teamId: id,
   lineup: POS.map((pos, i) => ({ id: `${id}-b${i}`, bats: i % 3 === 0 ? 'L' : 'R', contact: g, power: g, eye: g, speed: g, defense: g, pos })),
   starter: { id: `${id}-sp`, throws: 'R', stuff: g, command: g, breaking: g, stamina: g, pitchLimit: 90 },
-  bullpen: (['CL', 'SU', 'SU', 'MR', 'MR', 'MR', 'LR', 'LR'] as const).map((role, i) => ({
+  bullpen: (['CL', 'SU', 'HL', 'HL', 'LO', 'MU', 'MU', 'LR'] as const).map((role, i) => ({
     id: `${id}-rp${i}`,
     throws: i % 2 ? 'L' : 'R',
     stuff: g,

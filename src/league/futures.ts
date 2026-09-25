@@ -7,7 +7,7 @@
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { futuresGamesFor } from '../rules/kbo2026';
-import { ageIn, currentValue, futureValue, isPitcher, keepValue } from './players';
+import { ageIn, currentValue, futureValue, isForeign, isPitcher, keepValue } from './players';
 import { roundRobin, type ScheduledGame } from './schedule';
 import { firstTeamIds, type FuturesSeason, type LeagueState } from './state';
 import { FUTURES } from './tuning';
@@ -56,8 +56,20 @@ export function futuresSquad(s: LeagueState, teamId: TeamId): PlayerId[] {
       .map((p) => p.id);
   const r = s.rosters[teamId]!;
   // A club not yet in the first team plays everyone it has in the futures league.
-  const ids = firstTeamIds(s).includes(teamId) ? r.futures : [...r.active, ...r.futures];
-  return ids.filter(healthy);
+  if (!firstTeamIds(s).includes(teamId)) return [...r.active, ...r.futures].filter(healthy);
+  // Established first-team players and foreign players sent down work out with the squad but do not
+  // take futures at-bats and innings from the prospects.
+  return r.futures.filter((id) => healthy(id) && !established(s, s.players[id]!));
+}
+
+/** A first-team regular: foreign, or a full season's work last year or half of one already this year. */
+export function established(s: LeagueState, p: Player): boolean {
+  if (isForeign(p)) return true;
+  const E = FUTURES.established;
+  const last = p.career.find((c) => c.year === s.year - 1 && !c.level);
+  const now = s.lines[p.id];
+  const work = (b?: { pa: number } | null, q?: { outs: number } | null, share = 1) => (b?.pa ?? 0) >= E.pa * share || (q?.outs ?? 0) >= E.outs * share;
+  return work(last?.bat, last?.pit) || work(now?.bat, now?.pit, 0.5);
 }
 
 /** In futures games clubs give playing time to prospects: young players with room to grow move up. */

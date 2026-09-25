@@ -14,6 +14,8 @@ export interface SaveStore {
   put(slot: string, save: SaveFile): Promise<void>;
   remove(slot: string): Promise<void>;
   list(): Promise<SaveSummary[]>;
+  /** Copies a slot as stored (no parsing), e.g. to keep an old-version save before it is carried forward. */
+  copy(from: string, to: string): Promise<void>;
 }
 
 interface Row {
@@ -41,6 +43,10 @@ export function memoryStore(): SaveStore {
       rows.delete(slot);
     },
     list: async () => [...rows.values()].map(summaryOf).sort(byNewest),
+    copy: async (from, to) => {
+      const row = rows.get(from);
+      if (row) rows.set(to, { ...row, slot: to });
+    },
   };
 }
 
@@ -75,6 +81,10 @@ export async function indexedDbStore(name = 'kbo-expansion', factory: IDBFactory
       await request(store('readwrite').delete(slot));
     },
     list: async () => ((await request(store('readonly').getAll())) as Row[]).map(summaryOf).sort(byNewest),
+    copy: async (from, to) => {
+      const row = (await request(store('readonly').get(from))) as Row | undefined;
+      if (row) await request(store('readwrite').put({ ...row, slot: to }));
+    },
   };
 }
 

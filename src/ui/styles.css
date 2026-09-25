@@ -485,7 +485,30 @@ button:disabled {
 
 /* ── Expansion club (V0.3) ─────────────────────────────────────────────── */
 .new-game {
-  max-width: 1100px;
+  max-width: calc(var(--page) + 32px);
+}
+/* Wide screens: the form on the left, the founding terms and the button beside it. */
+@media (min-width: 1000px) {
+  .new-game {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 0 40px;
+    align-items: start;
+  }
+  .new-game > * {
+    grid-column: 1;
+  }
+  .new-game > .summary {
+    grid-column: 2;
+    grid-row: 1 / span 20;
+    position: sticky;
+    top: 16px;
+    margin-top: 0;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 16px;
+  }
 }
 .form-block {
   margin: 20px 0;
@@ -665,6 +688,11 @@ button.pick {
   gap: 4px;
   flex-wrap: nowrap;
 }
+.row-actions select {
+  font-size: 12px;
+  min-height: 28px;
+  padding: 2px 4px;
+}
 .row-actions button {
   padding: 2px 8px;
   font-size: 12px;
@@ -774,14 +802,34 @@ button.pick {
 .masthead,
 .progress-bar,
 .tabs,
-.page,
 .footer {
   padding-left: var(--gutter);
   padding-right: var(--gutter);
 }
+/* The page itself is a centred box, so pages with their own width (the founding form) still line up. */
+.page {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: calc(var(--page) + 32px);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+/* Only the app-level notice under the header spans the page gutters; notices inside a page sit in its flow. */
 .notice {
+  margin-left: 0;
+  margin-right: 0;
+}
+.masthead ~ .notice {
   margin-left: var(--gutter);
   margin-right: var(--gutter);
+}
+.summary .facts {
+  grid-template-columns: minmax(0, 1fr);
+}
+.new-game > .summary h3 {
+  margin-top: 0;
 }
 .masthead {
   border-bottom: 1px solid var(--rule);
@@ -1020,12 +1068,17 @@ h3 {
   gap: 10px;
 }
 
-/* Tables: a framed card, zebra rows, more room per row. */
+/* Tables: a framed card as wide as its columns need (up to the page), zebra rows, more room per row. */
 .table-wrap {
   border: 1px solid var(--rule);
   border-radius: 8px;
   background: var(--card);
   margin: 8px 0 16px;
+  width: fit-content;
+  max-width: 100%;
+}
+.table-wrap > table {
+  width: auto;
 }
 .record-table th,
 .record-table td {
@@ -1125,4 +1178,179 @@ h3 {
   .card-value {
     font-size: 17px;
   }
+}
+.trade-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  margin: 12px 0;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+}
+.trade-bar .primary {
+  margin-left: auto;
+}
+
+/* Player profile (V0.5.1) */
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-right: 56px;
+}
+.profile-head p {
+  margin: 0;
+}
+.profile-head h2 {
+  margin: 2px 0 0;
+}
+.profile-number {
+  min-width: 56px;
+  height: 56px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.profile-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px 24px;
+}
+.profile h3 {
+  font-size: 15px;
+  margin: 16px 0 6px;
+}
+.profile h4 {
+  font-size: 14px;
+  margin: 12px 0 4px;
+}
+.facts.one {
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0;
+}
+.small {
+  font-size: 12.5px;
+}
+.gradebars {
+  display: grid;
+  gap: 5px;
+}
+.gradebar {
+  display: grid;
+  grid-template-columns: 5.5em minmax(60px, 1fr) 4.6em;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+}
+.gradebar-note {
+  grid-column: 2 / 4;
+  margin-top: -4px;
+  font-size: 12px;
+}
+.gradebar-track {
+  position: relative;
+  height: 10px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+}
+.gradebar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--ink-2);
+}
+.gradebar-fill.plus {
+  background: var(--accent);
+}
+.gradebar-fill.minus {
+  background: var(--rule);
+}
+.gradebar-future {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--ink);
+}
+.gradebar-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.pitch-box {
+  margin-top: 4px;
+}
+.pitch-box .gradebars {
+  max-width: 460px;
+}
+.velocity {
+  display: flex;
+  gap: 20px;
+  margin: 0 0 8px;
+}
+.velocity strong {
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.segmented.profile-tabs {
+  margin: 18px 0 10px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+.highs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.highs div {
+  border: 1px solid var(--rule);
+  padding: 8px 10px;
+}
+.highs dt {
+  color: var(--ink-2);
+  font-size: 12.5px;
+}
+.highs dd {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.record-table tfoot th,
+.record-table tfoot td {
+  border-top: 1px solid var(--ink);
+  font-weight: 600;
+}
+@media (max-width: 640px) {
+  .profile-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.uniform {
+  display: inline-block;
+  min-width: 2.2em;
+  margin-right: 4px;
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.cell-select {
+  font-size: 12.5px;
+  min-height: 28px;
+  padding: 2px 4px;
+  margin-left: 4px;
+}
+.squad-table th,
+.squad-table td {
+  padding: 8px 9px;
 }
