@@ -1,7 +1,8 @@
 /* The AI manager of every club. Decisions use public scouting grades and this season's results only;
    the engine input it builds carries true ability, because the engine plays the actual players. */
 import type { Player, PlayerId, TeamId } from '../model/types';
-import { outOfPosition, type Position } from '../model/position';
+import type { Position } from '../model/position';
+import { fitPenalty, positionGames } from './positions';
 import type { BatterIn, BullpenRole, FieldPos, Hand, PitcherIn, RelieverIn, TeamIn } from './engine/types';
 import { ageIn, batValue, currentValue, isForeign, isPitcher, keepValue, starterValue } from './players';
 import { staffEdge, staffRating } from './staff';
@@ -95,6 +96,8 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
   }
   const used = new Set<PlayerId>();
   const slots: { p: Player; pos: FieldPos }[] = [];
+  const gameCache = new Map<PlayerId, Partial<Record<FieldPos, number>>>();
+  const games = (p: Player) => gameCache.get(p.id) ?? (gameCache.set(p.id, positionGames(s, p)), gameCache.get(p.id)!);
   // A better manager reads his hitters beyond the scouting report (STAFF.managerInsight at 80).
   const insight = STAFF.managerInsight * Math.max(0, (staffEdge(staffRating(s, hitters[0]?.teamId, 'manager')) + 1) / 2);
   const hitScore = (p: Player) =>
@@ -104,9 +107,10 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
       bestScore = -Infinity;
     for (const p of hitters) {
       if (used.has(p.id)) continue;
-      const def = pub(p, 'defense') - outOfPosition(p.position, pos);
+      const cost = fitPenalty(p, pos, games(p));
+      const def = pub(p, 'defense') - cost;
       const weight = pos === 'C' || pos === 'SS' ? 0.8 : pos === 'CF' || pos === '2B' ? 0.55 : 0.3;
-      const score = hitScore(p) + weight * (def - 45) - (outOfPosition(p.position, pos) >= 12 ? 40 : 0);
+      const score = hitScore(p) + weight * (def - 45) - (cost >= 12 ? 40 : 0);
       if (score > bestScore) {
         bestScore = score;
         best = p;
@@ -138,7 +142,7 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
     eye: t(p, 'eye'),
     speed: t(p, 'speed'),
     // A player who changed position this spring is still learning it (spring camp plan).
-    defense: t(p, 'defense') - outOfPosition(p.position, pos) - (p.plan?.adaptingIn === s.year ? ADAPTING_PENALTY : 0),
+    defense: t(p, 'defense') - fitPenalty(p, pos, games(p)) - (p.plan?.adaptingIn === s.year ? ADAPTING_PENALTY : 0),
     pos,
   }));
 }

@@ -333,6 +333,9 @@ export interface LeagueState {
   /** This season's home gates, and the postseason ticket money. */
   gate?: Record<TeamId, import('./fans').GateLine>;
   postseasonGate?: number;
+  /** Box scores and play-by-play logs kept for viewing (V0.7, boxscore.ts). */
+  boxes?: Record<string, import('./boxscore').StoredBox>;
+  pbp?: Record<string, import('./engine/types').PlayEvent[]>;
   /** Null in a spectator league. */
   user: UserClub | null;
   pending: Decision | null;

@@ -1,6 +1,8 @@
 import type { LeagueState } from '../league/state';
 import { standingsView, teamOf } from '../league/views';
+import { useState } from 'preact/hooks';
 import { Squad } from './Squad';
+import { Lineup } from './Lineup';
 
 /** Another club's page: its squads, one at a time. */
 export function TeamRoster({
@@ -15,6 +17,7 @@ export function TeamRoster({
   onPlayer: (id: string) => void;
 }) {
   const team = teamOf(league, teamId)!;
+  const [view, setView] = useState<'squad' | 'lineup'>('squad');
   const row = standingsView(league).find((r) => r.teamId === teamId);
   return (
     <section aria-labelledby="team-title" style={{ '--accent': team.color } as Record<string, string>}>
@@ -45,7 +48,15 @@ export function TeamRoster({
           </p>
         )}
       </div>
-      <Squad league={league} teamId={teamId} onPlayer={onPlayer} />
+      <div class="segmented" role="group" aria-label="보기">
+        <button type="button" aria-pressed={view === 'squad'} onClick={() => setView('squad')}>
+          선수단
+        </button>
+        <button type="button" aria-pressed={view === 'lineup'} onClick={() => setView('lineup')}>
+          라인업
+        </button>
+      </div>
+      {view === 'squad' ? <Squad league={league} teamId={teamId} onPlayer={onPlayer} /> : <Lineup league={league} teamId={teamId} onPlayer={onPlayer} />}
     </section>
   );
 }

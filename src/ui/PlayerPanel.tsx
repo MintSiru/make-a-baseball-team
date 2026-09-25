@@ -10,6 +10,8 @@ import { usdTotal } from '../league/contracts';
 import { usd } from '../league/foreign';
 import { handedness, militaryLabel, money, toolKeysFor } from './format';
 
+const POSITION_NAMES: Record<string, string> = { C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' };
+
 type Tab = 'seasons' | 'highs' | 'splits' | 'injuries';
 const TABS: { key: Tab; label: string }[] = [
   { key: 'seasons', label: '연도별 기록' },
@@ -345,6 +347,18 @@ export function PlayerPanel({ league, id, onClose }: { league: LeagueState; id: 
             <p class="muted small">막대는 현재 등급, 눈금은 스카우트가 보는 미래 등급입니다 (20~80).</p>
           </section>
         </div>
+
+        {!pitcher && card.positions.length > 0 && (
+          <section class="pitch-box">
+            <h3>포지션 적성</h3>
+            <div class="gradebars">
+              {card.positions.map((x) => (
+                <GradeBar key={x.pos} label={`${POSITION_NAMES[x.pos]}${x.main ? ' (주)' : ''}`} now={x.grade} note={x.games ? `1군 ${x.games}경기 선발` : undefined} />
+              ))}
+            </div>
+            <p class="muted small">수비 등급에서 포지션 차이만큼 빠집니다. 한 포지션에서 1군 30경기를 넘게 뛰면 그 포지션의 손해가 절반으로 줄어듭니다.</p>
+          </section>
+        )}
 
         {pitcher && (
           <section class="pitch-box">

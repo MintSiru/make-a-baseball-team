@@ -167,6 +167,26 @@ try {
   await page.getByLabel(/플래툰$/).first().selectOption('L');
   await page.screenshot({ path: join(shots, 'manual-entry.png'), fullPage: false });
 
+  // 4b. Lineup at a glance, and a game's box score with the text relay.
+  await page.getByRole('button', { name: '우리 구단', exact: true }).click();
+  await page.getByRole('button', { name: '라인업', exact: true }).click();
+  check((await page.locator('svg.diamond .spot').count()) === 9, 'nine players on the diamond');
+  await page.getByRole('button', { name: '상대 좌완 선발' }).click();
+  await page.screenshot({ path: join(shots, 'lineup.png'), fullPage: false });
+  await page.getByRole('button', { name: '1주', exact: true }).click();
+  await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled);
+  await page.getByRole('button', { name: '경기', exact: true }).click();
+  await page.getByRole('button', { name: '기록지 · 중계' }).first().click();
+  await page.getByRole('dialog').waitFor();
+  check((await page.locator('.linescore tbody tr').count()) === 2, 'line score has two clubs');
+  await page.getByRole('tab', { name: '문자중계' }).click();
+  check((await page.locator('.relay li').count()) > 20, 'text relay has plays');
+  await page.getByRole('button', { name: '처음부터 관전' }).click();
+  await page.getByRole('button', { name: '끝까지 보기' }).waitFor();
+  await page.screenshot({ path: join(shots, 'boxscore.png'), fullPage: false });
+  await page.getByRole('button', { name: '끝까지 보기' }).click();
+  await page.keyboard.press('Escape');
+
   // 5. The market: trade screen with a live verdict, the other views.
   await page.getByRole('button', { name: '이적시장', exact: true }).click();
   await page.locator('.pick-table').first().locator('input[type=checkbox]').first().check();
@@ -199,7 +219,7 @@ try {
   // 7. Layouts.
   for (const [width, height] of SIZES) {
     await page.setViewportSize({ width, height });
-    for (const tab of ['우리 구단', '이적시장', '순위', '기록', '구단', '역대', '드래프트 후보']) {
+    for (const tab of ['우리 구단', '이적시장', '경기', '순위', '기록', '구단', '역대', '드래프트 후보']) {
       await page.getByRole('button', { name: tab, exact: true }).click();
       await noOverflow(page, `${width}x${height} ${tab}`);
     }

@@ -165,6 +165,7 @@ function HitterTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; onP
                 <Name r={r} onPlayer={onPlayer} />
                 <td>
                   {r.pos}
+                  {r.also.length > 0 && <span class="muted small"> · {r.also.join('·')}</span>}
                   {posControl?.(r) ?? (r.platoon && <span class="muted"> ({r.platoon === 'L' ? '좌완 상대' : '우완 상대'})</span>)}
                 </td>
                 <td class="num">{r.age}</td>

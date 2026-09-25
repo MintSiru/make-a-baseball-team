@@ -5,11 +5,13 @@ import { publicView, type PublicPlayer } from '../model/player';
 import type { BatTotals, InjuryRecord, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { emptySplit, type Splits } from './engine/types';
 import { averageVelocity, pitchGrades, topVelocity } from './pitches';
+import { POSITION_SHORT, positionGrades, secondaryPositions } from './positions';
+import { halfLabel, playText } from './playtext';
 import { salaryIn, usdTotal } from './contracts';
 import { ageIn, isForeign, isPitcher } from './players';
 import { currentStandings } from './season';
 import { SANGMU } from './futures';
-import { penRoles, PEN_ROLE_LABELS, rotationFor } from './manager';
+import { lineupFor, penRoles, PEN_ROLE_LABELS, rotationFor } from './manager';
 import { isDevelopment, type LeagueState } from './state';
 import { avg, babip, babipAllowed, batterWar, era, fip, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
 import { addInto, emptyBat, emptyPit } from './state';
@@ -125,6 +127,8 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
       development: isDevelopment(p),
       pitcher: isPitcher(p),
       pos: usage ?? positionLabel(p),
+      /** Hitters: other positions he handles (V0.7). */
+      also: isPitcher(p) ? [] : secondaryPositions(s, p).map((x) => POSITION_SHORT[x]),
       /** A starter by role who pitches in relief on the first team. */
       starterInPen: !!penRole && p.role === 'SP',
       /** First-team relievers: the role in the bullpen, and whether the general manager set it. */
@@ -197,6 +201,8 @@ export interface PlayerCard {
   velocity: { top: number; average: number } | null;
   pitches: ReturnType<typeof pitchGrades>;
   injuries: InjuryRecord[];
+  /** Hitters: grade and first-team games at each position he can play. */
+  positions: ReturnType<typeof positionGrades>;
 }
 
 const QUALIFY = { pa: 446, outs: 432 };
@@ -275,6 +281,7 @@ export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
     velocity: top == null ? null : { top, average: averageVelocity(p)! },
     pitches: pitchGrades(p),
     injuries: [...(p.injuries ?? [])].reverse(),
+    positions: positionGrades(s, p),
   };
 }
 
@@ -328,4 +335,84 @@ export function seasonStats(s: LeagueState) {
       });
   }
   return { batters, pitchers, qualifying: { pa: Math.ceil(teamGames * 3.1), innings: teamGames } };
+}
+
+// ── Box scores (V0.7) ─────────────────────────────────────────────────────────────────────────────
+
+const POS_KO: Record<string, string> = { C: '포', '1B': '1', '2B': '2', '3B': '3', SS: '유', LF: '좌', CF: '중', RF: '우', DH: '지' };
+
+export function boxView(s: LeagueState, id: string) {
+  const b = s.boxes?.[id];
+  if (!b) return null;
+  const name = (pid: string) => s.players[pid]?.name ?? '?';
+  const side = (i: 0 | 1) => {
+    const teamId = i === 0 ? b.away : b.home;
+    return {
+      teamId,
+      name: teamOf(s, teamId)?.name ?? teamId,
+      short: shortName(s, teamId),
+      color: teamOf(s, teamId)?.color ?? '#888',
+      line: b.line[i],
+      rhe: b.rhe[i],
+      bat: b.bat[i].map(([pid, pos, ab, r, h, rbi, hr, bb, k, d, t, sb], order) => ({ id: pid, order: order + 1, name: name(pid), pos: POS_KO[pos] ?? pos, ab, r, h, rbi, hr, bb, k, d, t, sb })),
+      pit: b.pit[i].map(([pid, outs, h, r, er, bb, k, hr, pitches, dec]) => ({ id: pid, name: name(pid), ip: ip(outs), h, r, er, bb, k, hr, pitches, dec: ({ W: '승', L: '패', S: '세', H: '홀' } as Record<string, string>)[dec] ?? '' })),
+    };
+  };
+  const log = s.pbp?.[id];
+  const plays = log?.map((ev, n) => ({ ev, text: playText(ev, `${id}-${n}`, name), half: halfLabel(ev.i, ev.top) }));
+  return { id, date: b.date, innings: b.innings, att: b.att, away: side(0), home: side(1), plays: plays ?? null };
+}
+
+/** Games you can open: the user's this season, then the league's latest days (newest first). */
+export function gameList(s: LeagueState) {
+  const boxes = Object.values(s.boxes ?? {}).sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  const u = s.user?.teamId;
+  const row = (b: (typeof boxes)[number]) => {
+    const mine = u && (b.home === u || b.away === u);
+    const us = b.home === u ? 1 : 0;
+    const result = mine ? (b.rhe[us][0] > b.rhe[1 - us]![0] ? '승' : b.rhe[us][0] < b.rhe[1 - us]![0] ? '패' : '무') : '';
+    return { id: b.id, date: b.date, away: shortName(s, b.away), home: shortName(s, b.home), as: b.rhe[0][0], hs: b.rhe[1][0], att: b.att, result, pbp: !!s.pbp?.[b.id], post: /-(wildcard|semipo|po|ks)-/.test(b.id) };
+  };
+  return {
+    mine: u ? boxes.filter((b) => b.home === u || b.away === u).map(row) : [],
+    recent: boxes.filter((b) => !u || (b.home !== u && b.away !== u)).map(row),
+  };
+}
+
+// ── Lineup at a glance (V0.7) ─────────────────────────────────────────────────────────────────────
+
+/** Today's plan: the manager's lineup against a right- or left-handed starter, the rotation and the bullpen. */
+export function lineupView(s: LeagueState, teamId: TeamId, vs: 'L' | 'R') {
+  const r = s.rosters[teamId];
+  if (!r) return null;
+  const active = r.active;
+  const player = (id: PlayerId) => s.players[id]!;
+  const line = (id: PlayerId) => s.lines[id];
+  const lineup = lineupFor(s, active, undefined, false, vs).map((b, i) => {
+    const p = player(b.id);
+    const bat = line(b.id)?.bat;
+    return { id: b.id, order: i + 1, pos: b.pos, name: p.name, number: p.numberTeam === teamId ? p.number : undefined, bats: p.bats, avg: bat?.ab ? avg(bat) : null, ops: bat?.pa ? ops(bat) : null, hr: bat?.hr ?? 0 };
+  });
+  const rotation = rotationFor(s, active);
+  const nextUp = s.rotation[teamId] ?? 0;
+  const starters = rotation.map((p, i) => {
+    const pit = line(p.id)?.pit;
+    return { id: p.id, name: p.name, throws: p.throws, next: i === nextUp % Math.max(1, rotation.length), era: pit?.outs ? era(pit) : null, w: pit?.w ?? 0, l: pit?.l ?? 0 };
+  });
+  const inRotation = new Set(rotation.map((p) => p.id));
+  const pen = active.map(player).filter((p) => isPitcher(p) && !inRotation.has(p.id));
+  const roles = penRoles(s, teamId, pen);
+  const order = ['CL', 'SU', 'HL', 'LO', 'LR', 'MU'];
+  const bullpen = pen
+    .map((p) => {
+      const pit = line(p.id)?.pit;
+      return { id: p.id, name: p.name, throws: p.throws, role: PEN_ROLE_LABELS[roles[p.id] ?? 'MU'], rank: order.indexOf(roles[p.id] ?? 'MU'), era: pit?.outs ? era(pit) : null, sv: pit?.sv ?? 0, hld: pit?.hld ?? 0 };
+    })
+    .sort((a, b) => a.rank - b.rank);
+  const starting = new Set(lineup.map((b) => b.id));
+  const bench = active
+    .map(player)
+    .filter((p) => !isPitcher(p) && !starting.has(p.id))
+    .map((p) => ({ id: p.id, name: p.name, pos: positionLabel(p), bats: p.bats, injured: !!s.injuries[p.id] }));
+  return { lineup, starters, bullpen, bench };
 }

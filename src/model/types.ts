@@ -107,6 +107,8 @@ export interface BatTotals {
   gdp: number;
   /** First team only: against left- and right-handed pitchers. */
   split?: Splits;
+  /** Games started at each position (V0.7). */
+  posG?: Partial<Record<FieldPos, number>>;
 }
 
 export interface PitTotals {

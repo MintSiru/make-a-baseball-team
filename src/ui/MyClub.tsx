@@ -16,8 +16,9 @@ import { rates, shortName, standingsView } from '../league/views';
 import { money } from './format';
 import { Squad, type Row, type SquadKey } from './Squad';
 import { Office } from './Office';
+import { Lineup } from './Lineup';
 
-type View = 'overview' | 'squad' | 'office';
+type View = 'overview' | 'squad' | 'lineup' | 'office';
 
 export function MyClub({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void }) {
   const [view, setView] = useState<View>('overview');
@@ -41,6 +42,7 @@ export function MyClub({ league, onPlayer, onAct }: { league: LeagueState; onPla
             [
               ['overview', '개요'],
               ['squad', '선수단'],
+              ['lineup', '라인업'],
               ['office', '구단 운영'],
             ] as [View, string][]
           ).map(([id, label]) => (
@@ -53,6 +55,7 @@ export function MyClub({ league, onPlayer, onAct }: { league: LeagueState; onPla
       {u.fired && <p class="notice warn">{u.fired}년 겨울, 모기업이 단장을 해임했습니다. 새 게임을 시작하거나 이 구단을 계속 지켜볼 수 있습니다.</p>}
       {view === 'overview' && <Overview league={league} onPlayer={onPlayer} />}
       {view === 'squad' && <Management league={league} onPlayer={onPlayer} onAct={onAct} setMsg={setMsg} />}
+      {view === 'lineup' && <Lineup league={league} teamId={u.teamId} onPlayer={onPlayer} />}
       {view === 'office' && <Office league={league} onAct={onAct} setMsg={setMsg} />}
       {msg && (
         <p class="toast" role="status">

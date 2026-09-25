@@ -10,7 +10,9 @@ import { ageOn, publicView } from '../model/player';
 import type { CalendarPhase, Player, PlayerId } from '../model/types';
 import { makeSave, parseSave, SaveError, serializeSave } from '../save/format';
 import { openStore, type SaveStore } from '../save/store';
+import { BoxScore } from './BoxScore';
 import { Decision } from './Decision';
+import { Games } from './Games';
 import { DraftBoard } from './DraftBoard';
 import { History } from './History';
 import { Leaders } from './Leaders';
@@ -26,10 +28,11 @@ import { TeamRoster } from './TeamRoster';
 const AUTO_SLOT = 'auto';
 const newSeed = () => `kbo-${Math.floor(Math.random() * 36 ** 6).toString(36)}`;
 
-type Tab = 'club' | 'market' | 'standings' | 'leaders' | 'team' | 'history' | 'draft';
+type Tab = 'club' | 'market' | 'games' | 'standings' | 'leaders' | 'team' | 'history' | 'draft';
 const TABS: { id: Tab; label: string; userOnly?: boolean }[] = [
   { id: 'club', label: '우리 구단', userOnly: true },
   { id: 'market', label: '이적시장', userOnly: true },
+  { id: 'games', label: '경기' },
   { id: 'standings', label: '순위' },
   { id: 'leaders', label: '기록' },
   { id: 'team', label: '구단' },
@@ -60,6 +63,7 @@ export function App() {
   const [progress, setProgress] = useState('');
   const [notice, setNotice] = useState('');
   const [tab, setTab] = useState<Tab>('club');
+  const [boxId, setBoxId] = useState<string | null>(null);
   const [teamId, setTeamId] = useState<string>('kia');
   const [playerId, setPlayerId] = useState<PlayerId | null>(null);
   const [prospectId, setProspectId] = useState<PlayerId | null>(null);
@@ -283,6 +287,7 @@ export function App() {
           <main class="page" data-version={version}>
             {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
             {tab === 'market' && league.user && <Market league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
+            {tab === 'games' && <Games league={league} onOpen={setBoxId} />}
             {tab === 'standings' && <Standings league={league} onTeam={openTeam} />}
             {tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} />}
             {tab === 'team' && <TeamRoster league={league} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />}
@@ -296,6 +301,7 @@ export function App() {
           </main>
         </>
       )}
+      {boxId && league && <BoxScore league={league} id={boxId} onClose={() => setBoxId(null)} onPlayer={(pid) => { setBoxId(null); setPlayerId(pid); }} />}
       {playerId && <PlayerPanel league={league} id={playerId} onClose={() => setPlayerId(null)} />}
       <footer class="footer">
         <div class="save-actions">
