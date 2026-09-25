@@ -178,6 +178,8 @@ export interface Player {
   /** First professional season in the league. */
   proSince: number;
   career: SeasonRecord[];
+  /** Awards and titles ("2027 MVP", "2027 홈런 1위 (38개)"). */
+  honors?: string[];
   /** Injuries so far (first team and futures). */
   injuries?: InjuryRecord[];
   /** Uniform number and the club it belongs to (a player who moves gets a new one). */

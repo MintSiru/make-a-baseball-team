@@ -4,6 +4,8 @@ import type { Player, PlayerId, TeamId } from '../model/types';
 import { simulateGame } from './engine/game';
 import { emptySplit, type GameOut, type PlayEvent, type Splits, type TeamBox } from './engine/types';
 import { compactBox, isUserGame, keepBox } from './boxscore';
+import { gameMoments, milestone } from './milestones';
+import { gameNews, milestoneNews, monthNews } from './news';
 import { parkFactor } from './clubs';
 import { assignSquads, futuresPreference, futuresSquad, makeFuturesLeague } from './futures';
 import { chooseActive, matchInputs } from './manager';
@@ -55,6 +57,7 @@ export function startSeason(s: LeagueState) {
   s.boxes = {};
   s.pbp = {};
   setGoals(s, s.year);
+  if (s.user && s.user.firstTeamYear === s.year) milestone(s, s.year, `${s.year} 1군 첫 시즌 개막`, 'firstTeam');
 }
 
 // ── Futures league ──────────────────────────────────────────────────────────────────────────────
@@ -256,6 +259,8 @@ export function playDay(s: LeagueState): boolean {
   processWaivers(s, date);
   marketEvents(s, date);
   const day = s.next;
+  // The first game day of a month: last month's story.
+  if (day > 0 && s.schedule[day - 1]!.date.slice(5, 7) !== date.slice(5, 7)) monthNews(s, date);
   while (s.next < s.schedule.length && s.schedule[s.next]!.date === date) {
     const g = s.schedule[s.next]!;
     const log: PlayEvent[] | undefined = isUserGame(s, g.home, g.away) ? [] : undefined;
@@ -267,7 +272,13 @@ export function playDay(s: LeagueState): boolean {
     const att = attendance(s, { id: g.id, date, home: g.home, away: g.away });
     recordGate(s, g.home, att);
     s.scores.push({ id: g.id, date, home: g.home, away: g.away, hs: out.home.runs, as: out.away.runs, att });
-    keepBox(s, compactBox(out, g.id, date, att), log);
+    const box = compactBox(out, g.id, date, att);
+    keepBox(s, box, log);
+    if (log) {
+      gameMoments(s, box);
+      gameNews(s, box);
+      milestoneNews(s, date, [...out.home.batting, ...out.home.pitching, ...out.away.batting, ...out.away.pitching].map((x) => x.id));
+    }
     const r = rng(`${s.seed}|injury|${g.id}`);
     rollInjuries(s, out.home, date, r);
     rollInjuries(s, out.away, date, r);

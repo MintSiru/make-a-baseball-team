@@ -17,10 +17,18 @@ import { money } from './format';
 import { Squad, type Row, type SquadKey } from './Squad';
 import { Office } from './Office';
 import { Lineup } from './Lineup';
+import { Story } from './Story';
+import type { NewsItem } from '../league/news';
 
-type View = 'overview' | 'squad' | 'lineup' | 'office';
+type View = 'overview' | 'squad' | 'lineup' | 'story' | 'office';
 
-export function MyClub({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void }) {
+export interface StoryHooks {
+  onRewrite?: (item: NewsItem) => void;
+  onRevert?: (item: NewsItem) => void;
+  busyId?: string | null;
+}
+
+export function MyClub({ league, onPlayer, onAct, story = {} }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void; story?: StoryHooks }) {
   const [view, setView] = useState<View>('overview');
   const [msg, setMsg] = useState('');
   const u = league.user!;
@@ -43,6 +51,7 @@ export function MyClub({ league, onPlayer, onAct }: { league: LeagueState; onPla
               ['overview', '개요'],
               ['squad', '선수단'],
               ['lineup', '라인업'],
+              ['story', '소식'],
               ['office', '구단 운영'],
             ] as [View, string][]
           ).map(([id, label]) => (
@@ -56,6 +65,7 @@ export function MyClub({ league, onPlayer, onAct }: { league: LeagueState; onPla
       {view === 'overview' && <Overview league={league} onPlayer={onPlayer} />}
       {view === 'squad' && <Management league={league} onPlayer={onPlayer} onAct={onAct} setMsg={setMsg} />}
       {view === 'lineup' && <Lineup league={league} teamId={u.teamId} onPlayer={onPlayer} />}
+      {view === 'story' && <Story league={league} {...story} />}
       {view === 'office' && <Office league={league} onAct={onAct} setMsg={setMsg} />}
       {msg && (
         <p class="toast" role="status">

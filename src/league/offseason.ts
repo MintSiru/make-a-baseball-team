@@ -24,6 +24,9 @@ import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, orgIds, orgP
 import { batterWar, leagueContext, pitcherWar } from './stats';
 import { maybeRetireNumber } from './numbers';
 import { settleFinances } from './finance';
+import { awardHonours, computeAwards, hallOfFameCheck } from './awards';
+import { seasonMoments } from './milestones';
+import { seasonNews } from './news';
 import { seasonFans } from './fans';
 import { aiStaffWinter } from './staff';
 import { runAiPosting } from './posting';
@@ -100,7 +103,11 @@ export function closeSeason(s: LeagueState) {
   });
   // The business year closes with the baseball one: accounts, fans' mood, AI staff changes.
   const summary = s.history[s.history.length - 1]!;
+  summary.awards = computeAwards(s, s.year, summary.table, summary.champion);
+  awardHonours(s, s.year, summary.awards);
   settleFinances(s, s.year, summary.table);
+  seasonMoments(s, s.year, summary.awards);
+  seasonNews(s, s.year);
   seasonFans(s, s.year, summary.table, summary.champion);
   aiStaffWinter(s, s.year, summary.table);
   s.phase = 'offseason';
@@ -225,6 +232,7 @@ function removeFromRoster(s: LeagueState, p: Player) {
 /** Retire or drop a player. Players who never reached the first team are forgotten to keep saves small. */
 export function leaveLeague(s: LeagueState, p: Player, status: 'retired' | 'overseas') {
   if (status === 'retired' && p.teamId) maybeRetireNumber(s, p, p.teamId, s.year);
+  if (status === 'retired') hallOfFameCheck(s, p, s.year);
   removeFromRoster(s, p);
   p.teamId = null;
   p.contract = null;

@@ -291,7 +291,7 @@ export function App() {
             {tab === 'standings' && <Standings league={league} onTeam={openTeam} />}
             {tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} />}
             {tab === 'team' && <TeamRoster league={league} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />}
-            {tab === 'history' && <History league={league} />}
+            {tab === 'history' && <History league={league} onPlayer={setPlayerId} />}
             {tab === 'draft' && (
               <div class="layout">
                 <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} ourView={league?.user ? (p) => scoutView(league!, p) : undefined} />
@@ -302,7 +302,7 @@ export function App() {
         </>
       )}
       {boxId && league && <BoxScore league={league} id={boxId} onClose={() => setBoxId(null)} onPlayer={(pid) => { setBoxId(null); setPlayerId(pid); }} />}
-      {playerId && <PlayerPanel league={league} id={playerId} onClose={() => setPlayerId(null)} />}
+      {playerId && league && <PlayerPanel league={league} id={playerId} onClose={() => setPlayerId(null)} onInterview={(pid) => act({ kind: 'interview', id: pid }, '인터뷰 중', false)} />}
       <footer class="footer">
         <div class="save-actions">
           <button type="button" onClick={exportSave} disabled={!!busy}>

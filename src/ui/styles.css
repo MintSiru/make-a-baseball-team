@@ -1464,3 +1464,95 @@ ul.plain li {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Awards and records (V0.7) */
+.leader-card {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: var(--card, var(--paper));
+}
+.leader-card h4 {
+  margin: 0 0 4px;
+  font-size: 14px;
+}
+.award-year {
+  border-top: 1px solid var(--rule);
+  padding-top: 4px;
+}
+.honors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  margin: 6px 0;
+}
+.achievements {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 8px;
+}
+.achievement {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 8px 10px;
+  opacity: 0.55;
+}
+.achievement.done {
+  opacity: 1;
+  border-color: var(--accent);
+}
+.achievement strong {
+  display: block;
+}
+
+/* News and story (V0.7) */
+.news-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+.news-card {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: var(--card, var(--paper));
+}
+.news-card h4 {
+  margin: 2px 0 6px;
+  font-size: 16px;
+}
+.news-card p {
+  margin: 4px 0;
+}
+.quotes {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0;
+  font-size: 14px;
+}
+.quotes li {
+  padding: 2px 0;
+}
+.quotes .quote-fan {
+  color: var(--ink-2);
+}
+.form-dots {
+  display: flex;
+  gap: 3px;
+  margin: 6px 0 0;
+}
+.dot {
+  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  border: 1px solid var(--rule);
+}
+.dot-W {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+.timeline li {
+  display: flex;
+  gap: 10px;
+}

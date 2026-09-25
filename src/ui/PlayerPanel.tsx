@@ -246,7 +246,7 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
   );
 }
 
-export function PlayerPanel({ league, id, onClose }: { league: LeagueState; id: string; onClose: () => void }) {
+export function PlayerPanel({ league, id, onClose, onInterview }: { league: LeagueState; id: string; onClose: () => void; onInterview?: (id: string) => void }) {
   const card = playerCard(league, id);
   const heading = useRef<HTMLHeadingElement>(null);
   const [tab, setTab] = useState<Tab>('seasons');
@@ -283,6 +283,14 @@ export function PlayerPanel({ league, id, onClose }: { league: LeagueState; id: 
           </div>
         </div>
         {card.status && <p class="notice">{card.status}</p>}
+        {onInterview && league.user && p.teamId === league.user.teamId && (
+          <p>
+            <button type="button" onClick={() => onInterview(p.id)}>
+              인터뷰 요청
+            </button>{' '}
+            <span class="muted small">우리 구단 → 소식 → 뉴스에 실립니다.</span>
+          </p>
+        )}
 
         <div class="profile-grid">
           <section>
@@ -334,6 +342,15 @@ export function PlayerPanel({ league, id, onClose }: { league: LeagueState; id: 
               </div>
             </dl>
             <p class="muted small">{p.education.pathText}</p>
+            {!!p.honors?.length && (
+              <div class="honors">
+                {[...p.honors].reverse().map((h) => (
+                  <span key={h} class="tag">
+                    {h}
+                  </span>
+                ))}
+              </div>
+            )}
           </section>
 
           <section>

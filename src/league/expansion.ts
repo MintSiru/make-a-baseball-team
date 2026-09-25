@@ -6,6 +6,7 @@
 import { generateDraftPool, rng } from '../draftroom';
 import { cityById } from '../club/cities';
 import { baseSupport } from './parent';
+import { milestone, unlock } from './milestones';
 import type { ParentCompanyType } from '../club/types';
 import { fromDraftProspect } from '../model/player';
 import type { Player, PlayerId, Team, TeamId } from '../model/types';
@@ -141,6 +142,8 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
   s.user.ledger.push({ year: s.year, label: `가입 예치금 ${b.deposit / 10000}억 (KBO 보관, 지출 아님)`, amount: 0 });
   if (plan.opens) s.user.ledger.push({ year: s.year, label: `${plan.label} ${plan.opens}년 개장 예정 (지자체 건설)`, amount: 0 });
   s.pending = { kind: 'tryout', candidates: tryoutPool(s).map((p) => p.id), max: 20 };
+  milestone(s, 2026, `${FOUNDING_DATE} ${team.name} 창단 승인 (${city.name})`, 'founded');
+  unlock(s, 'founded', 2026);
 }
 
 /** Independent-league players, overseas returnees and recently released pros for the founding tryout. */

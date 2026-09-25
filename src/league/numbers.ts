@@ -6,6 +6,7 @@ import { rng } from '../draftroom';
 import type { Player, TeamId } from '../model/types';
 import { isForeign, isPitcher } from './players';
 import { isDevelopment, orgPlayers, type LeagueState } from './state';
+import { milestone, unlock } from './milestones';
 
 const RETIRE = { war: 60, seasons: 12 };
 
@@ -65,4 +66,8 @@ export function maybeRetireNumber(s: LeagueState, p: Player, teamId: TeamId, yea
   const team = s.teams.find((t) => t.id === teamId);
   if (!team || team.retiredNumbers?.some((x) => x.number === p.number)) return;
   (team.retiredNumbers ??= []).push({ number: p.number, playerId: p.id, name: p.name, year });
+  if (teamId === s.user?.teamId) {
+    unlock(s, 'retiredNumber', year, `${p.number}번 ${p.name}`);
+    milestone(s, year, `${p.name}의 ${p.number}번 영구결번`);
+  }
 }

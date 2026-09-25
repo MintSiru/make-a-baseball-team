@@ -19,6 +19,16 @@ const SPOTS: Record<string, [number, number]> = {
 /** Long names (foreign players) show their last word so they fit on the field. */
 const onField = (name: string) => (name.length > 5 && name.includes(' ') ? name.split(' ').at(-1)! : name);
 
+/** A 20–80 grade cell, coloured above 60 and below 40. */
+const Grade = ({ g }: { g: number }) => <td class={`num grade-cell ${g >= 60 ? 'plus' : g < 40 ? 'minus' : ''}`}>{g || '-'}</td>;
+
+/** 종합 · 구위/제구/변화구/체력 · 최고 구속. */
+const ArmLine = ({ p }: { p: { grade: number; tools: { stuff: number; command: number; breaking: number; stamina: number }; velocity: number | null } }) => (
+  <span title="현재 · 구위/제구/변화구/체력 · 최고 구속">
+    <strong>{p.grade}</strong> ({p.tools.stuff}/{p.tools.command}/{p.tools.breaking}/{p.tools.stamina}){p.velocity ? ` · ${p.velocity}km/h` : ''}
+  </span>
+);
+
 const f3 = (x: number | null) => (x == null ? '-' : rates.fmt3(x));
 
 export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; teamId: string; onPlayer: (id: string) => void }) {
@@ -26,7 +36,10 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
   const v = lineupView(league, teamId, vs);
   if (!v || v.lineup.length < 9) return <p class="muted">1군 선수가 모자라 라인업을 짤 수 없습니다.</p>;
   const next = v.starters.find((x) => x.next) ?? v.starters[0];
-  const field = [...v.lineup.filter((b) => b.pos !== 'DH').map((b) => ({ pos: b.pos as string, id: b.id, name: b.name, number: b.number })), ...(next ? [{ pos: 'P', id: next.id, name: next.name, number: undefined }] : [])];
+  const field = [
+    ...v.lineup.filter((b) => b.pos !== 'DH').map((b) => ({ pos: b.pos as string, id: b.id, name: b.name, number: b.number, grade: b.grade })),
+    ...(next ? [{ pos: 'P', id: next.id, name: next.name, number: undefined, grade: next.grade }] : []),
+  ];
   const dh = v.lineup.find((b) => b.pos === 'DH');
   return (
     <div class="lineup">
@@ -38,7 +51,9 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
           상대 좌완 선발
         </button>
       </div>
-      <p class="muted">감독이 오늘 짤 라인업입니다 (직접 관리에서 정한 플래툰·불펜 보직 반영). 부상·대표팀 선수는 빠집니다.</p>
+      <p class="muted">
+        감독이 오늘 짤 라인업입니다 (직접 관리에서 정한 플래툰·불펜 보직 반영). 부상·대표팀 선수는 빠집니다. 능력치는 스카우팅 등급(20~80)이며, 투수는 현재 (구위/제구/변화구/체력) 순입니다.
+      </p>
       <div class="lineup-grid">
         <svg viewBox="0 0 400 320" class="diamond" role="img" aria-label="수비 위치">
           <path d="M200 300 L40 140 A230 230 0 0 1 360 140 Z" class="grass" />
@@ -50,7 +65,7 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
                 <rect x={x - 50} y={y - 16} width={100} height={32} rx={6} />
                 <text x={x} y={y - 2} text-anchor="middle" class="spot-pos">
                   {f.pos === 'P' ? '선발' : f.pos}
-                  {f.number != null ? ` #${f.number}` : ''}
+                  {f.number != null ? ` #${f.number}` : ''} · {f.grade}
                 </text>
                 <text x={x} y={y + 12} text-anchor="middle" class="spot-name">
                   {onField(f.name)}
@@ -68,6 +83,12 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
                 <th>타자</th>
                 <th>위치</th>
                 <th>타</th>
+                <th class="num" title="현재 종합 등급">현재</th>
+                <th class="num" title="컨택">컨</th>
+                <th class="num" title="파워">파</th>
+                <th class="num" title="선구안">선</th>
+                <th class="num" title="주력">주</th>
+                <th class="num" title="수비">수</th>
                 <th class="num">타율</th>
                 <th class="num">OPS</th>
                 <th class="num">홈런</th>
@@ -84,6 +105,12 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
                   </td>
                   <td>{b.pos}</td>
                   <td>{b.bats}</td>
+                  <td class="num strong">{b.grade}</td>
+                  <Grade g={b.tools.contact} />
+                  <Grade g={b.tools.power} />
+                  <Grade g={b.tools.eye} />
+                  <Grade g={b.tools.speed} />
+                  <Grade g={b.tools.defense} />
                   <td class="num">{f3(b.avg)}</td>
                   <td class="num strong">{f3(b.ops)}</td>
                   <td class="num">{b.hr}</td>
@@ -104,7 +131,7 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
                   {p.name}
                 </button>{' '}
                 <span class="muted small">
-                  {p.throws}투 · {p.w}승 {p.l}패 · ERA {p.era == null ? '-' : p.era.toFixed(2)}
+                  {p.throws}투 · <ArmLine p={p} /> · {p.w}승 {p.l}패 · ERA {p.era == null ? '-' : p.era.toFixed(2)}
                 </span>
                 {p.next && <span class="tag">다음 등판</span>}
               </li>
@@ -121,13 +148,13 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
                   {p.name}
                 </button>{' '}
                 <span class="muted small">
-                  {p.throws}투 · {p.sv}세 {p.hld}홀 · ERA {p.era == null ? '-' : p.era.toFixed(2)}
+                  {p.throws}투 · <ArmLine p={p} /> · {p.sv}세 {p.hld}홀 · ERA {p.era == null ? '-' : p.era.toFixed(2)}
                 </span>
               </li>
             ))}
           </ol>
           <h3>벤치</h3>
-          <p>{v.bench.length ? v.bench.map((b) => `${b.name}(${b.pos}${b.injured ? '·부상' : ''})`).join(', ') : '-'}</p>
+          <p>{v.bench.length ? v.bench.map((b) => `${b.name}(${b.pos} ${b.grade}${b.injured ? '·부상' : ''})`).join(', ') : '-'}</p>
         </div>
       </div>
     </div>

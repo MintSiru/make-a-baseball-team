@@ -7,6 +7,8 @@ import type { LeagueState, SeriesResult } from './state';
 import { leaguePrice } from './fans';
 import { FANS } from './tuning';
 import { compactBox, isUserGame, keepBox } from './boxscore';
+import { gameMoments } from './milestones';
+import { gameNews } from './news';
 import type { PlayEvent } from './engine/types';
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
@@ -34,7 +36,12 @@ function series(s: LeagueState, round: SeriesResult['round'], high: TeamId, low:
       const att = Math.round(seats * (0.97 + (i % 3) * 0.01));
       s.postseasonGate = (s.postseasonGate ?? 0) + Math.round(att * leaguePrice(s.year) * FANS.postseasonPrice);
       games.push({ id, date, home, away, hs: out.home.runs, as: out.away.runs, att });
-      keepBox(s, compactBox(out, id, date, att), log);
+      const box = compactBox(out, id, date, att);
+      keepBox(s, box, log);
+      if (log) {
+        gameMoments(s, box);
+        gameNews(s, box);
+      }
       const highRuns = highHome ? out.home.runs : out.away.runs,
         lowRuns = highHome ? out.away.runs : out.home.runs;
       if (highRuns > lowRuns) hw++;
