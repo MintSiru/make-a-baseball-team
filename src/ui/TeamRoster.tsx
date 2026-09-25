@@ -51,12 +51,25 @@ function RosterTable({ title, rows, onPlayer }: { title: string; rows: Row[]; on
   );
 }
 
-export function TeamRoster({ league, teamId, onTeam, onPlayer }: { league: LeagueState; teamId: string; onTeam: (id: string) => void; onPlayer: (id: string) => void }) {
+export function TeamRoster({
+  league,
+  teamId,
+  onTeam,
+  onPlayer,
+  hideChips,
+}: {
+  league: LeagueState;
+  teamId: string;
+  onTeam: (id: string) => void;
+  onPlayer: (id: string) => void;
+  hideChips?: boolean;
+}) {
   const team = teamOf(league, teamId)!;
   const roster = rosterView(league, teamId);
   const row = standingsView(league).find((r) => r.teamId === teamId);
   return (
-    <section aria-labelledby="team-title" style={{ '--accent': team.color } as Record<string, string>}>
+    <section aria-labelledby={hideChips ? undefined : 'team-title'} style={{ '--accent': team.color } as Record<string, string>}>
+      {!hideChips && (
       <div class="team-chips" role="group" aria-label="구단">
         {league.teams.map((t) => (
           <button key={t.id} type="button" aria-pressed={t.id === teamId} onClick={() => onTeam(t.id)}>
@@ -64,11 +77,14 @@ export function TeamRoster({ league, teamId, onTeam, onPlayer }: { league: Leagu
           </button>
         ))}
       </div>
-      <h2 id="team-title">{team.name}</h2>
-      <p class="muted">
-        {team.stadium.name} ({team.stadium.capacity.toLocaleString('ko-KR')}석) · {team.parent.name}
-        {row && ` · ${row.rank}위 ${row.w}승 ${row.l}패 ${row.t}무`}
-      </p>
+      )}
+      {!hideChips && <h2 id="team-title">{team.name}</h2>}
+      {!hideChips && (
+        <p class="muted">
+          {team.stadium.name} ({team.stadium.capacity.toLocaleString('ko-KR')}석) · {team.parent.name}
+          {row && ` · ${row.rank}위 ${row.w}승 ${row.l}패 ${row.t}무`}
+        </p>
+      )}
       <RosterTable title="1군" rows={roster.active} onPlayer={onPlayer} />
       <RosterTable title="퓨처스" rows={roster.futures} onPlayer={onPlayer} />
       <RosterTable title="군 복무" rows={roster.military} onPlayer={onPlayer} />

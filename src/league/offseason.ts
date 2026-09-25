@@ -387,7 +387,8 @@ export function cutToLimits(s: LeagueState, next: number): Player[] {
     if (ids.length <= limit) continue;
     const cut = ids
       .map((id) => s.players[id]!)
-      .filter((p) => !isForeign(p) && p.contract?.kind !== 'freeAgent')
+      // Foreign players, free agents and this fall's early-round draftees are never cut in their first winter.
+      .filter((p) => !isForeign(p) && p.contract?.kind !== 'freeAgent' && !(p.proSince >= next && (p.origin.overallPick ?? Infinity) <= O.protectedRounds * s.teams.length))
       .sort((a, b) => keepValue(a, next) - keepValue(b, next))
       .slice(0, ids.length - limit);
     for (const p of cut) {

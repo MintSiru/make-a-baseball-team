@@ -109,6 +109,8 @@ export const OFFSEASON = {
   developmentSignings: 4,
   /** Clubs leave a few roster spots open after the draft. */
   openSpots: 3,
+  /** Draftees from these first rounds are kept through their first winter; later picks can be cut like anyone. */
+  protectedRounds: 5,
   release: { maxAge: 33, minValue: 45, signChance: 0.5 },
   foreign: { keepWarPitcher: 2.5, keepWarHitter: 2.0, keepChance: 0.85 },
 } as const;

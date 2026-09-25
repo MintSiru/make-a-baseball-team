@@ -17,7 +17,6 @@ import {
   foreignOn,
   freeAgentsFor,
   makePick,
-  payroll,
   removeFromRoster,
   renewForeigners,
   rosterLimit,
@@ -252,13 +251,21 @@ export type DecisionInput =
 
 const nextSeasonOf = (s: LeagueState) => (s.offseason ? s.offseason.year + 1 : s.year + 1);
 
+/** Next season's payroll, counting the renewal estimate for players whose salary is not set yet. */
+export function projectedPayroll(s: LeagueState, teamId: TeamId, season: number) {
+  return [...s.rosters[teamId]!.active, ...s.rosters[teamId]!.futures].reduce((sum, id) => {
+    const p = s.players[id]!;
+    return sum + (salaryIn(p, season) || (isForeign(p) ? 0 : renewSalary(p, season)));
+  }, 0);
+}
+
 /** Checks a decision against the rules and the budget. Returns a message for the player, or null when it is fine. */
 export function checkDecision(s: LeagueState, input: DecisionInput): string | null {
   const d = s.pending;
   const u = user(s);
   if (!d || d.kind !== input.kind) return '지금 내릴 결정이 아닙니다.';
   const next = nextSeasonOf(s);
-  const payrollAfter = (ids: PlayerId[]) => payroll(s, u.teamId, next) + ids.reduce((a, id) => a + (salaryIn(s.players[id]!, next) || minimumSalaryFor(next)), 0);
+  const payrollAfter = (ids: PlayerId[]) => projectedPayroll(s, u.teamId, next) + ids.reduce((a, id) => a + (salaryIn(s.players[id]!, next) || renewSalary(s.players[id]!, next)), 0);
   switch (input.kind) {
     case 'tryout':
     case 'released': {
@@ -278,7 +285,7 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       if (input.ids.some((id) => !dd.candidates.includes(id))) return '명단에 없는 선수입니다.';
       if (input.ids.length > dd.max) return `신생구단 특례로 최대 ${dd.max}명까지 영입할 수 있습니다.`;
       const cost = input.ids.reduce((a, id) => a + faAsk(s, s.players[id]!, next), 0);
-      if (payroll(s, u.teamId, next) + cost > u.payrollBudget) return '연봉 예산을 넘습니다.';
+      if (projectedPayroll(s, u.teamId, next) + cost > u.payrollBudget) return '연봉 예산을 넘습니다.';
       return null;
     }
     case 'specialDraft': {

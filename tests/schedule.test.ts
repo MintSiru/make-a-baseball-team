@@ -40,6 +40,26 @@ describe('schedule', () => {
     expect(seriesPlan(14).reduce((a, b) => a + b, 0)).toBe(14);
   });
 
+  it('gives eleven clubs 144 games: 15 against four opponents and 14 against six, split evenly home and away', () => {
+    const eleven = [...TEAMS, 'k'];
+    const g11 = makeSchedule(eleven, 2028, 'sched11');
+    expect(g11).toHaveLength(792);
+    for (const t of eleven) {
+      expect(g11.filter((g) => g.home === t || g.away === t)).toHaveLength(144);
+      const counts = eleven.filter((o) => o !== t).map((o) => g11.filter((g) => (g.home === t && g.away === o) || (g.home === o && g.away === t)).length);
+      expect(counts.filter((c) => c === 15)).toHaveLength(4);
+      expect(counts.filter((c) => c === 14)).toHaveLength(6);
+      for (const o of eleven.filter((x) => x !== t)) {
+        const home = g11.filter((g) => g.home === t && g.away === o).length,
+          away = g11.filter((g) => g.home === o && g.away === t).length;
+        expect(Math.abs(home - away)).toBeLessThanOrEqual(1);
+      }
+    }
+    const byDate = new Map<string, string[]>();
+    for (const g of g11) byDate.set(g.date, [...(byDate.get(g.date) ?? []), g.home, g.away]);
+    for (const clubs of byDate.values()) expect(new Set(clubs).size).toBe(clubs.length);
+  });
+
   it('builds round robins for odd club counts with one bye per round', () => {
     const rounds = roundRobin(11);
     expect(rounds).toHaveLength(11);
