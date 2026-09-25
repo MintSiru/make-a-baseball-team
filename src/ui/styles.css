@@ -485,7 +485,30 @@ button:disabled {
 
 /* ── Expansion club (V0.3) ─────────────────────────────────────────────── */
 .new-game {
-  max-width: 1100px;
+  max-width: calc(var(--page) + 32px);
+}
+/* Wide screens: the form on the left, the founding terms and the button beside it. */
+@media (min-width: 1000px) {
+  .new-game {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 0 40px;
+    align-items: start;
+  }
+  .new-game > * {
+    grid-column: 1;
+  }
+  .new-game > .summary {
+    grid-column: 2;
+    grid-row: 1 / span 20;
+    position: sticky;
+    top: 16px;
+    margin-top: 0;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 16px;
+  }
 }
 .form-block {
   margin: 20px 0;
@@ -774,14 +797,34 @@ button.pick {
 .masthead,
 .progress-bar,
 .tabs,
-.page,
 .footer {
   padding-left: var(--gutter);
   padding-right: var(--gutter);
 }
+/* The page itself is a centred box, so pages with their own width (the founding form) still line up. */
+.page {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: calc(var(--page) + 32px);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+/* Only the app-level notice under the header spans the page gutters; notices inside a page sit in its flow. */
 .notice {
+  margin-left: 0;
+  margin-right: 0;
+}
+.masthead ~ .notice {
   margin-left: var(--gutter);
   margin-right: var(--gutter);
+}
+.summary .facts {
+  grid-template-columns: minmax(0, 1fr);
+}
+.new-game > .summary h3 {
+  margin-top: 0;
 }
 .masthead {
   border-bottom: 1px solid var(--rule);
@@ -1020,12 +1063,17 @@ h3 {
   gap: 10px;
 }
 
-/* Tables: a framed card, zebra rows, more room per row. */
+/* Tables: a framed card as wide as its columns need (up to the page), zebra rows, more room per row. */
 .table-wrap {
   border: 1px solid var(--rule);
   border-radius: 8px;
   background: var(--card);
   margin: 8px 0 16px;
+  width: fit-content;
+  max-width: 100%;
+}
+.table-wrap > table {
+  width: auto;
 }
 .record-table th,
 .record-table td {

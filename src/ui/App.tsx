@@ -92,6 +92,11 @@ export function App() {
         if (state?.teams) {
           show(state);
           setTab(state.user ? 'club' : 'standings');
+          if (saved?.migratedFrom) {
+            // Keep the original before the carried-forward game overwrites the autosave.
+            await st.copy(AUTO_SLOT, `backup-${saved.migratedFrom}`).catch(() => undefined);
+            setNotice(`이전 버전(시뮬레이션 ${saved.migratedFrom})의 진행을 ${RELEASE} 규칙으로 옮겨 이어 합니다. 지나간 기록은 그대로이고, 앞으로의 경기와 성장은 새 규칙을 따릅니다.`);
+          }
         }
       } catch (e) {
         if (e instanceof SaveError) setNotice(`자동 저장을 열지 못했습니다. ${e.message}`);
@@ -181,7 +186,7 @@ export function App() {
       if (!state?.teams) throw new SaveError('damaged', '진행 파일에 리그 상태가 없습니다.');
       show(state);
       await persist(store, state);
-      setNotice('진행 파일을 불러왔습니다.');
+      setNotice(save.migratedFrom ? `이전 버전(시뮬레이션 ${save.migratedFrom})의 진행 파일을 ${RELEASE} 규칙으로 옮겨 불러왔습니다.` : '진행 파일을 불러왔습니다.');
     } catch (e) {
       setNotice(e instanceof SaveError ? e.message : '진행 파일을 읽지 못했습니다.');
     }
