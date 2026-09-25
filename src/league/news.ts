@@ -71,7 +71,13 @@ const managerQuote = (s: LeagueState, teamId: TeamId, won: boolean, key: string)
   role: 'manager',
   text: pick(won ? MANAGER_WIN : MANAGER_LOSS, key),
 });
-const fanQuotes = (won: boolean, key: string): Quote[] => [0, 1].map((i) => ({ who: '팬', role: 'fan' as const, text: pick(won ? FANS_WIN : FANS_LOSS, `${key}-${i}`) }));
+/** Two different fan reactions. */
+const fanQuotes = (won: boolean, key: string): Quote[] => {
+  const lines = won ? FANS_WIN : FANS_LOSS;
+  const a = Math.floor(hashUnit(`${key}-0`) * lines.length);
+  const b = (a + 1 + Math.floor(hashUnit(`${key}-1`) * (lines.length - 1))) % lines.length;
+  return [a, b].map((i) => ({ who: '팬', role: 'fan' as const, text: lines[i]! }));
+};
 
 // ── Game stories ─────────────────────────────────────────────────────────────────────────────────
 

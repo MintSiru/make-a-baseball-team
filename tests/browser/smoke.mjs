@@ -187,6 +187,20 @@ try {
   await page.getByRole('button', { name: '끝까지 보기' }).click();
   await page.keyboard.press('Escape');
 
+  // 4c. The club's story, the AI article settings (no key: nothing is sent), the record room.
+  await page.getByRole('button', { name: '우리 구단', exact: true }).click();
+  await page.getByRole('button', { name: '소식', exact: true }).click();
+  for (const v of ['연표', '업적', '뉴스']) await page.getByRole('group', { name: '이야기' }).getByRole('button', { name: v, exact: true }).click();
+  await page.screenshot({ path: join(shots, 'story.png'), fullPage: false });
+  await page.getByRole('button', { name: /^AI 기사 설정/ }).click();
+  await page.getByRole('dialog').waitFor();
+  await page.getByLabel('제공자').selectOption('gemini');
+  await page.getByRole('dialog').getByRole('button', { name: '닫기' }).click();
+  await page.getByRole('button', { name: '역대', exact: true }).click();
+  for (const v of ['시상', '기록실', '명예의 전당', '시즌']) await page.getByRole('group', { name: '역대' }).getByRole('button', { name: v, exact: true }).click();
+  await page.getByRole('group', { name: '역대' }).getByRole('button', { name: '기록실', exact: true }).click();
+  await page.screenshot({ path: join(shots, 'records.png'), fullPage: false });
+
   // 5. The market: trade screen with a live verdict, the other views.
   await page.getByRole('button', { name: '이적시장', exact: true }).click();
   await page.locator('.pick-table').first().locator('input[type=checkbox]').first().check();

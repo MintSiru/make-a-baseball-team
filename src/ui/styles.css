@@ -1556,3 +1556,12 @@ ul.plain li {
   display: flex;
   gap: 10px;
 }
+.form-grid {
+  display: grid;
+  gap: 10px;
+  margin: 10px 0;
+}
+.form-grid label {
+  display: grid;
+  gap: 4px;
+}

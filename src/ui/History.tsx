@@ -120,7 +120,7 @@ function Hall({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string
   const hall = [...(league.hallOfFame ?? [])].reverse();
   return (
     <>
-      <p class="muted">은퇴한 선수 가운데 통산 WAR 50 이상, 또는 WAR 40 이상에 MVP·골든글러브·신인왕을 네 번 넘게 받은 선수가 오릅니다 (게임 속 제도).</p>
+      <p class="muted">은퇴한 선수 가운데 통산 WAR 65 이상, 또는 WAR 55 이상에 MVP·골든글러브·신인왕을 다섯 번 넘게 받은 선수가 오릅니다 (게임 속 제도).</p>
       {hall.length ? (
         <div class="table-wrap">
           <table class="record-table">

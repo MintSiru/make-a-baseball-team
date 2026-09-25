@@ -134,7 +134,7 @@ export interface HallEntry {
   line: string;
 }
 
-const HALL = { war: 50, warWithHonours: 40, honours: 4 };
+const HALL = { war: 65, warWithHonours: 55, honours: 5 };
 
 /** A retiring player's career: enough WAR, or a strong career with major awards, enters the hall. */
 export function hallOfFameCheck(s: LeagueState, p: Player, year: number) {
