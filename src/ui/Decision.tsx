@@ -7,7 +7,7 @@ import { autoDecision, checkDecision, faAsk, projectedPayroll, type DecisionInpu
 import { sangmuChance } from '../league/offseason';
 import { ageIn, isPitcher, keepValue } from '../league/players';
 import type { Decision as DecisionT, LeagueState } from '../league/state';
-import { faAsk as ownAsk, focusOptions, payrollWithout, type CampPlan, type MilitaryOrder } from '../league/userclub';
+import { faAsk as ownAsk, focusOptions, payrollWithout, salaryOffer, type CampPlan, type MilitaryOrder, type SalaryChoice } from '../league/userclub';
 import { marketValue } from '../league/market';
 import { positionLabel, shortName } from '../league/views';
 import type { Position } from '../model/position';
@@ -37,7 +37,15 @@ const TITLES: Record<DecisionT['kind'], string> = {
   faMarket: 'FA 시장',
   faProtect: 'FA 보상 · 보호선수 명단',
   faCompensation: 'FA 보상 · 보상선수 지명',
+  salaries: '연봉 협상',
 };
+
+const SALARY_CHOICES: [SalaryChoice, string][] = [
+  ['merit', '고과대로'],
+  ['ask', '요구액 수용'],
+  ['freeze', '동결'],
+  ['extension', '다년계약 제안'],
+];
 
 const FA_BIDS: [string, string, number][] = [
   ['none', '제시 안 함', 0],
@@ -264,6 +272,8 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       }
       case 'faProtect':
         return { kind: 'faProtect', ids: [...selected] };
+      case 'salaries':
+        return { kind: 'salaries', choices: choices as Record<PlayerId, SalaryChoice> };
       case 'faCompensation':
         return { kind: 'faCompensation', player: choices.pick && choices.pick !== 'cash' ? choices.pick : null };
       case 'roster':
@@ -297,6 +307,9 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         break;
       case 'faCompensation':
         setChoices({ pick: a.player ?? 'cash' });
+        break;
+      case 'salaries':
+        setChoices(a.choices);
         break;
       default:
         if ('ids' in a) setSelected(new Set(a.ids));
@@ -591,6 +604,52 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
                 ))}
               </select>
             )}
+          />
+        </>
+      );
+      break;
+    }
+    case 'salaries': {
+      const byId = Object.fromEntries(d.rows.map((r) => [r.id, r]));
+      const total = d.rows.reduce((a, r) => a + salaryOffer(r, (choices[r.id] as SalaryChoice) ?? 'merit'), 0);
+      const others = payrollWithout(league, u.teamId, next, d.rows.map((r) => r.id));
+      body = (
+        <>
+          <p>
+            {next}년 연봉 협상입니다. 구단 고과(지난 시즌 성적으로 매긴 금액)로 제시하면 대부분 도장을 찍지만, 요구액보다 적으면 거절할 수 있습니다. 합의가 안 된 3년 차 이상 선수는 연봉 중재를
+            신청할 수 있고, 중재위원회는 대개 고과를 따릅니다. FA를 1~2년 앞둔 주축 선수에게는 비FA 다년계약을 제안할 수 있습니다.
+          </p>
+          <p class="muted">
+            협상 대상 {d.rows.length}명 · 제시 합계 {money(total)} + 나머지 {money(others)} = {money(total + others)} / 예산 {money(u.payrollBudget)}
+          </p>
+          <PlayerTable
+            league={league}
+            players={d.rows.map((r) => league.players[r.id]!)}
+            onPlayer={onPlayer}
+            extra={{
+              title: '작년 · 고과 · 요구 · WAR',
+              value: (p) => {
+                const r = byId[p.id]!;
+                return `${money(r.prev)} · ${money(r.merit)} · ${money(r.ask)} · ${lastWar(p)?.toFixed(1) ?? '-'}`;
+              },
+              sort: (p) => byId[p.id]!.merit,
+            }}
+            control={(p) => {
+              const r = byId[p.id]!;
+              const c = (choices[p.id] as SalaryChoice) ?? 'merit';
+              return (
+                <span class="row-actions">
+                  <select value={c} onChange={(e) => choose(p.id, (e.currentTarget as HTMLSelectElement).value)} aria-label={`${p.name} 연봉`}>
+                    {SALARY_CHOICES.filter(([k]) => k !== 'extension' || r.extension).map(([k, label]) => (
+                      <option key={k} value={k}>
+                        {label} {k === 'extension' && r.extension ? `(${r.extension.years}년 연 ${money(r.extension.annual)})` : money(salaryOffer(r, k))}
+                      </option>
+                    ))}
+                  </select>
+                  {r.arbitration && <span class="muted">중재 가능</span>}
+                </span>
+              );
+            }}
           />
         </>
       );

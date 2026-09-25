@@ -40,6 +40,7 @@ import {
   militaryDecision,
   resolveAnnual,
   rookieBonusDecision,
+  salariesDecision,
   yearlyGrant,
   type AnnualInput,
 } from './userclub';
@@ -218,6 +219,8 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
   switch (step) {
     case 'military':
       return militaryDecision(s);
+    case 'renew':
+      return salariesDecision(s);
     case 'camp':
       return campDecision(s);
     case 'freeAgency': {

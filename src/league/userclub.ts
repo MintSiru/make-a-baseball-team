@@ -6,13 +6,13 @@
 import { draftContracts, rng, type Difficulty, type Role, type ToolKey } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
 import type { Position } from '../model/position';
-import { salaryCapFor } from '../rules/kbo2026';
 import { freeAgentContract, MANWON_PER_USD, renewSalary, salaryIn, slotBonus } from './contracts';
 import { usd } from './foreign';
 import { cityById } from '../club/cities';
 import { budgetFor, STADIUM_PLANS } from './expansion';
 import {
   developmentContract,
+  setSalary,
   enlistAs,
   freeAgentsFor,
   removeFromRoster,
@@ -22,9 +22,9 @@ import {
 } from './offseason';
 import { ageIn, futureValue, isForeign, isPitcher, keepValue } from './players';
 import { aiCompensation, marketValue, movePlayer, type FaOffer } from './market';
-import { minimumSalaryFor } from '../rules/kbo2026';
-import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type UserClub } from './state';
-import { OFFSEASON as O } from './tuning';
+import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
+import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type SalaryRow, type UserClub } from './state';
+import { OFFSEASON as O, TALKS } from './tuning';
 
 /** What the owner puts in every winter for signing bonuses and other one-off costs (game assumption, until V0.6). */
 export const YEARLY_GRANT = { conglomerate: 200_000, midsize: 150_000, namingRights: 120_000, citizen: 100_000 } as const;
@@ -51,8 +51,18 @@ export type AnnualInput =
   | { kind: 'camp'; plans: Record<PlayerId, CampPlan> }
   | { kind: 'faMarket'; offers: Record<PlayerId, FaOffer> }
   | { kind: 'faProtect'; ids: PlayerId[] }
-  | { kind: 'faCompensation'; player: PlayerId | null };
+  | { kind: 'faCompensation'; player: PlayerId | null }
+  | { kind: 'salaries'; choices: Record<PlayerId, SalaryChoice> };
 
+/** The club's answer to each player: his ask, the club's merit figure, last year's pay, or a multi-year deal. */
+export type SalaryChoice = 'ask' | 'merit' | 'freeze' | 'extension';
+
+/** 만 원 as "1억 7,500만" for club news. */
+const money = (n: number) => {
+  const eok = Math.floor(n / 10000),
+    rest = n % 10000;
+  return eok ? (rest ? `${eok}억 ${rest.toLocaleString('ko-KR')}만` : `${eok}억`) : `${rest.toLocaleString('ko-KR')}만`;
+};
 const note = (u: UserClub, year: number, text: string) => (u.log ??= []).push({ year, text });
 const nextSeason = (s: LeagueState) => (s.offseason ? s.offseason.year + 1 : s.year + 1);
 
@@ -240,6 +250,15 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
       if (cost > 0 && payrollWithout(s, u.teamId, next, own) + cost > u.payrollBudget) return '제시액을 모두 합치면 연봉 예산을 넘습니다.';
       return null;
     }
+    case 'salaries': {
+      const dd = d as Extract<Decision, { kind: 'salaries' }>;
+      for (const [id, c] of Object.entries(input.choices)) {
+        const row = dd.rows.find((x) => x.id === id);
+        if (!row) return '연봉 협상 명단에 없는 선수입니다.';
+        if (c === 'extension' && !row.extension) return `${s.players[id]!.name}: 다년계약을 제안할 수 없는 선수입니다.`;
+      }
+      return null;
+    }
     case 'faProtect': {
       const dd = d as Extract<Decision, { kind: 'faProtect' }>;
       if (input.ids.some((id) => !dd.candidates.includes(id))) return '보호할 수 없는 선수입니다.';
@@ -338,6 +357,9 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
     case 'faMarket':
       if (s.offseason) s.offseason.faOffers = input.offers;
       return null;
+    case 'salaries':
+      settleSalaries(s, d as Extract<Decision, { kind: 'salaries' }>, input.choices);
+      return null;
     case 'faProtect': {
       const item = s.offseason?.faQueue?.shift();
       if (item) aiCompensation(s, item, new Set(input.ids), next);
@@ -429,6 +451,8 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
     }
     case 'faProtect':
       return { kind: 'faProtect', ids: d.candidates.slice(0, d.protect) };
+    case 'salaries':
+      return { kind: 'salaries', choices: Object.fromEntries(d.rows.map((r) => [r.id, 'merit' as SalaryChoice])) };
     case 'faCompensation': {
       const best = d.list[0];
       return { kind: 'faCompensation', player: best && keepValue(s.players[best]!, next) >= 50 ? best : null };
@@ -438,5 +462,87 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
   }
 }
 
-export const isAnnual = (kind: Decision['kind']) => ['military', 'ownFreeAgents', 'rookieBonus', 'development', 'camp', 'faMarket', 'faProtect', 'faCompensation'].includes(kind);
+export const isAnnual = (kind: Decision['kind']) =>
+  ['military', 'ownFreeAgents', 'rookieBonus', 'development', 'camp', 'faMarket', 'faProtect', 'faCompensation', 'salaries'].includes(kind);
+
+// ── Salary talks ─────────────────────────────────────────────────────────────────────────────────
+
+const lastWarOf = (p: Player, year: number) => p.career.find((c) => c.year === year && !c.level)?.war ?? 0;
+const faSeasons = (p: Player) => (p.origin.entryCategory === 'college' ? KBO_2026.freeAgency.seasonsCollege : KBO_2026.freeAgency.seasonsHighSchool);
+
+/** The user's players whose pay for next season is not set: merit figure, ask, arbitration and extension options. */
+export function salariesDecision(s: LeagueState): Decision | null {
+  const u = s.user!;
+  const next = nextSeason(s);
+  const T = TALKS;
+  const rows: SalaryRow[] = [];
+  for (const p of orgPlayers(s, u.teamId)) {
+    if (isForeign(p) || p.contract?.kind === 'development' || p.contract?.salaries.some((x) => x.season === next)) continue;
+    if (p.proSince >= next) continue; // rookies are on the minimum
+    const prev = salaryIn(p, next - 1);
+    const merit = renewSalary(p, next);
+    const war = lastWarOf(p, next - 1);
+    const ask = Math.max(prev, Math.round((merit * (1 + Math.min(T.ask.max, T.ask.base + T.ask.perWar * Math.max(0, war)))) / 100) * 100);
+    const toFa = faSeasons(p) - p.service.creditedSeasons;
+    const extensionOk =
+      p.service.lastFreeAgencyAt === undefined && toFa > 0 && toFa <= T.extension.seasonsBefore && ageIn(p, next) <= T.extension.maxAge && keepValue(p, next) >= T.extension.minValue;
+    const m = marketValue(p, next);
+    rows.push({
+      id: p.id,
+      prev,
+      merit,
+      ask,
+      arbitration: next - p.proSince >= KBO_2026.arbitration.minProYears,
+      extension: extensionOk ? { annual: Math.max(merit, Math.round((m.annual * T.extension.share) / 1000) * 1000), years: T.extension.years } : null,
+    });
+  }
+  if (!rows.length) return null;
+  return { kind: 'salaries', rows: rows.sort((a, b) => b.merit - a.merit) };
+}
+
+/** The figure a choice puts on the table for a row. */
+export const salaryOffer = (row: SalaryRow, c: SalaryChoice) => (c === 'ask' ? row.ask : c === 'freeze' ? row.prev : c === 'extension' && row.extension ? row.extension.annual : row.merit);
+
+function settleSalaries(s: LeagueState, d: Extract<Decision, { kind: 'salaries' }>, choices: Record<PlayerId, SalaryChoice>) {
+  const u = s.user!;
+  const next = nextSeason(s);
+  const year = next - 1;
+  const T = TALKS;
+  for (const row of d.rows) {
+    const p = s.players[row.id];
+    if (!p || p.teamId !== u.teamId) continue;
+    const choice = choices[row.id] ?? 'merit';
+    const r = rng(`${s.seed}|salary|${year}|${row.id}`);
+    if (choice === 'extension' && row.extension) {
+      if (r() < T.extension.accept) {
+        p.contract = { teamId: u.teamId, kind: 'multiYear', signedIn: year, signingBonus: 0, salaries: Array.from({ length: row.extension.years }, (_, i) => ({ season: next + i, amount: row.extension!.annual })) };
+        note(u, year, `${p.name} 비FA 다년계약 ${row.extension.years}년 연 ${Math.round(row.extension.annual / 1000) / 10}억`);
+        continue;
+      }
+      note(u, year, `${p.name} 다년계약 제안 거절, 고과대로 계약`);
+      setSalary(p, next, row.merit);
+      continue;
+    }
+    const offer = salaryOffer(row, choice);
+    if (offer >= row.ask) {
+      setSalary(p, next, offer);
+      continue;
+    }
+    const accept = choice === 'freeze' ? T.acceptFreeze : T.acceptMerit;
+    if (r() < accept) {
+      setSalary(p, next, offer);
+      continue;
+    }
+    // No agreement: an eligible player may go to arbitration; the committee usually sides with the merit figure.
+    if (row.arbitration && r() < T.arbitrationChance) {
+      const playerWins = (row.ask - row.merit) / Math.max(1, row.merit) <= T.arbitrationWithin && offer < row.merit;
+      const amount = playerWins ? row.ask : offer;
+      setSalary(p, next, amount);
+      note(u, year, `${p.name} 연봉 중재 신청 → ${playerWins ? '선수' : '구단'} 승 (${money(amount)})`);
+      continue;
+    }
+    setSalary(p, next, offer);
+    note(u, year, `${p.name} 진통 끝에 ${money(offer)}에 도장 (요구 ${money(row.ask)})`);
+  }
+}
 export { focusOptions, POSITION_ROLE };

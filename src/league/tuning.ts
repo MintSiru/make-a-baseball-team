@@ -171,3 +171,17 @@ export const MARKET = {
   /** An AI club takes a compensation player only if he is at least this good (keep value). */
   compensationPickValue: 50,
 } as const;
+
+/** Winter salary talks for the user's club (V0.5; game assumptions). */
+export const TALKS = {
+  /** A player asks for his merit figure plus base + perWar × WAR (up to max). */
+  ask: { base: 0.05, perWar: 0.03, max: 0.3 },
+  /** Chance he signs for less than he asked (merit), and for last year's salary. */
+  acceptMerit: 0.75,
+  acceptFreeze: 0.3,
+  /** Chance a player still unhappy files for arbitration; the committee takes his figure when it is within this of the club's. */
+  arbitrationChance: 0.12,
+  arbitrationWithin: 0.08,
+  /** Multi-year deals before free agency: offered up to this many seasons before it, at this share of his market value. */
+  extension: { seasonsBefore: 2, share: 0.9, years: 4, accept: 0.7, maxAge: 33, minValue: 50 },
+} as const;

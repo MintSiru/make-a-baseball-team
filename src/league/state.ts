@@ -81,7 +81,22 @@ export type Decision =
   // The market (V0.5)
   | { kind: 'faMarket'; candidates: PlayerId[]; grades: Record<PlayerId, 'A' | 'B' | 'C'>; limit: number }
   | { kind: 'faProtect'; fa: PlayerId; grade: 'A' | 'B'; from: TeamId; protect: number; candidates: PlayerId[] }
-  | { kind: 'faCompensation'; fa: PlayerId; grade: 'A' | 'B'; to: TeamId; list: PlayerId[]; withPlayer: number; cashOnly: number };
+  | { kind: 'faCompensation'; fa: PlayerId; grade: 'A' | 'B'; to: TeamId; list: PlayerId[]; withPlayer: number; cashOnly: number }
+  | { kind: 'salaries'; rows: SalaryRow[] };
+
+/** One player in the winter's salary talks (만 원). */
+export interface SalaryRow {
+  id: PlayerId;
+  prev: number;
+  /** The club's figure from last season's record (고과). */
+  merit: number;
+  /** What the player asks for. */
+  ask: number;
+  /** Three pro years or more: he may take a disagreement to salary arbitration (RULES.md §2). */
+  arbitration: boolean;
+  /** A multi-year deal before free agency the club can offer (비FA 다년계약), or null. */
+  extension: { annual: number; years: number } | null;
+}
 
 export interface DraftSlot {
   teamId: TeamId;

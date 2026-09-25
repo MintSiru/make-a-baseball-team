@@ -308,6 +308,12 @@ export function signFreeAgent(s: LeagueState, p: Player, to: TeamId, next: numbe
 }
 
 
+/** Sets next season's pay for a player: keeps the last few salaries, development players stay development until they play. */
+export function setSalary(p: Player, next: number, amount: number) {
+  const kind = p.contract?.kind === 'development' && !lastRecord(p, next - 1)?.days ? 'development' : 'standard';
+  p.contract = { teamId: p.teamId!, kind, signedIn: next - 1, signingBonus: 0, salaries: [...(p.contract?.salaries ?? []).slice(-3), { season: next, amount }] };
+}
+
 function renewContracts(s: LeagueState, next: number) {
   for (const p of Object.values(s.players)) {
     if (!p.teamId || isForeign(p) || (p.status !== 'active' && p.status !== 'military')) continue;
