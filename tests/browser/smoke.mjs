@@ -145,7 +145,7 @@ try {
   await page.locator('.squad-table').first().getByLabel(/관리$/).first().selectOption('futures');
   await page.waitForFunction((n) => document.querySelectorAll('.squad-table tbody tr').length === n - 1, before1);
   await page.getByRole('button', { name: /^퓨처스/ }).click();
-  await page.locator('.squad-table').first().getByLabel(/관리$/).first().selectOption('active');
+  await page.locator('.squad-table select[aria-label$="관리"]:has(option[value="active"])').first().selectOption('active');
   await page.getByRole('group', { name: '선수단' }).getByRole('button', { name: /^1군/ }).click();
   await page.getByLabel(/불펜 보직$/).first().selectOption('CL');
   await page.waitForFunction(() => [...document.querySelectorAll('.squad-table td')].some((td) => (td.querySelector('select')?.value === 'CL')));
