@@ -40,7 +40,7 @@ function series(s: LeagueState, round: SeriesResult['round'], high: TeamId, low:
       keepBox(s, box, log);
       if (log) {
         gameMoments(s, box);
-        gameNews(s, box);
+        gameNews(s, box, log);
       }
       const highRuns = highHome ? out.home.runs : out.away.runs,
         lowRuns = highHome ? out.away.runs : out.home.runs;

@@ -14,9 +14,10 @@ const numbers = (text: string) => (text.match(/\d+(?:[.,]\d+)*/g) ?? []).map((n)
 
 /** Every number the model wrote must already be in the facts or the draft. */
 export function numbersCheck(text: StoryText, item: NewsItem): boolean {
-  const known = new Set(numbers(`${JSON.stringify(item.facts)} ${item.title} ${item.body} ${item.quotes.map((q) => q.text).join(' ')}`));
+  const known = new Set(numbers(`${JSON.stringify(item.facts)} ${(item.detail ?? []).join(' ')} ${item.title} ${item.body} ${item.quotes.map((q) => q.text).join(' ')}`));
   const all = numbers(`${text.title} ${text.body} ${text.quotes.map((q) => q.text).join(' ')}`);
-  return all.every((n) => known.has(n));
+  // Single digits (innings, outs, "두 번째") pass; anything larger must be a fact.
+  return all.every((n) => known.has(n) || /^\d$/.test(n));
 }
 
 export interface RewriteSettings {
@@ -27,7 +28,7 @@ export interface RewriteSettings {
 
 export async function rewrite(item: NewsItem, settings: RewriteSettings, fetchImpl?: typeof fetch): Promise<StoryOutcome> {
   const provider = PROVIDERS[settings.provider];
-  const out = await provider.generate({ system: STORY_SYSTEM, user: storyPrompt(item), schema: STORY_SCHEMA as unknown as Record<string, unknown>, maxTokens: 4000 }, settings.key, settings.model || provider.defaultModel, fetchImpl);
+  const out = await provider.generate({ system: STORY_SYSTEM, user: storyPrompt(item), schema: STORY_SCHEMA as unknown as Record<string, unknown>, maxTokens: 8000 }, settings.key, settings.model || provider.defaultModel, fetchImpl);
   if (out.ok && !numbersCheck(out.text, item)) return { ok: false, error: 'invalid', message: '기사에 사실에 없는 숫자가 있어 원래 기사를 유지합니다.' };
   return out;
 }

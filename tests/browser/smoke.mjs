@@ -185,6 +185,11 @@ try {
   await page.getByRole('button', { name: '끝까지 보기' }).waitFor();
   await page.screenshot({ path: join(shots, 'boxscore.png'), fullPage: false });
   await page.getByRole('button', { name: '끝까지 보기' }).click();
+  await page.getByRole('tab', { name: '기사' }).click();
+  const write = page.getByRole('button', { name: '기사로 쓰기' });
+  if (await write.count()) await write.click();
+  await page.locator('.box-dialog .news-card').waitFor();
+  check((await page.locator('.box-dialog .news-facts li').count()) > 5, 'game article carries its fact lines');
   await page.keyboard.press('Escape');
 
   // 4c. The club's story, the AI article settings (no key: nothing is sent), the record room.

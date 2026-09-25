@@ -41,7 +41,8 @@ export function playText(ev: PlayEvent, key: string, name: (id: string) => strin
       case 'E':
         return pick(ERRORS, key);
       default:
-        return pick(OUTS, key);
+        // An out that scores a run is a ground ball to the infield (a fly would be a sacrifice fly).
+        return pick(ev.runs > 0 ? OUTS.filter((x) => x.endsWith('땅볼')) : OUTS, key);
     }
   })();
   const runs = ev.res !== 'HR' && ev.runs > 0 ? ` · ${ev.runs}점` : '';
