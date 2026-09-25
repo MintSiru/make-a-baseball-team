@@ -7,7 +7,7 @@ import type { Player, TeamId } from '../model/types';
 import { isForeign, isPitcher } from './players';
 import { isDevelopment, orgPlayers, type LeagueState } from './state';
 
-const RETIRE = { war: 45, seasons: 10 };
+const RETIRE = { war: 60, seasons: 12 };
 
 const fits = (p: Player, n: number) => (isDevelopment(p) ? n >= 100 && n <= 199 : n >= 0 && n <= 99);
 

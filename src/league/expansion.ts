@@ -345,7 +345,8 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       if (input.ids.length < dd.release) return `소속선수 한도 ${dd.limit}명을 맞추려면 ${dd.release}명을 정리해야 합니다.`;
       const develop = input.develop ?? [];
       if (develop.some((id) => !input.ids.includes(id))) return '육성 전환은 정리할 선수 중에서 고릅니다.';
-      if (developmentIds(s, u.teamId).length + develop.length > OFFSEASON.development.cap) return `육성선수는 ${OFFSEASON.development.cap}명까지입니다.`;
+      // Only new conversions count: a club can already be over the cap through trades or the second draft.
+      if (develop.length && developmentIds(s, u.teamId).length + develop.length > OFFSEASON.development.cap) return `육성선수는 ${OFFSEASON.development.cap}명까지입니다.`;
       return null;
     }
     case 'foreign': {
