@@ -122,6 +122,8 @@ export interface PitTotals {
 export interface SeasonRecord {
   year: number;
   teamId: TeamId;
+  /** Futures-league line (only the expansion club's futures year is simulated); first team when absent. */
+  level?: 'futures';
   age: number;
   /** First-team registered days this season. */
   days: number;
@@ -177,6 +179,8 @@ export interface Team {
   founded: number;
   /** First season in the first-team league; null while it plays futures only. */
   firstTeamFrom: number | null;
+  /** Expansion benefits (extra first-team spot and foreign player) last through this season. */
+  benefitsUntil?: number;
   parent: { type: ParentCompanyType; name: string };
   stadium: Stadium;
 }

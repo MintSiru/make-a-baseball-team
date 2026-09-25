@@ -107,6 +107,7 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
 export interface CareerRow {
   year: number;
   team: string;
+  futures: boolean;
   age: number;
   days: number;
   bat: BatTotals | null;
@@ -117,9 +118,13 @@ export interface CareerRow {
 
 export function careerView(s: LeagueState, p: Player): CareerRow[] {
   const played = (c: { bat: BatTotals | null; pit: PitTotals | null }) => (c.bat?.g ?? 0) + (c.pit?.g ?? 0) > 0;
-  const rows: CareerRow[] = p.career.filter(played).map((c: SeasonRecord) => ({ year: c.year, team: shortName(s, c.teamId), age: c.age, days: c.days, bat: c.bat, pit: c.pit, war: c.war, current: false }));
+  const rows: CareerRow[] = p.career
+    .filter(played)
+    .map((c: SeasonRecord) => ({ year: c.year, team: shortName(s, c.teamId), futures: c.level === 'futures', age: c.age, days: c.days, bat: c.bat, pit: c.pit, war: c.war, current: false }));
   const line = s.lines[p.id];
-  if (line && played(line)) rows.push({ year: s.year, team: shortName(s, line.teamId), age: ageIn(p, s.year), days: line.days, bat: line.bat, pit: line.pit, war: NaN, current: true });
+  if (line && played(line)) rows.push({ year: s.year, team: shortName(s, line.teamId), futures: false, age: ageIn(p, s.year), days: line.days, bat: line.bat, pit: line.pit, war: NaN, current: true });
+  const fline = s.futures?.lines[p.id];
+  if (fline && played(fline)) rows.push({ year: s.year, team: shortName(s, fline.teamId), futures: true, age: ageIn(p, s.year), days: 0, bat: fline.bat, pit: fline.pit, war: NaN, current: true });
   return rows;
 }
 

@@ -7,7 +7,7 @@ import { SIM_VERSION } from '../core/version';
 import type { Player } from '../model/types';
 import { existingTeams } from './clubs';
 import { estimatedSalary, freeAgentContract } from './contracts';
-import { applyInternational, closeSeason, developPlayer, enforceLimits, enlist, leaveLeague, refreshForeigners, retirementChance, runDraft, runOffseason } from './offseason';
+import { applyInternational, closeSeason, developPlayer, enforceLimits, enlist, leaveLeague, refreshForeigners, retirementChance, runOffseason, runWholeDraft } from './offseason';
 import { playPostseason } from './postseason';
 import { currentValue, isForeign } from './players';
 import { playRegularSeason, startSeason } from './season';
@@ -38,6 +38,10 @@ function emptyState(seed: string): LeagueState {
     postseason: [],
     history: [],
     international: [],
+    user: null,
+    pending: null,
+    offseason: null,
+    futures: null,
   };
 }
 
@@ -83,7 +87,7 @@ function fastOffseason(s: LeagueState) {
     else if (p.service.military === 'pending' && p.teamId) enlist(s, p, next, r);
   }
   const order = s.teams.map((t) => t.id).sort(() => r() - 0.5);
-  runDraft(s, year, order);
+  runWholeDraft(s, year, order);
   enforceLimits(s, next, r);
   s.year = next;
 }

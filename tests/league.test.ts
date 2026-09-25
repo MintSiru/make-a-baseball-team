@@ -61,7 +61,7 @@ describe('league structure at 2026 opening day', () => {
         expect(p.status).toBe('active');
       }
       expect(ids.length).toBeLessThanOrEqual(rosterLimit(GAME_START));
-      expect(r.active).toHaveLength(firstTeamSize(GAME_START));
+      expect(r.active).toHaveLength(firstTeamSize(league, t.id));
       const foreign = ids.map((id) => league.players[id]!).filter(isForeign);
       expect(foreign.filter((p) => !p.origin.asiaQuota)).toHaveLength(3);
       expect(foreign.filter((p) => p.origin.asiaQuota)).toHaveLength(1);

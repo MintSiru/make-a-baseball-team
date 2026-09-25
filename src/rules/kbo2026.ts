@@ -89,11 +89,13 @@ export const KBO_2026 = {
 
 /* Expansion club terms (RULES.md §8 precedents, §9 assumptions). Every number is a setting. */
 export const EXPANSION_DEFAULTS = {
-  entryFee: 30000, // 30억, NC and KT
-  deposit: 100000, // 100억 deposit, NC and KT
-  developmentFund: { min: 20000, max: 200000 }, // NC 20억, KT 200억
-  specialDraft: { protected: 20, perClub: 1, feePerPlayer: 10000 }, // 10억 each
+  entryFee: 300_000, // 30억, NC and KT
+  deposit: 1_000_000, // 100억 deposit, NC and KT
+  developmentFund: { min: 200_000, max: 2_000_000 }, // NC 20억, KT 200억
+  specialDraft: { protected: 20, perClub: 1, feePerPlayer: 100_000 }, // 10억 each
   rookiePriorityPicks: 2, // NC precedent
+  extraPicksAfterRound2: 5, // NC precedent (special picks after round two of its first draft)
+  freeAgentSigns: 3, // NC precedent: up to three free agents without compensation players
   extraForeignPlayers: 1, // assumed: +1 on top of 3 + Asia quota, first two first-team seasons
   extraFirstTeamSpots: 1, // assumed, first two first-team seasons
   benefitSeasons: 2, // assumed

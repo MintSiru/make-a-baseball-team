@@ -1,8 +1,9 @@
 /* Between seasons: close the books, then age every player a year and rebuild the rosters.
 
-   Order (fixed; each step has its own random stream):
-   close season → national-team exemptions → development → retirement → military service →
-   free agency → salaries → rookie draft → roster limits → foreign players. */
+   Order (fixed; each step has its own random stream): close season, then OFFSEASON_STEPS —
+   national-team exemptions → development → retirement → military service → free agency → salaries →
+   rookie draft → (expansion special draft) → roster limits → released players → foreign players.
+   The user's club can make the game wait at a step for a decision (see OffseasonHooks). */
 import { observe, overall, rng, toGrade, type Tools } from '../draftroom';
 import DraftSeason from '../draftroom/season.js';
 import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
@@ -13,7 +14,7 @@ import { foreignSlots } from './manager';
 import { champion } from './postseason';
 import { ageIn, currentValue, draftClass, futureValue, isForeign, isPitcher, keepValue, makeForeign } from './players';
 import { currentStandings } from './season';
-import { addInto, emptyBat, emptyPit, type LeagueState } from './state';
+import { addInto, emptyBat, emptyPit, firstTeamIds, type Decision, type DraftSlot, type DraftState, type LeagueState, type SeasonSummary } from './state';
 import { batterWar, leagueContext, pitcherWar } from './stats';
 import { OFFSEASON as O } from './tuning';
 
@@ -45,11 +46,29 @@ export function closeSeason(s: LeagueState) {
       p.service.creditedSeasons++;
     }
   }
-  s.history.push({ year: s.year, table: currentStandings(s), series: s.postseason, champion: champion(s), totals: { bat, pit, games: s.scores.length } });
+  let userFutures: SeasonSummary['userFutures'];
+  if (s.futures && s.user) {
+    for (const [id, line] of Object.entries(s.futures.lines)) {
+      const p = s.players[id];
+      if (p) p.career.push({ year: s.year, teamId: line.teamId, level: 'futures', age: ageIn(p, s.year), days: 0, bat: line.bat, pit: line.pit, war: 0 });
+    }
+    const me = s.user.teamId;
+    userFutures = { w: 0, l: 0, t: 0, rs: 0, ra: 0 };
+    for (const g of s.futures.scores) {
+      const [mine, theirs] = g.home === me ? [g.hs, g.as] : [g.as, g.hs];
+      userFutures.rs += mine;
+      userFutures.ra += theirs;
+      if (mine > theirs) userFutures.w++;
+      else if (mine < theirs) userFutures.l++;
+      else userFutures.t++;
+    }
+    s.futures = null;
+  }
+  s.history.push({ year: s.year, table: currentStandings(s), series: s.postseason, champion: champion(s), totals: { bat, pit, games: s.scores.length }, ...(userFutures ? { userFutures } : {}) });
   s.phase = 'offseason';
 }
 
-const lastRecord = (p: Player, year: number) => p.career.find((r) => r.year === year);
+const lastRecord = (p: Player, year: number) => p.career.find((r) => r.year === year && !r.level);
 
 // ── Development ──────────────────────────────────────────────────────────────────────────────────
 
@@ -208,30 +227,39 @@ function isFreeAgent(p: Player, next: number) {
   return s.lastFreeAgencyAt === undefined ? s.creditedSeasons >= faSeasonsNeeded(p) : s.creditedSeasons - s.lastFreeAgencyAt >= KBO_2026.freeAgency.seasonsToRequalify;
 }
 
-function payroll(s: LeagueState, teamId: TeamId, season: number) {
+export function payroll(s: LeagueState, teamId: TeamId, season: number) {
   return [...s.rosters[teamId]!.active, ...s.rosters[teamId]!.futures].reduce((sum, id) => sum + salaryIn(s.players[id]!, season), 0);
 }
 
-function freeAgency(s: LeagueState, next: number, r: () => number) {
-  const agents = Object.values(s.players)
+/** Players who reach free agency this winter and have a market (the rest re-sign as usual). */
+export function freeAgentsFor(s: LeagueState, next: number): Player[] {
+  return Object.values(s.players)
     .filter((p) => isFreeAgent(p, next))
+    .filter((p) => p.scouting.current >= O.freeAgency.minGrade || (lastRecord(p, next - 1)?.war ?? 0) >= 1)
     .sort((a, b) => b.scouting.current - a.scouting.current);
-  for (const p of agents) {
-    const war = lastRecord(p, next - 1)?.war ?? 0;
-    // Only players with a market declare; the rest re-sign as usual.
-    if (p.scouting.current < O.freeAgency.minGrade && war < 1) continue;
+}
+
+export function signFreeAgent(s: LeagueState, p: Player, to: TeamId, next: number) {
+  removeFromRoster(s, p);
+  p.teamId = to;
+  s.rosters[to]!.futures.push(p.id);
+  p.contract = freeAgentContract(p, to, next);
+  p.service.lastFreeAgencyAt = p.service.creditedSeasons;
+}
+
+function freeAgency(s: LeagueState, next: number, r: () => number) {
+  // The user's club signs its own free agents in its own decisions; AI clubs never sign for it.
+  const userTeam = s.user?.teamId;
+  const clubs = firstTeamIds(s, next).filter((id) => id !== userTeam);
+  for (const p of freeAgentsFor(s, next)) {
     const from = p.teamId!;
     let to = from;
-    if (r() > O.freeAgency.stayChance) {
-      const others = s.teams.map((t) => t.id).filter((id) => id !== from);
+    if (r() > O.freeAgency.stayChance || from === userTeam) {
+      const others = clubs.filter((id) => id !== from);
       const room = others.map((id) => Math.max(1, salaryCapFor(next) - payroll(s, id, next)) * (0.5 + r()));
       to = others[room.indexOf(Math.max(...room))]!;
     }
-    removeFromRoster(s, p);
-    p.teamId = to;
-    s.rosters[to]!.futures.push(p.id);
-    p.contract = freeAgentContract(p, to, next);
-    p.service.lastFreeAgencyAt = p.service.creditedSeasons;
+    signFreeAgent(s, p, to, next);
   }
 }
 
@@ -250,52 +278,83 @@ function renewContracts(s: LeagueState, next: number) {
 
 const TARGET_SHARE: Record<string, number> = { SP: 0.26, RP: 0.26, C: 0.08, IF: 0.22, OF: 0.18 };
 
-/** The September draft of `draftYear`: reverse order of that season's standings, 11 picks per club, then development deals. */
-export function runDraft(s: LeagueState, draftYear: number, order: TeamId[]) {
-  const r = rng(`${s.seed}|draft-picks|${draftYear}`);
+/** Eleven rounds in the given order, labelled by round. */
+export const standardSlots = (order: TeamId[]): DraftSlot[] =>
+  Array.from({ length: KBO_2026.draft.rounds }, (_, i) => order.map((teamId) => ({ teamId, label: `${i + 1}R` }))).flat();
+
+/** Puts the September draft of `draftYear` on the board. */
+export function openDraft(s: LeagueState, draftYear: number, slots: DraftSlot[]): DraftState {
   const pool = draftClass(s.seed, draftYear);
-  const clubs = order.length;
-  const taken = new Set<PlayerId>();
-  const counts = Object.fromEntries(order.map((id) => [id, orgCounts(s, id)]));
-  const score = (p: Player, teamId: TeamId) => {
-    const c = counts[teamId]!;
-    const total = Object.values(c).reduce((a, b) => a + b, 0) || 1;
-    const need = clamp(((TARGET_SHARE[p.role] ?? 0.2) - (c[p.role] ?? 0) / total) * 40, -4, 4);
-    return futureValue(p) * 0.6 + currentValue(p) * 0.4 - p.amateur.draftRank * 0.02 + need + normal(r) * 2;
-  };
-  let overallPick = 0;
-  const signed: Player[] = [];
-  for (let round = 1; round <= KBO_2026.draft.rounds; round++) {
-    for (const teamId of order) {
-      overallPick++;
-      let best: Player | null = null,
-        bestScore = -Infinity;
-      for (const p of pool) {
-        if (taken.has(p.id)) continue;
-        const v = score(p, teamId);
-        if (v > bestScore) {
-          bestScore = v;
-          best = p;
-        }
-      }
-      if (!best) continue;
-      taken.add(best.id);
-      best.origin.overallPick = overallPick;
-      sign(s, best, teamId, rookieContract(teamId, draftYear + 1, slotBonus(overallPick, clubs)));
-      counts[teamId]![best.role] = (counts[teamId]![best.role] ?? 0) + 1;
-      signed.push(best);
+  for (const p of pool) s.players[p.id] = p;
+  return { year: draftYear, slots, next: 0, pool: pool.map((p) => p.id), developmentDone: false };
+}
+
+function draftScore(s: LeagueState, p: Player, counts: Record<string, number>, r: () => number) {
+  const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+  const need = clamp(((TARGET_SHARE[p.role] ?? 0.2) - (counts[p.role] ?? 0) / total) * 40, -4, 4);
+  return futureValue(p) * 0.6 + currentValue(p) * 0.4 - p.amateur.draftRank * 0.02 + need + normal(r) * 2;
+}
+
+/** The pick an AI club (or the auto-pick for the user) would make. */
+export function aiDraftChoice(s: LeagueState, d: DraftState, teamId: TeamId, pickNo: number): Player | null {
+  const r = rng(`${s.seed}|draft-picks|${d.year}|${pickNo}`);
+  const counts = orgCounts(s, teamId);
+  let best: Player | null = null,
+    bestScore = -Infinity;
+  for (const id of d.pool) {
+    const p = s.players[id]!;
+    const v = draftScore(s, p, counts, r);
+    if (v > bestScore) {
+      bestScore = v;
+      best = p;
     }
   }
-  // Development contracts (육성선수) for the best of the rest.
-  for (let k = 0; k < O.developmentSignings; k++)
-    for (const teamId of order) {
-      const p = pool.filter((x) => !taken.has(x.id)).sort((a, b) => score(b, teamId) - score(a, teamId))[0];
-      if (!p) continue;
-      taken.add(p.id);
-      sign(s, p, teamId, rookieContract(teamId, draftYear + 1, 0, true));
-      signed.push(p);
+  return best;
+}
+
+export function makePick(s: LeagueState, d: DraftState, p: Player) {
+  const slot = d.slots[d.next]!;
+  const overall = d.next + 1;
+  p.origin.overallPick = overall;
+  d.pool = d.pool.filter((id) => id !== p.id);
+  const clubs = new Set(d.slots.map((x) => x.teamId)).size;
+  sign(s, p, slot.teamId, rookieContract(slot.teamId, d.year + 1, slotBonus(overall, clubs)));
+  if (s.user?.teamId === slot.teamId) {
+    s.user.fund -= p.contract!.signingBonus;
+    s.user.ledger.push({ year: d.year, label: `신인 계약금 · ${p.name}`, amount: -p.contract!.signingBonus });
+  }
+  d.next++;
+}
+
+/** Runs AI picks until the user's club is on the clock or the draft is over. */
+function runDraft(s: LeagueState, d: DraftState): 'wait' | 'done' {
+  while (d.next < d.slots.length) {
+    const slot = d.slots[d.next]!;
+    if (slot.teamId === s.user?.teamId) {
+      s.pending = { kind: 'draftPick', overall: d.next + 1, label: slot.label };
+      return 'wait';
     }
-  return signed;
+    const p = aiDraftChoice(s, d, slot.teamId, d.next + 1);
+    if (!p) break;
+    makePick(s, d, p);
+  }
+  if (!d.developmentDone) {
+    // Development contracts (육성선수) for the best of the rest, the user's club included (automatic in V0.3).
+    const order = [...new Set(d.slots.map((x) => x.teamId))];
+    for (let k = 0; k < O.developmentSignings; k++)
+      for (const teamId of order) {
+        const r = rng(`${s.seed}|draft-dev|${d.year}|${k}|${teamId}`);
+        const counts = orgCounts(s, teamId);
+        const p = d.pool.map((id) => s.players[id]!).sort((a, b) => draftScore(s, b, counts, r) - draftScore(s, a, counts, r))[0];
+        if (!p) continue;
+        d.pool = d.pool.filter((id) => id !== p.id);
+        sign(s, p, teamId, rookieContract(teamId, d.year + 1, 0, true));
+      }
+    d.developmentDone = true;
+  }
+  for (const id of d.pool) delete s.players[id];
+  d.pool = [];
+  return 'done';
 }
 
 function orgCounts(s: LeagueState, teamId: TeamId): Record<string, number> {
@@ -307,7 +366,7 @@ function orgCounts(s: LeagueState, teamId: TeamId): Record<string, number> {
   return c;
 }
 
-function sign(s: LeagueState, p: Player, teamId: TeamId, contract: Player['contract']) {
+export function sign(s: LeagueState, p: Player, teamId: TeamId, contract: Player['contract']) {
   p.status = 'active';
   p.teamId = teamId;
   p.contract = contract;
@@ -317,10 +376,12 @@ function sign(s: LeagueState, p: Player, teamId: TeamId, contract: Player['contr
 
 // ── Roster limits and foreign players ────────────────────────────────────────────────────────────
 
-export function enforceLimits(s: LeagueState, next: number, r: () => number) {
+/** Cuts every club down to its offseason limit; returns the released players (no longer on a roster). */
+export function cutToLimits(s: LeagueState, next: number): Player[] {
   const released: Player[] = [];
   const limit = rosterLimit(next) - O.openSpots;
   for (const t of s.teams) {
+    if (t.id === s.user?.teamId) continue; // the user's club is never cut by the AI
     const roster = s.rosters[t.id]!;
     const ids = [...roster.active, ...roster.futures];
     if (ids.length <= limit) continue;
@@ -335,11 +396,15 @@ export function enforceLimits(s: LeagueState, next: number, r: () => number) {
       released.push(p);
     }
   }
-  // Released players good enough to help somewhere get one chance with a club that has room.
-  released.sort((a, b) => keepValue(b, next) - keepValue(a, next));
+  return released.sort((a, b) => keepValue(b, next) - keepValue(a, next));
+}
+
+/** Released players good enough to help somewhere get one chance with an AI club that has room; the rest retire. */
+export function placeReleased(s: LeagueState, released: Player[], next: number, r: () => number) {
   for (const p of released) {
+    if (p.teamId) continue; // signed by the user
     const age = ageIn(p, next);
-    const room = s.teams.filter((t) => s.rosters[t.id]!.active.length + s.rosters[t.id]!.futures.length < rosterLimit(next) - 1);
+    const room = s.teams.filter((t) => t.id !== s.user?.teamId && s.rosters[t.id]!.active.length + s.rosters[t.id]!.futures.length < rosterLimit(next) - 1);
     if (room.length && age <= O.release.maxAge && keepValue(p, next) >= O.release.minValue && r() < O.release.signChance) {
       const to = room[Math.floor(r() * room.length)]!;
       p.teamId = to.id;
@@ -349,22 +414,35 @@ export function enforceLimits(s: LeagueState, next: number, r: () => number) {
   }
 }
 
-/** Keeps each club at three foreign players (two pitchers, one hitter) plus the Asia quota from 2026. */
+export function enforceLimits(s: LeagueState, next: number, r: () => number) {
+  placeReleased(s, cutToLimits(s, next), next, r);
+}
+
+/** Keeps or lets go of a club's foreign players after the season. */
+export function renewForeigners(s: LeagueState, teamId: TeamId, next: number, r: () => number) {
+  const roster = s.rosters[teamId]!;
+  const current = [...roster.active, ...roster.futures].map((id) => s.players[id]!).filter(isForeign);
+  for (const p of current) {
+    const last = lastRecord(p, next - 1);
+    const keep = last && ageIn(p, next) <= 35 && last.war >= (isPitcher(p) ? O.foreign.keepWarPitcher : O.foreign.keepWarHitter) && r() < O.foreign.keepChance;
+    if (keep) {
+      const prevUsd = salaryIn(p, next - 1) / MANWON_PER_USD;
+      const usd = Math.min(1_800_000, prevUsd + Math.max(0, last.war - 2) * 150_000 + 50_000);
+      p.contract = foreignContract(teamId, next, usd, !!p.origin.asiaQuota);
+    } else leaveLeague(s, p, 'overseas');
+  }
+}
+
+export const foreignOn = (s: LeagueState, teamId: TeamId) => [...s.rosters[teamId]!.active, ...s.rosters[teamId]!.futures].map((id) => s.players[id]!).filter(isForeign);
+
+/** Keeps each AI club at three foreign players (two pitchers, one hitter) plus the Asia quota from 2026. */
 export function refreshForeigners(s: LeagueState, next: number, r: () => number) {
-  const slots = foreignSlots(next);
   for (const t of s.teams) {
-    const roster = s.rosters[t.id]!;
-    const current = [...roster.active, ...roster.futures].map((id) => s.players[id]!).filter(isForeign);
-    for (const p of current) {
-      const last = lastRecord(p, next - 1);
-      const keep = last && ageIn(p, next) <= 35 && last.war >= (isPitcher(p) ? O.foreign.keepWarPitcher : O.foreign.keepWarHitter) && r() < O.foreign.keepChance;
-      if (keep) {
-        const prevUsd = salaryIn(p, next - 1) / MANWON_PER_USD;
-        const usd = Math.min(1_800_000, prevUsd + Math.max(0, last.war - 2) * 150_000 + 50_000);
-        p.contract = foreignContract(t.id, next, usd, !!p.origin.asiaQuota);
-      } else leaveLeague(s, p, 'overseas');
-    }
-    const staying = [...roster.active, ...roster.futures].map((id) => s.players[id]!).filter(isForeign);
+    if (t.firstTeamFrom === null || t.firstTeamFrom > next) continue; // no foreign players in a futures-only season
+    if (t.id === s.user?.teamId) continue; // the user's club renews and signs in its own foreign decision
+    renewForeigners(s, t.id, next, r);
+    const slots = foreignSlots(s, t.id, next);
+    const staying = foreignOn(s, t.id);
     const regular = staying.filter((p) => !p.origin.asiaQuota);
     const pitchers = regular.filter(isPitcher).length;
     let k = 0;
@@ -382,38 +460,122 @@ export function refreshForeigners(s: LeagueState, next: number, r: () => number)
 
 // ── The whole offseason ──────────────────────────────────────────────────────────────────────────
 
-export function runOffseason(s: LeagueState) {
-  const year = s.year,
-    next = year + 1;
-  applyInternational(s, year);
-  const devR = (id: string) => rng(`${s.seed}|develop|${year}|${id}`);
-  for (const p of Object.values(s.players)) {
-    if (p.status === 'retired' || p.status === 'overseas' || p.status === 'amateur') continue;
-    if (p.proSince > year) continue; // drafted this fall, first season still ahead
-    developPlayer(p, year, s.lines[p.id]?.lost ?? 0, devR(p.id));
-  }
-  const retR = rng(`${s.seed}|retire|${year}`);
-  for (const p of Object.values(s.players)) {
-    if (p.status !== 'active' || isForeign(p)) continue;
-    if (retR() < retirementChance(p, next)) leaveLeague(s, p, 'retired');
-  }
-  const milR = rng(`${s.seed}|military|${year}`);
-  for (const p of Object.values(s.players)) {
-    if (p.status === 'military' && p.service.returnsOn && p.service.returnsOn < `${next}-03-01`) {
-      p.status = 'active';
-      p.service.military = 'served';
-      delete p.service.route;
-      delete p.service.returnsOn;
-      if (p.teamId) s.rosters[p.teamId]!.futures.push(p.id);
-    } else if (p.status === 'active' && p.service.military === 'pending' && !isForeign(p) && p.teamId) enlist(s, p, next, milR);
-  }
-  freeAgency(s, next, rng(`${s.seed}|fa|${year}`));
-  renewContracts(s, next);
-  const order = [...(s.history[s.history.length - 1]?.table ?? [])].reverse().map((row) => row.teamId);
-  runDraft(s, year, order.length ? order : s.teams.map((t) => t.id));
-  enforceLimits(s, next, rng(`${s.seed}|limits|${year}`));
-  refreshForeigners(s, next, rng(`${s.seed}|foreign|${year}`));
-  s.year = next;
+/** Hooks the user's club plugs into the offseason. The expansion module fills these in; a spectator league leaves them empty. */
+export interface OffseasonHooks {
+  draftSlots?(s: LeagueState, draftYear: number, order: TeamId[]): DraftSlot[];
+  /** Return a decision to wait for, or null to go on. Called once per step until the step reports done. */
+  decide?(s: LeagueState, step: OffseasonStep): Decision | null;
+}
+const hooks: OffseasonHooks = {};
+export const setOffseasonHooks = (h: OffseasonHooks) => Object.assign(hooks, h);
+
+export const OFFSEASON_STEPS = ['international', 'develop', 'retire', 'military', 'freeAgency', 'renew', 'draft', 'special', 'limits', 'released', 'foreign'] as const;
+export type OffseasonStep = (typeof OFFSEASON_STEPS)[number];
+
+export function beginOffseason(s: LeagueState) {
+  s.offseason = { year: s.year, step: 0, draft: null, released: [], done: [] };
 }
 
-export { lastRecord };
+/** Runs offseason steps until the user must decide something ('waiting') or the new year starts ('done'). */
+export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
+  const o = s.offseason;
+  if (!o) return 'done';
+  if (s.pending) return 'waiting';
+  const year = o.year,
+    next = year + 1;
+  while (o.step < OFFSEASON_STEPS.length) {
+    const step = OFFSEASON_STEPS[o.step]!;
+    // A user decision that belongs before the automatic part of this step.
+    if (!o.done.includes(step)) {
+      const d = hooks.decide?.(s, step) ?? null;
+      o.done.push(step);
+      if (d) {
+        s.pending = d;
+        return 'waiting';
+      }
+    }
+    switch (step) {
+      case 'international':
+        applyInternational(s, year);
+        break;
+      case 'develop': {
+        for (const p of Object.values(s.players)) {
+          if (p.status === 'retired' || p.status === 'overseas' || p.status === 'amateur') continue;
+          if (p.proSince > year) continue; // drafted this fall, first season still ahead
+          developPlayer(p, year, s.lines[p.id]?.lost ?? 0, rng(`${s.seed}|develop|${year}|${p.id}`));
+        }
+        break;
+      }
+      case 'retire': {
+        const r = rng(`${s.seed}|retire|${year}`);
+        for (const p of Object.values(s.players)) {
+          if (p.status !== 'active' || isForeign(p)) continue;
+          if (r() < retirementChance(p, next)) leaveLeague(s, p, 'retired');
+        }
+        break;
+      }
+      case 'military': {
+        const r = rng(`${s.seed}|military|${year}`);
+        for (const p of Object.values(s.players)) {
+          if (p.status === 'military' && p.service.returnsOn && p.service.returnsOn < `${next}-03-01`) {
+            p.status = 'active';
+            p.service.military = 'served';
+            delete p.service.route;
+            delete p.service.returnsOn;
+            if (p.teamId) s.rosters[p.teamId]!.futures.push(p.id);
+          } else if (p.status === 'active' && p.service.military === 'pending' && !isForeign(p) && p.teamId) enlist(s, p, next, r);
+        }
+        break;
+      }
+      case 'freeAgency':
+        freeAgency(s, next, rng(`${s.seed}|fa|${year}`));
+        break;
+      case 'renew':
+        renewContracts(s, next);
+        break;
+      case 'draft': {
+        if (!o.draft) {
+          const table = s.history[s.history.length - 1]?.table ?? [];
+          const order = table.length ? [...table].reverse().map((row) => row.teamId) : firstTeamIds(s, year);
+          const slots = hooks.draftSlots?.(s, year, order) ?? standardSlots(order);
+          o.draft = openDraft(s, year, slots);
+        }
+        if (runDraft(s, o.draft) === 'wait') return 'waiting';
+        break;
+      }
+      case 'special':
+        break; // expansion special draft: entirely a user decision (see expansion.ts)
+      case 'limits':
+        o.released = cutToLimits(s, next).map((p) => p.id);
+        break;
+      case 'released':
+        placeReleased(
+          s,
+          o.released.map((id) => s.players[id]!).filter(Boolean),
+          next,
+          rng(`${s.seed}|limits|${year}`),
+        );
+        break;
+      case 'foreign':
+        refreshForeigners(s, next, rng(`${s.seed}|foreign|${year}`));
+        break;
+    }
+    o.step++;
+  }
+  s.offseason = null;
+  s.year = next;
+  return 'done';
+}
+
+/** A whole draft with AI picks only (the history bootstrap). */
+export function runWholeDraft(s: LeagueState, draftYear: number, order: TeamId[]) {
+  runDraft(s, openDraft(s, draftYear, standardSlots(order)));
+}
+
+/** A whole offseason with no user decisions (spectator leagues and history). */
+export function runOffseason(s: LeagueState) {
+  beginOffseason(s);
+  if (advanceOffseason(s) === 'waiting') throw new Error('offseason waits for a decision; use advanceOffseason');
+}
+
+export { lastRecord, removeFromRoster };

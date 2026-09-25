@@ -1,7 +1,8 @@
 /* Regular-season schedule. Clubs meet in series (three or two games) laid out on consecutive days,
    skipping Mondays and an All-Star break, like the KBO calendar. Works for any number of clubs: with
-   an odd count one club rests each block (the 9-club era's bye, RULES.md §9, used from V0.3). */
+   an odd count one club rests each block (the 9-club era's bye, RULES.md §9). */
 import { rng } from '../draftroom';
+import { ELEVEN_CLUB_SCHEDULE } from '../rules/kbo2026';
 
 export interface ScheduledGame {
   id: string;
@@ -10,17 +11,11 @@ export interface ScheduledGame {
   away: string;
 }
 
-/** Series lengths that make up the games between one pair, and home/away alternates by series. */
+/** Six series per pair; home and away alternate by series so each side gets half (16 → 8/8, 15 → 8/7, 14 → 7/7). */
 export function seriesPlan(gamesPerPair: number): number[] {
-  const threes = Math.floor(gamesPerPair / 3);
-  const rest = gamesPerPair - threes * 3;
-  // 16 → 3,3,3,3,2,2 ; 15 → 3×5 ; 14 → 3,3,3,3,2
-  const plan = Array<number>(threes).fill(3);
-  if (rest === 1) {
-    plan.pop();
-    plan.push(2, 2);
-  } else if (rest === 2) plan.push(2);
-  return plan;
+  const threes = gamesPerPair - 12; // 6 series of 2 = 12, each extra game turns a 2 into a 3
+  if (threes < 0 || threes > 6) throw new Error(`unsupported games per pair: ${gamesPerPair}`);
+  return [...Array<number>(threes).fill(3), ...Array<number>(6 - threes).fill(2)];
 }
 
 /** Circle-method round robin. Returns rounds of [a, b] index pairs; with an odd count, one club sits out per round. */
@@ -41,6 +36,25 @@ export function roundRobin(n: number): [number, number][][] {
   return rounds;
 }
 
+/** Games between each pair: 16 with ten clubs; with eleven, four opponents 15 and six 14 (a 4-regular circulant). */
+export function pairGames(n: number, seed: string, year: number): (a: number, b: number) => number {
+  if (n % 2 === 0) {
+    const perPair = Math.round((ELEVEN_CLUB_SCHEDULE.gamesPerClub * 1) / (n - 1));
+    return () => perPair;
+  }
+  const S = ELEVEN_CLUB_SCHEDULE;
+  if (n !== 11) throw new Error(`no schedule rule for ${n} clubs`);
+  // Shuffle positions each year so the heavier pairings change.
+  const r = rng(`${seed}|pairs|${year}`);
+  const pos = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) {
+    const j = Math.floor(r() * (i + 1));
+    [pos[i], pos[j]] = [pos[j]!, pos[i]!];
+  }
+  const heavy = new Set([1, 2, n - 1, n - 2].slice(0, S.heavyOpponents));
+  return (a, b) => (heavy.has((((pos[a]! - pos[b]!) % n) + n) % n) ? S.heavyGames : S.lightGames);
+}
+
 const pad = (n: number) => String(n).padStart(2, '0');
 export const isoDate = (d: Date) => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
 const utc = (y: number, m: number, d: number) => new Date(Date.UTC(y, m - 1, d));
@@ -52,11 +66,11 @@ export function openingDay(year: number): Date {
   return d;
 }
 
-export function makeSchedule(teamIds: string[], year: number, seed: string, gamesPerPair = 16): ScheduledGame[] {
+export function makeSchedule(teamIds: string[], year: number, seed: string): ScheduledGame[] {
   const r = rng(`${seed}|schedule|${year}`);
   const n = teamIds.length;
   const base = roundRobin(n);
-  const plan = seriesPlan(gamesPerPair);
+  const perPair = pairGames(n, seed, year);
   const games: ScheduledGame[] = [];
   const day = openingDay(year);
   const allStar = utc(year, 7, 10);
@@ -66,7 +80,7 @@ export function makeSchedule(teamIds: string[], year: number, seed: string, game
     if (day.getUTCDay() === 1) day.setUTCDate(day.getUTCDate() + 1); // Mondays off
     if (day >= allStar && day < utc(year, 7, 14)) day.setUTCDate(15); // All-Star break
   };
-  plan.forEach((length, cycle) => {
+  for (let cycle = 0; cycle < 6; cycle++) {
     // Shuffle the order of rounds each cycle so the same pairs do not always meet at the same time.
     const order = base.map((_, i) => i);
     for (let i = order.length - 1; i > 0; i--) {
@@ -74,15 +88,18 @@ export function makeSchedule(teamIds: string[], year: number, seed: string, game
       [order[i], order[j]] = [order[j]!, order[i]!];
     }
     for (const ri of order) {
-      for (let g = 0; g < length; g++) {
+      const pairs = base[ri]!.map(([a, b]) => ({ a, b, length: seriesPlan(perPair(a, b))[cycle]! }));
+      const days = Math.max(...pairs.map((p) => p.length));
+      for (let g = 0; g < days; g++) {
         const date = isoDate(day);
-        for (const [a, b] of base[ri]!) {
+        for (const { a, b, length } of pairs) {
+          if (g >= length) continue;
           const aHome = (cycle + a + b) % 2 === 0;
           games.push({ id: `${year}-${String(++count).padStart(4, '0')}`, date, home: teamIds[aHome ? a : b]!, away: teamIds[aHome ? b : a]! });
         }
         nextDay();
       }
     }
-  });
+  }
   return games;
 }

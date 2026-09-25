@@ -1,6 +1,6 @@
 {
   "name": "make-a-baseball-team",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "Offline, single-file KBO expansion club management game",

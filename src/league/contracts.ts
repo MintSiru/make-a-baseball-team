@@ -27,7 +27,7 @@ export function rookieContract(teamId: TeamId, season: number, bonus: number, de
 export const salaryIn = (p: Player, season: number) => p.contract?.salaries.find((x) => x.season === season)?.amount ?? 0;
 
 const recentWar = (p: Player, n: number) => {
-  const recs = p.career.slice(-n);
+  const recs = p.career.filter((r) => !r.level).slice(-n);
   if (!recs.length) return 0;
   const weights = recs.map((_, i) => i + 1);
   return recs.reduce((s, r, i) => s + r.war * weights[i]!, 0) / weights.reduce((a, b) => a + b, 0);
