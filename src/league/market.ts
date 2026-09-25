@@ -14,6 +14,7 @@ import { freeAgentsFor, leaveLeague, removeFromRoster } from './offseason';
 import { ageIn, currentValue, isForeign, isPitcher, keepValue } from './players';
 import { firstTeamIds, orgIds, orgPlayers, registeredIds, type Decision, type LeagueState } from './state';
 import { MARKET } from './tuning';
+import { moveNews } from './movenews';
 
 export type FaGrade = 'A' | 'B' | 'C';
 export interface FaOffer {
@@ -176,6 +177,7 @@ export function runFreeAgency(s: LeagueState, next: number, r: () => number, use
       continue;
     }
     sign(s, p, best.teamId, next, best.offer);
+    moveNews(s, { type: 'fa', from, to: best.teamId, id: p.id, years: best.offer.years, annual: best.offer.annual, grade: grades[p.id] ?? 'C' }, `${next - 1}-11-20`);
     if (best.teamId === user) (s.user!.log ??= []).push({ year: next - 1, text: `FA ${p.name} ${from === user ? '재계약' : `영입 (${shortOf(s, from)}에서)`} · ${best.offer.years}년 연 ${Math.round(best.offer.annual / 1000) / 10}억` });
     else if (from === user) (s.user!.log ??= []).push({ year: next - 1, text: `FA ${p.name} ${ro(shortOf(s, best.teamId))} 이적` });
     if (best.teamId === from) continue;

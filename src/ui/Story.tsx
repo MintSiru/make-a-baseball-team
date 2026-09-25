@@ -7,6 +7,14 @@ import type { LeagueState } from '../league/state';
 import { clubhouse } from '../league/views';
 
 type View = 'news' | 'timeline' | 'achievements';
+type Filter = 'all' | 'game' | 'move' | 'review' | 'interview';
+const FILTERS: [Filter, string, NewsItem['kind'][]][] = [
+  ['all', '전체', []],
+  ['game', '경기', ['game']],
+  ['move', '이적', ['move']],
+  ['review', '결산·기록', ['month', 'season', 'award', 'milestone']],
+  ['interview', '인터뷰', ['interview']],
+];
 
 const KIND: Record<NewsItem['kind'], string> = { game: '경기', milestone: '기록', month: '월간', season: '시즌', award: '시상', interview: '인터뷰', move: '이적' };
 
@@ -74,9 +82,15 @@ export function NewsCard({ item, onRewrite, onRevert, busy }: { item: NewsItem; 
 
 export function Story({ league, onRewrite, onRevert, busyId }: { league: LeagueState; onRewrite?: (item: NewsItem) => void; onRevert?: (item: NewsItem) => void; busyId?: string | null }) {
   const [view, setView] = useState<View>('news');
+  const [filter, setFilter] = useState<Filter>('all');
+  const kinds = FILTERS.find((f) => f[0] === filter)![2];
   const u = league.user!;
   const mood = clubhouse(league, u.teamId);
-  const news = [...(league.news ?? [])].reverse();
+  // Newest first by date (the winter's moves are written in the order the offseason runs them).
+  const news = [...(league.news ?? [])]
+    .reverse()
+    .filter((n) => !kinds.length || kinds.includes(n.kind))
+    .sort((a, b) => b.date.localeCompare(a.date));
   const done = new Map((u.achievements ?? []).map((a) => [a.id, a.year]));
   return (
     <>
@@ -115,6 +129,15 @@ export function Story({ league, onRewrite, onRevert, busyId }: { league: LeagueS
           </button>
         ))}
       </div>
+      {view === 'news' && (
+        <div class="segmented" role="group" aria-label="기사 종류">
+          {FILTERS.map(([id, label]) => (
+            <button key={id} type="button" aria-pressed={filter === id} onClick={() => setFilter(id)}>
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
       {view === 'news' &&
         (news.length ? (
           <div class="news-list">
@@ -123,7 +146,7 @@ export function Story({ league, onRewrite, onRevert, busyId }: { league: LeagueS
             ))}
           </div>
         ) : (
-          <p class="muted">아직 기사가 없습니다. 끝내기·대승·대기록 같은 경기와 월간 결산, 시즌 결산이 기사로 나옵니다.</p>
+          <p class="muted">아직 기사가 없습니다. 끝내기·대승·대기록 같은 경기, 트레이드·방출·외국인 교체·FA 같은 이적, 월간·시즌 결산이 기사로 나옵니다.</p>
         ))}
       {view === 'timeline' && (
         <ol class="plain timeline">

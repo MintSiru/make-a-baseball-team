@@ -1,10 +1,13 @@
 /* Google Gemini through its REST generateContent API (JSON response mode), called from the browser
    with the player's own key. The schema is enforced by our own parser. */
-import { parseStory, type StoryError, type StoryModel } from '../types';
+import { bodyOf, failure, retryAfterOf } from '../errors';
+import { parseStory, type StoryModel } from '../types';
 
 const BASE = 'https://generativelanguage.googleapis.com/v1beta';
 
-const errorOf = (status: number): StoryError => (status === 401 || status === 403 ? 'auth' : status === 429 ? 'rate' : status === 400 ? 'invalid' : 'unknown');
+interface GoogleError {
+  error?: { message?: string; details?: { reason?: string; retryDelay?: string; violations?: { quotaId?: string }[] }[] };
+}
 
 export const geminiModel: StoryModel = {
   id: 'gemini',
@@ -25,7 +28,14 @@ export const geminiModel: StoryModel = {
     } catch {
       return { ok: false, error: 'network', message: '연결하지 못했습니다.' };
     }
-    if (!res.ok) return { ok: false, error: errorOf(res.status), message: `API 오류 ${res.status}` };
+    if (!res.ok) {
+      // Google answers a bad key with 400 API_KEY_INVALID, and a spent daily quota with 429 whose quota id says PerDay.
+      const body = (await bodyOf(res)) as GoogleError | undefined;
+      const details = body?.error?.details ?? [];
+      const badKey = details.some((d) => d.reason === 'API_KEY_INVALID');
+      const daily = res.status === 429 && details.some((d) => d.violations?.some((v) => /PerDay/i.test(v.quotaId ?? '')));
+      return failure(res.status, { kind: badKey ? 'auth' : daily ? 'quota' : undefined, daily, retryAfter: retryAfterOf(res.headers, body), detail: body?.error?.message });
+    }
     const data = (await res.json()) as {
       candidates?: { content?: { parts?: { text?: string }[] }; finishReason?: string }[];
       promptFeedback?: { blockReason?: string };

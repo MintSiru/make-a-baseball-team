@@ -4,7 +4,7 @@ import { PROVIDERS } from '../story/writer';
 import type { StorySettings as Settings } from '../story/settings';
 import type { ProviderId } from '../story/types';
 
-export function StorySettings({ settings, usage, onSave, onClose }: { settings: Settings; usage: { input: number; output: number; articles: number }; onSave: (s: Settings) => void; onClose: () => void }) {
+export function StorySettings({ settings, usage, pausedUntil = 0, onSave, onClose }: { settings: Settings; usage: { input: number; output: number; articles: number }; pausedUntil?: number; onSave: (s: Settings) => void; onClose: () => void }) {
   const [s, setS] = useState<Settings>(settings);
   const [models, setModels] = useState<string[]>([]);
   const [msg, setMsg] = useState('');
@@ -64,7 +64,7 @@ export function StorySettings({ settings, usage, onSave, onClose }: { settings: 
           </div>
         </div>
         <label class="check">
-          <input type="checkbox" checked={s.auto} onChange={(e) => setS({ ...s, auto: (e.currentTarget as HTMLInputElement).checked })} /> 큰 기사(시즌 결산·시상·월간 결산·인터뷰)는 나올 때마다 자동으로 쓰기
+          <input type="checkbox" checked={s.auto} onChange={(e) => setS({ ...s, auto: (e.currentTarget as HTMLInputElement).checked })} /> 큰 기사(시즌 결산·시상·월간 결산·인터뷰·우리 구단 이적)는 나올 때마다 자동으로 쓰기
         </label>
         <label class="inline-form">
           한 번 켤 때 자동으로 쓸 기사 수
@@ -77,6 +77,10 @@ export function StorySettings({ settings, usage, onSave, onClose }: { settings: 
         <p class="muted small">
           이번 세션 사용량: 기사 {usage.articles}개 · 입력 {usage.input.toLocaleString('ko-KR')} 토큰 · 출력 {usage.output.toLocaleString('ko-KR')} 토큰
         </p>
+        {pausedUntil > Date.now() && (
+          <p class="muted small">자동 모드가 요청 한도나 서버 혼잡으로 {new Date(pausedUntil).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}까지 쉬었다가 이어 씁니다.</p>
+        )}
+        <p class="muted small">요청 한도(429)나 서버 혼잡(500·503·529)은 한 번 더 시도하고, 그래도 안 되면 자동 모드가 잠시 쉽니다. 크레딧·하루 한도가 바닥나거나 키가 틀리면 자동 모드가 꺼집니다.</p>
         <div class="row-actions">
           <button type="button" class="primary" onClick={() => onSave(s)}>
             저장

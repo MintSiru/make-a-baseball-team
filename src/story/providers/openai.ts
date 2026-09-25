@@ -1,10 +1,9 @@
 /* OpenAI (GPT) through its REST Chat Completions API with a strict JSON schema response format,
    called from the browser with the player's own key. */
-import { parseStory, type StoryError, type StoryModel } from '../types';
+import { bodyOf, failure, retryAfterOf } from '../errors';
+import { parseStory, type StoryModel } from '../types';
 
 const BASE = 'https://api.openai.com/v1';
-
-const errorOf = (status: number): StoryError => (status === 401 || status === 403 ? 'auth' : status === 429 ? 'rate' : 'unknown');
 
 export const openaiModel: StoryModel = {
   id: 'openai',
@@ -29,7 +28,13 @@ export const openaiModel: StoryModel = {
     } catch {
       return { ok: false, error: 'network', message: '연결하지 못했습니다.' };
     }
-    if (!res.ok) return { ok: false, error: errorOf(res.status), message: `API 오류 ${res.status}` };
+    if (!res.ok) {
+      // A 429 is either too many requests for now or an account with no credit left (insufficient_quota).
+      const body = (await bodyOf(res)) as { error?: { code?: string; type?: string; message?: string } } | undefined;
+      const e = body?.error;
+      const spent = res.status === 429 && (e?.code === 'insufficient_quota' || e?.type === 'insufficient_quota');
+      return failure(res.status, { kind: spent ? 'quota' : undefined, retryAfter: retryAfterOf(res.headers, body), detail: e?.message });
+    }
     const data = (await res.json()) as { choices?: { message?: { content?: string | null; refusal?: string | null } }[]; usage?: { prompt_tokens?: number; completion_tokens?: number } };
     const msg = data.choices?.[0]?.message;
     if (msg?.refusal) return { ok: false, error: 'refusal', message: '모델이 이 기사를 쓰지 않기로 했습니다.' };

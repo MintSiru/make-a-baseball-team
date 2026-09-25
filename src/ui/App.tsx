@@ -14,6 +14,7 @@ import { BoxScore } from './BoxScore';
 import { StorySettings } from './StorySettings';
 import { hasKey, loadSettings, saveSettings, type StorySettings as StorySettingsT } from '../story/settings';
 import { PROVIDERS, rewrite } from '../story/writer';
+import type { StoryError } from '../story/types';
 import { detailFor, type NewsItem } from '../league/news';
 import { Decision } from './Decision';
 import { Games } from './Games';
@@ -45,6 +46,13 @@ const TABS: { id: Tab; label: string; userOnly?: boolean }[] = [
 ];
 
 const AUTO_KINDS: NewsItem['kind'][] = ['season', 'award', 'month', 'interview'];
+/** Automatic mode after a failure it can wait out: seconds to pause (at least; longer if the server asks),
+    and how many times one article is tried. A spent quota or a bad key turns automatic mode off. */
+const AUTO_PAUSE: Partial<Record<StoryError, number>> = { rate: 60, busy: 180, network: 120 };
+const AUTO_TRIES = 3;
+/** Seconds between automatic articles, so a backlog does not go out as a burst. */
+const AUTO_GAP = 5;
+const seconds = (sec: number) => (sec < 60 ? `${sec}초` : `${Math.ceil(sec / 60)}분`);
 
 const PHASE: Record<LeagueState['phase'], CalendarPhase> = { regular: 'regularSeason', postseason: 'postseason', offseason: 'offseason' };
 const snapshotSave = (s: LeagueState) => makeSave(s.seed, [], { at: { year: s.year, phase: PHASE[s.phase] }, state: s });
@@ -80,6 +88,10 @@ export function App() {
   const [storyBusy, setStoryBusy] = useState<string | null>(null);
   const usage = useRef({ input: 0, output: 0, articles: 0 });
   const autoTried = useRef(new Set<string>());
+  const autoTries = useRef(new Map<string, number>());
+  // Automatic mode waits until this time (ms); the tick wakes it up.
+  const autoPause = useRef(0);
+  const [autoTick, setAutoTick] = useState(0);
   const latest = useRef<LeagueState | null>(null);
   latest.current = league;
   // A league built in the background while the player fills in the founding form.
@@ -141,17 +153,22 @@ export function App() {
   useEffect(() => {
     if (!league || !storySettings.auto || !hasKey(storySettings) || storyBusy || busy) return;
     if (usage.current.articles >= storySettings.budget) return;
-    const next = [...(league.news ?? [])].reverse().find((n) => AUTO_KINDS.includes(n.kind) && !n.ai && !autoTried.current.has(n.id));
+    const wait = autoPause.current - Date.now();
+    if (wait > 0) {
+      const t = setTimeout(() => setAutoTick((x) => x + 1), wait);
+      return () => clearTimeout(t);
+    }
+    const next = [...(league.news ?? [])].reverse().find((n) => (AUTO_KINDS.includes(n.kind) || (n.kind === 'move' && n.mine)) && !n.ai && !autoTried.current.has(n.id));
     if (next) {
       autoTried.current.add(next.id);
-      void writeStory(next);
+      void writeStory(next, true);
     }
-  }, [version, storySettings, storyBusy, busy]);
+  }, [version, storySettings, storyBusy, busy, autoTick]);
 
   if (loading || !store) return <main class="loading">불러오는 중</main>;
 
   /** Asks the chosen model for an article and stores it on the latest league state. */
-  async function writeStory(item: NewsItem) {
+  async function writeStory(item: NewsItem, auto = false) {
     if (!hasKey(storySettings)) {
       setStoryOpen(true);
       return;
@@ -164,9 +181,28 @@ export function App() {
     const out = await rewrite(detail ? { ...item, detail } : item, { provider, key: storySettings.keys[provider]!, model });
     setStoryBusy(null);
     if (!out.ok) {
-      setNotice(`AI 기사: ${out.message} (원래 기사를 씁니다)`);
+      let note = '';
+      const pause = AUTO_PAUSE[out.error];
+      if (storySettings.auto && pause) {
+        // Wait it out, then try this article again (a few times at most).
+        const sec = Math.max(pause, out.retryAfter ?? 0);
+        autoPause.current = Date.now() + sec * 1000;
+        note = ` 자동 모드는 ${seconds(sec)} 쉬었다가 이어갑니다.`;
+        const tries = (autoTries.current.get(item.id) ?? 0) + 1;
+        autoTries.current.set(item.id, tries);
+        if (auto && tries < AUTO_TRIES) autoTried.current.delete(item.id);
+      } else if (storySettings.auto && (out.error === 'quota' || out.error === 'auth')) {
+        setStorySettings((s) => {
+          const off = { ...s, auto: false };
+          saveSettings(off);
+          return off;
+        });
+        note = ' 자동 모드를 껐습니다. 확인한 뒤 AI 기사 설정에서 다시 켜세요.';
+      }
+      setNotice(`AI 기사: ${out.message} (원래 기사를 씁니다)${note}`);
       return;
     }
+    if (auto) autoPause.current = Date.now() + AUTO_GAP * 1000;
     usage.current = { input: usage.current.input + out.usage.input, output: usage.current.output + out.usage.output, articles: usage.current.articles + 1 };
     const base = latest.current;
     if (!base || !store) return;
@@ -324,6 +360,7 @@ export function App() {
         <StorySettings
           settings={storySettings}
           usage={usage.current}
+          pausedUntil={storySettings.auto ? autoPause.current : 0}
           onClose={() => setStoryOpen(false)}
           onSave={(s) => {
             setStorySettings(s);

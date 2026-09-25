@@ -32,6 +32,8 @@ export interface NewsItem {
   /** Longer fact lines (V0.7.1): a game's scoring plays and lines, a month's results, a season's leaders. */
   detail?: string[];
   players: PlayerId[];
+  /** A move involving the user's club (V0.7.2): automatic AI writing covers these. */
+  mine?: boolean;
   /** A language model's version, when one wrote it (the template stays as the fallback). */
   ai?: { title: string; body: string; quotes: Quote[]; provider: string; model: string };
 }

@@ -19,9 +19,14 @@ export interface StoryRequest {
   maxTokens: number;
 }
 
-export type StoryError = 'auth' | 'rate' | 'refusal' | 'network' | 'invalid' | 'unknown';
+/** Why an article could not be written. `rate`: too many requests or tokens for now (429). `quota`: the
+    account's credit or usage limit is spent — waiting does not help. `busy`: the provider's servers are
+    overloaded or down for a moment (500, 502, 503, 504, 529). */
+export type StoryError = 'auth' | 'rate' | 'quota' | 'busy' | 'refusal' | 'network' | 'invalid' | 'unknown';
 
-export type StoryOutcome = { ok: true; text: StoryText; usage: { input: number; output: number } } | { ok: false; error: StoryError; message: string };
+export type StoryFailure = { ok: false; error: StoryError; message: string; /** Seconds the server asked us to wait. */ retryAfter?: number };
+
+export type StoryOutcome = { ok: true; text: StoryText; usage: { input: number; output: number } } | StoryFailure;
 
 export interface StoryModel {
   id: ProviderId;
