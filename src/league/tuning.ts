@@ -7,12 +7,14 @@
    logit(p) = logit(base) + Σ coefficient × z. */
 
 export const ENGINE = {
+  /** Diminishing returns past this z (see Zr). */
+  extremes: { knee: 1, slope: 0.5 },
   /** Per plate appearance, for an average (50) batter against an average pitcher. */
   base: {
-    bb: 0.07,
+    bb: 0.074,
     hbp: 0.016,
-    k: 0.17,
-    hr: 0.0133,
+    k: 0.181,
+    hr: 0.0162,
     /** Hits on balls in play (excludes home runs). */
     babip: 0.316,
   },
@@ -25,7 +27,7 @@ export const ENGINE = {
   pitcher: {
     bb: { command: -0.42, stuff: 0.04 },
     hbp: { command: -0.18 },
-    k: { stuff: 0.32, breaking: 0.24, command: 0.04 },
+    k: { stuff: 0.28, breaking: 0.21, command: 0.04 },
     hr: { stuff: -0.26, command: -0.12, breaking: -0.06 },
     babip: { stuff: -0.07, breaking: -0.04 },
   },
@@ -83,6 +85,18 @@ export const ENGINE = {
 /** Scale factor turning a 20–80 grade into a z-score. */
 export const Z = (grade: number) => (grade - 50) / 10;
 
+/**
+ * The z-score the rate models use for batting and pitching tools: full effect up to `knee`, then
+ * diminishing returns (a 70→80 step counts `slope` of a 50→60 step). Keeps the averages and trims the
+ * extremes (V0.4: 60-homer hitters and 250-strikeout pitchers every year).
+ */
+export const Zr = (grade: number) => {
+  const z = Z(grade);
+  const { knee, slope } = ENGINE.extremes;
+  const a = Math.abs(z);
+  return a <= knee ? z : Math.sign(z) * (knee + (a - knee) * slope);
+};
+
 /** Offseason: development, careers and roster turnover. Military numbers follow Draft Room's tuning. */
 export const OFFSEASON = {
   veteranDecline: { from: 31, perYear: 0.3, steepFrom: 34, steepPerYear: 0.45, speed: 1.4, skill: 0.6 },
@@ -102,11 +116,12 @@ export const OFFSEASON = {
       [27, 4],
     ] as [number, number][],
     holdForGames: 48,
-    sangmu: { maxAge: 27, minGrade: 40, perGrade: 0.035, playedBonus: 0.12, min: 0.03, max: 0.6 },
+    sangmu: { maxAge: 27, minGrade: 40, perGrade: 0.045, playedBonus: 0.12, min: 0.05, max: 0.7 },
     socialBase: 0.1,
   },
   freeAgency: { minGrade: 50, stayChance: 0.62 },
-  developmentSignings: 4,
+  /** Development players (육성선수): draft-day signings per club, the AI's target and hard cap, and age limits. */
+  development: { signings: 5, aiTarget: 20, cap: 30, perYear: 10, maxAge: 27, convertAge: 25 },
   /** Clubs leave a few roster spots open after the draft. */
   openSpots: 3,
   /** Draftees from these first rounds are kept through their first winter; later picks can be cut like anyone. */
@@ -122,4 +137,22 @@ export const SALARY = {
   freeAgentPerWar: 13000,
   freeAgentMax: 250000,
   veteranStar: 32000,
+} as const;
+
+/** Futures league and development by playing time (V0.4; game assumptions, docs/CALIBRATION.md). */
+export const FUTURES = {
+  /** Squad kept for futures games; the rest of the club is in the third squad. */
+  squad: { pitchers: 16, catchers: 3, hitters: 17 },
+  /** Prospects get playing time: the gap between future and current value counts this much, up to this age. */
+  youthAge: 24,
+  youthWeight: 0.4,
+  /** A short-handed futures side bats pitchers rather than forfeit (상무 after the June discharge). */
+  pitchersBat: true,
+  /** Injury chance per futures appearance, relative to the first team. */
+  injuryFactor: 0.5,
+  /**
+   * Yearly growth multiplier for players up to `maxAge`, from last season's playing time (first team
+   * and futures, futures counted at `futuresWeight`) and days trained in the third squad.
+   */
+  growth: { maxAge: 27, base: 0.83, play: 0.3, train: 0.15, max: 1.15, fullPA: 300, fullInnings: 60, futuresWeight: 0.8, trainDays: 180 },
 } as const;

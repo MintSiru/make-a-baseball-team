@@ -8,7 +8,7 @@
 
    Determinism: every draw comes from the `r` passed in, in a fixed order. Changing the order of draws
    changes results and needs a SIM_VERSION bump. */
-import { ENGINE as E, Z } from '../tuning';
+import { ENGINE as E, Z, Zr } from '../tuning';
 import type { BattingLine, BatterIn, BullpenRole, GameIn, GameOut, PitcherIn, PitchingLine, RelieverIn, TeamBox, TeamIn } from './types';
 
 type R = () => number;
@@ -167,9 +167,9 @@ export function simulateGame(game: GameIn, r: R): GameOut {
       const batter = game[isHome ? 'home' : 'away'].lineup[bat.next]!;
       const bl = bat.bat[bat.next]!;
       const fatigue = Math.max(0, pl.pitches - p.pitchLimit) * 0.18;
-      const stuff = Z(p.stuff - fatigue),
-        command = Z(p.command - fatigue),
-        breaking = Z(p.breaking - fatigue * 0.5);
+      const stuff = Zr(p.stuff - fatigue),
+        command = Zr(p.command - fatigue),
+        breaking = Zr(p.breaking - fatigue * 0.5);
 
       // Stolen base attempt before the pitch: runner on first, second base open.
       const runner1 = bases[0];
@@ -221,10 +221,10 @@ export function simulateGame(game: GameIn, r: R): GameOut {
       const hb = isHome ? 1 : 0;
       const b = E.batter,
         q = E.pitcher;
-      const zc = Z(batter.contact),
-        zp = Z(batter.power),
-        ze = Z(batter.eye),
-        zs = Z(batter.speed);
+      const zc = Zr(batter.contact),
+        zp = Zr(batter.power),
+        ze = Zr(batter.eye),
+        zs = Zr(batter.speed);
       const pBB = inv(logit(E.base.bb) + b.bb.eye * ze + b.bb.contact * zc + q.bb.command * command + q.bb.stuff * stuff + E.platoon.bb * same);
       const pHBP = inv(logit(E.base.hbp) + q.hbp.command * command);
       const pK = inv(logit(E.base.k) + b.k.contact * zc + b.k.power * zp + b.k.eye * ze + q.k.stuff * stuff + q.k.breaking * breaking + q.k.command * command + E.platoon.k * same);

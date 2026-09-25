@@ -8,7 +8,8 @@ import { firstTeamSize } from '../src/league/manager';
 import { rosterLimit } from '../src/league/offseason';
 import { isForeign } from '../src/league/players';
 import { playDay } from '../src/league/season';
-import type { LeagueState } from '../src/league/state';
+import { developmentIds, orgIds, registeredIds, type LeagueState } from '../src/league/state';
+import { OFFSEASON } from '../src/league/tuning';
 import { era, obp, slg } from '../src/league/stats';
 import type { BatTotals, PitTotals } from '../src/model/types';
 
@@ -52,8 +53,9 @@ describe('league structure at 2026 opening day', () => {
     const seen = new Set<string>();
     for (const t of league.teams) {
       const r = league.rosters[t.id]!;
-      const ids = [...r.active, ...r.futures];
-      for (const id of ids) {
+      const all = orgIds(league, t.id);
+      const ids = registeredIds(league, t.id);
+      for (const id of all) {
         expect(seen.has(id)).toBe(false);
         seen.add(id);
         const p = league.players[id]!;
@@ -61,6 +63,11 @@ describe('league structure at 2026 opening day', () => {
         expect(p.status).toBe('active');
       }
       expect(ids.length).toBeLessThanOrEqual(rosterLimit(GAME_START));
+      // Development players sit outside the limit, up to the AI clubs' target.
+      const dev = developmentIds(league, t.id);
+      expect(dev.length).toBeGreaterThan(0);
+      expect(dev.length).toBeLessThanOrEqual(OFFSEASON.development.aiTarget);
+      expect(dev.every((id) => !r.active.includes(id))).toBe(true);
       expect(r.active).toHaveLength(firstTeamSize(league, t.id));
       const foreign = ids.map((id) => league.players[id]!).filter(isForeign);
       expect(foreign.filter((p) => !p.origin.asiaQuota)).toHaveLength(3);

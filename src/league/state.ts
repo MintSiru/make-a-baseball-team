@@ -9,9 +9,13 @@ export type LeaguePhase = 'regular' | 'postseason' | 'offseason';
 export interface ClubRoster {
   /** First-team (1군) registered players. */
   active: PlayerId[];
-  /** Everyone else under contract who is not serving (퓨처스·육성). */
+  /** The futures squad (퓨처스 출전조): registered and development players who play futures games. */
   futures: PlayerId[];
+  /** The third squad (잔류군·재활군): rehab and training, no games. */
+  third: PlayerId[];
 }
+
+export type Squad = 'active' | 'futures' | 'third';
 
 export interface ArmState {
   lastDate: string;
@@ -55,6 +59,8 @@ export interface SeasonSummary {
   totals: { bat: BatTotals; pit: PitTotals; games: number };
   /** The user's club in its futures year. */
   userFutures?: { w: number; l: number; t: number; rs: number; ra: number };
+  /** Futures league standings, from 2026 (growth then depends on playing time). */
+  futures?: StandingRow[];
 }
 
 /** A choice the game waits for before it can go on. Only the user's club ever raises one. */
@@ -65,7 +71,13 @@ export type Decision =
   | { kind: 'specialDraft'; lists: Record<TeamId, PlayerId[]>; protectedCount: number; fee: number }
   | { kind: 'released'; candidates: PlayerId[]; max: number }
   | { kind: 'foreign'; candidates: PlayerId[]; regular: number; asia: number }
-  | { kind: 'roster'; candidates: PlayerId[]; release: number; limit: number };
+  | { kind: 'roster'; candidates: PlayerId[]; release: number; limit: number }
+  // Every year (V0.4)
+  | { kind: 'military'; candidates: PlayerId[]; forced: PlayerId[] }
+  | { kind: 'ownFreeAgents'; candidates: PlayerId[] }
+  | { kind: 'rookieBonus'; picks: { id: PlayerId; slot: number; ask: number }[]; final: boolean }
+  | { kind: 'development'; candidates: PlayerId[]; max: number }
+  | { kind: 'camp'; players: PlayerId[] };
 
 export interface DraftSlot {
   teamId: TeamId;
@@ -79,6 +91,9 @@ export interface DraftState {
   /** Prospects still on the board (stored in `players` with status 'amateur' until the draft ends). */
   pool: PlayerId[];
   developmentDone: boolean;
+  /** The user's club has settled its rookies' bonuses and its development signings. */
+  bonusDone?: boolean;
+  userDevelopmentDone?: boolean;
 }
 
 export interface OffseasonState {
@@ -101,6 +116,12 @@ export interface UserClub {
   payrollBudget: number;
   firstTeamYear: number;
   ledger: { year: number; label: string; amount: number }[];
+  /** First-team registrations: the manager's (auto) or the general manager's own (manual). */
+  entry?: 'auto' | 'manual';
+  /** Name for the new ballpark when it opens (STADIUM_PLANS); default "<city> 신구장". */
+  newStadiumName?: string;
+  /** Club news: military results, re-signings, refusals, position changes. */
+  log?: { year: number; text: string }[];
 }
 
 export type Promotion = 'afterFutures' | 'immediate';
@@ -120,12 +141,15 @@ export interface ExpansionSettings {
   scenario: string | null;
 }
 
-/** The expansion club's futures season before it joins the first team. */
+/** The season's futures league (from 2026): every club's futures squad plus 상무. */
 export interface FuturesSeason {
+  teams: TeamId[];
   schedule: import('./schedule').ScheduledGame[];
   next: number;
   scores: GameScore[];
   lines: Record<PlayerId, SeasonLine>;
+  /** Days each player spent in the third squad (training or rehab). */
+  training: Record<PlayerId, number>;
 }
 
 export interface LeagueState {
@@ -144,6 +168,10 @@ export interface LeagueState {
   arms: Record<PlayerId, ArmState>;
   rotation: Record<TeamId, number>;
   injuries: Record<PlayerId, Injury>;
+  /** Away with the national team until this date (registered days still count). */
+  away: Record<PlayerId, string>;
+  /** When the user's players were last sent down from the first team (ten days before re-registering). */
+  demoted?: Record<PlayerId, string>;
   /** Last date registered days were counted for. */
   countedThrough: string | null;
   postseason: SeriesResult[];
@@ -173,3 +201,37 @@ export const hasBenefits = (s: LeagueState, teamId: string, year = s.year) => {
   const t = s.teams.find((x) => x.id === teamId);
   return !!t?.benefitsUntil && year <= t.benefitsUntil;
 };
+
+// ── Club organisation ────────────────────────────────────────────────────────────────────────────
+
+/** Development players (육성선수) sit outside the registered-player limit (RULES.md §6). */
+export const isDevelopment = (p: Player) => p.contract?.kind === 'development';
+
+/** Everyone under contract with the club who is not serving: first team, futures squad and third squad. */
+export const orgIds = (s: LeagueState, teamId: TeamId): PlayerId[] => {
+  const r = s.rosters[teamId]!;
+  return [...r.active, ...r.futures, ...r.third];
+};
+export const orgPlayers = (s: LeagueState, teamId: TeamId): Player[] => orgIds(s, teamId).map((id) => s.players[id]!);
+/** Registered players (소속선수), the ones the 68-player limit counts. */
+export const registeredIds = (s: LeagueState, teamId: TeamId) => orgIds(s, teamId).filter((id) => !isDevelopment(s.players[id]!));
+export const developmentIds = (s: LeagueState, teamId: TeamId) => orgIds(s, teamId).filter((id) => isDevelopment(s.players[id]!));
+
+export function squadOf(s: LeagueState, id: PlayerId): Squad | null {
+  const p = s.players[id];
+  const r = p?.teamId ? s.rosters[p.teamId] : undefined;
+  if (!r) return null;
+  return r.active.includes(id) ? 'active' : r.futures.includes(id) ? 'futures' : r.third.includes(id) ? 'third' : null;
+}
+
+/** Moves a player between squads of his club (no rule checks: callers check). */
+export function moveTo(s: LeagueState, id: PlayerId, squad: Squad) {
+  const p = s.players[id]!;
+  const r = s.rosters[p.teamId!]!;
+  r.active = r.active.filter((x) => x !== id);
+  r.futures = r.futures.filter((x) => x !== id);
+  r.third = r.third.filter((x) => x !== id);
+  r[squad].push(id);
+}
+
+export const emptyRoster = (): ClubRoster => ({ active: [], futures: [], third: [] });

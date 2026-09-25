@@ -3,6 +3,7 @@
 import { generateDraftPool, isPitcherRole, overall, rng, toGrade, type DraftProspect, type Role, type Tools } from '../draftroom';
 import { ageOn, fromDraftProspect } from '../model/player';
 import { assignPosition } from '../model/position';
+import { background, careerText, foreignAsk, foreignName, LEVEL_LABELS } from './foreign';
 import type { Player } from '../model/types';
 
 export const ageIn = (p: Player, year: number) => ageOn(p.birthday, `${year}-04-01`);
@@ -63,16 +64,7 @@ export function draftClass(seed: string, draftYear: number): Player[] {
   return pool.players.map((p) => fromDraftProspect(shiftProspect(p, draftYear - DRAFT_ROOM_YEAR), draftYear, ps));
 }
 
-// ── Foreign players ──────────────────────────────────────────────────────────────────────────────
-// Names are common given/family names put together at random, written the way KBO rosters spell them.
-const WEST_GIVEN = '제이크 라이언 카일 브랜든 타일러 코디 딜런 에릭 케빈 저스틴 조던 마이클 알렉스 대니얼 트레버 오스틴 네이선 숀 콜 잭 매트 루크 헌터 체이스 가렛'.split(' ');
-const WEST_FAMILY = '밀러 존슨 윌리엄스 브라운 데이비스 윌슨 테일러 앤더슨 토머스 무어 마틴 잭슨 톰프슨 화이트 해리스 클라크 워커 홀 영 앨런 라이트 킹 스콧 그린 베이커 애덤스 넬슨 캠벨 파커 에번스'.split(' ');
-const LATIN_GIVEN = '호세 카를로스 미겔 라파엘 안드레스 헥터 루이스 후안 페드로 라몬 에두아르도 프란시스코'.split(' ');
-const LATIN_FAMILY = '로드리게스 곤잘레스 에르난데스 페레스 산체스 라미레스 토레스 플로레스 리베라 고메스 크루스 모랄레스 오르티스 레예스 메디나'.split(' ');
-const JP_GIVEN = '쇼타 다이키 유토 가이토 료 하야토 겐타 소마 다쿠야 유마 렌 하루토'.split(' ');
-const JP_FAMILY = '다나카 사토 스즈키 다카하시 와타나베 이토 야마모토 나카무라 고바야시 가토 요시다 야마다 마쓰모토 이노우에'.split(' ');
-const TW_GIVEN = '즈웨이 위안 하오 청 쥔 이팅 원제 자하오'.split(' ');
-const TW_FAMILY = '린 천 황 장 리우 우 차이 양'.split(' ');
+// ── Foreign players (names and backgrounds in foreign.ts) ───────────────────────────────────────
 
 const pickFrom = <T>(xs: T[], r: () => number) => xs[Math.floor(r() * xs.length)]!;
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
@@ -86,19 +78,13 @@ export interface ForeignSpec {
 /** A foreign player signing for `season`. Mature ability: potential equals current. */
 export function makeForeign(seed: string, id: string, season: number, spec: ForeignSpec): Player {
   const r = rng(`${seed}|foreign|${id}`);
-  const nationality = spec.asiaQuota ? (r() < 0.7 ? '일본' : r() < 0.67 ? '호주' : '대만') : r() < 0.66 ? '미국' : pickFrom(['베네수엘라', '도미니카공화국', '쿠바', '파나마', '멕시코'], r);
-  const [given, family] =
-    nationality === '일본'
-      ? [JP_GIVEN, JP_FAMILY]
-      : nationality === '대만'
-        ? [TW_GIVEN, TW_FAMILY]
-        : nationality === '미국' || nationality === '호주'
-          ? [WEST_GIVEN, WEST_FAMILY]
-          : [LATIN_GIVEN, LATIN_FAMILY];
-  const name = nationality === '대만' ? `${pickFrom(family, r)}${pickFrom(given, r)}` : `${pickFrom(given, r)} ${pickFrom(family, r)}`;
+  const bg = background(spec.asiaQuota, r);
+  const nationality = bg.nationality;
+  const name = foreignName(bg.pool, r);
   const age = spec.asiaQuota ? 24 + Math.floor(r() * 7) : 26 + Math.floor(r() * 7);
   const birthday = `${season - age - 1}-${String(1 + Math.floor(r() * 12)).padStart(2, '0')}-${String(1 + Math.floor(r() * 28)).padStart(2, '0')}`;
-  const q = spec.asiaQuota ? -4 : 0; // Asia-quota signings are cheaper and a notch below
+  // Asia-quota signings are cheaper and a notch below; the background moves ability a little (and widens it for independent leagues).
+  const q = (spec.asiaQuota ? -4 : 0) + bg.shift + normal(r) * bg.spread;
   let role: Role, tools: Tools;
   if (spec.kind === 'pitcher') {
     const starter = spec.asiaQuota ? r() < 0.35 : r() < 0.92;
@@ -123,7 +109,9 @@ export function makeForeign(seed: string, id: string, season: number, spec: Fore
   const current = toGrade(overall(graded, role));
   const throwsLeft = r() < 0.3,
     bats = r() < 0.3 ? '좌' : r() < 0.05 ? '양' : '우';
-  const level = spec.asiaQuota ? (nationality === '일본' ? 'NPB' : nationality === '호주' ? 'ABL' : 'CPBL') : '트리플A';
+  const level = LEVEL_LABELS[bg.level];
+  const text = careerText(bg.level, spec.kind === 'pitcher', age, current, r);
+  const ask = foreignAsk(current, spec.asiaQuota, bg.premium, r);
   return {
     id,
     name,
@@ -139,8 +127,8 @@ export function makeForeign(seed: string, id: string, season: number, spec: Fore
     personality: '',
     velocity: spec.kind === 'pitcher' ? Math.round(146 + ((tools.stuff ?? 55) - 55) * 0.4 + normal(r) * 1.5) : null,
     twoWay: false,
-    origin: { kind: 'foreign', pathway: '외국인', entryCategory: 'foreign', nationality, asiaQuota: spec.asiaQuota },
-    education: { qualification: `${level} 출신`, school: level, schoolTier: '', region: nationality, pathText: `${nationality} · ${level}`, history: [] },
+    origin: { kind: 'foreign', pathway: '외국인', entryCategory: 'foreign', nationality, asiaQuota: spec.asiaQuota, background: { level: bg.level, text, ask } },
+    education: { qualification: `${level} 출신`, school: level, schoolTier: '', region: nationality, pathText: `${nationality} · ${text}`, history: [] },
     amateur: { record: { kind: spec.kind, games: 0 }, awards: [], draftRank: 0 },
     status: 'active',
     teamId: null,

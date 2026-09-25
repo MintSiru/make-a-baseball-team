@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'preact/hooks';
 import { TOOL_LABELS } from '../draftroom';
 import type { LeagueState } from '../league/state';
-import { playerCard, positionLabel, rates } from '../league/views';
+import { playerCard, positionLabel, rateContextFor, rates } from '../league/views';
+import { usdTotal } from '../league/contracts';
+import { usd } from '../league/foreign';
 import { handedness, militaryLabel, money, toolKeysFor } from './format';
 
 /** A league player's page: public scouting grades, contract and career records. */
@@ -43,8 +45,12 @@ export function PlayerPanel({ league, id, onClose }: { league: LeagueState; id: 
             <dd>{handedness(p)}</dd>
           </div>
           <div>
-            <dt>연봉</dt>
-            <dd>{money(card.salary)}</dd>
+            <dt>{p.contract?.usd ? '계약' : '연봉'}</dt>
+            <dd>
+              {p.contract?.usd
+                ? `총액 ${usd(usdTotal(p.contract))} (계약금 ${usd(p.contract.usd.bonus)}, 연봉 ${usd(p.contract.usd.salary)}, 옵션 ${usd(p.contract.usd.options)})`
+                : money(card.salary)}
+            </dd>
           </div>
           <div>
             <dt>병역</dt>
@@ -90,7 +96,7 @@ export function PlayerPanel({ league, id, onClose }: { league: LeagueState; id: 
 
         <h3>통산 기록</h3>
         {rows.length === 0 ? (
-          <p class="muted">1군 기록이 없습니다.</p>
+          <p class="muted">기록이 없습니다.</p>
         ) : (
           <div class="table-wrap" tabIndex={0}>
             {pitcher ? (
@@ -106,15 +112,22 @@ export function PlayerPanel({ league, id, onClose }: { league: LeagueState; id: 
                     <th class="num">홀</th>
                     <th class="num">이닝</th>
                     <th class="num">삼진</th>
+                    <th class="num">볼넷</th>
                     <th class="num">ERA</th>
+                    <th class="num">WHIP</th>
+                    <th class="num">FIP</th>
+                    <th class="num">K/9</th>
+                    <th class="num">BABIP</th>
                     <th class="num">WAR</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((r) => (
-                    <tr key={r.year + r.team}>
+                  {rows.map((r) => {
+                    const rc = rateContextFor(league, r.year);
+                    return (
+                    <tr key={r.year + r.team + r.futures} class={r.futures ? 'futures-row' : undefined}>
                       <td class="num">{r.year}</td>
-                      <td>{r.team}</td>
+                      <td>{r.team}{r.futures && <span class="tag">퓨처스</span>}</td>
                       <td class="num">{r.pit?.g ?? 0}</td>
                       <td class="num">{r.pit?.w ?? 0}</td>
                       <td class="num">{r.pit?.l ?? 0}</td>
@@ -122,10 +135,16 @@ export function PlayerPanel({ league, id, onClose }: { league: LeagueState; id: 
                       <td class="num">{r.pit?.hld ?? 0}</td>
                       <td class="num">{rates.ip(r.pit?.outs ?? 0)}</td>
                       <td class="num">{r.pit?.k ?? 0}</td>
+                      <td class="num">{r.pit?.bb ?? 0}</td>
                       <td class="num">{r.pit?.outs ? rates.era(r.pit).toFixed(2) : '-'}</td>
-                      <td class="num">{r.current ? '-' : r.war.toFixed(1)}</td>
+                      <td class="num">{r.pit?.outs ? rates.whip(r.pit).toFixed(2) : '-'}</td>
+                      <td class="num">{r.pit?.outs && rc ? rates.fip(r.pit, rc).toFixed(2) : '-'}</td>
+                      <td class="num">{r.pit?.outs ? rates.per9(r.pit.k, r.pit.outs).toFixed(1) : '-'}</td>
+                      <td class="num">{r.pit?.outs ? rates.fmt3(rates.babipAllowed(r.pit)) : '-'}</td>
+                      <td class="num">{r.current || r.futures ? '-' : r.war.toFixed(1)}</td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             ) : (
@@ -137,34 +156,45 @@ export function PlayerPanel({ league, id, onClose }: { league: LeagueState; id: 
                     <th class="num">경기</th>
                     <th class="num">타석</th>
                     <th class="num">타율</th>
+                    <th class="num">출루율</th>
+                    <th class="num">장타율</th>
                     <th class="num">홈런</th>
                     <th class="num">타점</th>
                     <th class="num">도루</th>
                     <th class="num">OPS</th>
+                    <th class="num">BABIP</th>
+                    <th class="num">wRC+</th>
                     <th class="num">WAR</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((r) => (
-                    <tr key={r.year + r.team}>
+                  {rows.map((r) => {
+                    const rc = rateContextFor(league, r.year);
+                    return (
+                    <tr key={r.year + r.team + r.futures} class={r.futures ? 'futures-row' : undefined}>
                       <td class="num">{r.year}</td>
-                      <td>{r.team}</td>
+                      <td>{r.team}{r.futures && <span class="tag">퓨처스</span>}</td>
                       <td class="num">{r.bat?.g ?? 0}</td>
                       <td class="num">{r.bat?.pa ?? 0}</td>
                       <td class="num">{r.bat?.ab ? rates.fmt3(rates.avg(r.bat)) : '-'}</td>
+                      <td class="num">{r.bat?.pa ? rates.fmt3(rates.obp(r.bat)) : '-'}</td>
+                      <td class="num">{r.bat?.ab ? rates.fmt3(rates.slg(r.bat)) : '-'}</td>
                       <td class="num">{r.bat?.hr ?? 0}</td>
                       <td class="num">{r.bat?.rbi ?? 0}</td>
                       <td class="num">{r.bat?.sb ?? 0}</td>
                       <td class="num">{r.bat?.pa ? rates.fmt3(rates.ops(r.bat)) : '-'}</td>
-                      <td class="num">{r.current ? '-' : r.war.toFixed(1)}</td>
+                      <td class="num">{r.bat?.ab ? rates.fmt3(rates.babip(r.bat)) : '-'}</td>
+                      <td class="num">{r.bat?.pa && rc && !r.futures ? rates.wrcPlus(r.bat, rc) : '-'}</td>
+                      <td class="num">{r.current || r.futures ? '-' : r.war.toFixed(1)}</td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             )}
           </div>
         )}
-        <p class="muted">WAR은 게임 내 추정치입니다. 올해 기록은 시즌이 끝나면 WAR이 계산됩니다.</p>
+        <p class="muted">WAR·FIP·wRC+는 게임 내 추정치입니다 (구장 보정 없음). 올해 WAR은 시즌이 끝나면 계산됩니다. 퓨처스 기록은 표시만 합니다.</p>
       </div>
     </div>
   );

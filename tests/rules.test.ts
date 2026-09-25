@@ -23,6 +23,7 @@ describe('2026 KBO rules', () => {
 
   it('lets every foreign player play', () => {
     expect(KBO_2026.foreign.regular + KBO_2026.foreign.asiaQuota).toBe(4);
-    expect(KBO_2026.league.firstTeam.registered - KBO_2026.league.firstTeam.active).toBe(2);
+    // KBO 2026: 29 registered, 28 may play (RULES.md §1, S27).
+    expect([KBO_2026.league.firstTeam.registered, KBO_2026.league.firstTeam.active]).toEqual([29, 28]);
   });
 });

@@ -31,7 +31,7 @@ export function fromDraftProspect(p: DraftProspect, draftYear: number, poolSeed:
       pathText: p.pathText,
       history: p.history,
     },
-    amateur: { record: p.record, awards: p.awards, draftRank: p.rank },
+    amateur: { record: p.record, awards: p.awards, draftRank: p.rank, intent: p.intent ?? null },
     status: 'amateur',
     teamId: null,
     contract: null,

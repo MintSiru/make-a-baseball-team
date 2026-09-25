@@ -4,6 +4,7 @@ import Prospects from './prospects.js';
 import Grades from './grades.js';
 import Tuning from './tuning.js';
 import Biography from './biography.js';
+import Contracts from './contracts.js';
 
 export type Role = 'SP' | 'RP' | 'C' | 'IF' | 'OF';
 export type PitchingTool = 'stuff' | 'command' | 'breaking' | 'stamina';
@@ -32,6 +33,8 @@ export interface HistoryEntry {
 export interface DraftProspect {
   id: string;
   rank: number;
+  /** Announced intention: would rather go to college, or has interest from abroad. */
+  intent: Intent;
   name: string;
   birthday: string;
   age: number;
@@ -122,3 +125,13 @@ export const overall = (tools: Tools, role: Role): number => G.overall(tools, ro
 export const toGrade = (n: number): number => G.grade(n);
 /** A scout's look at true ability: observer bias and noise shrink with pro years. */
 export const observe = G.observe;
+
+export type Intent = 'college' | 'abroad' | null;
+export type Difficulty = 'easy' | 'normal' | 'hard';
+/** Draft Room's signing-bonus negotiation. Amounts in 백만 원 (100 = 1억). */
+export const draftContracts = Contracts as unknown as {
+  demand(p: { rank: number; intent: Intent }, pick: { slot: number }, favourite: boolean): number;
+  publicChance(p: { intent: Intent }, offer: number, ask: number, difficulty: Difficulty): number;
+  respond(p: { id: string; intent: Intent }, offer: number, ask: number, difficulty: Difficulty, favourite: boolean, seed: string): { result: 'signed' | 'counter' | 'refused'; counter?: number };
+  refusalPath(p: { intent: Intent; pathway: string; highSchoolRegion?: string }, catalog: unknown[], seed: string): string;
+};

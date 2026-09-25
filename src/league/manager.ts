@@ -4,7 +4,7 @@ import type { Player, PlayerId, TeamId } from '../model/types';
 import { outOfPosition, type Position } from '../model/position';
 import type { BatterIn, FieldPos, Hand, PitcherIn, RelieverIn, TeamIn } from './engine/types';
 import { batValue, currentValue, isForeign, isPitcher, keepValue, starterValue } from './players';
-import { hasBenefits, type LeagueState } from './state';
+import { hasBenefits, registeredIds, type LeagueState } from './state';
 import { EXPANSION_DEFAULTS, KBO_2026 } from '../rules/kbo2026';
 import { ENGINE } from './tuning';
 
@@ -23,19 +23,25 @@ const handOf = (h: string): Hand => (h === '좌' ? 'L' : h === '양' ? 'S' : 'R'
 const t = (p: Player, k: string) => (p.hidden.current as Record<string, number>)[k] ?? 30;
 const pub = (p: Player, k: string) => (p.scouting.tools as Record<string, number>)[k] ?? 30;
 
-export const available = (s: LeagueState, id: PlayerId) => !s.injuries[id];
+export const available = (s: LeagueState, id: PlayerId) => !s.injuries[id] && !s.away?.[id];
+
+type Prefer = (p: Player) => number;
+const none: Prefer = () => 0;
 
 /** Choose the first-team roster: 13–14 pitchers (5 starters), two catchers, the best of the rest. */
 export function chooseActive(s: LeagueState, teamId: TeamId): PlayerId[] {
   const size = firstTeamSize(s, teamId);
   const pitchersWanted = size >= 29 ? 14 : 13;
-  const pool = [...s.rosters[teamId]!.active, ...s.rosters[teamId]!.futures].map((id) => s.players[id]!).filter((p) => available(s, p.id) && p.status === 'active');
+  // Development players cannot be registered until they are converted (RULES.md §6).
+  const pool = registeredIds(s, teamId)
+    .map((id) => s.players[id]!)
+    .filter((p) => available(s, p.id) && p.status === 'active');
   const perf = (p: Player) => performanceNudge(s, p);
   const val = (p: Player) => currentValue(p) * 0.8 + keepValue(p, s.year) * 0.2 + perf(p) + (isForeign(p) ? 30 : 0);
   const pitchers = pool.filter(isPitcher).sort((a, b) => val(b) - val(a));
   const hitters = pool.filter((p) => !isPitcher(p)).sort((a, b) => val(b) - val(a));
   const chosen: Player[] = [];
-  const starters = [...pitchers].sort((a, b) => starterValue(b.scouting.tools) + (isForeign(b) ? 30 : 0) - (starterValue(a.scouting.tools) + (isForeign(a) ? 30 : 0))).slice(0, 5);
+  const starters = [...pitchers].sort((a, b) => rotationScore(b, none) - rotationScore(a, none)).slice(0, 5);
   chosen.push(...starters);
   for (const p of pitchers) if (chosen.length < pitchersWanted && !chosen.includes(p)) chosen.push(p);
   const catchers = hitters.filter((p) => p.position === 'C').slice(0, 2);
@@ -60,14 +66,19 @@ function performanceNudge(s: LeagueState, p: Player): number {
   return 0;
 }
 
+const ADAPTING_PENALTY = 5;
 const LINEUP_ORDER: Position[] = ['C', 'SS', 'CF', '2B', '3B', 'RF', 'LF', '1B'];
 
 /** Fill the field positions, then the designated hitter, then set the batting order. */
-export function lineupFor(s: LeagueState, ids: PlayerId[]): BatterIn[] {
-  const hitters = ids.map((id) => s.players[id]!).filter((p) => !isPitcher(p) && available(s, p.id));
+export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none, pitchersBat = false): BatterIn[] {
+  let hitters = ids.map((id) => s.players[id]!).filter((p) => !isPitcher(p) && available(s, p.id));
+  if (pitchersBat && hitters.length < 9) {
+    const spare = ids.map((id) => s.players[id]!).filter((p) => isPitcher(p) && available(s, p.id)).sort((a, b) => a.scouting.current - b.scouting.current);
+    hitters = [...hitters, ...spare.slice(0, 9 - hitters.length)];
+  }
   const used = new Set<PlayerId>();
   const slots: { p: Player; pos: FieldPos }[] = [];
-  const hitScore = (p: Player) => batValue(p.scouting.tools) + performanceNudge(s, p) + (isForeign(p) ? 4 : 0);
+  const hitScore = (p: Player) => batValue(p.scouting.tools) + performanceNudge(s, p) + (isForeign(p) ? 4 : 0) + prefer(p);
   for (const pos of LINEUP_ORDER) {
     let best: Player | null = null,
       bestScore = -Infinity;
@@ -106,7 +117,8 @@ export function lineupFor(s: LeagueState, ids: PlayerId[]): BatterIn[] {
     power: t(p, 'power'),
     eye: t(p, 'eye'),
     speed: t(p, 'speed'),
-    defense: t(p, 'defense') - outOfPosition(p.position, pos),
+    // A player who changed position this spring is still learning it (spring camp plan).
+    defense: t(p, 'defense') - outOfPosition(p.position, pos) - (p.plan?.adaptingIn === s.year ? ADAPTING_PENALTY : 0),
     pos,
   }));
 }
@@ -117,12 +129,14 @@ function armIn(p: Player, pitchLimit: number): PitcherIn {
   return { id: p.id, throws: p.throws === '좌' ? 'L' : 'R', stuff: t(p, 'stuff'), command: t(p, 'command'), breaking: t(p, 'breaking'), stamina: t(p, 'stamina'), pitchLimit };
 }
 
-/** The five-man rotation in order of public starter value. */
-export function rotationFor(s: LeagueState, ids: PlayerId[]): Player[] {
+/** Pitchers set as starters come first: a reliever only starts when there are not five starters. */
+const STARTER_ROLE_BONUS = 100;
+const rotationScore = (p: Player, prefer: Prefer) => starterValue(p.scouting.tools) + (isForeign(p) ? 30 : 0) + (p.role === 'SP' ? STARTER_ROLE_BONUS : 0) + prefer(p);
+
+/** The five-man rotation: starters (role SP) by public starter value; everyone else pitches from the bullpen. */
+export function rotationFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none): Player[] {
   const pitchers = ids.map((id) => s.players[id]!).filter((p) => isPitcher(p));
-  return pitchers
-    .sort((a, b) => starterValue(b.scouting.tools) + (isForeign(b) ? 30 : 0) - (starterValue(a.scouting.tools) + (isForeign(a) ? 30 : 0)))
-    .slice(0, 5);
+  return pitchers.sort((a, b) => rotationScore(b, prefer) - rotationScore(a, prefer) || a.id.localeCompare(b.id)).slice(0, 5);
 }
 
 export function starterFor(s: LeagueState, key: string, date: string, rotation: Player[]): { p: Player; limit: number } | null {
@@ -156,7 +170,7 @@ export function starterFor(s: LeagueState, key: string, date: string, rotation: 
 }
 
 /** Relievers who can pitch today, with roles: closer, two setup men, long men, the rest middle relief. */
-export function bullpenFor(s: LeagueState, ids: PlayerId[], date: string, exclude: Set<PlayerId>): RelieverIn[] {
+export function bullpenFor(s: LeagueState, ids: PlayerId[], date: string, exclude: Set<PlayerId>, prefer: Prefer = none): RelieverIn[] {
   const arms = ids.map((id) => s.players[id]!).filter((p) => isPitcher(p) && !exclude.has(p.id) && available(s, p.id));
   const rested = arms.filter((p) => {
     const a = s.arms[p.id];
@@ -167,7 +181,7 @@ export function bullpenFor(s: LeagueState, ids: PlayerId[], date: string, exclud
     if (days <= 2 && a.lastPitches >= 50) return false;
     return true;
   });
-  const relief = (p: Player) => p.scouting.current + performanceNudge(s, p) + (p.role === 'RP' ? 2 : 0);
+  const relief = (p: Player) => p.scouting.current + performanceNudge(s, p) + (p.role === 'RP' ? 2 : 0) + prefer(p);
   const sorted = rested.sort((a, b) => relief(b) - relief(a));
   const out: RelieverIn[] = [];
   const longMen = [...sorted].sort((a, b) => pub(b, 'stamina') - pub(a, 'stamina')).slice(0, 2);
@@ -178,13 +192,16 @@ export function bullpenFor(s: LeagueState, ids: PlayerId[], date: string, exclud
   return out;
 }
 
-/** The engine input for one game. `ids` is the squad (the first team by default, or a futures squad). */
-export function teamInput(s: LeagueState, teamId: TeamId, date: string, ids = s.rosters[teamId]!.active, rotationKey: string = teamId): TeamIn | null {
-  const rotation = rotationFor(s, ids);
+/**
+ * The engine input for one game. `ids` is the squad (the first team by default, or a futures squad);
+ * `prefer` adds to every selection score (futures games favour prospects).
+ */
+export function teamInput(s: LeagueState, teamId: TeamId, date: string, ids = s.rosters[teamId]!.active, rotationKey: string = teamId, prefer: Prefer = none): TeamIn | null {
+  const rotation = rotationFor(s, ids, prefer);
   const sp = starterFor(s, rotationKey, date, rotation);
   if (!sp) return null;
-  const lineup = lineupFor(s, ids);
+  const lineup = lineupFor(s, ids, prefer, prefer !== none);
   if (lineup.length < 9) return null;
   const exclude = new Set(rotation.map((p) => p.id));
-  return { teamId, lineup, starter: armIn(sp.p, sp.limit), bullpen: bullpenFor(s, ids, date, exclude) };
+  return { teamId, lineup, starter: armIn(sp.p, sp.limit), bullpen: bullpenFor(s, ids, date, exclude, prefer) };
 }

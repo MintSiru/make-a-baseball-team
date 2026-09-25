@@ -16,9 +16,18 @@ export const KBO_2026 = {
     clubs: 10,
     gamesPerClub: 144,
     postseasonClubs: 5,
-    firstTeam: { registered: 29, active: 27 },
+    firstTeam: { registered: 29, active: 28 },
     rosterLimit: 68,
   },
+
+  // §1 Futures league: games per club (116 in 2026, 121 from 2027; S30)
+  futuresGames: [
+    { from: 2026, games: 116 },
+    { from: 2027, games: 121 },
+  ],
+
+  // §6 Development players (육성선수): registrable from May 1 (S28)
+  development: { registerFrom: '05-01' },
 
   // §2 Contracts
   minimumSalary: [
@@ -119,4 +128,10 @@ export function minimumSalaryFor(year: number): number {
   let amount: number = KBO_2026.minimumSalary[0].amount;
   for (const step of KBO_2026.minimumSalary) if (year >= step.from) amount = step.amount;
   return amount;
+}
+
+export function futuresGamesFor(year: number): number {
+  let games: number = KBO_2026.futuresGames[0].games;
+  for (const step of KBO_2026.futuresGames) if (year >= step.from) games = step.games;
+  return games;
 }

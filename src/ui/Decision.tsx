@@ -1,11 +1,18 @@
+import type { ComponentChildren } from 'preact';
 import { useEffect, useMemo, useState } from 'preact/hooks';
+import { draftContracts, TOOL_LABELS, type Difficulty } from '../draftroom';
+import { salaryIn, usdTotal } from '../league/contracts';
+import { usd } from '../league/foreign';
 import { autoDecision, checkDecision, faAsk, projectedPayroll, type DecisionInput } from '../league/expansion';
+import { sangmuChance } from '../league/offseason';
 import { ageIn, isPitcher, keepValue } from '../league/players';
 import type { Decision as DecisionT, LeagueState } from '../league/state';
+import { faAsk as ownAsk, focusOptions, payrollWithout, type CampPlan, type MilitaryOrder } from '../league/userclub';
 import { positionLabel, shortName } from '../league/views';
+import type { Position } from '../model/position';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { money } from './format';
-import { salaryIn } from '../league/contracts';
+import { positionKey, useSort, type SortColumn } from './sort';
 
 interface Props {
   league: LeagueState;
@@ -21,9 +28,33 @@ const TITLES: Record<DecisionT['kind'], string> = {
   released: '방출선수 영입',
   foreign: '외국인 선수 계약',
   roster: '소속선수 정리',
+  military: '병역',
+  ownFreeAgents: 'FA 재계약',
+  rookieBonus: '신인 계약금 협상',
+  development: '육성선수 계약',
+  camp: '스프링캠프',
 };
 
 const lastWar = (p: Player) => p.career.filter((c) => !c.level).at(-1)?.war;
+const POSITIONS: Position[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
+const POSITION_NAMES: Record<Position, string> = { C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' };
+const toolLabel = (k: string) => (k === 'balanced' ? '고르게' : ((TOOL_LABELS as Record<string, string>)[k] ?? k));
+const pct = (x: number) => `${Math.round(x * 100)}%`;
+
+type Extra = { title: string; value: (p: Player) => string; sort?: (p: Player) => number };
+
+/** Sortable player columns shared by the decision tables: name, position, age, current, future (+ one extra). */
+function usePlayerSort(players: Player[], year: number, extra?: Extra) {
+  const columns: Record<string, SortColumn<Player>> = {
+    name: { value: (p) => p.name },
+    pos: { value: (p) => positionKey(positionLabel(p)), first: 1 },
+    age: { value: (p) => ageIn(p, year), first: 1 },
+    current: { value: (p) => p.scouting.current },
+    future: { value: (p) => p.scouting.futureValue },
+    extra: { value: (p) => extra?.sort?.(p) ?? 0 },
+  };
+  return useSort(players, columns);
+}
 
 function PlayerTable({
   league,
@@ -34,48 +65,56 @@ function PlayerTable({
   extra,
   name,
   radio,
+  control,
 }: {
   league: LeagueState;
   players: Player[];
-  selected: Set<PlayerId>;
-  toggle: (id: PlayerId) => void;
+  selected?: Set<PlayerId>;
+  toggle?: (id: PlayerId) => void;
   onPlayer: (id: PlayerId) => void;
-  extra?: { title: string; value: (p: Player) => string };
+  extra?: Extra;
   name?: string;
   radio?: boolean;
+  /** A control per row instead of the checkbox (select boxes). */
+  control?: (p: Player) => ComponentChildren;
 }) {
   const year = league.offseason ? league.offseason.year + 1 : league.year + 1;
+  const { sorted, th } = usePlayerSort(players, year, extra);
   return (
     <div class="table-wrap" tabIndex={0}>
       <table class="record-table pick-table">
         <thead>
           <tr>
-            <th aria-label="선택" />
-            <th>이름</th>
-            <th>포지션</th>
-            <th class="num">나이</th>
+            {!control && <th aria-label="선택" />}
+            {th('name', '이름')}
+            {th('pos', '포지션')}
+            {th('age', '나이', true)}
             <th>경력</th>
-            <th class="num">현재</th>
-            <th class="num">미래</th>
-            {extra && <th class="num">{extra.title}</th>}
+            {th('current', '현재', true)}
+            {th('future', '미래', true)}
+            {extra && (extra.sort ? th('extra', extra.title, true) : <th class="num">{extra.title}</th>)}
+            {control && <th>결정</th>}
           </tr>
         </thead>
         <tbody>
-          {players.map((p) => (
-            <tr key={p.id} class="player-row" aria-selected={selected.has(p.id)}>
-              <td>
-                <input
-                  type={radio ? 'radio' : 'checkbox'}
-                  name={name}
-                  checked={selected.has(p.id)}
-                  onChange={() => toggle(p.id)}
-                  aria-label={`${p.name} 선택`}
-                />
-              </td>
+          {sorted.map((p) => (
+            <tr key={p.id} class="player-row" aria-selected={selected?.has(p.id)}>
+              {!control && (
+                <td>
+                  <input
+                    type={radio ? 'radio' : 'checkbox'}
+                    name={name}
+                    checked={selected?.has(p.id)}
+                    onChange={() => toggle?.(p.id)}
+                    aria-label={`${p.name} 선택`}
+                  />
+                </td>
+              )}
               <td>
                 <button type="button" class="link" onClick={() => onPlayer(p.id)}>
                   {p.name}
                 </button>
+                {p.contract?.kind === 'development' && <span class="tag">육성</span>}
               </td>
               <td>{positionLabel(p)}</td>
               <td class="num">{ageIn(p, year)}</td>
@@ -83,6 +122,72 @@ function PlayerTable({
               <td class="num">{p.scouting.current}</td>
               <td class="num strong">{p.scouting.futureValue}</td>
               {extra && <td class="num">{extra.value(p)}</td>}
+              {control && <td>{control(p)}</td>}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** The draft board on the clock: every heading sorts, the scouts' top three are marked. */
+function DraftTable({ league, onPlayer, onPick }: { league: LeagueState; onPlayer: (id: PlayerId) => void; onPick: (id: PlayerId) => void }) {
+  const draft = league.offseason!.draft!;
+  const pool = useMemo(() => draft.pool.map((id) => league.players[id]!).sort((a, b) => a.amateur.draftRank - b.amateur.draftRank), [draft.pool.length]);
+  const recommended = useMemo(() => {
+    const score = (p: Player) => p.scouting.futureValue * 0.6 + p.scouting.current * 0.4;
+    return new Set([...pool].sort((a, b) => score(b) - score(a) || a.amateur.draftRank - b.amateur.draftRank).slice(0, 3).map((p) => p.id));
+  }, [pool]);
+  const year = draft.year;
+  const { sorted, th } = useSort(pool, {
+    rank: { value: (p) => p.amateur.draftRank, first: 1 },
+    name: { value: (p) => p.name },
+    pos: { value: (p) => positionKey(positionLabel(p)), first: 1 },
+    age: { value: (p) => ageIn(p, year + 1), first: 1 },
+    current: { value: (p) => p.scouting.current },
+    future: { value: (p) => p.scouting.futureValue },
+    velocity: { value: (p) => p.velocity ?? 0 },
+  });
+  return (
+    <div class="table-wrap" tabIndex={0}>
+      <table class="record-table pick-table">
+        <thead>
+          <tr>
+            {th('rank', '순위', true)}
+            {th('name', '이름')}
+            {th('pos', '포지션')}
+            {th('age', '나이', true)}
+            <th>구분</th>
+            {th('current', '현재', true)}
+            {th('future', '미래', true)}
+            {th('velocity', '구속', true)}
+            <th aria-label="지명" />
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.slice(0, 150).map((p) => (
+            <tr key={p.id} class="player-row">
+              <td class="num">{p.amateur.draftRank}</td>
+              <td>
+                <button type="button" class="link" onClick={() => onPlayer(p.id)}>
+                  {p.name}
+                </button>
+                {recommended.has(p.id) && <span class="tag">팀장 추천</span>}
+                {p.amateur.intent === 'college' && <span class="tag">진학 희망</span>}
+                {p.amateur.intent === 'abroad' && <span class="tag">해외 관심</span>}
+              </td>
+              <td>{positionLabel(p)}</td>
+              <td class="num">{ageIn(p, year + 1)}</td>
+              <td class="muted">{p.origin.pathway}</td>
+              <td class="num">{p.scouting.current}</td>
+              <td class="num strong">{p.scouting.futureValue}</td>
+              <td class="num">{p.velocity ?? '-'}</td>
+              <td>
+                <button type="button" class="pick" onClick={() => onPick(p.id)}>
+                  지명
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -97,10 +202,17 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
   const next = league.offseason ? league.offseason.year + 1 : league.year + 1;
   const [selected, setSelected] = useState<Set<PlayerId>>(new Set());
   const [special, setSpecial] = useState<Record<TeamId, PlayerId>>({});
+  const [choices, setChoices] = useState<Record<PlayerId, string>>({});
+  const [develop, setDevelop] = useState<Set<PlayerId>>(new Set());
+  const [plans, setPlans] = useState<Record<PlayerId, CampPlan>>({});
+  const stage = d.kind === 'draftPick' ? d.overall : d.kind === 'rookieBonus' ? Number(d.final) : 0;
   useEffect(() => {
     setSelected(new Set());
     setSpecial({});
-  }, [d.kind, d.kind === 'draftPick' ? d.overall : 0]);
+    setChoices({});
+    setDevelop(new Set());
+    setPlans({});
+  }, [d.kind, stage]);
 
   const toggle = (id: PlayerId) =>
     setSelected((prev) => {
@@ -109,6 +221,12 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       else s.add(id);
       return s;
     });
+  const choose = (id: PlayerId, v: string) => setChoices((prev) => ({ ...prev, [id]: v }));
+
+  const bonusOffer = (id: PlayerId, pick: { slot: number; ask: number }) => {
+    const c = choices[id] ?? 'ask';
+    return c === 'ask' ? pick.ask : c === 'slot' ? pick.slot : 0;
+  };
 
   const input: DecisionInput | null = useMemo(() => {
     switch (d.kind) {
@@ -116,27 +234,51 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         return null;
       case 'specialDraft':
         return { kind: 'specialDraft', picks: special };
+      case 'military':
+        return { kind: 'military', orders: Object.fromEntries(Object.entries(choices).filter(([, v]) => v === 'sangmu' || v === 'army')) as Record<PlayerId, MilitaryOrder> };
+      case 'rookieBonus':
+        return { kind: 'rookieBonus', offers: Object.fromEntries(d.picks.map((pk) => [pk.id, bonusOffer(pk.id, pk)])) };
+      case 'camp':
+        return { kind: 'camp', plans };
+      case 'roster':
+        return { kind: 'roster', ids: [...selected], develop: [...develop].filter((id) => selected.has(id)) };
       default:
         return { kind: d.kind, ids: [...selected] } as DecisionInput;
     }
-  }, [d, selected, special]);
+  }, [d, selected, special, choices, plans, develop]);
   const problem = input ? checkDecision(league, input) : null;
 
   const recommend = () => {
     const a = autoDecision(league);
     if (!a) return;
-    if (a.kind === 'specialDraft') setSpecial(a.picks);
-    else if ('ids' in a) setSelected(new Set(a.ids));
+    switch (a.kind) {
+      case 'specialDraft':
+        setSpecial(a.picks);
+        break;
+      case 'military':
+        setChoices(Object.fromEntries((d as Extract<DecisionT, { kind: 'military' }>).candidates.map((id) => [id, a.orders[id] ?? 'stay'])));
+        break;
+      case 'rookieBonus': {
+        const picks = (d as Extract<DecisionT, { kind: 'rookieBonus' }>).picks;
+        setChoices(Object.fromEntries(picks.map((pk) => [pk.id, a.offers[pk.id] === pk.ask ? 'ask' : a.offers[pk.id] === pk.slot ? 'slot' : 'none'])));
+        break;
+      }
+      case 'camp':
+        setPlans(a.plans);
+        break;
+      default:
+        if ('ids' in a) setSelected(new Set(a.ids));
+    }
   };
 
   const byValue = (ids: PlayerId[]) => ids.map((id) => league.players[id]!).sort((a, b) => keepValue(b, next) - keepValue(a, next));
   const budgetLine = (
     <p class="muted">
-      창단 자금 {money(u.fund)} · {next}년 연봉 {money(projectedPayroll(league, u.teamId, next))} / 예산 {money(u.payrollBudget)}
+      구단 자금 {money(u.fund)} · {next}년 연봉 {money(projectedPayroll(league, u.teamId, next))} / 예산 {money(u.payrollBudget)}
     </p>
   );
 
-  let body = null;
+  let body: ComponentChildren = null;
   switch (d.kind) {
     case 'tryout':
     case 'released':
@@ -154,52 +296,15 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       break;
     case 'draftPick': {
       const draft = league.offseason!.draft!;
-      const pool = draft.pool.map((id) => league.players[id]!).sort((a, b) => a.amateur.draftRank - b.amateur.draftRank);
       const mine = Object.values(league.players).filter((p) => p.teamId === u.teamId && p.origin.draftYear === draft.year && p.origin.overallPick);
       body = (
         <>
           <p>
-            {d.label} · 전체 {d.overall}순위 차례입니다. 남은 후보 {pool.length}명. 지명한 선수 {mine.length}명:{' '}
+            {draft.year + 1} 신인 드래프트 {d.label} · 전체 {d.overall}순위 차례입니다. 남은 후보 {draft.pool.length}명. 지명한 선수 {mine.length}명:{' '}
             <span class="muted">{mine.map((p) => p.name).join(', ') || '없음'}</span>
           </p>
-          <div class="table-wrap" tabIndex={0}>
-            <table class="record-table pick-table">
-              <thead>
-                <tr>
-                  <th class="num">순위</th>
-                  <th>이름</th>
-                  <th>포지션</th>
-                  <th>구분</th>
-                  <th class="num">현재</th>
-                  <th class="num">미래</th>
-                  <th class="num">구속</th>
-                  <th aria-label="지명" />
-                </tr>
-              </thead>
-              <tbody>
-                {pool.slice(0, 120).map((p) => (
-                  <tr key={p.id} class="player-row">
-                    <td class="num">{p.amateur.draftRank}</td>
-                    <td>
-                      <button type="button" class="link" onClick={() => onPlayer(p.id)}>
-                        {p.name}
-                      </button>
-                    </td>
-                    <td>{positionLabel(p)}</td>
-                    <td class="muted">{p.origin.pathway}</td>
-                    <td class="num">{p.scouting.current}</td>
-                    <td class="num strong">{p.scouting.futureValue}</td>
-                    <td class="num">{p.velocity ?? '-'}</td>
-                    <td>
-                      <button type="button" class="pick" onClick={() => onSubmit({ kind: 'draftPick', id: p.id })}>
-                        지명
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <p class="muted">제목을 누르면 정렬됩니다. 계약금은 드래프트가 끝난 뒤 선수마다 협상합니다.</p>
+          <DraftTable league={league} onPlayer={onPlayer} onPick={(id) => onSubmit({ kind: 'draftPick', id })} />
         </>
       );
       break;
@@ -207,9 +312,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
     case 'freeAgents':
       body = (
         <>
-          <p>
-            1군 진입을 앞두고 FA를 최대 {d.max}명까지 보상선수 없이 영입할 수 있습니다. 선택 {selected.size}명
-          </p>
+          <p>1군 진입을 앞두고 FA를 최대 {d.max}명까지 보상선수 없이 영입할 수 있습니다. 선택 {selected.size}명</p>
           {budgetLine}
           <PlayerTable
             league={league}
@@ -217,11 +320,31 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
             selected={selected}
             toggle={toggle}
             onPlayer={onPlayer}
-            extra={{ title: '요구 연봉 · 최근 WAR', value: (p) => `${money(faAsk(league, p, next))} · ${lastWar(p)?.toFixed(1) ?? '-'}` }}
+            extra={{ title: '요구 연봉 · 최근 WAR', value: (p) => `${money(faAsk(league, p, next))} · ${lastWar(p)?.toFixed(1) ?? '-'}`, sort: (p) => faAsk(league, p, next) }}
           />
         </>
       );
       break;
+    case 'ownFreeAgents': {
+      const kept = [...selected].reduce((a, id) => a + ownAsk(league.players[id]!, next), 0);
+      body = (
+        <>
+          <p>우리 선수 {d.candidates.length}명이 FA 자격을 얻었습니다. 붙잡을 선수를 고르세요. 고르지 않은 선수는 다른 구단과 협상합니다.</p>
+          <p class="muted">
+            {next}년 연봉 (FA 제외) {money(payrollWithout(league, u.teamId, next, d.candidates))} + 재계약 {money(kept)} / 예산 {money(u.payrollBudget)}
+          </p>
+          <PlayerTable
+            league={league}
+            players={byValue(d.candidates)}
+            selected={selected}
+            toggle={toggle}
+            onPlayer={onPlayer}
+            extra={{ title: '요구 연봉 · 최근 WAR', value: (p) => `${money(ownAsk(p, next))} · ${lastWar(p)?.toFixed(1) ?? '-'}`, sort: (p) => ownAsk(p, next) }}
+          />
+        </>
+      );
+      break;
+    }
     case 'specialDraft': {
       const count = Object.keys(special).length;
       body = (
@@ -245,7 +368,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
                 selected={new Set(special[teamId] ? [special[teamId]!] : [])}
                 toggle={(id) => setSpecial((prev) => (prev[teamId] === id ? Object.fromEntries(Object.entries(prev).filter(([k]) => k !== teamId)) : { ...prev, [teamId]: id }))}
                 onPlayer={onPlayer}
-                extra={{ title: '연봉', value: (p) => money(salaryIn(p, next)) }}
+                extra={{ title: '연봉', value: (p) => money(salaryIn(p, next)), sort: (p) => salaryIn(p, next) }}
               />
             </details>
           ))}
@@ -263,7 +386,8 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       body = (
         <>
           <p>
-            외국인 {d.regular}명{d.asia ? `, 아시아쿼터 ${d.asia}명` : ''}을 더 계약할 수 있습니다. 신규 외국인은 총액 100만 달러, 아시아쿼터는 20만 달러까지입니다.
+            외국인 {d.regular}명{d.asia ? `, 아시아쿼터 ${d.asia}명` : ''}을 더 계약할 수 있습니다. 신규 외국인은 총액 100만 달러, 아시아쿼터는 20만 달러까지입니다. 경력 칸에
+            MLB·트리플A·일본·독립리그 이력이 있습니다.
           </p>
           {budgetLine}
           {groups.map(([title, test]) => (
@@ -275,10 +399,15 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
                 selected={selected}
                 toggle={toggle}
                 onPlayer={onPlayer}
-                extra={{ title: '연봉', value: (p) => money(salaryIn(p, next)) }}
+                extra={{
+                  title: '총액 (계약금·연봉·옵션)',
+                  value: (p) => (p.contract?.usd ? `${usd(usdTotal(p.contract))} (${usd(p.contract.usd.bonus)}·${usd(p.contract.usd.salary)}·${usd(p.contract.usd.options)})` : '-'),
+                  sort: (p) => usdTotal(p.contract),
+                }}
               />
             </div>
           ))}
+          <p class="muted">계약금과 연봉은 보장액이고, 옵션은 좋은 시즌(투수 WAR 2.5, 타자 2.0 이상)을 보내면 시즌 뒤 구단 자금에서 나갑니다. 연봉 예산에는 보장액이 원화로 잡힙니다.</p>
         </>
       );
       break;
@@ -287,7 +416,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       body = (
         <>
           <p>
-            소속선수 한도는 {d.limit}명입니다. {d.release}명 이상 방출하세요. 선택 {selected.size}명
+            소속선수 한도는 {d.limit}명입니다. {d.release}명 이상 정리하세요. 정리한 선수 중 원하는 선수는 육성선수로 다시 계약해 남길 수 있습니다 (한도 밖). 선택 {selected.size}명
           </p>
           <PlayerTable
             league={league}
@@ -295,11 +424,153 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
             selected={selected}
             toggle={toggle}
             onPlayer={onPlayer}
-            extra={{ title: '연봉', value: (p) => money(salaryIn(p, next)) }}
+            extra={{ title: '연봉', value: (p) => money(salaryIn(p, next)), sort: (p) => salaryIn(p, next) }}
+          />
+          {selected.size > 0 && (
+            <fieldset class="develop-picks">
+              <legend>육성선수로 남길 선수</legend>
+              {[...selected].map((id) => (
+                <label key={id}>
+                  <input
+                    type="checkbox"
+                    checked={develop.has(id)}
+                    onChange={() =>
+                      setDevelop((prev) => {
+                        const s = new Set(prev);
+                        if (s.has(id)) s.delete(id);
+                        else s.add(id);
+                        return s;
+                      })
+                    }
+                  />{' '}
+                  {league.players[id]!.name}
+                </label>
+              ))}
+            </fieldset>
+          )}
+        </>
+      );
+      break;
+    case 'military': {
+      const players = d.candidates.map((id) => league.players[id]!);
+      body = (
+        <>
+          <p>
+            군 미필 선수 {players.length}명입니다. 상무에 지원하면 합격할 때만 입대하고 (퓨처스리그에서 상무 소속으로 뜀), 현역은 바로 입대합니다. 둘 다 18개월 뒤 6월에 돌아옵니다.
+            만 28세 이상은 올해 입대해야 합니다.
+          </p>
+          <PlayerTable
+            league={league}
+            players={players}
+            onPlayer={onPlayer}
+            extra={{ title: '상무 합격 가능성', value: (p) => pct(sangmuChance(p, next)), sort: (p) => sangmuChance(p, next) }}
+            control={(p) => (
+              <select value={choices[p.id] ?? (d.forced.includes(p.id) ? '' : 'stay')} onChange={(e) => choose(p.id, (e.currentTarget as HTMLSelectElement).value)} aria-label={`${p.name} 병역`}>
+                {d.forced.includes(p.id) ? <option value="">골라야 함</option> : <option value="stay">미룸</option>}
+                <option value="sangmu">상무 지원</option>
+                <option value="army">현역 입대</option>
+              </select>
+            )}
           />
         </>
       );
       break;
+    }
+    case 'rookieBonus': {
+      const byId = Object.fromEntries(d.picks.map((pk) => [pk.id, pk]));
+      const total = d.picks.reduce((a, pk) => a + bonusOffer(pk.id, pk), 0);
+      body = (
+        <>
+          <p>
+            {d.final
+              ? '더 달라고 한 선수들입니다. 요구액을 받아들이지 않으면 계약하지 않고 떠납니다.'
+              : '지명한 선수마다 계약금을 한 번 제시합니다. 선수는 받아들이거나, 더 요구하거나, 거절하고 떠납니다. 진학 희망·해외 관심 선수는 거절하기 쉽습니다.'}
+          </p>
+          <p class="muted">
+            구단 자금 {money(u.fund)} · 제시 합계 {money(total)}
+          </p>
+          <PlayerTable
+            league={league}
+            players={d.picks.map((pk) => league.players[pk.id]!)}
+            onPlayer={onPlayer}
+            extra={{ title: '슬롯 · 요구액', value: (p) => `${money(byId[p.id]!.slot)} · ${money(byId[p.id]!.ask)}`, sort: (p) => byId[p.id]!.ask }}
+            control={(p) => {
+              const pk = byId[p.id]!;
+              const c = choices[p.id] ?? 'ask';
+              const chance = d.final ? null : draftContracts.publicChance({ intent: p.amateur.intent ?? null }, bonusOffer(p.id, pk) / 100, pk.ask / 100, u.settings.difficulty as Difficulty);
+              return (
+                <span class="row-actions">
+                  <select value={c} onChange={(e) => choose(p.id, (e.currentTarget as HTMLSelectElement).value)} aria-label={`${p.name} 계약금`}>
+                    <option value="ask">요구액 {money(pk.ask)}</option>
+                    {!d.final && pk.slot < pk.ask && <option value="slot">슬롯 {money(pk.slot)}</option>}
+                    <option value="none">포기</option>
+                  </select>
+                  {chance !== null && c !== 'none' && <span class="muted">수락 {pct(chance)}</span>}
+                </span>
+              );
+            }}
+          />
+        </>
+      );
+      break;
+    }
+    case 'development':
+      body = (
+        <>
+          <p>
+            지명받지 못한 선수 중에서 육성선수를 뽑습니다. 소속선수 68명 한도 밖이고, 5월 1일부터 정식선수로 등록할 수 있습니다. 최대 {d.max}명 · 선택 {selected.size}명
+          </p>
+          <PlayerTable league={league} players={d.candidates.map((id) => league.players[id]!)} selected={selected} toggle={toggle} onPlayer={onPlayer} />
+        </>
+      );
+      break;
+    case 'camp': {
+      const players = d.players.map((id) => league.players[id]!).sort((a, b) => ageIn(a, next) - ageIn(b, next));
+      const plan = (p: Player) => ({ focus: p.plan?.focus ?? 'balanced', role: p.role, position: p.position, ...plans[p.id] });
+      const setPlan = (p: Player, change: CampPlan) => setPlans((prev) => ({ ...prev, [p.id]: { ...prev[p.id], ...change } }));
+      body = (
+        <>
+          <p>
+            {next} 시즌 스프링캠프입니다. 선수마다 훈련 방향을 정할 수 있습니다: 고른 능력은 더 빨리, 나머지는 조금 느리게 자랍니다. 투수는 선발·불펜 보직을, 야수는 포지션을 바꿀 수
+            있고, 포지션을 바꾼 야수는 한 시즌 동안 수비가 서툽니다. 바꾸지 않은 선수는 지난해 계획을 이어갑니다.
+          </p>
+          <PlayerTable
+            league={league}
+            players={players}
+            onPlayer={onPlayer}
+            control={(p) => {
+              const cur = plan(p);
+              return (
+                <span class="row-actions">
+                  <select value={cur.focus} onChange={(e) => setPlan(p, { focus: (e.currentTarget as HTMLSelectElement).value })} aria-label={`${p.name} 훈련 방향`}>
+                    {focusOptions(p).map((k) => (
+                      <option key={k} value={k}>
+                        {toolLabel(k)}
+                      </option>
+                    ))}
+                  </select>
+                  {isPitcher(p) ? (
+                    <select value={cur.role} onChange={(e) => setPlan(p, { role: (e.currentTarget as HTMLSelectElement).value as 'SP' | 'RP' })} aria-label={`${p.name} 보직`}>
+                      <option value="SP">선발</option>
+                      <option value="RP">불펜</option>
+                    </select>
+                  ) : (
+                    <select value={cur.position ?? ''} onChange={(e) => setPlan(p, { position: (e.currentTarget as HTMLSelectElement).value as Position })} aria-label={`${p.name} 포지션`}>
+                      {POSITIONS.map((pos) => (
+                        <option key={pos} value={pos}>
+                          {POSITION_NAMES[pos]}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </span>
+              );
+            }}
+          />
+        </>
+      );
+      break;
+    }
   }
 
   return (
@@ -317,7 +588,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
               확정
             </button>
             <button type="button" onClick={recommend}>
-              스카우트 추천으로 채우기
+              {d.kind === 'camp' ? '코치 추천으로 채우기' : '스카우트 추천으로 채우기'}
             </button>
           </>
         )}

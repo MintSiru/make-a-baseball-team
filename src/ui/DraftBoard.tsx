@@ -2,9 +2,9 @@ import { useMemo, useState } from 'preact/hooks';
 import type { Role } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
 import { roleLabel } from './format';
+import { useSort } from './sort';
 
 type RoleFilter = 'all' | Role;
-type SortKey = 'rank' | 'future' | 'current' | 'velocity';
 
 const ROLE_FILTERS: { id: RoleFilter; label: string }[] = [
   { id: 'all', label: '전체' },
@@ -15,32 +15,35 @@ const ROLE_FILTERS: { id: RoleFilter; label: string }[] = [
   { id: 'OF', label: '외야' },
 ];
 
-const SORTS: { id: SortKey; label: string; value: (p: Player) => number }[] = [
-  { id: 'rank', label: '공개 순위', value: (p) => -p.amateur.draftRank },
-  { id: 'future', label: '미래 가치', value: (p) => p.scouting.futureValue * 1000 - p.amateur.draftRank },
-  { id: 'current', label: '현재 기량', value: (p) => p.scouting.current * 1000 - p.amateur.draftRank },
-  { id: 'velocity', label: '최고 구속', value: (p) => (p.velocity ?? 0) * 1000 - p.amateur.draftRank },
-];
 
 interface Props {
+  /** The draft held in September of this year (it fills next season's rosters). */
+  draftYear: number;
   players: Player[];
   ageOf: (p: Player) => number;
   selectedId: PlayerId | null;
   onSelect: (id: PlayerId) => void;
 }
 
-export function DraftBoard({ players, ageOf, selectedId, onSelect }: Props) {
+export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect }: Props) {
   const [role, setRole] = useState<RoleFilter>('all');
-  const [sort, setSort] = useState<SortKey>('rank');
-  const rows = useMemo(() => {
-    const value = SORTS.find((s) => s.id === sort)!.value;
-    return players.filter((p) => role === 'all' || p.role === role).sort((a, b) => value(b) - value(a));
-  }, [players, role, sort]);
+  const filtered = useMemo(() => players.filter((p) => role === 'all' || p.role === role).sort((a, b) => a.amateur.draftRank - b.amateur.draftRank), [players, role]);
+  const { sorted: rows, th } = useSort(filtered, {
+    rank: { value: (p) => p.amateur.draftRank, first: 1 },
+    name: { value: (p) => p.name },
+    role: { value: (p) => ['SP', 'RP', 'C', 'IF', 'OF'].indexOf(p.role), first: 1 },
+    path: { value: (p) => p.origin.pathway },
+    school: { value: (p) => p.education.school },
+    age: { value: (p) => ageOf(p), first: 1 },
+    current: { value: (p) => p.scouting.current },
+    future: { value: (p) => p.scouting.futureValue },
+    velocity: { value: (p) => p.velocity ?? 0 },
+  });
 
   return (
     <section class="board" aria-labelledby="board-title">
       <div class="board-head">
-        <h2 id="board-title">2027 신인 드래프트 후보</h2>
+        <h2 id="board-title">{draftYear + 1} 신인 드래프트 후보</h2>
         <p class="muted">{rows.length}명</p>
       </div>
       <div class="controls">
@@ -51,30 +54,20 @@ export function DraftBoard({ players, ageOf, selectedId, onSelect }: Props) {
             </button>
           ))}
         </div>
-        <label class="sort">
-          정렬
-          <select value={sort} onChange={(e) => setSort((e.currentTarget as HTMLSelectElement).value as SortKey)}>
-            {SORTS.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </label>
       </div>
       <div class="table-wrap" tabIndex={0} aria-label="후보 목록 (가로로 스크롤할 수 있습니다)">
         <table class="record-table">
           <thead>
             <tr>
-              <th class="num">순위</th>
-              <th>이름</th>
-              <th>포지션</th>
-              <th>구분</th>
-              <th>소속</th>
-              <th class="num">나이</th>
-              <th class="num">현재</th>
-              <th class="num">미래</th>
-              <th class="num">구속</th>
+              {th('rank', '순위', true)}
+              {th('name', '이름')}
+              {th('role', '포지션')}
+              {th('path', '구분')}
+              {th('school', '소속')}
+              {th('age', '나이', true)}
+              {th('current', '현재', true)}
+              {th('future', '미래', true)}
+              {th('velocity', '구속', true)}
             </tr>
           </thead>
           <tbody>

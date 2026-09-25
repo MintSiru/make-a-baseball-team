@@ -11,7 +11,7 @@ import { applyInternational, closeSeason, developPlayer, enforceLimits, enlist, 
 import { playPostseason } from './postseason';
 import { currentValue, isForeign } from './players';
 import { playRegularSeason, startSeason } from './season';
-import type { LeagueState } from './state';
+import { emptyRoster, orgPlayers, type LeagueState } from './state';
 
 export const HISTORY_START = 2015;
 export const GAME_START = 2026;
@@ -26,7 +26,7 @@ function emptyState(seed: string): LeagueState {
     phase: 'offseason',
     teams,
     players: {},
-    rosters: Object.fromEntries(teams.map((t) => [t.id, { active: [], futures: [] }])),
+    rosters: Object.fromEntries(teams.map((t) => [t.id, emptyRoster()])),
     schedule: [],
     next: 0,
     scores: [],
@@ -34,6 +34,7 @@ function emptyState(seed: string): LeagueState {
     arms: {},
     rotation: {},
     injuries: {},
+    away: {},
     countedThrough: null,
     postseason: [],
     history: [],
@@ -45,7 +46,7 @@ function emptyState(seed: string): LeagueState {
   };
 }
 
-const orgOf = (s: LeagueState, teamId: string) => [...s.rosters[teamId]!.active, ...s.rosters[teamId]!.futures].map((id) => s.players[id]!);
+const orgOf = orgPlayers;
 
 /** One season without games: the best 28 of each club are credited first-team time. */
 function virtualSeason(s: LeagueState) {

@@ -3,7 +3,7 @@
    Draft Room's rule carries over: hidden ability (`hidden`) and what scouts report (`scouting`) are
    kept apart. UI, AI clubs and news may read `scouting` and public facts only (see publicView). */
 import type { ParentCompanyType, StadiumOwnership, StadiumSize } from '../club/types';
-import type { AmateurRecord, HistoryEntry, Role, Tools } from '../draftroom';
+import type { AmateurRecord, HistoryEntry, Intent, Role, Tools } from '../draftroom';
 import type { FieldPos } from '../league/engine/types';
 
 export type PlayerId = string;
@@ -61,6 +61,8 @@ export interface Contract {
   signedIn: number;
   signingBonus: number;
   salaries: { season: number; amount: number }[];
+  /** Foreign contracts in US dollars: guaranteed bonus and salary, and options paid for a good season. */
+  usd?: { bonus: number; salary: number; options: number };
 }
 
 export interface PlayerOrigin {
@@ -76,7 +78,11 @@ export interface PlayerOrigin {
   /** Nationality for foreign players. */
   nationality?: string;
   asiaQuota?: boolean;
+  /** Foreign players: where he played before and what he asked for when he came (US dollars). */
+  background?: { level: ForeignLevel; text: string; ask: number };
 }
+
+export type ForeignLevel = 'mlb' | 'mlbCup' | 'aaa' | 'npb' | 'npbFarm' | 'jpIndie' | 'cpbl' | 'abl' | 'indie';
 
 /** Counting stats for one season at the first-team level. */
 export interface BatTotals {
@@ -122,11 +128,13 @@ export interface PitTotals {
 export interface SeasonRecord {
   year: number;
   teamId: TeamId;
-  /** Futures-league line (only the expansion club's futures year is simulated); first team when absent. */
+  /** Futures-league line (futures games are simulated from 2026); first team when absent. */
   level?: 'futures';
   age: number;
-  /** First-team registered days this season. */
+  /** First-team registered days this season (0 on a futures line). */
   days: number;
+  /** Futures line only: days in the third squad (잔류군), training or in rehab. */
+  thirdDays?: number;
   bat: BatTotals | null;
   pit: PitTotals | null;
   war: number;
@@ -150,7 +158,7 @@ export interface Player {
   twoWay: boolean;
   origin: PlayerOrigin;
   education: { qualification: string; school: string; schoolTier: string; region: string; pathText: string; history: HistoryEntry[] };
-  amateur: { record: AmateurRecord; awards: string[]; draftRank: number };
+  amateur: { record: AmateurRecord; awards: string[]; draftRank: number; intent?: Intent };
   status: PlayerStatus;
   teamId: TeamId | null;
   contract: Contract | null;
@@ -160,6 +168,16 @@ export interface Player {
   /** First professional season in the league. */
   proSince: number;
   career: SeasonRecord[];
+  /** The club's development plan from spring camp (absent: balanced growth, no change). */
+  plan?: PlayerPlan;
+}
+
+/** Spring-camp plan (Draft Room planStep, V0.4). */
+export interface PlayerPlan {
+  /** 'balanced' or the tool the player works on: it grows faster, the others a little slower. */
+  focus: string;
+  /** Season of a position change: his fielding suffers while he adapts. */
+  adaptingIn?: number;
 }
 
 export interface Stadium {
