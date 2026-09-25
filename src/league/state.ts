@@ -69,6 +69,8 @@ export interface ClubReport {
   revenue: { gate: number; broadcast: number; sponsors: number; naming: number; merchandise: number; concessions: number; postseason: number };
   expenses: { players: number; staff: number; frontOffice: number; gameDays: number; ballpark: number; farm: number; marketing: number };
   operating: number;
+  /** Sold-out home games. */
+  sellouts?: number;
   /** Paid by the parent (or city, or investor) to cover the deficit. */
   support: number;
   /** The user's club: other cash in or out of the fund during the year. */
@@ -141,6 +143,8 @@ export interface SeasonSummary {
   userFutures?: { w: number; l: number; t: number; rs: number; ra: number };
   /** Futures league standings, from 2026 (growth then depends on playing time). */
   futures?: StandingRow[];
+  /** MVP, rookie, golden gloves and titles (V0.7). */
+  awards?: import('./awards').SeasonAwards;
 }
 
 /** A choice the game waits for before it can go on. Only the user's club ever raises one. */
@@ -249,6 +253,9 @@ export interface UserClub {
   budgetScale?: number;
   /** The naming deal ended: a sponsor decision comes this winter. */
   sponsorPending?: boolean;
+  /** The club's story: timeline of firsts and big moments, and unlocked achievements (V0.7). */
+  timeline?: { year: number; text: string; key?: string }[];
+  achievements?: { id: string; year: number }[];
   /** Ledger length at the last settlement: later entries go into the next one. */
   settledAt?: number;
   /** The general manager has picked staff once (the first winter always asks). */
@@ -328,11 +335,18 @@ export interface LeagueState {
   postseason: SeriesResult[];
   history: SeasonSummary[];
   international: { year: number; name: string; medal: boolean; squad: PlayerId[] }[];
+  /** News articles (V0.7, news.ts). */
+  news?: import('./news').NewsItem[];
+  /** Retired greats (V0.7). */
+  hallOfFame?: import('./awards').HallEntry[];
   /** Fans, prices, staff and accounts of every club (V0.6). */
   clubs?: Record<TeamId, ClubState>;
   /** This season's home gates, and the postseason ticket money. */
   gate?: Record<TeamId, import('./fans').GateLine>;
   postseasonGate?: number;
+  /** Box scores and play-by-play logs kept for viewing (V0.7, boxscore.ts). */
+  boxes?: Record<string, import('./boxscore').StoredBox>;
+  pbp?: Record<string, import('./engine/types').PlayEvent[]>;
   /** Null in a spectator league. */
   user: UserClub | null;
   pending: Decision | null;

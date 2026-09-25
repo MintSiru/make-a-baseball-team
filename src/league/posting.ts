@@ -15,6 +15,7 @@ import { leaveLeague } from './offseason';
 import { ageIn, isForeign } from './players';
 import { orgPlayers, type LeagueState } from './state';
 import { logTransaction } from './trade';
+import { milestone, unlock } from './milestones';
 import { POSTING } from './tuning';
 
 const P = KBO_2026.posting;
@@ -88,6 +89,8 @@ export function post(s: LeagueState, id: PlayerId, next: number): PostingResult 
   logTransaction(s, `포스팅: ${short} ${p.name} 메이저리그 ${market.years}년 ${usd(market.total)} 계약 (이적료 ${usd(fee)})`);
   const u = s.user;
   if (u && teamId === u.teamId) {
+    unlock(s, 'posting', next - 1, p.name);
+    milestone(s, next - 1, `${p.name} 메이저리그 진출 (${market.years}년 ${usd(market.total)})`);
     const won = Math.round(fee * MANWON_PER_USD);
     u.fund += won;
     u.ledger.push({ year: next - 1, label: `포스팅 이적료 · ${p.name}`, amount: won });

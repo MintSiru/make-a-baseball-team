@@ -10,7 +10,7 @@ import { baseSupport, setGoals } from '../league/parent';
 import { staffOf } from '../league/staff';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6'];
 
 type Loose = Record<string, unknown>;
 

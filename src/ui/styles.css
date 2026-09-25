@@ -1392,3 +1392,176 @@ ul.plain li {
 .staff-table select {
   max-width: 340px;
 }
+
+/* Games and box scores (V0.7) */
+.box-dialog {
+  width: min(900px, 100%);
+}
+.linescore th,
+.linescore td {
+  padding: 6px 8px;
+  min-width: 26px;
+}
+.relay-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  margin: 8px 0;
+}
+.relay {
+  max-height: 60vh;
+  overflow-y: auto;
+  border-top: 1px solid var(--rule);
+}
+.relay h4 {
+  margin: 12px 0 4px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.relay li {
+  font-size: 14px;
+}
+
+/* Lineup at a glance (V0.7) */
+.lineup-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px 28px;
+  align-items: start;
+  margin-top: 8px;
+}
+.diamond {
+  width: 100%;
+  max-width: 520px;
+}
+.diamond .grass {
+  fill: color-mix(in srgb, var(--good, #2e7d32) 18%, var(--paper));
+  stroke: var(--rule);
+}
+.diamond .infield {
+  fill: color-mix(in srgb, #a0522d 22%, var(--paper));
+  stroke: var(--rule);
+}
+.diamond .spot {
+  cursor: pointer;
+}
+.diamond .spot rect {
+  fill: var(--paper);
+  stroke: var(--accent);
+}
+.diamond .spot-pos {
+  font-size: 10px;
+  fill: var(--ink-2);
+}
+.diamond .spot-name {
+  font-size: 13px;
+  font-weight: 600;
+  fill: var(--ink);
+}
+@media (max-width: 760px) {
+  .lineup-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Awards and records (V0.7) */
+.leader-card {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: var(--card, var(--paper));
+}
+.leader-card h4 {
+  margin: 0 0 4px;
+  font-size: 14px;
+}
+.award-year {
+  border-top: 1px solid var(--rule);
+  padding-top: 4px;
+}
+.honors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  margin: 6px 0;
+}
+.achievements {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 8px;
+}
+.achievement {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 8px 10px;
+  opacity: 0.55;
+}
+.achievement.done {
+  opacity: 1;
+  border-color: var(--accent);
+}
+.achievement strong {
+  display: block;
+}
+
+/* News and story (V0.7) */
+.news-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+.news-card {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: var(--card, var(--paper));
+}
+.news-card h4 {
+  margin: 2px 0 6px;
+  font-size: 16px;
+}
+.news-card p {
+  margin: 4px 0;
+}
+.quotes {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0;
+  font-size: 14px;
+}
+.quotes li {
+  padding: 2px 0;
+}
+.quotes .quote-fan {
+  color: var(--ink-2);
+}
+.form-dots {
+  display: flex;
+  gap: 3px;
+  margin: 6px 0 0;
+}
+.dot {
+  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  border: 1px solid var(--rule);
+}
+.dot-W {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+.timeline li {
+  display: flex;
+  gap: 10px;
+}
+.form-grid {
+  display: grid;
+  gap: 10px;
+  margin: 10px 0;
+}
+.form-grid label {
+  display: grid;
+  gap: 4px;
+}

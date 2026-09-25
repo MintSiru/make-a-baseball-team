@@ -5,11 +5,13 @@ import { publicView, type PublicPlayer } from '../model/player';
 import type { BatTotals, InjuryRecord, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { emptySplit, type Splits } from './engine/types';
 import { averageVelocity, pitchGrades, topVelocity } from './pitches';
+import { POSITION_SHORT, positionGrades, secondaryPositions } from './positions';
+import { halfLabel, playText } from './playtext';
 import { salaryIn, usdTotal } from './contracts';
 import { ageIn, isForeign, isPitcher } from './players';
 import { currentStandings } from './season';
 import { SANGMU } from './futures';
-import { penRoles, PEN_ROLE_LABELS, rotationFor } from './manager';
+import { lineupFor, penRoles, PEN_ROLE_LABELS, rotationFor } from './manager';
 import { isDevelopment, type LeagueState } from './state';
 import { avg, babip, babipAllowed, batterWar, era, fip, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
 import { addInto, emptyBat, emptyPit } from './state';
@@ -125,6 +127,8 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
       development: isDevelopment(p),
       pitcher: isPitcher(p),
       pos: usage ?? positionLabel(p),
+      /** Hitters: other positions he handles (V0.7). */
+      also: isPitcher(p) ? [] : secondaryPositions(s, p).map((x) => POSITION_SHORT[x]),
       /** A starter by role who pitches in relief on the first team. */
       starterInPen: !!penRole && p.role === 'SP',
       /** First-team relievers: the role in the bullpen, and whether the general manager set it. */
@@ -197,6 +201,8 @@ export interface PlayerCard {
   velocity: { top: number; average: number } | null;
   pitches: ReturnType<typeof pitchGrades>;
   injuries: InjuryRecord[];
+  /** Hitters: grade and first-team games at each position he can play. */
+  positions: ReturnType<typeof positionGrades>;
 }
 
 const QUALIFY = { pa: 446, outs: 432 };
@@ -275,6 +281,7 @@ export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
     velocity: top == null ? null : { top, average: averageVelocity(p)! },
     pitches: pitchGrades(p),
     injuries: [...(p.injuries ?? [])].reverse(),
+    positions: positionGrades(s, p),
   };
 }
 
@@ -328,4 +335,219 @@ export function seasonStats(s: LeagueState) {
       });
   }
   return { batters, pitchers, qualifying: { pa: Math.ceil(teamGames * 3.1), innings: teamGames } };
+}
+
+// ── Box scores (V0.7) ─────────────────────────────────────────────────────────────────────────────
+
+const POS_KO: Record<string, string> = { C: '포', '1B': '1', '2B': '2', '3B': '3', SS: '유', LF: '좌', CF: '중', RF: '우', DH: '지' };
+
+export function boxView(s: LeagueState, id: string) {
+  const b = s.boxes?.[id];
+  if (!b) return null;
+  const name = (pid: string) => s.players[pid]?.name ?? '?';
+  const side = (i: 0 | 1) => {
+    const teamId = i === 0 ? b.away : b.home;
+    return {
+      teamId,
+      name: teamOf(s, teamId)?.name ?? teamId,
+      short: shortName(s, teamId),
+      color: teamOf(s, teamId)?.color ?? '#888',
+      line: b.line[i],
+      rhe: b.rhe[i],
+      bat: b.bat[i].map(([pid, pos, ab, r, h, rbi, hr, bb, k, d, t, sb], order) => ({ id: pid, order: order + 1, name: name(pid), pos: POS_KO[pos] ?? pos, ab, r, h, rbi, hr, bb, k, d, t, sb })),
+      pit: b.pit[i].map(([pid, outs, h, r, er, bb, k, hr, pitches, dec]) => ({ id: pid, name: name(pid), ip: ip(outs), h, r, er, bb, k, hr, pitches, dec: ({ W: '승', L: '패', S: '세', H: '홀' } as Record<string, string>)[dec] ?? '' })),
+    };
+  };
+  const log = s.pbp?.[id];
+  const plays = log?.map((ev, n) => ({ ev, text: playText(ev, `${id}-${n}`, name), half: halfLabel(ev.i, ev.top) }));
+  return { id, date: b.date, innings: b.innings, att: b.att, away: side(0), home: side(1), plays: plays ?? null };
+}
+
+/** Games you can open: the user's this season, then the league's latest days (newest first). */
+export function gameList(s: LeagueState) {
+  const boxes = Object.values(s.boxes ?? {}).sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  const u = s.user?.teamId;
+  const row = (b: (typeof boxes)[number]) => {
+    const mine = u && (b.home === u || b.away === u);
+    const us = b.home === u ? 1 : 0;
+    const result = mine ? (b.rhe[us][0] > b.rhe[1 - us]![0] ? '승' : b.rhe[us][0] < b.rhe[1 - us]![0] ? '패' : '무') : '';
+    return { id: b.id, date: b.date, away: shortName(s, b.away), home: shortName(s, b.home), as: b.rhe[0][0], hs: b.rhe[1][0], att: b.att, result, pbp: !!s.pbp?.[b.id], post: /-(wildcard|semipo|po|ks)-/.test(b.id) };
+  };
+  return {
+    mine: u ? boxes.filter((b) => b.home === u || b.away === u).map(row) : [],
+    recent: boxes.filter((b) => !u || (b.home !== u && b.away !== u)).map(row),
+  };
+}
+
+// ── Lineup at a glance (V0.7) ─────────────────────────────────────────────────────────────────────
+
+/** A pitcher's public grades for the lineup screen. */
+const armGrades = (p: Player) => ({
+  grade: p.scouting.current,
+  tools: { stuff: p.scouting.tools.stuff ?? 0, command: p.scouting.tools.command ?? 0, breaking: p.scouting.tools.breaking ?? 0, stamina: p.scouting.tools.stamina ?? 0 },
+  velocity: topVelocity(p),
+});
+
+/** Today's plan: the manager's lineup against a right- or left-handed starter, the rotation and the bullpen. */
+export function lineupView(s: LeagueState, teamId: TeamId, vs: 'L' | 'R') {
+  const r = s.rosters[teamId];
+  if (!r) return null;
+  const active = r.active;
+  const player = (id: PlayerId) => s.players[id]!;
+  const line = (id: PlayerId) => s.lines[id];
+  const lineup = lineupFor(s, active, undefined, false, vs).map((b, i) => {
+    const p = player(b.id);
+    const bat = line(b.id)?.bat;
+    const tl = p.scouting.tools;
+    return {
+      id: b.id,
+      order: i + 1,
+      pos: b.pos,
+      name: p.name,
+      number: p.numberTeam === teamId ? p.number : undefined,
+      bats: p.bats,
+      avg: bat?.ab ? avg(bat) : null,
+      ops: bat?.pa ? ops(bat) : null,
+      hr: bat?.hr ?? 0,
+      grade: p.scouting.current,
+      tools: { contact: tl.contact ?? 0, power: tl.power ?? 0, eye: tl.eye ?? 0, speed: tl.speed ?? 0, defense: tl.defense ?? 0 },
+    };
+  });
+  const rotation = rotationFor(s, active);
+  const nextUp = s.rotation[teamId] ?? 0;
+  const starters = rotation.map((p, i) => {
+    const pit = line(p.id)?.pit;
+    return { id: p.id, name: p.name, throws: p.throws, next: i === nextUp % Math.max(1, rotation.length), era: pit?.outs ? era(pit) : null, w: pit?.w ?? 0, l: pit?.l ?? 0, ...armGrades(p) };
+  });
+  const inRotation = new Set(rotation.map((p) => p.id));
+  const pen = active.map(player).filter((p) => isPitcher(p) && !inRotation.has(p.id));
+  const roles = penRoles(s, teamId, pen);
+  const order = ['CL', 'SU', 'HL', 'LO', 'LR', 'MU'];
+  const bullpen = pen
+    .map((p) => {
+      const pit = line(p.id)?.pit;
+      return { id: p.id, name: p.name, throws: p.throws, role: PEN_ROLE_LABELS[roles[p.id] ?? 'MU'], rank: order.indexOf(roles[p.id] ?? 'MU'), era: pit?.outs ? era(pit) : null, sv: pit?.sv ?? 0, hld: pit?.hld ?? 0, ...armGrades(p) };
+    })
+    .sort((a, b) => a.rank - b.rank);
+  const starting = new Set(lineup.map((b) => b.id));
+  const bench = active
+    .map(player)
+    .filter((p) => !isPitcher(p) && !starting.has(p.id))
+    .map((p) => ({ id: p.id, name: p.name, pos: positionLabel(p), bats: p.bats, injured: !!s.injuries[p.id], grade: p.scouting.current }));
+  return { lineup, starters, bullpen, bench };
+}
+
+// ── Record room and awards (V0.7) ─────────────────────────────────────────────────────────────────
+
+type RecordRow = { id: PlayerId; name: string; team: string; year?: number; value: string; key: number };
+
+export function recordRoom(s: LeagueState) {
+  const seasons: { p: Player; c: SeasonRecord }[] = [];
+  for (const p of Object.values(s.players)) for (const c of p.career) if (!c.level) seasons.push({ p, c });
+  const top = (rows: RecordRow[], n: number, low = false) => rows.sort((a, b) => (low ? a.key - b.key : b.key - a.key)).slice(0, n);
+  const season = (label: string, pick: (c: SeasonRecord, p: Player) => number | null, show: (v: number) => string, low = false) => ({
+    label,
+    rows: top(
+      seasons.flatMap(({ p, c }) => {
+        const v = pick(c, p);
+        return v == null || (!low && v <= 0) ? [] : [{ id: p.id, name: p.name, team: shortName(s, c.teamId), year: c.year, value: show(v), key: v }];
+      }),
+      5,
+      low,
+    ),
+  });
+  const totals = new Map<PlayerId, { p: Player; bat: BatTotals; pit: PitTotals; war: number; last: TeamId }>();
+  for (const { p, c } of seasons) {
+    const t = totals.get(p.id) ?? { p, bat: emptyBat(), pit: emptyPit(), war: 0, last: c.teamId };
+    if (c.bat) addInto(t.bat, c.bat);
+    if (c.pit) addInto(t.pit, c.pit);
+    t.war += c.war;
+    t.last = c.teamId;
+    totals.set(p.id, t);
+  }
+  const career = (label: string, pick: (t: { bat: BatTotals; pit: PitTotals; war: number }) => number, show: (v: number) => string) => ({
+    label,
+    rows: top(
+      [...totals.values()].map((t) => ({ id: t.p.id, name: t.p.name, team: shortName(s, t.last), value: show(pick(t)), key: pick(t) })).filter((r) => r.key > 0),
+      10,
+    ),
+  });
+  const n = (v: number) => String(v);
+  return {
+    season: [
+      season('홈런', (c) => c.bat?.hr ?? null, (v) => `${v}개`),
+      season('타점', (c) => c.bat?.rbi ?? null, n),
+      season('안타', (c) => c.bat?.h ?? null, (v) => `${v}개`),
+      season('도루', (c) => c.bat?.sb ?? null, (v) => `${v}개`),
+      season('타율 (규정타석)', (c) => (c.bat && c.bat.pa >= 446 ? avg(c.bat) : null), fmt3),
+      season('승', (c) => c.pit?.w ?? null, (v) => `${v}승`),
+      season('탈삼진', (c) => c.pit?.k ?? null, (v) => `${v}개`),
+      season('평균자책점 (규정이닝)', (c) => (c.pit && c.pit.outs >= 432 ? era(c.pit) : null), (v) => v.toFixed(2), true),
+      season('세이브', (c) => c.pit?.sv ?? null, (v) => `${v}개`),
+      season('홀드', (c) => c.pit?.hld ?? null, (v) => `${v}개`),
+      season('WAR', (c) => c.war, (v) => v.toFixed(1)),
+    ],
+    career: [
+      career('홈런', (t) => t.bat.hr, (v) => `${v}개`),
+      career('안타', (t) => t.bat.h, (v) => `${v}개`),
+      career('타점', (t) => t.bat.rbi, n),
+      career('도루', (t) => t.bat.sb, (v) => `${v}개`),
+      career('승', (t) => t.pit.w, (v) => `${v}승`),
+      career('탈삼진', (t) => t.pit.k, (v) => `${v}개`),
+      career('세이브', (t) => t.pit.sv, (v) => `${v}개`),
+      career('홀드', (t) => t.pit.hld, (v) => `${v}개`),
+      career('WAR', (t) => Math.round(t.war * 10) / 10, (v) => v.toFixed(1)),
+    ],
+  };
+}
+
+/** Every season's awards with names and clubs. */
+export function awardsView(s: LeagueState) {
+  const who = (id: PlayerId | null, year: number) => {
+    if (!id) return null;
+    const p = s.players[id];
+    const c = p?.career.find((x) => x.year === year && !x.level);
+    return { id, name: p?.name ?? '?', team: c ? shortName(s, c.teamId) : '' };
+  };
+  return [...s.history]
+    .reverse()
+    .filter((h) => h.awards)
+    .map((h) => ({
+      year: h.year,
+      mvp: who(h.awards!.mvp, h.year),
+      rookie: who(h.awards!.rookie, h.year),
+      gg: h.awards!.goldenGloves.map((g) => ({ pos: g.pos, ...who(g.id, h.year)! })),
+      titles: h.awards!.titles.map((t) => ({ label: t.label, value: t.value, ...who(t.id, h.year)! })),
+    }));
+}
+
+// ── Clubhouse (V0.7) ──────────────────────────────────────────────────────────────────────────────
+
+/** The clubhouse mood: recent results, the streak, leaders and mood-makers, injuries (display only). */
+export function clubhouse(s: LeagueState, teamId: TeamId) {
+  const games = s.scores.filter((g) => g.home === teamId || g.away === teamId).slice(-10);
+  const res = games.map((g) => {
+    const mine = g.home === teamId ? g.hs : g.as,
+      theirs = g.home === teamId ? g.as : g.hs;
+    return mine > theirs ? 'W' : mine < theirs ? 'L' : 'T';
+  });
+  const w = res.filter((x) => x === 'W').length,
+    l = res.filter((x) => x === 'L').length;
+  let streak = 0;
+  const lastRes = res.at(-1);
+  for (let i = res.length - 1; i >= 0 && res[i] === lastRes; i--) streak++;
+  const roster = s.rosters[teamId]?.active.map((id) => s.players[id]!) ?? [];
+  const leaders = roster.filter((p) => p.personality === '책임감 강한 리더' && ageIn(p, s.year) >= 29).length;
+  const makers = roster.filter((p) => p.personality === '밝은 분위기 메이커').length;
+  const hurt = Object.keys(s.injuries).filter((id) => s.players[id]?.teamId === teamId).length;
+  const score = (w + l ? (w / (w + l) - 0.5) * 2 : 0) + leaders * 0.08 + makers * 0.05 - hurt * 0.03 + (lastRes === 'W' ? 0.03 : lastRes === 'L' ? -0.03 : 0) * Math.min(streak, 6);
+  const label = score >= 0.5 ? '최고조' : score >= 0.2 ? '좋음' : score > -0.2 ? '무난' : score > -0.5 ? '가라앉음' : '침체';
+  const notes = [
+    games.length ? `최근 10경기 ${w}승 ${l}패` : '아직 경기가 없음',
+    streak >= 3 && lastRes !== 'T' ? `${streak}연${lastRes === 'W' ? '승' : '패'} 중` : '',
+    leaders ? `고참 리더 ${leaders}명` : '고참 리더 없음',
+    makers ? `분위기 메이커 ${makers}명` : '',
+    hurt ? `부상자 ${hurt}명` : '',
+  ].filter(Boolean);
+  return { label, score, notes, form: res };
 }

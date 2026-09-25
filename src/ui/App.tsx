@@ -10,7 +10,13 @@ import { ageOn, publicView } from '../model/player';
 import type { CalendarPhase, Player, PlayerId } from '../model/types';
 import { makeSave, parseSave, SaveError, serializeSave } from '../save/format';
 import { openStore, type SaveStore } from '../save/store';
+import { BoxScore } from './BoxScore';
+import { StorySettings } from './StorySettings';
+import { hasKey, loadSettings, saveSettings, type StorySettings as StorySettingsT } from '../story/settings';
+import { PROVIDERS, rewrite } from '../story/writer';
+import type { NewsItem } from '../league/news';
 import { Decision } from './Decision';
+import { Games } from './Games';
 import { DraftBoard } from './DraftBoard';
 import { History } from './History';
 import { Leaders } from './Leaders';
@@ -26,16 +32,19 @@ import { TeamRoster } from './TeamRoster';
 const AUTO_SLOT = 'auto';
 const newSeed = () => `kbo-${Math.floor(Math.random() * 36 ** 6).toString(36)}`;
 
-type Tab = 'club' | 'market' | 'standings' | 'leaders' | 'team' | 'history' | 'draft';
+type Tab = 'club' | 'market' | 'games' | 'standings' | 'leaders' | 'team' | 'history' | 'draft';
 const TABS: { id: Tab; label: string; userOnly?: boolean }[] = [
   { id: 'club', label: '우리 구단', userOnly: true },
   { id: 'market', label: '이적시장', userOnly: true },
+  { id: 'games', label: '경기' },
   { id: 'standings', label: '순위' },
   { id: 'leaders', label: '기록' },
   { id: 'team', label: '구단' },
   { id: 'history', label: '역대' },
   { id: 'draft', label: '드래프트 후보' },
 ];
+
+const AUTO_KINDS: NewsItem['kind'][] = ['season', 'award', 'month', 'interview'];
 
 const PHASE: Record<LeagueState['phase'], CalendarPhase> = { regular: 'regularSeason', postseason: 'postseason', offseason: 'offseason' };
 const snapshotSave = (s: LeagueState) => makeSave(s.seed, [], { at: { year: s.year, phase: PHASE[s.phase] }, state: s });
@@ -60,10 +69,19 @@ export function App() {
   const [progress, setProgress] = useState('');
   const [notice, setNotice] = useState('');
   const [tab, setTab] = useState<Tab>('club');
+  const [boxId, setBoxId] = useState<string | null>(null);
   const [teamId, setTeamId] = useState<string>('kia');
   const [playerId, setPlayerId] = useState<PlayerId | null>(null);
   const [prospectId, setProspectId] = useState<PlayerId | null>(null);
   const [seed] = useState(newSeed);
+  // AI articles (V0.7): settings and keys stay outside the league state.
+  const [storySettings, setStorySettings] = useState<StorySettingsT>(loadSettings);
+  const [storyOpen, setStoryOpen] = useState(false);
+  const [storyBusy, setStoryBusy] = useState<string | null>(null);
+  const usage = useRef({ input: 0, output: 0, articles: 0 });
+  const autoTried = useRef(new Set<string>());
+  const latest = useRef<LeagueState | null>(null);
+  latest.current = league;
   // A league built in the background while the player fills in the founding form.
   const building = useRef<{ seed: string; promise: Promise<LeagueState> } | null>(null);
 
@@ -119,7 +137,48 @@ export function App() {
   const prospect = useMemo(() => draftPool.find((p) => p.id === prospectId) ?? draftPool[0] ?? null, [draftPool, prospectId]);
   const prospectAge = (p: Player) => ageOn(p.birthday, `${draftYear}${DRAFT_ROOM_DRAFT_DATE.slice(4)}`);
 
+  // Automatic mode: big articles get written as they appear, one at a time, within the session's budget.
+  useEffect(() => {
+    if (!league || !storySettings.auto || !hasKey(storySettings) || storyBusy || busy) return;
+    if (usage.current.articles >= storySettings.budget) return;
+    const next = [...(league.news ?? [])].reverse().find((n) => AUTO_KINDS.includes(n.kind) && !n.ai && !autoTried.current.has(n.id));
+    if (next) {
+      autoTried.current.add(next.id);
+      void writeStory(next);
+    }
+  }, [version, storySettings, storyBusy, busy]);
+
   if (loading || !store) return <main class="loading">불러오는 중</main>;
+
+  /** Asks the chosen model for an article and stores it on the latest league state. */
+  async function writeStory(item: NewsItem) {
+    if (!hasKey(storySettings)) {
+      setStoryOpen(true);
+      return;
+    }
+    const provider = storySettings.provider;
+    const model = storySettings.models[provider] || PROVIDERS[provider].defaultModel;
+    setStoryBusy(item.id);
+    const out = await rewrite(item, { provider, key: storySettings.keys[provider]!, model });
+    setStoryBusy(null);
+    if (!out.ok) {
+      setNotice(`AI 기사: ${out.message} (원래 기사를 씁니다)`);
+      return;
+    }
+    usage.current = { input: usage.current.input + out.usage.input, output: usage.current.output + out.usage.output, articles: usage.current.articles + 1 };
+    const base = latest.current;
+    if (!base || !store) return;
+    const s = applyHere(base, { kind: 'storyText', id: item.id, ai: { ...out.text, provider: PROVIDERS[provider].label, model } });
+    show(s);
+    await persist(store, s);
+  }
+  async function revertStory(item: NewsItem) {
+    const base = latest.current;
+    if (!base || !store) return;
+    const s = applyHere(base, { kind: 'storyText', id: item.id, ai: null });
+    show(s);
+    await persist(store, s);
+  }
 
   const found = async (settings: ExpansionSettings, s: string) => {
     setBusy('리그의 과거를 만드는 중');
@@ -250,10 +309,27 @@ export function App() {
             {userTeam ? `단장 · 버전 ${RELEASE}` : `관전 모드 · 버전 ${RELEASE}`} · 시드 {league.seed}
           </p>
         </div>
-        <button type="button" onClick={newGame} disabled={!!busy}>
-          새 게임
-        </button>
+        <div class="row-actions">
+          <button type="button" onClick={() => setStoryOpen(true)}>
+            AI 기사 설정{hasKey(storySettings) ? ' ✓' : ''}
+          </button>
+          <button type="button" onClick={newGame} disabled={!!busy}>
+            새 게임
+          </button>
+        </div>
       </header>
+      {storyOpen && (
+        <StorySettings
+          settings={storySettings}
+          usage={usage.current}
+          onClose={() => setStoryOpen(false)}
+          onSave={(s) => {
+            setStorySettings(s);
+            saveSettings(s);
+            setStoryOpen(false);
+          }}
+        />
+      )}
       <div class="progress-bar">
         <p class="status" aria-live="polite">
           {busy ?? statusLine(league)}
@@ -281,12 +357,13 @@ export function App() {
             ))}
           </nav>
           <main class="page" data-version={version}>
-            {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
+            {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }} />}
             {tab === 'market' && league.user && <Market league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
+            {tab === 'games' && <Games league={league} onOpen={setBoxId} />}
             {tab === 'standings' && <Standings league={league} onTeam={openTeam} />}
             {tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} />}
             {tab === 'team' && <TeamRoster league={league} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />}
-            {tab === 'history' && <History league={league} />}
+            {tab === 'history' && <History league={league} onPlayer={setPlayerId} />}
             {tab === 'draft' && (
               <div class="layout">
                 <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} ourView={league?.user ? (p) => scoutView(league!, p) : undefined} />
@@ -296,7 +373,8 @@ export function App() {
           </main>
         </>
       )}
-      {playerId && <PlayerPanel league={league} id={playerId} onClose={() => setPlayerId(null)} />}
+      {boxId && league && <BoxScore league={league} id={boxId} onClose={() => setBoxId(null)} onPlayer={(pid) => { setBoxId(null); setPlayerId(pid); }} />}
+      {playerId && league && <PlayerPanel league={league} id={playerId} onClose={() => setPlayerId(null)} onInterview={(pid) => act({ kind: 'interview', id: pid }, '인터뷰 중', false)} />}
       <footer class="footer">
         <div class="save-actions">
           <button type="button" onClick={exportSave} disabled={!!busy}>

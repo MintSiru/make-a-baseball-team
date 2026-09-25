@@ -141,3 +141,22 @@ export interface GameOut {
   /** 'home' | 'away' | 'tie' */
   result: 'home' | 'away' | 'tie';
 }
+
+/** Play-by-play (V0.7): one event per plate appearance or pitching change, recorded only on request. */
+export type PlayResult = 'HR' | '3B' | '2B' | '1B' | 'BB' | 'HBP' | 'K' | 'DP' | 'SF' | 'SH' | 'E' | 'OUT';
+export type PlayEvent =
+  | {
+      k: 'pa';
+      i: number;
+      top: boolean;
+      b: string;
+      p: string;
+      res: PlayResult;
+      /** Runs that scored during the plate appearance (steals and wild pitches before it included). */
+      runs: number;
+      rbi: number;
+      outs: number;
+      bases: [boolean, boolean, boolean];
+      score: [number, number];
+    }
+  | { k: 'pitch'; i: number; top: boolean; p: string; out: string };

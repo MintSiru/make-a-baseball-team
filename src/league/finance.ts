@@ -90,7 +90,7 @@ export function clubReport(s: LeagueState, teamId: TeamId, year: number, shares:
   };
   const income = Object.values(revenue).reduce((a, b) => a + b, 0);
   const spend = Object.values(expenses).reduce((a, b) => a + b, 0);
-  return { year, fans, homeGames, price: c.price, revenue, expenses, operating: income - spend, support: 0 };
+  return { year, fans, homeGames, price: c.price, revenue, expenses, operating: income - spend, sellouts: gate?.sellouts ?? 0, support: 0 };
 }
 
 /** What the parent pays to cover a deficit. AI parents always cover it; the user's covers up to its approved support. */

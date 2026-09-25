@@ -9,7 +9,7 @@
    Determinism: every draw comes from the `r` passed in, in a fixed order. Changing the order of draws
    changes results and needs a SIM_VERSION bump. */
 import { ENGINE as E, Z, Zr } from '../tuning';
-import { emptySplit, type BattingLine, type BatterIn, type BullpenRole, type GameIn, type GameOut, type PitcherIn, type PitchingLine, type RelieverIn, type Split, type TeamBox, type TeamIn } from './types';
+import { emptySplit, type BattingLine, type BatterIn, type BullpenRole, type GameIn, type GameOut, type PitcherIn, type PitchingLine, type PlayEvent, type PlayResult, type RelieverIn, type Split, type TeamBox, type TeamIn } from './types';
 
 type R = () => number;
 
@@ -81,7 +81,7 @@ function makeSide(team: TeamIn): Side {
 }
 
 /** Everything that happens in one game. */
-export function simulateGame(game: GameIn, r: R): GameOut {
+export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
   const home = makeSide(game.home),
     away = makeSide(game.away);
   const parkHr = Math.log(game.park) * 1.4,
@@ -103,13 +103,43 @@ export function simulateGame(game: GameIn, r: R): GameOut {
     const current = () => field.apps[field.apps.length - 1]!;
 
     // The plate appearance in progress, credited to both players' platoon splits once it is over.
-    let open: { bl: BattingLine; pl: PitchingLine; vsPitcher: 'L' | 'R'; vsBatter: 'L' | 'R'; before: Split } | null = null;
+    let open: { bl: BattingLine; pl: PitchingLine; vsPitcher: 'L' | 'R'; vsBatter: 'L' | 'R'; before: Split; runs: number; err: number; gdp: number; rbi: number } | null = null;
+    const scoreNow = (): [number, number] => [away.box.runs, home.box.runs];
+    const record = (o: NonNullable<typeof open>, res: PlayResult) =>
+      log?.push({ k: 'pa', i: inning, top: !isHome, b: o.bl.id, p: o.pl.id, res, runs: bat.box.runs - o.runs, rbi: o.bl.rbi - o.rbi, outs, bases: [!!bases[0], !!bases[1], !!bases[2]], score: scoreNow() });
     const counts = (l: BattingLine): Split => ({ pa: l.pa, ab: l.ab, h: l.h, tb: l.h + l.d + 2 * l.t + 3 * l.hr, hr: l.hr, bb: l.bb, hbp: l.hbp, k: l.k, sf: l.sf });
     const closePA = () => {
       if (!open) return;
       const now = counts(open.bl);
       const into = [open.bl.split![open.vsPitcher], open.pl.split![open.vsBatter]];
       for (const k of Object.keys(now) as (keyof Split)[]) for (const s of into) s[k] += now[k] - open.before[k];
+      if (log) {
+        const d = (k: keyof Split) => now[k] - open!.before[k];
+        const tb = d('tb'),
+          h = d('h');
+        const res: PlayResult = d('hr')
+          ? 'HR'
+          : h && tb === 3
+            ? '3B'
+            : h && tb === 2
+              ? '2B'
+              : h
+                ? '1B'
+                : d('bb')
+                  ? 'BB'
+                  : d('hbp')
+                    ? 'HBP'
+                    : d('k')
+                      ? 'K'
+                      : open.bl.gdp > open.gdp
+                        ? 'DP'
+                        : d('sf')
+                          ? 'SF'
+                          : field.box.errors > open.err
+                            ? 'E'
+                            : 'OUT';
+        record(open, res);
+      }
       open = null;
     };
 
@@ -180,6 +210,7 @@ export function simulateGame(game: GameIn, r: R): GameOut {
       const arm = field.pen.splice(pick, 1)[0]!;
       app.exitLead = myLead;
       field.apps.push({ arm, role: arm.role, line: emptyPitching(arm.id, false), entryLead: myLead, entryRunners: runnersOn(), minLead: myLead, exitLead: myLead });
+      log?.push({ k: 'pitch', i: inning, top: !isHome, p: arm.id, out: app.arm.id });
     };
 
     while (outs < 3 && !over) {
@@ -238,6 +269,7 @@ export function simulateGame(game: GameIn, r: R): GameOut {
         bases[1] = bases[0];
         bases[0] = null;
         bat.next = (bat.next + 1) % 9;
+        if (log) record({ bl, pl, vsPitcher: p.throws, vsBatter: 'R', before: counts(bl), runs: bat.box.runs, err: field.box.errors, gdp: bl.gdp, rbi: bl.rbi }, 'SH');
         continue;
       }
 
@@ -257,7 +289,7 @@ export function simulateGame(game: GameIn, r: R): GameOut {
       );
 
       const hitsFrom = batter.bats === 'S' ? (p.throws === 'L' ? 'R' : 'L') : batter.bats;
-      open = { bl, pl, vsPitcher: p.throws, vsBatter: hitsFrom, before: counts(bl) };
+      open = { bl, pl, vsPitcher: p.throws, vsBatter: hitsFrom, before: counts(bl), runs: bat.box.runs, err: field.box.errors, gdp: bl.gdp, rbi: bl.rbi };
       bl.pa++;
       pl.bf++;
       const u = r();

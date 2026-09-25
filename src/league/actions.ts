@@ -10,6 +10,7 @@ import { ensureNumbers } from './numbers';
 import { startProject, type ProjectKind } from './ballpark';
 import { clubState } from './fans';
 import { FANS } from './tuning';
+import { interviewNews, type NewsItem } from './news';
 import { renameStadium } from './userclub';
 import type { ExpansionSettings, LeagueState, Squad } from './state';
 import { foundClub, FOUNDING_DATE, resolveDecision, type DecisionInput } from './expansion';
@@ -34,6 +35,9 @@ export type Action =
   | { kind: 'ticketPrice'; level: number }
   | { kind: 'marketing'; amount: number }
   | { kind: 'stadiumProject'; project: ProjectKind }
+  // Stories (V0.7)
+  | { kind: 'interview'; id: PlayerId }
+  | { kind: 'storyText'; id: string; ai: NonNullable<NewsItem['ai']> | null }
   // The market (V0.5)
   | { kind: 'trade'; teamId: TeamId; give: PlayerId[]; get: PlayerId[] }
   | { kind: 'release'; id: PlayerId }
@@ -113,6 +117,18 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     case 'stadiumProject':
       startProject(s, action.project);
       break;
+    case 'interview':
+      if (s.players[action.id]?.teamId === s.user?.teamId) interviewNews(s, action.id, s.phase === 'regular' ? (s.schedule[Math.max(0, s.next - 1)]?.date ?? `${s.year}-03-01`) : `${s.year}-11-15`);
+      break;
+    case 'storyText': {
+      // A language model's version of an article, or null to go back to the template.
+      const item = s.news?.find((n) => n.id === action.id);
+      if (item) {
+        if (action.ai) item.ai = action.ai;
+        else delete item.ai;
+      }
+      break;
+    }
     case 'trade':
       makeTrade(s, action.teamId, action.give, action.get);
       break;
