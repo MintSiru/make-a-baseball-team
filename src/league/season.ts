@@ -8,6 +8,9 @@ import { assignSquads, futuresPreference, futuresSquad, makeFuturesLeague } from
 import { chooseActive, matchInputs } from './manager';
 import { manualReplacements } from './entry';
 import { ensureNumbers } from './numbers';
+import { attendance, clubState, recordGate } from './fans';
+import { staffEdge, staffOf, staffRating } from './staff';
+import { setGoals } from './parent';
 import { aiForeignChanges, aiTrades, processWaivers } from './trade';
 import { INTERNATIONAL } from './international';
 import { rosterLimit, selectNationalTeam } from './offseason';
@@ -15,7 +18,7 @@ import { currentValue, isForeign, isPitcher } from './players';
 import { makeSchedule } from './schedule';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, registeredIds, type FuturesSeason, type LeagueState, type SeasonLine } from './state';
 import { standings } from './standings';
-import { ENGINE, FUTURES } from './tuning';
+import { ENGINE, FUTURES, STAFF } from './tuning';
 
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
@@ -40,6 +43,15 @@ export function startSeason(s: LeagueState) {
   s.futures = makeFuturesLeague(s);
   for (const t of s.teams) if (s.rosters[t.id]) assignSquads(s, t.id);
   ensureNumbers(s);
+  // Every club's business side (fans, prices, staff) exists from its first season.
+  for (const t of s.teams)
+    if (s.rosters[t.id]) {
+      clubState(s, t.id);
+      staffOf(s, t.id);
+    }
+  s.gate = {};
+  s.postseasonGate = 0;
+  setGoals(s, s.year);
 }
 
 // ── Futures league ──────────────────────────────────────────────────────────────────────────────
@@ -172,10 +184,12 @@ function rollInjuries(s: LeagueState, box: TeamBox, date: string, r: () => numbe
     const p = s.players[id]!;
     const perGame = isPitcher(p) ? (p.role === 'SP' ? 28 : 55) : 120;
     const age = Math.max(0, Number(date.slice(0, 4)) - Number(p.birthday.slice(0, 4)) - 30);
-    const chance = (factor * p.hidden.injuryRisk * (1 + age * 0.06)) / perGame;
+    // The head trainer: fewer injuries and quicker returns (staff.ts).
+    const medical = staffEdge(staffRating(s, p.teamId, 'medical'));
+    const chance = ((factor * p.hidden.injuryRisk * (1 + age * 0.06)) / perGame) * (1 - STAFF.injury * medical);
     if (r() < chance) {
       const long = r() < 0.22;
-      const days = long ? 65 + Math.floor(r() * 66) : 7 + Math.floor(r() * 28);
+      const days = Math.max(5, Math.round((long ? 65 + Math.floor(r() * 66) : 7 + Math.floor(r() * 28)) * (1 - STAFF.injuryDays * medical)));
       s.injuries[id] = { until: addDays(date, days), days, onList: factor === 1 };
       (p.injuries ??= []).push({ date, days, part: injuryPart(p, long, rng(`${s.seed}|injury-part|${id}|${date}`)), ...(factor === 1 ? {} : { futures: true }) });
       lineOf(s, id, p.teamId!).lost += days;
@@ -224,7 +238,8 @@ function gameRng(s: LeagueState, id: string) {
 export function playGame(s: LeagueState, homeId: TeamId, awayId: TeamId, id: string, date: string, maxInnings: number | null): GameOut | null {
   const { home, away } = matchInputs(s, date, { teamId: homeId }, { teamId: awayId });
   if (!home || !away) return null;
-  return simulateGame({ gameId: id, home, away, maxInnings, park: parkFactor(homeId) }, gameRng(s, id));
+  const park = s.teams.find((t) => t.id === homeId)?.stadium.park ?? parkFactor(homeId);
+  return simulateGame({ gameId: id, home, away, maxInnings, park }, gameRng(s, id));
 }
 
 /** Plays every game on the next date. Returns false when the regular season is over. */
@@ -244,7 +259,9 @@ export function playDay(s: LeagueState): boolean {
     if (!out) continue;
     record(s, out.home, date);
     record(s, out.away, date);
-    s.scores.push({ id: g.id, date, home: g.home, away: g.away, hs: out.home.runs, as: out.away.runs });
+    const att = attendance(s, { id: g.id, date, home: g.home, away: g.away });
+    recordGate(s, g.home, att);
+    s.scores.push({ id: g.id, date, home: g.home, away: g.away, hs: out.home.runs, as: out.away.runs, att });
     const r = rng(`${s.seed}|injury|${g.id}`);
     rollInjuries(s, out.home, date, r);
     rollInjuries(s, out.away, date, r);

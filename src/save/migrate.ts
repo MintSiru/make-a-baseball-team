@@ -5,9 +5,12 @@
 import { SIM_VERSION } from '../core/version';
 import type { LeagueState } from '../league/state';
 import { batsFor } from '../model/player';
+import { attendance, recordGate } from '../league/fans';
+import { baseSupport, setGoals } from '../league/parent';
+import { staffOf } from '../league/staff';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1'];
 
 type Loose = Record<string, unknown>;
 
@@ -38,6 +41,25 @@ export function migrateState(raw: unknown, from: string): LeagueState {
   if (s.offseason && MIGRATABLE.includes(from) && s.offseason.step >= 4) s.offseason.step += 1;
   // 0.5.1: left-handed throwers bat left as in the league (좌투우타 became rare).
   for (const p of Object.values(s.players)) p.bats = batsFor(p.id, p.throws, p.bats);
+  // 0.6: the business side. Clubs get fans, prices and staff; this season's gates are rebuilt from the
+  // games already played; the user's owner starts with its base support and neutral trust.
+  if (!s.clubs) {
+    for (const t of s.teams) if (s.rosters[t.id]) staffOf(s, t.id);
+    s.gate = {};
+    s.postseasonGate = 0;
+    if (s.phase === 'regular' || s.phase === 'postseason')
+      for (const g of s.scores) {
+        g.att = attendance(s, g);
+        recordGate(s, g.home, g.att);
+      }
+    const u = s.user;
+    if (u) {
+      u.support ??= Math.round(baseSupport(u.settings.parentType) * ({ easy: 1.1, normal: 1, hard: 0.9 } as const)[u.settings.difficulty]);
+      u.trust ??= 60;
+      u.budgetScale ??= 1;
+      if (s.phase === 'regular') setGoals(s, s.year);
+    }
+  }
   s.sim = SIM_VERSION;
   return s;
 }

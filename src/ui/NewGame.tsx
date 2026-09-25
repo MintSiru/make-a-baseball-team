@@ -27,10 +27,11 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
   const [stadium, setStadium] = useState<Stadium>('existing');
   const [promotion, setPromotion] = useState<Promotion>('afterFutures');
   const [difficulty, setDifficulty] = useState<Difficulty>('normal');
+  const [firing, setFiring] = useState(false);
   const [seed, setSeed] = useState(initialSeed);
   const city = cityById(cityId)!;
 
-  const settings: ExpansionSettings = { name, short, color, cityId, parentType, parentName, stadium, promotion, difficulty, scenario: null };
+  const settings: ExpansionSettings = { name, short, color, cityId, parentType, parentName, stadium, promotion, difficulty, scenario: null, ...(firing ? { firing } : {}) };
   const b = budgetFor(settings);
   const stars = difficultyStars(settings);
   const problems = [
@@ -137,6 +138,9 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
             </button>
           ))}
         </div>
+        <label class="check">
+          <input type="checkbox" checked={firing} onChange={(e) => setFiring((e.currentTarget as HTMLInputElement).checked)} /> 성적이 나쁘면 모기업이 단장을 해임할 수 있음 (끄면 샌드박스)
+        </label>
         <label class="seed-field">
           시드
           <input value={seed} spellcheck={false} onInput={(e) => setSeed((e.currentTarget as HTMLInputElement).value)} />

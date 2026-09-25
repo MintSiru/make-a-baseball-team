@@ -121,8 +121,23 @@ try {
   await decideAll(page, log);
   const winter = log.slice(before);
   for (const t of ['특별지명', '외국인 선수 계약']) check(winter.includes(t), `winter before the first team includes ${t} (${winter.filter((x) => x !== '신인 드래프트').join(', ')})`);
-  for (const t of ['신인 계약금 협상', '스프링캠프']) check(log.includes(t), `yearly decisions include ${t}`);
+  for (const t of ['신인 계약금 협상', '스프링캠프', '코칭스태프 · 프런트']) check(log.includes(t), `yearly decisions include ${t}`);
   await waitStatus(page, '2028 정규시즌');
+
+  // 3b. The front office: every section, a ticket price change, the futures year's accounts.
+  await page.getByRole('button', { name: '우리 구단', exact: true }).click();
+  await page.getByRole('button', { name: '구단 운영', exact: true }).click();
+  for (const sec of ['모기업', '재정', '관중 · 티켓', '스태프', '구장', '자금 내역', '요약']) {
+    await page.getByRole('group', { name: '구단 운영' }).getByRole('button', { name: sec, exact: true }).click();
+    if (sec === '재정') {
+      check((await page.locator('.report-table').count()) === 1, 'the futures year was settled');
+      await page.screenshot({ path: join(shots, 'office-money.png'), fullPage: false });
+    }
+    if (sec === '관중 · 티켓') {
+      await page.getByLabel('티켓 가격').selectOption('1.20');
+      await page.waitForFunction(() => document.querySelector('select[aria-label="티켓 가격"]')?.value === '1.20');
+    }
+  }
   await page.getByRole('button', { name: '순위', exact: true }).click();
   check((await page.locator('.standings tbody tr').count()) === 11, 'eleven clubs in 2028');
   check((await page.locator('.standings').textContent())?.includes('울산 고래단'), 'our club in the standings');

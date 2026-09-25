@@ -75,6 +75,10 @@ export const ENGINE = {
     /** Starters rarely finish: hook in the 9th unless dominant. */
     completeGameChance: 0.12,
   },
+  /** A small-ball manager: steal attempts (logit) and bunts (multiplier). */
+  smallBall: { steal: 0.35, bunt: 1.6 },
+  /** Manager style: starter pitch limit change. */
+  hook: { quickHook: -8, patient: 6 },
   /** Lineup score for the platoon side (batValue points); `half` for a player the GM set as a platoon half. */
   platoonLineup: { edge: 2.5, half: 40 },
   reliever: { maxOutsShort: 4, maxOutsMopUp: 6, maxOutsLong: 9, pitchLimitShort: 28, pitchLimitMopUp: 40, pitchLimitLong: 55, lefty: { starterPitches: 85 } },
@@ -214,3 +218,108 @@ export const SECOND = { minValue: 49 } as const;
  * close to recent Korean signings.
  */
 export const POSTING = { minGrade: 62, maxAge: 30, wants: 0.5, baseChance: 0.45, chancePerGrade: 0.07, agePenalty: 0.1, aavAt60: 2_500_000, aavGrowth: 0.22, aiAllows: 0.55 } as const;
+
+/** Fans and attendance (V0.6, fans.ts). Calibrated to 2025: 17,103 a game (CALIBRATION.md §8). */
+export const FANS = {
+  /** Average ticket price in 2025 (만 원): 2,046억 / 1,231만 명. */
+  price2025: 1.66,
+  priceGrowth: 0.03,
+  averagePopularity: 19_000,
+  visitorWeight: 0.15,
+  elasticity: 0.9,
+  inSeasonWin: 0.9,
+  seasonWin: 1.0,
+  /** How strongly the mood moves a crowd. */
+  moodWeight: 0.7,
+  playoff: 0.08,
+  champion: 0.15,
+  starWar: 4,
+  perStar: 0.03,
+  perHomeGrown: 0.015,
+  perYoungStar: 0.02,
+  memory: 0.5,
+  growth: 0.04,
+  interestMin: -0.45,
+  interestMax: 0.8,
+  popularityMin: 5_000,
+  priceMin: 0.7,
+  priceMax: 1.6,
+  marketing: { base: 200_000, effect: 0.08, min: 0, max: 800_000 },
+  newClub: { base: 6_000, perMarket: 100, novelty: 0.3 },
+  /** Postseason tickets cost about three times a regular-season seat. */
+  postseasonPrice: 3,
+} as const;
+
+/** Club accounts (V0.6, finance.ts), 만 원 a year unless noted. */
+export const FINANCE = {
+  sponsor: { base: 350_000, perThousandFans: 30_000 },
+  naming: { base: 800_000 },
+  /** Merchandise margin per fan, and concessions per fan (the ballpark operator keeps more). */
+  merchPerFan: 0.3,
+  concessions: { operator: 0.25, tenant: 0.08 },
+  frontOffice: 1_800_000,
+  perHomeGame: 6_000,
+  ballpark: { operator: 250_000, tenant: 150_000, dome: 400_000, perSeat: 5 },
+  farm: 350_000,
+  /** A club in its futures year: sponsors and front office at this share. */
+  futuresYear: 0.5,
+  keepReports: 30,
+} as const;
+
+/** Staff (V0.6, staff.ts). */
+export const STAFF = {
+  salary: { manager: 50_000, head: 15_000 },
+  /** Assistants' payroll per department. */
+  departments: 30_000,
+  candidates: 3,
+  aiRenew: 0.7,
+  aiFireManager: 0.4,
+  growth: 0.08,
+  farmGrowth: 0.1,
+  injury: 0.15,
+  injuryDays: 0.1,
+  fielding: 0.12,
+  managerInsight: 0.3,
+  scoutBase: 0.35,
+  scoutSpan: 0.25,
+  scoutMax: 0.6,
+} as const;
+
+/** Owners (V0.6, parent.ts). Support in 만 원 a year before difficulty. */
+export const PARENT = {
+  support: { conglomerate: 1_600_000, midsize: 1_200_000, namingRights: 400_000, citizen: 1_000_000 },
+  rankGoal: { conglomerate: 5, midsize: 7, namingRights: 8, citizen: 8 },
+  crowdGoal: 1.0,
+  weights: {
+    conglomerate: { rank: 0.5, fans: 0.2, money: 0.3 },
+    midsize: { rank: 0.35, fans: 0.25, money: 0.4 },
+    namingRights: { rank: 0.3, fans: 0.3, money: 0.4 },
+    citizen: { rank: 0.3, fans: 0.45, money: 0.25 },
+  },
+  maxChange: 0.1,
+  startTrust: 60,
+  trustStep: { conglomerate: 25, midsize: 15, namingRights: 12, citizen: 15 },
+  fireBelow: 15,
+  scaleMin: 0.6,
+  scaleMax: 1.6,
+  groupSwing: { chance: 0.15, size: 0.1 },
+  midsizeReward: 0.05,
+  election: 0.15,
+  naming: { base: 900_000 },
+} as const;
+
+/** Ballpark projects (V0.6, ballpark.ts), 만 원. */
+export const BALLPARK = {
+  expandSeats: 3_000,
+  expandCost: 1_500_000,
+  maxSeats: 25_000,
+  fencesCost: 150_000,
+  fencesStep: 0.04,
+  parkMin: 0.9,
+  parkMax: 1.12,
+  newSeats: 22_000,
+  newCost: 4_000_000,
+  newYears: 3,
+  newParkBuzz: 0.25,
+  expandBuzz: 0.05,
+} as const;

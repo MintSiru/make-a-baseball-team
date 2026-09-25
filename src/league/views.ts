@@ -23,7 +23,13 @@ export const positionLabel = (p: Pick<Player, 'role' | 'position'>) =>
 const fmt3 = (x: number) => x.toFixed(3).replace(/^0/, '');
 
 export function standingsView(s: LeagueState) {
-  return currentStandings(s).map((r) => ({ ...r, name: teamOf(s, r.teamId)!.name, short: shortName(s, r.teamId), color: teamOf(s, r.teamId)!.color, games: r.w + r.l + r.t }));
+  return currentStandings(s).map((r) => {
+    // Average home crowd: this season's gate, or last season's report in the winter.
+    const gate = s.gate?.[r.teamId];
+    const last = s.clubs?.[r.teamId]?.reports.at(-1);
+    const crowd = gate?.games ? Math.round(gate.fans / gate.games) : last?.homeGames && last.year === s.year ? Math.round(last.fans / last.homeGames) : 0;
+    return { ...r, name: teamOf(s, r.teamId)!.name, short: shortName(s, r.teamId), color: teamOf(s, r.teamId)!.color, games: r.w + r.l + r.t, crowd };
+  });
 }
 
 export function lastDayScores(s: LeagueState) {

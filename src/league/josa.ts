@@ -9,3 +9,4 @@ const lastSyllable = (word: string) => {
 export const ro = (w: string) => `${w}${lastSyllable(w) > 0 && lastSyllable(w) !== 8 ? '으로' : '로'}`;
 export const iga = (w: string) => `${w}${lastSyllable(w) > 0 ? '이' : '가'}`;
 export const eulreul = (w: string) => `${w}${lastSyllable(w) > 0 ? '을' : '를'}`;
+export const wagwa = (w: string) => `${w}${lastSyllable(w) > 0 ? '과' : '와'}`;

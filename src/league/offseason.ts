@@ -23,8 +23,12 @@ import { standings } from './standings';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, orgIds, orgPlayers, registeredIds, type Decision, type DraftSlot, type DraftState, type LeagueState, type SeasonSummary } from './state';
 import { batterWar, leagueContext, pitcherWar } from './stats';
 import { maybeRetireNumber } from './numbers';
+import { settleFinances } from './finance';
+import { seasonFans } from './fans';
+import { aiStaffWinter } from './staff';
 import { runAiPosting } from './posting';
-import { FUTURES, OFFSEASON as O } from './tuning';
+import { FUTURES, OFFSEASON as O, STAFF } from './tuning';
+import { staffEdge, staffRating } from './staff';
 
 type Develop = (p: object, tools: Tools, yearIndex: number, age: number, daysLost: number, r: () => number, boost?: number, focus?: string, scale?: number) => Tools;
 const developTools = (DraftSeason as unknown as { developTools: Develop }).developTools;
@@ -94,6 +98,11 @@ export function closeSeason(s: LeagueState) {
     ...(userFutures ? { userFutures } : {}),
     ...(futuresTable ? { futures: futuresTable } : {}),
   });
+  // The business year closes with the baseball one: accounts, fans' mood, AI staff changes.
+  const summary = s.history[s.history.length - 1]!;
+  settleFinances(s, s.year, summary.table);
+  seasonFans(s, s.year, summary.table, summary.champion);
+  aiStaffWinter(s, s.year, summary.table);
   s.phase = 'offseason';
 }
 
@@ -117,8 +126,31 @@ export function growthScale(p: Player, year: number, futuresLeague: boolean): nu
   return clamp(G.base + G.play * Math.min(1, reps) + G.train * Math.min(1, train), G.base, G.max);
 }
 
+/** Coaching staff effect on this player's growth: an extra share for each ability (staff.ts). */
+export type Coaching = Partial<Record<keyof Tools, number>>;
+
+const TOOL_COACH: Record<string, 'hitting' | 'pitching' | 'fielding'> = {
+  contact: 'hitting',
+  power: 'hitting',
+  eye: 'hitting',
+  speed: 'fielding',
+  defense: 'fielding',
+  stuff: 'pitching',
+  command: 'pitching',
+  breaking: 'pitching',
+  stamina: 'pitching',
+};
+
+export function coachingFor(s: LeagueState, p: Player, year: number): Coaching {
+  if (!p.teamId || p.status !== 'active') return {};
+  const farm = ageIn(p, year) <= 24 && (lastRecord(p, year)?.days ?? 0) < 60 ? STAFF.farmGrowth * staffEdge(staffRating(s, p.teamId, 'farm')) : 0;
+  const out: Coaching = {};
+  for (const [k, role] of Object.entries(TOOL_COACH)) out[k as keyof Tools] = STAFF.growth * staffEdge(staffRating(s, p.teamId, role)) + farm;
+  return out;
+}
+
 /** One year of growth and aging on hidden ability, then a fresh public scouting report. */
-export function developPlayer(p: Player, year: number, lostDays: number, r: () => number, scale = 1) {
+export function developPlayer(p: Player, year: number, lostDays: number, r: () => number, scale = 1, coaching: Coaching = {}) {
   const age = ageIn(p, year);
   const yearIndex = Math.max(0, year - p.proSince);
   const h = p.hidden;
@@ -134,6 +166,12 @@ export function developPlayer(p: Player, year: number, lostDays: number, r: () =
     next = { ...h.current };
   } else {
     next = developTools({ potentialTools: h.potential, growthCurve: h.growthCurve, developmentRate: h.developmentRate }, h.current, yearIndex, age, lostDays, r, 0, p.plan?.focus ?? 'balanced', scale);
+  }
+  // Coaches speed up (or slow down) the growth part.
+  for (const k of Object.keys(next) as (keyof Tools)[]) {
+    const before = h.current[k] ?? next[k]!;
+    const gain = next[k]! - before;
+    if (gain > 0 && coaching[k]) next[k] = clamp(before + gain * (1 + coaching[k]!), 20, 80);
   }
   // Late-career decline on top of Draft Room's aging (which was tuned for players under 33).
   const V = O.veteranDecline;
@@ -628,7 +666,7 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         for (const p of Object.values(s.players)) {
           if (p.status === 'retired' || p.status === 'overseas' || p.status === 'amateur') continue;
           if (p.proSince > year) continue; // drafted this fall, first season still ahead
-          developPlayer(p, year, s.lines[p.id]?.lost ?? 0, rng(`${s.seed}|develop|${year}|${p.id}`), growthScale(p, year, futuresLeague));
+          developPlayer(p, year, s.lines[p.id]?.lost ?? 0, rng(`${s.seed}|develop|${year}|${p.id}`), growthScale(p, year, futuresLeague), coachingFor(s, p, year));
         }
         break;
       }

@@ -106,6 +106,10 @@ export const KBO_2026 = {
     month: 9,
     order: 'reverse-standings' as const,
   },
+  /** Broadcast rights: terrestrial TV 540억 + CJ ENM (TVING) 450억 a year for 2024–26, shared equally (S41). The next deal is a game assumption. */
+  broadcast: { annual2024: 9_900_000, nextDeal: 1.1, growth: 0.03 },
+  /** Postseason ticket money (KBO 규정 제47조, S42): costs off the top, the regular-season winner 20%, then 50/24/14/9/3%. */
+  postseasonShares: { costs: 0.4, regularSeasonWinner: 0.2, champion: 0.5, runnerUp: 0.24, third: 0.14, fourth: 0.09, fifth: 0.03 },
   /** KBO–MLB posting (2018 agreement): seven seasons, one player per club a winter, fee tiers on the guaranteed value (S39, S40). */
   posting: {
     seasons: 7,

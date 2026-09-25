@@ -23,6 +23,7 @@ export function Standings({ league, onTeam }: { league: LeagueState; onTeam: (id
               <th class="num">게임차</th>
               <th class="num">득점</th>
               <th class="num">실점</th>
+              <th class="num">평균 관중</th>
             </tr>
           </thead>
           <tbody>
@@ -43,6 +44,7 @@ export function Standings({ league, onTeam }: { league: LeagueState; onTeam: (id
                 <td class="num">{r.gb ? r.gb.toFixed(1) : '-'}</td>
                 <td class="num">{r.rs}</td>
                 <td class="num">{r.ra}</td>
+                <td class="num">{r.crowd ? r.crowd.toLocaleString('ko-KR') : '-'}</td>
               </tr>
             ))}
           </tbody>

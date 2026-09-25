@@ -5,6 +5,7 @@
    game assumptions in RULES.md §9. Money is in 만 원 (10,000 = 1억). */
 import { generateDraftPool, rng } from '../draftroom';
 import { cityById } from '../club/cities';
+import { baseSupport } from './parent';
 import type { ParentCompanyType } from '../club/types';
 import { fromDraftProspect } from '../model/player';
 import type { Player, PlayerId, Team, TeamId } from '../model/types';
@@ -32,7 +33,7 @@ import {
   type OffseasonStep,
 } from './offseason';
 import { ageIn, isForeign, isPitcher, keepValue, makeForeign } from './players';
-import { OFFSEASON } from './tuning';
+import { OFFSEASON, PARENT } from './tuning';
 import {
   autoAnnual,
   campDecision,
@@ -44,6 +45,8 @@ import {
   rookieBonusDecision,
   salariesDecision,
   postingDecision,
+  sponsorDecision,
+  staffDecision,
   yearlyGrant,
   type AnnualInput,
 } from './userclub';
@@ -101,10 +104,11 @@ const user = (s: LeagueState): UserClub => {
   if (!s.user) throw new Error('no user club');
   return s.user;
 };
-const spend = (s: LeagueState, label: string, amount: number) => {
+/** Pays from the fund. Founding fees are capital: the owner's yearly support does not cover them. */
+const spend = (s: LeagueState, label: string, amount: number, capital = false) => {
   const u = user(s);
   u.fund -= amount;
-  u.ledger.push({ year: s.year, label, amount: -amount });
+  u.ledger.push({ year: s.year, label, amount: -amount, ...(capital ? { capital } : {}) });
 };
 
 // ── Founding ─────────────────────────────────────────────────────────────────────────────────────
@@ -131,9 +135,9 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
   s.teams.push(team);
   s.rosters[EXPANSION_ID] = emptyRoster();
   const b = budgetFor(settings);
-  s.user = { teamId: EXPANSION_ID, settings, fund: b.fund, payrollBudget: b.payrollBudget, firstTeamYear, ledger: [] };
-  spend(s, 'KBO 가입금', b.entryFee);
-  spend(s, '야구발전기금', b.developmentFund);
+  s.user = { teamId: EXPANSION_ID, settings, fund: b.fund, payrollBudget: b.payrollBudget, firstTeamYear, ledger: [], support: Math.round(baseSupport(settings.parentType) * DIFFICULTY_MONEY[settings.difficulty]), trust: PARENT.startTrust, budgetScale: 1 };
+  spend(s, 'KBO 가입금', b.entryFee, true);
+  spend(s, '야구발전기금', b.developmentFund, true);
   s.user.ledger.push({ year: s.year, label: `가입 예치금 ${b.deposit / 10000}억 (KBO 보관, 지출 아님)`, amount: 0 });
   if (plan.opens) s.user.ledger.push({ year: s.year, label: `${plan.label} ${plan.opens}년 개장 예정 (지자체 건설)`, amount: 0 });
   s.pending = { kind: 'tryout', candidates: tryoutPool(s).map((p) => p.id), max: 20 };
@@ -222,6 +226,10 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
   switch (step) {
     case 'military':
       return militaryDecision(s);
+    case 'international':
+      return sponsorDecision(s, o.year);
+    case 'retire':
+      return staffDecision(s, o.year);
     case 'posting':
       return postingDecision(s, next);
     case 'renew':
