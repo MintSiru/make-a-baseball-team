@@ -25,7 +25,9 @@ export type Move =
   | { type: 'foreign'; teamId: TeamId; out: Player; in: PlayerId; price: number }
   | { type: 'posting'; teamId: TeamId; id: PlayerId; deal: { years: number; total: number; fee: number } | null }
   | { type: 'fa'; from: TeamId; to: TeamId; id: PlayerId; years: number; annual: number; grade: string }
-  | { type: 'secondDraft'; teamId: TeamId; from: TeamId; id: PlayerId; round: number };
+  | { type: 'secondDraft'; teamId: TeamId; from: TeamId; id: PlayerId; round: number }
+  /** A posted player back from the majors (V0.7.3): with the club that posted him (`own`) or another. */
+  | { type: 'returnee'; teamId: TeamId; id: PlayerId; years: number; annual: number; abroad: number; own: boolean };
 
 const short = (s: LeagueState, id: TeamId) => s.teams.find((t) => t.id === id)?.short ?? id;
 const pick = <T,>(xs: T[], key: string) => xs[Math.floor(hashUnit(key) * xs.length)]!;
@@ -106,6 +108,7 @@ const MANAGER = {
 };
 const ARRIVAL = ['새 유니폼이 아직 어색하지만 빨리 적응하겠습니다.', '불러 주신 만큼 보답하겠습니다.', '전 팀 팬들께 감사드립니다. 여기서도 제 야구를 하겠습니다.'];
 const STAY = ['남게 돼 기쁩니다. 계속 이 유니폼을 입고 뛰겠습니다.', '구단에서 믿어 주셔서 감사합니다. 보답하겠습니다.'];
+const HOME = ['다시 돌아와서 기쁩니다. 떠날 때 약속한 대로 팀에 힘이 되겠습니다.', '메이저리그에서 배운 걸 후배들과 나누고 싶습니다.', '팬들이 기다려 주셔서 돌아올 수 있었습니다.'];
 const MLB = ['어릴 때부터 꿈꾸던 무대입니다. 응원해 주신 팬들께 감사드립니다.', '보내 주신 구단에 감사드립니다. 가서 부끄럽지 않게 뛰겠습니다.'];
 const FANS = {
   trade: ['이 트레이드 누가 이긴 거냐', '보낸 선수 잘되길 바란다', '일단 결과로 말하자', '단장 결단 좋다'],
@@ -114,6 +117,7 @@ const FANS = {
   foreign: ['이번엔 제발 터져라', '떠난 선수도 수고 많았다', '영상 보니 기대된다'],
   leaving: ['가서 꼭 성공해라', '떠나는 건 아쉽지만 축하한다', '잘 가라, 고마웠다'],
   stay: ['남아 줘서 고맙다', '역시 우리 선수', '계속 같이 가자'],
+  home: ['돌아온 걸 환영한다!', '다시 이 유니폼 입은 모습 보니 눈물 난다', '마지막은 여기서 불태우자'],
 };
 
 /** Writes the article for a move (see the header for which ones). */
@@ -159,10 +163,16 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
       addNews(s, {
         ...base,
         id,
-        title: m.waiver ? `${club}, ${x.name} 웨이버 공시` : `${club}, ${x.name} 방출`,
-        body: `${iga(club)} ${ageIn(x, season)}세 ${posOf(x)} ${eulreul(x.name)} ${m.waiver ? '웨이버 공시했다. 일주일 안에 데려가는 구단이 없으면 자유계약선수가 된다.' : '방출했다. 자유계약선수로 새 팀을 찾는다.'}${r ? ` ${r}.` : ''}${m.owed ? ` 남은 연봉 ${won(m.owed)}은 ${iga(club)} 부담한다.` : ''}`,
+        title: m.waiver && !isForeign(x) ? `${club}, ${x.name} 웨이버 공시` : `${club}, ${x.name} 방출`,
+        body: `${iga(club)} ${ageIn(x, season)}세 ${posOf(x)} ${eulreul(x.name)} ${
+          isForeign(x)
+            ? '방출했다. 다른 구단이 새로 계약할 수 있고, 방출 뒤 재입단은 신규 계약으로 본다.'
+            : m.waiver
+              ? '웨이버 공시했다. 일주일 안에 데려가는 구단이 없으면 자유계약선수가 된다.'
+              : '방출했다. 자유계약선수로 새 팀을 찾는다.'
+        }${r ? ` ${r}.` : ''}${m.owed ? ` 남은 연봉 ${won(m.owed)}은 ${iga(club)} 부담한다.` : ''}`,
         quotes: [{ who: managerOf(s, m.teamId), role: 'manager', text: pick(MANAGER.release, id) }, ...fans(FANS.release, id)],
-        facts: { type: m.waiver ? '웨이버 공시' : '방출', date, club, player: x.name, ...(m.owed ? { owed: won(m.owed) } : {}) },
+        facts: { type: m.waiver && !isForeign(x) ? '웨이버 공시' : '방출', date, club, player: x.name, ...(m.owed ? { owed: won(m.owed) } : {}) },
         detail: [...playerFacts(s, x, season), ...clubFacts(s, [m.teamId], date)],
         players: [x.id],
         mine: true,
@@ -267,6 +277,28 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
         body: `${m.grade}등급 FA ${iga(x.name)} ${stay ? `원소속 ${to}에 남는다` : `${eulreul(from)} 떠나 ${wagwa(to)} 계약했다`}. 조건은 ${terms}.${r ? ` ${x.name}의 기록은 ${r}.` : ''}${!stay ? ` ${eunneun(from)} 보상을 받는다.` : ''}`,
         quotes: [said(x, pick(stay ? STAY : ARRIVAL, id)), ...(mine ? fans(stay ? FANS.stay : m.from === u ? FANS.leaving : FANS.signing, id) : [])],
         facts: { type: 'FA 계약', date, player: x.name, grade: m.grade, from, to, years: m.years, annual: won(m.annual) },
+        detail: playerFacts(s, x, season),
+        players: [x.id],
+        mine,
+      });
+      return;
+    }
+    case 'returnee': {
+      const x = p(m.id);
+      const mine = m.teamId === u;
+      if (!x) return;
+      const club = short(s, m.teamId);
+      const id = `mv-home-${date}-${m.id}`;
+      const posted = x.service.postedIn;
+      const terms = `${m.years}년, 연 ${won(m.annual)}`;
+      const r = recent(s, x);
+      addNews(s, {
+        ...base,
+        id,
+        title: `${x.name}, ${m.abroad}년 만에 ${club} 복귀… ${terms}`,
+        body: `메이저리그에서 뛰던 ${iga(x.name)} ${m.abroad}년 만에 KBO로 돌아와 ${wagwa(club)} 계약했다. 조건은 ${terms}.${posted !== undefined ? ` ${posted}년 겨울 포스팅으로 미국에 건너갔다.` : ''}${m.own ? ` 포스팅한 구단이 보류권을 갖고 있어 ${club}에 돌아왔다.` : ` 원소속 구단이 보류권을 풀어 ${ro(club)} 갔다.`}${r ? ` 떠나기 전 기록은 ${r}.` : ''}`,
+        quotes: [said(x, pick(HOME, id)), ...(mine ? fans(FANS.home, id) : [])],
+        facts: { type: '해외 복귀', date, club, player: x.name, abroad: m.abroad, years: m.years, annual: won(m.annual), ...(posted !== undefined ? { posted } : {}) },
         detail: playerFacts(s, x, season),
         players: [x.id],
         mine,

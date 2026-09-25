@@ -114,4 +114,32 @@ describe('the user club', () => {
     apply(u, { kind: 'ticketPrice', level: 9 });
     expect(clubState(u, EXPANSION_ID).price).toBe(1.6);
   });
+
+  it('starts ballpark work in the winter while a decision waits, and it opens with the next season', () => {
+    apply(u, { kind: 'regularEnd' });
+    apply(u, { kind: 'postseason' });
+    apply(u, { kind: 'nextSeason' });
+    expect(u.pending).toBeTruthy();
+    // The front office works beside the decision; the rest of the game waits.
+    const next = u.year + 1;
+    const team = () => u.teams.find((t) => t.id === EXPANSION_ID)!;
+    u.user!.fund += 300_000;
+    const fund = u.user!.fund;
+    apply(u, { kind: 'ticketPrice', level: 1.1 });
+    expect(clubState(u, EXPANSION_ID).price).toBe(1.1);
+    const fences = projectOptions(u).find((o) => o.kind === 'fencesIn')!;
+    expect(fences.blocked).toBeNull();
+    apply(u, { kind: 'stadiumProject', project: 'fencesIn' });
+    const project = u.user!.projects!.at(-1)!;
+    expect(project).toMatchObject({ kind: 'fences', opens: next });
+    expect(team().stadium.park).not.toBe(project.park);
+    expect(u.user!.fund).toBe(fund - fences.cost);
+    const day = u.next;
+    apply(u, { kind: 'days', days: 1 });
+    expect(u.next).toBe(day);
+    while (u.pending) apply(u, { kind: 'decide', input: autoDecision(u)! });
+    expect(u.year).toBe(next);
+    expect(u.phase).toBe('regular');
+    expect(team().stadium.park).toBe(project.park);
+  }, 240_000);
 });

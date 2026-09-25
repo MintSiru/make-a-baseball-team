@@ -171,6 +171,8 @@ export type Decision =
   | { kind: 'secondPick'; round: number; fee: number; candidates: PlayerId[] }
   | { kind: 'foreignRenew'; rows: { id: PlayerId; ask: number; war: number; leaving: boolean }[] }
   | { kind: 'posting'; candidates: PlayerId[]; max: number }
+  // Coming home (V0.7.3): posted players back from the majors, whose rights the club holds
+  | { kind: 'returnee'; rows: { id: PlayerId; years: number; annual: number; abroad: number }[] }
   | { kind: 'sponsor'; offers: { name: string; annual: number; years: number }[] }
   | { kind: 'staff'; rows: { role: StaffRole; current: StaffMember; expiring: boolean; buyout: number; candidates: StaffMember[] }[] };
 
@@ -186,6 +188,14 @@ export interface SalaryRow {
   arbitration: boolean;
   /** A multi-year deal before free agency the club can offer (비FA 다년계약), or null. */
   extension: { annual: number; years: number } | null;
+}
+
+/** A released or non-retained foreign player on the market: when and from which club, and his last contract (US dollars). */
+export interface ForeignPoolEntry {
+  id: PlayerId;
+  since: number;
+  from: TeamId;
+  usd: number;
 }
 
 export interface DraftSlot {
@@ -213,6 +223,8 @@ export interface OffseasonState {
   released: PlayerId[];
   /** Sub-steps already settled by the user this offseason. */
   done: string[];
+  /** The AI clubs have decided which foreign players to keep, ahead of the user's foreign signings (V0.7.3). */
+  foreignRenewed?: boolean;
   /** The free-agent market: the user's offers, whether it has run, and the decisions it left for the user. */
   faOffers?: Record<PlayerId, { annual: number; years: number }>;
   faDone?: boolean;
@@ -321,6 +333,8 @@ export interface LeagueState {
   /** Players on waivers (seven days) and unattached players any club may sign (V0.5). */
   waivers?: { id: PlayerId; from: TeamId; until: string }[];
   pool?: PlayerId[];
+  /** Foreign players with KBO experience whose clubs let them go (V0.7.3, foreignpool.ts). */
+  foreignPool?: ForeignPoolEntry[];
   /** Foreign replacements used this season, by club. */
   foreignChanges?: Record<TeamId, number>;
   /** League moves for the news feed: trades, waiver claims, foreign changes. */

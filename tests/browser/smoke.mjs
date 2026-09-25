@@ -118,6 +118,19 @@ try {
   const before = log.length;
   await playSeason(page);
   await page.screenshot({ path: join(shots, 'decision.png'), fullPage: false });
+  // The winter: the front office stays open beside the decision, and ballpark work can start.
+  await page.getByRole('button', { name: '우리 구단', exact: true }).click();
+  await page.getByRole('button', { name: '구단 운영', exact: true }).click();
+  await page.getByRole('group', { name: '구단 운영' }).getByRole('button', { name: '구장', exact: true }).click();
+  check(!(await page.locator('.page').textContent())?.includes('공사는 비시즌에만'), 'ballpark work can start during the winter');
+  const start = page.locator('.page button:not([disabled])', { hasText: /^시작$/ });
+  if (await start.count()) {
+    await start.first().click();
+    await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled);
+    check((await page.locator('.page').textContent())?.includes('완공 예정'), 'started ballpark work is listed');
+  }
+  await page.screenshot({ path: join(shots, 'winter-ballpark.png'), fullPage: false });
+  await page.getByRole('button', { name: /결정할 일/ }).click();
   await decideAll(page, log);
   const winter = log.slice(before);
   for (const t of ['특별지명', '외국인 선수 계약']) check(winter.includes(t), `winter before the first team includes ${t} (${winter.filter((x) => x !== '신인 드래프트').join(', ')})`);

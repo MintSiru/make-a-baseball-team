@@ -7,7 +7,7 @@ import { makeTrade, releasePlayer, replaceForeign, signFromPool } from './trade'
 import { movePlayer, registerPlayer, setRole } from './entry';
 import type { BullpenRole } from './engine/types';
 import { ensureNumbers } from './numbers';
-import { startProject, type ProjectKind } from './ballpark';
+import { openProjects, startProject, type ProjectKind } from './ballpark';
 import { clubState } from './fans';
 import { FANS } from './tuning';
 import { gameRecap, interviewNews, type NewsItem } from './news';
@@ -47,13 +47,22 @@ export type Action =
 
 export const regularOver = (s: LeagueState) => s.phase === 'regular' && s.next >= s.schedule.length;
 
-/** Starts the new year once the offseason has nothing left to ask. */
+/** Starts the new year once the offseason has nothing left to ask; ballpark work due this season opens
+    first (a project can be started at any point of the winter). */
 function finishOffseason(s: LeagueState) {
-  if (s.phase === 'offseason' && !s.offseason && !s.pending) startSeason(s);
+  if (s.phase === 'offseason' && !s.offseason && !s.pending) {
+    openProjects(s, s.year);
+    startSeason(s);
+  }
 }
 
+/** What the player can still do while the game waits for a decision: the front office (tickets,
+    marketing, ballpark) and the news. Everything else waits. */
+const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'interview', 'gameStory', 'storyText'];
+export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
+
 export function apply(s: LeagueState, action: Action): LeagueState {
-  if (s.pending && action.kind !== 'decide') return s; // the game waits for a decision
+  if (s.pending && !allowedWhileWaiting(action)) return s; // the game waits for a decision
   switch (action.kind) {
     case 'days':
       for (let i = 0; i < action.days && playDay(s); i++);

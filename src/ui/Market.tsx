@@ -3,6 +3,7 @@ import { useMemo, useState } from 'preact/hooks';
 import type { Action } from '../league/actions';
 import { usdTotal } from '../league/contracts';
 import { usd } from '../league/foreign';
+import { kboLine, poolEntry } from '../league/foreignpool';
 import { deadMoney, projectedPayroll } from '../league/market';
 import { eulreul } from '../league/josa';
 import { ageIn, isForeign } from '../league/players';
@@ -291,7 +292,8 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
   return (
     <>
       <p class="muted">
-        시즌 중 외국인 선수를 2번까지 바꿀 수 있습니다 (8월 15일까지). 내보낸 선수의 남은 보장액은 계속 나가고, 새 선수는 남은 시즌만큼 줄어든 금액으로 계약합니다. 올해 {used}번 썼습니다.
+        시즌 중 외국인 선수를 2번까지 바꿀 수 있습니다 (8월 15일까지). 내보낸 선수의 남은 보장액은 계속 나가고, 새 선수는 남은 시즌만큼 줄어든 금액으로 계약합니다. 올해 {used}번 썼습니다. 다른 구단이 방출하거나 재계약하지 않은 KBO 경력 외국인도 명단에
+        있습니다 (방출 뒤 재취업은 신규 계약이라 100만 달러 상한).
       </p>
       {closed && <p class="notice">{closed}</p>}
       <h3>내보낼 선수</h3>
@@ -309,8 +311,12 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
       <PickList
         league={league}
         players={market}
-        onPlayer={() => undefined}
-        extra={{ title: '지금 계약 (총액)', value: (p) => `${usd(foreignPriceNow(league, p))} · ${p.origin.asiaQuota ? '아시아' : ''}${p.origin.background?.text ?? ''}`, sort: (p) => foreignPriceNow(league, p) }}
+        onPlayer={(id) => poolEntry(league, id) && onPlayer(id)}
+        extra={{
+          title: '지금 계약 (총액)',
+          value: (p) => `${usd(foreignPriceNow(league, p))} · ${p.origin.asiaQuota ? '아시아 · ' : ''}${poolEntry(league, p.id) ? kboLine(league, p) : (p.origin.background?.text ?? '')}`,
+          sort: (p) => foreignPriceNow(league, p),
+        }}
         action={(p) => (
           <button type="button" aria-pressed={inId === p.id} onClick={() => setIn(p.id)}>
             {inId === p.id ? '선택됨' : '선택'}

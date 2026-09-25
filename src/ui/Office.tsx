@@ -427,7 +427,7 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
             </div>
           </div>
           <h3>구장 공사</h3>
-          <p class="muted">공사비는 구단 자금에서 바로 나갑니다 (모기업 지원은 운영 적자만 메웁니다). 비시즌에만 시작할 수 있고, 한 번에 하나씩 진행합니다.</p>
+          <p class="muted">공사비는 구단 자금에서 바로 나갑니다 (모기업 지원은 운영 적자만 메웁니다). 비시즌(포스트시즌이 끝난 뒤 오프시즌 결정을 하는 동안)에 시작할 수 있고, 한 번에 하나씩 진행합니다. 증축·펜스 공사는 다음 시즌 개막 전에 끝납니다.</p>
           <div class="table-wrap">
             <table class="record-table">
               <tbody>
