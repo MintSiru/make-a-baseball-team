@@ -24,7 +24,6 @@ import {
 import { ageIn, futureValue, isForeign, isPitcher, keepValue } from './players';
 import { aiCompensation, marketValue, movePlayer, projectedPayroll, type FaOffer } from './market';
 import { makeSecondPick } from './seconddraft';
-import { openProjects } from './ballpark';
 import { baseSupport, evaluate, nextBudget, ownerEvents, signSponsor, sponsorDue, sponsorOffers } from './parent';
 import { STAFF_LABELS, STAFF_ROLES, staffCandidates, staffOf } from './staff';
 import { post, postingCandidates, postingNote } from './posting';
@@ -143,9 +142,8 @@ export function yearlyGrant(s: LeagueState) {
   payForeignOptions(s);
   const u = s.user;
   if (!u || !s.offseason) return;
-  const year = s.offseason.year,
-    next = year + 1;
-  openProjects(s, next);
+  const year = s.offseason.year;
+  const next = year + 1;
   if (sponsorDue(s, year)) u.sponsorPending = true;
   const ev = evaluate(s, year);
   if (ev) note(u, year, `모기업 평가: ${ev.lines.map((l) => `${l.label} ${l.ok ? '달성' : '미달'}`).join(' · ')} → 내년 예산 ${ev.change >= 0 ? '+' : ''}${Math.round(ev.change * 100)}%, 신뢰도 ${Math.round(ev.trust)}`);

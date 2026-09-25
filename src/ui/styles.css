@@ -364,6 +364,14 @@ button:disabled {
   border-bottom-color: var(--accent);
   font-weight: 700;
 }
+/* The decision waiting in the winter: marked so it is easy to come back to. */
+.tabs button.tab-waiting {
+  color: var(--accent);
+  font-weight: 700;
+}
+.tabs button.tab-waiting::before {
+  content: '● ';
+}
 .page {
   padding: 16px;
 }

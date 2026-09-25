@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { RELEASE } from '../core/version';
 import { DRAFT_ROOM_DRAFT_DATE } from '../draftroom';
 import { draftClass } from '../league/players';
-import { nextDate, regularOver, type Action } from '../league/actions';
+import { allowedWhileWaiting, nextDate, regularOver, type Action } from '../league/actions';
 import type { ExpansionSettings, LeagueState } from '../league/state';
 import { shortName } from '../league/views';
 import { scoutView } from '../league/staff';
@@ -33,8 +33,10 @@ import { TeamRoster } from './TeamRoster';
 const AUTO_SLOT = 'auto';
 const newSeed = () => `kbo-${Math.floor(Math.random() * 36 ** 6).toString(36)}`;
 
-type Tab = 'club' | 'market' | 'games' | 'standings' | 'leaders' | 'team' | 'history' | 'draft';
-const TABS: { id: Tab; label: string; userOnly?: boolean }[] = [
+type Tab = 'decision' | 'club' | 'market' | 'games' | 'standings' | 'leaders' | 'team' | 'history' | 'draft';
+const TABS: { id: Tab; label: string; userOnly?: boolean; waiting?: boolean }[] = [
+  // Only while the game waits for a decision (the winter's steps): the other screens stay open beside it.
+  { id: 'decision', label: '결정할 일', waiting: true },
   { id: 'club', label: '우리 구단', userOnly: true },
   { id: 'market', label: '이적시장', userOnly: true },
   { id: 'games', label: '경기' },
@@ -165,6 +167,14 @@ export function App() {
     }
   }, [version, storySettings, storyBusy, busy, autoTick]);
 
+  // A new decision brings its screen forward (the other tabs stay open beside it); once the winter is
+  // done, its tab goes away.
+  const waitingKey = league?.pending ? `${league.year}|${league.offseason?.step ?? ''}|${league.pending.kind}` : null;
+  useEffect(() => {
+    if (waitingKey) setTab('decision');
+    else setTab((t) => (t === 'decision' ? (latest.current?.user ? 'club' : 'standings') : t));
+  }, [waitingKey]);
+
   if (loading || !store) return <main class="loading">불러오는 중</main>;
 
   /** Asks the chosen model for an article and stores it on the latest league state. */
@@ -255,6 +265,10 @@ export function App() {
     );
 
   const act = async (action: Action, label: string, heavy: boolean) => {
+    if (league.pending && !allowedWhileWaiting(action)) {
+      setNotice('먼저 결정할 일을 끝내세요. 기다리는 동안에는 구단 운영(티켓·마케팅·구장)과 기사만 바꿀 수 있습니다.');
+      return;
+    }
     setBusy(label);
     setNotice('');
     try {
@@ -382,20 +396,16 @@ export function App() {
           {notice}
         </p>
       )}
-      {league.pending ? (
-        <main class="page" data-version={version}>
-          <Decision league={league} onPlayer={setPlayerId} onSubmit={(input) => act({ kind: 'decide', input }, '진행 중', false)} />
-        </main>
-      ) : (
-        <>
+      <>
           <nav class="tabs" aria-label="화면">
-            {TABS.filter((t) => !t.userOnly || league.user).map((t) => (
-              <button key={t.id} type="button" aria-current={tab === t.id ? 'page' : undefined} onClick={() => setTab(t.id)}>
+            {TABS.filter((t) => (!t.userOnly || league.user) && (!t.waiting || league.pending)).map((t) => (
+              <button key={t.id} type="button" class={t.waiting ? 'tab-waiting' : undefined} aria-current={tab === t.id ? 'page' : undefined} onClick={() => setTab(t.id)}>
                 {t.label}
               </button>
             ))}
           </nav>
           <main class="page" data-version={version}>
+            {tab === 'decision' && league.pending && <Decision league={league} onPlayer={setPlayerId} onSubmit={(input) => act({ kind: 'decide', input }, '진행 중', false)} />}
             {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }} />}
             {tab === 'market' && league.user && <Market league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
             {tab === 'games' && <Games league={league} onOpen={setBoxId} />}
@@ -410,8 +420,7 @@ export function App() {
               </div>
             )}
           </main>
-        </>
-      )}
+      </>
       {boxId && league && (
         <BoxScore
           league={league}
