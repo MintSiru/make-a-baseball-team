@@ -27,7 +27,9 @@ const SECTIONS: [Section, string][] = [
   ['ledger', '자금 내역'],
 ];
 
-const signed = (n: number) => (n < 0 ? `−${money(-n)}` : n > 0 ? `+${money(n)}` : '0');
+/** 억 with one decimal ("101.9억"), for reports. */
+const eok = (n: number) => (n ? `${(Math.round(n / 1000) / 10).toLocaleString('ko-KR')}억` : '-');
+const signed = (n: number) => (n < 0 ? `−${eok(-n)}` : n > 0 ? `+${eok(n)}` : '0');
 const people = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}명`;
 
 const REVENUE: [keyof ClubReport['revenue'], string][] = [
@@ -73,7 +75,7 @@ function ReportTable({ reports }: { reports: { title: string; r: ClubReport }[] 
               <th scope="row">{label}</th>
               {reports.map((x) => (
                 <td key={x.title} class="num">
-                  {money(x.r.revenue[k])}
+                  {eok(x.r.revenue[k])}
                 </td>
               ))}
             </tr>
@@ -82,7 +84,7 @@ function ReportTable({ reports }: { reports: { title: string; r: ClubReport }[] 
             <th scope="row">수입 합계</th>
             {reports.map((x) => (
               <td key={x.title} class="num strong">
-                {money(total(x.r, 'revenue'))}
+                {eok(total(x.r, 'revenue'))}
               </td>
             ))}
           </tr>
@@ -94,7 +96,7 @@ function ReportTable({ reports }: { reports: { title: string; r: ClubReport }[] 
               <th scope="row">{label}</th>
               {reports.map((x) => (
                 <td key={x.title} class="num">
-                  {money(x.r.expenses[k])}
+                  {eok(x.r.expenses[k])}
                 </td>
               ))}
             </tr>
@@ -103,7 +105,7 @@ function ReportTable({ reports }: { reports: { title: string; r: ClubReport }[] 
             <th scope="row">지출 합계</th>
             {reports.map((x) => (
               <td key={x.title} class="num strong">
-                {money(total(x.r, 'expenses'))}
+                {eok(total(x.r, 'expenses'))}
               </td>
             ))}
           </tr>
@@ -127,7 +129,7 @@ function ReportTable({ reports }: { reports: { title: string; r: ClubReport }[] 
             <th scope="row">모기업(지자체·투자자) 지원</th>
             {reports.map((x) => (
               <td key={x.title} class="num">
-                {x.r.support ? money(x.r.support) : '-'}
+                {eok(x.r.support)}
               </td>
             ))}
           </tr>

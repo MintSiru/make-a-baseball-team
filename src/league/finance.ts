@@ -7,11 +7,11 @@
    reports are there to compare. Money in 만 원. */
 import type { TeamId } from '../model/types';
 import { KBO_2026 } from '../rules/kbo2026';
-import { clubState, leaguePrice } from './fans';
+import { boom, clubState, leaguePrice } from './fans';
 import { payroll } from './offseason';
 import { staffCost } from './staff';
 import { firstTeamIds, type ClubReport, type LeagueState } from './state';
-import { FINANCE as F } from './tuning';
+import { FANS, FINANCE as F } from './tuning';
 
 /** The league's broadcast money for `year` (990억 for 2024–26; the next deal assumed 10% higher, then +3% a year). */
 export function broadcastPool(year: number): number {
@@ -142,9 +142,26 @@ export function settleFinances(s: LeagueState, year: number, table: { teamId: Te
 export const supportLabel = (type: string) =>
   type === 'citizen' ? '지자체 출자·시민주주 지원' : type === 'namingRights' ? '투자자 지원' : '모기업 지원 (광고·운영 지원금)';
 
-/** A running estimate for this season (the report as if the season ended today). */
+/**
+ * A running estimate for the whole season: the gate so far carried over the remaining home games (or,
+ * before the first one, what the fan base and price suggest).
+ */
 export function projectedReport(s: LeagueState, teamId: TeamId): ClubReport {
-  return clubReport(s, teamId, s.year, {});
+  const home = s.schedule.filter((g) => g.home === teamId).length;
+  const gate = s.gate?.[teamId];
+  const team = s.teams.find((t) => t.id === teamId)!;
+  const c = clubState(s, teamId);
+  const perGame = gate?.games
+    ? gate.fans / gate.games
+    : Math.min(team.stadium.capacity, c.popularity * boom(s.year) * Math.max(0.45, 1 + FANS.moodWeight * c.interest) * c.price ** -FANS.elasticity);
+  const fans = Math.round(perGame * home);
+  const saved = s.gate;
+  s.gate = { ...(saved ?? {}), [teamId]: { games: home, fans, sellouts: 0, revenue: Math.round(fans * leaguePrice(s.year) * c.price) } };
+  try {
+    return clubReport(s, teamId, s.year, {});
+  } finally {
+    s.gate = saved;
+  }
 }
 
 export const ticketPriceWon = (s: LeagueState, teamId: TeamId, year = s.year) => Math.round(leaguePrice(year) * clubState(s, teamId).price * 10000);
