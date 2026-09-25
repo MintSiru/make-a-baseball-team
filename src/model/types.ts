@@ -122,11 +122,13 @@ export interface PitTotals {
 export interface SeasonRecord {
   year: number;
   teamId: TeamId;
-  /** Futures-league line (only the expansion club's futures year is simulated); first team when absent. */
+  /** Futures-league line (futures games are simulated from 2026); first team when absent. */
   level?: 'futures';
   age: number;
-  /** First-team registered days this season. */
+  /** First-team registered days this season (0 on a futures line). */
   days: number;
+  /** Futures line only: days in the third squad (잔류군), training or in rehab. */
+  thirdDays?: number;
   bat: BatTotals | null;
   pit: PitTotals | null;
   war: number;
@@ -160,6 +162,16 @@ export interface Player {
   /** First professional season in the league. */
   proSince: number;
   career: SeasonRecord[];
+  /** The club's development plan from spring camp (absent: balanced growth, no change). */
+  plan?: PlayerPlan;
+}
+
+/** Spring-camp plan (Draft Room planStep, V0.4). */
+export interface PlayerPlan {
+  /** 'balanced' or the tool the player works on: it grows faster, the others a little slower. */
+  focus: string;
+  /** Season of a position change: his fielding suffers while he adapts. */
+  adaptingIn?: number;
 }
 
 export interface Stadium {

@@ -6,8 +6,9 @@ import { createLeague } from '../src/league/history';
 import { firstTeamSize, foreignSlots } from '../src/league/manager';
 import { rosterLimit } from '../src/league/offseason';
 import { isForeign } from '../src/league/players';
-import { firstTeamIds, type Decision, type ExpansionSettings, type LeagueState } from '../src/league/state';
+import { developmentIds, firstTeamIds, registeredIds, type Decision, type ExpansionSettings, type LeagueState } from '../src/league/state';
 import { EXPANSION_DEFAULTS } from '../src/rules/kbo2026';
+import { OFFSEASON } from '../src/league/tuning';
 
 let base = '';
 beforeAll(() => {
@@ -94,14 +95,14 @@ describe('expansion after a futures year (NC/KT path)', () => {
         Object.assign(specialLists, d.lists);
         fundBeforeSpecial = st.user!.fund;
         for (const [teamId, ids] of Object.entries(d.lists)) {
-          const org = [...st.rosters[teamId]!.active, ...st.rosters[teamId]!.futures].filter((id) => {
+          const org = registeredIds(st, teamId).filter((id) => {
             const p = st.players[id]!;
             return !isForeign(p) && p.proSince < 2028 && !(p.contract?.kind === 'freeAgent' && p.contract.signedIn === 2027);
           });
           expect(org.length - ids.length).toBeLessThanOrEqual(EXPANSION_DEFAULTS.specialDraft.protected);
         }
         const [team, ids] = Object.entries(d.lists)[0]!;
-        const protectedId = [...st.rosters[team]!.active, ...st.rosters[team]!.futures].find((id) => !ids.includes(id) && !isForeign(st.players[id]!))!;
+        const protectedId = registeredIds(st, team).find((id) => !ids.includes(id) && !isForeign(st.players[id]!))!;
         expect(checkDecision(st, { kind: 'specialDraft', picks: { [team]: protectedId } })).toMatch(/보호선수/);
       }
       if (d.kind === 'freeAgents') {
@@ -124,8 +125,8 @@ describe('expansion after a futures year (NC/KT path)', () => {
     expect(s.schedule).toHaveLength(792);
     for (const id of firstTeamIds(s)) {
       expect(s.schedule.filter((g) => g.home === id || g.away === id)).toHaveLength(144);
-      const size = s.rosters[id]!.active.length + s.rosters[id]!.futures.length;
-      expect(size).toBeLessThanOrEqual(rosterLimit(2028));
+      expect(registeredIds(s, id).length).toBeLessThanOrEqual(rosterLimit(2028));
+      expect(developmentIds(s, id).length).toBeLessThanOrEqual(OFFSEASON.development.cap);
     }
     expect(firstTeamSize(s, EXPANSION_ID)).toBe(30);
     expect(s.rosters[EXPANSION_ID]!.active).toHaveLength(30);
@@ -143,7 +144,9 @@ describe('expansion straight into the first team', () => {
     expect(seen).toContain('foreign');
     expect(firstTeamIds(s)).toContain(EXPANSION_ID);
     expect(s.schedule).toHaveLength(792);
-    expect(s.futures).toBeNull();
+    // Every club, the new one included, and 상무 play in the futures league.
+    expect(s.futures?.teams).toHaveLength(12);
+    expect(s.futures?.teams).toContain(EXPANSION_ID);
   }, 60_000);
 
   it('is deterministic for the same seed and choices', () => {

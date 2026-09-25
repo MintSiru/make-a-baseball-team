@@ -9,9 +9,13 @@ export type LeaguePhase = 'regular' | 'postseason' | 'offseason';
 export interface ClubRoster {
   /** First-team (1군) registered players. */
   active: PlayerId[];
-  /** Everyone else under contract who is not serving (퓨처스·육성). */
+  /** The futures squad (퓨처스 출전조): registered and development players who play futures games. */
   futures: PlayerId[];
+  /** The third squad (잔류군·재활군): rehab and training, no games. */
+  third: PlayerId[];
 }
+
+export type Squad = 'active' | 'futures' | 'third';
 
 export interface ArmState {
   lastDate: string;
@@ -55,6 +59,8 @@ export interface SeasonSummary {
   totals: { bat: BatTotals; pit: PitTotals; games: number };
   /** The user's club in its futures year. */
   userFutures?: { w: number; l: number; t: number; rs: number; ra: number };
+  /** Futures league standings, from 2026 (growth then depends on playing time). */
+  futures?: StandingRow[];
 }
 
 /** A choice the game waits for before it can go on. Only the user's club ever raises one. */
@@ -120,12 +126,15 @@ export interface ExpansionSettings {
   scenario: string | null;
 }
 
-/** The expansion club's futures season before it joins the first team. */
+/** The season's futures league (from 2026): every club's futures squad plus 상무. */
 export interface FuturesSeason {
+  teams: TeamId[];
   schedule: import('./schedule').ScheduledGame[];
   next: number;
   scores: GameScore[];
   lines: Record<PlayerId, SeasonLine>;
+  /** Days each player spent in the third squad (training or rehab). */
+  training: Record<PlayerId, number>;
 }
 
 export interface LeagueState {
@@ -173,3 +182,37 @@ export const hasBenefits = (s: LeagueState, teamId: string, year = s.year) => {
   const t = s.teams.find((x) => x.id === teamId);
   return !!t?.benefitsUntil && year <= t.benefitsUntil;
 };
+
+// ── Club organisation ────────────────────────────────────────────────────────────────────────────
+
+/** Development players (육성선수) sit outside the registered-player limit (RULES.md §6). */
+export const isDevelopment = (p: Player) => p.contract?.kind === 'development';
+
+/** Everyone under contract with the club who is not serving: first team, futures squad and third squad. */
+export const orgIds = (s: LeagueState, teamId: TeamId): PlayerId[] => {
+  const r = s.rosters[teamId]!;
+  return [...r.active, ...r.futures, ...r.third];
+};
+export const orgPlayers = (s: LeagueState, teamId: TeamId): Player[] => orgIds(s, teamId).map((id) => s.players[id]!);
+/** Registered players (소속선수), the ones the 68-player limit counts. */
+export const registeredIds = (s: LeagueState, teamId: TeamId) => orgIds(s, teamId).filter((id) => !isDevelopment(s.players[id]!));
+export const developmentIds = (s: LeagueState, teamId: TeamId) => orgIds(s, teamId).filter((id) => isDevelopment(s.players[id]!));
+
+export function squadOf(s: LeagueState, id: PlayerId): Squad | null {
+  const p = s.players[id];
+  const r = p?.teamId ? s.rosters[p.teamId] : undefined;
+  if (!r) return null;
+  return r.active.includes(id) ? 'active' : r.futures.includes(id) ? 'futures' : r.third.includes(id) ? 'third' : null;
+}
+
+/** Moves a player between squads of his club (no rule checks: callers check). */
+export function moveTo(s: LeagueState, id: PlayerId, squad: Squad) {
+  const p = s.players[id]!;
+  const r = s.rosters[p.teamId!]!;
+  r.active = r.active.filter((x) => x !== id);
+  r.futures = r.futures.filter((x) => x !== id);
+  r.third = r.third.filter((x) => x !== id);
+  r[squad].push(id);
+}
+
+export const emptyRoster = (): ClubRoster => ({ active: [], futures: [], third: [] });

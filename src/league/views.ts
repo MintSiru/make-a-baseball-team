@@ -6,11 +6,12 @@ import type { BatTotals, PitTotals, Player, PlayerId, SeasonRecord, TeamId } fro
 import { salaryIn } from './contracts';
 import { ageIn, isForeign, isPitcher } from './players';
 import { currentStandings } from './season';
-import type { LeagueState } from './state';
+import { SANGMU } from './futures';
+import { isDevelopment, type LeagueState } from './state';
 import { avg, era, ip, obp, ops, slg } from './stats';
 
 export const teamOf = (s: LeagueState, id: TeamId | null) => s.teams.find((t) => t.id === id);
-export const shortName = (s: LeagueState, id: TeamId | null) => teamOf(s, id)?.short ?? '-';
+export const shortName = (s: LeagueState, id: TeamId | null) => (id === SANGMU ? '상무' : (teamOf(s, id)?.short ?? '-'));
 
 export const positionLabel = (p: Pick<Player, 'role' | 'position'>) =>
   p.position ? ({ C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' } as const)[p.position] : ROLE_LABELS[p.role];
@@ -70,7 +71,7 @@ export function pitLine(p: PitTotals | null) {
   return `${p.g}경기 ${p.w}승 ${p.l}패${extra} ${ip(p.outs)}이닝 평균자책점 ${era(p).toFixed(2)}`;
 }
 
-export type RosterGroup = 'active' | 'futures' | 'military';
+export type RosterGroup = 'active' | 'futures' | 'third' | 'military';
 
 export function rosterView(s: LeagueState, teamId: TeamId) {
   const r = s.rosters[teamId]!;
@@ -82,6 +83,7 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
       group,
       name: p.name,
       foreign: isForeign(p),
+      development: isDevelopment(p),
       pitcher: isPitcher(p),
       pos: positionLabel(p),
       age: ageIn(p, s.year),
@@ -100,6 +102,7 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
   return {
     active: r.active.map((id) => row(id, 'active')).sort(sortRows),
     futures: r.futures.map((id) => row(id, 'futures')).sort(sortRows),
+    third: r.third.map((id) => row(id, 'third')).sort(sortRows),
     military: military.sort(sortRows),
   };
 }

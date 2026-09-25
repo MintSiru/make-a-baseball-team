@@ -14,7 +14,8 @@ export function MyClub({ league, onPlayer, onTeam }: { league: LeagueState; onPl
   const inFirstTeam = league.year >= u.firstTeamYear;
   const row = standingsView(league).find((r) => r.teamId === u.teamId);
   const f = league.futures;
-  const fr = f ? f.scores.reduce((a, g) => {
+  const myFutures = f ? f.scores.filter((g) => g.home === u.teamId || g.away === u.teamId) : [];
+  const fr = f ? myFutures.reduce((a, g) => {
         const [mine, theirs] = g.home === u.teamId ? [g.hs, g.as] : [g.as, g.hs];
         return { w: a.w + (mine > theirs ? 1 : 0), l: a.l + (mine < theirs ? 1 : 0), t: a.t + (mine === theirs ? 1 : 0) };
       }, { w: 0, l: 0, t: 0 })
@@ -65,11 +66,11 @@ export function MyClub({ league, onPlayer, onTeam }: { league: LeagueState; onPl
         ))}
       </ol>
 
-      {f && f.scores.length > 0 && (
+      {myFutures.length > 0 && (
         <>
           <h3>최근 퓨처스 경기</h3>
           <ul class="scores">
-            {f.scores.slice(-5).reverse().map((g) => (
+            {myFutures.slice(-5).reverse().map((g) => (
               <li key={g.id} class="numbers">
                 {g.date.slice(5)} {shortName(league, g.away)} {g.as} : {g.hs} {shortName(league, g.home)}
               </li>

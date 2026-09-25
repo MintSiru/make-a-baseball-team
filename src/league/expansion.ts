@@ -27,7 +27,7 @@ import {
   type OffseasonStep,
 } from './offseason';
 import { ageIn, isForeign, isPitcher, keepValue, makeForeign } from './players';
-import { firstTeamIds, type Decision, type DraftSlot, type ExpansionSettings, type LeagueState, type UserClub } from './state';
+import { emptyRoster, firstTeamIds, orgIds, registeredIds, type Decision, type DraftSlot, type ExpansionSettings, type LeagueState, type UserClub } from './state';
 
 export const EXPANSION_ID = 'new';
 export const FOUNDING_DATE = '2026-07-01';
@@ -109,7 +109,7 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
     stadium: { name: city.stadium.name, size: city.stadium.seats < 10_000 ? 'small' : 'medium', capacity: city.stadium.seats, ownership: 'municipalLease' },
   };
   s.teams.push(team);
-  s.rosters[EXPANSION_ID] = { active: [], futures: [] };
+  s.rosters[EXPANSION_ID] = emptyRoster();
   const b = budgetFor(settings);
   s.user = { teamId: EXPANSION_ID, settings, fund: b.fund, payrollBudget: b.payrollBudget, firstTeamYear, ledger: [] };
   spend(s, 'KBO 가입금', b.entryFee);
@@ -161,7 +161,7 @@ export function protectedLists(s: LeagueState, next: number) {
   const lists: Record<TeamId, PlayerId[]> = {};
   for (const teamId of firstTeamIds(s, next - 1)) {
     if (teamId === s.user?.teamId) continue;
-    const eligible = [...s.rosters[teamId]!.active, ...s.rosters[teamId]!.futures]
+    const eligible = registeredIds(s, teamId)
       .map((id) => s.players[id]!)
       .filter((p) => !isForeign(p) && p.proSince < next && !(p.contract?.kind === 'freeAgent' && p.contract.signedIn === next - 1));
     const ranked = eligible.sort((a, b) => keepValue(b, next) - keepValue(a, next));
@@ -199,7 +199,7 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
   if (!u || !o) return null;
   const next = o.year + 1;
   const entering = next === u.firstTeamYear;
-  const space = rosterLimit(next) - (s.rosters[u.teamId]!.active.length + s.rosters[u.teamId]!.futures.length);
+  const space = rosterLimit(next) - registeredIds(s, u.teamId).length;
   switch (step) {
     case 'freeAgency': {
       if (!entering) return null;
@@ -211,9 +211,9 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       return { kind: 'specialDraft', lists: protectedLists(s, next), protectedCount: EXPANSION_DEFAULTS.specialDraft.protected, fee: EXPANSION_DEFAULTS.specialDraft.feePerPlayer };
     case 'limits': {
       // The AI never cuts the user's club; over the limit, the user chooses whom to release.
-      const size = s.rosters[u.teamId]!.active.length + s.rosters[u.teamId]!.futures.length;
+      const size = registeredIds(s, u.teamId).length;
       if (size <= rosterLimit(next)) return null;
-      const candidates = [...s.rosters[u.teamId]!.active, ...s.rosters[u.teamId]!.futures].filter((id) => !isForeign(s.players[id]!));
+      const candidates = registeredIds(s, u.teamId).filter((id) => !isForeign(s.players[id]!));
       return { kind: 'roster', candidates, release: size - rosterLimit(next), limit: rosterLimit(next) };
     }
     case 'released': {
@@ -253,7 +253,7 @@ const nextSeasonOf = (s: LeagueState) => (s.offseason ? s.offseason.year + 1 : s
 
 /** Next season's payroll, counting the renewal estimate for players whose salary is not set yet. */
 export function projectedPayroll(s: LeagueState, teamId: TeamId, season: number) {
-  return [...s.rosters[teamId]!.active, ...s.rosters[teamId]!.futures].reduce((sum, id) => {
+  return orgIds(s, teamId).reduce((sum, id) => {
     const p = s.players[id]!;
     return sum + (salaryIn(p, season) || (isForeign(p) ? 0 : renewSalary(p, season)));
   }, 0);

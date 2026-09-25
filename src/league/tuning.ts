@@ -102,11 +102,12 @@ export const OFFSEASON = {
       [27, 4],
     ] as [number, number][],
     holdForGames: 48,
-    sangmu: { maxAge: 27, minGrade: 40, perGrade: 0.035, playedBonus: 0.12, min: 0.03, max: 0.6 },
+    sangmu: { maxAge: 27, minGrade: 40, perGrade: 0.045, playedBonus: 0.12, min: 0.05, max: 0.7 },
     socialBase: 0.1,
   },
   freeAgency: { minGrade: 50, stayChance: 0.62 },
-  developmentSignings: 4,
+  /** Development players (육성선수): draft-day signings per club, the AI's target and hard cap, and age limits. */
+  development: { signings: 5, aiTarget: 20, cap: 30, maxAge: 27, convertAge: 25 },
   /** Clubs leave a few roster spots open after the draft. */
   openSpots: 3,
   /** Draftees from these first rounds are kept through their first winter; later picks can be cut like anyone. */
@@ -122,4 +123,22 @@ export const SALARY = {
   freeAgentPerWar: 13000,
   freeAgentMax: 250000,
   veteranStar: 32000,
+} as const;
+
+/** Futures league and development by playing time (V0.4; game assumptions, docs/CALIBRATION.md). */
+export const FUTURES = {
+  /** Squad kept for futures games; the rest of the club is in the third squad. */
+  squad: { pitchers: 16, catchers: 3, hitters: 17 },
+  /** Prospects get playing time: the gap between future and current value counts this much, up to this age. */
+  youthAge: 24,
+  youthWeight: 0.4,
+  /** A short-handed futures side bats pitchers rather than forfeit (상무 after the June discharge). */
+  pitchersBat: true,
+  /** Injury chance per futures appearance, relative to the first team. */
+  injuryFactor: 0.5,
+  /**
+   * Yearly growth multiplier for players up to `maxAge`, from last season's playing time (first team
+   * and futures, futures counted at `futuresWeight`) and days trained in the third squad.
+   */
+  growth: { maxAge: 27, base: 0.83, play: 0.3, train: 0.15, max: 1.15, fullPA: 300, fullInnings: 60, futuresWeight: 0.8, trainDays: 180 },
 } as const;

@@ -33,6 +33,7 @@ function RosterTable({ title, rows, onPlayer }: { title: string; rows: Row[]; on
                     {r.name}
                   </button>
                   {r.foreign && <span class="tag">외국인</span>}
+                  {r.development && <span class="tag">육성</span>}
                   {r.injured && <span class="tag">부상</span>}
                 </td>
                 <td>{r.pos}</td>
@@ -87,6 +88,7 @@ export function TeamRoster({
       )}
       <RosterTable title="1군" rows={roster.active} onPlayer={onPlayer} />
       <RosterTable title="퓨처스" rows={roster.futures} onPlayer={onPlayer} />
+      <RosterTable title="잔류군" rows={roster.third} onPlayer={onPlayer} />
       <RosterTable title="군 복무" rows={roster.military} onPlayer={onPlayer} />
     </section>
   );
