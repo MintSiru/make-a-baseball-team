@@ -34,6 +34,7 @@ function emptyState(seed: string): LeagueState {
     arms: {},
     rotation: {},
     injuries: {},
+    away: {},
     countedThrough: null,
     postseason: [],
     history: [],

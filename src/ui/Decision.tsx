@@ -14,6 +14,11 @@ interface Props {
 }
 
 const TITLES: Record<DecisionT['kind'], string> = {
+  military: '병역',
+  ownFreeAgents: 'FA 재계약',
+  rookieBonus: '신인 계약금 협상',
+  development: '육성선수 계약',
+  camp: '스프링캠프',
   tryout: '창단 트라이아웃',
   draftPick: '신인 드래프트',
   freeAgents: 'FA 영입 (신생구단 특례)',

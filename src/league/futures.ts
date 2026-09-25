@@ -49,7 +49,7 @@ export function makeFuturesLeague(s: LeagueState): FuturesSeason | null {
 
 /** Who can play a futures game today for `teamId`. */
 export function futuresSquad(s: LeagueState, teamId: TeamId): PlayerId[] {
-  const healthy = (id: PlayerId) => s.players[id]?.status === 'active' && !s.injuries[id];
+  const healthy = (id: PlayerId) => s.players[id]?.status === 'active' && !s.injuries[id] && !s.away[id];
   if (teamId === SANGMU)
     return Object.values(s.players)
       .filter((p) => p.status === 'military' && p.service.route === 'sangmu' && !s.injuries[p.id])

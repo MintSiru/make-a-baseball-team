@@ -107,7 +107,7 @@ export const OFFSEASON = {
   },
   freeAgency: { minGrade: 50, stayChance: 0.62 },
   /** Development players (육성선수): draft-day signings per club, the AI's target and hard cap, and age limits. */
-  development: { signings: 5, aiTarget: 20, cap: 30, maxAge: 27, convertAge: 25 },
+  development: { signings: 5, aiTarget: 20, cap: 30, perYear: 10, maxAge: 27, convertAge: 25 },
   /** Clubs leave a few roster spots open after the draft. */
   openSpots: 3,
   /** Draftees from these first rounds are kept through their first winter; later picks can be cut like anyone. */

@@ -6,7 +6,8 @@ import type { GameOut, TeamBox } from './engine/types';
 import { parkFactor } from './clubs';
 import { assignSquads, futuresPreference, futuresSquad, makeFuturesLeague } from './futures';
 import { chooseActive, teamInput } from './manager';
-import { rosterLimit } from './offseason';
+import { INTERNATIONAL } from './international';
+import { rosterLimit, selectNationalTeam } from './offseason';
 import { currentValue, isForeign, isPitcher } from './players';
 import { makeSchedule } from './schedule';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, registeredIds, type FuturesSeason, type LeagueState, type SeasonLine } from './state';
@@ -25,6 +26,7 @@ export function startSeason(s: LeagueState) {
   s.arms = {};
   s.rotation = {};
   s.injuries = {};
+  s.away = {};
   s.postseason = [];
   s.countedThrough = null;
   for (const id of firstTeamIds(s)) setActive(s, id, chooseActive(s, id));
@@ -100,6 +102,7 @@ function countDays(s: LeagueState, date: string) {
   if (days <= 0) return;
   for (const teamId of firstTeamIds(s)) for (const id of s.rosters[teamId]!.active) lineOf(s, id, teamId).days += days;
   for (const [id, inj] of Object.entries(s.injuries)) if (inj.onList) lineOf(s, id, s.players[id]!.teamId!).days += days;
+  for (const id of Object.keys(s.away)) if (s.players[id]?.teamId) lineOf(s, id, s.players[id]!.teamId!).days += days;
   if (s.futures) for (const t of s.teams) for (const id of s.rosters[t.id]?.third ?? []) s.futures.training[id] = (s.futures.training[id] ?? 0) + days;
   s.countedThrough = date;
 }
@@ -152,9 +155,10 @@ function rollInjuries(s: LeagueState, box: TeamBox, date: string, r: () => numbe
 /** Injured players leave the first team; recovered ones come back when they are better than the weakest. */
 function maintainRosters(s: LeagueState, date: string, reshuffle: boolean) {
   for (const [id, inj] of Object.entries(s.injuries)) if (inj.until <= date) delete s.injuries[id];
+  for (const [id, until] of Object.entries(s.away)) if (until < date) delete s.away[id];
   for (const teamId of firstTeamIds(s)) {
     const r = s.rosters[teamId]!;
-    const hurt = r.active.some((id) => s.injuries[id]);
+    const hurt = r.active.some((id) => s.injuries[id] || s.away[id]);
     if (reshuffle) convertDevelopment(s, teamId, date);
     if (hurt || reshuffle) setActive(s, teamId, chooseActive(s, teamId));
   }
@@ -178,6 +182,7 @@ export function playDay(s: LeagueState): boolean {
   const date = s.schedule[s.next]!.date;
   countDays(s, date);
   returnFromService(s, date);
+  nationalTeamLeaves(s, date);
   const day = s.next;
   while (s.next < s.schedule.length && s.schedule[s.next]!.date === date) {
     const g = s.schedule[s.next]!;
@@ -195,6 +200,16 @@ export function playDay(s: LeagueState): boolean {
   // Every ten game days the manager looks at the whole roster again; otherwise only injuries force moves.
   maintainRosters(s, date, day > 0 && Math.floor(s.next / (firstTeamIds(s).length / 2)) % 10 === 0);
   return s.next < s.schedule.length;
+}
+
+/** An in-season national team leaves its clubs on its date; clubs call up replacements (maintainRosters). */
+function nationalTeamLeaves(s: LeagueState, date: string) {
+  const event = INTERNATIONAL.find((e) => e.year === s.year && e.dates);
+  if (!event?.dates || date < event.dates.from || s.international.some((e) => e.year === s.year)) return;
+  const entry = selectNationalTeam(s, s.year);
+  if (!entry) return;
+  for (const id of entry.squad) if (s.players[id]?.status === 'active') s.away[id] = event.dates.to;
+  maintainRosters(s, date, false);
 }
 
 /** Soldiers discharged during the season rejoin their club's futures roster. */

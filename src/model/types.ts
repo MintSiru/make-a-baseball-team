@@ -3,7 +3,7 @@
    Draft Room's rule carries over: hidden ability (`hidden`) and what scouts report (`scouting`) are
    kept apart. UI, AI clubs and news may read `scouting` and public facts only (see publicView). */
 import type { ParentCompanyType, StadiumOwnership, StadiumSize } from '../club/types';
-import type { AmateurRecord, HistoryEntry, Role, Tools } from '../draftroom';
+import type { AmateurRecord, HistoryEntry, Intent, Role, Tools } from '../draftroom';
 import type { FieldPos } from '../league/engine/types';
 
 export type PlayerId = string;
@@ -152,7 +152,7 @@ export interface Player {
   twoWay: boolean;
   origin: PlayerOrigin;
   education: { qualification: string; school: string; schoolTier: string; region: string; pathText: string; history: HistoryEntry[] };
-  amateur: { record: AmateurRecord; awards: string[]; draftRank: number };
+  amateur: { record: AmateurRecord; awards: string[]; draftRank: number; intent?: Intent };
   status: PlayerStatus;
   teamId: TeamId | null;
   contract: Contract | null;

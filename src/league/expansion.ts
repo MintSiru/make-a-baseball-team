@@ -14,6 +14,7 @@ import { foreignSlots } from './manager';
 import {
   advanceOffseason,
   aiDraftChoice,
+  developmentContract,
   foreignOn,
   freeAgentsFor,
   makePick,
@@ -27,7 +28,21 @@ import {
   type OffseasonStep,
 } from './offseason';
 import { ageIn, isForeign, isPitcher, keepValue, makeForeign } from './players';
-import { emptyRoster, firstTeamIds, orgIds, registeredIds, type Decision, type DraftSlot, type ExpansionSettings, type LeagueState, type UserClub } from './state';
+import { OFFSEASON } from './tuning';
+import {
+  autoAnnual,
+  campDecision,
+  checkAnnual,
+  developmentDecision,
+  isAnnual,
+  militaryDecision,
+  ownFreeAgentsDecision,
+  resolveAnnual,
+  rookieBonusDecision,
+  yearlyGrant,
+  type AnnualInput,
+} from './userclub';
+import { developmentIds, emptyRoster, firstTeamIds, orgIds, registeredIds, type Decision, type DraftSlot, type ExpansionSettings, type LeagueState, type UserClub } from './state';
 
 export const EXPANSION_ID = 'new';
 export const FOUNDING_DATE = '2026-07-01';
@@ -201,16 +216,20 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
   const entering = next === u.firstTeamYear;
   const space = rosterLimit(next) - registeredIds(s, u.teamId).length;
   switch (step) {
+    case 'military':
+      return militaryDecision(s);
+    case 'camp':
+      return campDecision(s);
     case 'freeAgency': {
-      if (!entering) return null;
+      if (!entering) return ownFreeAgentsDecision(s);
       const candidates = freeAgentsFor(s, next).filter((p) => p.teamId !== u.teamId);
       return candidates.length ? { kind: 'freeAgents', candidates: candidates.map((p) => p.id), max: EXPANSION_DEFAULTS.freeAgentSigns } : null;
     }
     case 'special':
       if (!entering) return null;
       return { kind: 'specialDraft', lists: protectedLists(s, next), protectedCount: EXPANSION_DEFAULTS.specialDraft.protected, fee: EXPANSION_DEFAULTS.specialDraft.feePerPlayer };
-    case 'limits': {
-      // The AI never cuts the user's club; over the limit, the user chooses whom to release.
+    case 'check': {
+      // The AI never cuts the user's club; over the limit (after foreign signings), the user chooses whom to release.
       const size = registeredIds(s, u.teamId).length;
       if (size <= rosterLimit(next)) return null;
       const candidates = registeredIds(s, u.teamId).filter((id) => !isForeign(s.players[id]!));
@@ -236,7 +255,7 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
   }
 }
 
-setOffseasonHooks({ draftSlots, decide });
+setOffseasonHooks({ begin: yearlyGrant, draftSlots, decide, rookies: rookieBonusDecision, development: developmentDecision });
 
 // ── Resolving decisions ──────────────────────────────────────────────────────────────────────────
 
@@ -247,8 +266,10 @@ export type DecisionInput =
   | { kind: 'specialDraft'; picks: Record<TeamId, PlayerId> }
   | { kind: 'released'; ids: PlayerId[] }
   | { kind: 'foreign'; ids: PlayerId[] }
-  | { kind: 'roster'; ids: PlayerId[] };
+  | { kind: 'roster'; ids: PlayerId[]; develop?: PlayerId[] }
+  | AnnualInput;
 
+const isAnnualInput = (input: DecisionInput): input is AnnualInput => isAnnual(input.kind);
 const nextSeasonOf = (s: LeagueState) => (s.offseason ? s.offseason.year + 1 : s.year + 1);
 
 /** Next season's payroll, counting the renewal estimate for players whose salary is not set yet. */
@@ -264,6 +285,7 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
   const d = s.pending;
   const u = user(s);
   if (!d || d.kind !== input.kind) return '지금 내릴 결정이 아닙니다.';
+  if (isAnnualInput(input)) return checkAnnual(s, d, input);
   const next = nextSeasonOf(s);
   const payrollAfter = (ids: PlayerId[]) => projectedPayroll(s, u.teamId, next) + ids.reduce((a, id) => a + (salaryIn(s.players[id]!, next) || renewSalary(s.players[id]!, next)), 0);
   switch (input.kind) {
@@ -285,7 +307,7 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       if (input.ids.some((id) => !dd.candidates.includes(id))) return '명단에 없는 선수입니다.';
       if (input.ids.length > dd.max) return `신생구단 특례로 최대 ${dd.max}명까지 영입할 수 있습니다.`;
       const cost = input.ids.reduce((a, id) => a + faAsk(s, s.players[id]!, next), 0);
-      if (projectedPayroll(s, u.teamId, next) + cost > u.payrollBudget) return '연봉 예산을 넘습니다.';
+      if (cost > 0 && projectedPayroll(s, u.teamId, next) + cost > u.payrollBudget) return '연봉 예산을 넘습니다.';
       return null;
     }
     case 'specialDraft': {
@@ -293,13 +315,16 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       for (const [teamId, id] of Object.entries(input.picks)) if (!dd.lists[teamId]?.includes(id)) return '보호선수이거나 명단에 없는 선수입니다.';
       const cost = Object.keys(input.picks).length * dd.fee;
       if (cost > u.fund) return `창단 자금이 부족합니다 (필요 ${cost / 10000}억).`;
-      if (payrollAfter(Object.values(input.picks)) > u.payrollBudget) return '연봉 예산을 넘습니다.';
+      if (cost > 0 && payrollAfter(Object.values(input.picks)) > u.payrollBudget) return '연봉 예산을 넘습니다.';
       return null;
     }
     case 'roster': {
       const dd = d as Extract<Decision, { kind: 'roster' }>;
       if (input.ids.some((id) => !dd.candidates.includes(id))) return '우리 선수단에 없는 선수입니다.';
-      if (input.ids.length < dd.release) return `소속선수 한도 ${dd.limit}명을 맞추려면 ${dd.release}명을 방출해야 합니다.`;
+      if (input.ids.length < dd.release) return `소속선수 한도 ${dd.limit}명을 맞추려면 ${dd.release}명을 정리해야 합니다.`;
+      const develop = input.develop ?? [];
+      if (develop.some((id) => !input.ids.includes(id))) return '육성 전환은 정리할 선수 중에서 고릅니다.';
+      if (developmentIds(s, u.teamId).length + develop.length > OFFSEASON.development.cap) return `육성선수는 ${OFFSEASON.development.cap}명까지입니다.`;
       return null;
     }
     case 'foreign': {
@@ -308,7 +333,7 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       const picked = input.ids.map((id) => s.players[id]!);
       if (picked.filter((p) => !p.origin.asiaQuota).length > dd.regular) return `외국인 선수는 ${dd.regular}명까지 더 계약할 수 있습니다.`;
       if (picked.filter((p) => p.origin.asiaQuota).length > dd.asia) return `아시아쿼터는 ${dd.asia}명까지입니다.`;
-      if (payrollAfter(input.ids) > u.payrollBudget) return '연봉 예산을 넘습니다.';
+      if (input.ids.length && payrollAfter(input.ids) > u.payrollBudget) return '연봉 예산을 넘습니다.';
       return null;
     }
   }
@@ -324,6 +349,11 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
   const u = user(s);
   const next = nextSeasonOf(s);
   const d = s.pending!;
+  if (isAnnualInput(input)) {
+    s.pending = resolveAnnual(s, d, input);
+    if (!s.pending && s.offseason) advanceOffseason(s);
+    return;
+  }
   switch (input.kind) {
     case 'tryout': {
       for (const id of input.ids) {
@@ -368,9 +398,13 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
       if (s.offseason) s.offseason.released = s.offseason.released.filter((id) => !input.ids.includes(id));
       break;
     case 'roster':
-      // Released players join the pool other clubs look at; the rest retire.
+      // Released players join the pool other clubs look at; the rest retire. Some stay as development players.
       for (const id of input.ids) {
         const p = s.players[id]!;
+        if (input.develop?.includes(id)) {
+          p.contract = developmentContract(u.teamId, next);
+          continue;
+        }
         removeFromRoster(s, p);
         p.teamId = null;
         s.offseason?.released.push(id);
@@ -393,6 +427,7 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
 export function autoDecision(s: LeagueState): DecisionInput | null {
   const d = s.pending;
   if (!d || !s.user) return null;
+  if (isAnnual(d.kind)) return autoAnnual(s, d);
   const next = nextSeasonOf(s);
   const best = (ids: PlayerId[], n: number) => [...ids].sort((a, b) => keepValue(s.players[b]!, next) - keepValue(s.players[a]!, next)).slice(0, Math.max(0, n));
   switch (d.kind) {
@@ -436,5 +471,7 @@ export function autoDecision(s: LeagueState): DecisionInput | null {
       for (const id of wanted) if (checkDecision(s, { kind: 'foreign', ids: [...ids, id] }) === null) ids.push(id);
       return { kind: 'foreign', ids };
     }
+    default:
+      return null;
   }
 }

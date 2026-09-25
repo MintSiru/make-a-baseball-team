@@ -71,7 +71,13 @@ export type Decision =
   | { kind: 'specialDraft'; lists: Record<TeamId, PlayerId[]>; protectedCount: number; fee: number }
   | { kind: 'released'; candidates: PlayerId[]; max: number }
   | { kind: 'foreign'; candidates: PlayerId[]; regular: number; asia: number }
-  | { kind: 'roster'; candidates: PlayerId[]; release: number; limit: number };
+  | { kind: 'roster'; candidates: PlayerId[]; release: number; limit: number }
+  // Every year (V0.4)
+  | { kind: 'military'; candidates: PlayerId[]; forced: PlayerId[] }
+  | { kind: 'ownFreeAgents'; candidates: PlayerId[] }
+  | { kind: 'rookieBonus'; picks: { id: PlayerId; slot: number; ask: number }[]; final: boolean }
+  | { kind: 'development'; candidates: PlayerId[]; max: number }
+  | { kind: 'camp'; players: PlayerId[] };
 
 export interface DraftSlot {
   teamId: TeamId;
@@ -85,6 +91,9 @@ export interface DraftState {
   /** Prospects still on the board (stored in `players` with status 'amateur' until the draft ends). */
   pool: PlayerId[];
   developmentDone: boolean;
+  /** The user's club has settled its rookies' bonuses and its development signings. */
+  bonusDone?: boolean;
+  userDevelopmentDone?: boolean;
 }
 
 export interface OffseasonState {
@@ -107,6 +116,10 @@ export interface UserClub {
   payrollBudget: number;
   firstTeamYear: number;
   ledger: { year: number; label: string; amount: number }[];
+  /** First-team registrations: the manager's (auto) or the general manager's own (manual). */
+  entry?: 'auto' | 'manual';
+  /** Club news: military results, re-signings, refusals, position changes. */
+  log?: { year: number; text: string }[];
 }
 
 export type Promotion = 'afterFutures' | 'immediate';
@@ -153,6 +166,8 @@ export interface LeagueState {
   arms: Record<PlayerId, ArmState>;
   rotation: Record<TeamId, number>;
   injuries: Record<PlayerId, Injury>;
+  /** Away with the national team until this date (registered days still count). */
+  away: Record<PlayerId, string>;
   /** Last date registered days were counted for. */
   countedThrough: string | null;
   postseason: SeriesResult[];

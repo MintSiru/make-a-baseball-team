@@ -23,7 +23,7 @@ const handOf = (h: string): Hand => (h === '좌' ? 'L' : h === '양' ? 'S' : 'R'
 const t = (p: Player, k: string) => (p.hidden.current as Record<string, number>)[k] ?? 30;
 const pub = (p: Player, k: string) => (p.scouting.tools as Record<string, number>)[k] ?? 30;
 
-export const available = (s: LeagueState, id: PlayerId) => !s.injuries[id];
+export const available = (s: LeagueState, id: PlayerId) => !s.injuries[id] && !s.away?.[id];
 
 type Prefer = (p: Player) => number;
 const none: Prefer = () => 0;
@@ -66,6 +66,7 @@ function performanceNudge(s: LeagueState, p: Player): number {
   return 0;
 }
 
+const ADAPTING_PENALTY = 5;
 const LINEUP_ORDER: Position[] = ['C', 'SS', 'CF', '2B', '3B', 'RF', 'LF', '1B'];
 
 /** Fill the field positions, then the designated hitter, then set the batting order. */
@@ -116,7 +117,8 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
     power: t(p, 'power'),
     eye: t(p, 'eye'),
     speed: t(p, 'speed'),
-    defense: t(p, 'defense') - outOfPosition(p.position, pos),
+    // A player who changed position this spring is still learning it (spring camp plan).
+    defense: t(p, 'defense') - outOfPosition(p.position, pos) - (p.plan?.adaptingIn === s.year ? ADAPTING_PENALTY : 0),
     pos,
   }));
 }
