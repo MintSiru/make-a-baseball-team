@@ -1586,3 +1586,91 @@ ul.plain li {
   margin: 4px 0;
   padding-left: 18px;
 }
+
+/* Event pop-ups (V0.7.4): a short card above everything, its top rule in the tone of the news. */
+.alert-overlay {
+  z-index: 20;
+  align-items: center;
+}
+.alert-dialog {
+  width: min(520px, 100%);
+  border-top: 5px solid var(--ink-2);
+}
+.alert-dialog.tone-good {
+  border-top-color: var(--good, #2e7d32);
+}
+.alert-dialog.tone-bad {
+  border-top-color: var(--bad, #b3261e);
+}
+.alert-kind {
+  margin: 0 0 4px;
+  color: var(--ink-2);
+  font-size: 13px;
+}
+.alert-icon {
+  font-size: 22px;
+  vertical-align: -3px;
+}
+.alert-count {
+  float: right;
+  font-variant-numeric: tabular-nums;
+}
+.alert-dialog h2 {
+  margin: 0 0 10px;
+  font-size: 21px;
+  line-height: 1.35;
+}
+.alert-lines {
+  margin: 0 0 16px;
+  padding-left: 18px;
+}
+.alert-lines li + li {
+  margin-top: 4px;
+}
+.alert-list > li {
+  border-left: 4px solid var(--rule);
+  padding: 6px 0 6px 12px;
+  margin-bottom: 10px;
+}
+.alert-list > li.tone-good {
+  border-left-color: var(--good, #2e7d32);
+}
+.alert-list > li.tone-bad {
+  border-left-color: var(--bad, #b3261e);
+}
+.alert-list > li.unseen h4 {
+  font-weight: 800;
+}
+.alert-list h4 {
+  margin: 2px 0 4px;
+}
+.alert-list ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+/* Tutorial card (V0.7.5): a guide note above the screen in the club colour, not a dialog. */
+.tutorial {
+  margin: 12px var(--gutter, 16px) 0;
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--card, var(--paper)));
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--rule));
+  border-left: 5px solid var(--accent);
+}
+.tutorial-kind {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.tutorial h2 {
+  margin: 2px 0 8px;
+  font-size: 18px;
+}
+.tutorial p {
+  margin: 0 0 8px;
+  max-width: 78ch;
+}
+.tutorial .row-actions {
+  margin-top: 4px;
+}

@@ -17,6 +17,7 @@ import { orgPlayers, type LeagueState } from './state';
 import { logTransaction } from './trade';
 import { milestone, unlock } from './milestones';
 import { POSTING } from './tuning';
+import { postingAlert } from './alerts';
 import { moveNews } from './movenews';
 
 const P = KBO_2026.posting;
@@ -85,11 +86,13 @@ export function post(s: LeagueState, id: PlayerId, next: number): PostingResult 
   if (!market) {
     logTransaction(s, `포스팅: ${short} ${iga(p.name)} 메이저리그 계약에 실패해 잔류`);
     moveNews(s, { type: 'posting', teamId, id, deal: null }, `${next - 1}-11-10`);
+    postingAlert(s, p, teamId, next - 1, null);
     return { id, teamId, deal: null };
   }
   const fee = postingFee(market.total);
   logTransaction(s, `포스팅: ${short} ${p.name} 메이저리그 ${market.years}년 ${usd(market.total)} 계약 (이적료 ${usd(fee)})`);
   moveNews(s, { type: 'posting', teamId, id, deal: { ...market, fee } }, `${next - 1}-11-10`);
+  postingAlert(s, p, teamId, next - 1, { years: market.years, total: usd(market.total), fee: usd(fee) });
   const u = s.user;
   if (u && teamId === u.teamId) {
     unlock(s, 'posting', next - 1, p.name);

@@ -25,13 +25,15 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
   const [parentType, setParentType] = useState<ParentCompanyType>('conglomerate');
   const [parentName, setParentName] = useState('');
   const [stadium, setStadium] = useState<Stadium>('existing');
-  const [promotion, setPromotion] = useState<Promotion>('afterFutures');
+  // Game mode (V0.7.5): the futures start comes with the tutorial; the immediate start without it.
+  const [mode, setMode] = useState<'tutorial' | 'immediate'>('tutorial');
+  const promotion: Promotion = mode === 'tutorial' ? 'afterFutures' : 'immediate';
   const [difficulty, setDifficulty] = useState<Difficulty>('normal');
   const [firing, setFiring] = useState(false);
   const [seed, setSeed] = useState(initialSeed);
   const city = cityById(cityId)!;
 
-  const settings: ExpansionSettings = { name, short, color, cityId, parentType, parentName, stadium, promotion, difficulty, scenario: null, ...(firing ? { firing } : {}) };
+  const settings: ExpansionSettings = { name, short, color, cityId, parentType, parentName, stadium, promotion, difficulty, scenario: null, ...(firing ? { firing } : {}), ...(mode === 'tutorial' ? { tutorial: true } : {}) };
   const b = budgetFor(settings);
   const stars = difficultyStars(settings);
   const problems = [
@@ -48,7 +50,7 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
       <h2>2026년, KBO 11번째 구단 창단</h2>
       <p>
         7월 1일 창단 승인을 받는 순간부터 시작합니다. 9월 신인 드래프트에서 우선지명을 하고,{' '}
-        {promotion === 'afterFutures' ? '2027년 퓨처스리그를 거쳐 2028년 1군에 들어갑니다.' : '곧바로 2027년 1군에 들어갑니다.'}
+        {promotion === 'afterFutures' ? '2027년 퓨처스리그를 거쳐 2028년 1군에 들어가고, 그때까지 튜토리얼이 할 일을 안내합니다.' : '곧바로 2027년 1군에 들어갑니다.'}
       </p>
 
       <section class="form-block" aria-labelledby="ng-identity">
@@ -121,16 +123,22 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
         </div>
       </section>
 
-      <section class="form-block" aria-labelledby="ng-rules">
-        <h3 id="ng-rules">진행</h3>
-        <div class="segmented" role="group" aria-label="1군 진입">
-          <button type="button" aria-pressed={promotion === 'afterFutures'} onClick={() => setPromotion('afterFutures')}>
-            퓨처스 1년 후 1군 (NC·KT 선례)
+      <section class="form-block" aria-labelledby="ng-mode">
+        <h3 id="ng-mode">게임 모드</h3>
+        <div class="choice-grid mode-grid">
+          <button type="button" class="choice" aria-pressed={mode === 'tutorial'} onClick={() => setMode('tutorial')}>
+            <strong>튜토리얼 · 퓨처스부터</strong>
+            <span class="muted">창단부터 2027년 퓨처스리그 1년까지 단계마다 안내를 받으며 구단을 꾸립니다. 2028년 1군 진입 (NC·KT 선례). 처음이라면 추천.</span>
           </button>
-          <button type="button" aria-pressed={promotion === 'immediate'} onClick={() => setPromotion('immediate')}>
-            바로 1군
+          <button type="button" class="choice" aria-pressed={mode === 'immediate'} onClick={() => setMode('immediate')}>
+            <strong>바로 1군</strong>
+            <span class="muted">안내 없이 곧바로 2027년 1군에 들어갑니다. 규칙을 아는 단장용.</span>
           </button>
         </div>
+      </section>
+
+      <section class="form-block" aria-labelledby="ng-rules">
+        <h3 id="ng-rules">진행</h3>
         <div class="segmented" role="group" aria-label="기본 난이도">
           {(['easy', 'normal', 'hard'] as Difficulty[]).map((d) => (
             <button key={d} type="button" aria-pressed={difficulty === d} onClick={() => setDifficulty(d)}>

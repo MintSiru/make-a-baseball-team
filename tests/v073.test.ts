@@ -1,7 +1,9 @@
-/* V0.7.3: the market of KBO-experienced foreign players, posted players coming home, draftees abroad. */
+/* V0.7.3: the market of KBO-experienced foreign players, posted players coming home, draftees abroad.
+   V0.7.4: event alerts over the same seasons. */
 import { beforeAll, describe, expect, it } from 'vitest';
 import { apply } from '../src/league/actions';
 import { autoDecision, EXPANSION_ID } from '../src/league/expansion';
+import { unseenAlerts } from '../src/league/alerts';
 import { foreignPoolAsk, foreignPoolPlayers, poolEntry } from '../src/league/foreignpool';
 import { createLeague } from '../src/league/history';
 import { openDraft, removeFromRoster } from '../src/league/offseason';
@@ -121,5 +123,20 @@ describe('draftees who went abroad', () => {
     expect(back!.education.pathText).toContain('해외 진출');
     expect(back!.hidden.current).not.toEqual(before); // his years away changed him
     for (const id of d.pool) delete s.players[id];
+  });
+});
+
+describe('event alerts (V0.7.4)', () => {
+  it('tell the user about the season, awards, the owner, the market and the national team', () => {
+    const kinds = new Set((s.alerts ?? []).map((a) => a.kind));
+    for (const k of ['season', 'award', 'owner', 'fa', 'national', 'achievement'] as const) expect(kinds.has(k), k).toBe(true);
+    // The LA Olympics end in the 2028 season: the result is told the day after.
+    const la = s.alerts!.find((a) => a.id === 'intl-result-2028')!;
+    expect(la.date).toBe('2028-07-30');
+    const awards = s.alerts!.find((a) => a.id === 'awards-2027')!;
+    expect(awards.lines.some((l) => l.startsWith('MVP'))).toBe(true);
+    // Read while a decision waits too (the pop-up can come up in the winter).
+    apply(s, { kind: 'alertsSeen' });
+    expect(unseenAlerts(s)).toHaveLength(0);
   });
 });

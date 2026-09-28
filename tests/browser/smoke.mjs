@@ -90,11 +90,26 @@ try {
   await page.getByLabel('약칭').fill('고래');
   await page.getByLabel('모기업 이름').fill('가상그룹');
   check((await page.locator('.stars').textContent())?.includes('★'), 'felt difficulty shown');
+  check((await page.getByRole('button', { name: /^튜토리얼 · 퓨처스부터/ }).getAttribute('aria-pressed')) === 'true', 'tutorial mode is the default');
   await page.screenshot({ path: join(shots, 'new-game.png'), fullPage: true });
   await page.getByRole('button', { name: '창단 신청' }).click();
   await page.locator('#decision-title').waitFor({ timeout: 120_000 });
   console.log(`founded in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
   check((await page.locator('#decision-title').textContent()) === '창단 트라이아웃', 'tryout comes first');
+  const founded = page.getByRole('alertdialog');
+  await founded.waitFor();
+  check((await founded.textContent())?.includes('창단'), 'the founding pops up as an achievement');
+  await page.screenshot({ path: join(shots, 'alert.png'), fullPage: false });
+  // From here on, event pop-ups (V0.7.4) are closed whenever one is in the way.
+  await page.addLocatorHandler(page.getByRole('alertdialog'), async (dialog) => {
+    const all = dialog.getByRole('button', { name: '모두 확인' });
+    await ((await all.count()) ? all : dialog.getByRole('button', { name: '확인', exact: true })).click();
+  });
+  // Tutorial mode (V0.7.5): the guide opens with the founding and moves on as lessons are read.
+  check((await page.locator('.tutorial h2').textContent())?.includes('환영합니다'), 'the tutorial welcomes the new general manager');
+  await page.screenshot({ path: join(shots, 'tutorial.png'), fullPage: false });
+  await page.locator('.tutorial').getByRole('button', { name: '알겠어요' }).click();
+  await page.waitForFunction(() => document.querySelector('.tutorial h2')?.textContent === '결정할 일');
   check((await page.locator('h1').textContent()) === '울산 고래단', 'masthead shows the club');
   const log = [];
   await decideAll(page, log);
@@ -208,7 +223,9 @@ try {
   // 4c. The club's story, the AI article settings (no key: nothing is sent), the record room.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
   await page.getByRole('button', { name: '소식', exact: true }).click();
-  for (const v of ['연표', '업적', '뉴스']) await page.getByRole('group', { name: '이야기' }).getByRole('button', { name: v, exact: true }).click();
+  for (const v of ['연표', '업적', '알림']) await page.getByRole('group', { name: '이야기' }).getByRole('button', { name: v, exact: true }).click();
+  check((await page.locator('.alert-list > li').count()) >= 3, 'alerts are kept in the club news');
+  await page.getByRole('group', { name: '이야기' }).getByRole('button', { name: '뉴스', exact: true }).click();
   for (const v of ['이적', '경기', '전체']) await page.getByRole('group', { name: '기사 종류' }).getByRole('button', { name: v, exact: true }).click();
   await page.screenshot({ path: join(shots, 'story.png'), fullPage: false });
   await page.getByRole('button', { name: /^AI 기사 설정/ }).click();

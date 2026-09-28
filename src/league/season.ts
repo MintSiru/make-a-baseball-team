@@ -16,6 +16,7 @@ import { staffEdge, staffOf, staffRating } from './staff';
 import { setGoals } from './parent';
 import { aiForeignChanges, aiTrades, processWaivers } from './trade';
 import { INTERNATIONAL } from './international';
+import { nationalResultAlert } from './alerts';
 import { rosterLimit, selectNationalTeam } from './offseason';
 import { currentValue, isForeign, isPitcher } from './players';
 import { makeSchedule } from './schedule';
@@ -256,6 +257,7 @@ export function playDay(s: LeagueState): boolean {
   countDays(s, date);
   returnFromService(s, date);
   nationalTeamLeaves(s, date);
+  nationalTeamBack(s, date);
   processWaivers(s, date);
   marketEvents(s, date);
   const day = s.next;
@@ -309,6 +311,14 @@ function nationalTeamLeaves(s: LeagueState, date: string) {
   if (!entry) return;
   for (const id of entry.squad) if (s.players[id]?.status === 'active') s.away[id] = event.dates.to;
   maintainRosters(s, date, false);
+}
+
+/** The day after an in-season event ends, the user hears how it went (alerts.ts). */
+function nationalTeamBack(s: LeagueState, date: string) {
+  const event = INTERNATIONAL.find((e) => e.year === s.year && e.dates);
+  if (!s.user || !event?.dates || date <= event.dates.to) return;
+  const entry = s.international.find((e) => e.year === s.year);
+  if (entry) nationalResultAlert(s, event, entry, event.dates.to);
 }
 
 /** Soldiers discharged during the season rejoin their club's futures roster. */

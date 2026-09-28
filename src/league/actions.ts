@@ -12,6 +12,7 @@ import { clubState } from './fans';
 import { FANS } from './tuning';
 import { gameRecap, interviewNews, type NewsItem } from './news';
 import { renameStadium } from './userclub';
+import { markAlertsSeen } from './alerts';
 import type { ExpansionSettings, LeagueState, Squad } from './state';
 import { foundClub, FOUNDING_DATE, resolveDecision, type DecisionInput } from './expansion';
 
@@ -39,6 +40,8 @@ export type Action =
   | { kind: 'interview'; id: PlayerId }
   | { kind: 'gameStory'; id: string }
   | { kind: 'storyText'; id: string; ai: NonNullable<NewsItem['ai']> | null }
+  | { kind: 'alertsSeen'; ids?: string[] }
+  | { kind: 'tutorial'; seen?: string; off?: boolean; on?: boolean }
   // The market (V0.5)
   | { kind: 'trade'; teamId: TeamId; give: PlayerId[]; get: PlayerId[] }
   | { kind: 'release'; id: PlayerId }
@@ -57,8 +60,8 @@ function finishOffseason(s: LeagueState) {
 }
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
-    marketing, ballpark) and the news. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'interview', 'gameStory', 'storyText'];
+    marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
+const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -133,6 +136,18 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     case 'gameStory':
       gameRecap(s, action.id);
       break;
+    case 'alertsSeen':
+      markAlertsSeen(s, action.ids);
+      break;
+    case 'tutorial': {
+      // The guide's progress lives with the club, so a saved game picks up where it was.
+      const u = s.user;
+      if (!u) break;
+      if (action.seen && !(u.tutorialSeen ??= []).includes(action.seen)) u.tutorialSeen.push(action.seen);
+      if (action.off) u.tutorialOff = true;
+      if (action.on) delete u.tutorialOff;
+      break;
+    }
     case 'storyText': {
       // A language model's version of an article, or null to go back to the template.
       const item = s.news?.find((n) => n.id === action.id);
