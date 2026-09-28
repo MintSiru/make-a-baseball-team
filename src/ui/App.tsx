@@ -13,6 +13,8 @@ import { openStore, type SaveStore } from '../save/store';
 import { BoxScore } from './BoxScore';
 import { StorySettings } from './StorySettings';
 import { AlertPopup, useAlertPopups } from './Alerts';
+import { TutorialCard } from './Tutorial';
+import { tutorialPaused } from './tutorial';
 import { unseenAlerts } from '../league/alerts';
 import { hasKey, loadSettings, saveSettings, type StorySettings as StorySettingsT } from '../story/settings';
 import { PROVIDERS, rewrite } from '../story/writer';
@@ -372,6 +374,11 @@ export function App() {
           </p>
         </div>
         <div class="row-actions">
+          {tutorialPaused(league) && (
+            <button type="button" onClick={() => act({ kind: 'tutorial', on: true }, '튜토리얼', false)}>
+              튜토리얼 다시 켜기
+            </button>
+          )}
           {unseen.length > 0 && !popups && (
             <button type="button" onClick={() => setAlertsOpen(true)}>
               새 알림 {unseen.length}
@@ -421,6 +428,7 @@ export function App() {
           {notice}
         </p>
       )}
+      <TutorialCard league={league} tab={tab} onAct={(a) => act(a, '튜토리얼', false)} />
       <>
           <nav class="tabs" aria-label="화면">
             {TABS.filter((t) => (!t.userOnly || league.user) && (!t.waiting || league.pending)).map((t) => (
