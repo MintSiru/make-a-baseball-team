@@ -29,6 +29,7 @@ import { STAFF_LABELS, STAFF_ROLES, staffCandidates, staffOf } from './staff';
 import { post, postingCandidates, postingNote } from './posting';
 import { toForeignPool } from './foreignpool';
 import { goAbroad, releaseReturnee, signReturnee } from './returnees';
+import { ownerAlert } from './alerts';
 import { splitContract } from './foreign';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type SalaryRow, type StaffRole, type UserClub } from './state';
@@ -149,7 +150,10 @@ export function yearlyGrant(s: LeagueState) {
   const next = year + 1;
   if (sponsorDue(s, year)) u.sponsorPending = true;
   const ev = evaluate(s, year);
-  if (ev) note(u, year, `모기업 평가: ${ev.lines.map((l) => `${l.label} ${l.ok ? '달성' : '미달'}`).join(' · ')} → 내년 예산 ${ev.change >= 0 ? '+' : ''}${Math.round(ev.change * 100)}%, 신뢰도 ${Math.round(ev.trust)}`);
+  if (ev) {
+    note(u, year, `모기업 평가: ${ev.lines.map((l) => `${l.label} ${l.ok ? '달성' : '미달'}`).join(' · ')} → 내년 예산 ${ev.change >= 0 ? '+' : ''}${Math.round(ev.change * 100)}%, 신뢰도 ${Math.round(ev.trust)}`);
+    ownerAlert(s, year, ev);
+  }
   if (year < 2027) return; // the founding fund covers the first winter
   const event = ownerEvents(s, year);
   const k = DIFFICULTY_MONEY[u.settings.difficulty];

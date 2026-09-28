@@ -17,6 +17,7 @@ import { avg, era, obp, slg } from './stats';
 import type { LeagueState } from './state';
 import type { StandingRow } from './standings';
 import { milestone, unlock } from './milestones';
+import { hallAlert } from './alerts';
 
 export interface SeasonAwards {
   mvp: PlayerId | null;
@@ -146,7 +147,9 @@ export function hallOfFameCheck(s: LeagueState, p: Player, year: number) {
   const bat = major.reduce((a, c) => ({ h: a.h + (c.bat?.h ?? 0), hr: a.hr + (c.bat?.hr ?? 0) }), { h: 0, hr: 0 });
   const pit = major.reduce((a, c) => ({ w: a.w + (c.pit?.w ?? 0), sv: a.sv + (c.pit?.sv ?? 0), outs: a.outs + (c.pit?.outs ?? 0) }), { w: 0, sv: 0, outs: 0 });
   const line = isPitcher(p) ? `${pit.w}승 ${pit.sv}세이브 ${ip(pit.outs)}이닝` : `${bat.h}안타 ${bat.hr}홈런`;
-  (s.hallOfFame ??= []).push({ id: p.id, name: p.name, year, war, seasons: major.length, teams: [...new Set(major.map((c) => c.teamId))], line });
+  const entry = { id: p.id, name: p.name, year, war, seasons: major.length, teams: [...new Set(major.map((c) => c.teamId))], line };
+  (s.hallOfFame ??= []).push(entry);
+  hallAlert(s, p, entry);
   if (s.user && major.filter((c) => c.teamId === s.user!.teamId).length >= 3) {
     unlock(s, 'hallOfFame', year, p.name);
     milestone(s, year, `${p.name} 명예의 전당 헌액`);

@@ -5,8 +5,9 @@ import { ACHIEVEMENTS } from '../league/milestones';
 import type { NewsItem } from '../league/news';
 import type { LeagueState } from '../league/state';
 import { clubhouse } from '../league/views';
+import { AlertList } from './Alerts';
 
-type View = 'news' | 'timeline' | 'achievements';
+type View = 'news' | 'timeline' | 'achievements' | 'alerts';
 type Filter = 'all' | 'game' | 'move' | 'review' | 'interview';
 const FILTERS: [Filter, string, NewsItem['kind'][]][] = [
   ['all', '전체', []],
@@ -122,6 +123,7 @@ export function Story({ league, onRewrite, onRevert, busyId }: { league: LeagueS
             ['news', '뉴스'],
             ['timeline', '연표'],
             ['achievements', '업적'],
+            ['alerts', '알림'],
           ] as [View, string][]
         ).map(([id, label]) => (
           <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>
@@ -148,6 +150,7 @@ export function Story({ league, onRewrite, onRevert, busyId }: { league: LeagueS
         ) : (
           <p class="muted">아직 기사가 없습니다. 끝내기·대승·대기록 같은 경기, 트레이드·방출·외국인 교체·FA 같은 이적, 월간·시즌 결산이 기사로 나옵니다.</p>
         ))}
+      {view === 'alerts' && <AlertList alerts={league.alerts ?? []} />}
       {view === 'timeline' && (
         <ol class="plain timeline">
           {[...(u.timeline ?? [])].reverse().map((t, i) => (

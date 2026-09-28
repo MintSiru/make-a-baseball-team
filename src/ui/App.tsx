@@ -12,6 +12,8 @@ import { makeSave, parseSave, SaveError, serializeSave } from '../save/format';
 import { openStore, type SaveStore } from '../save/store';
 import { BoxScore } from './BoxScore';
 import { StorySettings } from './StorySettings';
+import { AlertPopup, useAlertPopups } from './Alerts';
+import { unseenAlerts } from '../league/alerts';
 import { hasKey, loadSettings, saveSettings, type StorySettings as StorySettingsT } from '../story/settings';
 import { PROVIDERS, rewrite } from '../story/writer';
 import type { StoryError } from '../story/types';
@@ -89,6 +91,9 @@ export function App() {
   const [storyOpen, setStoryOpen] = useState(false);
   const [storyBusy, setStoryBusy] = useState<string | null>(null);
   const usage = useRef({ input: 0, output: 0, articles: 0 });
+  // Event pop-ups (V0.7.4): shown when they are on, or when the player opens them from the header.
+  const [popups] = useAlertPopups();
+  const [alertsOpen, setAlertsOpen] = useState(false);
   const autoTried = useRef(new Set<string>());
   const autoTries = useRef(new Map<string, number>());
   // Automatic mode waits until this time (ms); the tick wakes it up.
@@ -355,6 +360,7 @@ export function App() {
   );
 
   const userTeam = league.user ? league.teams.find((t) => t.id === league.user!.teamId) : null;
+  const unseen = league.user ? unseenAlerts(league) : [];
 
   return (
     <div style={userTeam ? ({ '--accent': userTeam.color } as Record<string, string>) : undefined}>
@@ -366,6 +372,11 @@ export function App() {
           </p>
         </div>
         <div class="row-actions">
+          {unseen.length > 0 && !popups && (
+            <button type="button" onClick={() => setAlertsOpen(true)}>
+              새 알림 {unseen.length}
+            </button>
+          )}
           <button type="button" onClick={() => setStoryOpen(true)}>
             AI 기사 설정{hasKey(storySettings) ? ' ✓' : ''}
           </button>
@@ -384,6 +395,16 @@ export function App() {
             setStorySettings(s);
             saveSettings(s);
             setStoryOpen(false);
+          }}
+        />
+      )}
+      {(popups || alertsOpen) && !busy && unseen.length > 0 && (
+        <AlertPopup
+          key={unseen[0]!.id}
+          alerts={unseen}
+          onDone={(ids) => {
+            setAlertsOpen(false);
+            void act({ kind: 'alertsSeen', ids }, '알림 확인', false);
           }}
         />
       )}

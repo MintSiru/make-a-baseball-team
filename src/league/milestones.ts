@@ -3,6 +3,7 @@
 import type { StoredBox } from './boxscore';
 import type { SeasonAwards } from './awards';
 import type { LeagueState } from './state';
+import { achievementAlert } from './alerts';
 
 export interface Achievement {
   id: string;
@@ -46,6 +47,8 @@ export function unlock(s: LeagueState, id: string, year: number, detail = '') {
   if (!u || !a || u.achievements?.some((x) => x.id === id)) return;
   (u.achievements ??= []).push({ id, year });
   milestone(s, year, `업적 달성: ${a.label}${detail ? ` (${detail})` : ''}`);
+  const date = s.phase === 'regular' ? (s.schedule[Math.max(0, s.next - 1)]?.date ?? `${year}-03-01`) : `${year}-11-01`;
+  achievementAlert(s, id, a.label, a.note, date, detail);
 }
 
 /** After each of the user's games: first win, walk-off, no-hitter. */

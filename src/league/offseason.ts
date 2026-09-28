@@ -33,6 +33,7 @@ import { runAiPosting } from './posting';
 import { FUTURES, OFFSEASON as O, STAFF } from './tuning';
 import { aiTakesKnown, expireForeignPool, foreignPoolAsk, leavePool, poolChoice, toForeignPool } from './foreignpool';
 import { draftReturnees } from './returnees';
+import { awardAlert, faAlert, nationalPickAlert, nationalResultAlert, seasonAlert } from './alerts';
 import { staffEdge, staffRating } from './staff';
 
 type Develop = (p: object, tools: Tools, yearIndex: number, age: number, daysLost: number, r: () => number, boost?: number, focus?: string, scale?: number) => Tools;
@@ -105,8 +106,10 @@ export function closeSeason(s: LeagueState) {
   });
   // The business year closes with the baseball one: accounts, fans' mood, AI staff changes.
   const summary = s.history[s.history.length - 1]!;
+  seasonAlert(s, s.year);
   summary.awards = computeAwards(s, s.year, summary.table, summary.champion);
   awardHonours(s, s.year, summary.awards);
+  awardAlert(s, s.year, summary.awards);
   settleFinances(s, s.year, summary.table);
   seasonMoments(s, s.year, summary.awards);
   seasonNews(s, s.year);
@@ -277,12 +280,16 @@ export function selectNationalTeam(s: LeagueState, year: number) {
   const medal = event.result ? event.result === 'medal' : r() < event.medalChance;
   const entry = { year, name: event.name, medal, squad: squad.map((p) => p.id) };
   s.international.push(entry);
+  nationalPickAlert(s, event, entry, event.dates?.from ?? `${year}-11-01`);
   return entry;
 }
 
 /** After the event: a medal exempts the squad from military service (예술체육요원, RULES.md §11). */
 export function applyInternational(s: LeagueState, year: number) {
   const entry = selectNationalTeam(s, year);
+  // An event held in the season has told its result already (season.ts); a winter one tells it now.
+  const event = INTERNATIONAL.find((e) => e.year === year);
+  if (entry && event) nationalResultAlert(s, event, entry, event.dates?.to ?? `${year}-11-01`);
   if (!entry?.medal) return;
   for (const p of entry.squad.map((id) => s.players[id]).filter((p): p is Player => !!p)) {
     if (p.service.military === 'pending' || p.service.military === 'serving') {
@@ -731,8 +738,10 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         break;
       case 'freeAgency': {
         if (!o.faDone) {
+          const before = s.user ? freeAgentsFor(s, next).map((p) => ({ id: p.id, from: p.teamId! })) : [];
           o.faQueue = runFreeAgency(s, next, rng(`${s.seed}|fa|${year}`), o.faOffers ?? {});
           o.faDone = true;
+          faAlert(s, year, before, o.faOffers ?? {});
         }
         // Protected lists and compensation picks the user owes, one at a time.
         const item = o.faQueue?.[0];

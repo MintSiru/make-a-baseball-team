@@ -351,6 +351,8 @@ export interface LeagueState {
   international: { year: number; name: string; medal: boolean; squad: PlayerId[] }[];
   /** News articles (V0.7, news.ts). */
   news?: import('./news').NewsItem[];
+  /** Pop-up alerts for the user's club (V0.7.4, alerts.ts). */
+  alerts?: import('./alerts').Alert[];
   /** Retired greats (V0.7). */
   hallOfFame?: import('./awards').HallEntry[];
   /** Fans, prices, staff and accounts of every club (V0.6). */
