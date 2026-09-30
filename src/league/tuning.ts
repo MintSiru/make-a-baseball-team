@@ -15,8 +15,9 @@ export const ENGINE = {
     hbp: 0.016,
     k: 0.181,
     hr: 0.0162,
-    /** Hits on balls in play (excludes home runs). */
-    babip: 0.316,
+    /** Hits on balls in play (excludes home runs). 0.316 → 0.319 in 0.7.6: managers field better
+        defenders since the lineup is chosen as a whole (manager.ts), so the league average stays put. */
+    babip: 0.319,
   },
   batter: {
     bb: { eye: 0.42, contact: 0.05 },

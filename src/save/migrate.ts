@@ -10,7 +10,7 @@ import { baseSupport, setGoals } from '../league/parent';
 import { staffOf } from '../league/staff';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7'];
 
 type Loose = Record<string, unknown>;
 
@@ -37,8 +37,9 @@ export function migrateState(raw: unknown, from: string): LeagueState {
   }
   // 0.5 added the second draft after 'special' (step 7): later offseason steps move one on.
   if (s.offseason && ['0.2', '0.3', '0.4', '0.4.1'].includes(from) && s.offseason.step >= 8) s.offseason.step += 1;
-  // 0.5.1 added posting before free agency (step 4).
-  if (s.offseason && MIGRATABLE.includes(from) && s.offseason.step >= 4) s.offseason.step += 1;
+  // 0.5.1 added posting before free agency (step 4): only saves from before it move on (0.5.1 and
+  // later already have the step).
+  if (s.offseason && ['0.2', '0.3', '0.4', '0.4.1', '0.5'].includes(from) && s.offseason.step >= 4) s.offseason.step += 1;
   // 0.5.1: left-handed throwers bat left as in the league (좌투우타 became rare).
   for (const p of Object.values(s.players)) p.bats = batsFor(p.id, p.throws, p.bats);
   // 0.6: the business side. Clubs get fans, prices and staff; this season's gates are rebuilt from the

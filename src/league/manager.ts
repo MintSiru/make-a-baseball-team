@@ -4,6 +4,7 @@ import type { Player, PlayerId, TeamId } from '../model/types';
 import type { Position } from '../model/position';
 import { fitPenalty, positionGames } from './positions';
 import type { BatterIn, BullpenRole, FieldPos, Hand, PitcherIn, RelieverIn, TeamIn } from './engine/types';
+import { hashUnit } from '../draftroom';
 import { ageIn, batValue, currentValue, isForeign, isPitcher, keepValue, starterValue } from './players';
 import { staffEdge, staffRating } from './staff';
 import { hasBenefits, registeredIds, type LeagueState } from './state';
@@ -70,9 +71,7 @@ function performanceNudge(s: LeagueState, p: Player): number {
 }
 
 const ADAPTING_PENALTY = 5;
-const LINEUP_ORDER: Position[] = ['C', 'SS', 'CF', '2B', '3B', 'RF', 'LF', '1B'];
 
-/** Fill the field positions, then the designated hitter, then set the batting order. */
 /**
  * Platoon: against a left-hander (vs 'L') right-handed hitters get a small edge, and the other way round.
  * A player the general manager marked as a platoon half starts only against his side.
@@ -88,53 +87,162 @@ export function platoonEdge(s: LeagueState, p: Player, vs: 'L' | 'R' | undefined
   return opposite ? edge : -edge;
 }
 
-export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none, pitchersBat = false, vs?: 'L' | 'R'): BatterIn[] {
+// ── The lineup (V0.7.6) ──────────────────────────────────────────────────────────────────────────
+
+/** How much a position's fielding counts in choosing who plays there: the middle of the field most. */
+const DEF_WEIGHT: Record<Position, number> = { C: 0.6, SS: 0.55, CF: 0.4, '2B': 0.4, '3B': 0.25, RF: 0.2, LF: 0.15, '1B': 0.1 };
+const SLOTS: FieldPos[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+/** A position he cannot really play (the gap is 12 grade points or more). */
+const MISFIT = 40;
+/** Rest days in the regular season: the starting catcher sits about one day in seven (KBO starting
+    catchers start 110–125 games), hitters from 34 one in twelve. */
+const REST = { catcher: 7, veteran: 12, veteranAge: 34 };
+
+/**
+ * Best assignment of players to lineup slots (Hungarian algorithm): `value[slot][player]`, each slot
+ * gets a different player. Returns the player index for each slot, or -1.
+ */
+function assign(value: number[][]): number[] {
+  const n = value.length;
+  const m = value[0]?.length ?? 0;
+  if (m < n) {
+    // Not enough players: pad with empty chairs nobody wants.
+    return assign(value.map((row) => [...row, ...Array.from({ length: n - m }, () => -1e6)])).map((j) => (j >= m ? -1 : j));
+  }
+  const INF = 1e18;
+  const u = new Array<number>(n + 1).fill(0),
+    v = new Array<number>(m + 1).fill(0),
+    p = new Array<number>(m + 1).fill(0),
+    way = new Array<number>(m + 1).fill(0);
+  for (let i = 1; i <= n; i++) {
+    p[0] = i;
+    let j0 = 0;
+    const minv = new Array<number>(m + 1).fill(INF);
+    const used = new Array<boolean>(m + 1).fill(false);
+    do {
+      used[j0] = true;
+      const i0 = p[j0]!;
+      let delta = INF,
+        j1 = 0;
+      for (let j = 1; j <= m; j++) {
+        if (used[j]) continue;
+        const cur = -value[i0 - 1]![j - 1]! - u[i0]! - v[j]!;
+        if (cur < minv[j]!) {
+          minv[j] = cur;
+          way[j] = j0;
+        }
+        if (minv[j]! < delta) {
+          delta = minv[j]!;
+          j1 = j;
+        }
+      }
+      for (let j = 0; j <= m; j++) {
+        if (used[j]) {
+          u[p[j]!]! += delta;
+          v[j]! -= delta;
+        } else minv[j]! -= delta;
+      }
+      j0 = j1;
+    } while (p[j0] !== 0);
+    do {
+      const j1 = way[j0]!;
+      p[j0] = p[j1]!;
+      j0 = j1;
+    } while (j0);
+  }
+  const out = new Array<number>(n).fill(-1);
+  for (let j = 1; j <= m; j++) if (p[j]) out[p[j]! - 1] = j - 1;
+  return out;
+}
+
+/** Whether he gets the day off: regulars rest now and then in the season (never two catchers at once). */
+function restsToday(s: LeagueState, p: Player, date: string): boolean {
+  const opening = s.schedule[0]?.date;
+  if (!opening || date < opening) return false;
+  const day = Math.round((Date.parse(date) - Date.parse(opening)) / 86400000);
+  const every = p.position === 'C' ? REST.catcher : ageIn(p, s.year) >= REST.veteranAge ? REST.veteran : 0;
+  if (!every) return false;
+  return (day + Math.floor(hashUnit(`${p.id}-rest`) * every)) % every === 0;
+}
+
+export interface LineupOptions {
+  /** A regular-season game on this date: regulars may get the day off. */
+  date?: string;
+  /** The manager's style: a small-ball manager sets a traditional order (table-setters, then power). */
+  style?: string;
+}
+
+/**
+ * The manager's lineup: the nine players and positions worth the most together (hitting, plus fielding
+ * weighted by position; the designated hitter only hits), then the batting order. The order follows
+ * run-value studies: the three best hitters bat 1st, 2nd and 4th (the one who gets on base most leads
+ * off, the most power bats 4th), the next two 3rd and 5th, the rest by quality. A small-ball manager
+ * keeps the traditional order instead: on-base and speed at the top, power in the middle.
+ */
+export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none, pitchersBat = false, vs?: 'L' | 'R', opts: LineupOptions = {}): BatterIn[] {
   let hitters = ids.map((id) => s.players[id]!).filter((p) => !isPitcher(p) && available(s, p.id));
+  if (opts.date) {
+    // Days off: a resting catcher needs another catcher on the bench.
+    const date = opts.date;
+    const resting = new Set<PlayerId>();
+    for (const p of hitters) {
+      if (!restsToday(s, p, date)) continue;
+      if (p.position === 'C' && hitters.filter((q) => q.position === 'C' && q !== p && !resting.has(q.id)).length === 0) continue;
+      resting.add(p.id);
+    }
+    if (hitters.length - resting.size >= 9) hitters = hitters.filter((p) => !resting.has(p.id));
+  }
   if (pitchersBat && hitters.length < 9) {
     const spare = ids.map((id) => s.players[id]!).filter((p) => isPitcher(p) && available(s, p.id)).sort((a, b) => a.scouting.current - b.scouting.current);
     hitters = [...hitters, ...spare.slice(0, 9 - hitters.length)];
   }
-  const used = new Set<PlayerId>();
-  const slots: { p: Player; pos: FieldPos }[] = [];
   const gameCache = new Map<PlayerId, Partial<Record<FieldPos, number>>>();
   const games = (p: Player) => gameCache.get(p.id) ?? (gameCache.set(p.id, positionGames(s, p)), gameCache.get(p.id)!);
   // A better manager reads his hitters beyond the scouting report (STAFF.managerInsight at 80).
   const insight = STAFF.managerInsight * Math.max(0, (staffEdge(staffRating(s, hitters[0]?.teamId, 'manager')) + 1) / 2);
-  const hitScore = (p: Player) =>
-    batValue(p.scouting.tools) * (1 - insight) + batValue(p.hidden.current) * insight + performanceNudge(s, p) + (isForeign(p) ? 4 : 0) + prefer(p) + platoonEdge(s, p, vs);
-  for (const pos of LINEUP_ORDER) {
-    let best: Player | null = null,
-      bestScore = -Infinity;
-    for (const p of hitters) {
-      if (used.has(p.id)) continue;
-      const cost = fitPenalty(p, pos, games(p));
-      const def = pub(p, 'defense') - cost;
-      const weight = pos === 'C' || pos === 'SS' ? 0.8 : pos === 'CF' || pos === '2B' ? 0.55 : 0.3;
-      const score = hitScore(p) + weight * (def - 45) - (cost >= 12 ? 40 : 0);
-      if (score > bestScore) {
-        bestScore = score;
-        best = p;
-      }
+  const scoreCache = new Map<PlayerId, number>();
+  const hitScore = (p: Player) => {
+    let v = scoreCache.get(p.id);
+    if (v === undefined) {
+      v = batValue(p.scouting.tools) * (1 - insight) + batValue(p.hidden.current) * insight + performanceNudge(s, p) + (isForeign(p) ? 4 : 0) + prefer(p) + platoonEdge(s, p, vs);
+      scoreCache.set(p.id, v);
     }
-    if (best) {
-      used.add(best.id);
-      slots.push({ p: best, pos });
-    }
-  }
-  const dh = hitters.filter((p) => !used.has(p.id)).sort((a, b) => hitScore(b) - hitScore(a))[0];
-  if (dh) slots.push({ p: dh, pos: 'DH' });
-  // Batting order: on-base and speed at the top, power in the middle.
-  const obpScore = (p: Player) => pub(p, 'contact') * 0.5 + pub(p, 'eye') * 0.4 + pub(p, 'speed') * 0.25;
-  const powerScore = (p: Player) => pub(p, 'power') * 0.6 + pub(p, 'contact') * 0.4;
-  const rest = [...slots];
-  const take = (score: (p: Player) => number) => {
-    rest.sort((a, b) => score(b.p) - score(a.p));
-    return rest.shift();
+    return v;
   };
-  const order = [take(obpScore), take(obpScore), take((p) => powerScore(p) + obpScore(p) * 0.5), take(powerScore), take(powerScore)];
-  rest.sort((a, b) => hitScore(b.p) - hitScore(a.p));
-  const final = [...order, ...rest].filter((x): x is { p: Player; pos: FieldPos } => !!x);
-  return final.map(({ p, pos }) => ({
+  const fieldValue = (p: Player, pos: FieldPos) => {
+    if (pos === 'DH') return hitScore(p);
+    const cost = fitPenalty(p, pos, games(p));
+    return hitScore(p) + DEF_WEIGHT[pos as Position] * (pub(p, 'defense') - cost - 45) - (cost >= 12 ? MISFIT : 0);
+  };
+  const pick = assign(SLOTS.map((pos) => hitters.map((p) => fieldValue(p, pos))));
+  const slots = SLOTS.map((pos, i) => ({ p: hitters[pick[i]!], pos })).filter((x): x is { p: Player; pos: FieldPos } => !!x.p);
+
+  // Batting order.
+  const onBase = (p: Player) => pub(p, 'contact') * 0.5 + pub(p, 'eye') * 0.4 + pub(p, 'speed') * 0.1;
+  const power = (p: Player) => pub(p, 'power') * 0.65 + pub(p, 'contact') * 0.35;
+  // Catchers seldom lead off: they are slow and worn by the time the game gets late.
+  const speedy = (p: Player) => onBase(p) + (pub(p, 'speed') - 50) * 0.3 - (p.position === 'C' ? 15 : 0);
+  const ranked = [...slots].sort((a, b) => hitScore(b.p) - hitScore(a.p));
+  const takeBest = (from: typeof ranked, score: (p: Player) => number) => {
+    const best = [...from].sort((a, b) => score(b.p) - score(a.p))[0]!;
+    from.splice(from.indexOf(best), 1);
+    return best;
+  };
+  let order: typeof ranked;
+  if (opts.style === 'smallBall' || ranked.length < 9) {
+    const rest = [...ranked];
+    const first = [takeBest(rest, speedy), takeBest(rest, onBase), takeBest(rest, (p) => power(p) + onBase(p) * 0.5), takeBest(rest, power), takeBest(rest, power)];
+    order = [...first, ...rest];
+  } else {
+    const top = ranked.slice(0, 3),
+      next = ranked.slice(3, 5),
+      rest = ranked.slice(5);
+    const lead = takeBest(top, speedy);
+    const cleanup = takeBest(top, power);
+    const fifth = takeBest(next, power);
+    order = [lead, top[0]!, next[0]!, cleanup, fifth, ...rest];
+  }
+  return order.map(({ p, pos }) => ({
     id: p.id,
     bats: handOf(p.bats),
     contact: t(p, 'contact'),
@@ -277,7 +385,10 @@ export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away:
   const build = (me: typeof h, them: typeof h): TeamIn | null => {
     if (!me.sp) return null;
     const vs = them.sp ? (them.sp.p.throws === '좌' ? 'L' : 'R') : undefined;
-    const lineup = lineupFor(s, me.ids, me.prefer, me.prefer !== none, vs);
+    // A futures squad comes with its own list (pitchers bat when short of hitters); first-team
+    // regular-season games give regulars their days off, futures games and October do not.
+    const futures = !!me.x.ids;
+    const lineup = lineupFor(s, me.ids, me.prefer, futures, vs, { date: !futures && s.phase === 'regular' ? date : undefined, style: me.style });
     if (lineup.length < 9) return null;
     const exclude = new Set(me.rotation.map((p) => p.id));
     return {
