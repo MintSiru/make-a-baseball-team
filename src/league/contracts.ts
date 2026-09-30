@@ -58,8 +58,9 @@ export function freeAgentContract(p: Player, teamId: TeamId, season: number): Co
  * are capped at 100만 달러 in total, the Asia quota at 20만 달러 (RULES.md §5). The salary line in 만 원 is the
  * guaranteed part; options are paid after a good season.
  */
-export function foreignContract(teamId: TeamId, season: number, parts: { bonus: number; salary: number; options: number }, asia: boolean): Contract {
-  const cap = asia ? 200_000 : 1_800_000;
+/** `cap`: the most this contract may total (US dollars); an Asia quota player's grows with his years at
+    the club (foreigncap.ts asiaCapFor), a new one's is $200K. */
+export function foreignContract(teamId: TeamId, season: number, parts: { bonus: number; salary: number; options: number }, asia: boolean, cap = asia ? 200_000 : 1_800_000): Contract {
   const total = parts.bonus + parts.salary + parts.options;
   const k = total > cap ? cap / total : 1;
   const usd = { bonus: Math.round(parts.bonus * k), salary: Math.round(parts.salary * k), options: Math.round(parts.options * k) };

@@ -4,6 +4,8 @@
    Founding-only decisions live in expansion.ts, which also routes every decision through
    checkDecision / resolveDecision / autoDecision. Money in 만 원. */
 import { medicalReview, socialOnly } from './military';
+import { asiaCapFor, foreignCap } from './foreigncap';
+import { foreignSlots } from './manager';
 import { draftContracts, rng, type Difficulty, type Role, type ToolKey } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
 import type { Position } from '../model/position';
@@ -562,7 +564,7 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
       for (const row of dd.rows) {
         const p = s.players[row.id]!;
         if (input.keep.includes(row.id)) {
-          p.contract = foreignContract(u.teamId, next, splitContract(row.ask, rng(`${s.seed}|foreign-renew|${year}|${row.id}`)), !!p.origin.asiaQuota);
+          p.contract = foreignContract(u.teamId, next, splitContract(row.ask, rng(`${s.seed}|foreign-renew|${year}|${row.id}`)), !!p.origin.asiaQuota, p.origin.asiaQuota ? asiaCapFor(p, u.teamId, next) : undefined);
           note(u, year, `외국인 ${p.name} 재계약 (${usd(row.ask)})`);
         } else {
           note(u, year, `외국인 ${p.name} ${row.leaving ? '해외 진출로 이별' : '재계약 안 함'}`);
@@ -702,8 +704,19 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
     case 'foreignRenew': {
       const keep = d.rows
         .filter((r) => !r.leaving && r.war >= (isPitcher(s.players[r.id]!) ? O.foreign.keepWarPitcher : O.foreign.keepWarHitter))
+        .sort((a, b) => b.war - a.war)
         .map((r) => r.id);
-      return { kind: 'foreignRenew', keep: keep.filter((_, i) => checkAnnual(s, d, { kind: 'foreignRenew', keep: keep.slice(0, i + 1) }) === null) };
+      // Within the budget and the foreign salary cap, keeping room for the new signings still to come (V0.7.8).
+      const ok: PlayerId[] = [];
+      const slots = foreignSlots(s, u.teamId, next).regular;
+      for (const id of keep) {
+        const trial = [...ok, id];
+        const regular = trial.map((x) => s.players[x]!).filter((p) => !p.origin.asiaQuota);
+        const total = regular.reduce((a, p) => a + d.rows.find((r) => r.id === p.id)!.ask, 0);
+        const reserve = Math.max(0, slots - regular.length) * O.foreign.newReserveUSD;
+        if (checkAnnual(s, d, { kind: 'foreignRenew', keep: trial }) === null && total + reserve <= foreignCap(s, u.teamId, next, regular)) ok.push(id);
+      }
+      return { kind: 'foreignRenew', keep: ok };
     }
     case 'faCompensation': {
       const best = d.list[0];

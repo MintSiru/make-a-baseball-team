@@ -11,7 +11,9 @@ import { projectedPayroll, STADIUM_PLANS } from '../league/expansion';
 import { boom, leaguePrice } from '../league/fans';
 import { projectedReport, supportLabel } from '../league/finance';
 import { MANAGER_STYLES, STAFF_EFFECTS, STAFF_LABELS, STAFF_ROLES } from '../league/staff';
-import type { ClubReport, LeagueState } from '../league/state';
+import { firstTeamIds, type ClubReport, type LeagueState } from '../league/state';
+import { booksOf } from '../league/foreigncap';
+import { usd } from '../league/foreign';
 import { FANS } from '../league/tuning';
 import { checkStadiumName, STADIUM_NAME_MAX } from '../league/userclub';
 import { salaryCapFor } from '../rules/kbo2026';
@@ -220,6 +222,16 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
               {capFloorFor(league.year) ? ` · 하한 ${money(capFloorFor(league.year)!)}` : ''}
             </p>
           </div>
+          {firstTeamIds(league).includes(u.teamId) && league.phase === 'regular' && (
+            <div class="card">
+              <p class="card-label">외국인 샐러리캡 (3명)</p>
+              <p class="card-value">{usd(booksOf(league, u.teamId).spent)}</p>
+              <p class="card-sub">
+                상한 {usd(booksOf(league, u.teamId).cap)} · 옵션은 시즌 뒤 더함
+                {(league.foreignCap?.[u.teamId] ?? []).at(-1)?.over ? ` · 작년 초과 ${(league.foreignCap![u.teamId]!).at(-1)!.streak}년째` : ''}
+              </p>
+            </div>
+          )}
         </div>
       )}
 

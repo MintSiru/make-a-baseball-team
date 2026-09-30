@@ -17,8 +17,9 @@ import { medicalReview, socialOnly } from './military';
 import { ageIn, currentValue, draftClass, futureValue, isForeign, isPitcher, keepValue, makeForeign } from './players';
 import { currentStandings } from './season';
 import { queuedDecision, runFreeAgency, settleParentGift } from './market';
-import { aiTrades, clearPool } from './trade';
+import { aiTrades, applyPickTrades, clearPool } from './trade';
 import { applyPickDrop, settleCap } from './cap';
+import { applyForeignPickDrop, asiaCapFor, capPlayers, foreignCap, settleForeignCap } from './foreigncap';
 import { isSecondDraftYear, openSecondDraft, runSecondDraft, secondProtectDecision } from './seconddraft';
 import { standings } from './standings';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, orgIds, orgPlayers, registeredIds, type Decision, type DraftSlot, type DraftState, type LeagueState, type SeasonSummary } from './state';
@@ -94,6 +95,7 @@ export function closeSeason(s: LeagueState) {
   }
   s.futures = null;
   settleCap(s, s.year);
+  settleForeignCap(s, s.year);
   clearPool(s);
   aiTrades(s, rng(`${s.seed}|ai-trades-winter|${s.year}`));
   s.history.push({
@@ -440,6 +442,7 @@ export function makePick(s: LeagueState, d: DraftState, p: Player) {
   const slot = d.slots[d.next]!;
   const overall = d.next + 1;
   p.origin.overallPick = overall;
+  if (slot.via) p.origin.pickVia = slot.via;
   d.pool = d.pool.filter((id) => id !== p.id);
   const clubs = new Set(d.slots.map((x) => x.teamId)).size;
   // AI clubs pay the slot value; the user's club negotiates each bonus after the draft (rookieBonus).
@@ -605,10 +608,31 @@ export function foreignLeaves(s: LeagueState, p: Player, next: number) {
 
 export function renewForeigners(s: LeagueState, teamId: TeamId, next: number, r: () => number) {
   const current = orgPlayers(s, teamId).filter(isForeign);
+  const wanted = new Set(
+    current
+      .filter((p) => {
+        const last = lastRecord(p, next - 1);
+        return last && ageIn(p, next) <= 35 && last.war >= (isPitcher(p) ? O.foreign.keepWarPitcher : O.foreign.keepWarHitter) && r() < O.foreign.keepChance;
+      })
+      .map((p) => p.id),
+  );
+  // The foreign salary cap (V0.7.8): the best seasons first; a keeper who would leave too little room for
+  // the signings still to come is let go.
+  const regular = current.filter((p) => !p.origin.asiaQuota && wanted.has(p.id)).sort((a, b) => (lastRecord(b, next - 1)?.war ?? 0) - (lastRecord(a, next - 1)?.war ?? 0));
+  const slots = foreignSlots(s, teamId, next).regular;
+  const kept: Player[] = [];
+  let total = 0;
+  for (const p of regular) {
+    const ask = foreignRenewalAsk(p, next);
+    const reserve = Math.max(0, slots - kept.length - 1) * O.foreign.newReserveUSD;
+    if (total + ask + reserve > foreignCap(s, teamId, next, [...kept, p])) wanted.delete(p.id);
+    else {
+      kept.push(p);
+      total += ask;
+    }
+  }
   for (const p of current) {
-    const last = lastRecord(p, next - 1);
-    const keep = last && ageIn(p, next) <= 35 && last.war >= (isPitcher(p) ? O.foreign.keepWarPitcher : O.foreign.keepWarHitter) && r() < O.foreign.keepChance;
-    if (keep) p.contract = foreignContract(teamId, next, splitContract(foreignRenewalAsk(p, next), r), !!p.origin.asiaQuota);
+    if (wanted.has(p.id)) p.contract = foreignContract(teamId, next, splitContract(foreignRenewalAsk(p, next), r), !!p.origin.asiaQuota, p.origin.asiaQuota ? asiaCapFor(p, teamId, next) : undefined);
     // Not kept: a star may go to MLB or Japan; the others join the market of KBO-experienced foreigners.
     else if (!(s.user && !foreignLeaves(s, p, next) && toForeignPool(s, p, next - 1))) leaveLeague(s, p, 'overseas');
   }
@@ -641,17 +665,25 @@ export function refreshForeigners(s: LeagueState, next: number, r: () => number)
     const regular = staying.filter((p) => !p.origin.asiaQuota);
     const pitchers = regular.filter(isPitcher).length;
     let k = 0;
+    // Under the foreign salary cap (V0.7.8): each new signing gets at most what is left, keeping a floor for the rest.
+    const price = (ask: number, asia: boolean) => {
+      if (asia) return ask;
+      const signed = capPlayers(s, t.id, next);
+      const left = slots.regular - signed.length - 1;
+      const room = foreignCap(s, t.id, next, signed) - signed.reduce((a, p) => a + usdTotal(p.contract), 0) - left * O.foreign.newFloorUSD;
+      return Math.max(O.foreign.newFloorUSD, Math.min(ask, room));
+    };
     const add = (kind: 'pitcher' | 'hitter', asia: boolean) => {
       const id = `f${next}-${t.id}-${k++}`;
       // Now and then a proven KBO foreigner another club let go (foreignpool.ts, own stream).
       const known = poolChoice(s, kind, asia);
       if (known && aiTakesKnown(`${s.seed}|foreign-pool|${next}|${id}`)) {
         leavePool(s, known.id);
-        sign(s, known, t.id, foreignContract(t.id, next, splitContract(foreignPoolAsk(s, known), rng(`${s.seed}|foreign-pool-terms|${next}|${id}`)), asia));
+        sign(s, known, t.id, foreignContract(t.id, next, splitContract(price(foreignPoolAsk(s, known), asia), rng(`${s.seed}|foreign-pool-terms|${next}|${id}`)), asia));
         return;
       }
       const p = makeForeign(s.seed, id, next, { kind, asiaQuota: asia });
-      sign(s, p, t.id, foreignContract(t.id, next, splitContract(p.origin.background!.ask, r), asia));
+      sign(s, p, t.id, foreignContract(t.id, next, splitContract(price(p.origin.background!.ask, asia), r), asia));
     };
     for (let i = pitchers; i < 2 && regular.length + k < slots.regular; i++) add('pitcher', false);
     while (regular.length + k < slots.regular) add('hitter', false);
@@ -762,7 +794,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         if (!o.draft) {
           const table = s.history[s.history.length - 1]?.table ?? [];
           const order = table.length ? [...table].reverse().map((row) => row.teamId) : firstTeamIds(s, year);
-          const slots = applyPickDrop(s, year, hooks.draftSlots?.(s, year, order) ?? standardSlots(order));
+          // Picks traded during the year (V0.7.8) go to the clubs that hold them.
+          const slots = applyPickTrades(s, year, applyForeignPickDrop(s, year, applyPickDrop(s, year, hooks.draftSlots?.(s, year, order) ?? standardSlots(order))));
           o.draft = openDraft(s, year, slots);
         }
         if (runDraft(s, o.draft) === 'wait') return 'waiting';

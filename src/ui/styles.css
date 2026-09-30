@@ -2040,3 +2040,33 @@ ul.plain li {
     height: 32px;
   }
 }
+/* Cash and draft picks in a trade (V0.7.8). */
+.trade-extras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  align-items: center;
+  margin: 10px 0;
+  font-size: 13.5px;
+}
+.trade-extras label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.pick-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+.pick-chips button {
+  min-height: 28px;
+  padding: 2px 8px;
+  font-size: 12.5px;
+}
+.pick-chips button[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}

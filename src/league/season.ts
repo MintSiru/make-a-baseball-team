@@ -24,6 +24,7 @@ import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, registeredId
 import { standings } from './standings';
 import { ENGINE } from './tuning';
 import { carryOverInjuries, offRoster, rollInjuries } from './injuries';
+import { openForeignBooks } from './foreigncap';
 
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
@@ -46,6 +47,8 @@ export function startSeason(s: LeagueState) {
   // Operations from last season can run past opening day (injuries.ts).
   carryOverInjuries(s, s.schedule[0]?.date);
   for (const id of firstTeamIds(s)) setActive(s, id, chooseActive(s, id));
+  // The foreign players' salary cap: the season's books open with their guaranteed money (V0.7.8).
+  openForeignBooks(s);
   s.futures = makeFuturesLeague(s);
   for (const t of s.teams) if (s.rosters[t.id]) assignSquads(s, t.id);
   ensureNumbers(s);

@@ -6,6 +6,7 @@
 import { generateDraftPool, rng } from '../draftroom';
 import { cityById } from '../club/cities';
 import { baseSupport, electMayor } from './parent';
+import { capPlayers, foreignCap, foreignCost } from './foreigncap';
 import { milestone, unlock } from './milestones';
 import type { ParentCompanyType } from '../club/types';
 import { fromDraftProspect } from '../model/player';
@@ -522,7 +523,14 @@ export function autoDecision(s: LeagueState): DecisionInput | null {
       const pitchers = Math.min(2, d.regular);
       const wanted = [...pick(false, true, pitchers), ...pick(false, false, d.regular - pitchers), ...pick(true, null, d.asia)];
       const ids: PlayerId[] = [];
-      for (const id of wanted) if (checkDecision(s, { kind: 'foreign', ids: [...ids, id] }) === null) ids.push(id);
+      // Within the budget and the foreign salary cap (V0.7.8).
+      const next = nextSeasonOf(s);
+      const underCap = (trial: PlayerId[]) => {
+        const staying = capPlayers(s, user(s).teamId, next);
+        const adding = trial.map((x) => s.players[x]!).filter((p) => !p.origin.asiaQuota);
+        return foreignCost([...staying, ...adding]) <= foreignCap(s, user(s).teamId, next, [...staying, ...adding]);
+      };
+      for (const id of wanted) if (checkDecision(s, { kind: 'foreign', ids: [...ids, id] }) === null && underCap([...ids, id])) ids.push(id);
       return { kind: 'foreign', ids };
     }
     default:

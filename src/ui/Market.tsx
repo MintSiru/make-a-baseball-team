@@ -7,12 +7,17 @@ import { kboLine, poolEntry } from '../league/foreignpool';
 import { deadMoney, projectedPayroll } from '../league/market';
 import { eulreul } from '../league/josa';
 import { ageIn, isForeign } from '../league/players';
-import { orgPlayers, registeredIds, type LeagueState } from '../league/state';
+import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from '../league/state';
+import { booksOf } from '../league/foreigncap';
 import {
   canRelease,
   canReplaceForeign,
   canSignFromPool,
+  cashValue,
   checkTrade,
+  pickValue,
+  tradablePicks,
+  tradeDraftYear,
   foreignMarket,
   foreignPriceNow,
   foreignWindow,
@@ -27,6 +32,7 @@ import { money } from './format';
 import { gradeClass } from './grades';
 import { positionKey, useSort } from './sort';
 import { Help } from './Help';
+import { TRADES } from '../league/tuning';
 
 type View = 'trade' | 'release' | 'foreign' | 'news';
 
@@ -142,6 +148,8 @@ function PickList({
 
 // ── Trades ───────────────────────────────────────────────────────────────────────────────────────
 
+const CASH_STEPS = [0, 10_000, 20_000, 30_000, 50_000, 70_000, 100_000, 150_000, 200_000];
+
 function Trade({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void }) {
   const u = league.user!;
   const clubs = league.teams.filter((t) => t.id !== u.teamId && league.rosters[t.id]);
@@ -149,7 +157,18 @@ function Trade({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (id
   const [give, setGive] = useState<Set<PlayerId>>(new Set());
   const [get, setGet] = useState<Set<PlayerId>>(new Set());
   const [sent, setSent] = useState<number | null>(null);
-  const tradable = (id: string) => registeredIds(league, id).map((x) => league.players[x]!).filter((p) => !isForeign(p) && p.proSince <= league.year);
+  // Cash (만 원) and draft picks (rounds of the coming draft) in the deal (V0.7.8).
+  const [cashOut, setCashOut] = useState(0);
+  const [cashIn, setCashIn] = useState(0);
+  const [picksOut, setPicksOut] = useState<Set<number>>(new Set());
+  const [picksIn, setPicksIn] = useState<Set<number>>(new Set());
+  const ownPicks = tradablePicks(league, u.teamId);
+  const theirPicks = tradablePicks(league, teamId);
+  const draft = tradeDraftYear(league) + 1;
+  const tradable = (id: string) =>
+    registeredIds(league, id)
+      .map((x) => league.players[x]!)
+      .filter((p) => !isForeign(p) && p.proSince <= league.year && !(p.origin.pickVia && p.proSince >= league.year));
   const ours = useMemo(() => tradable(u.teamId), [league, u.teamId]);
   const theirs = useMemo(() => tradable(teamId), [league, teamId]);
   const flip = (set: Set<PlayerId>, id: PlayerId) => {
@@ -159,15 +178,27 @@ function Trade({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (id
     return s;
   };
   const closed = tradeWindow(league);
-  const check = give.size || get.size ? checkTrade(league, teamId, [...give], [...get]) : null;
+  const extras = { cashOut, cashIn, picksOut: [...picksOut], picksIn: [...picksIn] };
+  const anything = give.size || get.size || cashOut || cashIn || picksOut.size || picksIn.size;
+  const check = anything ? checkTrade(league, teamId, [...give], [...get], extras) : null;
   const value = { title: '가치', value: (p: Player) => tradeValue(league, p).toFixed(1), sort: (p: Player) => tradeValue(league, p) };
   const sum = (ids: Set<PlayerId>) => [...ids].reduce((a, id) => a + tradeValue(league, league.players[id]!), 0);
+  const sideValue = (ids: Set<PlayerId>, cash: number, picks: Set<number>, club: TeamId) => sum(ids) + cashValue(cash) + [...picks].reduce((a, r) => a + pickValue(league, club, r), 0);
+  const side = (ids: Set<PlayerId>, cash: number, picks: Set<number>) =>
+    [ids.size ? `선수 ${ids.size}명` : '', cash ? `현금 ${money(cash)}` : '', picks.size ? `지명권 ${[...picks].sort((a, b) => a - b).map((r) => `${r}R`).join('·')}` : ''].filter(Boolean).join(' + ') || '없음';
+  const toggleRound = (set: Set<number>, r: number) => {
+    const next = new Set(set);
+    if (next.has(r)) next.delete(r);
+    else next.add(r);
+    return next;
+  };
   const lastLog = sent !== null ? (u.log ?? []).slice(sent) : [];
   return (
     <>
       <Help title="트레이드 규칙">
         정규시즌 중에는 7월 31일까지, 그 뒤로는 한국시리즈가 끝난 다음부터 트레이드할 수 있습니다. 상대 구단은 공개 평가(현재·미래 가치, 나이, 계약 기간, 연봉)로 판단하고, 받는 가치가 주는 가치보다
-        조금 더 커야 받아들입니다. 외국인과 올해 뽑은 신인은 트레이드할 수 없습니다.
+        조금 더 커야 받아들입니다. 외국인과 올해 뽑은 신인은 트레이드할 수 없습니다. 현금(한쪽만, {money(TRADES.cash.max)}까지, 1억 = 가치 약 1)과 다가오는 드래프트의 신인 지명권(선수와 함께만, 구단당 한 해 2장까지 —
+        KBO 규정)을 붙일 수 있습니다. 지명권 가치는 라운드와 예상 지명 순서(성적이 나쁜 구단일수록 앞)로 매기고, 넘겨받은 지명권으로 뽑은 선수는 입단 첫해에 트레이드할 수 없습니다.
       </Help>
       {closed && <p class="notice">{closed}</p>}
       <div class="team-chips" role="group" aria-label="상대 구단">
@@ -179,15 +210,64 @@ function Trade({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (id
             onClick={() => {
               setTeamId(t.id);
               setGet(new Set());
+              setPicksIn(new Set());
             }}
           >
             {t.short}
           </button>
         ))}
       </div>
+      <div class="trade-extras">
+        <label>
+          우리가 줄 현금
+          <select value={cashOut} onChange={(e) => setCashOut(Number((e.currentTarget as HTMLSelectElement).value))}>
+            {CASH_STEPS.map((v) => (
+              <option key={v} value={v}>
+                {v ? money(v) : '없음'}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          받을 현금
+          <select value={cashIn} onChange={(e) => setCashIn(Number((e.currentTarget as HTMLSelectElement).value))}>
+            {CASH_STEPS.map((v) => (
+              <option key={v} value={v}>
+                {v ? money(v) : '없음'}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div class="pick-chips" role="group" aria-label="우리 지명권">
+          <span class="muted small">우리 {draft} 신인 지명권</span>
+          {ownPicks.length ? (
+            ownPicks.map((r) => (
+              <button key={r} type="button" aria-pressed={picksOut.has(r)} onClick={() => setPicksOut((x) => toggleRound(x, r))} title={`가치 ${pickValue(league, u.teamId, r).toFixed(1)}`}>
+                {r}R
+              </button>
+            ))
+          ) : (
+            <span class="muted small">넘길 수 있는 지명권 없음</span>
+          )}
+        </div>
+        <div class="pick-chips" role="group" aria-label={`${shortName(league, teamId)} 지명권`}>
+          <span class="muted small">
+            {shortName(league, teamId)} {draft} 신인 지명권
+          </span>
+          {theirPicks.length ? (
+            theirPicks.map((r) => (
+              <button key={r} type="button" aria-pressed={picksIn.has(r)} onClick={() => setPicksIn((x) => toggleRound(x, r))} title={`가치 ${pickValue(league, teamId, r).toFixed(1)}`}>
+                {r}R
+              </button>
+            ))
+          ) : (
+            <span class="muted small">받을 수 있는 지명권 없음</span>
+          )}
+        </div>
+      </div>
       <div class="trade-bar">
         <span>
-          보내는 선수 {give.size}명 (가치 {sum(give).toFixed(1)}) ↔ 받는 선수 {get.size}명 (가치 {sum(get).toFixed(1)})
+          보냄: {side(give, cashOut, picksOut)} (가치 {sideValue(give, cashOut, picksOut, u.teamId).toFixed(1)}) ↔ 받음: {side(get, cashIn, picksIn)} (가치 {sideValue(get, cashIn, picksIn, teamId).toFixed(1)})
         </span>
         {check?.problem && <span class="notice inline">{check.problem}</span>}
         {check && !check.problem && <span class={check.accepted ? 'plus' : 'muted'}>{check.accepted ? '상대 구단이 받아들일 만한 제안입니다' : '상대 구단은 가치가 부족하다고 볼 것 같습니다'}</span>}
@@ -197,9 +277,13 @@ function Trade({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (id
           disabled={!check || !!check.problem}
           onClick={() => {
             setSent((u.log ?? []).length);
-            onAct({ kind: 'trade', teamId, give: [...give], get: [...get] });
+            onAct({ kind: 'trade', teamId, give: [...give], get: [...get], extras });
             setGive(new Set());
             setGet(new Set());
+            setCashOut(0);
+            setCashIn(0);
+            setPicksOut(new Set());
+            setPicksIn(new Set());
           }}
         >
           트레이드 제안
@@ -291,8 +375,20 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
   const closed = foreignWindow(league, u.teamId);
   const problem = out && inId ? canReplaceForeign(league, u.teamId, out, inId) : null;
   const used = league.foreignChanges?.[u.teamId] ?? 0;
+  // The foreign salary cap this season (V0.7.8): what is on the books and what the pick would add.
+  const inFirst = firstTeamIds(league).includes(u.teamId);
+  const books = inFirst && league.phase === 'regular' ? booksOf(league, u.teamId) : null;
+  const incoming = inId ? market.find((p) => p.id === inId) : undefined;
+  const adds = incoming && !incoming.origin.asiaQuota ? foreignPriceNow(league, incoming) : 0;
   return (
     <>
+      {books && (
+        <p class={books.spent + adds > books.cap ? 'notice warn' : 'muted'}>
+          {league.year}년 외국인 샐러리캡: 쓴 돈 {usd(books.spent)}
+          {adds ? ` + 이번 영입 ${usd(adds)}` : ''} / 상한 {usd(books.cap)} (옵션은 시즌 뒤 실지급액으로 더함, 아시아쿼터 별도)
+          {books.spent + adds > books.cap ? ' — 넘으면 시즌 뒤 초과분의 50% 제재금 (2년 연속이면 100% + 2라운드 지명권 9순위 하락)' : ''}
+        </p>
+      )}
       <Help title="외국인 교체 규칙">
         시즌 중 외국인 선수를 2번까지 바꿀 수 있습니다 (8월 15일까지). 내보낸 선수의 남은 보장액은 계속 나가고, 새 선수는 남은 시즌만큼 줄어든 금액으로 계약합니다. 올해 {used}번 썼습니다. 다른 구단이 방출하거나 재계약하지 않은 KBO 경력 외국인도 명단에
         있습니다 (방출 뒤 재취업은 신규 계약이라 100만 달러 상한).

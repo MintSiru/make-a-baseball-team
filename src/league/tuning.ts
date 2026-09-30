@@ -143,7 +143,9 @@ export const OFFSEASON = {
   /** Draftees from these first rounds are kept through their first winter; later picks can be cut like anyone. */
   protectedRounds: 5,
   release: { maxAge: 33, minValue: 45, signChance: 0.5 },
-  foreign: { keepWarPitcher: 2.5, keepWarHitter: 2.0, keepChance: 0.85 },
+  /** V0.7.8: under the foreign salary cap, an AI club keeps room for each new signing still to come
+      (`newReserveUSD`) and pays a new one at least `newFloorUSD`. */
+  foreign: { keepWarPitcher: 2.5, keepWarHitter: 2.0, keepChance: 0.85, newReserveUSD: 700_000, newFloorUSD: 400_000 },
 } as const;
 
 /** Salaries (만 원) until the market arrives in V0.5; see docs/CALIBRATION.md §2. */
@@ -210,8 +212,16 @@ export const TRADES = {
   value: { replacement: 44, power: 1.35, controlBase: 0.4, controlPerYear: 0.15, oldFrom: 33, oldFactor: 0.7, perEok: 0.6 },
   /** An AI club says yes when what it gets beats what it gives × premium + fixed. */
   accept: { premium: 1.1, fixed: 1 },
-  /** AI-to-AI trades: tries per season and the chance each goes ahead. */
-  ai: { perSeason: 6, chance: 0.5 },
+  /** AI-to-AI trades: tries per season and the chance each goes ahead; a gap up to `evenOut` of the value
+      can be made up with cash or a pick (V0.7.8). */
+  ai: { perSeason: 6, chance: 0.5, evenOut: 0.45 },
+  /** Cash in a trade (V0.7.8): value per 억 (1 = a club takes 1억 as one point of value), the most in one
+      trade (만 원, a game limit; real deals: 손아섭 3억 + a pick, 2025; 박동원 10억 + a pick, 2022). */
+  cash: { perEok: 1, max: 200_000, step: 10_000 },
+  /** Draft picks in a trade (V0.7.8): value by round for a mid-order pick, how much the club's place in the
+      order moves it (the worst club's pick × (1 + spread), the best's × (1 − spread)), and the KBO limit of
+      two picks of one draft given away per club, only in trades with players (2019 rule). */
+  picks: { value: [12, 6, 4, 2.6, 1.8, 1.3, 1, 0.8, 0.6, 0.5, 0.4], spread: 0.3, perClub: 2 },
   /** A club claims a waived player who is this much better than its weakest registered player. */
   waiverMargin: 3,
   /** AI clubs replace a foreign player with an ERA or OPS this bad by July (or out six weeks), with this chance. */

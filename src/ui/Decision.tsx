@@ -18,6 +18,7 @@ import type { Player, PlayerId, TeamId } from '../model/types';
 import { money } from './format';
 import { serviceNote } from '../league/military';
 import { goalText } from '../league/parent';
+import { capPlayers, foreignCap, foreignCost } from '../league/foreigncap';
 import { gradeClass } from './grades';
 import { positionKey, useSort, type SortColumn } from './sort';
 
@@ -122,6 +123,22 @@ function SelectAllCell({ ids, selected, toggle, max }: { ids: PlayerId[]; select
 }
 
 /** Buttons that set one choice for every row that allows it (일괄 지정, V0.7.6). */
+/** The foreign salary cap for next season with these contracts (V0.7.8): a warning when they go over. */
+function ForeignCapLine({ league, next, adding }: { league: LeagueState; next: number; adding: { p: Player; total: number }[] }) {
+  const u = league.user!;
+  const staying = capPlayers(league, u.teamId, next).filter((p) => !adding.some((a) => a.p.id === p.id));
+  const regular = adding.filter((a) => !a.p.origin.asiaQuota);
+  const cap = foreignCap(league, u.teamId, next, [...staying, ...regular.map((a) => a.p)]);
+  const total = foreignCost(staying) + regular.reduce((a, x) => a + x.total, 0);
+  const over = total - cap;
+  return (
+    <p class={over > 0 ? 'notice warn' : 'muted'}>
+      {next}년 외국인 샐러리캡: 외국인 3명 총액(옵션 포함) {usd(total)} / 상한 {usd(cap)} (400만 달러 + 재계약 선수의 연차당 10만 달러; 아시아쿼터는 별도)
+      {over > 0 ? ` — ${usd(over)} 초과. 시즌 뒤 초과분의 50%를 제재금으로 내고, 2년 연속이면 100%와 2라운드 지명권 9순위 하락입니다.` : ''}
+    </p>
+  );
+}
+
 function BulkBar({ label = '일괄 지정', options, onApply }: { label?: string; options: [string, string][]; onApply: (value: string) => void }) {
   return (
     <div class="bulk-bar" role="group" aria-label={label}>
@@ -546,6 +563,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
             MLB·트리플A·일본·독립리그 이력이 있고, 다른 구단이 방출하거나 재계약하지 않은 KBO 경력 외국인은 KBO 기록이 나옵니다 (방출 뒤 재취업도 신규 계약이라 같은 상한).
           </p>
           {budgetLine}
+          <ForeignCapLine league={league} next={next} adding={[...selected].map((id) => ({ p: league.players[id]!, total: usdTotal(league.players[id]!.contract) }))} />
           {groups.map(([title, test]) => (
             <div key={title}>
               <h4>{title}</h4>
@@ -866,6 +884,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
             외국인 선수를 뽑습니다.
           </p>
           {budgetLine}
+          <ForeignCapLine league={league} next={next} adding={d.rows.filter((r) => selected.has(r.id)).map((r) => ({ p: league.players[r.id]!, total: r.ask }))} />
           <PlayerTable
             league={league}
             players={d.rows.map((r) => league.players[r.id]!)}

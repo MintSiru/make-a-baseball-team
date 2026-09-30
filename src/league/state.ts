@@ -227,6 +227,25 @@ export interface ForeignPoolEntry {
 export interface DraftSlot {
   teamId: TeamId;
   label: string;
+  /** The club whose pick this was, when it came in a trade (V0.7.8). */
+  via?: TeamId;
+}
+
+/** Cash and draft picks in a trade (V0.7.8), from the user's side: cash in 만 원, picks as rounds of the
+    coming draft (`picksOut` ours, `picksIn` theirs). */
+export interface TradeExtras {
+  cashOut?: number;
+  cashIn?: number;
+  picksOut?: number[];
+  picksIn?: number[];
+}
+
+/** A traded draft pick: `from`'s pick in round `round` of the draft of `year` now belongs to `to`. */
+export interface PickTrade {
+  year: number;
+  round: number;
+  from: TeamId;
+  to: TeamId;
 }
 
 export interface DraftState {
@@ -381,6 +400,13 @@ export interface LeagueState {
   /** Competitive balance tax records by club, and clubs whose first-round pick drops, by draft year. */
   cap?: Record<TeamId, import('./cap').CapRecord[]>;
   pickDrop?: Record<number, TeamId[]>;
+  /** Draft picks that changed hands in trades (V0.7.8). */
+  pickTrades?: PickTrade[];
+  /** The foreign salary cap (V0.7.8, foreigncap.ts): this season's books, past verdicts, and clubs whose
+      second-round pick drops in a draft. */
+  foreignBooks?: Record<TeamId, { season: number; spent: number; cap: number }>;
+  foreignCap?: Record<TeamId, import('./foreigncap').ForeignCapRecord[]>;
+  foreignPickDrop?: Record<number, TeamId[]>;
   /** Last date registered days were counted for. */
   countedThrough: string | null;
   postseason: SeriesResult[];
