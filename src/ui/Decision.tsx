@@ -88,6 +88,47 @@ function usePlayerSort(players: Player[], year: number, extra?: Extra) {
   return useSort(players, columns);
 }
 
+/**
+ * The header checkbox of a pick list (V0.7.6): with nothing picked it picks everyone (or the first `max`
+ * in the current order); with anyone picked it clears the list.
+ */
+function SelectAllCell({ ids, selected, toggle, max }: { ids: PlayerId[]; selected?: Set<PlayerId>; toggle: (id: PlayerId) => void; max?: number }) {
+  const on = ids.filter((id) => selected?.has(id)).length;
+  const target = Math.min(max ?? ids.length, ids.length);
+  const flip = () => {
+    if (on > 0) for (const id of ids) selected?.has(id) && toggle(id);
+    else for (const id of ids.slice(0, target)) toggle(id);
+  };
+  return (
+    <th>
+      <input
+        type="checkbox"
+        aria-label={on > 0 ? '모두 해제' : max && max < ids.length ? `위에서 ${target}명 선택` : '모두 선택'}
+        title={on > 0 ? '모두 해제' : max && max < ids.length ? `지금 정렬 순서로 위에서 ${target}명 선택` : '모두 선택'}
+        checked={on > 0 && on >= target}
+        ref={(el) => {
+          if (el) el.indeterminate = on > 0 && on < target;
+        }}
+        onChange={flip}
+      />
+    </th>
+  );
+}
+
+/** Buttons that set one choice for every row that allows it (일괄 지정, V0.7.6). */
+function BulkBar({ label = '일괄 지정', options, onApply }: { label?: string; options: [string, string][]; onApply: (value: string) => void }) {
+  return (
+    <div class="bulk-bar" role="group" aria-label={label}>
+      <span class="muted small">{label}</span>
+      {options.map(([v, text]) => (
+        <button key={v} type="button" onClick={() => onApply(v)}>
+          {text}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function PlayerTable({
   league,
   players,
@@ -98,6 +139,7 @@ function PlayerTable({
   name,
   radio,
   control,
+  max,
 }: {
   league: LeagueState;
   players: Player[];
@@ -109,6 +151,8 @@ function PlayerTable({
   radio?: boolean;
   /** A control per row instead of the checkbox (select boxes). */
   control?: (p: Player) => ComponentChildren;
+  /** Most players the decision takes: "select all" picks this many from the top of the current order. */
+  max?: number;
 }) {
   const year = league.offseason ? league.offseason.year + 1 : league.year + 1;
   const { sorted, th } = usePlayerSort(players, year, extra);
@@ -117,7 +161,7 @@ function PlayerTable({
       <table class="record-table pick-table">
         <thead>
           <tr>
-            {!control && <th aria-label="선택" />}
+            {!control && (radio || !toggle ? <th aria-label="선택" /> : <SelectAllCell ids={sorted.map((p) => p.id)} selected={selected} toggle={toggle} max={max} />)}
             {th('name', '이름')}
             {th('pos', '포지션')}
             {th('age', '나이', true)}
@@ -393,7 +437,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
               : '다른 구단이 방출한 선수들입니다. 신생구단은 다른 구단보다 먼저 계약할 수 있습니다.'}{' '}
             최대 {d.max}명 · 선택 {selected.size}명
           </p>
-          <PlayerTable league={league} players={byValue(d.candidates)} selected={selected} toggle={toggle} onPlayer={onPlayer} />
+          <PlayerTable league={league} players={byValue(d.candidates)} selected={selected} toggle={toggle} onPlayer={onPlayer} max={d.max} />
         </>
       );
       break;
@@ -423,6 +467,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
             selected={selected}
             toggle={toggle}
             onPlayer={onPlayer}
+            max={d.max}
             extra={{ title: '요구 연봉 · 최근 WAR', value: (p) => `${money(faAsk(league, p, next))} · ${lastWar(p)?.toFixed(1) ?? '-'}`, sort: (p) => faAsk(league, p, next) }}
           />
         </>
@@ -527,6 +572,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
             selected={selected}
             toggle={toggle}
             onPlayer={onPlayer}
+            max={d.release}
             extra={{ title: '연봉', value: (p) => money(salaryIn(p, next)), sort: (p) => salaryIn(p, next) }}
           />
           {selected.size > 0 && (
@@ -562,6 +608,14 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
             군 미필 선수 {players.length}명입니다. 상무에 지원하면 합격할 때만 입대하고 (퓨처스리그에서 상무 소속으로 뜀), 현역은 바로 입대합니다. 둘 다 18개월 뒤 6월에 돌아옵니다.
             만 28세 이상은 올해 입대해야 합니다.
           </p>
+          <BulkBar
+            options={[
+              ['stay', '모두 미룸'],
+              ['sangmu', '모두 상무 지원'],
+              ['army', '모두 현역 입대'],
+            ]}
+            onApply={(v) => setChoices((prev) => ({ ...prev, ...Object.fromEntries(players.filter((p) => v !== 'stay' || !d.forced.includes(p.id)).map((p) => [p.id, v])) }))}
+          />
           <PlayerTable
             league={league}
             players={players}
@@ -592,6 +646,10 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
           <p class="muted">
             구단 자금 {money(u.fund)} · 제시 합계 {money(total)}
           </p>
+          <BulkBar
+            options={[['ask', '모두 요구액'], ...(d.final ? [] : ([['slot', '모두 슬롯 금액']] as [string, string][])), ['none', '모두 포기']]}
+            onApply={(v) => setChoices((prev) => ({ ...prev, ...Object.fromEntries(d.picks.filter((pk) => v !== 'slot' || pk.slot < pk.ask).map((pk) => [pk.id, v])) }))}
+          />
           <PlayerTable
             league={league}
             players={d.picks.map((pk) => league.players[pk.id]!)}
@@ -623,7 +681,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
           <p>
             지명받지 못한 선수 중에서 육성선수를 뽑습니다. 소속선수 68명 한도 밖이고, 5월 1일부터 정식선수로 등록할 수 있습니다. 최대 {d.max}명 · 선택 {selected.size}명
           </p>
-          <PlayerTable league={league} players={d.candidates.map((id) => league.players[id]!)} selected={selected} toggle={toggle} onPlayer={onPlayer} />
+          <PlayerTable league={league} players={d.candidates.map((id) => league.players[id]!)} selected={selected} toggle={toggle} onPlayer={onPlayer} max={d.max} />
         </>
       );
       break;
@@ -640,6 +698,14 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
           <p class="muted">
             {next}년 연봉 (FA 제외) {money(payrollWithout(league, u.teamId, next, players.filter((p) => p.teamId === u.teamId).map((p) => p.id)))} + 제시 합계 {money(cost)} / 예산 {money(u.payrollBudget)} · 등급 A: 보상선수(보호 20명 외)+연봉 200% 또는 300%, B: 보상선수(보호 25명 외)+100% 또는 200%, C: 150%
           </p>
+          {players.some((p) => p.teamId === u.teamId) && (
+            <BulkBar
+              label="우리 FA 일괄"
+              options={FA_BIDS.map(([k, label]) => [k, label] as [string, string])}
+              onApply={(v) => setChoices((prev) => ({ ...prev, ...Object.fromEntries(players.filter((p) => p.teamId === u.teamId).map((p) => [p.id, v])) }))}
+            />
+          )}
+          <BulkBar label="모든 FA" options={[['none', '모든 제시 지우기']]} onApply={() => setChoices({})} />
           <PlayerTable
             league={league}
             players={players.sort((a, b) => Number(b.teamId === u.teamId) - Number(a.teamId === u.teamId) || b.scouting.current - a.scouting.current)}
@@ -680,6 +746,10 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
           <p class="muted">
             협상 대상 {d.rows.length}명 · 제시 합계 {money(total)} + 나머지 {money(others)} = {money(total + others)} / 예산 {money(u.payrollBudget)}
           </p>
+          <BulkBar
+            options={SALARY_CHOICES.filter(([k]) => k !== 'extension').map(([k, label]) => [k, `모두 ${label}`] as [string, string])}
+            onApply={(v) => setChoices((prev) => ({ ...prev, ...Object.fromEntries(d.rows.map((r) => [r.id, v])) }))}
+          />
           <PlayerTable
             league={league}
             players={d.rows.map((r) => league.players[r.id]!)}
@@ -720,7 +790,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
             {league.offseason?.year} 2차 드래프트입니다. 보호할 선수 {d.protect}명을 고르세요 (지금 {selected.size}명). 보호하지 않은 선수는 다른 구단이 지명할 수 있고, 지명되면 라운드별 양도금(4억·3억·2억·1억)을
             받습니다. 입단 3년 차까지의 선수, 올겨울 FA 계약 선수, 외국인은 저절로 빠집니다. 군 복무 중인 선수도 대상입니다.
           </p>
-          <PlayerTable league={league} players={d.candidates.map((id) => league.players[id]!)} selected={selected} toggle={toggle} onPlayer={onPlayer} />
+          <PlayerTable league={league} players={d.candidates.map((id) => league.players[id]!)} selected={selected} toggle={toggle} onPlayer={onPlayer} max={d.protect} />
         </>
       );
       break;
@@ -920,7 +990,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
             {shortName(league, d.from)}에서 {d.grade}등급 FA {eulreul(fa.name)} 데려왔습니다. 보호할 선수 {d.protect}명을 고르세요 (지금 {selected.size}명). {shortName(league, d.from)} 쪽은 나머지 선수 중 1명과
             보상금을 받거나, 보상금만 받습니다. 외국인, 올겨울 영입한 FA, 올해 뽑은 신인은 저절로 보호됩니다.
           </p>
-          <PlayerTable league={league} players={d.candidates.map((id) => league.players[id]!)} selected={selected} toggle={toggle} onPlayer={onPlayer} />
+          <PlayerTable league={league} players={d.candidates.map((id) => league.players[id]!)} selected={selected} toggle={toggle} onPlayer={onPlayer} max={d.protect} />
         </>
       );
       break;
@@ -961,6 +1031,27 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
             {next} 시즌 스프링캠프입니다. 선수마다 훈련 방향을 정할 수 있습니다: 고른 능력은 더 빨리, 나머지는 조금 느리게 자랍니다. 투수는 선발·불펜 보직을, 야수는 포지션을 바꿀 수
             있고, 포지션을 바꾼 야수는 한 시즌 동안 수비가 서툽니다. 바꾸지 않은 선수는 지난해 계획을 이어갑니다.
           </p>
+          <BulkBar
+            label="훈련 방향 일괄"
+            options={[
+              ['balanced', '모두 고르게'],
+              ['weak', '약점 보완'],
+              ['strong', '강점 강화'],
+            ]}
+            onApply={(v) =>
+              setPlans((prev) => {
+                const out = { ...prev };
+                for (const p of players) {
+                  // The public grade of each trainable tool: the lowest for 약점 보완, the highest for 강점 강화.
+                  const tools = focusOptions(p).filter((k) => k !== 'balanced');
+                  const grade = (k: string) => (p.scouting.tools as Record<string, number>)[k] ?? 50;
+                  const focus = v === 'balanced' ? 'balanced' : [...tools].sort((a, b) => (v === 'weak' ? grade(a) - grade(b) : grade(b) - grade(a)))[0]!;
+                  out[p.id] = { ...out[p.id], focus };
+                }
+                return out;
+              })
+            }
+          />
           <PlayerTable
             league={league}
             players={players}
