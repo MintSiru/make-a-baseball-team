@@ -8,7 +8,7 @@ import type { BatterIn, BullpenRole, FieldPos, Hand, PitcherIn, RelieverIn, Team
 import { hashUnit } from '../draftroom';
 import { ageIn, batValue, currentValue, isForeign, isPitcher, keepValue, starterValue } from './players';
 import { staffEdge, staffRating } from './staff';
-import { hasBenefits, registeredIds, type LeagueState, type ManagerStyle } from './state';
+import { hasBenefits, registeredIds, type LeagueState, type LineupSlot, type ManagerStyle } from './state';
 import { EXPANSION_DEFAULTS, KBO_2026 } from '../rules/kbo2026';
 import { platoonFactor } from './pitches';
 import { ENGINE, STAFF } from './tuning';
@@ -173,6 +173,10 @@ export interface LineupOptions {
   date?: string;
   /** The manager's style: a small-ball manager sets a traditional order (table-setters, then power). */
   style?: string;
+  /** The general manager's fixed spots (V0.8): index = batting order; a player who cannot play today is left to the manager. */
+  card?: (LineupSlot | null)[];
+  /** Fixed players still get the manager's days off. */
+  cardRest?: boolean;
 }
 
 /**
@@ -184,16 +188,30 @@ export interface LineupOptions {
  */
 export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none, pitchersBat = false, vs?: 'L' | 'R', opts: LineupOptions = {}): BatterIn[] {
   let hitters = ids.map((id) => s.players[id]!).filter((p) => !isPitcher(p) && available(s, p.id));
+  // The general manager's fixed spots, for the players who can play (and play once, at one position each).
+  const fixed = new Map<number, LineupSlot>();
+  if (opts.card) {
+    const seen = new Set<string>();
+    opts.card.forEach((slot, i) => {
+      if (!slot || i > 8 || seen.has(slot.id) || seen.has(`@${slot.pos}`) || !hitters.some((p) => p.id === slot.id)) return;
+      seen.add(slot.id).add(`@${slot.pos}`);
+      fixed.set(i, slot);
+    });
+  }
+  const fixedIds = new Set([...fixed.values()].map((x) => x.id));
   if (opts.date) {
     // Days off: a resting catcher needs another catcher on the bench.
     const date = opts.date;
     const resting = new Set<PlayerId>();
     for (const p of hitters) {
-      if (!restsToday(s, p, date)) continue;
+      if (!restsToday(s, p, date) || (fixedIds.has(p.id) && opts.cardRest === false)) continue;
       if (p.position === 'C' && hitters.filter((q) => q.position === 'C' && q !== p && !resting.has(q.id)).length === 0) continue;
       resting.add(p.id);
     }
-    if (hitters.length - resting.size >= 9) hitters = hitters.filter((p) => !resting.has(p.id));
+    if (hitters.length - resting.size >= 9) {
+      hitters = hitters.filter((p) => !resting.has(p.id));
+      for (const [i, slot] of fixed) if (resting.has(slot.id)) fixed.delete(i);
+    }
   }
   if (pitchersBat && hitters.length < 9) {
     const spare = ids.map((id) => s.players[id]!).filter((p) => isPitcher(p) && available(s, p.id)).sort((a, b) => a.scouting.current - b.scouting.current);
@@ -217,8 +235,15 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
     const cost = fitPenalty(p, pos, games(p));
     return hitScore(p) + DEF_WEIGHT[pos as Position] * (pub(p, 'defense') - cost - 45) - (cost >= 12 ? MISFIT : 0);
   };
-  const pick = assign(SLOTS.map((pos) => hitters.map((p) => fieldValue(p, pos))));
-  const slots = SLOTS.map((pos, i) => ({ p: hitters[pick[i]!], pos })).filter((x): x is { p: Player; pos: FieldPos } => !!x.p);
+  // The manager fills the positions nobody was fixed at with the players nobody fixed.
+  const takenPos = new Set([...fixed.values()].map((x) => x.pos));
+  const openPos = SLOTS.filter((pos) => !takenPos.has(pos));
+  const free = hitters.filter((p) => ![...fixed.values()].some((x) => x.id === p.id));
+  const pick = assign(openPos.map((pos) => free.map((p) => fieldValue(p, pos))));
+  const slots = [
+    ...[...fixed.values()].map((x) => ({ p: s.players[x.id]!, pos: x.pos })),
+    ...openPos.map((pos, i) => ({ p: free[pick[i]!], pos })).filter((x): x is { p: Player; pos: FieldPos } => !!x.p),
+  ];
 
   // Batting order.
   const onBase = (p: Player) => pub(p, 'contact') * 0.5 + pub(p, 'eye') * 0.4 + pub(p, 'speed') * 0.1;
@@ -247,6 +272,14 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
     const fifth = takeBest(next, power);
     order = [lead, top[0]!, next[0]!, cleanup, fifth, ...rest];
   }
+  // Fixed spots stay where the general manager put them; the manager's order fills the others.
+  if (fixed.size && order.length >= 9) {
+    const rest = order.filter((x) => ![...fixed.values()].some((f) => f.id === x.p.id));
+    order = Array.from({ length: 9 }, (_, i) => {
+      const f = fixed.get(i);
+      return f ? order.find((x) => x.p.id === f.id)! : rest.shift()!;
+    });
+  }
   return order.map(({ p, pos }) => ({
     id: p.id,
     bats: handOf(p.bats),
@@ -270,11 +303,17 @@ function armIn(p: Player, pitchLimit: number): PitcherIn {
 const STARTER_ROLE_BONUS = 100;
 const rotationScore = (p: Player, prefer: Prefer) => starterValue(p.scouting.tools) + (isForeign(p) ? 30 : 0) + (p.role === 'SP' ? STARTER_ROLE_BONUS : 0) + prefer(p);
 
-/** The five-man rotation: starters (role SP) by public starter value; everyone else pitches from the bullpen. */
-export function rotationFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none): Player[] {
+/** The five-man rotation: starters (role SP) by public starter value; everyone else pitches from the bullpen.
+    `order` (the user's club, V0.8): the general manager's starters first, in his order, while on the squad. */
+export function rotationFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none, order: PlayerId[] = []): Player[] {
   const pitchers = ids.map((id) => s.players[id]!).filter((p) => isPitcher(p));
-  return pitchers.sort((a, b) => rotationScore(b, prefer) - rotationScore(a, prefer) || a.id.localeCompare(b.id)).slice(0, 5);
+  const mine = order.filter((id, i) => order.indexOf(id) === i && pitchers.some((p) => p.id === id)).slice(0, 5);
+  const rest = pitchers.filter((p) => !mine.includes(p.id)).sort((a, b) => rotationScore(b, prefer) - rotationScore(a, prefer) || a.id.localeCompare(b.id));
+  return [...mine.map((id) => s.players[id]!), ...rest].slice(0, 5);
 }
+
+/** The user's lineup card for a squad (the first team only; futures squads are the manager's). */
+export const cardFor = (s: LeagueState, x: { teamId: TeamId; ids?: PlayerId[] }) => (x.teamId === s.user?.teamId && !x.ids ? s.user.lineup : undefined);
 
 export function starterFor(s: LeagueState, key: string, date: string, rotation: Player[], hook = 0): { p: Player; limit: number } | null {
   if (!rotation.length) return null;
@@ -384,9 +423,10 @@ export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away:
   const plan = (x: SquadSpec) => {
     const ids = x.ids ?? s.rosters[x.teamId]!.active;
     const { style, prefer } = managerLean(s, x.teamId, x.prefer);
-    const rotation = rotationFor(s, ids, prefer);
+    const card = cardFor(s, x);
+    const rotation = rotationFor(s, ids, prefer, card?.rotation);
     const hook = style === 'quickHook' ? ENGINE.hook.quickHook : style === 'patient' ? ENGINE.hook.patient : 0;
-    return { x, ids, prefer, rotation, style, sp: starterFor(s, x.rotationKey ?? x.teamId, date, rotation, hook) };
+    return { x, ids, prefer, rotation, style, card, sp: starterFor(s, x.rotationKey ?? x.teamId, date, rotation, hook) };
   };
   const h = plan(home),
     a = plan(away);
@@ -396,7 +436,11 @@ export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away:
     // A futures squad comes with its own list (pitchers bat when short of hitters); first-team
     // regular-season games give regulars their days off, futures games and October do not.
     const futures = !!me.x.ids;
-    const lineup = lineupFor(s, me.ids, me.prefer, futures, vs, { date: !futures && s.phase === 'regular' ? date : undefined, style: me.style });
+    const lineup = lineupFor(s, me.ids, me.prefer, futures, vs, {
+      date: !futures && s.phase === 'regular' ? date : undefined,
+      style: me.style,
+      ...(me.card ? { card: me.card[vs ?? 'R'], cardRest: me.card.rest } : {}),
+    });
     if (lineup.length < 9) return null;
     const exclude = new Set(me.rotation.map((p) => p.id));
     return {

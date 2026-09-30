@@ -4,11 +4,14 @@
    national team. KBO rules: a player sent down cannot be registered again for ten days; a development
    player can be registered from May 1, inside the 68-player limit (RULES.md §6). */
 import type { PlayerId } from '../model/types';
+import type { FieldPos } from './engine/types';
+import { isPitcher } from './players';
+import { eunneun, iga } from './josa';
 import { KBO_2026 } from '../rules/kbo2026';
 import { firstTeamSize } from './manager';
 import { offRoster } from './injuries';
 import { rosterLimit } from './offseason';
-import { isDevelopment, moveTo, registeredIds, squadOf, type LeagueState, type Squad } from './state';
+import { isDevelopment, moveTo, registeredIds, squadOf, type LeagueState, type LineupCard, type Squad } from './state';
 
 export const REREGISTER_DAYS = 10;
 /** The fewest players the general manager may leave on the first team (game assumption). */
@@ -99,3 +102,55 @@ export function setRole(s: LeagueState, id: PlayerId, role: 'SP' | 'RP') {
   p.role = role;
   (s.user!.log ??= []).push({ year: s.year, text: `${p.name} ${role === 'SP' ? '선발' : '불펜'}으로 보직 변경` });
 }
+
+// ── The lineup card (V0.8) ───────────────────────────────────────────────────────────────────────
+
+const FIELD: FieldPos[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+
+/** Checks the general manager's lineup card: his own hitters (a two-way player too), each once and each position
+    once per list; his own pitchers in the rotation, five at most. */
+export function checkLineupCard(s: LeagueState, card: LineupCard): string | null {
+  const u = s.user;
+  if (!u) return '구단이 없습니다.';
+  const ours = (id: PlayerId) => s.players[id]?.teamId === u.teamId;
+  for (const [hand, list] of [
+    ['우완', card.R],
+    ['좌완', card.L],
+  ] as const) {
+    if (!Array.isArray(list) || list.length !== 9) return '타순은 1~9번 아홉 자리입니다.';
+    const ids = new Set<PlayerId>(),
+      spots = new Set<FieldPos>();
+    for (const slot of list) {
+      if (!slot) continue;
+      const p = s.players[slot.id];
+      if (!p || !ours(slot.id)) return `상대 ${hand} 라인업: 우리 선수가 아닙니다.`;
+      if (isPitcher(p) && !p.twoWay) return `상대 ${hand} 라인업: ${eunneun(p.name)} 투수입니다.`;
+      if (!FIELD.includes(slot.pos)) return `상대 ${hand} 라인업: 알 수 없는 수비 위치입니다.`;
+      if (ids.has(slot.id)) return `상대 ${hand} 라인업: ${iga(p.name)} 두 번 들어 있습니다.`;
+      if (spots.has(slot.pos)) return `상대 ${hand} 라인업: ${slot.pos} 자리에 두 명이 있습니다.`;
+      ids.add(slot.id);
+      spots.add(slot.pos);
+    }
+  }
+  if (card.rotation.length > 5) return '선발 로테이션은 5명까지입니다.';
+  if (new Set(card.rotation).size !== card.rotation.length) return '선발 로테이션에 같은 투수가 두 번 있습니다.';
+  for (const id of card.rotation) {
+    const p = s.players[id];
+    if (!p || !ours(id) || !isPitcher(p)) return '선발 로테이션에는 우리 투수만 넣을 수 있습니다.';
+  }
+  return null;
+}
+
+/** Sets (or, with null, clears) the general manager's lineup card. */
+export function setLineupCard(s: LeagueState, card: LineupCard | null) {
+  const u = s.user;
+  if (!u) return;
+  if (!card) {
+    delete u.lineup;
+    return;
+  }
+  const problem = checkLineupCard(s, card);
+  if (problem) throw new Error(problem);
+  u.lineup = { R: card.R.map((x) => (x ? { id: x.id, pos: x.pos } : null)), L: card.L.map((x) => (x ? { id: x.id, pos: x.pos } : null)), rotation: [...card.rotation], rest: card.rest !== false };
+}
+

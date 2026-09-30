@@ -4,7 +4,7 @@ import { playPostseason } from './postseason';
 import { playDay, startSeason } from './season';
 import type { PlayerId, TeamId } from '../model/types';
 import { makeTrade, releasePlayer, replaceForeign, signFromPool } from './trade';
-import { movePlayer, registerPlayer, setRole } from './entry';
+import { movePlayer, registerPlayer, setLineupCard, setRole } from './entry';
 import type { BullpenRole } from './engine/types';
 import { ensureNumbers } from './numbers';
 import { openProjects, startProject, type ProjectKind } from './ballpark';
@@ -13,7 +13,7 @@ import { FANS } from './tuning';
 import { gameRecap, interviewNews, type NewsItem } from './news';
 import { renameStadium } from './userclub';
 import { markAlertsSeen } from './alerts';
-import type { ExpansionSettings, LeagueState, Squad, TradeExtras } from './state';
+import type { ExpansionSettings, LeagueState, LineupCard, Squad, TradeExtras } from './state';
 import { foundClub, FOUNDING_DATE, resolveDecision, type DecisionInput } from './expansion';
 
 export type Action =
@@ -31,6 +31,8 @@ export type Action =
   | { kind: 'setRole'; id: PlayerId; role: 'SP' | 'RP' }
   | { kind: 'penRole'; id: PlayerId; role: BullpenRole | null }
   | { kind: 'platoon'; id: PlayerId; side: 'L' | 'R' | null }
+  /** The general manager's lineup card (V0.8); null gives it all back to the manager. */
+  | { kind: 'lineupCard'; card: LineupCard | null }
   | { kind: 'renameStadium'; name: string; which: 'current' | 'new' }
   // The business side (V0.6)
   | { kind: 'ticketPrice'; level: number }
@@ -61,7 +63,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial'];
+const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -115,6 +117,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     }
     case 'setRole':
       setRole(s, action.id, action.role);
+      break;
+    case 'lineupCard':
+      setLineupCard(s, action.card);
       break;
     case 'renameStadium':
       renameStadium(s, action.name, action.which);

@@ -152,8 +152,8 @@ export const OFFSEASON = {
 /** 0.7.7: raises per WAR 3300 → 4300 and free-agent value per WAR 13000 → 15500, since the stronger foreign
     players now take their real share of the league's WAR (2026 domestic average about 1억 3천만; real 1억 7,536만). */
 export const SALARY = {
-  raisePerWar: 4300,
-  perServiceYear: 450,
+  raisePerWar: 5000,
+  perServiceYear: 650,
   freeAgentPerWar: 15500,
   freeAgentMax: 250000,
   veteranStar: 32000,
@@ -191,6 +191,68 @@ export const MARKET = {
   /** An AI club takes a compensation player only if he is at least this good (keep value). */
   compensationPickValue: 50,
 } as const;
+
+/**
+ * The free-agent negotiation (V0.8; game assumptions from the 2024–2026 markets, RULES.md §4 and §9).
+ * Money in 만 원; "value" is what an offer is worth to the player (bonus a little above salary, incentives
+ * at half, a period option by who holds it).
+ */
+export const FA = {
+  /** Market days after the list is published: 0 is 11월 9일, the last (2월 1일, camp) settles everyone left. */
+  opens: '11-09',
+  rounds: [0, 3, 6, 9, 12, 16, 20, 25, 30, 37, 44, 52, 60, 68, 76, 84],
+  /** A season's worth (bonus spread, salary and incentives): base + perWar × recent WAR, less 5% a year after 32, at most max. */
+  price: { base: 10000, perWar: 50000, max: 300000, min: 5000, ageFrom: 32, perAge: 0.05 },
+  /** Signing bonus as a share of the guaranteed money, by the guaranteed total (40억+, 15억+, smaller). */
+  bonus: [
+    { from: 400000, share: [0.45, 0.6] },
+    { from: 150000, share: [0.3, 0.5] },
+    { from: 0, share: [0, 0.3] },
+  ] as { from: number; share: [number, number] }[],
+  /** Incentives on top of the guaranteed money, as a share of it. */
+  options: [0.03, 0.2] as [number, number],
+  /** How a player values each part of an offer (see above). */
+  value: { bonus: 1.1, options: 0.5, playerOption: 0.35, clubOption: 0.1 },
+  /** He asks the market price × greed; accepts from floorStart of that; with no acceptable offer the floor
+      falls this much a week (faster from 33) and closes this share of the gap to his best offer each round,
+      never under floorMin. */
+  greed: [1.02, 1.22] as [number, number],
+  floorStart: 0.92,
+  coolPerWeek: 0.03,
+  coolOld: 0.05,
+  meet: 0.15,
+  floorMin: 0.6,
+  /** Days he weighs an acceptable offer before he signs; an offer this far over his floor he takes at once. */
+  patience: [2, 9] as [number, number],
+  overwhelm: 1.12,
+  /** How much more his own club's offer is worth to him. */
+  loyalty: [0.02, 0.12] as [number, number],
+  /** Offers that miss a demand lose this share of their value; a contender gains or loses by last season's rank. */
+  demand: { yearShort: 0.07, bonusShort: 0.45, starter: 0.12, reinforce: 0.08, contender: { top: 0.06, low: -0.12 }, hometown: 0.08, optOut: 0.1 },
+  /** AI clubs: first offer and most they pay (× the market's guaranteed money and their need), the chance they
+      raise for a player weighing a better offer, what compensation takes off an outside club's price, and how
+      far over the salary cap an offer may take them (renewal estimates are rough). */
+  ai: {
+    open: [0.86, 0.97] as [number, number],
+    most: [1.02, 1.14] as [number, number],
+    raise: 0.6,
+    /** The chance a club improves its offer a step while he likes none. */
+    nudge: 0.35,
+    step: [0.03, 0.07] as [number, number],
+    compensation: { A: 0.88, B: 0.94, C: 1 },
+    clubOption: 0.5,
+    capSlack: 50000,
+    /** His own club talks to a free agent worth keeping (keep value) almost always. */
+    keepOwn: { value: 45, chance: 0.95 },
+  },
+  /** A broken promise costs this much of every later free agent's trust in the club, for this many winters. */
+  promise: { trust: 0.04, winters: 4, starterGames: 90, starterStarts: 18, reliefGames: 40, reinforceValue: 55 },
+  /** Incentives earned in full (and in half) by games, innings or relief appearances. */
+  incentive: { games: [100, 70], innings: [130, 90], relief: [50, 35] } as Record<'games' | 'innings' | 'relief', [number, number]>,
+} as const;
+
+/** The salary cut for players sent down (KBO 규약, RULES.md §2): from 3억, half of 1/300 a day. */
+export const DEMOTION = { from: 30000, share: 0.5 } as const;
 
 /** Winter salary talks for the user's club (V0.5; game assumptions). */
 export const TALKS = {

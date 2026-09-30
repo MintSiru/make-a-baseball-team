@@ -1,7 +1,12 @@
 /* The club at a glance (V0.7): who plays where on the field today, the batting order against a
-   right- or left-handed starter, the rotation (next starter marked) and the bullpen by role. */
-import { useState } from 'preact/hooks';
-import type { LeagueState } from '../league/state';
+   right- or left-handed starter, the rotation (next starter marked) and the bullpen by role. For the
+   user's club (V0.8) the general manager's lineup card: spots and positions he fixes, the rotation order. */
+import { useEffect, useState } from 'preact/hooks';
+import type { Action } from '../league/actions';
+import type { FieldPos } from '../league/engine/types';
+import { checkLineupCard } from '../league/entry';
+import { isPitcher } from '../league/players';
+import type { LeagueState, LineupCard, LineupSlot } from '../league/state';
 import { MANAGER_STYLES } from '../league/staff';
 import { lineupView, rates } from '../league/views';
 import { gradeTier } from './display';
@@ -35,7 +40,7 @@ const ArmLine = ({ p }: { p: { grade: number; tools: { stuff: number; command: n
 
 const f3 = (x: number | null) => (x == null ? '-' : rates.fmt3(x));
 
-export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; teamId: string; onPlayer: (id: string) => void }) {
+export function Lineup({ league, teamId, onPlayer, onAct }: { league: LeagueState; teamId: string; onPlayer: (id: string) => void; onAct?: (a: Action) => void }) {
   const [vs, setVs] = useState<'R' | 'L'>('R');
   const v = lineupView(league, teamId, vs);
   if (!v || v.lineup.length < 9) return <p class="muted">1군 선수가 모자라 라인업을 짤 수 없습니다.</p>;
@@ -66,8 +71,9 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
           다음 경기({v.resting[0]!.date.slice(5).replace('-', '/')}) 휴식 예정: {v.resting.map((r) => `${r.name}(${r.pos})`).join(', ')} — 감독이 체력 관리로 쉬게 합니다.
         </p>
       )}
+      {onAct && teamId === league.user?.teamId && <CardEditor league={league} vs={vs} lineup={v.lineup} starters={v.starters} onAct={onAct} />}
       <Help title="라인업을 짜는 방식">
-        감독이 평소 짜는 라인업입니다 (직접 관리에서 정한 플래툰·불펜 보직 반영). 타격과 포지션별 수비를 함께 따져 9명과 수비 위치를 정하고, 가장 좋은 타자 셋을 1·2·4번, 다음 둘을 3·5번에 둡니다(작전형 감독은 출루·발 빠른 타자를 앞에, 거포를 중심에). 시즌 중에는 주전 포수가 5~6경기에 한 번, 34세 이상은 11~12경기에 한 번꼴로 쉽니다. 부상·대표팀 선수는 빠집니다. 능력치는 스카우팅 등급(20~80)이며, 투수는 현재 (구위/제구/변화구/체력) 순입니다.
+        감독이 평소 짜는 라인업입니다 (직접 관리에서 정한 플래툰·불펜 보직과 단장 라인업 카드의 고정 자리 반영). 타격과 포지션별 수비를 함께 따져 9명과 수비 위치를 정하고, 가장 좋은 타자 셋을 1·2·4번, 다음 둘을 3·5번에 둡니다(작전형 감독은 출루·발 빠른 타자를 앞에, 거포를 중심에). 시즌 중에는 주전 포수가 5~6경기에 한 번, 34세 이상은 11~12경기에 한 번꼴로 쉽니다. 부상·대표팀 선수는 빠집니다. 능력치는 스카우팅 등급(20~80)이며, 투수는 현재 (구위/제구/변화구/체력) 순입니다.
       </Help>
       <div class="lineup-grid">
         <svg viewBox="0 0 400 320" class="diamond" role="img" aria-label="수비 위치">
@@ -117,6 +123,7 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
                     <button type="button" class="link" onClick={() => onPlayer(b.id)}>
                       {b.name}
                     </button>
+                    {b.fixed && <span class="tag" title="단장이 고정한 자리">고정</span>}
                   </td>
                   <td>{b.pos}</td>
                   <td>{b.bats}</td>
@@ -149,6 +156,7 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
                   {p.throws}투 · <ArmLine p={p} /> · {p.w}승 {p.l}패 · ERA {p.era == null ? '-' : p.era.toFixed(2)}
                 </span>
                 {p.next && <span class="tag">다음 등판</span>}
+                {p.mine && <span class="tag" title="단장이 정한 로테이션">지정</span>}
               </li>
             ))}
           </ol>
@@ -175,3 +183,161 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
     </div>
   );
 }
+
+// ── The general manager's lineup card (V0.8) ────────────────────────────────────────────────────────
+
+const FIELD: FieldPos[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+const FIELD_NAMES: Record<FieldPos, string> = { C: '포수', '1B': '1루', '2B': '2루', '3B': '3루', SS: '유격', LF: '좌익', CF: '중견', RF: '우익', DH: '지명' };
+const emptyCard = (): LineupCard => ({ R: Array(9).fill(null), L: Array(9).fill(null), rotation: [], rest: true });
+const fixedCount = (list: (LineupSlot | null)[]) => list.filter(Boolean).length;
+
+type Row = { id: string; name: string; pos: string; order: number };
+type Arm = { id: string; name: string };
+
+function CardEditor({ league, vs, lineup, starters, onAct }: { league: LeagueState; vs: 'R' | 'L'; lineup: Row[]; starters: Arm[]; onAct: (a: Action) => void }) {
+  const u = league.user!;
+  const saved = u.lineup;
+  const [open, setOpen] = useState(false);
+  // Players who have left the club since drop out of the draft (they would not play anyway).
+  const ours = (id: string) => league.players[id]?.teamId === u.teamId;
+  const clean = (c: LineupCard | undefined): LineupCard =>
+    c ? { R: c.R.map((x) => (x && ours(x.id) ? { ...x } : null)), L: c.L.map((x) => (x && ours(x.id) ? { ...x } : null)), rotation: c.rotation.filter(ours), rest: c.rest } : emptyCard();
+  const [card, setCard] = useState<LineupCard>(() => clean(saved));
+  // A saved card (or a cleared one) resets the draft.
+  useEffect(() => setCard(clean(saved)), [saved]);
+  const active = league.rosters[u.teamId]!.active.map((id) => league.players[id]!);
+  const hitters = active.filter((p) => !isPitcher(p) || p.twoWay).sort((a, b) => b.scouting.current - a.scouting.current);
+  const arms = active.filter(isPitcher).sort((a, b) => (a.role === b.role ? b.scouting.current - a.scouting.current : a.role === 'SP' ? -1 : 1));
+  const list = card[vs];
+  const problem = checkLineupCard(league, card);
+  const changed = JSON.stringify(card) !== JSON.stringify(saved ?? emptyCard());
+  const setSlot = (i: number, slot: LineupSlot | null) => setCard((c) => ({ ...c, [vs]: c[vs].map((x, k) => (k === i ? slot : x)) }));
+  const pick = (i: number, id: string) => {
+    if (!id) return setSlot(i, null);
+    const p = league.players[id]!;
+    // Where he plays now, or his own position, or the first one free.
+    const taken = new Set(list.filter((x, k) => x && k !== i).map((x) => x!.pos));
+    const now = lineup.find((b) => b.id === id)?.pos as FieldPos | undefined;
+    const pos = [now, p.position ?? undefined, 'DH' as FieldPos, ...FIELD].find((x): x is FieldPos => !!x && !taken.has(x)) ?? 'DH';
+    setSlot(i, { id, pos });
+  };
+  const summary = saved
+    ? `고정한 자리: 우완 상대 ${fixedCount(saved.R)} · 좌완 상대 ${fixedCount(saved.L)} · 로테이션 ${saved.rotation.length}명${saved.rest ? '' : ' · 고정 선수는 쉬지 않음'}`
+    : '모두 감독에게 맡기고 있습니다.';
+  return (
+    <div class="lineup-card">
+      <p class="small">
+        <strong>단장 라인업 카드</strong> · {summary}{' '}
+        <button type="button" class="link" onClick={() => setOpen(!open)} aria-expanded={open}>
+          {open ? '접기' : '직접 짜기'}
+        </button>
+      </p>
+      {open && (
+        <div class="card-editor">
+          <p class="muted small">
+            고정한 자리는 그 선수가 그 위치에서 그 타순에 나섭니다. 비운 자리는 감독이 남은 선수와 위치로 채우고 타순도 감독 방식대로 넣습니다. 고정한 선수가 다치거나 1군에 없으면 감독이 대신 채웁니다. 지금 보고
+            있는 상대 {vs === 'R' ? '우완' : '좌완'} 선발용 라인업입니다.
+          </p>
+          <table class="record-table card-table">
+            <thead>
+              <tr>
+                <th class="num">#</th>
+                <th>타자</th>
+                <th>위치</th>
+                <th class="muted">지금</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((slot, i) => {
+                const now = lineup[i];
+                return (
+                  <tr key={i}>
+                    <td class="num">{i + 1}</td>
+                    <td>
+                      <select value={slot?.id ?? ''} onChange={(e) => pick(i, (e.currentTarget as HTMLSelectElement).value)} aria-label={`${i + 1}번 타자`}>
+                        <option value="">감독에게</option>
+                        {hitters.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} ({p.position ?? '투'} {p.scouting.current})
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        value={slot?.pos ?? ''}
+                        disabled={!slot}
+                        onChange={(e) => slot && setSlot(i, { ...slot, pos: (e.currentTarget as HTMLSelectElement).value as FieldPos })}
+                        aria-label={`${i + 1}번 수비 위치`}
+                      >
+                        {!slot && <option value="">-</option>}
+                        {FIELD.map((pos) => (
+                          <option key={pos} value={pos}>
+                            {FIELD_NAMES[pos]}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td class="muted small">{now ? `${now.name} (${now.pos})` : '-'}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <div class="row-actions">
+            <button type="button" onClick={() => setCard((c) => ({ ...c, [vs]: lineup.slice(0, 9).map((b) => ({ id: b.id, pos: b.pos as FieldPos })) }))}>
+              지금 라인업 그대로 고정
+            </button>
+            <button type="button" onClick={() => setCard((c) => ({ ...c, [vs]: c[vs === 'R' ? 'L' : 'R'].map((x) => (x ? { ...x } : null)) }))}>
+              {vs === 'R' ? '좌완' : '우완'} 상대 라인업 복사
+            </button>
+            <button type="button" onClick={() => setCard((c) => ({ ...c, [vs]: Array(9).fill(null) }))}>
+              이 라인업 모두 감독에게
+            </button>
+          </div>
+          <h4>선발 로테이션</h4>
+          <div class="rotation-picks">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <label key={i}>
+                {i + 1}선발
+                <select
+                  value={card.rotation[i] ?? ''}
+                  onChange={(e) => {
+                    const id = (e.currentTarget as HTMLSelectElement).value;
+                    setCard((c) => {
+                      const r = [...c.rotation];
+                      if (id) r[i] = id;
+                      else r.splice(i, 1);
+                      return { ...c, rotation: r.filter(Boolean) };
+                    });
+                  }}
+                  aria-label={`${i + 1}선발`}
+                >
+                  <option value="">감독에게{starters[i] && !card.rotation[i] ? ` (${starters[i]!.name})` : ''}</option>
+                  {arms.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.role === 'SP' ? '선발' : '불펜'} {p.scouting.current})
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ))}
+          </div>
+          <label class="check">
+            <input type="checkbox" checked={card.rest} onChange={(e) => setCard((c) => ({ ...c, rest: (e.currentTarget as HTMLInputElement).checked }))} /> 고정한 선수도 감독의 휴식일에는 쉬게 하기
+          </label>
+          <div class="row-actions">
+            <button type="button" class="primary" disabled={!!problem || !changed} onClick={() => onAct({ kind: 'lineupCard', card })}>
+              카드 저장
+            </button>
+            <button type="button" disabled={!saved} onClick={() => onAct({ kind: 'lineupCard', card: null })}>
+              모두 감독에게 돌려주기
+            </button>
+            {problem && <span class="notice inline">{problem}</span>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+

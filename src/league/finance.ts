@@ -5,13 +5,15 @@
 
    Only the user's club lives with the result (its fund); AI clubs' parents always cover them, and their
    reports are there to compare. Money in 만 원. */
-import type { TeamId } from '../model/types';
+import type { Player, TeamId } from '../model/types';
+import { salaryIn } from './contracts';
+import { isForeign } from './players';
 import { KBO_2026 } from '../rules/kbo2026';
 import { boom, clubState, leaguePrice } from './fans';
 import { payroll } from './offseason';
 import { staffCost } from './staff';
-import { firstTeamIds, type ClubReport, type LeagueState } from './state';
-import { FANS, FINANCE as F } from './tuning';
+import { firstTeamIds, orgPlayers, type ClubReport, type LeagueState } from './state';
+import { DEMOTION, FANS, FINANCE as F } from './tuning';
 
 /** The league's broadcast money for `year` (990억 for 2024–26; the next deal assumed 10% higher, then +3% a year). */
 export function broadcastPool(year: number): number {
@@ -58,6 +60,39 @@ export function namingFee(s: LeagueState, teamId: TeamId): number {
   return F.naming.base;
 }
 
+/** An AI club's player money beyond the salaries and bonuses (V0.8): incentives earned this season, less the
+    salary cut for players sent down (see demotionCut). The user's club settles both through its fund. */
+function faCash(s: LeagueState, teamId: TeamId, year: number) {
+  return orgPlayers(s, teamId).reduce((a, p) => a + (p.contract?.fa?.paid.find((x) => x.season === year)?.amount ?? 0) - demotionCut(s, p, year), 0);
+}
+
+/**
+ * The KBO's cut for a player paid 3억 or more who is off the first-team roster for reasons other than injury
+ * (규약, RULES.md §2): half of 1/300 of his salary for each such day of the regular season. Registered days
+ * count the injured list and national-team duty, so the days he was not registered are the days he was sent
+ * down. Domestic players only.
+ */
+export function demotionCut(s: LeagueState, p: Player, year: number) {
+  const salary = salaryIn(p, year);
+  if (salary < DEMOTION.from || isForeign(p) || p.status === 'military' || !s.schedule.length) return 0;
+  const span = Math.round((Date.parse(s.schedule.at(-1)!.date) - Date.parse(s.schedule[0]!.date)) / 86400000) + 1;
+  const days = p.career.filter((r) => r.year === year && !r.level).reduce((a, r) => a + r.days, 0);
+  const down = Math.max(0, span - days);
+  return down ? Math.round((salary / 300) * DEMOTION.share * down) : 0;
+}
+
+/** After the season: the user's club gets back the cut salary of players it sent down. */
+export function applyDemotionCuts(s: LeagueState, year: number) {
+  const u = s.user;
+  if (!u) return;
+  for (const p of orgPlayers(s, u.teamId)) {
+    const cut = demotionCut(s, p, year);
+    if (cut <= 0) continue;
+    u.ledger.push({ year, label: `2군 감액 · ${p.name}`, amount: cut });
+    u.fund += cut;
+  }
+}
+
 /** The season's report for one club. `extra` adds cash already spent or received during the year (the user's ledger). */
 export function clubReport(s: LeagueState, teamId: TeamId, year: number, shares: Record<TeamId, number>): ClubReport {
   const team = s.teams.find((t) => t.id === teamId)!;
@@ -80,7 +115,9 @@ export function clubReport(s: LeagueState, teamId: TeamId, year: number, shares:
   const homeGames = gate?.games ?? 0;
   const dome = team.stadium.size === 'dome';
   const expenses = {
-    players: payroll(s, teamId, year) + (teamId === s.user?.teamId ? (s.user.deadMoney ?? []).filter((d) => d.season === year).reduce((a, d) => a + d.amount, 0) : 0),
+    players:
+      payroll(s, teamId, year) +
+      (teamId === s.user?.teamId ? (s.user.deadMoney ?? []).filter((d) => d.season === year).reduce((a, d) => a + d.amount, 0) : faCash(s, teamId, year)),
     staff: staffCost(s, teamId),
     frontOffice: Math.round(F.frontOffice * (inFirstTeam ? 1 : F.futuresYear)),
     gameDays: homeGames * F.perHomeGame,

@@ -88,7 +88,10 @@ describe('the foreign salary cap', () => {
       const tenure = players.reduce((a, p) => a + tenureWith(p, teamId, s.year), 0);
       expect(foreignCap(s, teamId, s.year)).toBe(4_000_000 + slots * 1_000_000 + tenure * 100_000);
     }
-    const asia = Object.values(s.players).find((p) => p.origin.asiaQuota && p.teamId && p.career.length)!;
+    // An Asia quota player with a club (one with KBO seasons behind him when there is one).
+    const asia = Object.values(s.players)
+      .filter((p) => p.origin.asiaQuota && p.teamId)
+      .sort((a, b) => b.career.length - a.career.length || a.id.localeCompare(b.id))[0]!;
     expect(asiaCapFor(asia, asia.teamId!, s.year + 1)).toBe(200_000 + 100_000 * tenureWith(asia, asia.teamId!, s.year + 1));
   });
 

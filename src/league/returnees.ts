@@ -11,7 +11,7 @@
    keeps its players abroad. */
 import { hashUnit, rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
-import { faContract, marketValue } from './market';
+import { marketValue } from './fa';
 import { developPlayer, leaveLeague, removeFromRoster, rosterLimit, sign } from './offseason';
 import { ageIn, currentValue, isForeign, keepValue } from './players';
 import { registeredIds, type LeagueState } from './state';
@@ -87,7 +87,7 @@ function offerFor(p: Player, next: number, before: number): { years: number; ann
 
 /** Signs a returnee with a club: a multi-year deal, and an article. */
 export function signReturnee(s: LeagueState, p: Player, teamId: TeamId, o: ReturnOffer, next: number) {
-  sign(s, p, teamId, faContract(teamId, next, { years: o.years, annual: o.annual }));
+  sign(s, p, teamId, { teamId, kind: 'freeAgent', signedIn: next - 1, signingBonus: 0, salaries: Array.from({ length: o.years }, (_, i) => ({ season: next + i, amount: o.annual })) });
   moveNews(s, { type: 'returnee', teamId, id: p.id, years: o.years, annual: o.annual, abroad: o.abroad, own: teamId === postingClub(p) }, `${next - 1}-11-05`);
 }
 

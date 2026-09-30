@@ -12,9 +12,10 @@ import type { ParentCompanyType } from '../club/types';
 import { fromDraftProspect } from '../model/player';
 import type { Player, PlayerId, Team, TeamId } from '../model/types';
 import { EXPANSION_DEFAULTS, minimumSalaryFor } from '../rules/kbo2026';
-import { foreignContract, freeAgentContract, renewSalary, salaryIn } from './contracts';
+import { foreignContract, renewSalary, salaryIn } from './contracts';
 import { splitContract } from './foreign';
-import { marketDecision, projectedPayroll as marketPayroll } from './market';
+import { projectedPayroll as marketPayroll } from './market';
+import { clubOptionsDue } from './fa';
 import { foreignSlots } from './manager';
 import {
   advanceOffseason,
@@ -22,7 +23,6 @@ import {
   aiForeignRenewals,
   developmentContract,
   foreignOn,
-  freeAgentsFor,
   makePick,
   removeFromRoster,
   foreignLeaves,
@@ -31,7 +31,6 @@ import {
   rosterLimit,
   setOffseasonHooks,
   sign,
-  signFreeAgent,
   standardSlots,
   type OffseasonStep,
 } from './offseason';
@@ -254,9 +253,9 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
     case 'camp':
       return campDecision(s);
     case 'freeAgency': {
-      if (!entering) return marketDecision(s, next);
-      const candidates = freeAgentsFor(s, next).filter((p) => p.teamId !== u.teamId);
-      return candidates.length ? { kind: 'freeAgents', candidates: candidates.map((p) => p.id), max: EXPANSION_DEFAULTS.freeAgentSigns } : null;
+      // Club options on free-agent deals that end now, before the market opens (the market itself runs in the step).
+      const due = clubOptionsDue(s, u.teamId, next);
+      return due.length ? { kind: 'faOptions', rows: due.map((p) => ({ id: p.id, years: p.contract!.fa!.extra!.years, annual: p.contract!.fa!.extra!.annual })) } : null;
     }
     case 'special':
       if (!entering) return null;
@@ -315,7 +314,6 @@ setOffseasonHooks({ begin: yearlyGrant, draftSlots, decide, rookies: rookieBonus
 export type DecisionInput =
   | { kind: 'tryout'; ids: PlayerId[] }
   | { kind: 'draftPick'; id: PlayerId | null } // null: let the scouts pick
-  | { kind: 'freeAgents'; ids: PlayerId[] }
   | { kind: 'specialDraft'; picks: Record<TeamId, PlayerId> }
   | { kind: 'released'; ids: PlayerId[] }
   | { kind: 'foreign'; ids: PlayerId[] }
@@ -350,14 +348,6 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       if (input.id && !draft.pool.includes(input.id)) return '이미 지명됐거나 명단에 없는 선수입니다.';
       return null;
     }
-    case 'freeAgents': {
-      const dd = d as Extract<Decision, { kind: 'freeAgents' }>;
-      if (input.ids.some((id) => !dd.candidates.includes(id))) return '명단에 없는 선수입니다.';
-      if (input.ids.length > dd.max) return `신생구단 특례로 최대 ${dd.max}명까지 영입할 수 있습니다.`;
-      const cost = input.ids.reduce((a, id) => a + faAsk(s, s.players[id]!, next), 0);
-      if (cost > 0 && projectedPayroll(s, u.teamId, next) + cost > u.payrollBudget) return '연봉 예산을 넘습니다.';
-      return null;
-    }
     case 'specialDraft': {
       const dd = d as Extract<Decision, { kind: 'specialDraft' }>;
       for (const [teamId, id] of Object.entries(input.picks)) if (!dd.lists[teamId]?.includes(id)) return '보호선수이거나 명단에 없는 선수입니다.';
@@ -388,9 +378,6 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
   }
 }
 
-/** What a free agent asks for per season (the same pricing as the AI market). */
-export const faAsk = (_s: LeagueState, p: Player, next: number) => freeAgentContract(p, EXPANSION_ID, next).salaries[0]!.amount;
-
 /** Applies a checked decision and lets the game go on. Throws when the decision breaks a rule. */
 export function resolveDecision(s: LeagueState, input: DecisionInput) {
   const problem = checkDecision(s, input);
@@ -420,13 +407,6 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
       makePick(s, draft, p);
       break;
     }
-    case 'freeAgents':
-      for (const id of input.ids) {
-        const p = s.players[id]!;
-        signFreeAgent(s, p, u.teamId, next);
-        u.ledger.push({ year: s.offseason!.year, label: `FA 영입 · ${p.name} (보상 없음, 신생구단 특례)`, amount: 0 });
-      }
-      break;
     case 'specialDraft': {
       const fee = (d as Extract<Decision, { kind: 'specialDraft' }>).fee;
       for (const [teamId, id] of Object.entries(input.picks)) {
@@ -492,14 +472,6 @@ export function autoDecision(s: LeagueState): DecisionInput | null {
       return { kind: 'draftPick', id: null };
     case 'released':
       return { kind: 'released', ids: best(d.candidates, Math.min(d.max, 5)) };
-    case 'freeAgents': {
-      const ids: PlayerId[] = [];
-      for (const id of best(d.candidates, d.candidates.length)) {
-        if (ids.length >= d.max) break;
-        if (checkDecision(s, { kind: 'freeAgents', ids: [...ids, id] }) === null) ids.push(id);
-      }
-      return { kind: 'freeAgents', ids };
-    }
     case 'specialDraft': {
       // Best unprotected player from each club, best clubs' picks first, while money and payroll allow.
       const options = Object.entries(d.lists)

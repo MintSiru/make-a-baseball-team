@@ -33,7 +33,7 @@ const noOverflow = async (page, label) => {
 };
 
 /** Batch choices (V0.7.6) are tried once each: the select-all box and a row of one-click settings. */
-const batch = { all: false, bar: false };
+const batch = { all: false, bar: false, fa: false };
 
 /** Makes every pending decision the way the scouts suggest (draft picks: the first one by hand). */
 async function decideAll(page, log) {
@@ -45,6 +45,26 @@ async function decideAll(page, log) {
     log.push(title);
     if (title === '2차 드래프트') {
       await page.getByRole('button', { name: '스카우트에게 맡기기' }).click();
+    } else if (title.startsWith('FA 시장')) {
+      // The negotiation (V0.8): one talk by hand the first time (his terms, the reaction, an offer, withdrawn),
+      // then the scouts keep our own free agents and the market runs to its end.
+      if (!batch.fa) {
+        batch.fa = true;
+        await page.locator('.fa-table tbody .link').first().click();
+        await page.getByRole('button', { name: '요구에 맞추기' }).click();
+        check(((await page.locator('.fa-reaction strong').textContent()) ?? '').length > 0, 'the free agent reacts to an offer');
+        await page.getByRole('button', { name: /^제안 (넣기|고치기)$/ }).click();
+        check((await page.locator('.fa-talk').textContent())?.includes('보낼 제안'), 'an offer waits for the next round');
+        await page.screenshot({ path: join(shots, 'fa-market.png'), fullPage: false });
+        await page.getByRole('button', { name: '제안 철회' }).click();
+      }
+      await page.getByRole('button', { name: /스카우트 추천/ }).click();
+      const close = page.getByRole('button', { name: '시장 끝까지' });
+      if (await close.isDisabled()) {
+        failures.push(`${title}: the scouts' offers are not valid (${await page.locator('.notice.inline').textContent()})`);
+        return;
+      }
+      await close.click();
     } else if (title === '신인 드래프트') {
       if (!handPicked) {
         const name = await page.locator('.pick-table .link').first().textContent();
@@ -231,6 +251,12 @@ try {
   await page.getByRole('button', { name: '라인업', exact: true }).click();
   check((await page.locator('svg.diamond .spot').count()) === 9, 'nine players on the diamond');
   await page.getByRole('button', { name: '상대 좌완 선발' }).click();
+  // The general manager's lineup card (V0.8): fix today's lineup, save it, and play a week with it.
+  await page.getByRole('button', { name: '직접 짜기' }).click();
+  await page.getByRole('button', { name: '지금 라인업 그대로 고정' }).click();
+  await page.getByRole('button', { name: '카드 저장' }).click();
+  await page.waitForFunction(() => document.querySelectorAll('.lineup table .tag').length >= 9);
+  check((await page.locator('.lineup-card').textContent())?.includes('좌완 상대 9'), 'lineup card saved with nine fixed spots');
   await page.screenshot({ path: join(shots, 'lineup.png'), fullPage: false });
   await page.getByRole('button', { name: '1주', exact: true }).click();
   await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled);

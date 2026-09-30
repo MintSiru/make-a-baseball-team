@@ -52,6 +52,9 @@ export interface Service {
   postedIn?: number;
   /** Credited seasons when he last became a free agent (re-qualifies four seasons later). */
   lastFreeAgencyAt?: number;
+  /** The winter his free-agent deal's period option was declined or he opted out (V0.8): he is free that
+      winter whatever his service, and the club that signs him owes no compensation. */
+  optionFree?: number;
   /** The latest military medical grade after an operation (V0.7.7, military.ts): 3 active duty, 4 social
       service only, 5 no peacetime service. `surgeries` counts the major operations it looked at. */
   exam?: { year: number; grade: number; reason: string; surgeries: number };
@@ -68,6 +71,31 @@ export interface Contract {
   salaries: { season: number; amount: number }[];
   /** Foreign contracts in US dollars: guaranteed bonus and salary, and options paid for a good season. */
   usd?: { bonus: number; salary: number; options: number };
+  /** Domestic free-agent deals (V0.8): incentives, a period option and promises beyond the money. */
+  fa?: FaTerms;
+}
+
+/** How a free-agent deal's incentives are earned each season: games for a hitter, innings for a starter, games for a reliever. */
+export type IncentiveKind = 'games' | 'innings' | 'relief';
+
+/** Promises a club makes a free agent (V0.8): a starting job, or reinforcing a weak spot before opening day. */
+export type FaPromise = 'starter' | 'reinforce';
+export type FaSpot = 'SP' | 'RP' | 'C' | 'IF' | 'OF';
+
+/** The parts of a free-agent deal beyond bonus and salaries (만 원). */
+export interface FaTerms {
+  /** Guaranteed seasons (the bonus counts against the salary cap spread over them). */
+  years: number;
+  /** Incentives over the guaranteed seasons, earned season by season (출장·이닝 옵션), and what was paid. */
+  options: number;
+  incentive: IncentiveKind;
+  paid: { season: number; amount: number }[];
+  /** A period option after the guaranteed seasons ("4+2"): the club's to take up, or the player's (an opt-out). */
+  extra?: { years: number; holder: 'club' | 'player'; annual: number };
+  /** What the club promised, the spot it said it would reinforce, and how each promise ended. */
+  promises?: FaPromise[];
+  spot?: FaSpot;
+  kept?: Partial<Record<FaPromise, boolean>>;
 }
 
 export interface PlayerOrigin {

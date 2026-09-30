@@ -1,30 +1,20 @@
-/* The free-agent market (V0.5, RULES.md §4): grades from salary rank, a limit on outside signings,
-   offers from every interested club (the user's included), the player's choice, and compensation to
-   the club he leaves (a player outside the protected list plus money, or money only).
-
-   The market runs in one pass, best players first, so a club's needs, payroll and signing count
-   change as it signs. Decisions the user owes afterwards (a protected list when the user signed an
-   A/B free agent, a compensation pick when an AI club signed one of the user's) wait in a queue on the
+/* Free-agent rules around the negotiation (V0.5, RULES.md §4): grades from salary rank, the limit on
+   outside signings, compensation to the club a player leaves (a player outside the protected list plus money,
+   or money only), the owner's free agent, and the payroll the budget is checked against. The negotiation
+   itself is in fa.ts (V0.8). Decisions the user owes after a signing (a protected list when the user signed
+   an A/B free agent, a compensation pick when another club signed one of the user's) wait in a queue on the
    offseason state. Money in 만 원. */
-import { eulreul, iga, ro } from './josa';
+import { iga, ro } from './josa';
 import type { Player, PlayerId, TeamId } from '../model/types';
-import { KBO_2026, salaryCapFor } from '../rules/kbo2026';
-import { renewSalary, salaryIn } from './contracts';
-import { freeAgentsFor, leaveLeague, removeFromRoster } from './offseason';
-import { ageIn, currentValue, isForeign, isPitcher, keepValue } from './players';
-import { firstTeamIds, orgIds, orgPlayers, registeredIds, type Decision, type LeagueState, type ParentGift } from './state';
+import { KBO_2026 } from '../rules/kbo2026';
+import { bonusShare, renewSalary, salaryIn } from './contracts';
+import { removeFromRoster } from './offseason';
+import { ageIn, isForeign, keepValue } from './players';
+import { orgIds, orgPlayers, registeredIds, type Decision, type LeagueState } from './state';
 import { MARKET, PARENT } from './tuning';
-import { addAlert } from './alerts';
 import { rng } from '../draftroom';
-import { moveNews } from './movenews';
 
 export type FaGrade = 'A' | 'B' | 'C';
-export interface FaOffer {
-  /** Salary per season, 만 원. */
-  annual: number;
-  years: number;
-}
-
 export interface FaQueueItem {
   kind: 'protect' | 'compensation';
   fa: PlayerId;
@@ -71,27 +61,17 @@ export const externalLimit = (count: number) => F.externalLimit.find((x) => coun
 
 // ── Money ────────────────────────────────────────────────────────────────────────────────────────
 
-/** What the market thinks he is worth: yearly pay from recent WAR, length from age (the V0.2 pricing). */
-export function marketValue(p: Player, next: number): FaOffer {
-  const recs = p.career.filter((r) => !r.level).slice(-3);
-  const weights = recs.map((_, i) => i + 1);
-  const war = recs.length ? recs.reduce((a, r, i) => a + r.war * weights[i]!, 0) / weights.reduce((a, b) => a + b, 0) : 0;
-  const age = ageIn(p, next);
-  const years = age <= 31 ? 4 : age <= 33 ? 3 : age <= 35 ? 2 : 1;
-  const yearly = Math.min(MARKET.maxAnnual, Math.max(MARKET.minAnnual, 4000 + Math.max(0, war) ** 1.5 * MARKET.perWar));
-  return { annual: Math.round(yearly / 1000) * 1000, years };
-}
-
 /**
- * A season's payroll: salaries set for that season, renewal estimates where they are not set yet, and
- * (the user's club) money still owed to players it let go. `without` leaves players out (deals being decided).
+ * A season's payroll: salaries set for that season, renewal estimates where they are not set yet, free-agent
+ * bonuses spread over their deals (V0.8, as the salary cap counts them), and (the user's club) money still
+ * owed to players it let go. `without` leaves players out (deals being decided).
  */
 export function projectedPayroll(s: LeagueState, teamId: TeamId, season: number, without: PlayerId[] = []) {
   const players = orgIds(s, teamId)
     .filter((id) => !without.includes(id))
     .reduce((sum, id) => {
       const p = s.players[id]!;
-      return sum + (salaryIn(p, season) || (isForeign(p) ? 0 : renewSalary(p, season)));
+      return sum + (salaryIn(p, season) || (isForeign(p) ? 0 : renewSalary(p, season))) + bonusShare(p, season);
     }, 0);
   return players + (teamId === s.user?.teamId ? deadMoney(s, season) : 0);
 }
@@ -99,116 +79,18 @@ export function projectedPayroll(s: LeagueState, teamId: TeamId, season: number,
 /** Salary the user's club still pays players it released (released players' guaranteed money). */
 export const deadMoney = (s: LeagueState, season: number) => (s.user?.deadMoney ?? []).filter((x) => x.season === season).reduce((a, x) => a + x.amount, 0);
 
-export function faContract(teamId: TeamId, next: number, offer: FaOffer): Player['contract'] {
-  return { teamId, kind: 'freeAgent', signedIn: next - 1, signingBonus: 0, salaries: Array.from({ length: offer.years }, (_, i) => ({ season: next + i, amount: offer.annual })) };
-}
-
 /** What the signing club owes the former club: cash with a player, or cash only (RULES.md §4). */
 export function compensationCash(grade: FaGrade, salary: number) {
   const c = F.compensation[grade];
   return { withPlayer: c.withPlayer === null ? null : Math.round(salary * c.withPlayer), cashOnly: Math.round(salary * c.cashOnly) };
 }
 
-// ── The AI's view ────────────────────────────────────────────────────────────────────────────────
-
-/** How much better he is than what the club has at his spot (public grades). */
-function improvement(s: LeagueState, teamId: TeamId, p: Player) {
-  const mates = registeredIds(s, teamId)
-    .map((id) => s.players[id]!)
-    .filter((x) => x.id !== p.id && !isForeign(x));
-  let bench: number;
-  if (isPitcher(p)) {
-    const same = mates.filter((x) => x.role === p.role).map(currentValue).sort((a, b) => b - a);
-    bench = same[p.role === 'SP' ? 3 : 5] ?? 40;
-  } else {
-    const same = mates.filter((x) => x.position === p.position).map(currentValue).sort((a, b) => b - a);
-    bench = same[0] ?? 40;
-  }
-  return currentValue(p) - bench;
-}
-
-/** Chance an AI club makes an offer: need at his spot, room under the salary cap, and his age. */
-function interest(s: LeagueState, teamId: TeamId, p: Player, offer: FaOffer, next: number) {
-  const gain = improvement(s, teamId, p);
-  let x = MARKET.interest.base + gain * MARKET.interest.perGain;
-  const room = salaryCapFor(next) - projectedPayroll(s, teamId, next);
-  if (room < offer.annual) x *= MARKET.interest.overCap;
-  if (ageIn(p, next) >= 34) x *= 0.6;
-  return Math.max(0, Math.min(MARKET.interest.max, x));
-}
-
-// ── The market ───────────────────────────────────────────────────────────────────────────────────
-
-/**
- * Every free agent this winter, best first: offers from his club and interested clubs (the user's as
- * given), he signs the best (a little loyalty to his club), and compensation follows. Returns the
- * queue of decisions the user owes.
- */
-export function runFreeAgency(s: LeagueState, next: number, r: () => number, userOffers: Record<PlayerId, FaOffer> = {}): FaQueueItem[] {
-  const user = s.user?.teamId ?? null;
-  const fas = freeAgentsFor(s, next);
-  const grades = faGrades(s, next, fas);
-  const limit = externalLimit(fas.length);
-  const signed: Record<TeamId, number> = {};
-  const clubs = firstTeamIds(s, next).filter((id) => id !== user);
-  const queue: FaQueueItem[] = [];
-  const order = [...fas].sort((a, b) => keepValue(b, next) - keepValue(a, next) || a.id.localeCompare(b.id));
-  for (const p of order) {
-    if (!p.teamId || p.status !== 'active') continue;
-    const from = p.teamId;
-    const salary = salaryIn(p, next - 1);
-    const base = marketValue(p, next);
-    const offers: { teamId: TeamId; offer: FaOffer }[] = [];
-    for (const t of clubs) {
-      if (t !== from && (signed[t] ?? 0) >= limit) continue;
-      const chance = t === from ? MARKET.stay * (ageIn(p, next) <= 32 ? 1 : 0.8) : interest(s, t, p, base, next);
-      if (r() >= chance) continue;
-      const k = t === from ? 0.92 + r() * 0.15 : 0.9 + r() * 0.25;
-      offers.push({ teamId: t, offer: { annual: Math.round((base.annual * k) / 1000) * 1000, years: base.years } });
-    }
-    const mine = userOffers[p.id];
-    if (user && mine && (from === user || (signed[user] ?? 0) < limit)) offers.push({ teamId: user, offer: mine });
-    const score = (o: { teamId: TeamId; offer: FaOffer }) => o.offer.annual * (1 + 0.15 * (o.offer.years - 1)) * (o.teamId === from ? MARKET.loyalty : 1);
-    const best = offers.sort((a, b) => score(b) - score(a) || (a.teamId === user ? -1 : 1))[0];
-    if (!best) {
-      // Nobody bid: his club brings him back cheaper, or (the user's own, unsigned) he retires.
-      if (from === user) {
-        (s.user!.log ??= []).push({ year: next - 1, text: `FA ${p.name} 계약 못 함, 은퇴` });
-        leaveLeague(s, p, 'retired');
-      } else sign(s, p, from, next, { annual: Math.round((base.annual * 0.85) / 1000) * 1000, years: Math.max(1, base.years - 1) });
-      continue;
-    }
-    sign(s, p, best.teamId, next, best.offer);
-    moveNews(s, { type: 'fa', from, to: best.teamId, id: p.id, years: best.offer.years, annual: best.offer.annual, grade: grades[p.id] ?? 'C' }, `${next - 1}-11-20`);
-    if (best.teamId === user) (s.user!.log ??= []).push({ year: next - 1, text: `FA ${p.name} ${from === user ? '재계약' : `영입 (${shortOf(s, from)}에서)`} · ${best.offer.years}년 연 ${Math.round(best.offer.annual / 1000) / 10}억` });
-    else if (from === user) (s.user!.log ??= []).push({ year: next - 1, text: `FA ${p.name} ${ro(shortOf(s, best.teamId))} 이적` });
-    if (best.teamId === from) continue;
-    signed[best.teamId] = (signed[best.teamId] ?? 0) + 1;
-    const grade = grades[p.id] ?? 'C';
-    if (grade === 'C') {
-      moneyFor(s, best.teamId, from, compensationCash('C', salary).cashOnly, `FA ${p.name} 보상금 (C등급)`, next - 1);
-      continue;
-    }
-    const item: FaQueueItem = { kind: 'protect', fa: p.id, grade, from, to: best.teamId, salary };
-    if (best.teamId === user) queue.push(item);
-    else if (from === user) queue.push({ ...item, kind: 'compensation' });
-    else aiCompensation(s, item, protectedBy(s, best.teamId, grade, next), next);
-  }
-  return queue;
-}
+// ── Compensation ─────────────────────────────────────────────────────────────────────────────────
 
 const shortOf = (s: LeagueState, id: TeamId) => s.teams.find((t) => t.id === id)?.short ?? id;
 
-function sign(s: LeagueState, p: Player, teamId: TeamId, next: number, offer: FaOffer) {
-  removeFromRoster(s, p);
-  p.teamId = teamId;
-  s.rosters[teamId]!.futures.push(p.id);
-  p.contract = faContract(teamId, next, offer);
-  p.service.lastFreeAgencyAt = p.service.creditedSeasons;
-}
-
 /** Money between clubs: only the user's club keeps books (V0.6 brings finances for everyone). */
-function moneyFor(s: LeagueState, payer: TeamId, payee: TeamId, amount: number, label: string, year: number) {
+export function moneyFor(s: LeagueState, payer: TeamId, payee: TeamId, amount: number, label: string, year: number) {
   const u = s.user;
   if (!u || !amount) return;
   if (payer === u.teamId) {
@@ -262,57 +144,21 @@ export function movePlayer(s: LeagueState, p: Player, to: TeamId) {
 
 // ── The user's decisions ─────────────────────────────────────────────────────────────────────────
 
-export function marketDecision(s: LeagueState, next: number): Decision | null {
-  const fas = freeAgentsFor(s, next);
-  if (!fas.length) return null;
-  const grades = faGrades(s, next, fas);
-  const gift = parentGift(s, next, fas, grades);
-  return { kind: 'faMarket', candidates: fas.map((p) => p.id), grades, limit: externalLimit(fas.length), ...(gift ? { gift } : {}) };
-}
-
 /**
  * Now and then a conglomerate or mid-size owner decides to buy the club a star (V0.7.7): the best A- or
- * B-grade free agent of another club, at the market price plus 20%, paid outside the payroll budget for the
- * whole contract. The general manager can keep or drop the offer. Not in the winter before the first team.
+ * B-grade free agent of another club. Since V0.8 the owner pays a deal of up to the market's guaranteed money
+ * plus 20% (fa.ts), outside the fund and the payroll budget; the general manager negotiates it. Not in the
+ * winter before the first team.
  */
-export function parentGift(s: LeagueState, next: number, fas: Player[], grades: Record<PlayerId, FaGrade>): ParentGift | null {
+export function parentGiftFor(s: LeagueState, next: number, fas: Player[], grades: Record<PlayerId, FaGrade>): { id: PlayerId; premium: number } | null {
   const u = s.user;
   if (!u || next <= u.firstTeamYear) return null;
   const G = PARENT.faGift;
   if (rng(`${s.seed}|fa-gift|${next}`)() >= G[u.settings.parentType]) return null;
   const pick = fas
-    .filter((p) => p.teamId !== u.teamId && grades[p.id] !== 'C' && ageIn(p, next) <= G.maxAge)
-    .sort((a, b) => marketValue(b, next).annual - marketValue(a, next).annual)[0];
-  if (!pick) return null;
-  const m = marketValue(pick, next);
-  const gift = { id: pick.id, annual: Math.round((m.annual * G.premium) / 1000) * 1000, years: m.years };
-  addAlert(s, {
-    id: `fa-gift-${next}`,
-    date: `${next - 1}-11-25`,
-    kind: 'owner',
-    title: `모기업이 ${pick.name} 영입을 지원합니다`,
-    lines: [`${u.settings.parentName} 회장이 ${eulreul(pick.name)} 꼭 데려오라며 계약 비용을 따로 대기로 했습니다.`, `제시액 연 ${Math.round(gift.annual / 10000)}억 ${gift.years}년 (시장가 +20%)은 연봉 예산 밖에서 모기업이 부담합니다. FA 시장 화면에서 제시를 유지하거나 거절할 수 있습니다.`],
-    tone: 'good',
-    players: [pick.id],
-  });
-  return gift;
-}
-
-/** After the market: the owner's free agent, if he signed, is paid for outside the budget for his whole deal. */
-export function settleParentGift(s: LeagueState, next: number) {
-  const u = s.user;
-  const g = s.offseason?.faGift;
-  if (!u || !g) return;
-  const p = s.players[g.id];
-  const year = next - 1;
-  if (p && p.teamId === u.teamId) {
-    const annual = p.contract?.salaries.find((x) => x.season === next)?.amount ?? g.annual;
-    const years = p.contract?.salaries.length ?? g.years;
-    (u.parentGifts ??= []).push({ id: p.id, name: p.name, annual, from: next, to: next + years - 1 });
-    u.payrollBudget += annual;
-    (u.log ??= []).push({ year, text: `모기업 지원으로 FA ${p.name} 영입 (연 ${Math.round(annual / 10000)}억, ${years}년, 연봉 예산 밖)` });
-  } else if (p) (u.log ??= []).push({ year, text: `모기업이 지원한 FA ${p.name} 영입 실패 (${p.teamId ? '다른 구단 선택' : '미계약'})` });
-  delete s.offseason!.faGift;
+    .filter((p) => p.teamId !== u.teamId && grades[p.id] && grades[p.id] !== 'C' && ageIn(p, next) <= G.maxAge)
+    .sort((a, b) => keepValue(b, next) - keepValue(a, next) || a.id.localeCompare(b.id))[0];
+  return pick ? { id: pick.id, premium: G.premium } : null;
 }
 
 /** The next decision the user owes after the market, or null. */

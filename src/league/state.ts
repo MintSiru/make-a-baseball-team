@@ -175,7 +175,6 @@ export interface SeasonSummary {
 export type Decision =
   | { kind: 'tryout'; candidates: PlayerId[]; max: number }
   | { kind: 'draftPick'; overall: number; label: string }
-  | { kind: 'freeAgents'; candidates: PlayerId[]; max: number }
   | { kind: 'specialDraft'; lists: Record<TeamId, PlayerId[]>; protectedCount: number; fee: number }
   | { kind: 'released'; candidates: PlayerId[]; max: number }
   | { kind: 'foreign'; candidates: PlayerId[]; regular: number; asia: number }
@@ -183,13 +182,13 @@ export type Decision =
   // Every year (V0.4)
   /** `social`: graded 4급 after an operation (V0.7.7), who can only serve as social service agents. */
   | { kind: 'military'; candidates: PlayerId[]; forced: PlayerId[]; social?: PlayerId[] }
-  | { kind: 'ownFreeAgents'; candidates: PlayerId[] }
   | { kind: 'rookieBonus'; picks: { id: PlayerId; slot: number; ask: number }[]; final: boolean }
   | { kind: 'development'; candidates: PlayerId[]; max: number }
   | { kind: 'camp'; players: PlayerId[] }
-  // The market (V0.5)
-  /** `gift` (V0.7.7): the owner pays for one free agent this winter (outside the payroll budget). */
-  | { kind: 'faMarket'; candidates: PlayerId[]; grades: Record<PlayerId, 'A' | 'B' | 'C'>; limit: number; gift?: ParentGift }
+  // The market (V0.5); since V0.8 the free-agent negotiation in rounds (fa.ts, the market on `offseason.fa`)
+  | { kind: 'faRound'; round: number; day: number; date: string }
+  /** Free-agent deals whose guaranteed seasons end with a club option (V0.8): take it up or let him go. */
+  | { kind: 'faOptions'; rows: { id: PlayerId; years: number; annual: number }[] }
   | { kind: 'faProtect'; fa: PlayerId; grade: 'A' | 'B'; from: TeamId; protect: number; candidates: PlayerId[] }
   | { kind: 'faCompensation'; fa: PlayerId; grade: 'A' | 'B'; to: TeamId; list: PlayerId[]; withPlayer: number; cashOnly: number }
   | { kind: 'salaries'; rows: SalaryRow[] }
@@ -270,14 +269,30 @@ export interface OffseasonState {
   done: string[];
   /** The AI clubs have decided which foreign players to keep, ahead of the user's foreign signings (V0.7.3). */
   foreignRenewed?: boolean;
-  /** The free-agent market: the user's offers, whether it has run, and the decisions it left for the user. */
-  faOffers?: Record<PlayerId, { annual: number; years: number }>;
-  /** The owner's free agent this winter, if the general manager kept the offer (V0.7.7). */
-  faGift?: ParentGift;
+  /** The free-agent negotiation (V0.8), whether it is over, and the decisions it left for the user. */
+  fa?: import('./fa').FaMarket;
   faDone?: boolean;
   faQueue?: import('./market').FaQueueItem[];
   /** The second draft in progress (odd winters). */
   second?: import('./seconddraft').SecondDraftState | null;
+}
+
+/** A spot in the batting order the general manager fixed: who bats there and where he plays. */
+export interface LineupSlot {
+  id: PlayerId;
+  pos: import('./engine/types').FieldPos;
+}
+
+/**
+ * The general manager's lineup card (V0.8): the nine spots of the batting order against a right-handed (`R`)
+ * and a left-handed (`L`) starter, each fixed or left to the manager (null); the starting rotation in order
+ * (the manager fills the rest of the five); and whether fixed regulars still get the manager's days off.
+ */
+export interface LineupCard {
+  R: (LineupSlot | null)[];
+  L: (LineupSlot | null)[];
+  rotation: PlayerId[];
+  rest: boolean;
 }
 
 /** The club the user runs (V0.3: an expansion club). Money in 만 원. */
@@ -295,6 +310,8 @@ export interface UserClub {
   penRoles?: Record<PlayerId, BullpenRole>;
   /** Platoon halves: players who start only against left- ('L') or right-handed ('R') starters. */
   platoon?: Record<PlayerId, 'L' | 'R'>;
+  /** The general manager's lineup card (V0.8): spots he fixed himself; the manager fills the rest. */
+  lineup?: LineupCard;
   /** First-team registrations: the manager's (auto) or the general manager's own (manual). */
   entry?: 'auto' | 'manual';
   /** Most the parent will pay this year to cover a deficit (V0.6; 만 원). */
@@ -316,6 +333,8 @@ export interface UserClub {
   mayor?: Mayor;
   /** Free agents the owner paid for (V0.7.7): their salary is added to the payroll budget while they are under contract. */
   parentGifts?: { id: PlayerId; name: string; annual: number; from: number; to: number }[];
+  /** Promises made to free agents (V0.8) and whether they were kept: broken ones cost later free agents' trust. */
+  promises?: { year: number; id: PlayerId; name: string; kind: import('../model/types').FaPromise; kept: boolean }[];
   /** The club's story: timeline of firsts and big moments, and unlocked achievements (V0.7). */
   timeline?: { year: number; text: string; key?: string }[];
   achievements?: { id: string; year: number }[];
@@ -486,8 +505,3 @@ export function moveTo(s: LeagueState, id: PlayerId, squad: Squad) {
 export const emptyRoster = (): ClubRoster => ({ active: [], futures: [], third: [] });
 
 /** The owner pays for a free agent (V0.7.7): the offer it makes, outside the payroll budget. */
-export interface ParentGift {
-  id: PlayerId;
-  annual: number;
-  years: number;
-}

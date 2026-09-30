@@ -11,7 +11,8 @@ import { era, obp, slg } from '../src/league/stats';
 import { createLeague } from '../src/league/history';
 import { militaryDecision } from '../src/league/userclub';
 import { electMayor, ownerEvents, sponsorOffers, sponsorReview } from '../src/league/parent';
-import { faGrades, marketValue, parentGift } from '../src/league/market';
+import { faGrades, parentGiftFor } from '../src/league/market';
+import { guaranteed, splitOffer } from '../src/league/fa';
 import { freeAgentsFor } from '../src/league/offseason';
 
 let s: LeagueState;
@@ -227,20 +228,34 @@ describe('owners (V0.7.7)', () => {
     apply(c, { kind: 'regularEnd' });
     apply(c, { kind: 'postseason' });
     apply(c, { kind: 'nextSeason' });
-    while (c.pending && c.pending.kind !== 'faMarket') apply(c, { kind: 'decide', input: autoDecision(c)! });
-    expect(c.pending?.kind).toBe('faMarket');
+    while (c.pending && c.pending.kind !== 'faRound') apply(c, { kind: 'decide', input: autoDecision(c)! });
+    expect(c.pending?.kind).toBe('faRound');
     const fas = freeAgentsFor(c, 2027);
     const grades = faGrades(c, 2027, fas);
-    const gifts = Array.from({ length: 60 }, (_, i) => parentGift({ ...c, seed: `gift-${i}` }, 2027, fas, grades)).filter(Boolean);
+    const gifts = Array.from({ length: 60 }, (_, i) => parentGiftFor({ ...c, seed: `gift-${i}` }, 2027, fas, grades)).filter(Boolean);
     expect(gifts.length).toBeGreaterThan(1);
     expect(gifts.length).toBeLessThan(20);
     const g = gifts[0]!;
     expect(c.players[g.id]!.teamId).not.toBe(EXPANSION_ID);
-    expect(g.annual).toBeGreaterThanOrEqual(marketValue(c.players[g.id]!, 2027).annual);
-    // Kept, the offer does not count against the payroll budget.
-    const d = { ...(c.pending as Extract<NonNullable<LeagueState['pending']>, { kind: 'faMarket' }>), gift: g };
-    c.pending = d;
+    // The owner pays up to the market's guaranteed money + 20%: outside the payroll budget and the fund.
+    const m = c.offseason!.fa!;
+    const t = m.talks[g.id]!;
+    m.gift = { id: g.id, total: Math.round(guaranteed(t.price) * g.premium), years: t.price.years };
     c.user!.payrollBudget = 0;
-    expect(checkDecision(c, { kind: 'faMarket', offers: { [g.id]: { annual: g.annual, years: g.years } } })).toBeNull();
+    c.user!.fund = 0;
+    const offer = splitOffer(m.gift.total - 5000, t.price.years, 0.5, 0, 2027);
+    expect(checkDecision(c, { kind: 'faRound', offers: { [g.id]: offer }, run: 'round' })).toBeNull();
+    expect(checkDecision(c, { kind: 'faRound', offers: { [g.id]: splitOffer(m.gift.total + 20000, t.price.years, 0.5, 0, 2027) }, run: 'round' })).toMatch(/모기업 지원 한도/);
+    // He takes it (nobody else bids here): nothing from the fund, his cost on top of the budget.
+    t.offers = {};
+    t.interest = {};
+    t.floor = 1;
+    apply(c, { kind: 'decide', input: { kind: 'faRound', offers: { [g.id]: offer }, run: 'round' } });
+    expect(c.players[g.id]!.teamId).toBe(EXPANSION_ID);
+    expect(c.user!.fund).toBe(0);
+    // The budget grows by the whole season's cost (salary and the bonus spread over the deal).
+    const season = offer.annual + Math.round(offer.bonus / offer.years);
+    expect(c.user!.parentGifts?.at(-1)).toMatchObject({ id: g.id, annual: season });
+    expect(c.user!.payrollBudget).toBe(season);
   }, 300_000);
 });

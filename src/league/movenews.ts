@@ -25,7 +25,8 @@ export type Move =
   /** `out` is passed whole: a foreign player with no first-team record leaves the player list. */
   | { type: 'foreign'; teamId: TeamId; out: Player; in: PlayerId; price: number }
   | { type: 'posting'; teamId: TeamId; id: PlayerId; deal: { years: number; total: number; fee: number } | null }
-  | { type: 'fa'; from: TeamId; to: TeamId; id: PlayerId; years: number; annual: number; grade: string }
+  /** A free-agent deal: since V0.8 with its bonus, incentives and period option. */
+  | { type: 'fa'; from: TeamId; to: TeamId; id: PlayerId; years: number; annual: number; grade: string; bonus?: number; options?: number; extra?: { years: number; holder: 'club' | 'player' } }
   | { type: 'secondDraft'; teamId: TeamId; from: TeamId; id: PlayerId; round: number }
   /** A posted player back from the majors (V0.7.3): with the club that posted him (`own`) or another. */
   | { type: 'returnee'; teamId: TeamId; id: PlayerId; years: number; annual: number; abroad: number; own: boolean };
@@ -277,14 +278,20 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
       const stay = m.to === m.from;
       const id = `mv-fa-${date}-${m.id}`;
       const r = recent(s, x);
-      const terms = `${m.years}년, 연 ${won(m.annual)}`;
+      const bonus = m.bonus ?? 0,
+        options = m.options ?? 0;
+      const total = bonus + m.annual * m.years + options + (m.extra ? m.annual * m.extra.years : 0);
+      const len = m.extra ? `${m.years}+${m.extra.years}년` : `${m.years}년`;
+      const terms = bonus || options ? `${len} 총액 ${won(total)}` : `${len}, 연 ${won(m.annual)}`;
+      const parts = [bonus ? `계약금 ${won(bonus)}` : '', `연봉 ${won(m.annual)}`, options ? `옵션 ${won(options)}` : ''].filter(Boolean).join(', ');
+      const option = m.extra ? (m.extra.holder === 'club' ? ` ${m.years}년 뒤에는 구단이 ${m.extra.years}년 연장 여부를 정한다.` : ` ${m.years}년 뒤 선수가 계약을 끝낼 수 있는 옵트아웃 조항이 들어갔다.`) : '';
       addNews(s, {
         ...base,
         id,
         title: stay ? `${to}, FA ${x.name} 잔류… ${terms}` : `FA ${x.name}, ${ro(to)} 이적… ${terms}`,
-        body: `${m.grade}등급 FA ${iga(x.name)} ${stay ? `원소속 ${to}에 남는다` : `${eulreul(from)} 떠나 ${wagwa(to)} 계약했다`}. 조건은 ${terms}.${r ? ` ${x.name}의 기록은 ${r}.` : ''}${!stay ? ` ${eunneun(from)} 보상을 받는다.` : ''}`,
+        body: `${m.grade}등급 FA ${iga(x.name)} ${stay ? `원소속 ${to}에 남는다` : `${eulreul(from)} 떠나 ${wagwa(to)} 계약했다`}. 조건은 ${terms}${bonus || options ? ` (${parts})` : ''}.${option}${r ? ` ${x.name}의 기록은 ${r}.` : ''}${!stay ? ` ${eunneun(from)} 보상을 받는다.` : ''}`,
         quotes: [said(x, pick(stay ? STAY : ARRIVAL, id)), ...(mine ? fans(stay ? FANS.stay : m.from === u ? FANS.leaving : FANS.signing, id) : [])],
-        facts: { type: 'FA 계약', date, player: x.name, grade: m.grade, from, to, years: m.years, annual: won(m.annual) },
+        facts: { type: 'FA 계약', date, player: x.name, grade: m.grade, from, to, years: m.years, annual: won(m.annual), ...(bonus ? { bonus: won(bonus) } : {}), ...(options ? { options: won(options) } : {}), ...(m.extra ? { option: `${m.extra.years}년 ${m.extra.holder === 'club' ? '구단' : '선수'} 옵션` } : {}), total: won(total) },
         detail: playerFacts(s, x, season),
         players: [x.id],
         mine,
