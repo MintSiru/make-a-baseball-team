@@ -456,7 +456,8 @@ button:disabled {
   align-items: flex-start;
   padding: 24px 12px;
   overflow-y: auto;
-  z-index: 10;
+  /* Above the sticky progress bar (10), below toasts and event pop-ups (20). */
+  z-index: 15;
 }
 .dialog {
   position: relative;
