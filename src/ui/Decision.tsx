@@ -95,7 +95,9 @@ function usePlayerSort(players: Player[], year: number, extra?: Extra) {
  */
 function SelectAllCell({ ids, selected, toggle, max }: { ids: PlayerId[]; selected?: Set<PlayerId>; toggle: (id: PlayerId) => void; max?: number }) {
   const on = ids.filter((id) => selected?.has(id)).length;
-  const target = Math.min(max ?? ids.length, ids.length);
+  // The limit is for the whole decision: players picked in the other lists count against it.
+  const room = max == null ? ids.length : Math.max(0, max - ((selected?.size ?? 0) - on));
+  const target = Math.min(room, ids.length);
   const flip = () => {
     if (on > 0) for (const id of ids) selected?.has(id) && toggle(id);
     else for (const id of ids.slice(0, target)) toggle(id);
@@ -104,8 +106,9 @@ function SelectAllCell({ ids, selected, toggle, max }: { ids: PlayerId[]; select
     <th>
       <input
         type="checkbox"
-        aria-label={on > 0 ? '모두 해제' : max && max < ids.length ? `위에서 ${target}명 선택` : '모두 선택'}
-        title={on > 0 ? '모두 해제' : max && max < ids.length ? `지금 정렬 순서로 위에서 ${target}명 선택` : '모두 선택'}
+        aria-label={on > 0 ? '모두 해제' : target < ids.length ? `위에서 ${target}명 선택` : '모두 선택'}
+        title={on > 0 ? '모두 해제' : target < ids.length ? `지금 정렬 순서로 위에서 ${target}명 선택` : '모두 선택'}
+        disabled={on === 0 && target === 0}
         checked={on > 0 && on >= target}
         ref={(el) => {
           if (el) el.indeterminate = on > 0 && on < target;

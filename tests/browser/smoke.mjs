@@ -32,6 +32,9 @@ const noOverflow = async (page, label) => {
   check(overflow <= 0, `${label}: page scrolls sideways by ${overflow}px`);
 };
 
+/** Batch choices (V0.7.6) are tried once each: the select-all box and a row of one-click settings. */
+const batch = { all: false, bar: false };
+
 /** Makes every pending decision the way the scouts suggest (draft picks: the first one by hand). */
 async function decideAll(page, log) {
   let handPicked = false;
@@ -50,6 +53,23 @@ async function decideAll(page, log) {
         await page.waitForFunction((n) => !document.querySelector('.pick-table .link') || document.querySelector('.decision')?.textContent?.includes(n), name);
       } else await page.getByRole('button', { name: '스카우트에게 맡기기' }).click();
     } else {
+      const all = page.locator('.decision th input[type=checkbox]').first();
+      if (!batch.all && (await all.count())) {
+        batch.all = true;
+        const rows = page.locator('.decision tbody input[type=checkbox]');
+        const total = await rows.count();
+        await all.check();
+        const picked = await page.locator('.decision tbody input[type=checkbox]:checked').count();
+        check(picked > 0 && picked <= total, `${title}: select-all picks players (${picked}/${total})`);
+        await all.uncheck();
+        check((await page.locator('.decision tbody input[type=checkbox]:checked').count()) === 0, `${title}: select-all clears the picks`);
+      }
+      const bar = page.locator('.bulk-bar button').first();
+      if (!batch.bar && (await bar.count())) {
+        batch.bar = true;
+        await bar.click();
+        check((await page.locator('.decision select').count()) > 0, `${title}: one-click setting leaves the per-player choices`);
+      }
       await page.getByRole('button', { name: /추천으로 채우기/ }).click();
       const confirm = page.getByRole('button', { name: '확정' });
       if (await confirm.isDisabled()) {
@@ -111,6 +131,14 @@ try {
   await page.locator('.tutorial').getByRole('button', { name: '알겠어요' }).click();
   await page.waitForFunction(() => document.querySelector('.tutorial h2')?.textContent === '결정할 일');
   check((await page.locator('h1').textContent()) === '울산 고래단', 'masthead shows the club');
+  // Display settings (V0.7.6): the bar colours by grade tier, kept in this browser.
+  await page.getByRole('button', { name: '화면 설정', exact: true }).click();
+  await page.getByRole('radio', { name: /등급별 색/ }).check();
+  check((await page.evaluate(() => document.documentElement.style.getPropertyValue('--grade-4'))) !== '', 'bar colours by grade tier are applied');
+  await page.getByRole('checkbox', { name: /선수 표의 현재·미래 능력치/ }).check();
+  check((await page.evaluate(() => document.documentElement.dataset.gradeTables)) === 'on', 'grades in the tables can be coloured');
+  await page.screenshot({ path: join(shots, 'display-settings.png'), fullPage: false });
+  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
   const log = [];
   await decideAll(page, log);
 
