@@ -11,7 +11,7 @@ import { salaryIn, usdTotal } from './contracts';
 import { ageIn, isForeign, isPitcher } from './players';
 import { currentStandings } from './season';
 import { SANGMU } from './futures';
-import { lineupFor, penRoles, PEN_ROLE_LABELS, rotationFor } from './manager';
+import { lineupFor, managerLean, penRoles, PEN_ROLE_LABELS, rotationFor } from './manager';
 import { isDevelopment, type LeagueState } from './state';
 import { avg, babip, babipAllowed, batterWar, era, fip, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
 import { addInto, emptyBat, emptyPit } from './state';
@@ -395,7 +395,13 @@ export function lineupView(s: LeagueState, teamId: TeamId, vs: 'L' | 'R') {
   const active = r.active;
   const player = (id: PlayerId) => s.players[id]!;
   const line = (id: PlayerId) => s.lines[id];
-  const lineup = lineupFor(s, active, undefined, false, vs).map((b, i) => {
+  // The manager's usual lineup (his style sets the order), and who sits out the club's next game.
+  const { style, prefer } = managerLean(s, teamId);
+  const usual = lineupFor(s, active, prefer, false, vs, { style });
+  const next = s.phase === 'regular' ? s.schedule.slice(s.next).find((g) => g.home === teamId || g.away === teamId) : undefined;
+  const nextIds = next ? new Set(lineupFor(s, active, prefer, false, vs, { style, date: next.date }).map((b) => b.id)) : null;
+  const resting = nextIds ? usual.filter((b) => !nextIds.has(b.id)).map((b) => ({ id: b.id, name: player(b.id).name, pos: b.pos, date: next!.date })) : [];
+  const lineup = usual.map((b, i) => {
     const p = player(b.id);
     const bat = line(b.id)?.bat;
     const tl = p.scouting.tools;
@@ -413,7 +419,7 @@ export function lineupView(s: LeagueState, teamId: TeamId, vs: 'L' | 'R') {
       tools: { contact: tl.contact ?? 0, power: tl.power ?? 0, eye: tl.eye ?? 0, speed: tl.speed ?? 0, defense: tl.defense ?? 0 },
     };
   });
-  const rotation = rotationFor(s, active);
+  const rotation = rotationFor(s, active, prefer);
   const nextUp = s.rotation[teamId] ?? 0;
   const starters = rotation.map((p, i) => {
     const pit = line(p.id)?.pit;
@@ -434,7 +440,7 @@ export function lineupView(s: LeagueState, teamId: TeamId, vs: 'L' | 'R') {
     .map(player)
     .filter((p) => !isPitcher(p) && !starting.has(p.id))
     .map((p) => ({ id: p.id, name: p.name, pos: positionLabel(p), bats: p.bats, injured: !!s.injuries[p.id], grade: p.scouting.current }));
-  return { lineup, starters, bullpen, bench };
+  return { lineup, starters, bullpen, bench, resting, style };
 }
 
 // ── Record room and awards (V0.7) ─────────────────────────────────────────────────────────────────

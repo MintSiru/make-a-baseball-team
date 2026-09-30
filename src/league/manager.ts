@@ -7,7 +7,7 @@ import type { BatterIn, BullpenRole, FieldPos, Hand, PitcherIn, RelieverIn, Team
 import { hashUnit } from '../draftroom';
 import { ageIn, batValue, currentValue, isForeign, isPitcher, keepValue, starterValue } from './players';
 import { staffEdge, staffRating } from './staff';
-import { hasBenefits, registeredIds, type LeagueState } from './state';
+import { hasBenefits, registeredIds, type LeagueState, type ManagerStyle } from './state';
 import { EXPANSION_DEFAULTS, KBO_2026 } from '../rules/kbo2026';
 import { platoonFactor } from './pitches';
 import { ENGINE, STAFF } from './tuning';
@@ -368,14 +368,17 @@ export interface SquadSpec {
   prefer?: Prefer;
 }
 
+/** The manager's leanings: his style (the batting order, the hook), and a youth-minded one gives young players a little more. */
+export function managerLean(s: LeagueState, teamId: TeamId, base: Prefer = none): { style?: ManagerStyle; prefer: Prefer } {
+  const style = s.clubs?.[teamId]?.staff?.manager?.style;
+  return { style, prefer: style === 'youth' ? (p) => base(p) + (ageIn(p, s.year) <= 25 ? 3 : 0) : base };
+}
+
 /** Both clubs' engine inputs for one game: starters first, so each lineup can be set against the other starter. */
 export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away: SquadSpec): { home: TeamIn | null; away: TeamIn | null } {
   const plan = (x: SquadSpec) => {
     const ids = x.ids ?? s.rosters[x.teamId]!.active;
-    const style = s.clubs?.[x.teamId]?.staff?.manager?.style;
-    // A youth-minded manager gives young players a little more.
-    const base = x.prefer ?? none;
-    const prefer: Prefer = style === 'youth' ? (p) => base(p) + (ageIn(p, s.year) <= 25 ? 3 : 0) : base;
+    const { style, prefer } = managerLean(s, x.teamId, x.prefer);
     const rotation = rotationFor(s, ids, prefer);
     const hook = style === 'quickHook' ? ENGINE.hook.quickHook : style === 'patient' ? ENGINE.hook.patient : 0;
     return { x, ids, prefer, rotation, style, sp: starterFor(s, x.rotationKey ?? x.teamId, date, rotation, hook) };

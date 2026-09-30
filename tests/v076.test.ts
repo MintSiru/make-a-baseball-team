@@ -2,6 +2,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { bootstrap } from '../src/league/history';
 import { assign, lineupFor } from '../src/league/manager';
+import { lineupView } from '../src/league/views';
 import { rng } from '../src/draftroom';
 import { fitPenalty, positionGames } from '../src/league/positions';
 import type { LeagueState } from '../src/league/state';
@@ -92,6 +93,32 @@ describe('the manager’s lineup', () => {
     }
     expect(off).toBeGreaterThanOrEqual(7);
     expect(off).toBeLessThanOrEqual(13);
+  });
+});
+
+describe('the lineup screen', () => {
+  it('shows the order the manager really bats, and who sits out the next game', () => {
+    const t = s.teams[1]!;
+    const manager = s.clubs![t.id]!.staff.manager!;
+    const was = manager.style;
+    manager.style = 'smallBall';
+    const shown = lineupView(s, t.id, 'R')!;
+    expect(shown.style).toBe('smallBall');
+    expect(shown.lineup.map((b) => b.id)).toEqual(lineupFor(s, s.rosters[t.id]!.active, undefined, false, 'R', { style: 'smallBall' }).map((b) => b.id));
+    manager.style = was;
+    // Over the first weeks somebody is due a day off, and he is named.
+    const saved = s.next;
+    let named = 0;
+    for (let i = 0; i < 60; i++) {
+      s.next = s.schedule.findIndex((g, k) => k >= i * 5 && (g.home === t.id || g.away === t.id));
+      const v = lineupView(s, t.id, 'R')!;
+      if (v.resting.length) {
+        named++;
+        expect(v.lineup.some((b) => b.id === v.resting[0]!.id)).toBe(true);
+      }
+    }
+    s.next = saved;
+    expect(named).toBeGreaterThan(0);
   });
 });
 

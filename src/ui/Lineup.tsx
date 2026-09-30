@@ -2,6 +2,7 @@
    right- or left-handed starter, the rotation (next starter marked) and the bullpen by role. */
 import { useState } from 'preact/hooks';
 import type { LeagueState } from '../league/state';
+import { MANAGER_STYLES } from '../league/staff';
 import { lineupView, rates } from '../league/views';
 import { gradeTier } from './display';
 import { gradeClass } from './grades';
@@ -43,6 +44,7 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
     ...(next ? [{ pos: 'P', id: next.id, name: next.name, number: undefined, grade: next.grade }] : []),
   ];
   const dh = v.lineup.find((b) => b.pos === 'DH');
+  const style = v.style && v.style !== 'balanced' ? MANAGER_STYLES[v.style] : null;
   return (
     <div class="lineup">
       <div class="segmented" role="group" aria-label="상대 선발">
@@ -53,8 +55,18 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
           상대 좌완 선발
         </button>
       </div>
+      {style && (
+        <p class="small">
+          감독 성향: <strong>{style.label}</strong> <span class="muted">({style.note})</span>
+        </p>
+      )}
+      {v.resting.length > 0 && (
+        <p class="notice">
+          다음 경기({v.resting[0]!.date.slice(5).replace('-', '/')}) 휴식 예정: {v.resting.map((r) => `${r.name}(${r.pos})`).join(', ')} — 감독이 체력 관리로 쉬게 합니다.
+        </p>
+      )}
       <p class="muted">
-        감독이 오늘 짤 라인업입니다 (직접 관리에서 정한 플래툰·불펜 보직 반영). 타격과 포지션별 수비를 함께 따져 9명과 수비 위치를 정하고, 가장 좋은 타자 셋을 1·2·4번, 다음 둘을 3·5번에 둡니다(작전형 감독은 출루·발 빠른 타자를 앞에, 거포를 중심에). 시즌 중에는 주전 포수가 7경기에 한 번, 34세 이상은 12경기에 한 번꼴로 쉽니다. 부상·대표팀 선수는 빠집니다. 능력치는 스카우팅 등급(20~80)이며, 투수는 현재 (구위/제구/변화구/체력) 순입니다.
+        감독이 평소 짜는 라인업입니다 (직접 관리에서 정한 플래툰·불펜 보직 반영). 타격과 포지션별 수비를 함께 따져 9명과 수비 위치를 정하고, 가장 좋은 타자 셋을 1·2·4번, 다음 둘을 3·5번에 둡니다(작전형 감독은 출루·발 빠른 타자를 앞에, 거포를 중심에). 시즌 중에는 주전 포수가 7경기에 한 번, 34세 이상은 12경기에 한 번꼴로 쉽니다. 부상·대표팀 선수는 빠집니다. 능력치는 스카우팅 등급(20~80)이며, 투수는 현재 (구위/제구/변화구/체력) 순입니다.
       </p>
       <div class="lineup-grid">
         <svg viewBox="0 0 400 320" class="diamond" role="img" aria-label="수비 위치">
