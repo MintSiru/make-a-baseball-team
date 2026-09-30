@@ -6,14 +6,16 @@
    change as it signs. Decisions the user owes afterwards (a protected list when the user signed an
    A/B free agent, a compensation pick when an AI club signed one of the user's) wait in a queue on the
    offseason state. Money in 만 원. */
-import { iga, ro } from './josa';
+import { eulreul, iga, ro } from './josa';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { KBO_2026, salaryCapFor } from '../rules/kbo2026';
 import { renewSalary, salaryIn } from './contracts';
 import { freeAgentsFor, leaveLeague, removeFromRoster } from './offseason';
 import { ageIn, currentValue, isForeign, isPitcher, keepValue } from './players';
-import { firstTeamIds, orgIds, orgPlayers, registeredIds, type Decision, type LeagueState } from './state';
-import { MARKET } from './tuning';
+import { firstTeamIds, orgIds, orgPlayers, registeredIds, type Decision, type LeagueState, type ParentGift } from './state';
+import { MARKET, PARENT } from './tuning';
+import { addAlert } from './alerts';
+import { rng } from '../draftroom';
 import { moveNews } from './movenews';
 
 export type FaGrade = 'A' | 'B' | 'C';
@@ -264,7 +266,53 @@ export function marketDecision(s: LeagueState, next: number): Decision | null {
   const fas = freeAgentsFor(s, next);
   if (!fas.length) return null;
   const grades = faGrades(s, next, fas);
-  return { kind: 'faMarket', candidates: fas.map((p) => p.id), grades, limit: externalLimit(fas.length) };
+  const gift = parentGift(s, next, fas, grades);
+  return { kind: 'faMarket', candidates: fas.map((p) => p.id), grades, limit: externalLimit(fas.length), ...(gift ? { gift } : {}) };
+}
+
+/**
+ * Now and then a conglomerate or mid-size owner decides to buy the club a star (V0.7.7): the best A- or
+ * B-grade free agent of another club, at the market price plus 20%, paid outside the payroll budget for the
+ * whole contract. The general manager can keep or drop the offer. Not in the winter before the first team.
+ */
+export function parentGift(s: LeagueState, next: number, fas: Player[], grades: Record<PlayerId, FaGrade>): ParentGift | null {
+  const u = s.user;
+  if (!u || next <= u.firstTeamYear) return null;
+  const G = PARENT.faGift;
+  if (rng(`${s.seed}|fa-gift|${next}`)() >= G[u.settings.parentType]) return null;
+  const pick = fas
+    .filter((p) => p.teamId !== u.teamId && grades[p.id] !== 'C' && ageIn(p, next) <= G.maxAge)
+    .sort((a, b) => marketValue(b, next).annual - marketValue(a, next).annual)[0];
+  if (!pick) return null;
+  const m = marketValue(pick, next);
+  const gift = { id: pick.id, annual: Math.round((m.annual * G.premium) / 1000) * 1000, years: m.years };
+  addAlert(s, {
+    id: `fa-gift-${next}`,
+    date: `${next - 1}-11-25`,
+    kind: 'owner',
+    title: `모기업이 ${pick.name} 영입을 지원합니다`,
+    lines: [`${u.settings.parentName} 회장이 ${eulreul(pick.name)} 꼭 데려오라며 계약 비용을 따로 대기로 했습니다.`, `제시액 연 ${Math.round(gift.annual / 10000)}억 ${gift.years}년 (시장가 +20%)은 연봉 예산 밖에서 모기업이 부담합니다. FA 시장 화면에서 제시를 유지하거나 거절할 수 있습니다.`],
+    tone: 'good',
+    players: [pick.id],
+  });
+  return gift;
+}
+
+/** After the market: the owner's free agent, if he signed, is paid for outside the budget for his whole deal. */
+export function settleParentGift(s: LeagueState, next: number) {
+  const u = s.user;
+  const g = s.offseason?.faGift;
+  if (!u || !g) return;
+  const p = s.players[g.id];
+  const year = next - 1;
+  if (p && p.teamId === u.teamId) {
+    const annual = p.contract?.salaries.find((x) => x.season === next)?.amount ?? g.annual;
+    const years = p.contract?.salaries.length ?? g.years;
+    (u.parentGifts ??= []).push({ id: p.id, name: p.name, annual, from: next, to: next + years - 1 });
+    u.payrollBudget += annual;
+    (u.log ??= []).push({ year, text: `모기업 지원으로 FA ${p.name} 영입 (연 ${Math.round(annual / 10000)}억, ${years}년, 연봉 예산 밖)` });
+  } else if (p) (u.log ??= []).push({ year, text: `모기업이 지원한 FA ${p.name} 영입 실패 (${p.teamId ? '다른 구단 선택' : '미계약'})` });
+  delete s.offseason!.faGift;
 }
 
 /** The next decision the user owes after the market, or null. */

@@ -16,6 +16,8 @@ import { MANAGER_STYLES, STAFF_EFFECTS, STAFF_LABELS } from '../league/staff';
 import type { Position } from '../model/position';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { money } from './format';
+import { serviceNote } from '../league/military';
+import { goalText } from '../league/parent';
 import { gradeClass } from './grades';
 import { positionKey, useSort, type SortColumn } from './sort';
 
@@ -337,7 +339,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       case 'specialDraft':
         return { kind: 'specialDraft', picks: special };
       case 'military':
-        return { kind: 'military', orders: Object.fromEntries(Object.entries(choices).filter(([, v]) => v === 'sangmu' || v === 'army')) as Record<PlayerId, MilitaryOrder> };
+        return { kind: 'military', orders: Object.fromEntries(Object.entries(choices).filter(([, v]) => v === 'sangmu' || v === 'army' || v === 'social')) as Record<PlayerId, MilitaryOrder> };
       case 'rookieBonus':
         return { kind: 'rookieBonus', offers: Object.fromEntries(d.picks.map((pk) => [pk.id, bonusOffer(pk.id, pk)])) };
       case 'camp':
@@ -396,9 +398,11 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       case 'camp':
         setPlans(a.plans);
         break;
-      case 'faMarket':
-        setChoices(Object.fromEntries(Object.keys(a.offers).map((id) => [id, 'base'])));
+      case 'faMarket': {
+        const gift = (d as Extract<DecisionT, { kind: 'faMarket' }>).gift;
+        setChoices(Object.fromEntries(Object.keys(a.offers).map((id) => [id, id === gift?.id ? 'p20' : 'base'])));
         break;
+      }
       case 'faCompensation':
         setChoices({ pick: a.player ?? 'cash' });
         break;
@@ -611,6 +615,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
           <p>
             군 미필 선수 {players.length}명입니다. 상무에 지원하면 합격할 때만 입대하고 (퓨처스리그에서 상무 소속으로 뜀), 현역은 바로 입대합니다. 둘 다 18개월 뒤 6월에 돌아옵니다.
             만 28세 이상은 올해 입대해야 합니다.
+            {d.social?.length ? ' 큰 수술 뒤 병역판정 4급을 받은 선수는 상무·현역 대신 사회복무요원(21개월, 그동안 경기 출전 불가)으로 복무하며, 재활 중에 소집되면 재활과 복무를 함께 합니다.' : ''}
           </p>
           <BulkBar
             options={[
@@ -618,7 +623,15 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
               ['sangmu', '모두 상무 지원'],
               ['army', '모두 현역 입대'],
             ]}
-            onApply={(v) => setChoices((prev) => ({ ...prev, ...Object.fromEntries(players.filter((p) => v !== 'stay' || !d.forced.includes(p.id)).map((p) => [p.id, v])) }))}
+            onApply={(v) =>
+              setChoices((prev) => ({
+                ...prev,
+                // 4급 players can only go to social service; the forced ones cannot stay.
+                ...Object.fromEntries(
+                  players.filter((p) => (v === 'stay' ? !d.forced.includes(p.id) : !d.social?.includes(p.id))).map((p) => [p.id, v]),
+                ),
+              }))
+            }
           />
           <PlayerTable
             league={league}
@@ -626,11 +639,25 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
             onPlayer={onPlayer}
             extra={{ title: '상무 합격 가능성', value: (p) => pct(sangmuChance(p, next)), sort: (p) => sangmuChance(p, next) }}
             control={(p) => (
-              <select value={choices[p.id] ?? (d.forced.includes(p.id) ? '' : 'stay')} onChange={(e) => choose(p.id, (e.currentTarget as HTMLSelectElement).value)} aria-label={`${p.name} 병역`}>
-                {d.forced.includes(p.id) ? <option value="">골라야 함</option> : <option value="stay">미룸</option>}
-                <option value="sangmu">상무 지원</option>
-                <option value="army">현역 입대</option>
-              </select>
+              <span class="row-actions">
+                <select value={choices[p.id] ?? (d.forced.includes(p.id) ? '' : 'stay')} onChange={(e) => choose(p.id, (e.currentTarget as HTMLSelectElement).value)} aria-label={`${p.name} 병역`}>
+                  {d.forced.includes(p.id) ? <option value="">골라야 함</option> : <option value="stay">미룸</option>}
+                  {d.social?.includes(p.id) ? (
+                    <option value="social">사회복무요원 소집</option>
+                  ) : (
+                    <>
+                      <option value="sangmu">상무 지원</option>
+                      <option value="army">현역 입대</option>
+                    </>
+                  )}
+                </select>
+                {d.social?.includes(p.id) && (
+                  <span class="tag warn" title={serviceNote(p)}>
+                    4급
+                  </span>
+                )}
+                {league.injuries[p.id] && <span class="muted small">재활 중</span>}
+              </span>
             )}
           />
         </>
@@ -692,9 +719,21 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
     case 'faMarket': {
       const players = d.candidates.map((id) => league.players[id]!);
       const outside = Object.entries(choices).filter(([id, c]) => c !== 'none' && league.players[id]!.teamId !== u.teamId).length;
-      const cost = input && input.kind === 'faMarket' ? Object.values(input.offers).reduce((a, o) => a + o.annual, 0) : 0;
+      const cost = input && input.kind === 'faMarket' ? Object.entries(input.offers).reduce((a, [id, o]) => a + (id === d.gift?.id ? 0 : o.annual), 0) : 0;
+      const giftPlayer = d.gift ? league.players[d.gift.id] : undefined;
       body = (
         <>
+          {d.gift && giftPlayer && (
+            <div class="notice good">
+              <strong>모기업 지원</strong>: 회장이 {giftPlayer.name} 영입 비용을 따로 대기로 했습니다. 시장가 +20% (연 {money(d.gift.annual)}, {d.gift.years}년)는 계약 기간 내내 연봉 예산 밖에서 모기업이 냅니다.
+              제시를 빼면 사양한 것으로 보고 신뢰도가 조금 떨어집니다.{' '}
+              {choices[d.gift.id] !== 'p20' && (
+                <button type="button" onClick={() => choose(d.gift!.id, 'p20')}>
+                  제시 넣기
+                </button>
+              )}
+            </div>
+          )}
           <p>
             올겨울 FA {players.length}명입니다. 다른 구단 FA는 {d.limit}명까지 영입할 수 있고 (지금 {outside}명), 우리 FA를 붙잡으려면 우리도 제시해야 합니다. 선수는 받은 제안 중 가장 좋은 곳과 계약하고
             (원소속 구단을 조금 더 선호), A·B등급 FA를 데려오면 원소속 구단에 보상선수와 보상금을 줍니다.
@@ -847,9 +886,10 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       const pick = choices.pick ?? '0';
       body = (
         <>
+          {d.ended && <p class="notice warn">{d.ended}</p>}
           <p>
             명명권 계약이 끝났습니다. 지금 스폰서와 재계약하거나 새 스폰서를 받을 수 있습니다. 새 스폰서를 받으면 구단명과 약칭이 스폰서 이름으로 바뀝니다 (키움 히어로즈 방식). 명명권료는 구단 인기와 성적을
-            따라갑니다.
+            따라갑니다. 스폰서마다 원하는 목표가 다르고, 많이 주는 곳일수록 목표가 높고 목표를 못 채우면 계약 도중에 해지할 수 있습니다 (두 해 연속이면 더 쉽게).
           </p>
           <div class="table-wrap">
             <table class="record-table">
@@ -859,6 +899,8 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
                   <th>스폰서</th>
                   <th class="num">연간</th>
                   <th class="num">기간</th>
+                  <th>목표</th>
+                  <th class="num">미달 시 해지</th>
                 </tr>
               </thead>
               <tbody>
@@ -873,6 +915,8 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
                     </td>
                     <td class="num">{money(o.annual)}</td>
                     <td class="num">{o.years}년</td>
+                    <td>{goalText(o.goal)}</td>
+                    <td class="num">{o.risk ? pct(o.risk) : '-'}</td>
                   </tr>
                 ))}
               </tbody>

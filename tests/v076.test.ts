@@ -78,7 +78,7 @@ describe('the manager’s lineup', () => {
     }
   });
 
-  it('gives the starting catcher about one day in seven off in the season, never without a catcher', () => {
+  it('gives the starting catcher about one game in five or six off in the season, never without a catcher', () => {
     const t = s.teams[0]!;
     const ids = s.rosters[t.id]!.active;
     const opening = s.schedule[0]!.date;
@@ -92,7 +92,7 @@ describe('the manager’s lineup', () => {
       if (!lineup.some((b) => b.id === everyday)) off++;
     }
     expect(off).toBeGreaterThanOrEqual(7);
-    expect(off).toBeLessThanOrEqual(13);
+    expect(off).toBeLessThanOrEqual(16);
   });
 });
 
@@ -109,14 +109,15 @@ describe('the lineup screen', () => {
     // Over the first weeks somebody is due a day off, and he is named.
     const saved = s.next;
     let named = 0;
-    for (let i = 0; i < 60; i++) {
-      s.next = s.schedule.findIndex((g, k) => k >= i * 5 && (g.home === t.id || g.away === t.id));
-      const v = lineupView(s, t.id, 'R')!;
-      if (v.resting.length) {
-        named++;
-        expect(v.lineup.some((b) => b.id === v.resting[0]!.id)).toBe(true);
+    for (const club of s.teams)
+      for (let i = 0; i < 30; i++) {
+        s.next = s.schedule.findIndex((g, k) => k >= i * 5 && (g.home === club.id || g.away === club.id));
+        const v = lineupView(s, club.id, 'R')!;
+        if (v.resting.length) {
+          named++;
+          expect(v.lineup.some((b) => b.id === v.resting[0]!.id)).toBe(true);
+        }
       }
-    }
     s.next = saved;
     expect(named).toBeGreaterThan(0);
   });

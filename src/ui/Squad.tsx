@@ -32,7 +32,16 @@ function Name({ r, onPlayer }: { r: Row; onPlayer: (id: string) => void }) {
       </button>
       {r.foreign && <span class="tag">외국인</span>}
       {r.development && <span class="tag">육성</span>}
-      {r.injured && <span class="tag warn">부상</span>}
+      {r.injured && (
+        <span class="tag warn" title={r.injury}>
+          부상
+        </span>
+      )}
+      {r.knock && (
+        <span class="tag" title={r.injury}>
+          결장
+        </span>
+      )}
       {r.away && <span class="tag">대표팀</span>}
     </td>
   );

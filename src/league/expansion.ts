@@ -5,7 +5,7 @@
    game assumptions in RULES.md §9. Money is in 만 원 (10,000 = 1억). */
 import { generateDraftPool, rng } from '../draftroom';
 import { cityById } from '../club/cities';
-import { baseSupport } from './parent';
+import { baseSupport, electMayor } from './parent';
 import { milestone, unlock } from './milestones';
 import type { ParentCompanyType } from '../club/types';
 import { fromDraftProspect } from '../model/player';
@@ -140,6 +140,8 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
   s.rosters[EXPANSION_ID] = emptyRoster();
   const b = budgetFor(settings);
   s.user = { teamId: EXPANSION_ID, settings, fund: b.fund, payrollBudget: b.payrollBudget, firstTeamYear, ledger: [], support: Math.round(baseSupport(settings.parentType) * DIFFICULTY_MONEY[settings.difficulty]), trust: PARENT.startTrust, budgetScale: 1 };
+  // A citizen club is founded by the mayor elected in June 2026 (parent.ts).
+  if (settings.parentType === 'citizen') s.user.mayor = electMayor(s, 2026);
   spend(s, 'KBO 가입금', b.entryFee, true);
   spend(s, '야구발전기금', b.developmentFund, true);
   s.user.ledger.push({ year: s.year, label: `가입 예치금 ${b.deposit / 10000}억 (KBO 보관, 지출 아님)`, amount: 0 });

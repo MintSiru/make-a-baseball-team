@@ -146,7 +146,10 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
       salary: salaryIn(p, s.year),
       /** Foreign players: the contract total in US dollars (bonus + salary + options). */
       usd: usdTotal(p.contract),
-      injured: !!s.injuries[id],
+      injured: !!s.injuries[id] && !s.injuries[id]!.dtd,
+      /** What is wrong and until when (V0.7.7): an injury or a knock that keeps him out for a few days. */
+      injury: injuryNote(s.injuries[id]),
+      knock: !!s.injuries[id]?.dtd,
       away: !!s.away?.[id],
     };
   };
@@ -255,7 +258,7 @@ function sumSplits(list: (Splits | undefined)[]): Splits | null {
 export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
   const p = s.players[id];
   if (!p) return null;
-  const status = p.status === 'military' ? `군 복무 중 (${p.service.route === 'sangmu' ? '상무' : p.service.route === 'social' ? '사회복무' : '현역'}, ${p.service.returnsOn} 전역)` : s.injuries[id] ? `부상 (${s.injuries[id]!.until} 복귀 예정)` : p.status === 'retired' ? '은퇴' : p.status === 'overseas' ? '해외 이적' : p.status === 'freeAgent' ? '자유계약 (새 구단을 찾는 중)' : '';
+  const status = p.status === 'military' ? `군 복무 중 (${p.service.route === 'sangmu' ? '상무' : p.service.route === 'social' ? '사회복무' : '현역'}, ${p.service.returnsOn} 전역)` : s.injuries[id] ? `${s.injuries[id]!.dtd ? '결장' : '부상'} (${injuryNote(s.injuries[id])})` : p.status === 'retired' ? '은퇴' : p.status === 'overseas' ? '해외 이적' : p.status === 'freeAgent' ? '자유계약 (새 구단을 찾는 중)' : '';
   const career = careerView(s, p);
   const pitcher = isPitcher(p);
   const major = career.filter((r) => !r.futures);
@@ -389,6 +392,13 @@ const armGrades = (p: Player) => ({
 });
 
 /** Today's plan: the manager's lineup against a right- or left-handed starter, the rotation and the bullpen. */
+/** "옆구리 근육 손상 · 5/20 복귀" (an old save's injury has no name). */
+export function injuryNote(i: LeagueState['injuries'][string] | undefined): string {
+  if (!i) return '';
+  const back = `${Number(i.until.slice(5, 7))}/${Number(i.until.slice(8, 10))} 복귀${i.dtd ? '' : ' 예정'}`;
+  return [i.part, i.surgery ? '수술' : '', back].filter(Boolean).join(' · ');
+}
+
 export function lineupView(s: LeagueState, teamId: TeamId, vs: 'L' | 'R') {
   const r = s.rosters[teamId];
   if (!r) return null;
@@ -545,7 +555,7 @@ export function clubhouse(s: LeagueState, teamId: TeamId) {
   const roster = s.rosters[teamId]?.active.map((id) => s.players[id]!) ?? [];
   const leaders = roster.filter((p) => p.personality === '책임감 강한 리더' && ageIn(p, s.year) >= 29).length;
   const makers = roster.filter((p) => p.personality === '밝은 분위기 메이커').length;
-  const hurt = Object.keys(s.injuries).filter((id) => s.players[id]?.teamId === teamId).length;
+  const hurt = Object.entries(s.injuries).filter(([id, i]) => !i.dtd && s.players[id]?.teamId === teamId).length;
   const score = (w + l ? (w / (w + l) - 0.5) * 2 : 0) + leaders * 0.08 + makers * 0.05 - hurt * 0.03 + (lastRes === 'W' ? 0.03 : lastRes === 'L' ? -0.03 : 0) * Math.min(streak, 6);
   const label = score >= 0.5 ? '최고조' : score >= 0.2 ? '좋음' : score > -0.2 ? '무난' : score > -0.5 ? '가라앉음' : '침체';
   const notes = [

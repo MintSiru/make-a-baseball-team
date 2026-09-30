@@ -12,17 +12,18 @@ import { chooseActive, matchInputs } from './manager';
 import { manualReplacements } from './entry';
 import { ensureNumbers } from './numbers';
 import { attendance, clubState, recordGate } from './fans';
-import { staffEdge, staffOf, staffRating } from './staff';
+import { staffOf } from './staff';
 import { setGoals } from './parent';
 import { aiForeignChanges, aiTrades, processWaivers } from './trade';
 import { INTERNATIONAL } from './international';
 import { nationalResultAlert } from './alerts';
 import { rosterLimit, selectNationalTeam } from './offseason';
-import { currentValue, isForeign, isPitcher } from './players';
+import { currentValue, isForeign } from './players';
 import { makeSchedule } from './schedule';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, registeredIds, type FuturesSeason, type LeagueState, type SeasonLine } from './state';
 import { standings } from './standings';
-import { ENGINE, FUTURES, STAFF } from './tuning';
+import { ENGINE } from './tuning';
+import { carryOverInjuries, offRoster, rollInjuries } from './injuries';
 
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
@@ -35,7 +36,6 @@ export function startSeason(s: LeagueState) {
   s.lines = {};
   s.arms = {};
   s.rotation = {};
-  s.injuries = {};
   s.away = {};
   s.demoted = {};
   s.waivers = [];
@@ -43,6 +43,8 @@ export function startSeason(s: LeagueState) {
   s.marketDone = [];
   s.postseason = [];
   s.countedThrough = null;
+  // Operations from last season can run past opening day (injuries.ts).
+  carryOverInjuries(s, s.schedule[0]?.date);
   for (const id of firstTeamIds(s)) setActive(s, id, chooseActive(s, id));
   s.futures = makeFuturesLeague(s);
   for (const t of s.teams) if (s.rosters[t.id]) assignSquads(s, t.id);
@@ -82,7 +84,7 @@ function playFuturesDay(s: LeagueState, date: string) {
     const r = rng(`${s.seed}|injury|${g.id}`);
     for (const box of [out.home, out.away]) {
       record(s, box, g.date, f.lines);
-      rollInjuries(s, box, g.date, r, FUTURES.injuryFactor);
+      rollInjuries(s, box, g.date, r, (id, teamId) => lineOf(s, id, teamId), 'futures');
     }
   }
 }
@@ -172,39 +174,6 @@ function record(s: LeagueState, box: TeamBox, date: string, lines: Record<Player
   }
 }
 
-const INJURY_PARTS = {
-  pitcher: { short: ['팔꿈치 염증', '어깨 염증', '옆구리 근육', '허리 통증', '손가락 물집', '햄스트링', '종아리 근육'], long: ['팔꿈치 인대 손상', '어깨 회전근개 손상', '팔꿈치 뼛조각', '옆구리 근육 파열', '허리 디스크'] },
-  hitter: { short: ['햄스트링', '옆구리 근육', '손목 염좌', '발목 염좌', '허리 통증', '손가락 타박상', '종아리 근육', '무릎 타박상'], long: ['손가락 골절', '손목 골절', '햄스트링 파열', '무릎 인대 손상', '발목 골절', '어깨 탈구'] },
-};
-
-function injuryPart(p: Player, long: boolean, r: () => number): string {
-  const list = INJURY_PARTS[isPitcher(p) ? 'pitcher' : 'hitter'][long ? 'long' : 'short'];
-  return list[Math.floor(r() * list.length)]!;
-}
-
-/**
- * Per appearance injury chance from the season risk; longer layoffs follow Draft Room's health split.
- * Futures injuries (`factor` < 1) do not go on the first-team injured list.
- */
-function rollInjuries(s: LeagueState, box: TeamBox, date: string, r: () => number, factor = 1) {
-  const ids = [...box.batting.map((b) => b.id), ...box.pitching.map((p) => p.id)];
-  for (const id of ids) {
-    const p = s.players[id]!;
-    const perGame = isPitcher(p) ? (p.role === 'SP' ? 28 : 55) : 120;
-    const age = Math.max(0, Number(date.slice(0, 4)) - Number(p.birthday.slice(0, 4)) - 30);
-    // The head trainer: fewer injuries and quicker returns (staff.ts).
-    const medical = staffEdge(staffRating(s, p.teamId, 'medical'));
-    const chance = ((factor * p.hidden.injuryRisk * (1 + age * 0.06)) / perGame) * (1 - STAFF.injury * medical);
-    if (r() < chance) {
-      const long = r() < 0.22;
-      const days = Math.max(5, Math.round((long ? 65 + Math.floor(r() * 66) : 7 + Math.floor(r() * 28)) * (1 - STAFF.injuryDays * medical)));
-      s.injuries[id] = { until: addDays(date, days), days, onList: factor === 1 };
-      (p.injuries ??= []).push({ date, days, part: injuryPart(p, long, rng(`${s.seed}|injury-part|${id}|${date}`)), ...(factor === 1 ? {} : { futures: true }) });
-      lineOf(s, id, p.teamId!).lost += days;
-    }
-  }
-}
-
 /** Injured players leave the first team; recovered ones come back when they are better than the weakest. */
 function maintainRosters(s: LeagueState, date: string, reshuffle: boolean) {
   // A first-team player back from the injured list or the national team is recalled at once.
@@ -224,7 +193,7 @@ function maintainRosters(s: LeagueState, date: string, reshuffle: boolean) {
   const manual = s.user?.entry === 'manual' ? s.user.teamId : null;
   for (const teamId of firstTeamIds(s)) {
     const r = s.rosters[teamId]!;
-    const hurt = r.active.some((id) => s.injuries[id] || s.away[id]) || back.has(teamId);
+    const hurt = r.active.some((id) => offRoster(s, id)) || back.has(teamId);
     if (teamId === manual) {
       // The general manager's roster stands; only players who cannot play are replaced.
       if (hurt) {
@@ -282,8 +251,8 @@ export function playDay(s: LeagueState): boolean {
       milestoneNews(s, date, [...out.home.batting, ...out.home.pitching, ...out.away.batting, ...out.away.pitching].map((x) => x.id));
     }
     const r = rng(`${s.seed}|injury|${g.id}`);
-    rollInjuries(s, out.home, date, r);
-    rollInjuries(s, out.away, date, r);
+    rollInjuries(s, out.home, date, r, (id, teamId) => lineOf(s, id, teamId));
+    rollInjuries(s, out.away, date, r, (id, teamId) => lineOf(s, id, teamId));
   }
   playFuturesDay(s, date);
   // Every ten game days the manager looks at the whole roster again; otherwise only injuries force moves.

@@ -13,9 +13,10 @@ import { splitContract } from './foreign';
 import { INTERNATIONAL } from './international';
 import { foreignSlots } from './manager';
 import { champion } from './postseason';
+import { medicalReview, socialOnly } from './military';
 import { ageIn, currentValue, draftClass, futureValue, isForeign, isPitcher, keepValue, makeForeign } from './players';
 import { currentStandings } from './season';
-import { queuedDecision, runFreeAgency } from './market';
+import { queuedDecision, runFreeAgency, settleParentGift } from './market';
 import { aiTrades, clearPool } from './trade';
 import { applyPickDrop, settleCap } from './cap';
 import { isSecondDraftYear, openSecondDraft, runSecondDraft, secondProtectDecision } from './seconddraft';
@@ -318,10 +319,11 @@ export function enlist(s: LeagueState, p: Player, next: number, r: () => number)
     // Clubs hold back likely picks when Asian Games are this season or next.
     const games = INTERNATIONAL.find((e) => (e.year === next || e.year === next + 1) && e.kind === 'asianGames');
     if (games && p.scouting.current >= M.holdForGames && age <= (games.limit?.maxAge ?? 99)) return;
-    if (r() >= Math.min(0.95, (M.byRoute[route] ?? 0.2) * factor)) return;
+    // A 4급 player in a long rehab serves now: the service and the rehab run together.
+    const rehab = socialOnly(p) && (s.injuries[p.id]?.until ?? '') > `${next}-05-01`;
+    if (r() >= (rehab ? M.socialInRehab : Math.min(0.95, (M.byRoute[route] ?? 0.2) * factor))) return;
   }
-  const lost = s.lines[p.id]?.lost ?? 0;
-  const route = r() < sangmuChance(p, next) ? 'sangmu' : r() < Math.min(0.4, M.socialBase + lost * 0.0012) ? 'social' : 'army';
+  const route = socialOnly(p) ? 'social' : r() < sangmuChance(p, next) ? 'sangmu' : r() < M.socialBase ? 'social' : 'army';
   enlistAs(s, p, next, route);
 }
 
@@ -721,6 +723,7 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         break;
       }
       case 'military': {
+        medicalReview(s, year);
         const r = rng(`${s.seed}|military|${year}`);
         for (const p of Object.values(s.players)) {
           if (p.status === 'military' && p.service.returnsOn && p.service.returnsOn < `${next}-03-01`) {
@@ -741,6 +744,7 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
           const before = s.user ? freeAgentsFor(s, next).map((p) => ({ id: p.id, from: p.teamId! })) : [];
           o.faQueue = runFreeAgency(s, next, rng(`${s.seed}|fa|${year}`), o.faOffers ?? {});
           o.faDone = true;
+          settleParentGift(s, next);
           faAlert(s, year, before, o.faOffers ?? {});
         }
         // Protected lists and compensation picks the user owes, one at a time.

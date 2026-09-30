@@ -7,7 +7,7 @@ import type { SeasonAwards } from './awards';
 import type { InternationalEvent } from './international';
 import type { LeagueState } from './state';
 
-export type AlertKind = 'national' | 'fa' | 'award' | 'hall' | 'season' | 'owner' | 'posting' | 'achievement';
+export type AlertKind = 'national' | 'fa' | 'award' | 'hall' | 'season' | 'owner' | 'posting' | 'achievement' | 'injury' | 'military';
 
 export interface Alert {
   id: string;

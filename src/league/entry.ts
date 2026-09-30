@@ -5,7 +5,8 @@
    player can be registered from May 1, inside the 68-player limit (RULES.md §6). */
 import type { PlayerId } from '../model/types';
 import { KBO_2026 } from '../rules/kbo2026';
-import { available, firstTeamSize } from './manager';
+import { firstTeamSize } from './manager';
+import { offRoster } from './injuries';
 import { rosterLimit } from './offseason';
 import { isDevelopment, moveTo, registeredIds, squadOf, type LeagueState, type Squad } from './state';
 
@@ -31,7 +32,7 @@ export function canMove(s: LeagueState, id: PlayerId, to: Squad): string | null 
   if (to === 'active') {
     if (!r.active.length && s.year < u.firstTeamYear) return '아직 1군에 들어가지 않았습니다.';
     if (isDevelopment(p)) return '육성선수는 정식선수로 등록한 뒤에 1군에 올릴 수 있습니다.';
-    if (!available(s, id)) return '부상이거나 대표팀에 가 있습니다.';
+    if (offRoster(s, id)) return '부상이거나 대표팀에 가 있습니다.';
     if (r.active.length >= firstTeamSize(s, u.teamId)) return `1군 엔트리 ${firstTeamSize(s, u.teamId)}명이 찼습니다. 먼저 한 명을 말소하세요.`;
     const back = s.demoted?.[id];
     if (back && date < addDays(back, REREGISTER_DAYS)) return `말소 후 ${REREGISTER_DAYS}일이 지나야 다시 등록할 수 있습니다 (${addDays(back, REREGISTER_DAYS)}부터).`;
@@ -70,9 +71,9 @@ export function manualReplacements(s: LeagueState, pick: (candidates: PlayerId[]
   const u = s.user!;
   const r = s.rosters[u.teamId]!;
   const size = firstTeamSize(s, u.teamId);
-  for (const id of r.active.filter((x) => !available(s, x))) moveTo(s, id, 'futures');
+  for (const id of r.active.filter((x) => offRoster(s, x))) moveTo(s, id, 'futures');
   while (r.active.length < Math.min(size, MIN_FIRST_TEAM)) {
-    const candidates = [...r.futures, ...r.third].filter((x) => available(s, x) && !isDevelopment(s.players[x]!));
+    const candidates = [...r.futures, ...r.third].filter((x) => !offRoster(s, x) && !isDevelopment(s.players[x]!));
     const next = pick(candidates);
     if (!next) break;
     moveTo(s, next, 'active');

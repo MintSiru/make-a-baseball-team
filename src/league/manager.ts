@@ -3,6 +3,7 @@
 import type { Player, PlayerId, TeamId } from '../model/types';
 import type { Position } from '../model/position';
 import { fitPenalty, positionGames } from './positions';
+import { offRoster, sidelined } from './injuries';
 import type { BatterIn, BullpenRole, FieldPos, Hand, PitcherIn, RelieverIn, TeamIn } from './engine/types';
 import { hashUnit } from '../draftroom';
 import { ageIn, batValue, currentValue, isForeign, isPitcher, keepValue, starterValue } from './players';
@@ -27,7 +28,8 @@ const handOf = (h: string): Hand => (h === '좌' ? 'L' : h === '양' ? 'S' : 'R'
 const t = (p: Player, k: string) => (p.hidden.current as Record<string, number>)[k] ?? 30;
 const pub = (p: Player, k: string) => (p.scouting.tools as Record<string, number>)[k] ?? 30;
 
-export const available = (s: LeagueState, id: PlayerId) => !s.injuries[id] && !s.away?.[id];
+/** Can play today: not hurt (a knock included) and not with the national team. */
+export const available = (s: LeagueState, id: PlayerId) => !sidelined(s, id);
 
 type Prefer = (p: Player) => number;
 const none: Prefer = () => 0;
@@ -39,7 +41,7 @@ export function chooseActive(s: LeagueState, teamId: TeamId): PlayerId[] {
   // Development players cannot be registered until they are converted (RULES.md §6).
   const pool = registeredIds(s, teamId)
     .map((id) => s.players[id]!)
-    .filter((p) => available(s, p.id) && p.status === 'active');
+    .filter((p) => !offRoster(s, p.id) && p.status === 'active');
   const perf = (p: Player) => performanceNudge(s, p);
   const val = (p: Player) => currentValue(p) * 0.8 + keepValue(p, s.year) * 0.2 + perf(p) + (isForeign(p) ? 30 : 0);
   const pitchers = pool.filter(isPitcher).sort((a, b) => val(b) - val(a));
@@ -94,9 +96,10 @@ const DEF_WEIGHT: Record<Position, number> = { C: 0.6, SS: 0.55, CF: 0.4, '2B': 
 const SLOTS: FieldPos[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
 /** A position he cannot really play (the gap is 12 grade points or more). */
 const MISFIT = 40;
-/** Rest days in the regular season: the starting catcher sits about one day in seven (KBO starting
-    catchers start 110–125 games), hitters from 34 one in twelve. */
-const REST = { catcher: 7, veteran: 12, veteranAge: 34 };
+/** Rest days in the regular season, in calendar days: the starting catcher sits one day in six (about one
+    game in five or six; KBO starting catchers start 110–125 games), hitters from 34 one day in thirteen.
+    The cycles share no factor with the week, so a rest day does not keep falling on the Monday off day. */
+const REST = { catcher: 6, veteran: 13, veteranAge: 34 };
 
 /**
  * Best assignment of players to lineup slots (Hungarian algorithm): `value[slot][player]`, each slot
@@ -229,7 +232,9 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
     return best;
   };
   let order: typeof ranked;
-  if (opts.style === 'smallBall' || ranked.length < 9) {
+  // Short-handed (a futures squad hit by injuries): best first; the game needs nine and will not start.
+  if (ranked.length < 9) order = ranked;
+  else if (opts.style === 'smallBall') {
     const rest = [...ranked];
     const first = [takeBest(rest, speedy), takeBest(rest, onBase), takeBest(rest, (p) => power(p) + onBase(p) * 0.5), takeBest(rest, power), takeBest(rest, power)];
     order = [...first, ...rest];
