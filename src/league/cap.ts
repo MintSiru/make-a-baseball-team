@@ -5,7 +5,7 @@
    pays money (clubs' finances come in V0.6); the pick penalty applies to everyone. */
 import type { TeamId } from '../model/types';
 import { KBO_2026, salaryCapFor } from '../rules/kbo2026';
-import { salaryIn } from './contracts';
+import { capPay } from './contracts';
 import { firstTeamIds, orgPlayers, type LeagueState } from './state';
 
 const C = KBO_2026.salaryCap;
@@ -15,10 +15,12 @@ export function capFloorFor(year: number): number | null {
   return Math.round(C.floor.amount * (1 + C.floor.growth) ** (year - C.floor.from));
 }
 
-/** A club's top-40 total for `year` (its players and soldiers under contract that season). */
+/** A club's top-40 total for `year` (its players and soldiers under contract that season): salaries, free-agent
+    bonuses spread over their deals and incentives paid (V0.8). The KBO leaves foreign players and rookies out;
+    the game keeps them in, its pay being lower than the league's (RULES.md §9). */
 export function capTotal(s: LeagueState, teamId: TeamId, year: number) {
   const soldiers = Object.values(s.players).filter((p) => p.teamId === teamId && p.status === 'military');
-  const pay = [...orgPlayers(s, teamId), ...soldiers].map((p) => salaryIn(p, year)).sort((a, b) => b - a);
+  const pay = [...orgPlayers(s, teamId), ...soldiers].map((p) => capPay(p, year)).sort((a, b) => b - a);
   return pay.slice(0, C.topPlayers).reduce((a, b) => a + b, 0);
 }
 

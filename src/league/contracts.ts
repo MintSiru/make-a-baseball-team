@@ -26,6 +26,17 @@ export function rookieContract(teamId: TeamId, season: number, bonus: number, de
 
 export const salaryIn = (p: Player, season: number) => p.contract?.salaries.find((x) => x.season === season)?.amount ?? 0;
 
+/** A free-agent signing bonus spread over the guaranteed seasons (the salary cap's 계약금 안분, V0.8). */
+export function bonusShare(p: Player, season: number) {
+  const c = p.contract;
+  if (!c?.fa || !c.signingBonus) return 0;
+  const first = c.signedIn + 1;
+  return season >= first && season < first + c.fa.years ? Math.round(c.signingBonus / c.fa.years) : 0;
+}
+
+/** What a season counts against the salary cap: salary, the bonus spread and incentives paid (RULES.md §3). */
+export const capPay = (p: Player, season: number) => salaryIn(p, season) + bonusShare(p, season) + (p.contract?.fa?.paid.find((x) => x.season === season)?.amount ?? 0);
+
 const recentWar = (p: Player, n: number) => {
   const recs = p.career.filter((r) => !r.level).slice(-n);
   if (!recs.length) return 0;

@@ -39,17 +39,8 @@ export function markAlertsSeen(s: LeagueState, ids?: string[]) {
 }
 
 const short = (s: LeagueState, id: TeamId | null | undefined) => s.teams.find((t) => t.id === id)?.short ?? '';
-const won = (manwon: number) => {
-  const eok = Math.floor(manwon / 10000),
-    rest = manwon % 10000;
-  return eok ? `${eok}억${rest ? ` ${rest.toLocaleString('ko-KR')}만` : ''}` : `${rest.toLocaleString('ko-KR')}만`;
-};
 const POS: Record<string, string> = { C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' };
 const posOf = (p: Player) => (p.position ? POS[p.position]! : p.role === 'SP' ? '선발투수' : '불펜투수');
-const terms = (p: Player) => {
-  const c = p.contract;
-  return c?.salaries.length ? `${c.salaries.length}년 연 ${won(c.salaries[0]!.amount)}` : '';
-};
 
 // ── National team ────────────────────────────────────────────────────────────────────────────────
 
@@ -103,42 +94,6 @@ export function nationalResultAlert(s: LeagueState, e: InternationalEvent, entry
 // ── The free-agent market ────────────────────────────────────────────────────────────────────────
 
 /** After the market: our bids, our own free agents, and the league's biggest moves. */
-export function faAlert(s: LeagueState, year: number, before: { id: PlayerId; from: TeamId }[], offers: Record<PlayerId, unknown>) {
-  const u = s.user;
-  if (!u || !before.length) return;
-  const lines: string[] = [];
-  let good = false,
-    bad = false;
-  for (const b of before) {
-    const p = s.players[b.id];
-    if (!p) continue;
-    const to = p.teamId;
-    if (b.id in offers && b.from !== u.teamId) {
-      if (to === u.teamId) {
-        lines.push(`영입 성공: ${p.name} (${short(s, b.from)}에서, ${terms(p)})`);
-        good = true;
-      } else {
-        lines.push(`영입 실패: ${p.name} → ${to ? `${short(s, to)} (${terms(p)})` : '은퇴'}`);
-        bad = true;
-      }
-    } else if (b.from === u.teamId) {
-      if (to === u.teamId) lines.push(`잔류: ${p.name} (${terms(p)})`);
-      else {
-        lines.push(`이적: ${p.name} → ${to ? `${short(s, to)} (${terms(p)})` : '은퇴'}`);
-        bad = true;
-      }
-    }
-  }
-  const big = before
-    .map((b) => ({ b, p: s.players[b.id] }))
-    .filter((x): x is { b: (typeof before)[number]; p: Player } => !!x.p && !!x.p.teamId && x.p.teamId !== x.b.from && x.p.teamId !== u.teamId && x.b.from !== u.teamId)
-    .sort((a, c) => (c.p.contract?.salaries[0]?.amount ?? 0) - (a.p.contract?.salaries[0]?.amount ?? 0))
-    .slice(0, 3);
-  if (big.length) lines.push(`리그 대형 이적: ${big.map((x) => `${x.p.name} ${short(s, x.b.from)}→${short(s, x.p.teamId)} (${terms(x.p)})`).join(', ')}`);
-  if (!lines.length) return;
-  addAlert(s, { id: `fa-${year}`, date: `${year}-11-20`, kind: 'fa', title: `${year} FA 시장 결과`, lines, tone: good ? 'good' : bad ? 'bad' : undefined, players: before.map((b) => b.id) });
-}
-
 // ── Awards, the hall of fame, the season ─────────────────────────────────────────────────────────
 
 export function awardAlert(s: LeagueState, year: number, a: SeasonAwards) {

@@ -8,9 +8,10 @@ import { batsFor } from '../model/player';
 import { attendance, recordGate } from '../league/fans';
 import { baseSupport, setGoals } from '../league/parent';
 import { staffOf } from '../league/staff';
+import { openMarket, roundDecision } from '../league/fa';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8'];
 
 type Loose = Record<string, unknown>;
 
@@ -60,6 +61,16 @@ export function migrateState(raw: unknown, from: string): LeagueState {
       u.budgetScale ??= 1;
       if (s.phase === 'regular') setGoals(s, s.year);
     }
+  }
+  // 0.8: the free-agent market became a negotiation in rounds. A save waiting on the old one-pass market (or
+  // the founding winter's free-agent list) opens the new market instead, on the same winter.
+  const pending = s.pending as { kind: string } | null;
+  if (s.offseason && pending && ['faMarket', 'freeAgents', 'ownFreeAgents'].includes(pending.kind)) {
+    const o = s.offseason as typeof s.offseason & Loose;
+    delete o.faOffers;
+    delete o.faGift;
+    o.fa = openMarket(s, o.year + 1);
+    s.pending = roundDecision(o.fa);
   }
   s.sim = SIM_VERSION;
   return s;

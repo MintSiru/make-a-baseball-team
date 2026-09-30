@@ -89,7 +89,7 @@ describe('expansion after a futures year (NC/KT path)', () => {
   });
 
   it('takes one unprotected player per club for 10억 each, and at most three free agents, before joining', () => {
-    let faSeen = 0;
+    const faSeen = new Set<number>();
     playTo(s, 2028, (d, st) => {
       if (d.kind === 'specialDraft') {
         Object.assign(specialLists, d.lists);
@@ -105,12 +105,17 @@ describe('expansion after a futures year (NC/KT path)', () => {
         const protectedId = registeredIds(st, team).find((id) => !ids.includes(id) && !isForeign(st.players[id]!))!;
         expect(checkDecision(st, { kind: 'specialDraft', picks: { [team]: protectedId } })).toMatch(/보호선수/);
       }
-      if (d.kind === 'freeAgents') {
-        faSeen++;
-        expect(checkDecision(st, { kind: 'freeAgents', ids: d.candidates.slice(0, d.max + 1) })).toMatch(/최대/);
+      // The winter before the first team: the free-agent market lets the club sign three without compensation.
+      const m = st.offseason?.fa;
+      if (d.kind === 'faRound' && m?.userFree) {
+        faSeen.add(m.year);
+        expect(m.userLimit).toBe(EXPANSION_DEFAULTS.freeAgentSigns);
+        const outside = m.order.filter((id) => m.talks[id]!.from !== EXPANSION_ID).slice(0, m.userLimit + 1);
+        const offers = Object.fromEntries(outside.map((id) => [id, { ...m.talks[id]!.price, annual: 10000, bonus: 0, options: 0 }]));
+        expect(checkDecision(st, { kind: 'faRound', offers, run: 'round' })).toMatch(/3명까지/);
       }
     });
-    expect(faSeen).toBe(1);
+    expect([...faSeen]).toEqual([2027]);
     const specialPicks = s.user!.ledger.filter((l) => l.label.startsWith('특별지명'));
     expect(specialPicks.length).toBeGreaterThan(0);
     expect(specialPicks.length).toBeLessThanOrEqual(10);

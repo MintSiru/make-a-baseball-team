@@ -2070,3 +2070,139 @@ ul.plain li {
   color: var(--accent-ink);
   border-color: var(--accent);
 }
+
+/* The free-agent market (V0.8): the class on the left, talks with one player on the right. */
+.fa-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  margin: 8px 0 12px;
+  font-size: 13.5px;
+}
+.fa-summary div {
+  display: flex;
+  gap: 6px;
+}
+.fa-summary dt {
+  color: var(--ink-2);
+}
+.fa-summary dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.fa-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+@media (min-width: 1100px) {
+  .fa-grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 1fr);
+    align-items: start;
+  }
+  .fa-talk {
+    position: sticky;
+    top: 8px;
+  }
+}
+.fa-list .segmented {
+  margin-bottom: 8px;
+}
+.fa-table td {
+  white-space: nowrap;
+}
+.fa-band.great,
+.fa-band.ok {
+  color: var(--good);
+}
+.fa-band.far {
+  color: var(--bad);
+}
+.fa-talk {
+  border-top: 2px solid var(--ink);
+  padding-top: 4px;
+}
+.fa-talk h3 {
+  margin-top: 4px;
+  border: 0;
+  font-size: 16px;
+}
+.fa-offer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px 12px;
+  margin: 10px 0 6px;
+  font-size: 13px;
+}
+.fa-offer label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.fa-offer label.check {
+  flex-direction: row;
+  align-items: center;
+  grid-column: 1 / -1;
+}
+.fa-offer input[type='number'],
+.fa-offer select {
+  width: 100%;
+}
+.fa-reaction {
+  margin: 8px 0;
+  padding: 8px 10px;
+  background: var(--paper-2);
+  border-left: 3px solid var(--rule);
+}
+.fa-reaction.great,
+.fa-reaction.ok {
+  border-left-color: var(--good);
+}
+.fa-reaction.far {
+  border-left-color: var(--bad);
+}
+.fa-reaction ul {
+  margin: 6px 0 0;
+}
+.fa-meter {
+  position: relative;
+  height: 6px;
+  margin-bottom: 6px;
+  background: var(--rule);
+}
+.fa-meter span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.fa-meter i {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--ink);
+}
+.fa-news,
+.fa-notes {
+  margin: 6px 0;
+  padding-left: 0;
+  list-style: none;
+  font-size: 13.5px;
+}
+.fa-news li,
+.fa-notes li {
+  padding: 3px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.fa-news li.mine {
+  font-weight: 600;
+}
+.fa-notes li.tone-good {
+  color: var(--good);
+}
+.fa-notes li.tone-bad {
+  color: var(--bad);
+}
+.fa-talk {
+  scroll-margin-top: 72px;
+}

@@ -6,9 +6,9 @@
    The user's club can make the game wait at a step for a decision (see OffseasonHooks). */
 import { observe, overall, rng, toGrade, type Tools } from '../draftroom';
 import DraftSeason from '../draftroom/season.js';
-import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
+import type { Player, SeasonRecord, TeamId } from '../model/types';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
-import { foreignContract, freeAgentContract, MANWON_PER_USD, renewSalary, rookieContract, salaryIn, slotBonus, usdTotal } from './contracts';
+import { bonusShare, foreignContract, MANWON_PER_USD, renewSalary, rookieContract, salaryIn, slotBonus, usdTotal } from './contracts';
 import { splitContract } from './foreign';
 import { INTERNATIONAL } from './international';
 import { foreignSlots } from './manager';
@@ -16,7 +16,8 @@ import { champion } from './postseason';
 import { medicalReview, socialOnly } from './military';
 import { ageIn, currentValue, draftClass, futureValue, isForeign, isPitcher, keepValue, makeForeign } from './players';
 import { currentStandings } from './season';
-import { queuedDecision, runFreeAgency, settleParentGift } from './market';
+import { queuedDecision } from './market';
+import { closeMarket, judgeReinforcePromises, judgeStarterPromises, openMarket, payIncentives, playRound, roundDecision, settlePeriodOptions } from './fa';
 import { aiTrades, applyPickTrades, clearPool } from './trade';
 import { applyPickDrop, settleCap } from './cap';
 import { applyForeignPickDrop, asiaCapFor, capPlayers, foreignCap, settleForeignCap } from './foreigncap';
@@ -25,7 +26,7 @@ import { standings } from './standings';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, orgIds, orgPlayers, registeredIds, type Decision, type DraftSlot, type DraftState, type LeagueState, type SeasonSummary } from './state';
 import { batterWar, leagueContext, pitcherWar } from './stats';
 import { maybeRetireNumber } from './numbers';
-import { settleFinances } from './finance';
+import { applyDemotionCuts, settleFinances } from './finance';
 import { awardHonours, computeAwards, hallOfFameCheck } from './awards';
 import { seasonMoments } from './milestones';
 import { seasonNews } from './news';
@@ -35,7 +36,7 @@ import { runAiPosting } from './posting';
 import { FUTURES, OFFSEASON as O, STAFF } from './tuning';
 import { aiTakesKnown, expireForeignPool, foreignPoolAsk, leavePool, poolChoice, toForeignPool } from './foreignpool';
 import { draftReturnees } from './returnees';
-import { awardAlert, faAlert, nationalPickAlert, nationalResultAlert, seasonAlert } from './alerts';
+import { awardAlert, nationalPickAlert, nationalResultAlert, seasonAlert } from './alerts';
 import { staffEdge, staffRating } from './staff';
 
 type Develop = (p: object, tools: Tools, yearIndex: number, age: number, daysLost: number, r: () => number, boost?: number, focus?: string, scale?: number) => Tools;
@@ -94,6 +95,9 @@ export function closeSeason(s: LeagueState) {
     }
   }
   s.futures = null;
+  payIncentives(s, s.year);
+  applyDemotionCuts(s, s.year);
+  judgeStarterPromises(s, s.year);
   settleCap(s, s.year);
   settleForeignCap(s, s.year);
   clearPool(s);
@@ -356,28 +360,24 @@ function isFreeAgent(p: Player, next: number) {
   if (isForeign(p) || p.status !== 'active' || !p.teamId) return false;
   if (p.contract && p.contract.salaries.some((x) => x.season >= next)) return false;
   const s = p.service;
+  // A declined period option or an opt-out (V0.8) frees him whatever his service.
+  if (s.optionFree === next - 1) return true;
   return s.lastFreeAgencyAt === undefined ? s.creditedSeasons >= faSeasonsNeeded(p) : s.creditedSeasons - s.lastFreeAgencyAt >= KBO_2026.freeAgency.seasonsToRequalify;
 }
 
+/** A season's pay: salaries and free-agent bonuses spread over their deals (V0.8). */
 export function payroll(s: LeagueState, teamId: TeamId, season: number) {
-  return orgIds(s, teamId).reduce((sum, id) => sum + salaryIn(s.players[id]!, season), 0);
+  return orgIds(s, teamId).reduce((sum, id) => sum + salaryIn(s.players[id]!, season) + bonusShare(s.players[id]!, season), 0);
 }
 
 /** Players who reach free agency this winter and have a market (the rest re-sign as usual). */
 export function freeAgentsFor(s: LeagueState, next: number): Player[] {
   return Object.values(s.players)
     .filter((p) => isFreeAgent(p, next))
-    .filter((p) => p.scouting.current >= O.freeAgency.minGrade || (lastRecord(p, next - 1)?.war ?? 0) >= 1)
+    .filter((p) => p.scouting.current >= O.freeAgency.minGrade || (lastRecord(p, next - 1)?.war ?? 0) >= 1 || p.service.optionFree === next - 1)
     .sort((a, b) => b.scouting.current - a.scouting.current);
 }
 
-export function signFreeAgent(s: LeagueState, p: Player, to: TeamId, next: number) {
-  removeFromRoster(s, p);
-  p.teamId = to;
-  s.rosters[to]!.futures.push(p.id);
-  p.contract = freeAgentContract(p, to, next);
-  p.service.lastFreeAgencyAt = p.service.creditedSeasons;
-}
 
 
 /** Sets next season's pay for a player: keeps the last few salaries, development players stay development until they play. */
@@ -772,14 +772,31 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         runAiPosting(s, next);
         break;
       case 'freeAgency': {
-        if (!o.faDone) {
-          const before = s.user ? freeAgentsFor(s, next).map((p) => ({ id: p.id, from: p.teamId! })) : [];
-          o.faQueue = runFreeAgency(s, next, rng(`${s.seed}|fa|${year}`), o.faOffers ?? {});
-          o.faDone = true;
-          settleParentGift(s, next);
-          faAlert(s, year, before, o.faOffers ?? {});
+        // The negotiation in rounds (V0.8): period options first, then the market opens.
+        if (!o.faDone && !o.fa) {
+          settlePeriodOptions(s, next);
+          o.fa = openMarket(s, next);
         }
-        // Protected lists and compensation picks the user owes, one at a time.
+        const m = o.fa;
+        while (!o.faDone) {
+          // Protected lists and compensation picks the user owes, one at a time, as signings happen.
+          const item = o.faQueue?.[0];
+          if (item) {
+            s.pending = queuedDecision(s, item, next);
+            return 'waiting';
+          }
+          if (!m || m.closed) {
+            if (m) closeMarket(s, m, next);
+            o.faDone = true;
+            break;
+          }
+          if (s.user && !m.run) {
+            s.pending = roundDecision(m);
+            return 'waiting';
+          }
+          const touched = playRound(s, m, next);
+          if (m.run === 'round' || (m.run === 'news' && touched)) delete m.run;
+        }
         const item = o.faQueue?.[0];
         if (item) {
           s.pending = queuedDecision(s, item, next);
@@ -833,7 +850,10 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
       case 'check':
         break; // the user's club over the limit after foreign signings: a user decision (expansion.ts)
       case 'camp':
-        break; // spring camp plans: a user decision only (AI clubs keep balanced plans)
+        // Spring camp plans are a user decision only (AI clubs keep balanced plans). Opening day is near: the
+        // reinforcements promised to free agents are judged.
+        judgeReinforcePromises(s, o.fa, next);
+        break;
     }
     o.step++;
   }
