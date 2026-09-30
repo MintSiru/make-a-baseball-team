@@ -26,6 +26,7 @@ import type { Player, PlayerId, TeamId } from '../model/types';
 import { money } from './format';
 import { gradeClass } from './grades';
 import { positionKey, useSort } from './sort';
+import { Help } from './Help';
 
 type View = 'trade' | 'release' | 'foreign' | 'news';
 
@@ -164,10 +165,10 @@ function Trade({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (id
   const lastLog = sent !== null ? (u.log ?? []).slice(sent) : [];
   return (
     <>
-      <p class="muted">
+      <Help title="트레이드 규칙">
         정규시즌 중에는 7월 31일까지, 그 뒤로는 한국시리즈가 끝난 다음부터 트레이드할 수 있습니다. 상대 구단은 공개 평가(현재·미래 가치, 나이, 계약 기간, 연봉)로 판단하고, 받는 가치가 주는 가치보다
         조금 더 커야 받아들입니다. 외국인과 올해 뽑은 신인은 트레이드할 수 없습니다.
-      </p>
+      </Help>
       {closed && <p class="notice">{closed}</p>}
       <div class="team-chips" role="group" aria-label="상대 구단">
         {clubs.map((t) => (
@@ -292,10 +293,10 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
   const used = league.foreignChanges?.[u.teamId] ?? 0;
   return (
     <>
-      <p class="muted">
+      <Help title="외국인 교체 규칙">
         시즌 중 외국인 선수를 2번까지 바꿀 수 있습니다 (8월 15일까지). 내보낸 선수의 남은 보장액은 계속 나가고, 새 선수는 남은 시즌만큼 줄어든 금액으로 계약합니다. 올해 {used}번 썼습니다. 다른 구단이 방출하거나 재계약하지 않은 KBO 경력 외국인도 명단에
         있습니다 (방출 뒤 재취업은 신규 계약이라 100만 달러 상한).
-      </p>
+      </Help>
       {closed && <p class="notice">{closed}</p>}
       <h3>내보낼 선수</h3>
       <div class="choice-grid">

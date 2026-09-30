@@ -100,6 +100,16 @@ export function DisplaySettings({ onClose }: { onClose: () => void }) {
           <input type="checkbox" checked={p.tables} onChange={(e) => set({ ...p, tables: (e.currentTarget as HTMLInputElement).checked })} /> 선수 표의 현재·미래 능력치에도 색 입히기
         </label>
 
+        <h3>표</h3>
+        <div class="segmented" role="group" aria-label="표 간격">
+          <button type="button" aria-pressed={p.density === 'compact'} onClick={() => set({ ...p, density: 'compact' })}>
+            촘촘하게 (한 화면에 더 많이)
+          </button>
+          <button type="button" aria-pressed={p.density === 'comfortable'} onClick={() => set({ ...p, density: 'comfortable' })}>
+            넉넉하게
+          </button>
+        </div>
+
         <h3>알림</h3>
         <label class="check">
           <input type="checkbox" checked={popups} onChange={(e) => setPopups((e.currentTarget as HTMLInputElement).checked)} /> 새 알림을 팝업으로 보기

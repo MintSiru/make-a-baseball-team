@@ -16,6 +16,8 @@ export interface DisplayPrefs {
   custom: Colors;
   /** Colour the overall grades in the player tables as well (the lineup's tool grades always are). */
   tables: boolean;
+  /** Table rows (V0.7.7): compact fits more on the screen at once. */
+  density: 'compact' | 'comfortable';
 }
 
 /** null: the stylesheet's own colours (the club colour above 60, grey in the middle, pale under 40). */
@@ -26,7 +28,7 @@ export const PRESETS: Record<Exclude<BarPreset, 'custom'>, { label: string; note
   mono: { label: '흑백', note: '진할수록 높음', colors: ['var(--rule)', 'var(--ink-2)', 'var(--ink-2)', 'var(--ink)', 'var(--ink)'] },
 };
 
-export const DEFAULT_PREFS: DisplayPrefs = { bars: 'club', custom: [...PRESETS.scale.colors!] as Colors, tables: false };
+export const DEFAULT_PREFS: DisplayPrefs = { bars: 'club', custom: [...PRESETS.scale.colors!] as Colors, tables: false, density: 'compact' };
 
 const HEX = /^#[0-9a-f]{6}$/i;
 
@@ -40,7 +42,7 @@ export function parseDisplay(raw: string | null): DisplayPrefs {
   }
   const bars = typeof v.bars === 'string' && (v.bars === 'custom' || Object.hasOwn(PRESETS, v.bars)) ? v.bars : DEFAULT_PREFS.bars;
   const custom = DEFAULT_PREFS.custom.map((d, i) => (Array.isArray(v.custom) && typeof v.custom[i] === 'string' && HEX.test(v.custom[i]) ? v.custom[i] : d)) as Colors;
-  return { bars, custom, tables: v.tables === true };
+  return { bars, custom, tables: v.tables === true, density: v.density === 'comfortable' ? 'comfortable' : 'compact' };
 }
 
 /** The five tier colours to set, or null for the stylesheet's own. */
@@ -74,6 +76,7 @@ export function applyDisplay(p: DisplayPrefs, root: HTMLElement = document.docum
   else delete root.dataset.gradeColors;
   if (p.tables) root.dataset.gradeTables = 'on';
   else delete root.dataset.gradeTables;
+  root.dataset.density = p.density;
 }
 
 export function saveDisplay(p: DisplayPrefs) {

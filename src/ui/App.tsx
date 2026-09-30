@@ -13,6 +13,7 @@ import { openStore, type SaveStore } from '../save/store';
 import { BoxScore } from './BoxScore';
 import { StorySettings } from './StorySettings';
 import { DisplaySettings } from './DisplaySettings';
+import { ClubSummary } from './ClubSummary';
 import { AlertPopup, useAlertPopups } from './Alerts';
 import { TutorialCard } from './Tutorial';
 import { tutorialPaused } from './tutorial';
@@ -373,36 +374,61 @@ export function App() {
   const unseen = league.user ? unseenAlerts(league) : [];
 
   return (
-    <div style={userTeam ? ({ '--accent': userTeam.color } as Record<string, string>) : undefined}>
-      <header class="masthead">
-        <div>
-          <h1>{userTeam ? userTeam.name : 'KBO 신구단'}</h1>
-          <p class="muted">
-            {userTeam ? `단장 · 버전 ${RELEASE}` : `관전 모드 · 버전 ${RELEASE}`} · 시드 {league.seed}
-          </p>
-        </div>
-        <div class="row-actions">
-          {tutorialPaused(league) && (
-            <button type="button" onClick={() => act({ kind: 'tutorial', on: true }, '튜토리얼', false)}>
-              튜토리얼 다시 켜기
+    <div class="app" style={userTeam ? ({ '--accent': userTeam.color } as Record<string, string>) : undefined}>
+      {/* V0.7.7: on a wide screen the club, the screens and the saves stay in a sidebar and only the page
+          scrolls; on a phone everything flows top to bottom as before. */}
+      <aside class="sidebar">
+        <header class="masthead">
+          <div>
+            <h1>{userTeam ? userTeam.name : 'KBO 신구단'}</h1>
+            <p class="muted">
+              {userTeam ? `단장 · 버전 ${RELEASE}` : `관전 모드 · 버전 ${RELEASE}`} · 시드 {league.seed}
+            </p>
+          </div>
+          <div class="row-actions">
+            {tutorialPaused(league) && (
+              <button type="button" onClick={() => act({ kind: 'tutorial', on: true }, '튜토리얼', false)}>
+                튜토리얼 다시 켜기
+              </button>
+            )}
+            {unseen.length > 0 && !popups && (
+              <button type="button" onClick={() => setAlertsOpen(true)}>
+                새 알림 {unseen.length}
+              </button>
+            )}
+            <button type="button" onClick={() => setDisplayOpen(true)}>
+              화면 설정
             </button>
-          )}
-          {unseen.length > 0 && !popups && (
-            <button type="button" onClick={() => setAlertsOpen(true)}>
-              새 알림 {unseen.length}
+            <button type="button" onClick={() => setStoryOpen(true)}>
+              AI 기사 설정{hasKey(storySettings) ? ' ✓' : ''}
             </button>
-          )}
-          <button type="button" onClick={() => setDisplayOpen(true)}>
-            화면 설정
-          </button>
-          <button type="button" onClick={() => setStoryOpen(true)}>
-            AI 기사 설정{hasKey(storySettings) ? ' ✓' : ''}
-          </button>
-          <button type="button" onClick={newGame} disabled={!!busy}>
-            새 게임
-          </button>
-        </div>
-      </header>
+            <button type="button" onClick={newGame} disabled={!!busy}>
+              새 게임
+            </button>
+          </div>
+        </header>
+        {league.user && <ClubSummary league={league} onTab={setTab} />}
+        <nav class="tabs" aria-label="화면">
+          {TABS.filter((t) => (!t.userOnly || league.user) && (!t.waiting || league.pending)).map((t) => (
+            <button key={t.id} type="button" class={t.waiting ? 'tab-waiting' : undefined} aria-current={tab === t.id ? 'page' : undefined} onClick={() => setTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </nav>
+        <footer class="footer">
+          <div class="save-actions">
+            <button type="button" onClick={exportSave} disabled={!!busy}>
+              진행 파일 저장
+            </button>
+            <label class="file-button">
+              불러오기
+              <input type="file" accept="application/json,.json" onChange={(e) => importSave((e.currentTarget as HTMLInputElement).files?.[0])} />
+            </label>
+            <span class="muted">{store.kind === 'indexedDB' ? '자동 저장됨' : '이 브라우저에서는 자동 저장을 쓸 수 없습니다. 진행 파일로 저장하세요.'}</span>
+          </div>
+          <p class="muted small">선수·학교·기록은 모두 가상입니다. 구단명과 구장 외에는 실제와 관계없습니다.</p>
+        </footer>
+      </aside>
       {displayOpen && <DisplaySettings onClose={() => setDisplayOpen(false)} />}
       {storyOpen && (
         <StorySettings
@@ -435,37 +461,28 @@ export function App() {
           {controls}
         </fieldset>
       </div>
-      {notice && (
-        <p class="notice" role="status">
-          {notice}
-        </p>
-      )}
-      <TutorialCard league={league} tab={tab} onAct={(a) => act(a, '튜토리얼', false)} />
-      <>
-          <nav class="tabs" aria-label="화면">
-            {TABS.filter((t) => (!t.userOnly || league.user) && (!t.waiting || league.pending)).map((t) => (
-              <button key={t.id} type="button" class={t.waiting ? 'tab-waiting' : undefined} aria-current={tab === t.id ? 'page' : undefined} onClick={() => setTab(t.id)}>
-                {t.label}
-              </button>
-            ))}
-          </nav>
-          <main class="page" data-version={version}>
-            {tab === 'decision' && league.pending && <Decision league={league} onPlayer={setPlayerId} onSubmit={(input) => act({ kind: 'decide', input }, '진행 중', false)} />}
-            {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }} />}
-            {tab === 'market' && league.user && <Market league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
-            {tab === 'games' && <Games league={league} onOpen={setBoxId} />}
-            {tab === 'standings' && <Standings league={league} onTeam={openTeam} />}
-            {tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} />}
-            {tab === 'team' && <TeamRoster league={league} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />}
-            {tab === 'history' && <History league={league} onPlayer={setPlayerId} />}
-            {tab === 'draft' && (
-              <div class="layout">
-                <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} ourView={league?.user ? (p) => scoutView(league!, p) : undefined} />
-                <PlayerProfile player={prospect && publicView(prospect)} age={prospect && prospectAge(prospect)} />
-              </div>
-            )}
-          </main>
-      </>
+      <main class="page" data-version={version}>
+        {notice && (
+          <p class="notice" role="status">
+            {notice}
+          </p>
+        )}
+        <TutorialCard league={league} tab={tab} onAct={(a) => act(a, '튜토리얼', false)} />
+        {tab === 'decision' && league.pending && <Decision league={league} onPlayer={setPlayerId} onSubmit={(input) => act({ kind: 'decide', input }, '진행 중', false)} />}
+        {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }} />}
+        {tab === 'market' && league.user && <Market league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
+        {tab === 'games' && <Games league={league} onOpen={setBoxId} />}
+        {tab === 'standings' && <Standings league={league} onTeam={openTeam} />}
+        {tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} />}
+        {tab === 'team' && <TeamRoster league={league} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />}
+        {tab === 'history' && <History league={league} onPlayer={setPlayerId} />}
+        {tab === 'draft' && (
+          <div class="layout">
+            <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} ourView={league?.user ? (p) => scoutView(league!, p) : undefined} />
+            <PlayerProfile player={prospect && publicView(prospect)} age={prospect && prospectAge(prospect)} />
+          </div>
+        )}
+      </main>
       {boxId && league && (
         <BoxScore
           league={league}
@@ -480,19 +497,6 @@ export function App() {
         />
       )}
       {playerId && league && <PlayerPanel league={league} id={playerId} onClose={() => setPlayerId(null)} onInterview={(pid) => act({ kind: 'interview', id: pid }, '인터뷰 중', false)} />}
-      <footer class="footer">
-        <div class="save-actions">
-          <button type="button" onClick={exportSave} disabled={!!busy}>
-            진행 파일 저장
-          </button>
-          <label class="file-button">
-            불러오기
-            <input type="file" accept="application/json,.json" onChange={(e) => importSave((e.currentTarget as HTMLInputElement).files?.[0])} />
-          </label>
-          <span class="muted">{store.kind === 'indexedDB' ? '자동 저장됨' : '이 브라우저에서는 자동 저장을 쓸 수 없습니다. 진행 파일로 저장하세요.'}</span>
-        </div>
-        <p class="muted">선수·학교·기록은 모두 가상입니다. 구단명과 구장 외에는 실제와 관계없습니다.</p>
-      </footer>
     </div>
   );
 }

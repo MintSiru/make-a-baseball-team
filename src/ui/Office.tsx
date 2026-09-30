@@ -16,6 +16,7 @@ import { FANS } from '../league/tuning';
 import { checkStadiumName, STADIUM_NAME_MAX } from '../league/userclub';
 import { salaryCapFor } from '../rules/kbo2026';
 import { money } from './format';
+import { Help } from './Help';
 
 type Section = 'summary' | 'owner' | 'money' | 'fans' | 'staff' | 'ballpark' | 'ledger';
 const SECTIONS: [Section, string][] = [
@@ -324,10 +325,10 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
 
       {section === 'money' && (
         <>
-          <p class="muted">
+          <Help title="결산 방식">
             시즌이 끝나면 결산합니다. 수입에서 지출을 뺀 운영 결과와 한 해 동안 자금에서 쓴 돈(계약금·위약금 등)을 합쳐 적자가 나면 모기업이 지원 한도까지 메우고, 넘는 만큼은 구단 자금에서 나갑니다. 흑자는
             구단 자금으로 쌓입니다. 구장 공사비는 지원 대상이 아니라 자금에서 바로 나갑니다.
-          </p>
+          </Help>
           {current || reports.length ? (
             <ReportTable
               reports={[

@@ -201,6 +201,9 @@ try {
   // 4. Sorting and running the first team by hand.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
   await page.screenshot({ path: join(shots, 'overview.png'), fullPage: false });
+  // V0.7.7: the club at a glance in the sidebar, the overview as panels (standings, injuries, upcoming games…).
+  check((await page.locator('.club-summary').textContent())?.includes('부상'), 'the sidebar sums up the club');
+  check((await page.locator('.dash-grid .panel').count()) >= 6, 'the overview shows its panels side by side');
   await page.getByRole('button', { name: '선수단', exact: true }).click();
   const firstTeam = page.locator('.squad-table').first();
   await firstTeam.getByRole('button', { name: /^현재/ }).click();

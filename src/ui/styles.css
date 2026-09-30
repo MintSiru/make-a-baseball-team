@@ -1761,3 +1761,282 @@ ul.plain li {
 .notice.good {
   border-left-color: var(--good);
 }
+
+/* ── V0.7.7: the app shell. A phone reads top to bottom (the sidebar's parts flow into the page); a wide
+   screen keeps the club, the screens and the saves in a sidebar and scrolls only the page. ──────────── */
+.app {
+  display: flex;
+  flex-direction: column;
+}
+.sidebar {
+  display: contents;
+}
+.sidebar > .masthead {
+  order: 1;
+}
+.club-summary {
+  order: 2;
+}
+.app > .progress-bar {
+  order: 3;
+}
+.sidebar > .tabs {
+  order: 4;
+}
+.app > .page {
+  order: 5;
+}
+.sidebar > .footer {
+  order: 6;
+}
+.club-summary {
+  padding: 8px var(--gutter);
+  border-bottom: 1px solid var(--rule);
+  font-size: 13.5px;
+}
+.club-summary dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin: 0;
+}
+.club-summary dl > div {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+.club-summary dt {
+  color: var(--ink-2);
+  font-size: 12px;
+}
+.club-summary dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.club-summary .wide {
+  margin-top: 6px;
+}
+.footer .small {
+  margin: 8px 0 0;
+}
+
+@media (min-width: 1100px) {
+  .app {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100vh;
+  }
+  .sidebar {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 14px 12px;
+    background: var(--paper-2);
+    border-right: 1px solid var(--rule);
+  }
+  .sidebar > .masthead {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+  .sidebar > .masthead h1 {
+    font-size: 20px;
+    line-height: 1.25;
+  }
+  .sidebar > .masthead .row-actions {
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .club-summary {
+    padding: 10px;
+    border: 1px solid var(--rule);
+    background: var(--card);
+  }
+  .club-summary dl {
+    display: grid;
+    gap: 5px;
+  }
+  .club-summary dl > div {
+    justify-content: space-between;
+  }
+  .club-summary .wide {
+    width: 100%;
+  }
+  .sidebar > .tabs {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    padding: 0;
+    border: 0;
+    gap: 2px;
+  }
+  .sidebar > .tabs button {
+    text-align: left;
+    padding: 7px 10px;
+    border-bottom: 0;
+    border-left: 3px solid transparent;
+  }
+  .sidebar > .tabs button[aria-current='page'] {
+    border-left-color: var(--accent);
+    background: var(--card);
+  }
+  .sidebar > .footer {
+    margin-top: auto;
+    padding: 10px 0 0;
+    border-top: 1px solid var(--rule);
+  }
+  .sidebar .save-actions {
+    font-size: 13px;
+  }
+  .app > .progress-bar {
+    grid-column: 2;
+    grid-row: 1;
+    position: static;
+    padding: 8px 20px;
+  }
+  .app > .page {
+    grid-column: 2;
+    grid-row: 2;
+    min-height: 0;
+    overflow-y: auto;
+    max-width: none;
+    margin: 0;
+    padding: 16px 24px 32px;
+  }
+  /* The tutorial floats at the bottom right instead of pushing the page down. */
+  .app .tutorial {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 12;
+    width: min(420px, calc(100vw - 300px));
+    max-height: 60vh;
+    overflow-y: auto;
+    margin: 0;
+    box-shadow: 0 8px 28px rgb(0 0 0 / 0.18);
+  }
+}
+@media (min-width: 1100px) and (max-height: 640px) {
+  .sidebar > .masthead .row-actions button {
+    font-size: 12px;
+  }
+}
+
+/* The club overview as a dashboard (V0.7.7): panels side by side, each scrolling on its own. */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+.panel {
+  min-width: 0;
+  max-height: 330px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  border: 1px solid var(--rule);
+  background: var(--card);
+}
+.panel > h3 {
+  position: sticky;
+  top: -10px;
+  margin: -10px -12px 8px;
+  padding: 8px 12px 6px;
+  background: var(--card);
+  border-bottom: 1px solid var(--rule);
+  font-size: 14px;
+}
+.panel .results,
+.panel .club-log,
+.panel .leaders-mini {
+  margin: 0;
+}
+.mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+.mini-table td {
+  padding: 3px 4px;
+  border-bottom: 1px solid var(--rule);
+}
+.mini-table tr.mine td {
+  font-weight: 700;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.absences li,
+.upcoming li {
+  padding: 3px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.absences .tag {
+  margin-left: 2px;
+}
+@media (min-width: 1100px) {
+  .cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .page-head {
+    margin-bottom: 10px;
+  }
+}
+/* Two columns on a wide screen (V0.7.7): the main table and what goes with it side by side. */
+@media (min-width: 1100px) {
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+  .split > div > h3:first-child {
+    margin-top: 0;
+  }
+  .panel.tall {
+    max-height: calc(100vh - 170px);
+  }
+}
+/* Folded explanations (Help.tsx). */
+.help {
+  margin: 4px 0 10px;
+  font-size: 13.5px;
+}
+.help > summary {
+  cursor: pointer;
+  color: var(--ink-2);
+  width: fit-content;
+}
+.help > summary::marker {
+  color: var(--accent);
+}
+.help[open] > div {
+  margin-top: 4px;
+  max-width: 90ch;
+}
+/* Compact tables (display setting, the default since V0.7.7): more rows on one screen. */
+:root[data-density='compact'] .record-table th,
+:root[data-density='compact'] .record-table td {
+  padding: 4px 10px;
+}
+:root[data-density='compact'] .squad-table th,
+:root[data-density='compact'] .squad-table td {
+  padding: 4px 8px;
+}
+:root[data-density='compact'] .results li {
+  padding: 3px 0;
+}
+@media (min-width: 1100px) {
+  /* Inside the scrolling page a sticky bar would stop short of the bottom by the page's padding. */
+  .app > .page {
+    padding-bottom: 0;
+  }
+  .app > .page::after {
+    content: '';
+    display: block;
+    height: 32px;
+  }
+}
