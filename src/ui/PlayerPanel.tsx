@@ -9,6 +9,7 @@ import { playerCard, positionLabel, rateContextFor, rates, type PlayerCard } fro
 import { usdTotal } from '../league/contracts';
 import { usd } from '../league/foreign';
 import { handedness, militaryLabel, money, toolKeysFor } from './format';
+import { GradeBar } from './grades';
 
 const POSITION_NAMES: Record<string, string> = { C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' };
 
@@ -19,25 +20,6 @@ const TABS: { key: Tab; label: string }[] = [
   { key: 'splits', label: '좌우 기록' },
   { key: 'injuries', label: '부상 이력' },
 ];
-
-/** A 20–80 grade as a bar, with the projected grade as a tick. */
-function GradeBar({ label, now, future, note }: { label: string; now: number | undefined; future?: number; note?: string }) {
-  const pct = (g: number) => `${((Math.max(20, Math.min(80, g)) - 20) / 60) * 100}%`;
-  return (
-    <div class="gradebar">
-      <span class="gradebar-label">{label}</span>
-      <span class="gradebar-track" aria-hidden="true">
-        {now != null && <span class={`gradebar-fill${now >= 60 ? ' plus' : now < 40 ? ' minus' : ''}`} style={{ width: pct(now) }} />}
-        {future != null && future > (now ?? 0) && <span class="gradebar-future" style={{ left: pct(future) }} />}
-      </span>
-      <span class="gradebar-num">
-        {now ?? '-'}
-        {future != null && future !== now && <span class="muted"> → {future}</span>}
-      </span>
-      {note && <span class="gradebar-note muted">{note}</span>}
-    </div>
-  );
-}
 
 const splitRates = (x: Split) => ({
   avg: x.ab ? x.h / x.ab : 0,

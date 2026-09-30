@@ -102,7 +102,7 @@ const REST = { catcher: 7, veteran: 12, veteranAge: 34 };
  * Best assignment of players to lineup slots (Hungarian algorithm): `value[slot][player]`, each slot
  * gets a different player. Returns the player index for each slot, or -1.
  */
-function assign(value: number[][]): number[] {
+export function assign(value: number[][]): number[] {
   const n = value.length;
   const m = value[0]?.length ?? 0;
   if (m < n) {

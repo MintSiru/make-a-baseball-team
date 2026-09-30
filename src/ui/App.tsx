@@ -12,6 +12,7 @@ import { makeSave, parseSave, SaveError, serializeSave } from '../save/format';
 import { openStore, type SaveStore } from '../save/store';
 import { BoxScore } from './BoxScore';
 import { StorySettings } from './StorySettings';
+import { DisplaySettings } from './DisplaySettings';
 import { AlertPopup, useAlertPopups } from './Alerts';
 import { TutorialCard } from './Tutorial';
 import { tutorialPaused } from './tutorial';
@@ -91,6 +92,7 @@ export function App() {
   // AI articles (V0.7): settings and keys stay outside the league state.
   const [storySettings, setStorySettings] = useState<StorySettingsT>(loadSettings);
   const [storyOpen, setStoryOpen] = useState(false);
+  const [displayOpen, setDisplayOpen] = useState(false);
   const [storyBusy, setStoryBusy] = useState<string | null>(null);
   const usage = useRef({ input: 0, output: 0, articles: 0 });
   // Event pop-ups (V0.7.4): shown when they are on, or when the player opens them from the header.
@@ -269,7 +271,13 @@ export function App() {
             <h1>KBO 신구단</h1>
             <p class="muted">버전 {RELEASE}</p>
           </div>
+          <div class="row-actions">
+            <button type="button" onClick={() => setDisplayOpen(true)}>
+              화면 설정
+            </button>
+          </div>
         </header>
+        {displayOpen && <DisplaySettings onClose={() => setDisplayOpen(false)} />}
         {notice && <p class="notice">{notice}</p>}
         <NewGame seed={seed} busy={busy && `${busy}${progress ? ` · ${progress}` : ''}`} onFound={found} onSpectate={spectate} />
       </>
@@ -384,6 +392,9 @@ export function App() {
               새 알림 {unseen.length}
             </button>
           )}
+          <button type="button" onClick={() => setDisplayOpen(true)}>
+            화면 설정
+          </button>
           <button type="button" onClick={() => setStoryOpen(true)}>
             AI 기사 설정{hasKey(storySettings) ? ' ✓' : ''}
           </button>
@@ -392,6 +403,7 @@ export function App() {
           </button>
         </div>
       </header>
+      {displayOpen && <DisplaySettings onClose={() => setDisplayOpen(false)} />}
       {storyOpen && (
         <StorySettings
           settings={storySettings}

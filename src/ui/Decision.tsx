@@ -16,6 +16,7 @@ import { MANAGER_STYLES, STAFF_EFFECTS, STAFF_LABELS } from '../league/staff';
 import type { Position } from '../model/position';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { money } from './format';
+import { gradeClass } from './grades';
 import { positionKey, useSort, type SortColumn } from './sort';
 
 interface Props {
@@ -207,8 +208,8 @@ function PlayerTable({
                           ? '방출'
                           : p.origin.pathway}
               </td>
-              <td class="num">{p.scouting.current}</td>
-              <td class="num strong">{p.scouting.futureValue}</td>
+              <td class={`num ${gradeClass(p.scouting.current)}`}>{p.scouting.current}</td>
+              <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{p.scouting.futureValue}</td>
               {extra && <td class="num">{extra.value(p)}</td>}
               {control && <td>{control(p)}</td>}
             </tr>
@@ -268,8 +269,8 @@ function DraftTable({ league, onPlayer, onPick }: { league: LeagueState; onPlaye
               <td>{positionLabel(p)}</td>
               <td class="num">{ageIn(p, year + 1)}</td>
               <td class="muted">{p.origin.pathway}</td>
-              <td class="num">{p.scouting.current}</td>
-              <td class="num strong">{p.scouting.futureValue}</td>
+              <td class={`num ${gradeClass(p.scouting.current)}`}>{p.scouting.current}</td>
+              <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{p.scouting.futureValue}</td>
               <td class="num">{p.velocity ?? '-'}</td>
               <td>
                 <button type="button" class="pick" onClick={() => onPick(p.id)}>

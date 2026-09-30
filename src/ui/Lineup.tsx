@@ -3,6 +3,8 @@
 import { useState } from 'preact/hooks';
 import type { LeagueState } from '../league/state';
 import { lineupView, rates } from '../league/views';
+import { gradeTier } from './display';
+import { gradeClass } from './grades';
 
 const SPOTS: Record<string, [number, number]> = {
   CF: [200, 40],
@@ -20,7 +22,7 @@ const SPOTS: Record<string, [number, number]> = {
 const onField = (name: string) => (name.length > 5 && name.includes(' ') ? name.split(' ').at(-1)! : name);
 
 /** A 20–80 grade cell, coloured above 60 and below 40. */
-const Grade = ({ g }: { g: number }) => <td class={`num grade-cell ${g >= 60 ? 'plus' : g < 40 ? 'minus' : ''}`}>{g || '-'}</td>;
+const Grade = ({ g }: { g: number }) => <td class={`num grade-cell t${gradeTier(g)} ${g >= 60 ? 'plus' : g < 40 ? 'minus' : ''}`}>{g || '-'}</td>;
 
 /** 종합 · 구위/제구/변화구/체력 · 최고 구속. */
 const ArmLine = ({ p }: { p: { grade: number; tools: { stuff: number; command: number; breaking: number; stamina: number }; velocity: number | null } }) => (
@@ -105,7 +107,7 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
                   </td>
                   <td>{b.pos}</td>
                   <td>{b.bats}</td>
-                  <td class="num strong">{b.grade}</td>
+                  <td class={`num strong ${gradeClass(b.grade)}`}>{b.grade}</td>
                   <Grade g={b.tools.contact} />
                   <Grade g={b.tools.power} />
                   <Grade g={b.tools.eye} />

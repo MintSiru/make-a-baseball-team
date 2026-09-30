@@ -24,6 +24,7 @@ import {
 import { positionLabel, shortName } from '../league/views';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { money } from './format';
+import { gradeClass } from './grades';
 import { positionKey, useSort } from './sort';
 
 type View = 'trade' | 'release' | 'foreign' | 'news';
@@ -126,8 +127,8 @@ function PickList({
               </td>
               <td>{positionLabel(p)}</td>
               <td class="num">{ageIn(p, league.year)}</td>
-              <td class="num">{p.scouting.current}</td>
-              <td class="num strong">{p.scouting.futureValue}</td>
+              <td class={`num ${gradeClass(p.scouting.current)}`}>{p.scouting.current}</td>
+              <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{p.scouting.futureValue}</td>
               {extra && <td class="num">{extra.value(p)}</td>}
               {action && <td>{action(p)}</td>}
             </tr>

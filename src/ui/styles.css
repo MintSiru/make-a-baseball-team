@@ -1290,11 +1290,79 @@ h3 {
   inset: 0 auto 0 0;
   background: var(--ink-2);
 }
-.gradebar-fill.plus {
-  background: var(--accent);
+/* Tier colours (V0.7.6): --grade-0…4 come from the display settings; unset, the club colour scheme. */
+.gradebar-fill.t0 {
+  background: var(--grade-0, var(--rule));
 }
-.gradebar-fill.minus {
-  background: var(--rule);
+.gradebar-fill.t1 {
+  background: var(--grade-1, var(--ink-2));
+}
+.gradebar-fill.t2 {
+  background: var(--grade-2, var(--ink-2));
+}
+.gradebar-fill.t3 {
+  background: var(--grade-3, var(--accent));
+}
+.gradebar-fill.t4 {
+  background: var(--grade-4, var(--accent));
+}
+.grade-cell.t0,
+.grade-num.t0 {
+  --tint: var(--grade-0, var(--rule));
+}
+.grade-cell.t1,
+.grade-num.t1 {
+  --tint: var(--grade-1, transparent);
+}
+.grade-cell.t2,
+.grade-num.t2 {
+  --tint: var(--grade-2, transparent);
+}
+.grade-cell.t3,
+.grade-num.t3 {
+  --tint: var(--grade-3, var(--accent));
+}
+.grade-cell.t4,
+.grade-num.t4 {
+  --tint: var(--grade-4, var(--accent));
+}
+:root[data-grade-colors] .grade-cell,
+:root[data-grade-tables] .grade-num {
+  background: color-mix(in srgb, var(--tint) 26%, transparent);
+  color: var(--ink);
+}
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 8px 0;
+}
+.swatches label {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  font-size: 12px;
+}
+.swatches input[type='color'] {
+  width: 44px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--rule);
+  background: none;
+}
+.preset-list {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0 10px;
+}
+.preset-list .strip {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+.preset-list .strip span {
+  width: 14px;
+  height: 10px;
 }
 .gradebar-future {
   position: absolute;

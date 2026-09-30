@@ -2,6 +2,7 @@ import { useMemo, useState } from 'preact/hooks';
 import type { Role } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
 import { roleLabel } from './format';
+import { gradeClass } from './grades';
 import { useSort } from './sort';
 
 type RoleFilter = 'all' | Role;
@@ -90,8 +91,8 @@ export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect, ou
                 <td>{p.origin.pathway}</td>
                 <td>{p.education.school}</td>
                 <td class="num">{ageOf(p)}</td>
-                <td class="num">{p.scouting.current}</td>
-                <td class="num strong">{p.scouting.futureValue}</td>
+                <td class={`num ${gradeClass(p.scouting.current)}`}>{p.scouting.current}</td>
+                <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{p.scouting.futureValue}</td>
                 <td class="num">{p.velocity ?? '-'}</td>
                 {ourView && <td class="num strong">{ourView(p) ?? '-'}</td>}
               </tr>
