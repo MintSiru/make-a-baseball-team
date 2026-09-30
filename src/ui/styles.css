@@ -2206,3 +2206,31 @@ ul.plain li {
 .fa-talk {
   scroll-margin-top: 72px;
 }
+
+/* The general manager's lineup card (V0.8). */
+.lineup-card {
+  margin: 8px 0 12px;
+  padding: 6px 10px;
+  background: var(--paper-2);
+  border-left: 3px solid var(--accent);
+}
+.card-editor .card-table select {
+  max-width: 100%;
+}
+.rotation-picks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.rotation-picks label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+/* The batting order table scrolls inside its column rather than past the page edge. */
+.lineup-grid > div {
+  min-width: 0;
+  overflow-x: auto;
+}

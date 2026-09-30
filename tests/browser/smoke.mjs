@@ -251,6 +251,12 @@ try {
   await page.getByRole('button', { name: '라인업', exact: true }).click();
   check((await page.locator('svg.diamond .spot').count()) === 9, 'nine players on the diamond');
   await page.getByRole('button', { name: '상대 좌완 선발' }).click();
+  // The general manager's lineup card (V0.8): fix today's lineup, save it, and play a week with it.
+  await page.getByRole('button', { name: '직접 짜기' }).click();
+  await page.getByRole('button', { name: '지금 라인업 그대로 고정' }).click();
+  await page.getByRole('button', { name: '카드 저장' }).click();
+  await page.waitForFunction(() => document.querySelectorAll('.lineup table .tag').length >= 9);
+  check((await page.locator('.lineup-card').textContent())?.includes('좌완 상대 9'), 'lineup card saved with nine fixed spots');
   await page.screenshot({ path: join(shots, 'lineup.png'), fullPage: false });
   await page.getByRole('button', { name: '1주', exact: true }).click();
   await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled);

@@ -64,7 +64,7 @@ export function MyClub({ league, onPlayer, onAct, story = {} }: { league: League
       {u.fired && <p class="notice warn">{u.fired}년 겨울, 모기업이 단장을 해임했습니다. 새 게임을 시작하거나 이 구단을 계속 지켜볼 수 있습니다.</p>}
       {view === 'overview' && <Overview league={league} onPlayer={onPlayer} />}
       {view === 'squad' && <Management league={league} onPlayer={onPlayer} onAct={onAct} setMsg={setMsg} />}
-      {view === 'lineup' && <Lineup league={league} teamId={u.teamId} onPlayer={onPlayer} />}
+      {view === 'lineup' && <Lineup league={league} teamId={u.teamId} onPlayer={onPlayer} onAct={onAct} />}
       {view === 'story' && <Story league={league} {...story} />}
       {view === 'office' && <Office league={league} onAct={onAct} setMsg={setMsg} />}
       {msg && (

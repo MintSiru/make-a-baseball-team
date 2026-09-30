@@ -277,6 +277,24 @@ export interface OffseasonState {
   second?: import('./seconddraft').SecondDraftState | null;
 }
 
+/** A spot in the batting order the general manager fixed: who bats there and where he plays. */
+export interface LineupSlot {
+  id: PlayerId;
+  pos: import('./engine/types').FieldPos;
+}
+
+/**
+ * The general manager's lineup card (V0.8): the nine spots of the batting order against a right-handed (`R`)
+ * and a left-handed (`L`) starter, each fixed or left to the manager (null); the starting rotation in order
+ * (the manager fills the rest of the five); and whether fixed regulars still get the manager's days off.
+ */
+export interface LineupCard {
+  R: (LineupSlot | null)[];
+  L: (LineupSlot | null)[];
+  rotation: PlayerId[];
+  rest: boolean;
+}
+
 /** The club the user runs (V0.3: an expansion club). Money in 만 원. */
 export interface UserClub {
   teamId: TeamId;
@@ -292,6 +310,8 @@ export interface UserClub {
   penRoles?: Record<PlayerId, BullpenRole>;
   /** Platoon halves: players who start only against left- ('L') or right-handed ('R') starters. */
   platoon?: Record<PlayerId, 'L' | 'R'>;
+  /** The general manager's lineup card (V0.8): spots he fixed himself; the manager fills the rest. */
+  lineup?: LineupCard;
   /** First-team registrations: the manager's (auto) or the general manager's own (manual). */
   entry?: 'auto' | 'manual';
   /** Most the parent will pay this year to cover a deficit (V0.6; 만 원). */
