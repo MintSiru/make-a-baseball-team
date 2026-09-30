@@ -17,7 +17,8 @@ import { addInto, emptyBat, emptyPit, type LeagueState } from './state';
 import { avg, era, obp, slg } from './stats';
 
 export type Move =
-  | { type: 'trade'; a: TeamId; b: TeamId; fromA: PlayerId[]; fromB: PlayerId[] }
+  /** V0.7.8: `cash` (만 원) paid by A (negative: by B), and rounds of the coming draft each side gives. */
+  | { type: 'trade'; a: TeamId; b: TeamId; fromA: PlayerId[]; fromB: PlayerId[]; cash?: number; picksA?: number[]; picksB?: number[] }
   | { type: 'release'; teamId: TeamId; id: PlayerId; waiver: boolean; owed: number }
   | { type: 'claim'; teamId: TeamId; from: TeamId; id: PlayerId }
   | { type: 'pool'; teamId: TeamId; id: PlayerId; salary: number }
@@ -141,13 +142,20 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
       // Seen from the user's club when it is part of the deal, else from the first club.
       const home = m.b === u ? m.b : m.a;
       const arriving = (home === m.a ? m.fromB : m.fromA).map(p).find((x): x is Player => !!x);
+      // Cash and draft picks (V0.7.8) go with the players on each side.
+      const draft = s.year + 1;
+      const and = (xs: string[]) => xs.filter(Boolean).reduce((a, x) => (a ? `${wagwa(a)} ${x}` : x), '');
+      const extra = (money: number, picks: number[] = []) => [money > 0 ? `현금 ${Math.round(money / 1000) / 10}억` : '', ...picks.map((r) => `${draft} 신인 ${r}라운드 지명권`)];
+      const sideA = and([m.fromA.length ? names(m.fromA) : '', ...extra(Math.max(0, m.cash ?? 0), m.picksA)]);
+      const sideB = and([m.fromB.length ? names(m.fromB) : '', ...extra(Math.max(0, -(m.cash ?? 0)), m.picksB)]);
+      const shape = m.fromA.length && m.fromB.length ? `${m.fromA.length}대${m.fromB.length} ` : '';
       addNews(s, {
         ...base,
         id,
-        title: `${A}–${B}, ${names(m.fromA)}↔${names(m.fromB)} 트레이드`,
-        body: `${iga(A)} ${B}에 ${eulreul(names(m.fromA))} 내주고 ${eulreul(names(m.fromB))} 받는 ${m.fromA.length}대${m.fromB.length} 트레이드를 했다.\n${about.join(' ')}`,
+        title: `${A}–${B}, ${sideA}↔${sideB} 트레이드`,
+        body: `${iga(A)} ${B}에 ${eulreul(sideA)} 내주고 ${eulreul(sideB)} 받는 ${shape}트레이드를 했다.\n${about.join(' ')}`,
         quotes: [{ who: managerOf(s, home), role: 'manager', text: pick(MANAGER.trade, id) }, ...(arriving ? [said(arriving, pick(ARRIVAL, `${id}-a`))] : []), ...(mine ? fans(FANS.trade, id) : [])],
-        facts: { type: '트레이드', date, clubA: A, clubB: B, [`${A} 보냄`]: names(m.fromA), [`${B} 보냄`]: names(m.fromB) },
+        facts: { type: '트레이드', date, clubA: A, clubB: B, [`${A} 보냄`]: sideA, [`${B} 보냄`]: sideB },
         detail: [...everyone.flatMap((x) => playerFacts(s, x, season)), ...clubFacts(s, [m.a, m.b], date)],
         players: everyone.map((x) => x.id),
         mine,

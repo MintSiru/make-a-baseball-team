@@ -52,15 +52,19 @@ export function Games({ league, onOpen }: { league: LeagueState; onOpen: (id: st
   return (
     <section aria-labelledby="games-title">
       <h2 id="games-title">경기</h2>
-      {league.user && (
-        <>
-          <h3>우리 구단 ({league.year})</h3>
-          <p class="muted">최근 10경기는 문자중계를 처음부터 다시 볼 수 있습니다.</p>
-          <GameTable rows={list.mine} onOpen={onOpen} mine />
-        </>
-      )}
-      <h3>최근 경기</h3>
-      <GameTable rows={list.recent} onOpen={onOpen} mine={false} />
+      <div class={league.user ? 'split' : undefined}>
+        {league.user && (
+          <div class="panel tall">
+            <h3>우리 구단 ({league.year})</h3>
+            <p class="muted">최근 10경기는 문자중계를 처음부터 다시 볼 수 있습니다.</p>
+            <GameTable rows={list.mine} onOpen={onOpen} mine />
+          </div>
+        )}
+        <div class={league.user ? 'panel tall' : undefined}>
+          <h3>최근 경기</h3>
+          <GameTable rows={list.recent} onOpen={onOpen} mine={false} />
+        </div>
+      </div>
     </section>
   );
 }

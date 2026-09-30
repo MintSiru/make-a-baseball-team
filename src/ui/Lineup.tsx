@@ -2,7 +2,11 @@
    right- or left-handed starter, the rotation (next starter marked) and the bullpen by role. */
 import { useState } from 'preact/hooks';
 import type { LeagueState } from '../league/state';
+import { MANAGER_STYLES } from '../league/staff';
 import { lineupView, rates } from '../league/views';
+import { gradeTier } from './display';
+import { gradeClass } from './grades';
+import { Help } from './Help';
 
 const SPOTS: Record<string, [number, number]> = {
   CF: [200, 40],
@@ -20,7 +24,7 @@ const SPOTS: Record<string, [number, number]> = {
 const onField = (name: string) => (name.length > 5 && name.includes(' ') ? name.split(' ').at(-1)! : name);
 
 /** A 20–80 grade cell, coloured above 60 and below 40. */
-const Grade = ({ g }: { g: number }) => <td class={`num grade-cell ${g >= 60 ? 'plus' : g < 40 ? 'minus' : ''}`}>{g || '-'}</td>;
+const Grade = ({ g }: { g: number }) => <td class={`num grade-cell t${gradeTier(g)} ${g >= 60 ? 'plus' : g < 40 ? 'minus' : ''}`}>{g || '-'}</td>;
 
 /** 종합 · 구위/제구/변화구/체력 · 최고 구속. */
 const ArmLine = ({ p }: { p: { grade: number; tools: { stuff: number; command: number; breaking: number; stamina: number }; velocity: number | null } }) => (
@@ -41,6 +45,7 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
     ...(next ? [{ pos: 'P', id: next.id, name: next.name, number: undefined, grade: next.grade }] : []),
   ];
   const dh = v.lineup.find((b) => b.pos === 'DH');
+  const style = v.style && v.style !== 'balanced' ? MANAGER_STYLES[v.style] : null;
   return (
     <div class="lineup">
       <div class="segmented" role="group" aria-label="상대 선발">
@@ -51,9 +56,19 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
           상대 좌완 선발
         </button>
       </div>
-      <p class="muted">
-        감독이 오늘 짤 라인업입니다 (직접 관리에서 정한 플래툰·불펜 보직 반영). 부상·대표팀 선수는 빠집니다. 능력치는 스카우팅 등급(20~80)이며, 투수는 현재 (구위/제구/변화구/체력) 순입니다.
-      </p>
+      {style && (
+        <p class="small">
+          감독 성향: <strong>{style.label}</strong> <span class="muted">({style.note})</span>
+        </p>
+      )}
+      {v.resting.length > 0 && (
+        <p class="notice">
+          다음 경기({v.resting[0]!.date.slice(5).replace('-', '/')}) 휴식 예정: {v.resting.map((r) => `${r.name}(${r.pos})`).join(', ')} — 감독이 체력 관리로 쉬게 합니다.
+        </p>
+      )}
+      <Help title="라인업을 짜는 방식">
+        감독이 평소 짜는 라인업입니다 (직접 관리에서 정한 플래툰·불펜 보직 반영). 타격과 포지션별 수비를 함께 따져 9명과 수비 위치를 정하고, 가장 좋은 타자 셋을 1·2·4번, 다음 둘을 3·5번에 둡니다(작전형 감독은 출루·발 빠른 타자를 앞에, 거포를 중심에). 시즌 중에는 주전 포수가 5~6경기에 한 번, 34세 이상은 11~12경기에 한 번꼴로 쉽니다. 부상·대표팀 선수는 빠집니다. 능력치는 스카우팅 등급(20~80)이며, 투수는 현재 (구위/제구/변화구/체력) 순입니다.
+      </Help>
       <div class="lineup-grid">
         <svg viewBox="0 0 400 320" class="diamond" role="img" aria-label="수비 위치">
           <path d="M200 300 L40 140 A230 230 0 0 1 360 140 Z" class="grass" />
@@ -105,7 +120,7 @@ export function Lineup({ league, teamId, onPlayer }: { league: LeagueState; team
                   </td>
                   <td>{b.pos}</td>
                   <td>{b.bats}</td>
-                  <td class="num strong">{b.grade}</td>
+                  <td class={`num strong ${gradeClass(b.grade)}`}>{b.grade}</td>
                   <Grade g={b.tools.contact} />
                   <Grade g={b.tools.power} />
                   <Grade g={b.tools.eye} />

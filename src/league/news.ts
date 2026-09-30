@@ -12,7 +12,7 @@ import type { LeagueState } from './state';
 import type { PlayEvent } from './engine/types';
 import { gameDetail, monthDetail, seasonDetail } from './gamedetail';
 
-export type NewsKind = 'game' | 'milestone' | 'month' | 'season' | 'award' | 'interview' | 'move';
+export type NewsKind = 'game' | 'milestone' | 'month' | 'season' | 'award' | 'interview' | 'move' | 'injury';
 
 export interface Quote {
   who: string;

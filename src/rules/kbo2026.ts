@@ -92,7 +92,14 @@ export const KBO_2026 = {
     allMayPlay: true,
     maxPitchersInGame: 2,
     newContractCapUSD: 1_000_000,
+    /** The three foreign players' total (salary, bonus, transfer fee and options paid), 2023~. Each re-signed
+        player's years with the club raise it by `tenureRaiseUSD`; over it: 50% of the excess, 100% two
+        seasons running plus the next draft's second-round pick nine places later, 150% from the third
+        (S55). The Asia quota player is outside it (his own cap). */
     clubTotalCapUSD: 4_000_000,
+    tenureRaiseUSD: 100_000,
+    capLevies: [0.5, 1, 1.5],
+    capPickDropFrom: 2,
     asiaQuotaCapUSD: 200_000,
     asiaQuotaRaisePerYearUSD: 100_000,
     asiaQuotaReplacementsPerYear: 1,

@@ -13,8 +13,10 @@ export const ALERT_LABEL: Record<AlertKind, string> = {
   owner: '모기업',
   posting: '포스팅',
   achievement: '업적',
+  injury: '부상',
+  military: '병역',
 };
-const ICON: Record<AlertKind, string> = { national: '⚾', fa: '✍️', award: '🏆', hall: '🏛️', season: '📅', owner: '🏢', posting: '✈️', achievement: '🎖️' };
+const ICON: Record<AlertKind, string> = { national: '⚾', fa: '✍️', award: '🏆', hall: '🏛️', season: '📅', owner: '🏢', posting: '✈️', achievement: '🎖️', injury: '🩹', military: '🪖' };
 
 // ── Whether new alerts pop up (a per-browser preference; the list is always there) ─────────────────
 

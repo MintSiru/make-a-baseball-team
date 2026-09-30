@@ -15,9 +15,10 @@ import { movePlayer } from './market';
 import { leaveLeague, removeFromRoster, rosterLimit } from './offseason';
 import { ageIn, currentValue, isForeign, isPitcher, keepValue, makeForeign } from './players';
 import { currentStandings } from './season';
-import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from './state';
+import { firstTeamIds, orgPlayers, registeredIds, type DraftSlot, type LeagueState, type TradeExtras } from './state';
 import { TRADES } from './tuning';
 import { moveNews } from './movenews';
+import { capRoom, chargeForeign } from './foreigncap';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry, toForeignPool } from './foreignpool';
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
@@ -66,34 +67,107 @@ export interface TradeCheck {
   accepted: boolean;
 }
 
-export function checkTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get: PlayerId[]): TradeCheck {
+// ── Draft picks and cash (V0.7.8) ─────────────────────────────────────────────────────────────────
+
+/** The draft a trade today can include: the one after this season (held in the winter in the game). */
+export const tradeDraftYear = (s: LeagueState) => s.year;
+
+/** Who holds `teamId`'s own pick in `round` of the draft of `year`. */
+export const pickHolder = (s: LeagueState, year: number, round: number, teamId: TeamId) => s.pickTrades?.find((x) => x.year === year && x.round === round && x.from === teamId)?.to ?? teamId;
+
+/** Rounds of its own pick in the coming draft a club can still trade away: not traded yet, and at most
+    two of one draft (KBO 2019 rule). A club outside the regular draft order (before its first team) has none. */
+export function tradablePicks(s: LeagueState, teamId: TeamId): number[] {
+  const year = tradeDraftYear(s);
+  if (!firstTeamIds(s, year).includes(teamId) || s.offseason?.draft) return [];
+  const gone = (s.pickTrades ?? []).filter((x) => x.year === year && x.from === teamId).length;
+  if (gone >= TRADES.picks.perClub) return [];
+  return Array.from({ length: KBO_2026.draft.rounds }, (_, i) => i + 1).filter((round) => pickHolder(s, year, round, teamId) === teamId);
+}
+
+/** A club's place in the coming draft order (1 = picks first): the worst record picks first. */
+function draftPlace(s: LeagueState, teamId: TeamId): { place: number; clubs: number } {
+  const played = s.phase === 'regular' || s.phase === 'postseason' ? s.scores.length > 0 : false;
+  const table = played ? currentStandings(s) : (s.history.at(-1)?.table ?? []);
+  const order = [...table].reverse().map((r) => r.teamId);
+  const i = order.indexOf(teamId);
+  return { place: i < 0 ? Math.ceil(order.length / 2) : i + 1, clubs: Math.max(2, order.length) };
+}
+
+/** What a club thinks `teamId`'s pick in `round` of the coming draft is worth (trade value points). */
+export function pickValue(s: LeagueState, teamId: TeamId, round: number): number {
+  const P = TRADES.picks;
+  const { place, clubs } = draftPlace(s, teamId);
+  const k = 1 + P.spread - (2 * P.spread * (place - 1)) / (clubs - 1);
+  return Math.round((P.value[round - 1] ?? P.value[P.value.length - 1]!) * k * 10) / 10;
+}
+
+export const cashValue = (manwon: number) => (manwon / 10000) * TRADES.cash.perEok;
+
+const pickText = (year: number, rounds: number[]) => rounds.map((r) => `${year + 1} 신인 ${r}라운드 지명권`).join('·');
+const eok = (manwon: number) => `${Math.round(manwon / 1000) / 10}억`;
+
+export function checkTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get: PlayerId[], extras: TradeExtras = {}): TradeCheck {
   const u = s.user;
   const no = (problem: string): TradeCheck => ({ problem, margin: 0, accepted: false });
   if (!u) return no('구단이 없습니다.');
   const closed = tradeWindow(s);
   if (closed) return no(closed);
   if (teamId === u.teamId || !s.rosters[teamId]) return no('상대 구단을 고르세요.');
-  if (!give.length || !get.length) return no('주고받을 선수를 한 명 이상 고르세요.');
+  const cashOut = extras.cashOut ?? 0,
+    cashIn = extras.cashIn ?? 0,
+    picksOut = extras.picksOut ?? [],
+    picksIn = extras.picksIn ?? [];
+  if (!give.length && !get.length) return no('트레이드에는 선수가 한 명 이상 있어야 합니다.');
+  if (!give.length && !cashOut && !picksOut.length) return no('우리가 줄 선수·현금·지명권을 고르세요.');
+  if (!get.length && !cashIn && !picksIn.length) return no('받을 선수·현금·지명권을 고르세요.');
+  if (cashOut && cashIn) return no('현금은 한쪽만 줄 수 있습니다.');
+  for (const c of [cashOut, cashIn]) if (c < 0 || c > TRADES.cash.max || c % TRADES.cash.step) return no(`현금은 ${eok(TRADES.cash.step)} 단위로 ${eok(TRADES.cash.max)}까지입니다.`);
+  if (cashOut > u.fund) return no(`구단 자금(${eok(u.fund)})보다 많은 현금은 줄 수 없습니다.`);
+  const ownPicks = tradablePicks(s, u.teamId),
+    theirPicks = tradablePicks(s, teamId);
+  const perClub = TRADES.picks.perClub;
+  const used = (club: TeamId) => (s.pickTrades ?? []).filter((x) => x.year === tradeDraftYear(s) && x.from === club).length;
+  if (picksOut.some((r) => !ownPicks.includes(r)) || used(u.teamId) + picksOut.length > perClub) return no(`우리 지명권은 이번 드래프트 것만, 한 해 ${perClub}장까지 넘길 수 있습니다.`);
+  if (picksIn.some((r) => !theirPicks.includes(r)) || used(teamId) + picksIn.length > perClub) return no(`상대 구단이 넘길 수 있는 지명권이 아닙니다 (한 해 ${perClub}장까지).`);
   const gives = give.map((id) => s.players[id]);
   const gets = get.map((id) => s.players[id]);
   if (gives.some((p) => !p || p.teamId !== u.teamId || p.status !== 'active')) return no('우리 선수만 보낼 수 있습니다.');
   if (gets.some((p) => !p || p.teamId !== teamId || p.status !== 'active')) return no('상대 구단 선수만 받을 수 있습니다.');
   if ([...gives, ...gets].some((p) => isForeign(p!))) return no('외국인 선수는 트레이드할 수 없습니다 (게임 규칙).');
   if ([...gives, ...gets].some((p) => p!.proSince > s.year)) return no('올해 지명한 신인은 계약 첫해가 시작되기 전에는 트레이드할 수 없습니다 (게임 규칙).');
+  if ([...gives, ...gets].some((p) => p!.origin.pickVia && p!.proSince >= s.year)) return no('넘겨받은 지명권으로 뽑은 선수는 입단 첫해에 트레이드할 수 없습니다 (KBO 규정).');
   const devCount = (xs: typeof gives) => xs.filter((p) => p!.contract?.kind === 'development').length;
   const limit = rosterLimit(s.phase === 'regular' ? s.year : s.year + 1);
   const mine = registeredIds(s, u.teamId).length - (give.length - devCount(gives)) + (get.length - devCount(gets));
   const theirs = registeredIds(s, teamId).length - (get.length - devCount(gets)) + (give.length - devCount(gives));
   if (mine > limit) return no(`받으면 우리 소속선수가 ${limit}명을 넘습니다.`);
   if (theirs > limit) return no(`상대 구단 소속선수가 ${limit}명을 넘게 됩니다.`);
-  const inValue = gives.reduce((a, p) => a + tradeValue(s, p!), 0);
-  const outValue = gets.reduce((a, p) => a + tradeValue(s, p!), 0);
+  const inValue = gives.reduce((a, p) => a + tradeValue(s, p!), 0) + cashValue(cashOut) + picksOut.reduce((a, r) => a + pickValue(s, u.teamId, r), 0);
+  const outValue = gets.reduce((a, p) => a + tradeValue(s, p!), 0) + cashValue(cashIn) + picksIn.reduce((a, r) => a + pickValue(s, teamId, r), 0);
   const margin = Math.round((inValue - outValue * TRADES.accept.premium - TRADES.accept.fixed) * 10) / 10;
   return { problem: null, margin, accepted: margin >= 0 };
 }
 
-export function makeTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get: PlayerId[]) {
-  const c = checkTrade(s, teamId, give, get);
+/** Moves the cash and the picks of a trade (`a` gives `picksA` and pays `cash`; negative cash: `b` pays). */
+function settleExtras(s: LeagueState, a: TeamId, b: TeamId, cash: number, picksA: number[], picksB: number[]) {
+  const year = tradeDraftYear(s);
+  for (const round of picksA) (s.pickTrades ??= []).push({ year, round, from: a, to: b });
+  for (const round of picksB) (s.pickTrades ??= []).push({ year, round, from: b, to: a });
+  const u = s.user;
+  if (!cash || !u || (a !== u.teamId && b !== u.teamId)) return;
+  const paid = a === u.teamId ? cash : -cash;
+  u.fund -= paid;
+  u.ledger.push({ year: s.year, label: `트레이드 현금 (${shortOf(s, a === u.teamId ? b : a)})`, amount: -paid });
+}
+
+/** Cash and picks as a line: "현금 3억 + 2027 신인 3라운드 지명권". */
+export function extrasText(s: LeagueState, cash: number, picks: number[]) {
+  return [cash > 0 ? `현금 ${eok(cash)}` : '', picks.length ? pickText(tradeDraftYear(s), picks) : ''].filter(Boolean).join(' + ');
+}
+
+export function makeTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get: PlayerId[], extras: TradeExtras = {}) {
+  const c = checkTrade(s, teamId, give, get, extras);
   if (c.problem) throw new Error(c.problem);
   const u = s.user!;
   if (!c.accepted) {
@@ -102,12 +176,26 @@ export function makeTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get:
   }
   for (const id of give) movePlayer(s, s.players[id]!, teamId);
   for (const id of get) movePlayer(s, s.players[id]!, u.teamId);
-  const names = (ids: PlayerId[]) => ids.map((id) => s.players[id]!.name).join('·');
-  const text = `트레이드: ${shortOf(s, u.teamId)} ${names(give)} ↔ ${shortOf(s, teamId)} ${names(get)}`;
+  const cash = (extras.cashOut ?? 0) - (extras.cashIn ?? 0);
+  settleExtras(s, u.teamId, teamId, cash, extras.picksOut ?? [], extras.picksIn ?? []);
+  const side = (ids: PlayerId[], money: number, picks: number[]) => [ids.map((id) => s.players[id]!.name).join('·'), extrasText(s, money, picks)].filter(Boolean).join(' + ');
+  const text = `트레이드: ${shortOf(s, u.teamId)} ${side(give, Math.max(0, cash), extras.picksOut ?? [])} ↔ ${shortOf(s, teamId)} ${side(get, Math.max(0, -cash), extras.picksIn ?? [])}`;
   (u.log ??= []).push({ year: s.year, text });
   logTransaction(s, text);
-  moveNews(s, { type: 'trade', a: u.teamId, b: teamId, fromA: give, fromB: get });
+  moveNews(s, { type: 'trade', a: u.teamId, b: teamId, fromA: give, fromB: get, cash, picksA: extras.picksOut ?? [], picksB: extras.picksIn ?? [] });
   return true;
+}
+
+/** Traded picks change hands in the draft order: the slot keeps its place, the club that holds it picks. */
+export function applyPickTrades(s: LeagueState, year: number, slots: DraftSlot[]): DraftSlot[] {
+  const trades = (s.pickTrades ?? []).filter((x) => x.year === year);
+  if (!trades.length) return slots;
+  const out = slots.map((x) => ({ ...x }));
+  for (const t of trades) {
+    const slot = out.find((x) => x.teamId === t.from && !x.via && x.label === `${t.round}R`);
+    if (slot) Object.assign(slot, { teamId: t.to, via: t.from, label: `${t.round}R (${shortOf(s, t.from)} 지명권)` });
+  }
+  return out;
 }
 
 /** A few trades between AI clubs each season: depth at one spot for need at another, at even value. */
@@ -131,16 +219,34 @@ export function aiTrades(s: LeagueState, r: () => number) {
       .sort((x, y) => tradeValue(s, y) - tradeValue(s, x))[0];
     if (!fromA) continue;
     const need = groupOf(fromA);
-    const fromB = spots(b)
-      .filter((p) => groupOf(p) !== need)
-      .map((p) => ({ p, gap: Math.abs(tradeValue(s, p) - tradeValue(s, fromA)) }))
-      .filter((x) => x.gap <= Math.max(2, tradeValue(s, fromA) * 0.15))
-      .sort((x, y) => x.gap - y.gap)[0]?.p;
+    const vA = tradeValue(s, fromA);
+    // Even values, or a gap made up with cash or a pick (V0.7.8).
+    const options = spots(b)
+      .filter((p) => groupOf(p) !== need && !(p.origin.pickVia && p.proSince >= s.year))
+      .map((p) => ({ p, gap: tradeValue(s, p) - vA }))
+      .filter((x) => Math.abs(x.gap) <= Math.max(2, vA * TRADES.ai.evenOut))
+      .sort((x, y) => Math.abs(x.gap) - Math.abs(y.gap))
+      .slice(0, 3);
+    // One of the three closest in value: the rest is made up with cash or a pick.
+    const fromB = options[Math.floor(r() * options.length)];
     if (!fromB) continue;
+    // The club getting more value pays the difference: a pick worth about the gap, else cash.
+    const gap = fromB.gap; // > 0: A gets more, A pays
+    let cash = 0;
+    const picksA: number[] = [],
+      picksB: number[] = [];
+    if (Math.abs(gap) > Math.max(2, vA * 0.15)) {
+      const payer = gap > 0 ? a : b;
+      const round = tradablePicks(s, payer).find((r) => pickValue(s, payer, r) <= Math.abs(gap) * 1.2);
+      if (round && r() < 0.5) (payer === a ? picksA : picksB).push(round);
+      else cash = Math.sign(gap) * Math.min(TRADES.cash.max, Math.round((Math.abs(gap) / TRADES.cash.perEok) * 10000 / TRADES.cash.step) * TRADES.cash.step);
+    }
     movePlayer(s, fromA, b);
-    movePlayer(s, fromB, a);
-    logTransaction(s, `트레이드: ${shortOf(s, a)} ${fromA.name} ↔ ${shortOf(s, b)} ${fromB.name}`);
-    moveNews(s, { type: 'trade', a, b, fromA: [fromA.id], fromB: [fromB.id] });
+    movePlayer(s, fromB.p, a);
+    settleExtras(s, a, b, cash, picksA, picksB);
+    const side = (name: string, money: number, picks: number[]) => [name, extrasText(s, money, picks)].filter(Boolean).join(' + ');
+    logTransaction(s, `트레이드: ${shortOf(s, a)} ${side(fromA.name, Math.max(0, cash), picksA)} ↔ ${shortOf(s, b)} ${side(fromB.p.name, Math.max(0, -cash), picksB)}`);
+    moveNews(s, { type: 'trade', a, b, fromA: [fromA.id], fromB: [fromB.p.id], cash, picksA, picksB });
   }
 }
 
@@ -337,6 +443,7 @@ export function replaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, in
   p.teamId = teamId;
   p.contract = foreignContract(teamId, s.year, splitContract(price, r), !!p.origin.asiaQuota);
   s.players[p.id] = p;
+  chargeForeign(s, teamId, p);
   s.rosters[teamId]![wasActive ? 'active' : 'futures'].push(p.id);
   (s.foreignChanges ??= {})[teamId] = (s.foreignChanges[teamId] ?? 0) + 1;
   const text = `외국인 교체: ${shortOf(s, teamId)} ${old.name} → ${p.name} (${p.origin.background!.text})`;
@@ -365,7 +472,8 @@ export function aiForeignChanges(s: LeagueState, date: string, r: () => number) 
     const pick = foreignMarket(s, teamId)
       .filter((p) => !!p.origin.asiaQuota === !!bad.origin.asiaQuota && isPitcher(p) === isPitcher(bad))
       .sort((a, b) => b.scouting.current - a.scouting.current)[0];
-    if (pick) replaceForeign(s, teamId, bad.id, pick.id, r);
+    // A club stays under the foreign salary cap (V0.7.8): no replacement it cannot afford.
+    if (pick && (pick.origin.asiaQuota || foreignPriceNow(s, pick) <= capRoom(s, teamId))) replaceForeign(s, teamId, bad.id, pick.id, r);
   }
 }
 

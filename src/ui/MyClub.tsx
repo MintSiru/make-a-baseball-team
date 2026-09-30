@@ -12,7 +12,7 @@ import { rosterLimit } from '../league/offseason';
 import { isPitcher } from '../league/players';
 import { developmentIds, registeredIds, type LeagueState, type Squad as SquadName } from '../league/state';
 import { OFFSEASON } from '../league/tuning';
-import { rates, shortName, standingsView } from '../league/views';
+import { injuryNote, rates, shortName, standingsView } from '../league/views';
 import { money } from './format';
 import { Squad, type Row, type SquadKey } from './Squad';
 import { Office } from './Office';
@@ -98,6 +98,7 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
   const payYear = league.phase === 'offseason' && league.offseason ? league.offseason.year + 1 : league.year;
   const payroll = projectedPayroll(league, me, payYear);
   const share = Math.min(1, payroll / Math.max(1, u.payrollBudget));
+  const upcoming = league.phase === 'regular' ? league.schedule.slice(league.next).filter((g) => g.home === me || g.away === me).slice(0, 6) : [];
   const steps = [
     { year: 2026, label: '창단 승인 · 트라이아웃' },
     { year: 2026, label: '첫 신인 드래프트' },
@@ -154,8 +155,8 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
         </ol>
       )}
 
-      <div class="two-col">
-        <div>
+      <div class="dash-grid">
+        <section class="panel">
           <h3>최근 경기</h3>
           {games.length ? (
             <ul class="results">
@@ -180,29 +181,98 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
           ) : (
             <p class="empty">아직 경기가 없습니다.</p>
           )}
-        </div>
-        <div>
+        </section>
+        <section class="panel">
+          <h3>순위</h3>
+          {inFirstTeam && table.length ? (
+            <table class="mini-table">
+              <tbody>
+                {table.map((r) => (
+                  <tr key={r.teamId} class={r.teamId === me ? 'mine' : ''}>
+                    <td class="num">{r.rank}</td>
+                    <td>{shortName(league, r.teamId)}</td>
+                    <td class="num">
+                      {r.w}-{r.l}-{r.t}
+                    </td>
+                    <td class="num">{rates.fmt3(r.pct)}</td>
+                    <td class="num muted">{r.gb ? r.gb : '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p class="empty">1군에 들어가는 {u.firstTeamYear}년부터 순위가 나옵니다.</p>
+          )}
+        </section>
+        <section class="panel">
           <h3>팀 리더</h3>
           <TeamLeaders league={league} onPlayer={onPlayer} />
-        </div>
+        </section>
+        <section class="panel">
+          <h3>부상 · 결장</h3>
+          <Absences league={league} onPlayer={onPlayer} />
+        </section>
+        <section class="panel">
+          <h3>다가오는 경기</h3>
+          {upcoming.length ? (
+            <ul class="plain upcoming">
+              {upcoming.map((g) => (
+                <li key={g.id}>
+                  <span class="muted num">{g.date.slice(5).replace('-', '/')}</span> {g.home === me ? 'vs' : '@'} {shortName(league, g.home === me ? g.away : g.home)}
+                  <span class="muted small">{g.home === me ? ' 홈' : ' 원정'}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="empty">{league.phase === 'regular' ? '남은 경기가 없습니다.' : '시즌이 끝났습니다.'}</p>
+          )}
+        </section>
+        <section class="panel">
+          <h3>구단 소식</h3>
+          {u.log?.length ? (
+            <ul class="club-log">
+              {[...u.log]
+                .reverse()
+                .slice(0, 30)
+                .map((l, i) => (
+                  <li key={i}>
+                    <span class="num muted">{l.year}</span> {l.text}
+                  </li>
+                ))}
+            </ul>
+          ) : (
+            <p class="empty">아직 소식이 없습니다.</p>
+          )}
+        </section>
       </div>
-
-      <h3>구단 소식</h3>
-      {u.log?.length ? (
-        <ul class="club-log">
-          {[...u.log]
-            .reverse()
-            .slice(0, 10)
-            .map((l, i) => (
-              <li key={i}>
-                <span class="num muted">{l.year}</span> {l.text}
-              </li>
-            ))}
-        </ul>
-      ) : (
-        <p class="empty">아직 소식이 없습니다.</p>
-      )}
     </>
+  );
+}
+
+/** Who is out: the injured list and rehab (with what and until when), knocks, and military service. */
+function Absences({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
+  const me = league.user!.teamId;
+  const out = Object.entries(league.injuries)
+    .filter(([id]) => league.players[id]?.teamId === me)
+    .sort((a, b) => Number(!!a[1].dtd) - Number(!!b[1].dtd) || a[1].until.localeCompare(b[1].until));
+  const soldiers = Object.values(league.players).filter((p) => p.teamId === me && p.status === 'military');
+  if (!out.length && !soldiers.length) return <p class="empty">빠진 선수가 없습니다.</p>;
+  return (
+    <ul class="plain absences">
+      {out.map(([id, i]) => (
+        <li key={id}>
+          <button type="button" class="link" onClick={() => onPlayer(id)}>
+            {league.players[id]!.name}
+          </button>{' '}
+          <span class={`tag${i.dtd ? '' : ' warn'}`}>{i.dtd ? '결장' : i.onList ? '부상자 명단' : '재활'}</span> <span class="muted small">{injuryNote(i)}</span>
+        </li>
+      ))}
+      {soldiers.length > 0 && (
+        <li class="muted small">
+          군 복무 {soldiers.length}명: {soldiers.map((p) => `${p.name}(${p.service.route === 'sangmu' ? '상무' : p.service.route === 'social' ? '사회복무' : '현역'})`).join(', ')}
+        </li>
+      )}
+    </ul>
   );
 }
 

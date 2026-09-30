@@ -26,6 +26,9 @@ export const toolKeysFor = (role: Role) =>
 
 export const militaryLabel = { pending: '미필', serving: '복무 중', served: '군필', exempt: '면제' } as const;
 
+/** 만 원 amounts in a tight space: "64.6억", "3,000만". */
+export const moneyShort = (manwon: number) => (Math.abs(manwon) >= 10000 ? `${(manwon / 10000).toFixed(1).replace(/\.0$/, '')}억` : `${manwon.toLocaleString('ko-KR')}만`);
+
 /** 만 원 amounts as "1억 7,500만" / "3,000만". */
 export function money(manwon: number) {
   if (!manwon) return '-';

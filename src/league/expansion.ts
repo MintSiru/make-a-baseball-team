@@ -5,7 +5,8 @@
    game assumptions in RULES.md §9. Money is in 만 원 (10,000 = 1억). */
 import { generateDraftPool, rng } from '../draftroom';
 import { cityById } from '../club/cities';
-import { baseSupport } from './parent';
+import { baseSupport, electMayor } from './parent';
+import { capPlayers, foreignCap, foreignCost } from './foreigncap';
 import { milestone, unlock } from './milestones';
 import type { ParentCompanyType } from '../club/types';
 import { fromDraftProspect } from '../model/player';
@@ -140,6 +141,8 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
   s.rosters[EXPANSION_ID] = emptyRoster();
   const b = budgetFor(settings);
   s.user = { teamId: EXPANSION_ID, settings, fund: b.fund, payrollBudget: b.payrollBudget, firstTeamYear, ledger: [], support: Math.round(baseSupport(settings.parentType) * DIFFICULTY_MONEY[settings.difficulty]), trust: PARENT.startTrust, budgetScale: 1 };
+  // A citizen club is founded by the mayor elected in June 2026 (parent.ts).
+  if (settings.parentType === 'citizen') s.user.mayor = electMayor(s, 2026);
   spend(s, 'KBO 가입금', b.entryFee, true);
   spend(s, '야구발전기금', b.developmentFund, true);
   s.user.ledger.push({ year: s.year, label: `가입 예치금 ${b.deposit / 10000}억 (KBO 보관, 지출 아님)`, amount: 0 });
@@ -520,7 +523,14 @@ export function autoDecision(s: LeagueState): DecisionInput | null {
       const pitchers = Math.min(2, d.regular);
       const wanted = [...pick(false, true, pitchers), ...pick(false, false, d.regular - pitchers), ...pick(true, null, d.asia)];
       const ids: PlayerId[] = [];
-      for (const id of wanted) if (checkDecision(s, { kind: 'foreign', ids: [...ids, id] }) === null) ids.push(id);
+      // Within the budget and the foreign salary cap (V0.7.8).
+      const next = nextSeasonOf(s);
+      const underCap = (trial: PlayerId[]) => {
+        const staying = capPlayers(s, user(s).teamId, next);
+        const adding = trial.map((x) => s.players[x]!).filter((p) => !p.origin.asiaQuota);
+        return foreignCost([...staying, ...adding]) <= foreignCap(s, user(s).teamId, next, [...staying, ...adding]);
+      };
+      for (const id of wanted) if (checkDecision(s, { kind: 'foreign', ids: [...ids, id] }) === null && underCap([...ids, id])) ids.push(id);
       return { kind: 'foreign', ids };
     }
     default:

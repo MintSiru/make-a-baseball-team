@@ -1,6 +1,7 @@
 /* The front office (V0.6): the owner's goals and verdicts, the accounts, fans and tickets, the staff and
    the ballpark. One section at a time behind a segmented control. */
 import { useState } from 'preact/hooks';
+import { goalText, STANCE_LABEL } from '../league/parent';
 import { cityById } from '../club/cities';
 import { PARENT_COMPANY_TYPES } from '../club/types';
 import type { Action } from '../league/actions';
@@ -10,11 +11,14 @@ import { projectedPayroll, STADIUM_PLANS } from '../league/expansion';
 import { boom, leaguePrice } from '../league/fans';
 import { projectedReport, supportLabel } from '../league/finance';
 import { MANAGER_STYLES, STAFF_EFFECTS, STAFF_LABELS, STAFF_ROLES } from '../league/staff';
-import type { ClubReport, LeagueState } from '../league/state';
+import { firstTeamIds, type ClubReport, type LeagueState } from '../league/state';
+import { booksOf } from '../league/foreigncap';
+import { usd } from '../league/foreign';
 import { FANS } from '../league/tuning';
 import { checkStadiumName, STADIUM_NAME_MAX } from '../league/userclub';
 import { salaryCapFor } from '../rules/kbo2026';
 import { money } from './format';
+import { Help } from './Help';
 
 type Section = 'summary' | 'owner' | 'money' | 'fans' | 'staff' | 'ballpark' | 'ledger';
 const SECTIONS: [Section, string][] = [
@@ -218,6 +222,16 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
               {capFloorFor(league.year) ? ` · 하한 ${money(capFloorFor(league.year)!)}` : ''}
             </p>
           </div>
+          {firstTeamIds(league).includes(u.teamId) && league.phase === 'regular' && (
+            <div class="card">
+              <p class="card-label">외국인 샐러리캡 (3명)</p>
+              <p class="card-value">{usd(booksOf(league, u.teamId).spent)}</p>
+              <p class="card-sub">
+                상한 {usd(booksOf(league, u.teamId).cap)} · 옵션은 시즌 뒤 더함
+                {(league.foreignCap?.[u.teamId] ?? []).at(-1)?.over ? ` · 작년 초과 ${(league.foreignCap![u.teamId]!).at(-1)!.streak}년째` : ''}
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -243,11 +257,34 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
                 <p class="card-label">명명권 스폰서</p>
                 <p class="card-value small">{club.sponsor.name}</p>
                 <p class="card-sub">
-                  연 {money(club.sponsor.annual)} · {club.sponsor.until}년까지
+                  연 {money(club.sponsor.annual)} · {club.sponsor.until}년까지 · 목표 {goalText(club.sponsor.goal)}
+                  {club.sponsor.risk ? ` (미달 시 해지 ${Math.round(club.sponsor.risk * 100)}%)` : ''}
+                  {club.sponsor.missed ? ` · ${club.sponsor.missed}년 연속 미달` : ''}
+                </p>
+              </div>
+            )}
+            {u.mayor && (
+              <div class="card">
+                <p class="card-label">시장</p>
+                <p class={`card-value small ${u.mayor.stance === 'friendly' ? 'plus' : u.mayor.stance === 'hostile' ? 'minus' : ''}`}>
+                  {u.mayor.name} · {STANCE_LABEL[u.mayor.stance]}
+                </p>
+                <p class="card-sub">
+                  {u.mayor.since}~{u.mayor.until}년 · 다음 지방선거 {u.mayor.until}년 6월 · 지원 한도 {u.mayor.stance === 'friendly' ? '+15%' : u.mayor.stance === 'hostile' ? '−15%, 적자에 엄격' : '그대로'}
                 </p>
               </div>
             )}
           </div>
+          {u.settings.parentType === 'citizen' && (
+            <p class="muted small">
+              시민구단: 적자가 지원 한도를 넘거나, 지원 한도의 절반이 넘는 적자가 3년 이어지면 시의회 예산 삭감·행정사무감사·운영비 동결·경영진 교체 압박·혈세 논란 같은 일이 생깁니다. 적대적인 시장일수록 더 자주.
+            </p>
+          )}
+          {u.parentGifts?.length ? (
+            <p class="small">
+              모기업이 사 준 FA: {u.parentGifts.map((g) => `${g.name} (연 ${money(g.annual)}, ${g.from}~${g.to}년, 연봉 예산 밖)`).join(', ')}
+            </p>
+          ) : null}
           {u.fired && <p class="notice warn">{u.fired}년 겨울, 모기업이 단장을 해임했습니다. 새 게임을 시작하거나 이 구단을 계속 지켜볼 수 있습니다.</p>}
           <h3>{goals ? `${goals.year} 목표` : '목표'}</h3>
           {goals ? (
@@ -300,10 +337,10 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
 
       {section === 'money' && (
         <>
-          <p class="muted">
+          <Help title="결산 방식">
             시즌이 끝나면 결산합니다. 수입에서 지출을 뺀 운영 결과와 한 해 동안 자금에서 쓴 돈(계약금·위약금 등)을 합쳐 적자가 나면 모기업이 지원 한도까지 메우고, 넘는 만큼은 구단 자금에서 나갑니다. 흑자는
             구단 자금으로 쌓입니다. 구장 공사비는 지원 대상이 아니라 자금에서 바로 나갑니다.
-          </p>
+          </Help>
           {current || reports.length ? (
             <ReportTable
               reports={[

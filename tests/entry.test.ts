@@ -5,6 +5,7 @@ import { canMove, canRegister, MIN_FIRST_TEAM, REREGISTER_DAYS, today } from '..
 import { autoDecision, EXPANSION_ID } from '../src/league/expansion';
 import { createLeague } from '../src/league/history';
 import { firstTeamSize } from '../src/league/manager';
+import { offRoster } from '../src/league/injuries';
 import { developmentIds, squadOf, type LeagueState } from '../src/league/state';
 
 let s: LeagueState;
@@ -49,7 +50,8 @@ describe('running the first team by hand', () => {
     expect(canMove(s, r.active[0]!, 'futures')).toMatch(/최소/);
     apply(s, { kind: 'days', days: 20 });
     expect(r.active.length).toBeGreaterThanOrEqual(MIN_FIRST_TEAM);
-    expect(r.active.every((id) => !s.injuries[id])).toBe(true);
+    // Knocks (a few days out) stay registered; anyone on the injured list is off the first team.
+    expect(r.active.every((id) => !offRoster(s, id))).toBe(true);
   }, 60_000);
 
   it('registers development players only from May 1', () => {

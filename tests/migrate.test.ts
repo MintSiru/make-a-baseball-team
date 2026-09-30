@@ -41,6 +41,19 @@ describe('carrying older saves forward', () => {
     expect(org.some((p) => p.career.length === 0 || state.lines[p.id]?.bat?.split || state.lines[p.id]?.pit?.split)).toBe(true);
   }, 120_000);
 
+  it('moves a winter in progress on only for the steps its version did not have', () => {
+    const s = createLeague('migrate-steps');
+    const at = (sim: string) => {
+      const old = JSON.parse(JSON.stringify(s)) as typeof s;
+      old.offseason = { year: 2025, step: 6, draft: null, released: [], done: [] };
+      const text = serializeSave({ ...makeSave(s.seed, [], { at: { year: 2025, phase: 'offseason' }, state: old }), sim });
+      return (parseSave(text).snapshot!.state as typeof s).offseason!.step;
+    };
+    expect(at('0.5')).toBe(7); // posting came in 0.5.1
+    expect(at('0.6')).toBe(6);
+    expect(at('0.7')).toBe(6);
+  }, 120_000);
+
   it('still refuses versions it cannot carry', () => {
     const text = serializeSave({ ...makeSave('x', [], { at: { year: 2026, phase: 'regularSeason' }, state: { teams: [] } }), sim: '0.1' });
     expect(() => parseSave(text)).toThrow(SaveError);

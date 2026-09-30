@@ -52,6 +52,9 @@ export interface Service {
   postedIn?: number;
   /** Credited seasons when he last became a free agent (re-qualifies four seasons later). */
   lastFreeAgencyAt?: number;
+  /** The latest military medical grade after an operation (V0.7.7, military.ts): 3 active duty, 4 social
+      service only, 5 no peacetime service. `surgeries` counts the major operations it looked at. */
+  exam?: { year: number; grade: number; reason: string; surgeries: number };
 }
 
 export type ContractKind = 'rookie' | 'standard' | 'multiYear' | 'freeAgent' | 'foreign' | 'asiaQuota' | 'development';
@@ -77,6 +80,8 @@ export interface PlayerOrigin {
   entryCategory: string;
   /** Draft pick in the league draft (overall), when drafted by a club. */
   overallPick?: number;
+  /** Drafted with a pick another club traded away (V0.7.8): he cannot be traded in his first season. */
+  pickVia?: string;
   /** Nationality for foreign players. */
   nationality?: string;
   asiaQuota?: boolean;
@@ -198,6 +203,8 @@ export interface InjuryRecord {
   part: string;
   /** Hurt in a futures game. */
   futures?: boolean;
+  /** An operation (V0.7.7): a major one is the usual ground for a 4급 military grade. */
+  surgery?: 'minor' | 'major';
 }
 
 /** Spring-camp plan (Draft Room planStep, V0.4). */

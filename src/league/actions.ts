@@ -13,7 +13,7 @@ import { FANS } from './tuning';
 import { gameRecap, interviewNews, type NewsItem } from './news';
 import { renameStadium } from './userclub';
 import { markAlertsSeen } from './alerts';
-import type { ExpansionSettings, LeagueState, Squad } from './state';
+import type { ExpansionSettings, LeagueState, Squad, TradeExtras } from './state';
 import { foundClub, FOUNDING_DATE, resolveDecision, type DecisionInput } from './expansion';
 
 export type Action =
@@ -43,7 +43,7 @@ export type Action =
   | { kind: 'alertsSeen'; ids?: string[] }
   | { kind: 'tutorial'; seen?: string; off?: boolean; on?: boolean }
   // The market (V0.5)
-  | { kind: 'trade'; teamId: TeamId; give: PlayerId[]; get: PlayerId[] }
+  | { kind: 'trade'; teamId: TeamId; give: PlayerId[]; get: PlayerId[]; extras?: TradeExtras }
   | { kind: 'release'; id: PlayerId }
   | { kind: 'signPool'; id: PlayerId }
   | { kind: 'foreignSwap'; out: PlayerId; in: string };
@@ -158,7 +158,7 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     }
     case 'trade':
-      makeTrade(s, action.teamId, action.give, action.get);
+      makeTrade(s, action.teamId, action.give, action.get, action.extras);
       break;
     case 'release':
       releasePlayer(s, action.id);

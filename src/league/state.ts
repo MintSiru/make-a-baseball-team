@@ -30,6 +30,11 @@ export interface Injury {
   days: number;
   /** On the injured list: registered days keep counting (RULES.md §7). */
   onList: boolean;
+  /** What it is (V0.7.7; injuries.ts), and whether it needed an operation. */
+  part?: string;
+  surgery?: 'minor' | 'major';
+  /** A knock: out of the lineup for a few days but still registered. */
+  dtd?: boolean;
 }
 
 export interface SeasonLine {
@@ -89,8 +94,27 @@ export interface ClubState {
   marketing: number;
   staff?: Partial<Record<StaffRole, StaffMember>>;
   reports: ClubReport[];
-  /** Naming-rights clubs: the sponsor, its fee and the last season of the deal. */
-  sponsor?: { name: string; annual: number; until: number };
+  /** Naming-rights clubs: the sponsor, its fee and the last season of the deal; since V0.7.7 its goal, the
+      first season judged against it, and the seasons missed in a row (parent.ts). */
+  sponsor?: { name: string; annual: number; until: number; goal?: SponsorGoal; risk?: number; from?: number; missed?: number };
+}
+
+/** What a naming sponsor wants for its money (V0.7.7). `risk`: the chance it walks out after a missed season. */
+export type SponsorGoal = { kind: 'none' } | { kind: 'rank'; rank: number } | { kind: 'fans'; fans: number };
+export interface SponsorOffer {
+  name: string;
+  annual: number;
+  years: number;
+  goal?: SponsorGoal;
+  risk?: number;
+}
+
+/** A citizen club's mayor (V0.7.7): elected every four years in June; the stance moves the city's money. */
+export interface Mayor {
+  name: string;
+  stance: 'friendly' | 'neutral' | 'hostile';
+  since: number;
+  until: number;
 }
 
 export interface SeasonGoals {
@@ -157,13 +181,15 @@ export type Decision =
   | { kind: 'foreign'; candidates: PlayerId[]; regular: number; asia: number }
   | { kind: 'roster'; candidates: PlayerId[]; release: number; limit: number }
   // Every year (V0.4)
-  | { kind: 'military'; candidates: PlayerId[]; forced: PlayerId[] }
+  /** `social`: graded 4급 after an operation (V0.7.7), who can only serve as social service agents. */
+  | { kind: 'military'; candidates: PlayerId[]; forced: PlayerId[]; social?: PlayerId[] }
   | { kind: 'ownFreeAgents'; candidates: PlayerId[] }
   | { kind: 'rookieBonus'; picks: { id: PlayerId; slot: number; ask: number }[]; final: boolean }
   | { kind: 'development'; candidates: PlayerId[]; max: number }
   | { kind: 'camp'; players: PlayerId[] }
   // The market (V0.5)
-  | { kind: 'faMarket'; candidates: PlayerId[]; grades: Record<PlayerId, 'A' | 'B' | 'C'>; limit: number }
+  /** `gift` (V0.7.7): the owner pays for one free agent this winter (outside the payroll budget). */
+  | { kind: 'faMarket'; candidates: PlayerId[]; grades: Record<PlayerId, 'A' | 'B' | 'C'>; limit: number; gift?: ParentGift }
   | { kind: 'faProtect'; fa: PlayerId; grade: 'A' | 'B'; from: TeamId; protect: number; candidates: PlayerId[] }
   | { kind: 'faCompensation'; fa: PlayerId; grade: 'A' | 'B'; to: TeamId; list: PlayerId[]; withPlayer: number; cashOnly: number }
   | { kind: 'salaries'; rows: SalaryRow[] }
@@ -173,7 +199,7 @@ export type Decision =
   | { kind: 'posting'; candidates: PlayerId[]; max: number }
   // Coming home (V0.7.3): posted players back from the majors, whose rights the club holds
   | { kind: 'returnee'; rows: { id: PlayerId; years: number; annual: number; abroad: number }[] }
-  | { kind: 'sponsor'; offers: { name: string; annual: number; years: number }[] }
+  | { kind: 'sponsor'; offers: SponsorOffer[]; ended?: string }
   | { kind: 'staff'; rows: { role: StaffRole; current: StaffMember; expiring: boolean; buyout: number; candidates: StaffMember[] }[] };
 
 /** One player in the winter's salary talks (만 원). */
@@ -201,6 +227,25 @@ export interface ForeignPoolEntry {
 export interface DraftSlot {
   teamId: TeamId;
   label: string;
+  /** The club whose pick this was, when it came in a trade (V0.7.8). */
+  via?: TeamId;
+}
+
+/** Cash and draft picks in a trade (V0.7.8), from the user's side: cash in 만 원, picks as rounds of the
+    coming draft (`picksOut` ours, `picksIn` theirs). */
+export interface TradeExtras {
+  cashOut?: number;
+  cashIn?: number;
+  picksOut?: number[];
+  picksIn?: number[];
+}
+
+/** A traded draft pick: `from`'s pick in round `round` of the draft of `year` now belongs to `to`. */
+export interface PickTrade {
+  year: number;
+  round: number;
+  from: TeamId;
+  to: TeamId;
 }
 
 export interface DraftState {
@@ -227,6 +272,8 @@ export interface OffseasonState {
   foreignRenewed?: boolean;
   /** The free-agent market: the user's offers, whether it has run, and the decisions it left for the user. */
   faOffers?: Record<PlayerId, { annual: number; years: number }>;
+  /** The owner's free agent this winter, if the general manager kept the offer (V0.7.7). */
+  faGift?: ParentGift;
   faDone?: boolean;
   faQueue?: import('./market').FaQueueItem[];
   /** The second draft in progress (odd winters). */
@@ -265,6 +312,10 @@ export interface UserClub {
   budgetScale?: number;
   /** The naming deal ended: a sponsor decision comes this winter. */
   sponsorPending?: boolean;
+  /** A citizen club's mayor (V0.7.7). */
+  mayor?: Mayor;
+  /** Free agents the owner paid for (V0.7.7): their salary is added to the payroll budget while they are under contract. */
+  parentGifts?: { id: PlayerId; name: string; annual: number; from: number; to: number }[];
   /** The club's story: timeline of firsts and big moments, and unlocked achievements (V0.7). */
   timeline?: { year: number; text: string; key?: string }[];
   achievements?: { id: string; year: number }[];
@@ -349,6 +400,13 @@ export interface LeagueState {
   /** Competitive balance tax records by club, and clubs whose first-round pick drops, by draft year. */
   cap?: Record<TeamId, import('./cap').CapRecord[]>;
   pickDrop?: Record<number, TeamId[]>;
+  /** Draft picks that changed hands in trades (V0.7.8). */
+  pickTrades?: PickTrade[];
+  /** The foreign salary cap (V0.7.8, foreigncap.ts): this season's books, past verdicts, and clubs whose
+      second-round pick drops in a draft. */
+  foreignBooks?: Record<TeamId, { season: number; spent: number; cap: number }>;
+  foreignCap?: Record<TeamId, import('./foreigncap').ForeignCapRecord[]>;
+  foreignPickDrop?: Record<number, TeamId[]>;
   /** Last date registered days were counted for. */
   countedThrough: string | null;
   postseason: SeriesResult[];
@@ -426,3 +484,10 @@ export function moveTo(s: LeagueState, id: PlayerId, squad: Squad) {
 }
 
 export const emptyRoster = (): ClubRoster => ({ active: [], futures: [], third: [] });
+
+/** The owner pays for a free agent (V0.7.7): the offer it makes, outside the payroll budget. */
+export interface ParentGift {
+  id: PlayerId;
+  annual: number;
+  years: number;
+}

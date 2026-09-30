@@ -20,7 +20,7 @@ export interface InternationalEvent {
 
 const HANGZHOU_RULE = { maxAge: 25, maxProYears: 4, wildcards: 3, wildcardMaxAge: 29 };
 
-export const INTERNATIONAL: InternationalEvent[] = [
+const REAL: InternationalEvent[] = [
   { year: 2014, name: '인천 아시안게임', kind: 'asianGames', squad: 24, limit: null, result: 'medal', medalChance: 0 },
   { year: 2018, name: '자카르타·팔렘방 아시안게임', kind: 'asianGames', squad: 24, limit: null, result: 'medal', medalChance: 0, dates: { from: '2018-08-18', to: '2018-09-01' } },
   { year: 2021, name: '도쿄 올림픽', kind: 'olympics', squad: 24, limit: null, result: 'none', medalChance: 0, dates: { from: '2021-07-19', to: '2021-08-07' } },
@@ -30,3 +30,21 @@ export const INTERNATIONAL: InternationalEvent[] = [
   { year: 2030, name: '도하 아시안게임', kind: 'asianGames', squad: 24, limit: HANGZHOU_RULE, result: null, medalChance: 0.55 },
   { year: 2034, name: '리야드 아시안게임', kind: 'asianGames', squad: 24, limit: HANGZHOU_RULE, result: null, medalChance: 0.55 },
 ];
+
+/**
+ * After the scheduled events the Games go on every four years (V0.7.9, game assumption): Olympics from 2032
+ * (Brisbane; baseball is not yet confirmed there) and Asian Games from 2038, hosts unknown, with the same
+ * squad rules and medal chances as the last known ones. In-season dates follow the recent events: the
+ * Olympics late July to early August, the Asian Games the second half of September.
+ */
+function laterGames(until: number): InternationalEvent[] {
+  const out: InternationalEvent[] = [];
+  for (let year = 2032; year <= until; year += 4)
+    out.push({ year, name: year === 2032 ? '브리즈번 올림픽' : `${year} 하계 올림픽`, kind: 'olympics', squad: 24, limit: null, result: null, medalChance: 0.35, dates: { from: `${year}-07-24`, to: `${year}-08-09` } });
+  for (let year = 2038; year <= until; year += 4)
+    out.push({ year, name: `${year} 아시안게임`, kind: 'asianGames', squad: 24, limit: HANGZHOU_RULE, result: null, medalChance: 0.55, dates: { from: `${year}-09-15`, to: `${year}-09-29` } });
+  return out;
+}
+
+/** Every national-team event the game knows, one a year at most, far beyond any career. */
+export const INTERNATIONAL: InternationalEvent[] = [...REAL, ...laterGames(2400)].sort((a, b) => a.year - b.year);

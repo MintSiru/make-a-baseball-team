@@ -11,12 +11,15 @@ export const ENGINE = {
   extremes: { knee: 1, slope: 0.5 },
   /** Per plate appearance, for an average (50) batter against an average pitcher. */
   base: {
-    bb: 0.074,
+    /** 0.7.7: walks 0.074 → 0.076, home runs 0.0162 → 0.0167 and BABIP 0.319 → 0.325, back to the 2025
+        league after the stronger foreign pitchers (FOREIGN below, CALIBRATION.md §10). */
+    bb: 0.076,
     hbp: 0.016,
     k: 0.181,
-    hr: 0.0162,
-    /** Hits on balls in play (excludes home runs). */
-    babip: 0.316,
+    hr: 0.0167,
+    /** Hits on balls in play (excludes home runs). 0.316 → 0.319 in 0.7.6: managers field better
+        defenders since the lineup is chosen as a whole (manager.ts), so the league average stays put. */
+    babip: 0.325,
   },
   batter: {
     bb: { eye: 0.42, contact: 0.05 },
@@ -123,7 +126,14 @@ export const OFFSEASON = {
     ] as [number, number][],
     holdForGames: 48,
     sangmu: { maxAge: 27, minGrade: 40, perGrade: 0.045, playedBonus: 0.12, min: 0.05, max: 0.7 },
-    socialBase: 0.1,
+    /** Social service for reasons other than an operation (illness and the like). */
+    socialBase: 0.06,
+    /** Winter exams after a major operation (military.ts, a game assumption): 5급 chance after one
+        operation and after two or more, extra for a knee or Achilles, 4급 otherwise at `four`
+        (the rest stay fit for active duty), and a serving agent's operated knee re-graded 5급. */
+    exam: { five: 0.06, fiveRepeated: 0.35, kneeBonus: 0.06, four: 0.85, worsening: 0.1 },
+    /** An AI club sends a 4급 player in long rehab to serve at once (service and rehab together). */
+    socialInRehab: 0.8,
   },
   freeAgency: { minGrade: 50, stayChance: 0.62 },
   /** Development players (육성선수): draft-day signings per club, the AI's target and hard cap, and age limits. */
@@ -133,14 +143,18 @@ export const OFFSEASON = {
   /** Draftees from these first rounds are kept through their first winter; later picks can be cut like anyone. */
   protectedRounds: 5,
   release: { maxAge: 33, minValue: 45, signChance: 0.5 },
-  foreign: { keepWarPitcher: 2.5, keepWarHitter: 2.0, keepChance: 0.85 },
+  /** V0.7.8: under the foreign salary cap, an AI club keeps room for each new signing still to come
+      (`newReserveUSD`) and pays a new one at least `newFloorUSD`. */
+  foreign: { keepWarPitcher: 2.5, keepWarHitter: 2.0, keepChance: 0.85, newReserveUSD: 700_000, newFloorUSD: 400_000 },
 } as const;
 
 /** Salaries (만 원) until the market arrives in V0.5; see docs/CALIBRATION.md §2. */
+/** 0.7.7: raises per WAR 3300 → 4300 and free-agent value per WAR 13000 → 15500, since the stronger foreign
+    players now take their real share of the league's WAR (2026 domestic average about 1억 3천만; real 1억 7,536만). */
 export const SALARY = {
-  raisePerWar: 3300,
+  raisePerWar: 4300,
   perServiceYear: 450,
-  freeAgentPerWar: 13000,
+  freeAgentPerWar: 15500,
   freeAgentMax: 250000,
   veteranStar: 32000,
 } as const;
@@ -156,8 +170,6 @@ export const FUTURES = {
   youthWeight: 0.4,
   /** A short-handed futures side bats pitchers rather than forfeit (상무 after the June discharge). */
   pitchersBat: true,
-  /** Injury chance per futures appearance, relative to the first team. */
-  injuryFactor: 0.5,
   /**
    * Yearly growth multiplier for players up to `maxAge`, from last season's playing time (first team
    * and futures, futures counted at `futuresWeight`) and days trained in the third squad.
@@ -200,8 +212,16 @@ export const TRADES = {
   value: { replacement: 44, power: 1.35, controlBase: 0.4, controlPerYear: 0.15, oldFrom: 33, oldFactor: 0.7, perEok: 0.6 },
   /** An AI club says yes when what it gets beats what it gives × premium + fixed. */
   accept: { premium: 1.1, fixed: 1 },
-  /** AI-to-AI trades: tries per season and the chance each goes ahead. */
-  ai: { perSeason: 6, chance: 0.5 },
+  /** AI-to-AI trades: tries per season and the chance each goes ahead; a gap up to `evenOut` of the value
+      can be made up with cash or a pick (V0.7.8). */
+  ai: { perSeason: 6, chance: 0.5, evenOut: 0.45 },
+  /** Cash in a trade (V0.7.8): value per 억 (1 = a club takes 1억 as one point of value), the most in one
+      trade (만 원, a game limit; real deals: 손아섭 3억 + a pick, 2025; 박동원 10억 + a pick, 2022). */
+  cash: { perEok: 1, max: 200_000, step: 10_000 },
+  /** Draft picks in a trade (V0.7.8): value by round for a mid-order pick, how much the club's place in the
+      order moves it (the worst club's pick × (1 + spread), the best's × (1 − spread)), and the KBO limit of
+      two picks of one draft given away per club, only in trades with players (2019 rule). */
+  picks: { value: [12, 6, 4, 2.6, 1.8, 1.3, 1, 0.8, 0.6, 0.5, 0.4], spread: 0.3, perClub: 2 },
   /** A club claims a waived player who is this much better than its weakest registered player. */
   waiverMargin: 3,
   /** AI clubs replace a foreign player with an ERA or OPS this bad by July (or out six weeks), with this chance. */
@@ -304,8 +324,42 @@ export const PARENT = {
   scaleMax: 1.6,
   groupSwing: { chance: 0.15, size: 0.1 },
   midsizeReward: 0.05,
-  election: 0.15,
-  naming: { base: 900_000 },
+  /** Citizen clubs (V0.7.7): the mayor's stance (support factor every year, a budget shift when elected,
+      how surely deficits bring trouble), election odds, and what the council does about deficits. */
+  citizen: {
+    stance: {
+      friendly: { support: 1.15, election: 0.05, eventChance: 0.3 },
+      neutral: { support: 1, election: 0, eventChance: 0.55 },
+      hostile: { support: 0.85, election: -0.05, eventChance: 0.85 },
+    },
+    foundingOdds: { friendly: 0.6, neutral: 0.3, hostile: 0.1 },
+    odds: { friendly: 0.3, neutral: 0.45, hostile: 0.25 },
+    deficitHostile: 0.2,
+    reelect: 0.45,
+    /** A lasting deficit: over this share of the approved support, this many winters in a row. */
+    lastingShare: 0.5,
+    lastingYears: 3,
+    events: [
+      { title: '시의회 예산 삭감', text: '시의회가 내년 구단 예산을 깎았습니다.', budget: 0.08 },
+      { title: '행정사무감사', text: '시의회 감사에서 구단 운영이 도마에 올랐습니다. 모기업(시) 신뢰도가 떨어집니다.', trust: 12 },
+      { title: '운영비 지원 동결', text: '시가 내년 운영비 지원을 줄이기로 했습니다.', support: 0.12 },
+      { title: '대표이사 교체 압박', text: '시와 시의회가 구단 경영진 교체를 요구합니다. 단장 신뢰도도 흔들립니다.', trust: 8, budget: 0.04 },
+      { title: '혈세 논란', text: '"세금 먹는 하마" 여론이 일어 팬심도 식었습니다.', fans: 0.04, trust: 5 },
+    ] as { title: string; text: string; budget?: number; support?: number; trust?: number; fans?: number }[],
+  },
+  naming: {
+    base: 900_000,
+    /** Sponsor kinds (V0.7.7): fee range against the club's worth, goal, and the chance of walking out after a miss. */
+    profiles: [
+      { goal: 'none', pay: [0.82, 0.92], risk: 0, stretch: 0 },
+      { goal: 'fans', pay: [0.95, 1.08], risk: 0.3, stretch: 0.05 },
+      { goal: 'rank', pay: [1.0, 1.15], risk: 0.35, stretch: 0 },
+      { goal: 'postseason', pay: [1.12, 1.3], risk: 0.5, stretch: 0 },
+    ] as { goal: 'none' | 'fans' | 'rank' | 'postseason'; pay: [number, number]; risk: number; stretch: number }[],
+    missedTwice: 1.6,
+  },
+  /** A conglomerate or mid-size owner pays for a free agent this winter (market.ts parentGift). */
+  faGift: { conglomerate: 0.12, midsize: 0.05, namingRights: 0, citizen: 0, premium: 1.2, maxAge: 33 },
 } as const;
 
 /** Ballpark projects (V0.6, ballpark.ts), 만 원. */
@@ -323,3 +377,28 @@ export const BALLPARK = {
   newParkBuzz: 0.25,
   expandBuzz: 0.05,
 } as const;
+
+/** Injuries (V0.7.7, injuries.ts). Chances per game appearance for a player of average hidden risk
+    (`riskScale`); a KBO first team loses about 15 players a season for a week or more and many more for a
+    day or two (RULES.md §7, S51). */
+export const INJURY = {
+  perGame: { hitter: 0.0055, starter: 0.022, reliever: 0.009 },
+  knock: { hitter: 0.012, pitcher: 0.004, days: [1, 5] as [number, number] },
+  riskScale: 0.1,
+  ageFrom: 30,
+  perYearOver: 0.06,
+  /** Futures games, relative to the first team. */
+  futures: 0.7,
+  riskAfterSurgery: 0.015,
+  maxRisk: 0.2,
+  /** The user's player out this long makes the news. */
+  newsFrom: 21,
+};
+
+/** Foreign players' hidden ability when they sign (players.ts makeForeign, before the background's shift).
+    V0.7.7: raised so they play like the KBO's real imports (CALIBRATION.md §10). */
+export const FOREIGN = {
+  hitter: { contact: 62, power: 70, eye: 58 },
+  pitcher: { stuff: 65, command: 60, breaking: 60, stamina: 64 },
+  asiaShift: -4,
+};

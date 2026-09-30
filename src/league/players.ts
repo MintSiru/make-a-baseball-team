@@ -5,6 +5,7 @@ import { ageOn, fromDraftProspect } from '../model/player';
 import { assignPosition } from '../model/position';
 import { background, careerText, foreignAsk, foreignName, LEVEL_LABELS } from './foreign';
 import type { Player } from '../model/types';
+import { FOREIGN } from './tuning';
 
 export const ageIn = (p: Player, year: number) => ageOn(p.birthday, `${year}-04-01`);
 export const isPitcher = (p: Player) => isPitcherRole(p.role);
@@ -84,23 +85,24 @@ export function makeForeign(seed: string, id: string, season: number, spec: Fore
   const age = spec.asiaQuota ? 24 + Math.floor(r() * 7) : 26 + Math.floor(r() * 7);
   const birthday = `${season - age - 1}-${String(1 + Math.floor(r() * 12)).padStart(2, '0')}-${String(1 + Math.floor(r() * 28)).padStart(2, '0')}`;
   // Asia-quota signings are cheaper and a notch below; the background moves ability a little (and widens it for independent leagues).
-  const q = (spec.asiaQuota ? -4 : 0) + bg.shift + normal(r) * bg.spread;
+  const F = FOREIGN;
+  const q = (spec.asiaQuota ? F.asiaShift : 0) + bg.shift + normal(r) * bg.spread;
   let role: Role, tools: Tools;
   if (spec.kind === 'pitcher') {
     const starter = spec.asiaQuota ? r() < 0.35 : r() < 0.92;
     role = starter ? 'SP' : 'RP';
     tools = {
-      stuff: clampGrade(60 + q + normal(r) * 5),
-      command: clampGrade(55 + q + normal(r) * 6),
-      breaking: clampGrade(56 + q + normal(r) * 6),
-      stamina: clampGrade((starter ? 62 : 45) + normal(r) * 6),
+      stuff: clampGrade(F.pitcher.stuff + q + normal(r) * 5),
+      command: clampGrade(F.pitcher.command + q + normal(r) * 6),
+      breaking: clampGrade(F.pitcher.breaking + q + normal(r) * 6),
+      stamina: clampGrade((starter ? F.pitcher.stamina : 45) + normal(r) * 6),
     };
   } else {
     role = r() < 0.55 ? 'IF' : 'OF';
     tools = {
-      contact: clampGrade(58 + q + normal(r) * 6),
-      power: clampGrade(64 + q + normal(r) * 6),
-      eye: clampGrade(55 + q + normal(r) * 6),
+      contact: clampGrade(F.hitter.contact + q + normal(r) * 6),
+      power: clampGrade(F.hitter.power + q + normal(r) * 6),
+      eye: clampGrade(F.hitter.eye + q + normal(r) * 6),
       speed: clampGrade(44 + normal(r) * 9),
       defense: clampGrade(47 + normal(r) * 8),
     };
