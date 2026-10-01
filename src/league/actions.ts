@@ -13,7 +13,7 @@ import { FANS } from './tuning';
 import { gameRecap, interviewNews, type NewsItem } from './news';
 import { renameStadium } from './userclub';
 import { markAlertsSeen } from './alerts';
-import type { ExpansionSettings, LeagueState, LineupCard, Squad, TradeExtras } from './state';
+import type { ExpansionSettings, LeagueState, LineupCard, Squad, TradeExtras, TwelveSetting } from './state';
 import { foundClub, FOUNDING_DATE, resolveDecision, type DecisionInput } from './expansion';
 
 export type Action =
@@ -44,6 +44,8 @@ export type Action =
   | { kind: 'storyText'; id: string; ai: NonNullable<NewsItem['ai']> | null }
   | { kind: 'alertsSeen'; ids?: string[] }
   | { kind: 'tutorial'; seen?: string; off?: boolean; on?: boolean }
+  /** When a twelfth club comes (V0.9), until it is founded. */
+  | { kind: 'twelveSetting'; setting: TwelveSetting }
   // The market (V0.5)
   | { kind: 'trade'; teamId: TeamId; give: PlayerId[]; get: PlayerId[]; extras?: TradeExtras }
   | { kind: 'release'; id: PlayerId }
@@ -63,7 +65,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard'];
+const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -151,6 +153,14 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       if (action.seen && !(u.tutorialSeen ??= []).includes(action.seen)) u.tutorialSeen.push(action.seen);
       if (action.off) u.tutorialOff = true;
       if (action.on) delete u.tutorialOff;
+      break;
+    }
+    case 'twelveSetting': {
+      const u = s.user;
+      if (!u || s.twelve) break;
+      const st = action.setting;
+      if (st.mode === 'off') delete u.settings.twelve;
+      else u.settings.twelve = st.mode === 'year' ? { mode: 'year', year: Math.max(u.firstTeamYear, st.year ?? u.firstTeamYear) } : { mode: 'event' };
       break;
     }
     case 'storyText': {

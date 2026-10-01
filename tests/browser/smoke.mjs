@@ -137,6 +137,9 @@ try {
   await page.getByLabel('모기업 이름').fill('가상그룹');
   check((await page.locator('.stars').textContent())?.includes('★'), 'felt difficulty shown');
   check((await page.getByRole('button', { name: /^튜토리얼 · 퓨처스부터/ }).getAttribute('aria-pressed')) === 'true', 'tutorial mode is the default');
+  // V0.9: a twelfth club, the rival, founded in a set winter.
+  await page.getByRole('group', { name: '12구단 창단' }).getByRole('button', { name: '연도 지정' }).click();
+  check((await page.getByLabel('창단 연도').inputValue()) === '2030', 'the rival comes in the winter of 2030 by default');
   await page.screenshot({ path: join(shots, 'new-game.png'), fullPage: true });
   await page.getByRole('button', { name: '창단 신청' }).click();
   await page.locator('#decision-title').waitFor({ timeout: 120_000 });
@@ -209,12 +212,13 @@ try {
   // 3b. The front office: every section, a ticket price change, the futures year's accounts.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
   await page.getByRole('button', { name: '구단 운영', exact: true }).click();
-  for (const sec of ['모기업', '재정', '관중 · 티켓', '스태프', '구장', '자금 내역', '요약']) {
+  for (const sec of ['모기업', '재정', '관중 · 티켓', '스태프', '구장', '12구단 · 라이벌', '자금 내역', '요약']) {
     await page.getByRole('group', { name: '구단 운영' }).getByRole('button', { name: sec, exact: true }).click();
     if (sec === '재정') {
       check((await page.locator('.report-table').count()) === 1, 'the futures year was settled');
       await page.screenshot({ path: join(shots, 'office-money.png'), fullPage: false });
     }
+    if (sec === '12구단 · 라이벌') check((await page.getByLabel('창단 연도').inputValue()) === '2030', 'the twelfth-club setting carries over to the front office');
     if (sec === '관중 · 티켓') {
       await page.getByLabel('티켓 가격').selectOption('1.20');
       await page.waitForFunction(() => document.querySelector('select[aria-label="티켓 가격"]')?.value === '1.20');

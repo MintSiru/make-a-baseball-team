@@ -4,6 +4,7 @@ import type { StoredBox } from './boxscore';
 import type { SeasonAwards } from './awards';
 import type { LeagueState } from './state';
 import { achievementAlert } from './alerts';
+import { madePostseason } from './twelve';
 
 export interface Achievement {
   id: string;
@@ -82,7 +83,7 @@ export function seasonMoments(s: LeagueState, year: number, awards: SeasonAwards
   const row = h.table.find((r) => r.teamId === u.teamId);
   if (row) {
     if (row.pct >= 0.5) unlock(s, 'winning', year, `${row.w}승 ${row.l}패`);
-    if (row.rank <= 5) {
+    if (madePostseason(h, u.teamId)) {
       unlock(s, 'playoffs', year);
       milestone(s, year, `${year} 첫 포스트시즌 진출 (${row.rank}위)`, 'playoffs');
     }

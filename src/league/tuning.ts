@@ -459,6 +459,19 @@ export const INJURY = {
 
 /** Foreign players' hidden ability when they sign (players.ts makeForeign, before the background's shift).
     V0.7.7: raised so they play like the KBO's real imports (CALIBRATION.md §10). */
+/** The twelfth club (V0.9, rival.ts; game assumptions). `fill`: registered players it signs up to from the
+    players other clubs let go, in its founding winter and before its first first-team season. `event`: offered
+    by the board from the user's club's third first-team winter, at this chance a winter, and again three winters
+    after a no. `rivalry`: the gate of a rivalry game, and the fans' mood per game won or lost over .500 in the
+    season series (to a limit), and when a well-liked player crosses over. */
+export const RIVAL = {
+  tryout: 20,
+  fill: { founding: 50, entering: 58, minValue: 38, maxAge: 35 },
+  event: { after: 2, chance: 0.3, again: 3 },
+  minSeats: 12_000,
+  rivalry: { gate: 1.15, perGame: 0.006, most: 0.05, crossing: 0.03 },
+} as const;
+
 export const FOREIGN = {
   hitter: { contact: 62, power: 70, eye: 58 },
   pitcher: { stuff: 65, command: 60, breaking: 60, stamina: 64 },

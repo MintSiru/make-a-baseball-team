@@ -38,6 +38,8 @@ import { aiTakesKnown, expireForeignPool, foreignPoolAsk, leavePool, poolChoice,
 import { draftReturnees } from './returnees';
 import { awardAlert, nationalPickAlert, nationalResultAlert, seasonAlert } from './alerts';
 import { staffEdge, staffRating } from './staff';
+import { gmDraftWeights, gmOf, twoLeagues } from './twelve';
+import { closeRivalry } from './rivalry';
 
 type Develop = (p: object, tools: Tools, yearIndex: number, age: number, daysLost: number, r: () => number, boost?: number, focus?: string, scale?: number) => Tools;
 const developTools = (DraftSeason as unknown as { developTools: Develop }).developTools;
@@ -110,6 +112,7 @@ export function closeSeason(s: LeagueState) {
     totals: { bat, pit, games: s.scores.length },
     ...(userFutures ? { userFutures } : {}),
     ...(futuresTable ? { futures: futuresTable } : {}),
+    ...(twoLeagues(s) ? { leagues: { ...s.twelve!.leagues! } } : {}),
   });
   // The business year closes with the baseball one: accounts, fans' mood, AI staff changes.
   const summary = s.history[s.history.length - 1]!;
@@ -121,6 +124,7 @@ export function closeSeason(s: LeagueState) {
   seasonMoments(s, s.year, summary.awards);
   seasonNews(s, s.year);
   seasonFans(s, s.year, summary.table, summary.champion);
+  closeRivalry(s, s.year);
   aiStaffWinter(s, s.year, summary.table);
   s.phase = 'offseason';
 }
@@ -311,11 +315,15 @@ export function applyInternational(s: LeagueState, year: number) {
   }
 }
 
-export function enlist(s: LeagueState, p: Player, next: number, r: () => number) {
+/** The twelfth club before its first first-team season (V0.9): it keeps its few players out of the army. */
+const founding = (s: LeagueState, teamId: TeamId, next: number) => !!s.twelve && s.twelve.teamId === teamId && next <= s.twelve.firstTeam;
+
+export function enlist(s: LeagueState, p: Player, next: number, r: () => number, onlyMust = false) {
   const M = O.military;
   const age = ageIn(p, next);
   const last = lastRecord(p, next - 1);
   const must = age >= M.mustAge;
+  if (!must && onlyMust) return;
   if (!must) {
     if (age < M.minAge) return;
     const days = last?.days ?? 0;
@@ -415,21 +423,23 @@ export function openDraft(s: LeagueState, draftYear: number, slots: DraftSlot[])
   return { year: draftYear, slots, next: 0, pool: [...pool, ...back].map((p) => p.id), developmentDone: false };
 }
 
-function draftScore(s: LeagueState, p: Player, counts: Record<string, number>, r: () => number) {
+function draftScore(s: LeagueState, p: Player, counts: Record<string, number>, r: () => number, weights: [number, number] = [0.6, 0.4]) {
   const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
   const need = clamp(((TARGET_SHARE[p.role] ?? 0.2) - (counts[p.role] ?? 0) / total) * 40, -4, 4);
-  return futureValue(p) * 0.6 + currentValue(p) * 0.4 - p.amateur.draftRank * 0.02 + need + normal(r) * 2;
+  return futureValue(p) * weights[0] + currentValue(p) * weights[1] - p.amateur.draftRank * 0.02 + need + normal(r) * 2;
 }
 
 /** The pick an AI club (or the auto-pick for the user) would make. */
 export function aiDraftChoice(s: LeagueState, d: DraftState, teamId: TeamId, pickNo: number): Player | null {
   const r = rng(`${s.seed}|draft-picks|${d.year}|${pickNo}`);
   const counts = orgCounts(s, teamId);
+  // The twelfth club's front office leans to upside or to readiness (V0.9).
+  const weights = gmDraftWeights(gmOf(s, teamId));
   let best: Player | null = null,
     bestScore = -Infinity;
   for (const id of d.pool) {
     const p = s.players[id]!;
-    const v = draftScore(s, p, counts, r);
+    const v = draftScore(s, p, counts, r, weights);
     if (v > bestScore) {
       bestScore = v;
       best = p;
@@ -703,6 +713,8 @@ export interface OffseasonHooks {
   development?(s: LeagueState, d: DraftState): Decision | null;
   /** Return a decision to wait for, or null to go on. Called once per step until the step reports done. */
   decide?(s: LeagueState, step: OffseasonStep): Decision | null;
+  /** The twelfth club's part of a step (V0.9), once, after the user's decision and before the step's own work. */
+  auto?(s: LeagueState, step: OffseasonStep): void;
 }
 const hooks: OffseasonHooks = {};
 export const setOffseasonHooks = (h: OffseasonHooks) => Object.assign(hooks, h);
@@ -732,6 +744,10 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         s.pending = d;
         return 'waiting';
       }
+    }
+    if (hooks.auto && s.twelve && !o.done.includes(`auto:${step}`)) {
+      o.done.push(`auto:${step}`);
+      hooks.auto(s, step);
     }
     switch (step) {
       case 'international':
@@ -764,7 +780,7 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
             delete p.service.route;
             delete p.service.returnsOn;
             if (p.teamId) s.rosters[p.teamId]!.futures.push(p.id);
-          } else if (p.status === 'active' && p.service.military === 'pending' && !isForeign(p) && p.teamId && p.teamId !== s.user?.teamId) enlist(s, p, next, r);
+          } else if (p.status === 'active' && p.service.military === 'pending' && !isForeign(p) && p.teamId && p.teamId !== s.user?.teamId) enlist(s, p, next, r, founding(s, p.teamId, next));
         }
         break;
       }

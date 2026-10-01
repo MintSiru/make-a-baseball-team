@@ -10,7 +10,8 @@ import { cityById } from '../club/cities';
 import { ageIn, isForeign } from './players';
 import type { GameScore } from './standings';
 import { firstTeamIds, orgPlayers, type ClubState, type LeagueState } from './state';
-import { FANS, PARENT } from './tuning';
+import { FANS, PARENT, RIVAL } from './tuning';
+import { isRivalry } from './twelve';
 
 /** Fan base per existing club (2025 demand at average price, game estimate from real attendance). */
 const POPULARITY: Record<TeamId, number> = {
@@ -40,7 +41,7 @@ export function initialClubState(s: LeagueState, teamId: TeamId): ClubState {
   let popularity = POPULARITY[teamId];
   if (popularity == null) {
     // A new club: its city's market, a little more loyalty for a citizen-owned club.
-    const city = s.user?.teamId === teamId ? cityById(s.user.settings.cityId) : null;
+    const city = s.user?.teamId === teamId ? cityById(s.user.settings.cityId) : s.twelve?.teamId === teamId ? cityById(s.twelve.cityId) : null;
     popularity = FANS.newClub.base + (city?.market ?? 50) * FANS.newClub.perMarket;
     if (team.parent.type === 'citizen') popularity *= 1.1;
   }
@@ -95,7 +96,9 @@ export function attendance(s: LeagueState, g: Pick<GameScore, 'id' | 'date' | 'h
   const day = DAY_FACTOR[new Date(`${g.date}T12:00:00Z`).getUTCDay()]!;
   const month = MONTH_FACTOR[Number(g.date.slice(5, 7))] ?? 1;
   const visitors = 1 + ((away.popularity - FANS.averagePopularity) / FANS.averagePopularity) * FANS.visitorWeight;
-  const demand = home.popularity * boom(s.year) * Math.max(0.45, 1 + FANS.moodWeight * mood) * day * month * visitors * home.price ** -FANS.elasticity * (0.92 + r() * 0.16);
+  // The rivalry (V0.9) draws more.
+  const rivalry = isRivalry(s, g.home, g.away) ? RIVAL.rivalry.gate : 1;
+  const demand = home.popularity * boom(s.year) * Math.max(0.45, 1 + FANS.moodWeight * mood) * day * month * visitors * rivalry * home.price ** -FANS.elasticity * (0.92 + r() * 0.16);
   return Math.round(Math.min(team.stadium.capacity, demand));
 }
 
@@ -137,7 +140,8 @@ export function seasonFans(s: LeagueState, year: number, table: { teamId: TeamId
   // (league-wide swings are the boom, not the clubs).
   const pull = ids.map((teamId) => {
     const row = table.find((x) => x.teamId === teamId);
-    const playoff = row && row.rank <= 5 ? FANS.playoff : 0;
+    // In the postseason: the five seeds, or with two leagues the clubs that played a series (V0.9).
+    const playoff = row && (s.postseason.length ? s.postseason.some((x) => x.high === teamId || x.low === teamId) : row.rank <= 5) ? FANS.playoff : 0;
     const title = champion === teamId ? FANS.champion : 0;
     return ((row?.pct ?? 0.5) - 0.5) * FANS.seasonWin + playoff + title + draw(s, teamId, year);
   });

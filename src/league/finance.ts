@@ -37,17 +37,17 @@ export function postseasonShares(s: LeagueState, table: { teamId: TeamId; rank: 
   const first = table.find((r) => r.rank === 1)?.teamId;
   if (first) out[first] = Math.round(pool * P.regularSeasonWinner);
   const rest = pool * (1 - P.regularSeasonWinner);
-  const ks = s.postseason.find((x) => x.round === 'ks'),
-    po = s.postseason.find((x) => x.round === 'po'),
-    semi = s.postseason.find((x) => x.round === 'semipo'),
-    wc = s.postseason.find((x) => x.round === 'wildcard');
+  const ks = s.postseason.find((x) => x.round === 'ks');
   const loser = (x?: { high: TeamId; low: TeamId; winner: TeamId }) => (x ? (x.winner === x.high ? x.low : x.high) : null);
+  const rank = (id: TeamId) => table.find((r) => r.teamId === id)?.rank ?? 99;
+  const out_ = (round: string) => s.postseason.filter((x) => x.round === round).map((x) => loser(x)!).sort((a, b) => rank(a) - rank(b));
+  // Third and fourth to the clubs out in the last rounds before the final, the fifth share to the rest (shared
+  // when two leagues send two clubs out in the semi-playoffs).
+  const ladder = [...out_('po'), ...out_('semipo'), ...out_('wildcard')];
   const places: [TeamId | null, number][] = [
     [ks?.winner ?? null, P.champion],
     [loser(ks), P.runnerUp],
-    [loser(po), P.third],
-    [loser(semi), P.fourth],
-    [loser(wc), P.fifth],
+    ...ladder.map((id, i): [TeamId, number] => [id, i === 0 ? P.third : i === 1 ? P.fourth : P.fifth / Math.max(1, ladder.length - 2)]),
   ];
   for (const [id, share] of places) if (id) out[id] = (out[id] ?? 0) + Math.round(rest * share);
   return out;

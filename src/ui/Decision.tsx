@@ -7,7 +7,7 @@ import { kboLine, poolEntry } from '../league/foreignpool';
 import { autoDecision, checkDecision, projectedPayroll, type DecisionInput } from '../league/expansion';
 import { sangmuChance } from '../league/offseason';
 import { ageIn, isPitcher, keepValue } from '../league/players';
-import type { Decision as DecisionT, LeagueState } from '../league/state';
+import type { Decision as DecisionT, LeagueState, RivalSettings } from '../league/state';
 import { focusOptions, payrollWithout, salaryOffer, type CampPlan, type MilitaryOrder, type SalaryChoice } from '../league/userclub';
 import { eok as eokText } from '../league/fa';
 import { FaMarket } from './FaMarket';
@@ -22,6 +22,7 @@ import { goalText } from '../league/parent';
 import { capPlayers, foreignCap, foreignCost } from '../league/foreigncap';
 import { gradeClass } from './grades';
 import { positionKey, useSort, type SortColumn } from './sort';
+import { RivalForm } from './Twelve';
 
 interface Props {
   league: LeagueState;
@@ -52,6 +53,8 @@ const TITLES: Record<DecisionT['kind'], string> = {
   returnee: '해외 복귀 선수',
   sponsor: '명명권 스폰서 계약',
   staff: '코칭스태프 · 프런트',
+  rival: '12구단 창단',
+  rivalProtect: '12구단 특별지명 · 보호선수 명단',
 };
 
 /** What the scouts hear about major league interest, from the public grade. */
@@ -309,6 +312,8 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
   const [choices, setChoices] = useState<Record<PlayerId, string>>({});
   const [develop, setDevelop] = useState<Set<PlayerId>>(new Set());
   const [plans, setPlans] = useState<Record<PlayerId, CampPlan>>({});
+  const [rival, setRival] = useState<RivalSettings | null>(d.kind === 'rival' ? d.suggestion : null);
+  const [vote, setVote] = useState(true);
   // Consecutive decisions of one kind (draft picks, compensation per free agent) start from a clean slate.
   const stage =
     d.kind === 'draftPick'
@@ -319,13 +324,17 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
           ? d.fa
           : d.kind === 'secondPick'
             ? `${d.round}-${d.candidates.length}`
-            : '';
+            : d.kind === 'rival'
+              ? String(d.year)
+              : '';
   useEffect(() => {
     setSelected(new Set());
     setSpecial({});
     setChoices({});
     setDevelop(new Set());
     setPlans({});
+    setRival(d.kind === 'rival' ? d.suggestion : null);
+    setVote(true);
   }, [d.kind, stage]);
 
   const toggle = (id: PlayerId) =>
@@ -378,10 +387,14 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         return { kind: 'faCompensation', player: choices.pick && choices.pick !== 'cash' ? choices.pick : null };
       case 'roster':
         return { kind: 'roster', ids: [...selected], develop: [...develop].filter((id) => selected.has(id)) };
+      case 'rival':
+        return { kind: 'rival', settings: vote ? (rival ?? d.suggestion) : null };
+      case 'rivalProtect':
+        return { kind: 'rivalProtect', ids: [...selected] };
       default:
         return { kind: d.kind, ids: [...selected] } as DecisionInput;
     }
-  }, [d, selected, special, choices, plans, develop]);
+  }, [d, selected, special, choices, plans, develop, rival, vote]);
   const problem = input ? checkDecision(league, input) : null;
 
   const recommend = () => {
@@ -420,6 +433,10 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         break;
       case 'staff':
         setChoices(a.hires as Record<string, string>);
+        break;
+      case 'rival':
+        setRival(a.settings);
+        setVote(true);
         break;
       default:
         if ('ids' in a) setSelected(new Set(a.ids));
@@ -739,6 +756,41 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
           <p>
             {league.offseason?.year} 2차 드래프트입니다. 보호할 선수 {d.protect}명을 고르세요 (지금 {selected.size}명). 보호하지 않은 선수는 다른 구단이 지명할 수 있고, 지명되면 라운드별 양도금(4억·3억·2억·1억)을
             받습니다. 입단 3년 차까지의 선수, 올겨울 FA 계약 선수, 외국인은 저절로 빠집니다. 군 복무 중인 선수도 대상입니다.
+          </p>
+          <PlayerTable league={league} players={d.candidates.map((id) => league.players[id]!)} selected={selected} toggle={toggle} onPlayer={onPlayer} max={d.protect} />
+        </>
+      );
+      break;
+    case 'rival':
+      body = (
+        <>
+          <p>
+            {d.event
+              ? `KBO 이사회가 12번째 구단 창단을 논의합니다. 찬성하면 라이벌이 될 구단의 모습을 직접 정합니다. 반대하면 이번 겨울은 부결되고, 몇 해 뒤 다시 논의될 수 있습니다.`
+              : `${d.year}년 겨울, 12번째 구단이 창단합니다. 라이벌이 될 구단의 모습을 정하세요.`}{' '}
+            새 구단은 {d.year}년 신인 드래프트에서 우선지명 2명과 매 라운드 첫 지명권을 받고, {d.year + 1}년 퓨처스리그를 거쳐 {d.year + 2}년 1군에 들어옵니다. 그 직전 겨울 특별지명에서
+            우리 구단도 보호선수 20명 밖의 1명을 내주고 10억을 받습니다.
+          </p>
+          {d.event && (
+            <div class="segmented" role="group" aria-label="창단 표결">
+              <button type="button" aria-pressed={vote} onClick={() => setVote(true)}>
+                찬성 (창단)
+              </button>
+              <button type="button" aria-pressed={!vote} onClick={() => setVote(false)}>
+                반대 (부결)
+              </button>
+            </div>
+          )}
+          {vote && <RivalForm league={league} value={rival ?? d.suggestion} onChange={setRival} />}
+        </>
+      );
+      break;
+    case 'rivalProtect':
+      body = (
+        <>
+          <p>
+            12구단 {league.teams.find((t) => t.id === league.twelve?.teamId)?.name}의 특별지명입니다. 보호할 선수 {d.protect}명을 고르세요 (지금 {selected.size}명). 보호하지 않은 선수 중 1명이 지명되면 보상금{' '}
+            {money(d.fee)}을 받습니다. 외국인, 올가을 지명된 신인, 올겨울 FA 계약 선수는 저절로 빠집니다. 고르지 않고 확정하면 스카우트가 가치 높은 순으로 채웁니다.
           </p>
           <PlayerTable league={league} players={d.candidates.map((id) => league.players[id]!)} selected={selected} toggle={toggle} onPlayer={onPlayer} max={d.protect} />
         </>

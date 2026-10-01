@@ -38,6 +38,7 @@ import { ageIn, isForeign, isPitcher, keepValue, makeForeign } from './players';
 import { OFFSEASON, PARENT } from './tuning';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './foreignpool';
 import { homecomings } from './returnees';
+import { autoProtect, checkRival, checkRivalProtect, resolveRival, resolveRivalProtect, rivalDecision, rivalProtectDecision, rivalStep } from './rival';
 import {
   autoAnnual,
   campDecision,
@@ -54,7 +55,7 @@ import {
   yearlyGrant,
   type AnnualInput,
 } from './userclub';
-import { developmentIds, emptyRoster, firstTeamIds, orgIds, registeredIds, type Decision, type DraftSlot, type ExpansionSettings, type LeagueState, type UserClub } from './state';
+import { developmentIds, emptyRoster, firstTeamIds, orgIds, registeredIds, type Decision, type DraftSlot, type ExpansionSettings, type LeagueState, type RivalSettings, type UserClub } from './state';
 
 export const EXPANSION_ID = 'new';
 export const FOUNDING_DATE = '2026-07-01';
@@ -172,18 +173,22 @@ function tryoutPool(s: LeagueState): Player[] {
 
 const inFoundingPeriod = (s: LeagueState, next: number) => !!s.user && next <= s.user.firstTeamYear;
 
-/** Draft order before the club reaches the first team: priority picks, first in every round, extra picks after round two. */
+/** Draft order before a new club reaches the first team (the user's, and since V0.9 the twelfth club): priority
+    picks, first in every round, extra picks after round two. */
 function draftSlots(s: LeagueState, draftYear: number, order: TeamId[]): DraftSlot[] {
+  const founding: { teamId: TeamId; first: boolean }[] = [];
   const u = s.user;
-  if (!u || order.includes(u.teamId) || draftYear + 1 > u.firstTeamYear) return standardSlots(order);
-  const firstDraft = draftYear === 2026;
+  if (u && !order.includes(u.teamId) && draftYear + 1 <= u.firstTeamYear) founding.push({ teamId: u.teamId, first: draftYear === 2026 });
+  const tw = s.twelve;
+  if (tw && !order.includes(tw.teamId) && draftYear + 1 <= tw.firstTeam) founding.push({ teamId: tw.teamId, first: draftYear === tw.founded });
+  if (!founding.length) return standardSlots(order);
   const slots: DraftSlot[] = [];
-  if (firstDraft) for (let i = 0; i < EXPANSION_DEFAULTS.rookiePriorityPicks; i++) slots.push({ teamId: u.teamId, label: '우선지명' });
+  for (const f of founding) if (f.first) for (let i = 0; i < EXPANSION_DEFAULTS.rookiePriorityPicks; i++) slots.push({ teamId: f.teamId, label: '우선지명' });
   const rounds = standardSlots(order).length / order.length;
   for (let round = 1; round <= rounds; round++) {
-    slots.push({ teamId: u.teamId, label: `${round}R` });
+    for (const f of founding) slots.push({ teamId: f.teamId, label: `${round}R` });
     for (const teamId of order) slots.push({ teamId, label: `${round}R` });
-    if (firstDraft && round === 2) for (let i = 0; i < EXPANSION_DEFAULTS.extraPicksAfterRound2; i++) slots.push({ teamId: u.teamId, label: '특별지명' });
+    if (round === 2) for (const f of founding) if (f.first) for (let i = 0; i < EXPANSION_DEFAULTS.extraPicksAfterRound2; i++) slots.push({ teamId: f.teamId, label: '특별지명' });
   }
   return slots;
 }
@@ -241,6 +246,9 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       return militaryDecision(s);
     case 'international':
       return sponsorDecision(s, o.year);
+    case 'develop':
+      // The twelfth club (V0.9): founded this winter, or offered by the board.
+      return rivalDecision(s, o.year);
     case 'retire':
       return staffDecision(s, o.year);
     case 'posting': {
@@ -258,7 +266,8 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       return due.length ? { kind: 'faOptions', rows: due.map((p) => ({ id: p.id, years: p.contract!.fa!.extra!.years, annual: p.contract!.fa!.extra!.annual })) } : null;
     }
     case 'special':
-      if (!entering) return null;
+      // Our own special draft in our founding winter; later, the twelfth club's, where we protect our 20.
+      if (!entering) return rivalProtectDecision(s, next);
       return { kind: 'specialDraft', lists: protectedLists(s, next), protectedCount: EXPANSION_DEFAULTS.specialDraft.protected, fee: EXPANSION_DEFAULTS.specialDraft.feePerPlayer };
     case 'check': {
       // The AI never cuts the user's club; over the limit (after foreign signings), the user chooses whom to release.
@@ -307,7 +316,7 @@ export function foreignSigningDecision(s: LeagueState, next: number): Decision |
   return { kind: 'foreign', candidates: foreignCandidates(s, next).map((p) => p.id), regular, asia };
 }
 
-setOffseasonHooks({ begin: yearlyGrant, draftSlots, decide, rookies: rookieBonusDecision, development: developmentDecision });
+setOffseasonHooks({ begin: yearlyGrant, draftSlots, decide, rookies: rookieBonusDecision, development: developmentDecision, auto: rivalStep });
 
 // ── Resolving decisions ──────────────────────────────────────────────────────────────────────────
 
@@ -318,6 +327,9 @@ export type DecisionInput =
   | { kind: 'released'; ids: PlayerId[] }
   | { kind: 'foreign'; ids: PlayerId[] }
   | { kind: 'roster'; ids: PlayerId[]; develop?: PlayerId[] }
+  /** The twelfth club (V0.9): its design, or null to vote it down when the board offers it. */
+  | { kind: 'rival'; settings: RivalSettings | null }
+  | { kind: 'rivalProtect'; ids: PlayerId[] }
   | AnnualInput;
 
 const isAnnualInput = (input: DecisionInput): input is AnnualInput => isAnnual(input.kind);
@@ -366,6 +378,10 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       if (develop.length && developmentIds(s, u.teamId).length + develop.length > OFFSEASON.development.cap) return `육성선수는 ${OFFSEASON.development.cap}명까지입니다.`;
       return null;
     }
+    case 'rival':
+      return checkRival(s, d as Extract<Decision, { kind: 'rival' }>, input.settings);
+    case 'rivalProtect':
+      return checkRivalProtect(d as Extract<Decision, { kind: 'rivalProtect' }>, input.ids);
     case 'foreign': {
       const dd = d as Extract<Decision, { kind: 'foreign' }>;
       if (input.ids.some((id) => !dd.candidates.includes(id))) return '명단에 없는 선수입니다.';
@@ -426,6 +442,12 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
       }
       if (s.offseason) s.offseason.released = s.offseason.released.filter((id) => !input.ids.includes(id));
       break;
+    case 'rival':
+      resolveRival(s, d as Extract<Decision, { kind: 'rival' }>, input.settings);
+      break;
+    case 'rivalProtect':
+      resolveRivalProtect(s, d as Extract<Decision, { kind: 'rivalProtect' }>, input.ids);
+      break;
     case 'roster':
       // Released players join the pool other clubs look at; the rest retire. Some stay as development players.
       for (const id of input.ids) {
@@ -484,6 +506,10 @@ export function autoDecision(s: LeagueState): DecisionInput | null {
     }
     case 'roster':
       return { kind: 'roster', ids: [...d.candidates].sort((a, b) => keepValue(s.players[a]!, next) - keepValue(s.players[b]!, next)).slice(0, d.release) };
+    case 'rival':
+      return { kind: 'rival', settings: d.suggestion };
+    case 'rivalProtect':
+      return { kind: 'rivalProtect', ids: autoProtect(s, d, next) };
     case 'foreign': {
       const cands = d.candidates.map((id) => s.players[id]!);
       const pick = (asia: boolean, pitcher: boolean | null, n: number) =>

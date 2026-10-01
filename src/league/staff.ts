@@ -128,7 +128,10 @@ export function aiStaffWinter(s: LeagueState, year: number, table: { teamId: Tea
         m.until = year + 2;
         continue;
       }
-      s.clubs[t.id]!.staff![role] = makeStaff(s, role, `${t.id}-${role}-${year}`, year, r() * 10 - 3);
+      const hire = makeStaff(s, role, `${t.id}-${role}-${year}`, year, r() * 10 - 3);
+      // The twelfth club hires managers of the style its front office chose (V0.9).
+      if (role === 'manager' && t.id === s.twelve?.teamId) hire.style = s.twelve.manager;
+      s.clubs[t.id]!.staff![role] = hire;
     }
     for (const m of Object.values(staff)) m.age++;
   }

@@ -2,8 +2,9 @@ import { useState } from 'preact/hooks';
 import { CITIES, cityById } from '../club/cities';
 import { PARENT_COMPANY_TYPES, type ParentCompanyType } from '../club/types';
 import { budgetFor, difficultyStars, STADIUM_PLANS } from '../league/expansion';
-import type { Difficulty, ExpansionSettings, Promotion } from '../league/state';
+import type { Difficulty, ExpansionSettings, Promotion, TwelveSetting } from '../league/state';
 import { money } from './format';
+import { TwelveSettingField } from './Twelve';
 
 const COLORS = ['#0f6e8c', '#1b7f5a', '#6b3fa0', '#c2572b', '#2f4858', '#b3261e', '#0b5394', '#8a6d1d'];
 const TAKEN = ['키움', 'NC', '한화', '롯데', 'SSG', 'KT', '두산', 'LG', '삼성', 'KIA'];
@@ -31,9 +32,27 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
   const [difficulty, setDifficulty] = useState<Difficulty>('normal');
   const [firing, setFiring] = useState(false);
   const [seed, setSeed] = useState(initialSeed);
+  const [twelve, setTwelve] = useState<TwelveSetting>({ mode: 'off' });
   const city = cityById(cityId)!;
+  // The twelfth club comes once ours is in the first team.
+  const twelveFrom = promotion === 'immediate' ? 2027 : 2028;
+  const twelveSetting: TwelveSetting = twelve.mode === 'year' ? { mode: 'year', year: Math.max(twelveFrom, twelve.year ?? twelveFrom + 2) } : twelve;
 
-  const settings: ExpansionSettings = { name, short, color, cityId, parentType, parentName, stadium, promotion, difficulty, scenario: null, ...(firing ? { firing } : {}), ...(mode === 'tutorial' ? { tutorial: true } : {}) };
+  const settings: ExpansionSettings = {
+    name,
+    short,
+    color,
+    cityId,
+    parentType,
+    parentName,
+    stadium,
+    promotion,
+    difficulty,
+    scenario: null,
+    ...(firing ? { firing } : {}),
+    ...(mode === 'tutorial' ? { tutorial: true } : {}),
+    ...(twelveSetting.mode !== 'off' ? { twelve: twelveSetting } : {}),
+  };
   const b = budgetFor(settings);
   const stars = difficultyStars(settings);
   const problems = [
@@ -135,6 +154,11 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
             <span class="muted">안내 없이 곧바로 2027년 1군에 들어갑니다. 규칙을 아는 단장용.</span>
           </button>
         </div>
+      </section>
+
+      <section class="form-block" aria-labelledby="ng-twelve">
+        <h3 id="ng-twelve">12구단 · 라이벌</h3>
+        <TwelveSettingField value={twelveSetting} from={twelveFrom} onChange={setTwelve} />
       </section>
 
       <section class="form-block" aria-labelledby="ng-rules">

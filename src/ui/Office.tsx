@@ -19,8 +19,9 @@ import { checkStadiumName, STADIUM_NAME_MAX } from '../league/userclub';
 import { salaryCapFor } from '../rules/kbo2026';
 import { money } from './format';
 import { Help } from './Help';
+import { RivalryBox, TwelveSettingField } from './Twelve';
 
-type Section = 'summary' | 'owner' | 'money' | 'fans' | 'staff' | 'ballpark' | 'ledger';
+type Section = 'summary' | 'owner' | 'money' | 'fans' | 'staff' | 'ballpark' | 'rival' | 'ledger';
 const SECTIONS: [Section, string][] = [
   ['summary', '요약'],
   ['owner', '모기업'],
@@ -28,6 +29,7 @@ const SECTIONS: [Section, string][] = [
   ['fans', '관중 · 티켓'],
   ['staff', '스태프'],
   ['ballpark', '구장'],
+  ['rival', '12구단 · 라이벌'],
   ['ledger', '자금 내역'],
 ];
 
@@ -512,6 +514,24 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
               </label>
               <button type="submit">정하기</button>
             </form>
+          )}
+        </>
+      )}
+
+      {section === 'rival' && (
+        <>
+          {league.twelve ? (
+            <RivalryBox league={league} />
+          ) : (
+            <>
+              <p>12번째 구단이 언제 들어올지 정합니다. 창단 전까지는 언제든 바꿀 수 있습니다.</p>
+              <TwelveSettingField
+                value={u.settings.twelve ?? { mode: 'off' }}
+                from={Math.max(u.firstTeamYear, league.phase === 'offseason' ? (league.offseason?.year ?? league.year) + 1 : league.year)}
+                onChange={(setting) => act({ kind: 'twelveSetting', setting })}
+              />
+              {u.twelveNo?.length ? <p class="muted small">이사회 부결: {u.twelveNo.join(', ')}년 겨울</p> : null}
+            </>
           )}
         </>
       )}
