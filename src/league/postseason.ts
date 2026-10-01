@@ -10,6 +10,8 @@ import { compactBox, isUserGame, keepBox } from './boxscore';
 import { gameMoments } from './milestones';
 import { gameNews } from './news';
 import type { PlayEvent } from './engine/types';
+import type { StandingRow } from './standings';
+import { leagueTables, twoLeagues } from './twelve';
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 
@@ -53,8 +55,45 @@ function series(s: LeagueState, round: SeriesResult['round'], high: TeamId, low:
   return { result: { round, high, low, highWins: hw, lowWins: lw, winner: hw >= need ? high : low, games }, end: date };
 }
 
+/**
+ * Two leagues (V0.9, the 1999–2000 드림·매직리그): each league's winner meets the other league's runner-up, best of
+ * seven. A league's third place with a better record than the other league's runner-up first plays it for that
+ * spot, best of three (2000: 삼성, 드림 3위, over 롯데, 매직 2위), and the winner meets its own league's winner. The
+ * two playoff winners play the Korean Series, the better record at home.
+ */
+function playTwoLeagues(s: LeagueState) {
+  const t = leagueTables(currentStandings(s), s.twelve!.leagues!);
+  const [d, m] = [t.dream, t.magic];
+  if (d.length < 3 || m.length < 3) return;
+  const last = s.schedule[s.schedule.length - 1]?.date ?? `${s.year}-10-01`;
+  const start = addDays(last, 3);
+  const three = [true, true, false];
+  const seven = [true, true, false, false, false, true, true];
+  const pct = (id: TeamId) => [...d, ...m].find((r) => r.teamId === id)!.pct;
+  // The spot against a league's winner: the other league's runner-up, unless this league's third beat its record.
+  let end = start;
+  const spot = (second: StandingRow, third: StandingRow): TeamId => {
+    if (third.pct <= second.pct) return second.teamId;
+    const x = series(s, 'semipo', third.teamId, second.teamId, 2, three, start);
+    s.postseason.push(x.result);
+    if (x.end > end) end = x.end;
+    return x.result.winner;
+  };
+  const vsDream = spot(m[1]!, d[2]!);
+  const vsMagic = spot(d[1]!, m[2]!);
+  const poStart = end === start ? start : addDays(end, 1);
+  const a = series(s, 'po', d[0]!.teamId, vsDream, 4, seven, poStart);
+  const b = series(s, 'po', m[0]!.teamId, vsMagic, 4, seven, poStart);
+  s.postseason.push(a.result, b.result);
+  const [x, y] = [a.result.winner, b.result.winner];
+  const [high, low] = pct(x) >= pct(y) ? [x, y] : [y, x];
+  const ks = series(s, 'ks', high, low, 4, seven, addDays(a.end > b.end ? a.end : b.end, 2));
+  s.postseason.push(ks.result);
+}
+
 export function playPostseason(s: LeagueState) {
   s.phase = 'postseason';
+  if (twoLeagues(s)) return playTwoLeagues(s);
   const seeds = currentStandings(s)
     .slice(0, 5)
     .map((r) => r.teamId);

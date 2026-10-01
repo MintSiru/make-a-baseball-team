@@ -7,6 +7,8 @@ import type { Split, Splits } from '../league/engine/types';
 import type { LeagueState } from '../league/state';
 import { playerCard, positionLabel, rateContextFor, rates, type PlayerCard } from '../league/views';
 import { usdTotal } from '../league/contracts';
+import { fanAffinity, hometownOf, isMarried } from '../league/life';
+import { SITES } from '../league/training';
 import { usd } from '../league/foreign';
 import { handedness, militaryLabel, money, toolKeysFor } from './format';
 import { GradeBar } from './grades';
@@ -246,6 +248,10 @@ export function PlayerPanel({ league, id, onClose, onInterview }: { league: Leag
   const foreign = p.origin.kind === 'foreign';
   const wearing = p.number != null && p.numberTeam === p.teamId ? p.number : null;
   const hurtDays = card.injuries.reduce((a, x) => a + x.days, 0);
+  // Life off the field (V0.10): today's form and his trips abroad.
+  const today = league.phase === 'regular' ? (league.schedule[league.next]?.date ?? `${league.year}-10-01`) : `${league.year}-12-31`;
+  const form = p.life?.form && p.life.form.until >= today && league.phase === 'regular' ? p.life.form : null;
+  const trips = (league.user?.trips ?? []).filter((t) => t.id === p.id);
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div class="dialog profile" role="dialog" aria-modal="true" aria-labelledby="player-name">
@@ -326,8 +332,51 @@ export function PlayerPanel({ league, id, onClose, onInterview }: { league: Leag
                 <dt>통산 WAR</dt>
                 <dd>{card.totals.seasons ? card.totals.war.toFixed(1) : '-'}</dd>
               </div>
+              {p.teamId && (
+                <div>
+                  <dt>팬 호감도</dt>
+                  <dd>
+                    {fanAffinity(league, p)}
+                    <span class="muted small"> / 100{hometownOf(league, p) ? ' · 연고지 출신' : ''}</span>
+                  </dd>
+                </div>
+              )}
+              {form && (
+                <div>
+                  <dt>컨디션</dt>
+                  <dd class={form.delta > 0 ? 'plus' : 'minus'}>
+                    {form.delta > 0 ? '좋음' : '나쁨'} ({form.why}, {form.until.slice(5).replace('-', '/')}까지)
+                  </dd>
+                </div>
+              )}
+              {league.user && p.teamId === league.user.teamId && (
+                <div>
+                  <dt>가족</dt>
+                  <dd>
+                    {p.life?.married ? `${p.life.married}년 결혼` : isMarried(league, p) ? '기혼' : '미혼'}
+                    {p.life?.kids ? ` · 자녀 ${p.life.kids}명` : ''}
+                  </dd>
+                </div>
+              )}
             </dl>
             <p class="muted small">{p.education.pathText}</p>
+            {(trips.length > 0 || (p.life?.events?.length ?? 0) > 0) && (
+              <ul class="plain small life-list">
+                {trips.map((t) => (
+                  <li key={`${t.season}-${t.site}`}>
+                    {t.from.slice(0, 7)} 해외 연수 · {SITES[t.site].name}: {t.result ? t.result.text + (t.result.injury ? ` (${t.result.injury})` : '') : `${t.until}까지`}
+                  </li>
+                ))}
+                {(p.life?.events ?? [])
+                  .slice(-5)
+                  .reverse()
+                  .map((e, i) => (
+                    <li key={i} class={e.tone === 'good' ? 'plus' : e.tone === 'bad' ? 'minus' : ''}>
+                      {e.date} {e.text}
+                    </li>
+                  ))}
+              </ul>
+            )}
             {!!p.honors?.length && (
               <div class="honors">
                 {[...p.honors].reverse().map((h) => (

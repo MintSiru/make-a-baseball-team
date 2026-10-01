@@ -159,6 +159,8 @@ export interface SeriesResult {
 export interface SeasonSummary {
   year: number;
   table: StandingRow[];
+  /** Two leagues (V0.9): each club's side that season. */
+  leagues?: Record<TeamId, LeagueSide>;
   series: SeriesResult[];
   champion: TeamId | null;
   /** League totals for the balance checks and the record room. */
@@ -199,7 +201,57 @@ export type Decision =
   // Coming home (V0.7.3): posted players back from the majors, whose rights the club holds
   | { kind: 'returnee'; rows: { id: PlayerId; years: number; annual: number; abroad: number }[] }
   | { kind: 'sponsor'; offers: SponsorOffer[]; ended?: string }
-  | { kind: 'staff'; rows: { role: StaffRole; current: StaffMember; expiring: boolean; buyout: number; candidates: StaffMember[] }[] };
+  | { kind: 'staff'; rows: { role: StaffRole; current: StaffMember; expiring: boolean; buyout: number; candidates: StaffMember[] }[] }
+  // The twelfth club (V0.9, rival.ts): design it (or, offered by the board, vote it down), then protect our players
+  // from its special draft
+  | { kind: 'rival'; year: number; event: boolean; suggestion: RivalSettings }
+  | { kind: 'rivalProtect'; candidates: PlayerId[]; protect: number; fee: number };
+
+// ── The twelfth club (V0.9) ───────────────────────────────────────────────────────────────────────
+
+/** How the twelfth club's front office builds a team: balanced, through youth, for now, or for value. */
+export type GmStyle = 'balanced' | 'develop' | 'winNow' | 'moneyball';
+/** One league of twelve, or two of six (드림·매직리그, the 1999–2000 precedent). */
+export type LeagueFormat = 'single' | 'two';
+export type LeagueSide = 'dream' | 'magic';
+
+/** When a twelfth club comes: never, in a set winter, or when the board puts it to the clubs. */
+export interface TwelveSetting {
+  mode: 'off' | 'year' | 'event';
+  /** The winter it is founded (it plays futures the next season and joins the first team the one after). */
+  year?: number;
+}
+
+/** What the player decides for the rival club. */
+export interface RivalSettings {
+  name: string;
+  short: string;
+  color: string;
+  cityId: string;
+  parentType: import('../club/types').ParentCompanyType;
+  parentName: string;
+  gm: GmStyle;
+  manager: ManagerStyle;
+  format: LeagueFormat;
+}
+
+/** The twelfth club once founded, the league format from its first season, and the rivalry's record. */
+export interface TwelveState {
+  teamId: TeamId;
+  cityId: string;
+  /** The winter it was founded; its first first-team season. */
+  founded: number;
+  firstTeam: number;
+  format: LeagueFormat;
+  gm: GmStyle;
+  manager: ManagerStyle;
+  /** Two leagues: each club's side, set when the twelve clubs first play. */
+  leagues?: Record<TeamId, LeagueSide>;
+  /** Season series against the user's club, from the user's side. */
+  h2h?: { year: number; w: number; l: number; t: number }[];
+  /** Who it took in its special draft. */
+  picks?: { from: TeamId; id: PlayerId; name: string }[];
+}
 
 /** One player in the winter's salary talks (만 원). */
 export interface SalaryRow {
@@ -275,6 +327,8 @@ export interface OffseasonState {
   faQueue?: import('./market').FaQueueItem[];
   /** The second draft in progress (odd winters). */
   second?: import('./seconddraft').SecondDraftState | null;
+  /** The user's club's protected players in the twelfth club's special draft (V0.9). */
+  rivalProtect?: PlayerId[];
 }
 
 /** A spot in the batting order the general manager fixed: who bats there and where he plays. */
@@ -351,7 +405,33 @@ export interface UserClub {
   /** Tutorial mode (V0.7.5): lessons already read, and whether the player turned the guide off. */
   tutorialSeen?: string[];
   tutorialOff?: boolean;
+  /** Winters the board voted down a twelfth club (V0.9, event mode). */
+  twelveNo?: number[];
+  /** Short programmes at private training centres abroad (V0.10, training.ts). */
+  trips?: TrainingTrip[];
+  /** Facilities built (level by kind) and under construction (V0.10, facilities.ts). */
+  facilities?: Partial<Record<FacilityKind, number>>;
+  facilityWorks?: { kind: FacilityKind; level: number; opens: number; cost: number }[];
 }
+
+/** A private training centre abroad (V0.10). */
+export type SiteId = 'seattle' | 'arizona' | 'florida' | 'tokyo';
+
+export interface TrainingTrip {
+  id: PlayerId;
+  site: SiteId;
+  /** The season it counts for: a winter programme for the next season, or one during the season. */
+  season: number;
+  from: string;
+  until: string;
+  cost: number;
+  inSeason: boolean;
+  /** Filled in when he is back. */
+  result?: { gains: Partial<Record<import('../draftroom').ToolKey, number>>; velocity?: [number, number]; injury?: string; text: string };
+}
+
+/** What the club can build (V0.10): ballpark improvements and training facilities. */
+export type FacilityKind = 'premium' | 'scoreboard' | 'turf' | 'concessions' | 'indoor' | 'gym' | 'rehab' | 'analytics' | 'futuresPark' | 'dorm';
 
 export type Promotion = 'afterFutures' | 'immediate';
 export type Difficulty = 'easy' | 'normal' | 'hard';
@@ -372,6 +452,8 @@ export interface ExpansionSettings {
   firing?: boolean;
   /** Tutorial mode (V0.7.5): a guide from the founding through the futures year (promotion after futures). */
   tutorial?: boolean;
+  /** A twelfth club, the rival (V0.9). Off when missing. */
+  twelve?: TwelveSetting;
 }
 
 /** The season's futures league (from 2026): every club's futures squad plus 상무. */
@@ -401,8 +483,11 @@ export interface LeagueState {
   arms: Record<PlayerId, ArmState>;
   rotation: Record<TeamId, number>;
   injuries: Record<PlayerId, Injury>;
-  /** Away with the national team until this date (registered days still count). */
+  /** Away with the national team until this date (registered days still count); since V0.10 also on family
+      leave (경조사 휴가), which the KBO counts the same way. */
   away: Record<PlayerId, string>;
+  /** Abroad at a training centre until this date (V0.10): off the roster, registered days do not count. */
+  abroad?: Record<PlayerId, string>;
   /** When the user's players were last sent down from the first team (ten days before re-registering). */
   demoted?: Record<PlayerId, string>;
   /** Players on waivers (seven days) and unattached players any club may sign (V0.5). */
@@ -445,6 +530,8 @@ export interface LeagueState {
   /** Box scores and play-by-play logs kept for viewing (V0.7, boxscore.ts). */
   boxes?: Record<string, import('./boxscore').StoredBox>;
   pbp?: Record<string, import('./engine/types').PlayEvent[]>;
+  /** The twelfth club (V0.9), once founded. */
+  twelve?: TwelveState;
   /** Null in a spectator league. */
   user: UserClub | null;
   pending: Decision | null;

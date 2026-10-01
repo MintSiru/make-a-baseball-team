@@ -11,6 +11,7 @@ import { isPitcher } from './players';
 import type { LeagueState } from './state';
 import type { PlayEvent } from './engine/types';
 import { gameDetail, monthDetail, seasonDetail } from './gamedetail';
+import { isRivalry, madePostseason, seasonSeries } from './twelve';
 
 export type NewsKind = 'game' | 'milestone' | 'month' | 'season' | 'award' | 'interview' | 'move' | 'injury';
 
@@ -68,6 +69,8 @@ const PLAYER_DEFAULT = ['팀이 이겨서 기쁩니다.', '좋은 결과가 나�
 
 const MANAGER_WIN = ['선수들이 끝까지 집중했다. 칭찬하고 싶다.', '준비한 대로 잘 풀렸다. 이 흐름을 이어 가겠다.', '어려운 경기였는데 선수들이 이겨 냈다.'];
 const MANAGER_LOSS = ['오늘은 상대가 더 잘했다. 빨리 잊고 다음 경기를 준비하겠다.', '실책이 아쉬웠다. 선수들과 다시 이야기하겠다.', '투수 운용은 내 판단이었다. 책임은 나에게 있다.'];
+const RIVAL_WIN = ['라이벌은 무조건 잡아야지', '이 경기는 두 배로 기쁘다', '라이벌전 직관은 못 참지'];
+const RIVAL_LOSS = ['다른 팀한테는 져도 여기만은…', '라이벌한테 지니까 잠이 안 온다', '다음 맞대결은 꼭 갚아 주자'];
 const FANS_WIN = ['이 맛에 야구 본다', '오늘 직관 온 사람 승리', '분위기 탔다 이대로 가자', '끝까지 안 나가길 잘했다'];
 const FANS_LOSS = ['내일은 이기자…', '불펜 좀 어떻게 해 봐', '그래도 끝까지 응원한다', '타선 언제 터지냐'];
 
@@ -108,6 +111,7 @@ export function gameNews(s: LeagueState, box: StoredBox, log?: PlayEvent[] | nul
   const ace = pit[0];
   const facts: NewsItem['facts'] = { date: box.date, club: me, opponent: opp, runsFor: rs, runsAgainst: rt, result: won ? '승' : rs < rt ? '패' : '무', innings: box.innings };
   const walkOff = won && us === 1 && box.line[1].length === box.line[0].length && (box.line[1].at(-1) ?? 0) > 0;
+  const rivalry = /^\d{4}-\d{4}$/.test(box.id) && isRivalry(s, box.home, box.away);
   const noHit = box.rhe[them][1] === 0 && box.line[them].length >= 9;
   const multiHr = bat.find((b) => b[6] >= 2);
   const bigK = pit.find((p) => p[6] >= 10);
@@ -143,15 +147,22 @@ export function gameNews(s: LeagueState, box: StoredBox, log?: PlayEvent[] | nul
     title = `${me}, 연장 ${box.innings}회 끝에 승리`;
     body = `${iga(me)} ${opp}전에서 ${box.innings}회까지 가는 접전 끝에 ${rs}-${rt}로 이겼다.`;
     star = hero?.[0] ?? null;
-  } else if (recap) {
+  } else if (recap || rivalry) {
     const sp = pit[0];
     title = `${me}, ${opp}에 ${rs}-${rt} ${won ? '승리' : rs < rt ? '패배' : '무승부'}`;
     body = `${iga(me)} ${box.date} ${opp}전에서 ${rs}-${rt}로 ${won ? '이겼다' : rs < rt ? '졌다' : '비겼다'}. ${sp ? `선발 ${iga(name(sp[0]))} ${Math.floor(sp[1] / 3)}이닝 ${sp[3]}실점했다.` : ''} ${hero && hero[4] > 0 ? `타선에서는 ${iga(name(hero[0]))} ${hero[4]}안타 ${hero[5]}타점을 기록했다.` : ''}`.trim();
     star = won ? (hero?.[0] ?? null) : null;
   } else return;
+  // Every game against the twelfth club is the rivalry (V0.9): an article, with the season series so far.
+  if (rivalry) {
+    const sr = seasonSeries(s);
+    title = `[라이벌전] ${title}`;
+    body = `${body} 올 시즌 맞대결 ${sr.w}승 ${sr.l}패${sr.t ? ` ${sr.t}무` : ''}.`;
+    facts.rivalry = `${sr.w}승 ${sr.l}패 ${sr.t}무`;
+  }
   const quotes: Quote[] = [];
   if (star && s.players[star]) quotes.push(playerQuote(s.players[star]!, `${key}-p`));
-  quotes.push(managerQuote(s, u.teamId, won, `${key}-m`), ...fanQuotes(won, `${key}-f`));
+  quotes.push(managerQuote(s, u.teamId, won, `${key}-m`), ...(rivalry ? [{ who: '팬', role: 'fan' as const, text: pick(won ? RIVAL_WIN : RIVAL_LOSS, `${key}-r`) }] : []), ...fanQuotes(won, `${key}-f`));
   if (star) facts.star = name(star);
   addNews(s, { id: `g-${box.id}`, date: box.date, kind: 'game', title, body, quotes, facts, detail: gameDetail(s, box, log), players: star ? [star] : [] });
 }
@@ -283,7 +294,7 @@ export function seasonNews(s: LeagueState, year: number) {
     date,
     kind: 'season',
     title: champ ? `${me}, ${year} 한국시리즈 우승` : `${me} ${year} 시즌 결산: ${row.rank}위`,
-    body: `${iga(me)} ${year} 시즌을 ${row.w}승 ${row.l}패 ${row.t}무, ${row.rank}위로 마쳤다. ${champ ? '한국시리즈 정상에 올랐다.' : row.rank <= 5 ? '가을야구에 나갔다.' : '가을야구에는 닿지 못했다.'}${report?.homeGames ? ` 홈 관중은 경기당 ${Math.round(report.fans / report.homeGames).toLocaleString('ko-KR')}명.` : ''}`,
+    body: `${iga(me)} ${year} 시즌을 ${row.w}승 ${row.l}패 ${row.t}무, ${row.rank}위로 마쳤다. ${champ ? '한국시리즈 정상에 올랐다.' : madePostseason(h, u.teamId) ? '가을야구에 나갔다.' : '가을야구에는 닿지 못했다.'}${report?.homeGames ? ` 홈 관중은 경기당 ${Math.round(report.fans / report.homeGames).toLocaleString('ko-KR')}명.` : ''}`,
     quotes: [managerQuote(s, u.teamId, row.pct >= 0.5, `season-${year}`), ...fanQuotes(row.pct >= 0.5, `season-${year}`)],
     facts: { year, club: me, rank: row.rank, wins: row.w, losses: row.l, champion: champ ? '예' : '아니오' },
     detail: seasonDetail(s, u.teamId, year),

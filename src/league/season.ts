@@ -25,13 +25,19 @@ import { standings } from './standings';
 import { ENGINE } from './tuning';
 import { carryOverInjuries, offRoster, rollInjuries } from './injuries';
 import { openForeignBooks } from './foreigncap';
+import { assignLeagues, twelveClubs, twelveGames } from './twelve';
+import { finishTrips } from './training';
+import { lifeDay } from './life';
 
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 
 export function startSeason(s: LeagueState) {
   s.phase = 'regular';
-  s.schedule = makeSchedule(firstTeamIds(s), s.year, s.seed);
+  // Twelve clubs (V0.9): two leagues are drawn once, before the first twelve-club season.
+  if (s.twelve?.format === 'two' && !s.twelve.leagues && twelveClubs(s)) s.twelve.leagues = assignLeagues(s);
+  const teams = firstTeamIds(s);
+  s.schedule = makeSchedule(teams, s.year, s.seed, twelveGames(s, teams, s.year));
   s.next = 0;
   s.scores = [];
   s.lines = {};
@@ -46,6 +52,8 @@ export function startSeason(s: LeagueState) {
   s.countedThrough = null;
   // Operations from last season can run past opening day (injuries.ts).
   carryOverInjuries(s, s.schedule[0]?.date);
+  // Winter programmes abroad are over before camp (V0.10).
+  finishTrips(s, s.schedule[0]?.date ?? `${s.year}-03-01`);
   for (const id of firstTeamIds(s)) setActive(s, id, chooseActive(s, id));
   // The foreign players' salary cap: the season's books open with their guaranteed money (V0.7.8).
   openForeignBooks(s);
@@ -227,6 +235,9 @@ export function playDay(s: LeagueState): boolean {
   if (s.phase !== 'regular' || s.next >= s.schedule.length) return false;
   const date = s.schedule[s.next]!.date;
   countDays(s, date);
+  // The user's players back from training abroad, and what happened off the field today (V0.10).
+  finishTrips(s, date);
+  lifeDay(s, date);
   returnFromService(s, date);
   nationalTeamLeaves(s, date);
   nationalTeamBack(s, date);

@@ -16,6 +16,8 @@ import { leaveLeague, removeFromRoster, rosterLimit } from './offseason';
 import { ageIn, currentValue, isForeign, isPitcher, keepValue, makeForeign } from './players';
 import { currentStandings } from './season';
 import { firstTeamIds, orgPlayers, registeredIds, type DraftSlot, type LeagueState, type TradeExtras } from './state';
+import { crossing } from './rivalry';
+import { farewell } from './life';
 import { TRADES } from './tuning';
 import { moveNews } from './movenews';
 import { capRoom, chargeForeign } from './foreigncap';
@@ -183,6 +185,11 @@ export function makeTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get:
   (u.log ??= []).push({ year: s.year, text });
   logTransaction(s, text);
   moveNews(s, { type: 'trade', a: u.teamId, b: teamId, fromA: give, fromB: get, cash, picksA: extras.picksOut ?? [], picksB: extras.picksIn ?? [] });
+  // A trade with the twelfth club stirs both fan bases (V0.9).
+  for (const id of give) crossing(s, s.players[id]!, u.teamId, teamId, '트레이드');
+  // Fans see a favourite go (V0.10).
+  for (const id of give) farewell(s, s.players[id]!, u.teamId, '트레이드');
+  for (const id of get) crossing(s, s.players[id]!, teamId, u.teamId, '트레이드');
   return true;
 }
 
@@ -294,6 +301,7 @@ export function releasePlayer(s: LeagueState, id: PlayerId) {
     (u.log ??= []).push({ year: s.year, text: `${p.name} 방출 (자유계약선수)` });
   }
   moveNews(s, { type: 'release', teamId: u.teamId, id, waiver: s.phase === 'regular', owed: owed.reduce((a, x) => a + x.amount, 0) });
+  farewell(s, p, u.teamId, '방출');
   if (isForeign(p)) leaveForeign(s, p, u.teamId);
 }
 

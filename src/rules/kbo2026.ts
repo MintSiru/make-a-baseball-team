@@ -161,6 +161,12 @@ export const EXPANSION_DEFAULTS = {
 /* 11-club schedule (RULES.md §9, assumed): 144 games = 15 against four opponents + 14 against six. */
 export const ELEVEN_CLUB_SCHEDULE = { gamesPerClub: 144, heavyOpponents: 4, heavyGames: 15, lightGames: 14 } as const;
 
+/* 12-club schedules (V0.9, RULES.md §9, assumed; the KBO has never had twelve clubs). Still 144 games.
+   One league: 14 against the club's natural rival, 13 against the other ten. Two leagues of six (the 1999–2000
+   드림·매직리그 played more inside the league: 20 against 18): 14 against each of the five in the league, 13
+   against two of the other league and 12 against the other four. */
+export const TWELVE_CLUB_SCHEDULE = { gamesPerClub: 144, single: { rival: 14, other: 13 }, two: { same: 14, near: 13, far: 12, nearOpponents: 2 } } as const;
+
 export function salaryCapFor(year: number): number {
   const years = KBO_2026.salaryCap.years;
   const known = years.find((y) => y.year === year);

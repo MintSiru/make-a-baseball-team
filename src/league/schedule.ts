@@ -66,11 +66,12 @@ export function openingDay(year: number): Date {
   return d;
 }
 
-export function makeSchedule(teamIds: string[], year: number, seed: string): ScheduledGame[] {
+/** `pairs`: games between two clubs when the league sets them itself (twelve clubs, twelve.ts). */
+export function makeSchedule(teamIds: string[], year: number, seed: string, pairs?: (a: string, b: string) => number): ScheduledGame[] {
   const r = rng(`${seed}|schedule|${year}`);
   const n = teamIds.length;
   const base = roundRobin(n);
-  const perPair = pairGames(n, seed, year);
+  const perPair = pairs ? (a: number, b: number) => pairs(teamIds[a]!, teamIds[b]!) : pairGames(n, seed, year);
   const games: ScheduledGame[] = [];
   const day = openingDay(year);
   const allStar = utc(year, 7, 10);

@@ -148,7 +148,7 @@ export function seasonAlert(s: LeagueState, year: number) {
     kind: 'season',
     title: champ ? `${year} 한국시리즈 우승!` : `${year} 시즌 종료 · ${row.rank}위`,
     lines: [`정규시즌 ${row.w}승 ${row.l}패 ${row.t}무, ${row.rank}위`, post, ...(h.champion && !champ ? [`우승: ${short(s, h.champion)}`] : [])],
-    tone: champ || row.rank <= 5 ? 'good' : 'bad',
+    tone: champ || ours.length || (!h.series.length && row.rank <= 5) ? 'good' : 'bad',
   });
 }
 

@@ -13,8 +13,13 @@ import { FANS } from './tuning';
 import { gameRecap, interviewNews, type NewsItem } from './news';
 import { renameStadium } from './userclub';
 import { markAlertsSeen } from './alerts';
-import type { ExpansionSettings, LeagueState, LineupCard, Squad, TradeExtras } from './state';
+import type { ExpansionSettings, FacilityKind, LeagueState, LineupCard, SiteId, Squad, TradeExtras, TwelveSetting } from './state';
+
+/** A new scoreboard's lift to the fans' mood in its first season (V0.10, facilities.ts). */
+const SCOREBOARD_BUZZ = 0.03;
 import { foundClub, FOUNDING_DATE, resolveDecision, type DecisionInput } from './expansion';
+import { finishTrips, sendTrip } from './training';
+import { openFacilities, startFacility } from './facilities';
 
 export type Action =
   | { kind: 'days'; days: number }
@@ -44,11 +49,16 @@ export type Action =
   | { kind: 'storyText'; id: string; ai: NonNullable<NewsItem['ai']> | null }
   | { kind: 'alertsSeen'; ids?: string[] }
   | { kind: 'tutorial'; seen?: string; off?: boolean; on?: boolean }
+  /** When a twelfth club comes (V0.9), until it is founded. */
+  | { kind: 'twelveSetting'; setting: TwelveSetting }
   // The market (V0.5)
   | { kind: 'trade'; teamId: TeamId; give: PlayerId[]; get: PlayerId[]; extras?: TradeExtras }
   | { kind: 'release'; id: PlayerId }
   | { kind: 'signPool'; id: PlayerId }
-  | { kind: 'foreignSwap'; out: PlayerId; in: string };
+  | { kind: 'foreignSwap'; out: PlayerId; in: string }
+  // Players and facilities (V0.10)
+  | { kind: 'trip'; id: PlayerId; site: SiteId }
+  | { kind: 'facility'; facility: FacilityKind };
 
 export const regularOver = (s: LeagueState) => s.phase === 'regular' && s.next >= s.schedule.length;
 
@@ -57,13 +67,15 @@ export const regularOver = (s: LeagueState) => s.phase === 'regular' && s.next >
 function finishOffseason(s: LeagueState) {
   if (s.phase === 'offseason' && !s.offseason && !s.pending) {
     openProjects(s, s.year);
+    // Facilities due this season (V0.10); a new scoreboard draws people in.
+    if (openFacilities(s, s.year).includes('scoreboard') && s.user) clubState(s, s.user.teamId).interest += SCOREBOARD_BUZZ;
     startSeason(s);
   }
 }
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard'];
+const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -86,6 +98,8 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'nextSeason':
       if (s.phase === 'postseason') {
+        // Programmes abroad still running end with the season (V0.10).
+        finishTrips(s, `${s.year}-12-31`);
         closeSeason(s);
         beginOffseason(s);
         advanceOffseason(s);
@@ -153,6 +167,14 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       if (action.on) delete u.tutorialOff;
       break;
     }
+    case 'twelveSetting': {
+      const u = s.user;
+      if (!u || s.twelve) break;
+      const st = action.setting;
+      if (st.mode === 'off') delete u.settings.twelve;
+      else u.settings.twelve = st.mode === 'year' ? { mode: 'year', year: Math.max(u.firstTeamYear, st.year ?? u.firstTeamYear) } : { mode: 'event' };
+      break;
+    }
     case 'storyText': {
       // A language model's version of an article, or null to go back to the template.
       const item = s.news?.find((n) => n.id === action.id);
@@ -173,6 +195,12 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'foreignSwap':
       if (s.user) replaceForeign(s, s.user.teamId, action.out, action.in);
+      break;
+    case 'trip':
+      sendTrip(s, action.id, action.site);
+      break;
+    case 'facility':
+      startFacility(s, action.facility);
       break;
   }
   // Anyone who joined a club (or became a registered player) gets his number.

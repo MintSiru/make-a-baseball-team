@@ -12,6 +12,7 @@ import { hasBenefits, registeredIds, type LeagueState, type LineupSlot, type Man
 import { EXPANSION_DEFAULTS, KBO_2026 } from '../rules/kbo2026';
 import { platoonFactor } from './pitches';
 import { ENGINE, STAFF } from './tuning';
+import { formOf } from './life';
 
 const STARTER_LIMIT = ENGINE.starterLimit;
 
@@ -419,6 +420,24 @@ export function managerLean(s: LeagueState, teamId: TeamId, base: Prefer = none)
 }
 
 /** Both clubs' engine inputs for one game: starters first, so each lineup can be set against the other starter. */
+/** A hot or cold spell, a newborn or a loss (V0.10, the user's players only) moves his main tools today. */
+function withForm(s: LeagueState, date: string, team: TeamIn): TeamIn {
+  for (const b of team.lineup) {
+    const f = formOf(s.players[b.id]!, date);
+    if (!f) continue;
+    b.contact += f;
+    b.power += f;
+    b.eye += f;
+  }
+  for (const a of [team.starter, ...team.bullpen]) {
+    const f = formOf(s.players[a.id]!, date);
+    if (!f) continue;
+    a.stuff += f;
+    a.command += f;
+  }
+  return team;
+}
+
 export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away: SquadSpec): { home: TeamIn | null; away: TeamIn | null } {
   const plan = (x: SquadSpec) => {
     const ids = x.ids ?? s.rosters[x.teamId]!.active;
@@ -443,14 +462,14 @@ export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away:
     });
     if (lineup.length < 9) return null;
     const exclude = new Set(me.rotation.map((p) => p.id));
-    return {
+    return withForm(s, date, {
       teamId: me.x.teamId,
       lineup,
       starter: armIn(me.sp.p, me.sp.limit),
       bullpen: bullpenFor(s, me.x.teamId, me.ids, date, exclude, me.prefer),
       fieldBonus: STAFF.fielding * staffEdge(staffRating(s, me.x.teamId, 'analytics')),
       ...(me.style === 'smallBall' ? { smallBall: true } : {}),
-    };
+    });
   };
   return { home: build(h, a), away: build(a, h) };
 }

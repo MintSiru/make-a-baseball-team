@@ -17,7 +17,8 @@ import { addNews } from './news';
 import { ageIn, isPitcher } from './players';
 import { staffEdge, staffRating } from './staff';
 import type { LeagueState, SeasonLine } from './state';
-import { INJURY, STAFF } from './tuning';
+import { INJURY, STAFF, TRAINING } from './tuning';
+import { facilityInjury, facilityRehab } from './facilities';
 
 export interface InjuryType {
   part: string;
@@ -141,11 +142,11 @@ function pick(list: InjuryType[], r: () => number): InjuryType {
 }
 
 /** Out of the lineup today for any reason (injured, a knock, the national team). */
-export const sidelined = (s: LeagueState, id: PlayerId) => !!s.injuries[id] || !!s.away?.[id];
+export const sidelined = (s: LeagueState, id: PlayerId) => !!s.injuries[id] || !!s.away?.[id] || !!s.abroad?.[id];
 /** Off the first team: on the injured list, in rehab or with the national team (a knock does not count). */
 export const offRoster = (s: LeagueState, id: PlayerId) => {
   const i = s.injuries[id];
-  return (!!i && !i.dtd) || !!s.away?.[id];
+  return (!!i && !i.dtd) || !!s.away?.[id] || !!s.abroad?.[id];
 };
 
 /** A major operation's lasting mark on the player: hidden ability, and a little more fragile. */
@@ -178,7 +179,9 @@ export function rollInjuries(s: LeagueState, box: TeamBox, date: string, r: () =
     const workload = pitcher ? Math.max(1, (pitches.get(id) ?? 0) / (starter ? 95 : 25)) : 1;
     const age = Math.max(0, ageIn(p, s.year) - INJURY.ageFrom);
     const medical = staffEdge(staffRating(s, p.teamId, 'medical'));
-    const scale = (p.hidden.injuryRisk / INJURY.riskScale) * (1 + age * INJURY.perYearOver) * (1 - STAFF.injury * medical) * (level === 'futures' ? INJURY.futures : 1);
+    // The user's grass and gym, and a conditioning programme abroad this season (V0.10; 1 for everyone else).
+    const care = (1 - facilityInjury(s, p.teamId)) * (p.life?.conditioned === s.year ? TRAINING.conditioned : 1);
+    const scale = (p.hidden.injuryRisk / INJURY.riskScale) * (1 + age * INJURY.perYearOver) * (1 - STAFF.injury * medical) * (level === 'futures' ? INJURY.futures : 1) * care;
     const serious = base * workload * scale;
     const knock = (pitcher ? INJURY.knock.pitcher : INJURY.knock.hitter) * scale;
     if (u >= serious + knock) continue;
@@ -193,7 +196,7 @@ export function rollInjuries(s: LeagueState, box: TeamBox, date: string, r: () =
     }
     const t = pick(INJURY_TYPES[pitcher ? 'pitcher' : 'hitter'], r2);
     const spread = (r2() + r2()) / 2;
-    const quicker = STAFF.injuryDays * medical * (t.surgery === 'major' ? 0.5 : 1);
+    const quicker = STAFF.injuryDays * medical * (t.surgery === 'major' ? 0.5 : 1) + facilityRehab(s, p.teamId);
     const days = Math.max(7, Math.round((t.days[0] + (t.days[1] - t.days[0]) * spread) * (1 - quicker)));
     s.injuries[id] = { until: addDays(date, days), days, onList: level === 'first', part: t.part, ...(t.surgery ? { surgery: t.surgery } : {}) };
     const rec: InjuryRecord = { date, days, part: t.part, ...(level === 'futures' ? { futures: true } : {}), ...(t.surgery ? { surgery: t.surgery } : {}) };

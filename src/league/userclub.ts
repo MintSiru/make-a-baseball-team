@@ -38,6 +38,7 @@ import { splitContract } from './foreign';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type SalaryRow, type StaffRole, type UserClub } from './state';
 import { OFFSEASON as O, TALKS } from './tuning';
+import { lifeWinter } from './life';
 
 /** Difficulty scales the owner's money. */
 const DIFFICULTY_MONEY = { easy: 1.1, normal: 1, hard: 0.9 } as const;
@@ -151,6 +152,8 @@ export function yearlyGrant(s: LeagueState) {
   const u = s.user;
   if (!u || !s.offseason) return;
   const year = s.offseason.year;
+  // The players' winter: weddings, gifts, work on their own (V0.10).
+  lifeWinter(s, year);
   const next = year + 1;
   // A naming sponsor judges the season against its goal and may walk out (then a new one is signed now).
   sponsorReview(s, year);

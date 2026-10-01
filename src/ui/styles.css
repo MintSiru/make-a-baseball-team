@@ -2270,3 +2270,85 @@ ul.plain li {
   min-width: 34px;
   padding: 0 6px;
 }
+/* V0.9: the twelfth club's form and the rivalry box. */
+.rival-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+.rival-form input[type='color'] {
+  width: 64px;
+  height: 34px;
+  padding: 2px;
+}
+.choice-set {
+  border: 0;
+  padding: 0;
+  margin: 4px 0 0;
+  min-width: 0;
+}
+.choice-set legend {
+  font-weight: 600;
+  font-size: 14px;
+  padding: 0;
+}
+.twelve-setting .inline-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 13px;
+  max-width: 360px;
+}
+.rivalry-box p {
+  margin: 4px 0;
+}
+/* V0.10: training abroad, facilities, the fans' favourites, a player's life. */
+.trip-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 12px;
+  margin: 12px 0 4px;
+}
+.trip-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  min-width: 0;
+  max-width: 100%;
+}
+.trip-form select {
+  max-width: 100%;
+}
+.record-table.facilities td,
+.record-table.facilities th {
+  vertical-align: top;
+  white-space: normal;
+}
+.record-table.facilities td:first-child {
+  min-width: 180px;
+}
+.record-table.facilities td.small {
+  min-width: 120px;
+}
+.record-table.facilities td.num,
+.record-table.facilities th.num,
+.record-table.facilities td:last-child,
+.record-table.facilities button {
+  white-space: nowrap;
+}
+.favourites {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  padding-left: 0;
+}
+.life-list {
+  margin: 6px 0 0;
+}
+.life-list li {
+  margin: 2px 0;
+}
