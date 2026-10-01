@@ -51,7 +51,13 @@ async function decideAll(page, log) {
       if (!batch.fa) {
         batch.fa = true;
         await page.locator('.fa-table tbody .link').first().click();
-        await page.getByRole('button', { name: '요구에 맞추기' }).click();
+        await page.getByRole('button', { name: '요구 수준', exact: true }).click();
+        // A typed amount with a decimal point (a phone keyboard types "12." on the way to "12.5").
+        const bonus = page.getByRole('textbox', { name: '계약금 (억)' });
+        await bonus.fill('');
+        await bonus.pressSequentially('12.5');
+        check((await bonus.inputValue()) === '12.5', 'a decimal amount can be typed');
+        await page.getByRole('button', { name: '바로 사인 수준' }).click();
         check(((await page.locator('.fa-reaction strong').textContent()) ?? '').length > 0, 'the free agent reacts to an offer');
         await page.getByRole('button', { name: /^제안 (넣기|고치기)$/ }).click();
         check((await page.locator('.fa-talk').textContent())?.includes('보낼 제안'), 'an offer waits for the next round');

@@ -8,7 +8,7 @@ import { observe, overall, rng, toGrade, type Tools } from '../draftroom';
 import DraftSeason from '../draftroom/season.js';
 import type { Player, SeasonRecord, TeamId } from '../model/types';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
-import { bonusShare, foreignContract, MANWON_PER_USD, renewSalary, rookieContract, salaryIn, slotBonus, usdTotal } from './contracts';
+import { budgetBonus, foreignContract, MANWON_PER_USD, renewSalary, rookieContract, salaryIn, slotBonus, usdTotal } from './contracts';
 import { splitContract } from './foreign';
 import { INTERNATIONAL } from './international';
 import { foreignSlots } from './manager';
@@ -367,7 +367,7 @@ function isFreeAgent(p: Player, next: number) {
 
 /** A season's pay: salaries and free-agent bonuses spread over their deals (V0.8). */
 export function payroll(s: LeagueState, teamId: TeamId, season: number) {
-  return orgIds(s, teamId).reduce((sum, id) => sum + salaryIn(s.players[id]!, season) + bonusShare(s.players[id]!, season), 0);
+  return orgIds(s, teamId).reduce((sum, id) => sum + salaryIn(s.players[id]!, season) + budgetBonus(s.players[id]!, season), 0);
 }
 
 /** Players who reach free agency this winter and have a market (the rest re-sign as usual). */

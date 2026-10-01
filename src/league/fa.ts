@@ -36,6 +36,11 @@ export interface FaOffer {
   extra?: { years: number; holder: 'club' | 'player' };
   /** The user's club only. */
   promises?: FaPromise[];
+  /** The user's club (V0.8.1): the most guaranteed money it will go to. Each round the offer is raised, within
+      this and the budget, to what he would take and past the best rival offer. */
+  ceiling?: number;
+  /** The user's club (V0.8.1): the bonus is paid at once from the fund, outside the payroll budget. */
+  prepaid?: boolean;
 }
 
 export interface FaBid extends FaOffer {
@@ -140,6 +145,14 @@ export function splitOffer(g: number, years: number, share: number, options: num
   const bonus = round1000(g * share);
   const annual = Math.max(minimumSalaryFor(next), (g - bonus) / years >= 10000 ? round1000((g - bonus) / years) : round100((g - bonus) / years));
   return { years, bonus, annual, options: round1000(options), ...(extra ? { extra } : {}) };
+}
+
+/** The same offer at a different guaranteed total (bonus, salary and incentives in proportion). */
+export function scaleOffer(o: FaOffer, g: number, next: number): FaOffer {
+  const k = g / Math.max(1, guaranteed(o));
+  const share = o.bonus / Math.max(1, guaranteed(o));
+  const out: FaOffer = { ...o, ...splitOffer(g, o.years, share, o.options * k, next, o.extra) };
+  return out;
 }
 
 /**
@@ -381,6 +394,17 @@ export function meetTerms(s: LeagueState, m: FaMarket, t: FaTalk, next: number, 
   const unit = shape(guaranteed(t.price));
   const k = (t.floor * margin) / Math.max(1, utility(s, t, me, unit, next));
   return shape(guaranteed(t.price) * k);
+}
+
+/** An offer he signs at once (V0.8.1): his terms, priced over what he takes outright and past the best rival offer. */
+export function winTerms(s: LeagueState, m: FaMarket, t: FaTalk, next: number): FaOffer {
+  const me = s.user!.teamId;
+  const base = meetTerms(s, m, t, next);
+  const rival = Object.entries(t.offers)
+    .filter(([id]) => id !== me)
+    .reduce((a, [id, o]) => Math.max(a, utility(s, t, id, o, next)), 0);
+  const want = Math.max(t.floor * FA.overwhelm * 1.01, rival * 1.03);
+  return scaleOffer(base, (guaranteed(base) * want) / Math.max(1, utility(s, t, me, base, next)), next);
 }
 
 // ── Opening the market ───────────────────────────────────────────────────────────────────────────
@@ -651,6 +675,8 @@ export function playRound(s: LeagueState, m: FaMarket, next: number): boolean {
       }
     }
   }
+  // The user's offers with a ceiling are raised the same way, before anyone decides.
+  if (me) raiseUserOffers(s, m, day, next);
   // Players.
   for (const id of m.order) {
     const t = m.talks[id]!;
@@ -692,6 +718,40 @@ export function playRound(s: LeagueState, m: FaMarket, next: number): boolean {
   m.round++;
   if (m.round >= FA.rounds.length) m.closed = true;
   return touched;
+}
+
+/** The user's offers with a ceiling (V0.8.1): raised to what he would take and past the best rival offer, as far
+    as the ceiling and the payroll budget (and the fund, for a bonus paid at once) allow. */
+function raiseUserOffers(s: LeagueState, m: FaMarket, day: number, next: number) {
+  const me = s.user!.teamId;
+  for (const id of m.order) {
+    const t = m.talks[id]!;
+    const mine = t.offers[me];
+    if (!isOpen(t) || !mine || mine.ceiling === undefined) continue;
+    const ours = utility(s, t, me, mine, next);
+    const rival = Object.entries(t.offers)
+      .filter(([c]) => c !== me)
+      .reduce((a, [c, o]) => Math.max(a, utility(s, t, c, o, next)), 0);
+    const want = Math.max(t.floor * 1.01, rival * 1.02);
+    if (want <= ours) continue;
+    const now = guaranteed(mine);
+    const most = Math.min(mine.ceiling, maxGuaranteed(s, m, t, mine, next, userOffers(s, m)));
+    const need = (now * want) / Math.max(1, ours);
+    const g = Math.min(need, most);
+    const name = s.players[id]!.name;
+    if (g <= now + 500) {
+      if (t.said !== 'ceiling') {
+        t.said = 'ceiling';
+        t.notes.push({ day, text: `${name}: 상한(${eok(mine.ceiling)})이나 연봉 예산에 닿아 제안을 더 올리지 못했습니다.`, tone: 'bad' });
+      }
+      continue;
+    }
+    t.offers[me] = { ...scaleOffer(mine, g, next), day };
+    const capped = g < need ? ` 상한(${eok(mine.ceiling)})이나 예산에 닿아 더는 못 올립니다.` : ` (상한 ${eok(mine.ceiling)})`;
+    t.notes.push({ day, text: `${name}에게 제안을 보장 ${eok(now)} → ${eok(guaranteed(t.offers[me]!))}로 올렸습니다.${capped}`, tone: g < need ? undefined : 'good' });
+    if (t.notes.length > 12) t.notes.splice(0, t.notes.length - 12);
+    delete t.said;
+  }
 }
 
 /** What he tells the user's club after a round (only when it is news). Returns whether it matters: he signed,
@@ -745,7 +805,7 @@ function tell(s: LeagueState, m: FaMarket, t: FaTalk, day: number, next: number)
 /** The contract a signing writes. */
 export function faContract(teamId: TeamId, next: number, o: FaOffer, p: Player, spot?: FaSpot): Player['contract'] {
   const incentive: IncentiveKind = isPitcher(p) ? (p.role === 'SP' ? 'innings' : 'relief') : 'games';
-  const fa: FaTerms = { years: o.years, options: o.options, incentive, paid: [] };
+  const fa: FaTerms = { years: o.years, options: o.options, incentive, paid: [], ...(o.prepaid && o.bonus ? { prepaid: true } : {}) };
   if (o.extra) fa.extra = { ...o.extra, annual: o.annual };
   if (o.promises?.length) {
     fa.promises = [...o.promises];
@@ -782,6 +842,9 @@ function signTalk(s: LeagueState, m: FaMarket, t: FaTalk, teamId: TeamId, o: FaO
       (u.parentGifts ??= []).push({ id: p.id, name: p.name, annual, from: next, to: next + o.years - 1 });
       u.payrollBudget += annual;
       (u.log ??= []).push({ year, text: `모기업 지원으로 FA ${p.name} 영입 (${termsText(o)}, 모기업 부담)` });
+    } else if (o.prepaid && o.bonus) {
+      u.fund -= o.bonus;
+      u.ledger.push({ year, label: `FA 계약금 일시불 · ${p.name}`, amount: -o.bonus });
     }
     if (!gift) (u.log ??= []).push({ year, text: `FA ${p.name} ${from === me ? '재계약' : `영입 (${short(s, from)}에서)`} · ${termsText(o)}` });
   } else if (u && from === me) (u.log ??= []).push({ year, text: `FA ${p.name} ${ro(short(s, teamId))} 이적 (${termsText(o)})` });
@@ -893,15 +956,47 @@ function offersAfter(s: LeagueState, m: FaMarket, input: RoundInput) {
   return out;
 }
 
-/** What the user's club has put on the table for next season's payroll budget: salaries and bonuses spread over
-    their deals (the owner's free agent aside). */
+/** What one offer takes from next season's payroll budget: the salary, and the bonus spread over the deal unless
+    it is paid at once from the fund. */
+export const budgetUse = (o: FaOffer) => o.annual + (o.prepaid ? 0 : Math.round(o.bonus / o.years));
+
+/** What the user's club has put on the table: next season's payroll budget, and bonuses paid at once from the
+    fund (the owner's free agent aside). */
 export function openCommitments(s: LeagueState, m: FaMarket, offers: Record<PlayerId, FaOffer>) {
-  let budget = 0;
+  let budget = 0,
+    fund = 0;
   for (const [id, o] of Object.entries(offers)) {
     if (m.gift?.id === id && guaranteed(o) <= m.gift.total) continue;
-    budget += o.annual + Math.round(o.bonus / o.years);
+    budget += budgetUse(o);
+    if (o.prepaid) fund += o.bonus;
   }
-  return budget;
+  return { budget, fund };
+}
+
+/** The user's offers on the table now (open talks only). */
+export function userOffers(s: LeagueState, m: FaMarket): Record<PlayerId, FaOffer> {
+  const me = s.user!.teamId;
+  const out: Record<PlayerId, FaOffer> = {};
+  for (const id of m.order) {
+    const t = m.talks[id]!;
+    if (isOpen(t) && t.offers[me]) out[id] = t.offers[me]!;
+  }
+  return out;
+}
+
+/** The most guaranteed money an offer of this shape to him can carry: within the payroll budget and the fund left
+    after the club's other offers (the owner's free agent: up to the owner's limit). */
+export function maxGuaranteed(s: LeagueState, m: FaMarket, t: FaTalk, o: FaOffer, next: number, offers: Record<PlayerId, FaOffer>) {
+  if (m.gift?.id === t.id) return m.gift.total;
+  const u = s.user!;
+  const others = Object.fromEntries(Object.entries(offers).filter(([id]) => id !== t.id));
+  const c = openCommitments(s, m, others);
+  const budgetRoom = u.payrollBudget - payrollBeforeOffers(s, m, next) - c.budget;
+  const g = Math.max(1, guaranteed(o));
+  const perYear = budgetUse(o) / g;
+  let most = perYear > 0 ? budgetRoom / perYear : Infinity;
+  if (o.prepaid && o.bonus > 0) most = Math.min(most, (u.fund - c.fund) / (o.bonus / g));
+  return Math.max(0, Math.floor(most / 1000) * 1000);
 }
 
 /** Next season's payroll without the club's own free agents still on the market. */
@@ -926,6 +1021,7 @@ export function checkRound(s: LeagueState, m: FaMarket, input: RoundInput, next:
     if (o.extra && (!Number.isInteger(o.extra.years) || o.extra.years < 1 || o.extra.years > 2 || !['club', 'player'].includes(o.extra.holder))) return `${name}: 기간 옵션은 1~2년입니다.`;
     if (o.promises?.some((x) => !t.demands.some((d) => d.kind === x))) return `${name}: 요구하지 않은 약속입니다.`;
     if (m.gift?.id === id && guaranteed(o) > m.gift.total) return `${name}: 모기업 지원 한도(보장 ${eok(m.gift.total)})를 넘습니다.`;
+    if (o.ceiling !== undefined && (!Number.isFinite(o.ceiling) || o.ceiling < guaranteed(o))) return `${name}: 자동 증액 상한이 지금 보장액보다 낮습니다.`;
   }
   const offers = offersAfter(s, m, input);
   const me = u.teamId;
@@ -933,7 +1029,9 @@ export function checkRound(s: LeagueState, m: FaMarket, input: RoundInput, next:
   const room = m.userLimit - (m.signedOut[me] ?? 0);
   if (outsideOffers > room) return `다른 구단 FA는 올겨울 ${m.userLimit}명까지 영입할 수 있습니다 (남은 자리 ${Math.max(0, room)}명).`;
   const c = openCommitments(s, m, offers);
-  if (c > 0 && payrollBeforeOffers(s, m, next) + c > u.payrollBudget) return '제안을 모두 합치면 연봉 예산을 넘습니다 (계약금은 계약 기간에 나눠 들어갑니다).';
+  if (c.budget > 0 && payrollBeforeOffers(s, m, next) + c.budget > u.payrollBudget)
+    return `제안을 모두 합치면 ${next} 연봉 예산을 ${eok(payrollBeforeOffers(s, m, next) + c.budget - u.payrollBudget)} 넘습니다 (계약금은 계약 기간에 나눠 들어가며, 구단 자금 일시불로 돌릴 수 있습니다).`;
+  if (c.fund > 0 && c.fund > u.fund) return `일시불 계약금 합계 ${eok(c.fund)}가 구단 자금 ${eok(Math.max(0, u.fund))}보다 많습니다.`;
   return null;
 }
 
@@ -963,12 +1061,16 @@ export function autoRound(s: LeagueState, m: FaMarket, next: number): RoundInput
     if (guaranteed(o) > m.gift.total) o = { ...o, ...splitOffer(m.gift.total, o.years, o.bonus / Math.max(1, guaranteed(o)), o.options, next, o.extra) };
     if (ok({ ...offers, [t.id]: o })) offers[t.id] = o;
   }
+  // Our own free agents worth keeping: on their terms, raised as needed up to 15% more (within the budget).
   const own = m.order.map((id) => m.talks[id]!).filter((t) => t.from === me && isOpen(t) && !t.offers[me]);
   for (const t of own) {
     const p = s.players[t.id]!;
     if (ageIn(p, next) > 34 || keepValue(p, next) < 48) continue;
     const o = meetTerms(s, m, t, next);
-    if (ok({ ...offers, [t.id]: o })) offers[t.id] = o;
+    const trial = { ...offers, [t.id]: o };
+    if (!ok(trial)) continue;
+    const firm = { ...userOffers(s, m), ...Object.fromEntries(Object.entries(trial).filter((x): x is [PlayerId, FaOffer] => !!x[1])) };
+    offers[t.id] = { ...o, ceiling: Math.max(guaranteed(o), Math.min(Math.round(guaranteed(o) * 1.15), maxGuaranteed(s, m, t, o, next, firm))) };
   }
   return { kind: 'faRound', offers, run: 'close' };
 }

@@ -34,6 +34,10 @@ export function bonusShare(p: Player, season: number) {
   return season >= first && season < first + c.fa.years ? Math.round(c.signingBonus / c.fa.years) : 0;
 }
 
+/** The bonus spread that counts against the payroll budget and the season's pay: none when it was paid at once
+    from the fund (V0.8.1). */
+export const budgetBonus = (p: Player, season: number) => (p.contract?.fa?.prepaid ? 0 : bonusShare(p, season));
+
 /** What a season counts against the salary cap: salary, the bonus spread and incentives paid (RULES.md §3). */
 export const capPay = (p: Player, season: number) => salaryIn(p, season) + bonusShare(p, season) + (p.contract?.fa?.paid.find((x) => x.season === season)?.amount ?? 0);
 

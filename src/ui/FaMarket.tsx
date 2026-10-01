@@ -1,9 +1,29 @@
 /* The free-agent market (V0.8): the winter's free agents, what each wants, and talks with one at a time. The
    club makes or changes offers (bonus, salary, incentives, a period option, promises), then lets the days run:
    to the next round, until one of its talks has news, or to the end of the market. */
-import { useMemo, useState } from 'preact/hooks';
+import { useEffect, useMemo, useState } from 'preact/hooks';
 import { autoDecision, checkDecision, type DecisionInput } from '../league/expansion';
-import { capHit, capRoomFor, faDate, guaranteed, meetTerms, offerTotal, openCommitments, payrollBeforeOffers, reaction, spotLabel, termsText, type FaDemand, type FaMarket as Market, type FaOffer, type FaTalk } from '../league/fa';
+import {
+  budgetUse,
+  capHit,
+  capRoomFor,
+  faDate,
+  guaranteed,
+  maxGuaranteed,
+  meetTerms,
+  offerTotal,
+  openCommitments,
+  payrollBeforeOffers,
+  reaction,
+  scaleOffer,
+  spotLabel,
+  termsText,
+  winTerms,
+  type FaDemand,
+  type FaMarket as Market,
+  type FaOffer,
+  type FaTalk,
+} from '../league/fa';
 import { wagwa } from '../league/josa';
 import { ageIn } from '../league/players';
 import type { LeagueState } from '../league/state';
@@ -11,7 +31,7 @@ import { FA } from '../league/tuning';
 import { positionLabel, shortName } from '../league/views';
 import type { FaPromise, PlayerId } from '../model/types';
 import { salaryCapFor } from '../rules/kbo2026';
-import { money, moneyShort } from './format';
+import { money, moneyShort, parseEok } from './format';
 import { gradeClass } from './grades';
 
 interface Props {
@@ -96,7 +116,7 @@ export function FaMarket({ league, onSubmit, onPlayer }: Props) {
     const o = current(t.id);
     if (o && !t.signed && !t.gone) mine[t.id] = o;
   }
-  const c = openCommitments(league, m, mine);
+  const c = openCommitments(league, m, mine).budget;
   const base = payrollBeforeOffers(league, m, next);
   const cap = salaryCapFor(next);
   const capNow = cap - capRoomFor(league, me, next, new Set(talks.filter((t) => !t.signed && !t.gone).map((t) => t.id)));
@@ -194,7 +214,10 @@ export function FaMarket({ league, onSubmit, onPlayer }: Props) {
                       <td class="num">{lastWar(league, t.id)?.toFixed(1) ?? '-'}</td>
                       <td class="num">{moneyShort(offerTotal(t.price))}</td>
                       <td class={t.signed?.teamId === me ? 'plus' : t.signed && t.from === me ? 'minus' : ''}>{status(league, m, t)}</td>
-                      <td class={x ? `fa-band ${x.band}` : 'muted'}>{x ? x.label : o && t.signed?.teamId === me ? '계약' : '-'}</td>
+                      <td class={x ? `fa-band ${x.band}` : 'muted'}>
+                        {x ? x.label : o && t.signed?.teamId === me ? '계약' : '-'}
+                        {x && o?.ceiling !== undefined && <span class="muted small"> · 상한 {moneyShort(o.ceiling)}</span>}
+                      </td>
                     </tr>
                   );
                 })}
@@ -202,7 +225,21 @@ export function FaMarket({ league, onSubmit, onPlayer }: Props) {
             </table>
           </div>
         </div>
-        {selected && <TalkPanel key={selected.id} league={league} m={m} t={selected} next={next} offer={current(selected.id)} setOffer={(o) => setDrafts((prev) => ({ ...prev, [selected.id]: o }))} onPlayer={onPlayer} changed={selected.id in drafts} />}
+        {selected && (
+          <TalkPanel
+            key={selected.id}
+            league={league}
+            m={m}
+            t={selected}
+            next={next}
+            offer={current(selected.id)}
+            offers={mine}
+            check={(o) => checkDecision(league, { kind: 'faRound', offers: { ...drafts, [selected.id]: o }, run: 'round' })}
+            setOffer={(o) => setDrafts((prev) => ({ ...prev, [selected.id]: o }))}
+            onPlayer={onPlayer}
+            changed={selected.id in drafts}
+          />
+        )}
       </div>
 
       <h3>시장 소식</h3>
@@ -235,11 +272,59 @@ export function FaMarket({ league, onSubmit, onPlayer }: Props) {
             if (a && a.kind === 'faRound') setDrafts((prev) => ({ ...prev, ...a.offers }));
           }}
         >
-          스카우트 추천 (우리 FA 붙잡기)
+          스카우트 추천 (우리 FA 붙잡기, 15%까지 자동 증액)
         </button>
         {problem && <span class="notice inline">{problem}</span>}
       </div>
     </section>
+  );
+}
+
+/** A money field in 억 that keeps what is typed until it is a number (a phone keyboard types "12." on the way to
+    "12.5"), with one-tap steps either side. */
+function MoneyField({ label, value, onChange, step = 1, hint }: { label: string; value: number; onChange: (manwon: number) => void; step?: number; hint?: string }) {
+  const show = (v: number) => String(eok(v));
+  const [text, setText] = useState(show(value));
+  const [editing, setEditing] = useState(false);
+  useEffect(() => {
+    if (!editing) setText(show(value));
+  }, [value, editing]);
+  const bump = (d: number) => onChange(manwon(Math.max(0, eok(value) + d)));
+  return (
+    <div class="money-field">
+      <span>
+        {label}
+        {hint && <span class="muted small"> {hint}</span>}
+      </span>
+      <span class="money-stepper">
+        <button type="button" aria-label={`${label} ${step}억 줄이기`} onClick={() => bump(-step)}>
+          −
+        </button>
+        <input
+          type="text"
+          inputMode="decimal"
+          value={text}
+          aria-label={label}
+          onFocus={() => setEditing(true)}
+          onBlur={() => {
+            setEditing(false);
+            const x = parseEok(text);
+            if (x !== null) onChange(manwon(x));
+            else setText(show(value));
+          }}
+          onInput={(e) => {
+            const v = (e.currentTarget as HTMLInputElement).value;
+            setText(v);
+            const x = parseEok(v);
+            if (x !== null && !v.endsWith('.')) onChange(manwon(x));
+          }}
+          onKeyDown={(e) => e.key === 'Enter' && (e.currentTarget as HTMLInputElement).blur()}
+        />
+        <button type="button" aria-label={`${label} ${step}억 늘리기`} onClick={() => bump(step)}>
+          +
+        </button>
+      </span>
+    </div>
   );
 }
 
@@ -249,6 +334,8 @@ function TalkPanel({
   t,
   next,
   offer,
+  offers,
+  check,
   setOffer,
   onPlayer,
   changed,
@@ -258,12 +345,17 @@ function TalkPanel({
   t: FaTalk;
   next: number;
   offer: FaOffer | null;
+  /** The club's offers as they stand (drafts included). */
+  offers: Record<PlayerId, FaOffer>;
+  /** What the rules say about this offer with the others. */
+  check: (o: FaOffer) => string | null;
   setOffer: (o: FaOffer | null) => void;
   onPlayer: (id: PlayerId) => void;
   changed: boolean;
 }) {
   const p = league.players[t.id]!;
-  const me = league.user!.teamId;
+  const u = league.user!;
+  const me = u.teamId;
   const open = !t.signed && !t.gone;
   const [form, setForm] = useState<FaOffer>(() => offer ?? meetTerms(league, m, t, next));
   const x = useMemo(() => reaction(league, m, t, form, next), [form, t, league]);
@@ -271,6 +363,15 @@ function TalkPanel({
   const others = Object.keys(t.offers).filter((id) => id !== me).length;
   const set = (change: Partial<FaOffer>) => setForm((prev) => ({ ...prev, ...change }));
   const meter = Math.max(0, Math.min(1.3, x.ratio)) / 1.3;
+  // Room for this offer: the payroll budget and the fund after the club's other offers.
+  const rest = Object.fromEntries(Object.entries(offers).filter(([id]) => id !== t.id));
+  const used = openCommitments(league, m, rest);
+  const budgetLeft = u.payrollBudget - payrollBeforeOffers(league, m, next) - used.budget;
+  const fundLeft = u.fund - used.fund;
+  const most = maxGuaranteed(league, m, t, form, next, offers);
+  const keepCeiling = (o: FaOffer): FaOffer => (form.ceiling !== undefined ? { ...o, ceiling: Math.max(form.ceiling, guaranteed(o)), prepaid: form.prepaid } : { ...o, prepaid: form.prepaid });
+  const shape = (o: FaOffer) => setForm(keepCeiling({ ...o, promises: o.promises ?? form.promises }));
+  const problem = open ? check(form) : null;
   return (
     <aside class="fa-talk" aria-label={`${p.name} 협상`}>
       <h3>
@@ -297,6 +398,23 @@ function TalkPanel({
         <p class="notice">새 팀을 찾지 못하고 은퇴했습니다.</p>
       ) : (
         <>
+          <div class="quick-offers" role="group" aria-label="빠른 제안">
+            <button type="button" onClick={() => shape(meetTerms(league, m, t, next))} title="지금 받아들일 만한 최소 수준">
+              요구 수준
+            </button>
+            <button type="button" onClick={() => shape(winTerms(league, m, t, next))} title="다른 구단 제안보다 좋고, 고민 없이 바로 사인할 수준">
+              바로 사인 수준
+            </button>
+            <button type="button" onClick={() => shape(scaleOffer(form, guaranteed(form) * 1.05, next))}>
+              +5%
+            </button>
+            <button type="button" onClick={() => shape(scaleOffer(form, guaranteed(form) * 1.1, next))}>
+              +10%
+            </button>
+            <button type="button" disabled={most < 1000} onClick={() => shape(scaleOffer(form, most, next))} title="연봉 예산(일시불이면 구단 자금)이 허락하는 최대">
+              예산 안 최대
+            </button>
+          </div>
           <div class="fa-offer" role="group" aria-label="제안 조건">
             <label>
               보장 기간
@@ -308,18 +426,9 @@ function TalkPanel({
                 ))}
               </select>
             </label>
-            <label>
-              계약금 (억)
-              <input type="number" min={0} step={0.5} value={eok(form.bonus)} onInput={(e) => set({ bonus: manwon(Number((e.currentTarget as HTMLInputElement).value)) })} />
-            </label>
-            <label>
-              연봉 (억, 매년)
-              <input type="number" min={0} step={0.1} value={eok(form.annual)} onInput={(e) => set({ annual: manwon(Number((e.currentTarget as HTMLInputElement).value)) })} />
-            </label>
-            <label>
-              옵션 총액 (억)
-              <input type="number" min={0} step={0.5} value={eok(form.options)} onInput={(e) => set({ options: manwon(Number((e.currentTarget as HTMLInputElement).value)) })} />
-            </label>
+            <MoneyField label="계약금 (억)" value={form.bonus} step={1} onChange={(v) => set({ bonus: v })} />
+            <MoneyField label="연봉 (억, 매년)" value={form.annual} step={0.5} onChange={(v) => set({ annual: v })} />
+            <MoneyField label="옵션 총액 (억)" value={form.options} step={1} onChange={(v) => set({ options: v })} />
             <label>
               기간 옵션
               <select value={extraKey(form)} onChange={(e) => set({ extra: extraOf((e.currentTarget as HTMLSelectElement).value) })}>
@@ -344,9 +453,27 @@ function TalkPanel({
                 {dd.kind === 'starter' ? '주전 보장 약속' : `${spotLabel(dd.spot)} 보강 약속 (개막 전까지)`}
               </label>
             ))}
+            <label class="check">
+              <input type="checkbox" checked={!!form.prepaid} onChange={(e) => set({ prepaid: (e.currentTarget as HTMLInputElement).checked || undefined })} /> 계약금을 구단 자금에서 일시불로 (연봉 예산에서 빠짐 · 쓸 수 있는 자금 {moneyShort(Math.max(0, fundLeft))})
+            </label>
+            <label class="check">
+              <input
+                type="checkbox"
+                checked={form.ceiling !== undefined}
+                onChange={(e) => {
+                  const on = (e.currentTarget as HTMLInputElement).checked;
+                  set({ ceiling: on ? Math.max(guaranteed(form), Math.min(Math.round((guaranteed(form) * 1.2) / 1000) * 1000, most)) : undefined });
+                }}
+              />{' '}
+              자동 증액: 경쟁 제안이 오거나 요구에 못 미치면 상한까지 알아서 올리기
+            </label>
+            {form.ceiling !== undefined && (
+              <MoneyField label="상한 (보장액, 억)" hint={`예산 안 최대 ${moneyShort(most)}`} value={form.ceiling} step={5} onChange={(v) => set({ ceiling: v })} />
+            )}
           </div>
           <p class="small">
-            총액 {money(offerTotal(form))} (보장 {money(guaranteed(form))}) · 계약금 비중 {Math.round((form.bonus / Math.max(1, guaranteed(form))) * 100)}% · 샐러리캡 연 {moneyShort(Math.round(capHit(form)))}
+            총액 {money(offerTotal(form))} (보장 {money(guaranteed(form))}) · 계약금 비중 {Math.round((form.bonus / Math.max(1, guaranteed(form))) * 100)}% · 연봉 예산 연{' '}
+            {moneyShort(budgetUse(form))} / 남은 예산 {moneyShort(Math.max(0, budgetLeft))} · 샐러리캡 연 {moneyShort(Math.round(capHit(form)))}
           </p>
           <div class={`fa-reaction ${x.band}`}>
             <div class="fa-meter" aria-hidden="true">
@@ -354,7 +481,11 @@ function TalkPanel({
               <i style={{ left: `${(1 / 1.3) * 100}%` }} />
             </div>
             <strong>{x.label}</strong> <span class="muted small">(스카우트 판단: 지금 요구 수준의 약 {Math.round(x.ratio * 20) * 5}%)</span>
-            {x.behind !== undefined && <p class="small minus">다른 구단 제안이 더 좋다고 합니다 (가치로 약 {Math.max(1, Math.round(x.behind * 100))}% 차이).</p>}
+            {x.behind !== undefined && (
+              <p class="small minus">
+                다른 구단 제안이 더 좋다고 합니다 (가치로 약 {Math.max(1, Math.round(x.behind * 100))}% 차이). 이기려면 보장 약 {money(Math.ceil((guaranteed(form) * (1 + x.behind) * 1.02) / 1000) * 1000)} 이상이 필요합니다.
+              </p>
+            )}
             {(x.fit.wants.length > 0 || x.fit.good.length > 0) && (
               <ul class="plain small">
                 {x.fit.wants.map((w) => (
@@ -371,11 +502,8 @@ function TalkPanel({
             )}
           </div>
           <div class="row-actions">
-            <button type="button" class="primary" onClick={() => setOffer(form)}>
+            <button type="button" class="primary" disabled={!!problem} onClick={() => setOffer(form)}>
               {offer ? '제안 고치기' : '제안 넣기'}
-            </button>
-            <button type="button" onClick={() => setForm(meetTerms(league, m, t, next))}>
-              요구에 맞추기
             </button>
             {offer && (
               <button type="button" onClick={() => setOffer(null)}>
@@ -383,10 +511,13 @@ function TalkPanel({
               </button>
             )}
           </div>
+          {problem && <p class="notice warn small">{problem}</p>}
           {offer && (
             <p class="small muted">
               {changed ? '다음 라운드로 넘길 때 보낼 제안' : '지금 걸려 있는 제안'}: {termsText(offer)}
               {offer.promises?.length ? ` · 약속: ${offer.promises.map((k) => (k === 'starter' ? '주전' : '보강')).join(', ')}` : ''}
+              {offer.prepaid ? ' · 계약금 일시불' : ''}
+              {offer.ceiling !== undefined ? ` · 자동 증액 상한 ${money(offer.ceiling)}` : ''}
             </p>
           )}
         </>
