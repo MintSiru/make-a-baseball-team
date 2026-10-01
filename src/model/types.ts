@@ -86,6 +86,8 @@ export type FaSpot = 'SP' | 'RP' | 'C' | 'IF' | 'OF';
 export interface FaTerms {
   /** Guaranteed seasons (the bonus counts against the salary cap spread over them). */
   years: number;
+  /** The bonus was paid at once from the club's fund (V0.8.1, the user's club): it stays out of the payroll budget. */
+  prepaid?: boolean;
   /** Incentives over the guaranteed seasons, earned season by season (출장·이닝 옵션), and what was paid. */
   options: number;
   incentive: IncentiveKind;

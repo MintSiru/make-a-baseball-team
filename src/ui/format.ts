@@ -37,3 +37,12 @@ export function money(manwon: number) {
   if (!eok) return `${rest.toLocaleString('ko-KR')}만`;
   return rest ? `${eok}억 ${rest.toLocaleString('ko-KR')}만` : `${eok}억`;
 }
+
+/** A typed amount in 억 ("12", "12.5", "1,200", "30억"), or null while it is not a number yet (V0.8.1). */
+export function parseEok(text: string): number | null {
+  const t = text.replace(/[,\s억]/g, '');
+  if (!/^\d*\.?\d*$/.test(t) || !/\d/.test(t)) return null;
+  const x = Number(t);
+  return Number.isFinite(x) ? x : null;
+}
+

@@ -7,7 +7,7 @@
 import { iga, ro } from './josa';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { KBO_2026 } from '../rules/kbo2026';
-import { bonusShare, renewSalary, salaryIn } from './contracts';
+import { budgetBonus, renewSalary, salaryIn } from './contracts';
 import { removeFromRoster } from './offseason';
 import { ageIn, isForeign, keepValue } from './players';
 import { orgIds, orgPlayers, registeredIds, type Decision, type LeagueState } from './state';
@@ -71,7 +71,7 @@ export function projectedPayroll(s: LeagueState, teamId: TeamId, season: number,
     .filter((id) => !without.includes(id))
     .reduce((sum, id) => {
       const p = s.players[id]!;
-      return sum + (salaryIn(p, season) || (isForeign(p) ? 0 : renewSalary(p, season))) + bonusShare(p, season);
+      return sum + (salaryIn(p, season) || (isForeign(p) ? 0 : renewSalary(p, season))) + budgetBonus(p, season);
     }, 0);
   return players + (teamId === s.user?.teamId ? deadMoney(s, season) : 0);
 }
