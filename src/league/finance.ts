@@ -14,6 +14,8 @@ import { payroll } from './offseason';
 import { staffCost } from './staff';
 import { firstTeamIds, orgPlayers, type ClubReport, type LeagueState } from './state';
 import { DEMOTION, FANS, FINANCE as F } from './tuning';
+import { concessionsShare, facilityUpkeep, premiumShare } from './facilities';
+import { favouritesMerch } from './life';
 
 /** The league's broadcast money for `year` (990억 for 2024–26; the next deal assumed 10% higher, then +3% a year). */
 export function broadcastPool(year: number): number {
@@ -108,12 +110,14 @@ export function clubReport(s: LeagueState, teamId: TeamId, year: number, shares:
     broadcast: inFirstTeam ? Math.round(broadcastPool(year) / clubs) : 0,
     sponsors: Math.round((F.sponsor.base + (c.popularity / 1000) * F.sponsor.perThousandFans) * heat * (inFirstTeam ? 1 : F.futuresYear)),
     naming: team.parent.type === 'namingRights' ? namingFee(s, teamId) : 0,
-    merchandise: Math.round(fans * F.merchPerFan * heat),
-    concessions: Math.round(fans * (longTerm ? F.concessions.operator : F.concessions.tenant)),
+    // The user's club (V0.10): its best-loved players sell shirts, and its shops sell more food.
+    merchandise: Math.round(fans * F.merchPerFan * heat * (1 + favouritesMerch(s, teamId))),
+    concessions: Math.round(fans * (longTerm ? F.concessions.operator : F.concessions.tenant) * (1 + concessionsShare(s, teamId))),
     postseason: shares[teamId] ?? 0,
   };
   const homeGames = gate?.games ?? 0;
   const dome = team.stadium.size === 'dome';
+  const upkeep = facilityUpkeep(s, teamId);
   const expenses = {
     players:
       payroll(s, teamId, year) +
@@ -121,8 +125,8 @@ export function clubReport(s: LeagueState, teamId: TeamId, year: number, shares:
     staff: staffCost(s, teamId),
     frontOffice: Math.round(F.frontOffice * (inFirstTeam ? 1 : F.futuresYear)),
     gameDays: homeGames * F.perHomeGame,
-    ballpark: (longTerm ? F.ballpark.operator : F.ballpark.tenant) + (dome ? F.ballpark.dome : 0) + Math.round(team.stadium.capacity * F.ballpark.perSeat),
-    farm: F.farm,
+    ballpark: (longTerm ? F.ballpark.operator : F.ballpark.tenant) + (dome ? F.ballpark.dome : 0) + Math.round(team.stadium.capacity * F.ballpark.perSeat) + upkeep.ballpark,
+    farm: F.farm + upkeep.training,
     marketing: c.marketing,
   };
   const income = Object.values(revenue).reduce((a, b) => a + b, 0);
@@ -193,7 +197,7 @@ export function projectedReport(s: LeagueState, teamId: TeamId): ClubReport {
     : Math.min(team.stadium.capacity, c.popularity * boom(s.year) * Math.max(0.45, 1 + FANS.moodWeight * c.interest) * c.price ** -FANS.elasticity);
   const fans = Math.round(perGame * home);
   const saved = s.gate;
-  s.gate = { ...(saved ?? {}), [teamId]: { games: home, fans, sellouts: 0, revenue: Math.round(fans * leaguePrice(s.year) * c.price) } };
+  s.gate = { ...(saved ?? {}), [teamId]: { games: home, fans, sellouts: 0, revenue: Math.round(fans * leaguePrice(s.year) * c.price * (1 + premiumShare(s, teamId))) } };
   try {
     return clubReport(s, teamId, s.year, {});
   } finally {

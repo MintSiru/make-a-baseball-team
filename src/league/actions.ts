@@ -13,8 +13,13 @@ import { FANS } from './tuning';
 import { gameRecap, interviewNews, type NewsItem } from './news';
 import { renameStadium } from './userclub';
 import { markAlertsSeen } from './alerts';
-import type { ExpansionSettings, LeagueState, LineupCard, Squad, TradeExtras, TwelveSetting } from './state';
+import type { ExpansionSettings, FacilityKind, LeagueState, LineupCard, SiteId, Squad, TradeExtras, TwelveSetting } from './state';
+
+/** A new scoreboard's lift to the fans' mood in its first season (V0.10, facilities.ts). */
+const SCOREBOARD_BUZZ = 0.03;
 import { foundClub, FOUNDING_DATE, resolveDecision, type DecisionInput } from './expansion';
+import { finishTrips, sendTrip } from './training';
+import { openFacilities, startFacility } from './facilities';
 
 export type Action =
   | { kind: 'days'; days: number }
@@ -50,7 +55,10 @@ export type Action =
   | { kind: 'trade'; teamId: TeamId; give: PlayerId[]; get: PlayerId[]; extras?: TradeExtras }
   | { kind: 'release'; id: PlayerId }
   | { kind: 'signPool'; id: PlayerId }
-  | { kind: 'foreignSwap'; out: PlayerId; in: string };
+  | { kind: 'foreignSwap'; out: PlayerId; in: string }
+  // Players and facilities (V0.10)
+  | { kind: 'trip'; id: PlayerId; site: SiteId }
+  | { kind: 'facility'; facility: FacilityKind };
 
 export const regularOver = (s: LeagueState) => s.phase === 'regular' && s.next >= s.schedule.length;
 
@@ -59,13 +67,15 @@ export const regularOver = (s: LeagueState) => s.phase === 'regular' && s.next >
 function finishOffseason(s: LeagueState) {
   if (s.phase === 'offseason' && !s.offseason && !s.pending) {
     openProjects(s, s.year);
+    // Facilities due this season (V0.10); a new scoreboard draws people in.
+    if (openFacilities(s, s.year).includes('scoreboard') && s.user) clubState(s, s.user.teamId).interest += SCOREBOARD_BUZZ;
     startSeason(s);
   }
 }
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting'];
+const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -88,6 +98,8 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'nextSeason':
       if (s.phase === 'postseason') {
+        // Programmes abroad still running end with the season (V0.10).
+        finishTrips(s, `${s.year}-12-31`);
         closeSeason(s);
         beginOffseason(s);
         advanceOffseason(s);
@@ -183,6 +195,12 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'foreignSwap':
       if (s.user) replaceForeign(s, s.user.teamId, action.out, action.in);
+      break;
+    case 'trip':
+      sendTrip(s, action.id, action.site);
+      break;
+    case 'facility':
+      startFacility(s, action.facility);
       break;
   }
   // Anyone who joined a club (or became a registered player) gets his number.

@@ -225,6 +225,23 @@ export interface Player {
   /** A draftee who refused to sign and went abroad (V0.7.3): when, and the draft he comes back through
       after the KBO's two-year wait (null: he stays abroad). */
   abroad?: { left: number; draft: number | null };
+  /** Life off the field (V0.10, the user's players only): family, form, what fans think, what happened. */
+  life?: PlayerLife;
+}
+
+/** V0.10. Kept only for the user's club's players, so the shared simulation never reads it for others. */
+export interface PlayerLife {
+  /** Year he married, and children. */
+  married?: number;
+  kids?: number;
+  /** A spell of good or bad form: grade points on his main tools in games until `until`. */
+  form?: { delta: number; until: string; why: string };
+  /** What events added to or took from the fans' fondness (−30 … +30). */
+  fans?: number;
+  /** A conditioning programme abroad lowers his injury chance this season. */
+  conditioned?: number;
+  /** What happened, newest last. */
+  events?: { date: string; text: string; tone?: 'good' | 'bad' }[];
 }
 
 export interface InjuryRecord {

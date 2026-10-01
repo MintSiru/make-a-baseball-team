@@ -2304,3 +2304,51 @@ ul.plain li {
 .rivalry-box p {
   margin: 4px 0;
 }
+/* V0.10: training abroad, facilities, the fans' favourites, a player's life. */
+.trip-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 12px;
+  margin: 12px 0 4px;
+}
+.trip-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  min-width: 0;
+  max-width: 100%;
+}
+.trip-form select {
+  max-width: 100%;
+}
+.record-table.facilities td,
+.record-table.facilities th {
+  vertical-align: top;
+  white-space: normal;
+}
+.record-table.facilities td:first-child {
+  min-width: 180px;
+}
+.record-table.facilities td.small {
+  min-width: 120px;
+}
+.record-table.facilities td.num,
+.record-table.facilities th.num,
+.record-table.facilities td:last-child,
+.record-table.facilities button {
+  white-space: nowrap;
+}
+.favourites {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  padding-left: 0;
+}
+.life-list {
+  margin: 6px 0 0;
+}
+.life-list li {
+  margin: 2px 0;
+}

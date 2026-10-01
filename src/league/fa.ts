@@ -23,6 +23,7 @@ import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from './sta
 import { FA, MARKET } from './tuning';
 import { gmAppetite, gmOf } from './twelve';
 import { crossing } from './rivalry';
+import { farewell } from './life';
 
 // ── Offers ───────────────────────────────────────────────────────────────────────────────────────
 
@@ -864,6 +865,7 @@ function signTalk(s: LeagueState, m: FaMarket, t: FaTalk, teamId: TeamId, o: FaO
   });
   moveNews(s, { type: 'fa', from, to: teamId, id: p.id, years: o.years, annual: o.annual, bonus: o.bonus, options: o.options, extra: o.extra, grade: t.grade }, date);
   crossing(s, p, from, teamId, 'FA 계약', date);
+  if (from === me && teamId !== me) farewell(s, p, from, `FA 이적(${short(s, teamId)})`, date);
   if (teamId === from) return;
   // Compensation to the club he left (none after a declined option, none for the user's founding signings).
   if (t.free || (teamId === me && m.userFree) || teamId === m.newClub) return;

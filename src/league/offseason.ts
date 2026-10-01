@@ -40,6 +40,7 @@ import { awardAlert, nationalPickAlert, nationalResultAlert, seasonAlert } from 
 import { staffEdge, staffRating } from './staff';
 import { gmDraftWeights, gmOf, twoLeagues } from './twelve';
 import { closeRivalry } from './rivalry';
+import { facilityAging, facilityGrowth } from './facilities';
 
 type Develop = (p: object, tools: Tools, yearIndex: number, age: number, daysLost: number, r: () => number, boost?: number, focus?: string, scale?: number) => Tools;
 const developTools = (DraftSeason as unknown as { developTools: Develop }).developTools;
@@ -167,13 +168,16 @@ const TOOL_COACH: Record<string, 'hitting' | 'pitching' | 'fielding'> = {
 export function coachingFor(s: LeagueState, p: Player, year: number): Coaching {
   if (!p.teamId || p.status !== 'active') return {};
   const farm = ageIn(p, year) <= 24 && (lastRecord(p, year)?.days ?? 0) < 60 ? STAFF.farmGrowth * staffEdge(staffRating(s, p.teamId, 'farm')) : 0;
+  // The user's club's training facilities (V0.10; none for AI clubs, whose staff ratings stand for theirs).
+  const built = facilityGrowth(s, p, year);
   const out: Coaching = {};
-  for (const [k, role] of Object.entries(TOOL_COACH)) out[k as keyof Tools] = STAFF.growth * staffEdge(staffRating(s, p.teamId, role)) + farm;
+  for (const [k, role] of Object.entries(TOOL_COACH)) out[k as keyof Tools] = STAFF.growth * staffEdge(staffRating(s, p.teamId, role)) + farm + built;
   return out;
 }
 
 /** One year of growth and aging on hidden ability, then a fresh public scouting report. */
-export function developPlayer(p: Player, year: number, lostDays: number, r: () => number, scale = 1, coaching: Coaching = {}) {
+/** `slower`: share off the late-career decline (the user's gym, V0.10). */
+export function developPlayer(p: Player, year: number, lostDays: number, r: () => number, scale = 1, coaching: Coaching = {}, slower = 0) {
   const age = ageIn(p, year);
   const yearIndex = Math.max(0, year - p.proSince);
   const h = p.hidden;
@@ -198,7 +202,7 @@ export function developPlayer(p: Player, year: number, lostDays: number, r: () =
   }
   // Late-career decline on top of Draft Room's aging (which was tuned for players under 33).
   const V = O.veteranDecline;
-  const extra = Math.max(0, age - V.from) * V.perYear + Math.max(0, age - V.steepFrom) * V.steepPerYear;
+  const extra = (Math.max(0, age - V.from) * V.perYear + Math.max(0, age - V.steepFrom) * V.steepPerYear) * (1 - slower);
   if (extra > 0)
     for (const k of Object.keys(next) as (keyof Tools)[]) {
       const f = k === 'speed' ? V.speed : k === 'command' || k === 'eye' ? V.skill : 1;
@@ -758,7 +762,7 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         for (const p of Object.values(s.players)) {
           if (p.status === 'retired' || p.status === 'overseas' || p.status === 'amateur') continue;
           if (p.proSince > year) continue; // drafted this fall, first season still ahead
-          developPlayer(p, year, s.lines[p.id]?.lost ?? 0, rng(`${s.seed}|develop|${year}|${p.id}`), growthScale(p, year, futuresLeague), coachingFor(s, p, year));
+          developPlayer(p, year, s.lines[p.id]?.lost ?? 0, rng(`${s.seed}|develop|${year}|${p.id}`), growthScale(p, year, futuresLeague), coachingFor(s, p, year), facilityAging(s, p));
         }
         break;
       }

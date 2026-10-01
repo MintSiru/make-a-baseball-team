@@ -23,6 +23,7 @@ import { ageIn, isForeign, keepValue } from './players';
 import { MANAGER_STYLES, staffOf } from './staff';
 import { developmentIds, emptyRoster, firstTeamIds, registeredIds, type Decision, type GmStyle, type LeagueState, type ManagerStyle, type RivalSettings } from './state';
 import { crossing } from './rivalry';
+import { farewell } from './life';
 import { GM_STYLES, gmValue } from './twelve';
 import { OFFSEASON, RIVAL } from './tuning';
 
@@ -259,7 +260,10 @@ export function rivalSpecialDraft(s: LeagueState, next: number) {
     if (p.contract) p.contract.teamId = tw.teamId;
     s.rosters[tw.teamId]!.futures.push(p.id);
     picks.push({ from: teamId, id: p.id, name: p.name });
-    if (mine) crossing(s, p, teamId, tw.teamId, '특별지명', `${next - 1}-11-28`, false);
+    if (mine) {
+      crossing(s, p, teamId, tw.teamId, '특별지명', `${next - 1}-11-28`, false);
+      farewell(s, p, teamId, '특별지명', `${next - 1}-11-28`);
+    }
     if (mine && u) {
       u.fund += P.feePerPlayer;
       u.ledger.push({ year: next - 1, label: `특별지명 보상금 수령 · ${p.name} (${short(s, tw.teamId)})`, amount: P.feePerPlayer });

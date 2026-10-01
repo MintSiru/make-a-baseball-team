@@ -12,6 +12,7 @@ import type { GameScore } from './standings';
 import { firstTeamIds, orgPlayers, type ClubState, type LeagueState } from './state';
 import { FANS, PARENT, RIVAL } from './tuning';
 import { isRivalry } from './twelve';
+import { premiumShare, scoreboardDemand } from './facilities';
 
 /** Fan base per existing club (2025 demand at average price, game estimate from real attendance). */
 const POPULARITY: Record<TeamId, number> = {
@@ -98,7 +99,9 @@ export function attendance(s: LeagueState, g: Pick<GameScore, 'id' | 'date' | 'h
   const visitors = 1 + ((away.popularity - FANS.averagePopularity) / FANS.averagePopularity) * FANS.visitorWeight;
   // The rivalry (V0.9) draws more.
   const rivalry = isRivalry(s, g.home, g.away) ? RIVAL.rivalry.gate : 1;
-  const demand = home.popularity * boom(s.year) * Math.max(0.45, 1 + FANS.moodWeight * mood) * day * month * visitors * rivalry * home.price ** -FANS.elasticity * (0.92 + r() * 0.16);
+  // The user's new scoreboard (V0.10).
+  const venue = 1 + scoreboardDemand(s, g.home);
+  const demand = home.popularity * boom(s.year) * Math.max(0.45, 1 + FANS.moodWeight * mood) * day * month * visitors * rivalry * venue * home.price ** -FANS.elasticity * (0.92 + r() * 0.16);
   return Math.round(Math.min(team.stadium.capacity, demand));
 }
 
@@ -117,7 +120,8 @@ export function recordGate(s: LeagueState, home: TeamId, fans: number) {
   gate.games++;
   gate.fans += fans;
   if (fans >= team.stadium.capacity) gate.sellouts++;
-  gate.revenue += Math.round(fans * leaguePrice(s.year) * clubState(s, home).price);
+  // Premium seats (V0.10, the user's club) earn more per fan.
+  gate.revenue += Math.round(fans * leaguePrice(s.year) * clubState(s, home).price * (1 + premiumShare(s, home)));
 }
 
 /** Players who make fans come: stars (last season's WAR) and home-grown favourites. */

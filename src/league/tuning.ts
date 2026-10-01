@@ -472,6 +472,48 @@ export const RIVAL = {
   rivalry: { gate: 1.15, perGame: 0.006, most: 0.05, crossing: 0.03 },
 } as const;
 
+/** Programmes at private training centres abroad (V0.10, training.ts; game assumptions from KIA's 2023–24 Driveline
+    trip, 34 days, "3–5 km/h for some", and its 2026 NEXTBASE trips, 19 days, one in June). `gain`: grade points
+    on the main tool for a 23-year-old with room to grow (the second tool gets `secondary` of it), × 0.25–1.35 by
+    luck; older players gain less (`age`: up to that age, the factor). A gain may pass his potential by
+    `overPotential` (a fixed motion lifts the ceiling). `analytics`: the analytics staff's edge. At most
+    `winterMax` players a winter and `seasonMax` abroad at once in the season, which starts no later than
+    `lastStart`. `conditioned`: the injury chance that season after a conditioning programme. */
+export const TRAINING = {
+  gain: 3.2,
+  secondary: 0.6,
+  overPotential: 1,
+  age: [
+    [23, 1.2],
+    [26, 1],
+    [29, 0.7],
+    [32, 0.45],
+    [99, 0.25],
+  ] as [number, number][],
+  analytics: 0.2,
+  winterMax: 8,
+  seasonMax: 3,
+  lastStart: '08-15',
+  winterStart: '12-01',
+  conditioned: 0.85,
+} as const;
+
+/** Life off the field (V0.10, life.ts; game assumptions). In the season about one event a game day comes up at
+    `daily`, for one of the club's players; `form` is the grade points a hot or cold spell, a newborn or a loss
+    moves his main tools. Family leave (경조사 휴가) is at most five days, counted as registered days (KBO 규정,
+    2019~). Winter: marriage, charity and work on his own at these chances. `fans`: the fans' fondness, 0–100. */
+export const LIFE = {
+  daily: 0.12,
+  form: { hot: 2.5, cold: -2.5, baby: 2, loss: -2, row: -1 },
+  leave: { birth: [2, 3], loss: [3, 5] } as Record<'birth' | 'loss', [number, number]>,
+  winter: { marry: 0.12, charity: 0.08, selfWork: 0.1 },
+  fans: { base: 20, perSeason: 3, seasons: 25, perWar: 4, war: [-10, 30] as [number, number], homeGrown: 10, hometown: 8, perHonor: 2, honors: 10 },
+  /** Fondness from which fans feel a departure, and how much the club's mood drops for a 100. */
+  farewell: { from: 60, most: 0.04 },
+  /** Merchandise: up to this share more when the three best-loved players average 100. */
+  merch: 0.25,
+} as const;
+
 export const FOREIGN = {
   hitter: { contact: 62, power: 70, eye: 58 },
   pitcher: { stuff: 65, command: 60, breaking: 60, stamina: 64 },

@@ -18,9 +18,10 @@ import { Squad, type Row, type SquadKey } from './Squad';
 import { Office } from './Office';
 import { Lineup } from './Lineup';
 import { Story } from './Story';
+import { Training } from './Training';
 import type { NewsItem } from '../league/news';
 
-type View = 'overview' | 'squad' | 'lineup' | 'story' | 'office';
+type View = 'overview' | 'squad' | 'lineup' | 'training' | 'story' | 'office';
 
 export interface StoryHooks {
   onRewrite?: (item: NewsItem) => void;
@@ -51,6 +52,7 @@ export function MyClub({ league, onPlayer, onAct, story = {} }: { league: League
               ['overview', '개요'],
               ['squad', '선수단'],
               ['lineup', '라인업'],
+              ['training', '해외 연수'],
               ['story', '소식'],
               ['office', '구단 운영'],
             ] as [View, string][]
@@ -65,6 +67,7 @@ export function MyClub({ league, onPlayer, onAct, story = {} }: { league: League
       {view === 'overview' && <Overview league={league} onPlayer={onPlayer} />}
       {view === 'squad' && <Management league={league} onPlayer={onPlayer} onAct={onAct} setMsg={setMsg} />}
       {view === 'lineup' && <Lineup league={league} teamId={u.teamId} onPlayer={onPlayer} onAct={onAct} />}
+      {view === 'training' && <Training league={league} onAct={onAct} onPlayer={onPlayer} />}
       {view === 'story' && <Story league={league} {...story} />}
       {view === 'office' && <Office league={league} onAct={onAct} setMsg={setMsg} />}
       {msg && (

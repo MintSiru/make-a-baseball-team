@@ -407,7 +407,31 @@ export interface UserClub {
   tutorialOff?: boolean;
   /** Winters the board voted down a twelfth club (V0.9, event mode). */
   twelveNo?: number[];
+  /** Short programmes at private training centres abroad (V0.10, training.ts). */
+  trips?: TrainingTrip[];
+  /** Facilities built (level by kind) and under construction (V0.10, facilities.ts). */
+  facilities?: Partial<Record<FacilityKind, number>>;
+  facilityWorks?: { kind: FacilityKind; level: number; opens: number; cost: number }[];
 }
+
+/** A private training centre abroad (V0.10). */
+export type SiteId = 'seattle' | 'arizona' | 'florida' | 'tokyo';
+
+export interface TrainingTrip {
+  id: PlayerId;
+  site: SiteId;
+  /** The season it counts for: a winter programme for the next season, or one during the season. */
+  season: number;
+  from: string;
+  until: string;
+  cost: number;
+  inSeason: boolean;
+  /** Filled in when he is back. */
+  result?: { gains: Partial<Record<import('../draftroom').ToolKey, number>>; velocity?: [number, number]; injury?: string; text: string };
+}
+
+/** What the club can build (V0.10): ballpark improvements and training facilities. */
+export type FacilityKind = 'premium' | 'scoreboard' | 'turf' | 'concessions' | 'indoor' | 'gym' | 'rehab' | 'analytics' | 'futuresPark' | 'dorm';
 
 export type Promotion = 'afterFutures' | 'immediate';
 export type Difficulty = 'easy' | 'normal' | 'hard';
@@ -459,8 +483,11 @@ export interface LeagueState {
   arms: Record<PlayerId, ArmState>;
   rotation: Record<TeamId, number>;
   injuries: Record<PlayerId, Injury>;
-  /** Away with the national team until this date (registered days still count). */
+  /** Away with the national team until this date (registered days still count); since V0.10 also on family
+      leave (경조사 휴가), which the KBO counts the same way. */
   away: Record<PlayerId, string>;
+  /** Abroad at a training centre until this date (V0.10): off the roster, registered days do not count. */
+  abroad?: Record<PlayerId, string>;
   /** When the user's players were last sent down from the first team (ten days before re-registering). */
   demoted?: Record<PlayerId, string>;
   /** Players on waivers (seven days) and unattached players any club may sign (V0.5). */

@@ -212,12 +212,14 @@ try {
   // 3b. The front office: every section, a ticket price change, the futures year's accounts.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
   await page.getByRole('button', { name: '구단 운영', exact: true }).click();
-  for (const sec of ['모기업', '재정', '관중 · 티켓', '스태프', '구장', '12구단 · 라이벌', '자금 내역', '요약']) {
+  for (const sec of ['모기업', '재정', '관중 · 티켓', '스태프', '구장', '시설', '12구단 · 라이벌', '자금 내역', '요약']) {
     await page.getByRole('group', { name: '구단 운영' }).getByRole('button', { name: sec, exact: true }).click();
     if (sec === '재정') {
       check((await page.locator('.report-table').count()) === 1, 'the futures year was settled');
       await page.screenshot({ path: join(shots, 'office-money.png'), fullPage: false });
     }
+    if (sec === '시설') check((await page.locator('.record-table.facilities tbody tr').count()) >= 10, 'every facility can be built in levels');
+    if (sec === '관중 · 티켓') check((await page.locator('.favourites li').count()) >= 3, 'the fans have favourites');
     if (sec === '12구단 · 라이벌') check((await page.getByLabel('창단 연도').inputValue()) === '2030', 'the twelfth-club setting carries over to the front office');
     if (sec === '관중 · 티켓') {
       await page.getByLabel('티켓 가격').selectOption('1.20');
@@ -287,7 +289,18 @@ try {
   check((await page.locator('.box-dialog .news-facts li').count()) > 5, 'game article carries its fact lines');
   await page.keyboard.press('Escape');
 
-  // 4c. The club's story, the AI article settings (no key: nothing is sent), the record room.
+  // 4c. V0.10: a player to a training centre abroad during the season.
+  await page.getByRole('button', { name: '우리 구단', exact: true }).click();
+  await page.getByRole('button', { name: '해외 연수', exact: true }).click();
+  check((await page.locator('.training .choice').count()) === 4, 'three American centres and one Japanese');
+  await page.getByRole('button', { name: /^도쿄 모션 베이스 일본/ }).click();
+  const tripPick = page.getByLabel('보낼 선수');
+  await tripPick.selectOption({ index: 1 });
+  await page.getByRole('button', { name: '도쿄 모션 베이스에 보내기' }).click();
+  await page.waitForFunction(() => document.querySelectorAll('.training .record-table tbody tr').length >= 1);
+  check((await page.locator('.training .record-table').textContent())?.includes('연수 중'), 'the player is away on his programme');
+
+  // 4d. The club's story, the AI article settings (no key: nothing is sent), the record room.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
   await page.getByRole('button', { name: '소식', exact: true }).click();
   for (const v of ['연표', '업적', '알림']) await page.getByRole('group', { name: '이야기' }).getByRole('button', { name: v, exact: true }).click();

@@ -20,8 +20,10 @@ import { salaryCapFor } from '../rules/kbo2026';
 import { money } from './format';
 import { Help } from './Help';
 import { RivalryBox, TwelveSettingField } from './Twelve';
+import { favourites } from '../league/life';
+import { FACILITIES, FACILITY_KINDS, facilityLevel, facilityOptions, facilityUpkeep } from '../league/facilities';
 
-type Section = 'summary' | 'owner' | 'money' | 'fans' | 'staff' | 'ballpark' | 'rival' | 'ledger';
+type Section = 'summary' | 'owner' | 'money' | 'fans' | 'staff' | 'ballpark' | 'facilities' | 'rival' | 'ledger';
 const SECTIONS: [Section, string][] = [
   ['summary', '요약'],
   ['owner', '모기업'],
@@ -29,6 +31,7 @@ const SECTIONS: [Section, string][] = [
   ['fans', '관중 · 티켓'],
   ['staff', '스태프'],
   ['ballpark', '구장'],
+  ['facilities', '시설'],
   ['rival', '12구단 · 라이벌'],
   ['ledger', '자금 내역'],
 ];
@@ -380,6 +383,15 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
               </p>
             </div>
           </div>
+          <h3>팬들이 아끼는 선수</h3>
+          <p class="muted small">팬 호감도(0~100)는 우리 구단에서 보낸 해, 최근 성적, 자체 육성·연고지 출신, 수상, 선행·구설 같은 일로 정해집니다. 상위 3명이 유니폼 판매를 끌어올리고, 60이 넘는 선수가 떠나면 팬 분위기가 식습니다.</p>
+          <ol class="plain favourites">
+            {favourites(league, u.teamId, 5).map(({ p, love }) => (
+              <li key={p.id}>
+                {p.name} <span class="muted small">{love}</span>
+              </li>
+            ))}
+          </ol>
           <h3>티켓 가격</h3>
           <p class="muted">
             리그 평균 객단가 {priceWon(1).toLocaleString('ko-KR')}원 기준. 가격을 올리면 경기당 수입은 늘지만 관중이 줄고, 매진되는 구단이라면 올려도 빈자리가 덜 생깁니다. 바로 적용됩니다.
@@ -518,6 +530,8 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
         </>
       )}
 
+      {section === 'facilities' && <Facilities league={league} act={act} />}
+
       {section === 'rival' && (
         <>
           {league.twelve ? (
@@ -554,6 +568,70 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
           </table>
         </div>
       )}
+    </>
+  );
+}
+
+/** Ballpark improvements and training facilities (V0.10): what is built, what is under way, and the next level of each. */
+function Facilities({ league, act }: { league: LeagueState; act: (a: Action) => void }) {
+  const u = league.user!;
+  const options = facilityOptions(league);
+  const upkeep = facilityUpkeep(league, u.teamId);
+  const works = (u.facilityWorks ?? []).filter((w) => (u.facilities?.[w.kind] ?? 0) < w.level);
+  return (
+    <>
+      <p class="muted">
+        공사비는 구단 자금에서 한 번에 나가고(모기업 지원 밖), 완공되면 해마다 유지비가 듭니다. 비시즌에 한 번에 하나씩 시작해 다음 시즌부터 쓸 수 있습니다(2군 전용 구장 첫 단계는 2년). 지금 유지비: 구장 시설{' '}
+        {upkeep.ballpark ? `연 ${money(upkeep.ballpark)}` : '없음'}, 훈련 시설 {upkeep.training ? `연 ${money(upkeep.training)}` : '없음'}.
+      </p>
+      {works.length > 0 && <p>공사 중: {works.map((w) => `${FACILITIES[w.kind].label} ${w.level}단계 (${w.opens}년 시즌부터)`).join(', ')}</p>}
+      {(['ballpark', 'training'] as const).map((group) => (
+        <div key={group}>
+          <h3>{group === 'ballpark' ? '구장 보강' : '훈련 시설'}</h3>
+          <div class="table-wrap" tabIndex={0}>
+            <table class="record-table facilities">
+              <thead>
+                <tr>
+                  <th>시설</th>
+                  <th>지금</th>
+                  <th>다음 단계</th>
+                  <th class="num">공사비</th>
+                  <th class="num">유지비</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {FACILITY_KINDS.filter((k) => FACILITIES[k].group === group).map((kind) => {
+                  const spec = FACILITIES[kind];
+                  const level = facilityLevel(league, kind);
+                  const o = options.find((x) => x.kind === kind);
+                  const nextLevel = o ? spec.levels[o.level - 1]! : null;
+                  return (
+                    <tr key={kind}>
+                      <td>
+                        <strong>{spec.label}</strong>
+                        <div class="muted small">{spec.note}</div>
+                      </td>
+                      <td class="small">{level ? `${level}단계 · ${spec.levels[level - 1]!.effect}` : '없음'}</td>
+                      <td class="small">{nextLevel ? `${o!.level}단계 · ${nextLevel.effect} (${o!.opens}년부터)` : '최고 단계'}</td>
+                      <td class="num">{nextLevel ? money(nextLevel.cost) : '-'}</td>
+                      <td class="num">{nextLevel ? `연 ${money(nextLevel.upkeep)}` : '-'}</td>
+                      <td>
+                        {o && (
+                          <button type="button" disabled={!!o.blocked} title={o.blocked ?? ''} onClick={() => act({ kind: 'facility', facility: kind })}>
+                            짓기
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+      {options[0]?.blocked && <p class="muted small">{options[0].blocked}</p>}
     </>
   );
 }
