@@ -11,6 +11,7 @@ import { ageIn, isForeign, isPitcher } from '../src/league/players';
 import { orgPlayers, type LeagueState } from '../src/league/state';
 import { checkTrip, finishTrips, SITES, tripGains } from '../src/league/training';
 import { clubState } from '../src/league/fans';
+import { statLine } from '../src/league/views';
 
 let s: LeagueState;
 const pending = () => s.pending as LeagueState['pending'];
@@ -181,10 +182,36 @@ describe('life off the field', () => {
     expect(a.speed).toBe(b.speed);
   });
 
+  it('births and deaths in the family are rare (0.10.1), and pop up only when a first-team player is out', () => {
+    const c = structuredClone(s);
+    let family = 0;
+    for (let i = 0; i < 180; i++) {
+      const date = new Date(Date.parse('2027-04-01') + i * 86400000).toISOString().slice(0, 10);
+      const before = new Set(Object.keys(c.away));
+      const id = lifeDay(c, date);
+      const news = id ? c.news!.find((n) => n.id === `life-${date}-${id}`) : undefined;
+      if (news && /득남|득녀|(부친|모친|조부|조모)상/.test(news.title)) family++;
+      const alert = c.alerts?.find((a) => a.id === `life-${date}-${id}`);
+      if (alert && id) expect(!!c.away[id] && !before.has(id) || !!c.injuries[id]).toBe(true);
+      if (id) delete c.away[id];
+    }
+    expect(family).toBeLessThanOrEqual(5);
+  });
+
   it('nothing happens in a spectator league', () => {
     const c = structuredClone(s);
     c.user = null;
     expect(lifeDay(c, c.schedule[c.next]!.date)).toBeNull();
+  });
+});
+
+describe('a player at a glance (0.10.1)', () => {
+  it('the free-agent list and the search show his last numbers', () => {
+    const veterans = Object.values(s.players).filter((p) => p.teamId === 'kia' && p.career.some((c) => !c.level && (c.bat?.pa ?? 0) > 200 || (c.pit?.outs ?? 0) > 150));
+    const hitter = veterans.find((p) => !isPitcher(p))!;
+    const pitcher = veterans.find((p) => isPitcher(p))!;
+    expect(statLine(s, hitter)!.text).toMatch(/OPS/);
+    expect(statLine(s, pitcher)!.text).toMatch(/ERA .*이닝/);
   });
 });
 

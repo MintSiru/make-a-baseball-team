@@ -50,7 +50,12 @@ async function decideAll(page, log) {
       // then the scouts keep our own free agents and the market runs to its end.
       if (!batch.fa) {
         batch.fa = true;
+        // 0.10.1: the name opens his profile (grades and stats are in the list too); talks open from the button.
+        check(/\d/.test((await page.locator('.fa-table tbody tr').first().locator('td').nth(4).textContent()) ?? ''), 'the free-agent list shows his grade');
         await page.locator('.fa-table tbody .link').first().click();
+        await page.locator('.dialog.profile').waitFor();
+        await page.keyboard.press('Escape');
+        await page.locator('.fa-table tbody .talk-button').first().click();
         await page.getByRole('button', { name: '요구 수준', exact: true }).click();
         // A typed amount with a decimal point (a phone keyboard types "12." on the way to "12.5").
         const bonus = page.getByRole('textbox', { name: '계약금 (억)' });
@@ -323,6 +328,16 @@ try {
   await page.locator('.pick-table').nth(1).locator('input[type=checkbox]').first().check();
   check((await page.locator('.trade-bar').textContent())?.includes('상대 구단'), 'trade verdict shown');
   await page.screenshot({ path: join(shots, 'market.png'), fullPage: false });
+  // 0.10.1: find a right fielder anywhere in the league and take him to a trade proposal.
+  await page.getByRole('button', { name: '선수 찾기', exact: true }).click();
+  await page.getByRole('combobox', { name: '포지션', exact: true }).selectOption('RF');
+  await page.getByLabel('트레이드할 수 있는 선수만').check();
+  const found = page.locator('.search-table tbody tr');
+  check((await found.count()) > 5, `right fielders across the league (${await found.count()})`);
+  const target = (await found.first().locator('td').nth(1).textContent())?.trim() ?? '';
+  await found.first().getByRole('button', { name: '트레이드', exact: true }).click();
+  check((await page.locator('.trade-bar').textContent())?.includes('받음: 선수 1명'), `the search puts ${target} into a trade proposal`);
+  await page.screenshot({ path: join(shots, 'search.png'), fullPage: false });
   for (const v of ['방출 · 자유계약', '외국인 교체', '이적 소식']) await page.getByRole('button', { name: v, exact: true }).click();
 
   // 6. Every screen, the player dialog, reload.

@@ -28,7 +28,7 @@ import { wagwa } from '../league/josa';
 import { ageIn } from '../league/players';
 import type { LeagueState } from '../league/state';
 import { FA } from '../league/tuning';
-import { positionLabel, shortName } from '../league/views';
+import { positionLabel, shortName, statLine } from '../league/views';
 import type { FaPromise, PlayerId } from '../model/types';
 import { salaryCapFor } from '../rules/kbo2026';
 import { money, moneyShort, parseEok } from './format';
@@ -181,14 +181,17 @@ export function FaMarket({ league, onSubmit, onPlayer }: Props) {
             <table class="record-table fa-table">
               <thead>
                 <tr>
+                  <th>우리 제안</th>
                   <th>선수</th>
                   <th>포지션</th>
                   <th class="num">나이</th>
-                  <th>등급</th>
+                  <th class="num">현재</th>
+                  <th class="num">미래</th>
+                  <th>최근 성적</th>
                   <th class="num">WAR</th>
+                  <th>등급</th>
                   <th class="num">시장가</th>
                   <th>상태</th>
-                  <th>우리 제안</th>
                 </tr>
               </thead>
               <tbody>
@@ -197,10 +200,18 @@ export function FaMarket({ league, onSubmit, onPlayer }: Props) {
                   const o = current(t.id);
                   const open = !t.signed && !t.gone;
                   const x = o && open ? reaction(league, m, t, o, next) : null;
+                  const line = statLine(league, p);
                   return (
                     <tr key={t.id} class={`player-row${sel === t.id ? ' selected' : ''}`} aria-selected={sel === t.id}>
+                      <td class={x ? `fa-band ${x.band}` : 'muted'}>
+                        <button type="button" class={`talk-button${sel === t.id ? ' on' : ''}`} aria-label={`${p.name} 협상`} onClick={() => setSel(t.id)}>
+                          {x ? x.label : o && t.signed?.teamId === me ? '계약' : open ? '협상' : '보기'}
+                        </button>
+                        {x && o?.ceiling !== undefined && <span class="muted small"> · 상한 {moneyShort(o.ceiling)}</span>}
+                      </td>
                       <td>
-                        <button type="button" class="link" onClick={() => setSel(t.id)}>
+                        {/* The name opens his profile, as everywhere else; talks open from the first column (0.10.1). */}
+                        <button type="button" class="link" onClick={() => onPlayer(t.id)}>
                           {p.name}
                         </button>
                         {t.from === me && <span class="tag">우리 FA</span>}
@@ -210,14 +221,13 @@ export function FaMarket({ league, onSubmit, onPlayer }: Props) {
                         {positionLabel(p)} <span class="muted small">{shortName(league, t.from)}</span>
                       </td>
                       <td class="num">{ageIn(p, next)}</td>
-                      <td>{t.free ? '보상 없음' : t.grade}</td>
+                      <td class={`num ${gradeClass(p.scouting.current)}`}>{p.scouting.current}</td>
+                      <td class={`num ${gradeClass(p.scouting.futureValue)}`}>{p.scouting.futureValue}</td>
+                      <td class="small nowrap">{line ? line.text : '-'}</td>
                       <td class="num">{lastWar(league, t.id)?.toFixed(1) ?? '-'}</td>
+                      <td>{t.free ? '보상 없음' : t.grade}</td>
                       <td class="num">{moneyShort(offerTotal(t.price))}</td>
                       <td class={t.signed?.teamId === me ? 'plus' : t.signed && t.from === me ? 'minus' : ''}>{status(league, m, t)}</td>
-                      <td class={x ? `fa-band ${x.band}` : 'muted'}>
-                        {x ? x.label : o && t.signed?.teamId === me ? '계약' : '-'}
-                        {x && o?.ceiling !== undefined && <span class="muted small"> · 상한 {moneyShort(o.ceiling)}</span>}
-                      </td>
                     </tr>
                   );
                 })}
@@ -372,6 +382,7 @@ function TalkPanel({
   const keepCeiling = (o: FaOffer): FaOffer => (form.ceiling !== undefined ? { ...o, ceiling: Math.max(form.ceiling, guaranteed(o)), prepaid: form.prepaid } : { ...o, prepaid: form.prepaid });
   const shape = (o: FaOffer) => setForm(keepCeiling({ ...o, promises: o.promises ?? form.promises }));
   const problem = open ? check(form) : null;
+  const line = statLine(league, p);
   return (
     <aside class="fa-talk" aria-label={`${p.name} 협상`}>
       <h3>
@@ -383,10 +394,14 @@ function TalkPanel({
         </span>
       </h3>
       <p class="small">
-        <span class={gradeClass(p.scouting.current)}>현재 {p.scouting.current}</span> · 최근 WAR {lastWar(league, t.id)?.toFixed(1) ?? '-'} · 시장가 {termsText(t.price)}
+        <span class={gradeClass(p.scouting.current)}>현재 {p.scouting.current}</span> · <span class={gradeClass(p.scouting.futureValue)}>미래 {p.scouting.futureValue}</span> ·{' '}
+        {line ? `${line.year} ${line.text}` : '1군 기록 없음'} · WAR {lastWar(league, t.id)?.toFixed(1) ?? '-'}{' '}
+        <button type="button" class="link small" onClick={() => onPlayer(p.id)}>
+          선수 정보
+        </button>
       </p>
       <p class="small">
-        요구: {t.demands.length ? t.demands.map(demandText).join(' · ') : '조건보다 돈'} · 다른 구단 제안 {others}곳
+        시장가 {termsText(t.price)} · 요구: {t.demands.length ? t.demands.map(demandText).join(' · ') : '조건보다 돈'} · 다른 구단 제안 {others}곳
         {t.decideOn !== undefined && ` · ${decideDate(m, t)}까지 고민`}
       </p>
 

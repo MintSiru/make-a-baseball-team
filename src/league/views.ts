@@ -571,3 +571,24 @@ export function clubhouse(s: LeagueState, teamId: TeamId) {
   ].filter(Boolean);
   return { label, score, notes, form: res };
 }
+
+/**
+ * A player's numbers at a glance (0.10.1, the free-agent list and the player search): this season so far once he
+ * has played, else his last first-team season. Pitchers: ERA, innings and wins or saves/holds; hitters: average,
+ * home runs and OPS.
+ */
+export function statLine(s: LeagueState, p: Player): { year: number; text: string; war: number | null } | null {
+  const now = s.phase === 'regular' ? s.lines[p.id] : undefined;
+  const nowUsed = now && (isPitcher(p) ? (now.pit?.outs ?? 0) > 0 : (now.bat?.pa ?? 0) > 0);
+  const rec = nowUsed ? null : p.career.filter((c) => !c.level && (isPitcher(p) ? c.pit?.outs : c.bat?.pa)).at(-1);
+  const bat = nowUsed ? now!.bat : rec?.bat;
+  const pit = nowUsed ? now!.pit : rec?.pit;
+  const year = nowUsed ? s.year : rec?.year;
+  if (year == null) return null;
+  if (isPitcher(p) && pit?.outs) {
+    const pen = pit.sv + pit.hld >= 5 ? ` · ${pit.sv}세 ${pit.hld}홀` : ` · ${pit.w}승 ${pit.l}패`;
+    return { year, text: `ERA ${era(pit).toFixed(2)} · ${ip(pit.outs)}이닝${pen}`, war: rec?.war ?? null };
+  }
+  if (bat?.pa) return { year, text: `${fmt3(avg(bat))} · ${bat.hr}홈런 · OPS ${fmt3(ops(bat))}`, war: rec?.war ?? null };
+  return null;
+}
