@@ -129,16 +129,7 @@ const note = (p: Player, date: string, text: string, tone?: 'good' | 'bad') => {
 // ── Events in the season ─────────────────────────────────────────────────────────────────────────
 
 type Kind = 'birth' | 'loss' | 'hot' | 'cold' | 'fanService' | 'charity' | 'row' | 'accident';
-const WEIGHTS: [Kind, number][] = [
-  ['birth', 3],
-  ['loss', 1],
-  ['hot', 4],
-  ['cold', 4],
-  ['fanService', 3],
-  ['charity', 2],
-  ['row', 1.5],
-  ['accident', 0.7],
-];
+const WEIGHTS = Object.entries(L.weights) as [Kind, number][];
 
 const FAN_SERVICE = ['경기 뒤 1시간 넘게 사인을 해 줘', '병원에 있는 어린이 팬을 찾아가', '홈런 공을 주운 어린이 팬에게 배트를 선물해', '비 오는 날 우비를 입고 끝까지 팬 사인회를 지켜'];
 const CHARITY = ['모교에 야구용품을', '지역 아동센터에 성금을', '소아암 환우를 위해 기부금을', '홈런 하나당 적립한 돈을 유소년 야구에'];
@@ -155,7 +146,8 @@ function eligible(s: LeagueState, kind: Kind, p: Player, year: number, date: str
   if (p.status !== 'active' || s.injuries[p.id] || s.away[p.id] || s.abroad?.[p.id]) return false;
   switch (kind) {
     case 'birth':
-      return isMarried(s, p, year) && age >= 25 && age <= 38;
+      // Not again within two years of the last child.
+      return isMarried(s, p, year) && age >= 25 && age <= 38 && year - (p.life?.lastBirth ?? -99) >= 2;
     case 'loss':
       return age >= 24;
     case 'hot':
@@ -197,6 +189,7 @@ export function lifeDay(s: LeagueState, date: string): PlayerId | null {
     case 'birth': {
       const life = (p.life ??= {});
       life.kids = (life.kids ?? 0) + 1;
+      life.lastBirth = year;
       const days = L.leave.birth[0] + Math.floor(r() * (L.leave.birth[1] - L.leave.birth[0] + 1));
       const child = r() < 0.5 ? '득남' : '득녀';
       if (onFirst) s.away[p.id] = addDays(date, days - 1);
@@ -271,7 +264,8 @@ export function lifeDay(s: LeagueState, date: string): PlayerId | null {
   }
   note(p, date, title, tone);
   addNews(s, { id: `life-${date}-${p.id}`, date, kind: 'interview', title, body, quotes, facts: { player: p.name, event: title }, players: [p.id], mine: true });
-  if (kind === 'birth' || kind === 'loss' || kind === 'accident')
+  // A pop-up only when it takes a first-team player out for a few days.
+  if (onFirst && (kind === 'birth' || kind === 'loss' || kind === 'accident'))
     addAlert(s, { id: `life-${date}-${p.id}`, date, kind: 'injury', title, lines: [body], ...(tone ? { tone } : {}), players: [p.id] });
   return p.id;
 }

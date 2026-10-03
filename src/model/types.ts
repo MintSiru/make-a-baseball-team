@@ -234,6 +234,8 @@ export interface PlayerLife {
   /** Year he married, and children. */
   married?: number;
   kids?: number;
+  /** Season of his latest child (0.10.1: no other within two years). */
+  lastBirth?: number;
   /** A spell of good or bad form: grade points on his main tools in games until `until`. */
   form?: { delta: number; until: string; why: string };
   /** What events added to or took from the fans' fondness (−30 … +30). */

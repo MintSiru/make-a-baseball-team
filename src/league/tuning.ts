@@ -504,6 +504,9 @@ export const TRAINING = {
     2019~). Winter: marriage, charity and work on his own at these chances. `fans`: the fans' fondness, 0–100. */
 export const LIFE = {
   daily: 0.12,
+  /** How often each kind comes up when something happens (0.10.1: births and deaths in the family made rarer,
+      about 1–1.5 a season for the club, a loss about one season in three). */
+  weights: { birth: 1, loss: 0.3, hot: 4, cold: 4, fanService: 3, charity: 2, row: 1.5, accident: 0.5 },
   form: { hot: 2.5, cold: -2.5, baby: 2, loss: -2, row: -1 },
   leave: { birth: [2, 3], loss: [3, 5] } as Record<'birth' | 'loss', [number, number]>,
   winter: { marry: 0.12, charity: 0.08, selfWork: 0.1 },

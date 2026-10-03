@@ -32,12 +32,15 @@ import { money } from './format';
 import { gradeClass } from './grades';
 import { positionKey, useSort } from './sort';
 import { Help } from './Help';
+import { PlayerSearch } from './PlayerSearch';
 import { TRADES } from '../league/tuning';
 
-type View = 'trade' | 'release' | 'foreign' | 'news';
+type View = 'trade' | 'search' | 'release' | 'foreign' | 'news';
 
 export function Market({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void }) {
   const [view, setView] = useState<View>('trade');
+  // A player picked in the search goes straight into a trade proposal with his club (0.10.1).
+  const [target, setTarget] = useState<{ teamId: TeamId; id: PlayerId } | null>(null);
   const u = league.user!;
   return (
     <section aria-labelledby="market-title">
@@ -53,6 +56,7 @@ export function Market({ league, onPlayer, onAct }: { league: LeagueState; onPla
           {(
             [
               ['trade', '트레이드'],
+              ['search', '선수 찾기'],
               ['release', '방출 · 자유계약'],
               ['foreign', '외국인 교체'],
               ['news', '이적 소식'],
@@ -64,7 +68,18 @@ export function Market({ league, onPlayer, onAct }: { league: LeagueState; onPla
           ))}
         </div>
       </div>
-      {view === 'trade' && <Trade league={league} onPlayer={onPlayer} onAct={onAct} />}
+      {view === 'trade' && <Trade key={target ? `${target.teamId}-${target.id}` : 'trade'} league={league} onPlayer={onPlayer} onAct={onAct} initial={target} />}
+      {view === 'search' && (
+        <PlayerSearch
+          league={league}
+          onPlayer={onPlayer}
+          onAct={onAct}
+          onTrade={(teamId, id) => {
+            setTarget({ teamId, id });
+            setView('trade');
+          }}
+        />
+      )}
       {view === 'release' && <Release league={league} onPlayer={onPlayer} onAct={onAct} />}
       {view === 'foreign' && <Foreign league={league} onPlayer={onPlayer} onAct={onAct} />}
       {view === 'news' && <News league={league} />}
@@ -150,12 +165,12 @@ function PickList({
 
 const CASH_STEPS = [0, 10_000, 20_000, 30_000, 50_000, 70_000, 100_000, 150_000, 200_000];
 
-function Trade({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void }) {
+function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void; initial?: { teamId: TeamId; id: PlayerId } | null }) {
   const u = league.user!;
   const clubs = league.teams.filter((t) => t.id !== u.teamId && league.rosters[t.id]);
-  const [teamId, setTeamId] = useState<TeamId>(clubs[0]?.id ?? '');
+  const [teamId, setTeamId] = useState<TeamId>(initial?.teamId ?? clubs[0]?.id ?? '');
   const [give, setGive] = useState<Set<PlayerId>>(new Set());
-  const [get, setGet] = useState<Set<PlayerId>>(new Set());
+  const [get, setGet] = useState<Set<PlayerId>>(new Set(initial ? [initial.id] : []));
   const [sent, setSent] = useState<number | null>(null);
   // Cash (만 원) and draft picks (rounds of the coming draft) in the deal (V0.7.8).
   const [cashOut, setCashOut] = useState(0);
