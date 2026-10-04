@@ -6,7 +6,7 @@
    The user's club can make the game wait at a step for a decision (see OffseasonHooks). */
 import { observe, overall, rng, toGrade, type Tools } from '../draftroom';
 import DraftSeason from '../draftroom/season.js';
-import type { Player, SeasonRecord, TeamId } from '../model/types';
+import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { budgetBonus, foreignContract, MANWON_PER_USD, renewSalary, rookieContract, salaryIn, slotBonus, usdTotal } from './contracts';
 import { splitContract } from './foreign';
@@ -26,6 +26,7 @@ import { standings } from './standings';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, orgIds, orgPlayers, registeredIds, type Decision, type DraftSlot, type DraftState, type LeagueState, type SeasonSummary } from './state';
 import { batterWar, leagueContext, pitcherWar } from './stats';
 import { maybeRetireNumber } from './numbers';
+import { learnPositions } from './positions';
 import { applyDemotionCuts, settleFinances } from './finance';
 import { awardHonours, computeAwards, hallOfFameCheck } from './awards';
 import { seasonMoments } from './milestones';
@@ -36,7 +37,7 @@ import { runAiPosting } from './posting';
 import { FUTURES, OFFSEASON as O, STAFF } from './tuning';
 import { aiTakesKnown, expireForeignPool, foreignPoolAsk, leavePool, poolChoice, toForeignPool } from './foreignpool';
 import { draftReturnees } from './returnees';
-import { awardAlert, nationalPickAlert, nationalResultAlert, seasonAlert } from './alerts';
+import { awardAlert, nationalPickAlert, nationalResultAlert, retirementAlert, seasonAlert } from './alerts';
 import { staffEdge, staffRating } from './staff';
 import { gmDraftWeights, gmOf, twoLeagues } from './twelve';
 import { closeRivalry } from './rivalry';
@@ -263,16 +264,41 @@ export function leaveLeague(s: LeagueState, p: Player, status: 'retired' | 'over
   if (!p.career.some((c) => !c.level) && !s.lines[p.id]) delete s.players[p.id];
 }
 
+/**
+ * The chance a player calls it a career before `season`: from 33 on, rising with age. Ability decides most of it
+ * (V0.11): a regular who can still play keeps going, a star into his late thirties; a fringe player goes early,
+ * sooner still after a season without a first-team day; a good last season keeps him another year.
+ */
 export function retirementChance(p: Player, season: number, knownRecords = true): number {
   const age = ageIn(p, season);
   const R = O.retirement;
-  let base = age >= 41 ? 0.95 : age >= R.from ? R.byAge[Math.min(age - R.from, R.byAge.length - 1)]! : 0;
+  if (age < R.from) return 0;
   const cur = p.scouting.current;
-  if (cur >= 55) base *= 0.45;
-  else if (cur < 45) base *= 1.8;
-  const last = lastRecord(p, season - 1);
-  if (knownRecords && (!last || last.days === 0)) base *= 1.6;
+  const keep = R.byGrade.find(([grade]) => cur >= grade)?.[1] ?? R.weak;
+  let base = age >= R.old.age ? R.old.chance * Math.max(keep, R.old.floor) : R.byAge[Math.min(age - R.from, R.byAge.length - 1)]! * keep;
+  if (knownRecords) {
+    const last = lastRecord(p, season - 1);
+    if (!last || last.days === 0) base *= 1.6;
+    else if (last.war >= R.goodYear) base *= 0.5;
+  }
   return clamp(base, 0, 0.97);
+}
+
+/** Who decides to retire after `year` (the user's decision and the step draw the same list). */
+export function retiring(s: LeagueState, year: number): PlayerId[] {
+  const r = rng(`${s.seed}|retire|${year}`);
+  const out: PlayerId[] = [];
+  for (const p of Object.values(s.players)) {
+    if (p.status !== 'active' || isForeign(p)) continue;
+    if (r() < retirementChance(p, year + 1)) out.push(p.id);
+  }
+  return out;
+}
+
+/** The chance a player who wants to retire listens when the club asks him to play on (V0.11): younger and better, likelier. */
+export function persuadeChance(p: Player, season: number): number {
+  const P = O.retirement.persuade;
+  return clamp(P.base - Math.max(0, ageIn(p, season) - P.from) * P.perYear + (p.scouting.current - 50) * P.perGrade, P.min, P.max);
 }
 
 // ── Military service and national teams ─────────────────────────────────────────────────────────
@@ -763,15 +789,19 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
           if (p.status === 'retired' || p.status === 'overseas' || p.status === 'amateur') continue;
           if (p.proSince > year) continue; // drafted this fall, first season still ahead
           developPlayer(p, year, s.lines[p.id]?.lost ?? 0, rng(`${s.seed}|develop|${year}|${p.id}`), growthScale(p, year, futuresLeague), coachingFor(s, p, year), facilityAging(s, p));
+          // A season of regular play at a new position adds it to his list (V0.11).
+          learnPositions(p, s.lines[p.id]?.bat?.posG);
         }
         break;
       }
       case 'retire': {
-        const r = rng(`${s.seed}|retire|${year}`);
-        for (const p of Object.values(s.players)) {
-          if (p.status !== 'active' || isForeign(p)) continue;
-          if (r() < retirementChance(p, next)) leaveLeague(s, p, 'retired');
-        }
+        // Players the user's club talked round stay (V0.11); our retirements make a pop-up.
+        const stay = new Set(o.stay ?? []);
+        const gone = retiring(s, year)
+          .filter((id) => !stay.has(id))
+          .map((id) => s.players[id]!);
+        retirementAlert(s, gone, o.stay ?? [], year);
+        for (const p of gone) leaveLeague(s, p, 'retired');
         break;
       }
       case 'military': {

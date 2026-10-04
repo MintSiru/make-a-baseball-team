@@ -5,13 +5,16 @@
 import { SIM_VERSION } from '../core/version';
 import type { LeagueState } from '../league/state';
 import { batsFor } from '../model/player';
+import { altPositions } from '../model/position';
+import { migrateAlt } from '../league/positions';
+import { rng } from '../draftroom';
 import { attendance, recordGate } from '../league/fans';
 import { baseSupport, setGoals } from '../league/parent';
 import { staffOf } from '../league/staff';
 import { openMarket, roundDecision } from '../league/fa';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0'];
 
 type Loose = Record<string, unknown>;
 
@@ -72,6 +75,8 @@ export function migrateState(raw: unknown, from: string): LeagueState {
     o.fa = openMarket(s, o.year + 1);
     s.pending = roundDecision(o.fa);
   }
+  // 0.11: a hitter's other positions became a list of up to three: where he has played most, then a draw.
+  for (const p of Object.values(s.players)) if (p.position && !p.alt) migrateAlt(p, altPositions(p.position, p.scouting.futureTools ?? p.scouting.tools, rng(`${s.seed}|alt|${p.id}`)));
   s.sim = SIM_VERSION;
   return s;
 }

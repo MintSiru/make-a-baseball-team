@@ -1,13 +1,17 @@
 /* Event alerts (V0.7.4): the moments the general manager should hear about right away — national team
    picks and results, how the free-agent market went, awards, the hall of fame, the season's end, the
-   owner's verdict, postings and achievements. The screen shows new ones in a pop-up and keeps the list
-   in the club's news. Only in a game with the player's club, and never part of the simulation. */
+   owner's verdict, postings and achievements. Since V0.11 also our retirements and every article about our
+   club and players (games, records, injuries, moves, life off the field) as minor alerts the screen can
+   leave out of the pop-ups. The screen shows new ones in a pop-up and keeps the list in the club's news.
+   Only in a game with the player's club, and never part of the simulation. */
 import type { Player, PlayerId, TeamId } from '../model/types';
 import type { SeasonAwards } from './awards';
 import type { InternationalEvent } from './international';
+import type { NewsItem, NewsKind } from './news';
+import { ageIn } from './players';
 import type { LeagueState } from './state';
 
-export type AlertKind = 'national' | 'fa' | 'award' | 'hall' | 'season' | 'owner' | 'posting' | 'achievement' | 'injury' | 'military';
+export type AlertKind = 'national' | 'fa' | 'award' | 'hall' | 'season' | 'owner' | 'posting' | 'achievement' | 'injury' | 'military' | 'retire' | 'move' | 'life' | 'game' | 'record';
 
 export interface Alert {
   id: string;
@@ -18,17 +22,37 @@ export interface Alert {
   /** Good news for the club (a medal, a signing, an award) or bad (a loss). */
   tone?: 'good' | 'bad';
   players?: PlayerId[];
+  /** An article about our club turned into an alert (V0.11): the screen can keep these out of the pop-ups. */
+  minor?: boolean;
   seen?: boolean;
 }
 
-const KEEP = 80;
+const KEEP = 200;
 
 export function addAlert(s: LeagueState, a: Omit<Alert, 'seen'>) {
   if (!s.user) return;
   const list = (s.alerts ??= []);
-  if (list.some((x) => x.id === a.id)) return;
+  const i = list.findIndex((x) => x.id === a.id);
+  if (i >= 0) {
+    // The article came first (same id): the full alert takes its place.
+    if (list[i]!.minor && !a.minor) list[i] = { ...a, ...(list[i]!.seen ? { seen: true } : {}) };
+    return;
+  }
   list.push(a);
   if (list.length > KEEP) list.splice(0, list.length - KEEP);
+}
+
+/** Our club's articles that also pop up (V0.11), by the article's kind. Season reviews and awards have alerts of
+    their own; an interview the user asked for is already on screen. */
+const FROM_NEWS: Partial<Record<NewsKind, AlertKind>> = { game: 'game', milestone: 'record', interview: 'life', injury: 'injury', move: 'move' };
+/** Kinds written only about our club (the rest carry `mine` when they are ours). */
+const OURS_ONLY: NewsKind[] = ['game', 'milestone'];
+
+export function newsAlert(s: LeagueState, n: NewsItem) {
+  const kind = FROM_NEWS[n.kind];
+  if (!s.user || !kind || n.id.startsWith('iv-')) return;
+  if (!n.mine && !OURS_ONLY.includes(n.kind)) return;
+  addAlert(s, { id: n.id, date: n.date, kind, title: n.title, lines: n.body.split('\n').filter(Boolean), minor: true, ...(n.players.length ? { players: n.players } : {}) });
 }
 
 export const unseenAlerts = (s: LeagueState) => (s.alerts ?? []).filter((a) => !a.seen);
@@ -173,6 +197,29 @@ export function postingAlert(s: LeagueState, p: Player, teamId: TeamId, year: nu
     lines: deal ? [`메이저리그 구단과 ${deal.years}년 ${deal.total}에 계약했습니다.`, `이적료 ${deal.fee}를 받습니다.`] : ['계약한 메이저리그 구단이 없어 팀에 남습니다.'],
     tone: deal ? 'good' : 'bad',
     players: [p.id],
+  });
+}
+
+/** Our players who retire this winter, and the ones the club talked into another season (V0.11). */
+export function retirementAlert(s: LeagueState, gone: Player[], stayed: PlayerId[], year: number) {
+  const u = s.user;
+  if (!u) return;
+  const ours = gone.filter((p) => p.teamId === u.teamId);
+  const kept = stayed.map((id) => s.players[id]).filter((p): p is Player => !!p && p.teamId === u.teamId);
+  if (!ours.length && !kept.length) return;
+  const line = (p: Player) => {
+    const major = p.career.filter((c) => !c.level);
+    const war = major.reduce((a, c) => a + c.war, 0);
+    return `${p.name} (${ageIn(p, year + 1)}세 ${posOf(p)}) · ${major.length ? `1군 ${major.length}시즌, 통산 WAR ${war.toFixed(1)}` : '1군 기록 없음'}`;
+  };
+  addAlert(s, {
+    id: `retire-${year}`,
+    date: `${year}-11-05`,
+    kind: 'retire',
+    title: ours.length ? `${year} 시즌 뒤 은퇴 · 우리 선수 ${ours.length}명` : '은퇴 번복',
+    lines: [...ours.map(line), ...(kept.length ? [`은퇴를 미루고 한 시즌 더 뜁니다: ${kept.map((p) => p.name).join(', ')}`] : [])],
+    tone: kept.length && !ours.length ? 'good' : undefined,
+    players: [...ours, ...kept].map((p) => p.id),
   });
 }
 

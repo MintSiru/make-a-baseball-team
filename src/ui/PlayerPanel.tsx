@@ -405,10 +405,13 @@ export function PlayerPanel({ league, id, onClose, onInterview }: { league: Leag
             <h3>포지션 적성</h3>
             <div class="gradebars">
               {card.positions.map((x) => (
-                <GradeBar key={x.pos} label={`${POSITION_NAMES[x.pos]}${x.main ? ' (주)' : ''}`} now={x.grade} note={x.games ? `1군 ${x.games}경기 선발` : undefined} />
+                <GradeBar key={x.pos} label={`${POSITION_NAMES[x.pos]}${x.main ? ' (주)' : x.listed ? ' (부)' : ''}`} now={x.grade} note={x.games ? `1군 ${x.games}경기 선발` : undefined} />
               ))}
             </div>
-            <p class="muted small">수비 등급에서 포지션 차이만큼 빠집니다. 한 포지션에서 1군 30경기를 넘게 뛰면 그 포지션의 손해가 절반으로 줄어듭니다.</p>
+            <p class="muted small">
+              주 포지션과 부포지션(최대 3개)만 제대로 소화합니다. 부포지션에서는 포지션 차이의 절반만 빠지고, 그 밖의 포지션은 손해가 훨씬 큽니다. 새 포지션에서 한 시즌 1군 40경기를 뛰면 부포지션이
+              되고, 통산 30경기를 넘기면 손해가 절반으로 줄어듭니다.
+            </p>
           </section>
         )}
 

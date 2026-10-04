@@ -195,6 +195,8 @@ export interface Player {
   role: Role;
   /** Everyday position for hitters; pitchers use `role` (SP/RP). */
   position: Exclude<FieldPos, 'DH'> | null;
+  /** Other positions he handles (V0.11, up to three; hitters only). Anywhere else costs him more in the field. */
+  alt?: Exclude<FieldPos, 'DH'>[];
   archetype: string;
   personality: string;
   /** Top velocity when he was drafted or signed (km/h); `velocityStuff` is his hidden 구위 then. */

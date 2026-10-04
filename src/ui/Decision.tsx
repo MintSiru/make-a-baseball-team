@@ -55,6 +55,7 @@ const TITLES: Record<DecisionT['kind'], string> = {
   staff: '코칭스태프 · 프런트',
   rival: '12구단 창단',
   rivalProtect: '12구단 특별지명 · 보호선수 명단',
+  retire: '은퇴 의사 · 설득',
 };
 
 /** What the scouts hear about major league interest, from the public grade. */
@@ -990,6 +991,26 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       );
       break;
     }
+    case 'retire': {
+      const chance = Object.fromEntries(d.rows.map((r) => [r.id, r.chance]));
+      body = (
+        <>
+          <p>
+            올 시즌을 끝으로 은퇴하겠다는 우리 선수들입니다. 붙잡고 싶은 선수를 고르면 단장이 직접 만나 한 시즌 더 뛰어 달라고 설득합니다. 젊고 아직 잘하는 선수일수록 마음을 돌리기
+            쉽습니다. 고르지 않은 선수와 설득에 실패한 선수는 은퇴합니다. 선택 {selected.size}명
+          </p>
+          <PlayerTable
+            league={league}
+            players={d.rows.map((r) => league.players[r.id]!)}
+            selected={selected}
+            toggle={toggle}
+            onPlayer={onPlayer}
+            extra={{ title: '최근 WAR · 설득 가능성', value: (p) => `${lastWar(p)?.toFixed(1) ?? '-'} · ${pct(chance[p.id] ?? 0)}`, sort: (p) => chance[p.id] ?? 0 }}
+          />
+        </>
+      );
+      break;
+    }
     case 'faOptions':
       body = (
         <>
@@ -1111,6 +1132,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
                       {POSITIONS.map((pos) => (
                         <option key={pos} value={pos}>
                           {POSITION_NAMES[pos]}
+                          {pos === p.position ? ' (지금)' : (p.alt ?? []).includes(pos) ? ' (부포지션, 적응 없음)' : ''}
                         </option>
                       ))}
                     </select>

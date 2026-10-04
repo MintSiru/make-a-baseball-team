@@ -1,7 +1,7 @@
 /* Display settings (V0.7.6): the colours of the ability bars by 20–80 tier, a preview, whether the grades in
    the tables are coloured too, and the event pop-ups. Changes show at once and stay in this browser. */
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { useAlertPopups } from './Alerts';
+import { PopupSettings } from './Alerts';
 import { DEFAULT_PREFS, gradeTier, loadDisplay, PRESETS, saveDisplay, TIER_LABELS, type BarPreset, type DisplayPrefs } from './display';
 import { GradeBar } from './grades';
 
@@ -12,7 +12,6 @@ const CLUB_STRIP = ['var(--rule)', 'var(--ink-2)', 'var(--ink-2)', 'var(--accent
 
 export function DisplaySettings({ onClose }: { onClose: () => void }) {
   const [p, setP] = useState<DisplayPrefs>(loadDisplay);
-  const [popups, setPopups] = useAlertPopups();
   const first = useRef<HTMLInputElement>(null);
   const set = (next: DisplayPrefs) => {
     setP(next);
@@ -111,9 +110,7 @@ export function DisplaySettings({ onClose }: { onClose: () => void }) {
         </div>
 
         <h3>알림</h3>
-        <label class="check">
-          <input type="checkbox" checked={popups} onChange={(e) => setPopups((e.currentTarget as HTMLInputElement).checked)} /> 새 알림을 팝업으로 보기
-        </label>
+        <PopupSettings />
 
         <div class="row-actions">
           <button type="button" onClick={() => set(DEFAULT_PREFS)}>

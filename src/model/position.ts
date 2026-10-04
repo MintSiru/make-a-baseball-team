@@ -1,5 +1,6 @@
 /* Everyday positions. Draft Room scouts only C / IF / OF; the league needs the exact spot. Clubs place a
-   hitter from his public future grades, so the choice uses no hidden ability. */
+   hitter from his public future grades, so the choice uses no hidden ability. Since V0.11 a hitter also has
+   up to three other positions he can handle (`altPositions`); anywhere else costs him more. */
 import type { Role, Tools } from '../draftroom';
 import type { FieldPos } from '../league/engine/types';
 
@@ -54,4 +55,83 @@ export function outOfPosition(home: Position | null, at: FieldPos): number {
   if (outfield.includes(home) && outfield.includes(at)) return at === 'CF' ? 6 : home === 'CF' ? 0 : 2;
   if (infield.includes(home) && outfield.includes(at)) return at === 'CF' ? 9 : 4;
   return at === '1B' ? 4 : 12; // outfielder in the infield
+}
+
+/** Where a player at `home` may also be able to play, by how often (V0.11): the spots next to his on the diamond. */
+const NEIGHBOURS: Record<Position, [Position, number][]> = {
+  C: [
+    ['1B', 3],
+    ['3B', 1],
+    ['LF', 0.5],
+  ],
+  '1B': [
+    ['LF', 2],
+    ['RF', 1.5],
+    ['3B', 1.5],
+  ],
+  '2B': [
+    ['SS', 2.5],
+    ['3B', 2],
+    ['1B', 1],
+    ['LF', 0.5],
+    ['CF', 0.5],
+  ],
+  SS: [
+    ['2B', 3],
+    ['3B', 2.5],
+    ['1B', 0.5],
+    ['CF', 0.5],
+  ],
+  '3B': [
+    ['1B', 3],
+    ['2B', 1],
+    ['SS', 0.6],
+    ['LF', 1],
+    ['RF', 1],
+  ],
+  LF: [
+    ['RF', 3],
+    ['1B', 2],
+    ['CF', 1],
+  ],
+  CF: [
+    ['LF', 3],
+    ['RF', 3],
+  ],
+  RF: [
+    ['LF', 3],
+    ['1B', 1.5],
+    ['CF', 1],
+    ['3B', 0.5],
+  ],
+};
+
+/** How many other positions a hitter handles: most one or two, a true utility man (three) about one in nine. */
+const ALT_COUNT: [number, number][] = [
+  [0, 0.2],
+  [1, 0.42],
+  [2, 0.27],
+  [3, 0.11],
+];
+
+/**
+ * The other positions (up to three) a hitter at `home` can play without much loss (V0.11). Short and centre need
+ * the glove or the legs, second base a decent glove; a catcher seldom has more than first base. `r` is the
+ * player's own stream so the choice does not shift any other draw.
+ */
+export function altPositions(home: Position | null, tools: Tools, r: () => number): Position[] {
+  if (!home) return [];
+  let x = r();
+  const n = home === 'C' ? (x < 0.6 ? 0 : 1) : (ALT_COUNT.find(([, w]) => (x -= w) < 0)?.[0] ?? 0);
+  const def = g(tools, 'defense'),
+    spd = g(tools, 'speed');
+  const fit = (pos: Position) => (pos === 'SS' ? (def >= 50 ? 1 : 0.15) : pos === 'CF' ? (spd >= 50 ? 1 : 0.15) : pos === '2B' ? (def >= 45 ? 1 : 0.3) : 1);
+  const pool = NEIGHBOURS[home].map(([pos, w]) => [pos, w * fit(pos)] as [Position, number]);
+  const out: Position[] = [];
+  while (out.length < n && pool.length) {
+    let y = r() * pool.reduce((a, [, w]) => a + w, 0);
+    const i = pool.findIndex(([, w]) => (y -= w) < 0);
+    out.push(pool.splice(i < 0 ? pool.length - 1 : i, 1)[0]![0]);
+  }
+  return out;
 }

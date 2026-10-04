@@ -111,7 +111,23 @@ export const OFFSEASON = {
   veteranDecline: { from: 31, perYear: 0.3, steepFrom: 34, steepPerYear: 0.45, speed: 1.4, skill: 0.6 },
   scouting: { matureAge: 28, window: 7 },
   serviceDecline: { army: [0.8, 1.6] as [number, number], social: [0.3, 0.8] as [number, number] },
-  retirement: { from: 33, byAge: [0.05, 0.08, 0.14, 0.22, 0.34, 0.48, 0.64, 0.8] },
+  /** Retirement (offseason.ts retirementChance): the chance a year by age from `from`, at `old.age` and over (no
+      lower than `old.floor` of it however good he is), times the multiplier of his current grade (`byGrade`, best
+      first; `weak` below). V0.11: stars and regulars play longer. `persuade`: the user's club asking him to play on. */
+  retirement: {
+    from: 33,
+    byAge: [0.05, 0.08, 0.14, 0.22, 0.34, 0.48, 0.64, 0.8],
+    old: { age: 41, chance: 0.95, floor: 0.4 },
+    byGrade: [
+      [60, 0.12],
+      [55, 0.35],
+      [50, 0.8],
+      [45, 1.1],
+    ] as [number, number][],
+    weak: 1.8,
+    goodYear: 2.5,
+    persuade: { base: 0.85, from: 34, perYear: 0.08, perGrade: 0.01, min: 0.1, max: 0.9 },
+  },
   military: {
     mustAge: 28,
     minAge: 20,
@@ -449,10 +465,13 @@ export const INJURY = {
   riskScale: 0.1,
   ageFrom: 30,
   perYearOver: 0.06,
-  /** Futures games, relative to the first team. */
-  futures: 0.7,
+  /** Futures games, relative to the first team (V0.11: 0.7 → 0.55, fewer operations on the farm). */
+  futures: 0.55,
   riskAfterSurgery: 0.015,
   maxRisk: 0.2,
+  /** The same major operation again (V0.11, injuries.ts injuryWeight): its weight within `within` years of the
+      last one (`soon`) and after (`later`), times `again` for each earlier one beyond the first. */
+  repeat: { within: 2, soon: 0.08, later: 0.45, again: 0.3 },
   /** The user's player out this long makes the news. */
   newsFrom: 21,
 };
@@ -517,8 +536,26 @@ export const LIFE = {
   merch: 0.25,
 } as const;
 
+/** Fielding away from the main position (V0.11, positions.ts): extra grade points lost at a position he does not
+    list, games that make one his anyway (`experienced`, career) or add it to his list (`learn`, one season, up to
+    `most`), and games that show it on his profile. */
+export const POSITION_FIT = { unlisted: 6, experienced: 30, learn: 40, most: 3, shown: 10 };
+
 export const FOREIGN = {
   hitter: { contact: 62, power: 70, eye: 58 },
   pitcher: { stuff: 65, command: 60, breaking: 60, stamina: 64 },
   asiaShift: -4,
+  /** V0.11: a regular (not Asia-quota) signing is now and then a star, `shift` grade points better (the 70s). */
+  star: { chance: 0.07, shift: 7 },
+  /** V0.11: where foreign hitters play (share), with the fielding and speed that go with it and a shift to the bat
+      (a centre fielder or shortstop hits for less power). Shares follow recent KBO imports (RULES.md S72). */
+  hitterPositions: [
+    { pos: '1B', share: 0.24, defense: 42, speed: 38, power: 3, contact: 0 },
+    { pos: 'LF', share: 0.13, defense: 46, speed: 45, power: 1, contact: 0 },
+    { pos: 'RF', share: 0.2, defense: 49, speed: 46, power: 1, contact: 0 },
+    { pos: 'CF', share: 0.18, defense: 56, speed: 57, power: -5, contact: 1 },
+    { pos: '3B', share: 0.13, defense: 51, speed: 42, power: 0, contact: 0 },
+    { pos: '2B', share: 0.06, defense: 55, speed: 50, power: -6, contact: 2 },
+    { pos: 'SS', share: 0.06, defense: 58, speed: 52, power: -7, contact: 1 },
+  ] as { pos: import('../model/position').Position; share: number; defense: number; speed: number; power: number; contact: number }[],
 };

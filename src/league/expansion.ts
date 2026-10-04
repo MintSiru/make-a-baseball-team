@@ -46,6 +46,7 @@ import {
   developmentDecision,
   isAnnual,
   militaryDecision,
+  retireDecision,
   resolveAnnual,
   rookieBonusDecision,
   salariesDecision,
@@ -250,7 +251,8 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       // The twelfth club (V0.9): founded this winter, or offered by the board.
       return rivalDecision(s, o.year);
     case 'retire':
-      return staffDecision(s, o.year);
+      // Staff first; our players who want to retire follow (V0.11, userclub.ts).
+      return staffDecision(s, o.year) ?? retireDecision(s);
     case 'posting': {
       // Posted players coming home first (their clubs hold the rights), then this winter's postings.
       const back = homecomings(s, next);

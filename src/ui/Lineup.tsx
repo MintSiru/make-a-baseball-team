@@ -250,6 +250,9 @@ function CardEditor({ league, vs, lineup, starters, onAct }: { league: LeagueSta
             <tbody>
               {list.map((slot, i) => {
                 const now = lineup[i];
+                const who = slot ? hitters.find((p) => p.id === slot.id) : undefined;
+                // Main and listed positions marked (V0.11): anywhere else costs him more in the field.
+                const mark = (pos: FieldPos) => (pos === 'DH' || !who ? '' : who.position === pos ? ' · 주' : (who.alt ?? []).includes(pos as Exclude<FieldPos, 'DH'>) ? ' · 부' : ' · 낯섦');
                 return (
                   <tr key={i}>
                     <td class="num">{i + 1}</td>
@@ -274,6 +277,7 @@ function CardEditor({ league, vs, lineup, starters, onAct }: { league: LeagueSta
                         {FIELD.map((pos) => (
                           <option key={pos} value={pos}>
                             {FIELD_NAMES[pos]}
+                            {mark(pos)}
                           </option>
                         ))}
                       </select>

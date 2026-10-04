@@ -205,7 +205,9 @@ export type Decision =
   // The twelfth club (V0.9, rival.ts): design it (or, offered by the board, vote it down), then protect our players
   // from its special draft
   | { kind: 'rival'; year: number; event: boolean; suggestion: RivalSettings }
-  | { kind: 'rivalProtect'; candidates: PlayerId[]; protect: number; fee: number };
+  | { kind: 'rivalProtect'; candidates: PlayerId[]; protect: number; fee: number }
+  /** Our players who want to retire (V0.11): the chance each listens if the club asks him to play on. */
+  | { kind: 'retire'; rows: { id: PlayerId; chance: number }[] };
 
 // ── The twelfth club (V0.9) ───────────────────────────────────────────────────────────────────────
 
@@ -329,6 +331,8 @@ export interface OffseasonState {
   second?: import('./seconddraft').SecondDraftState | null;
   /** The user's club's protected players in the twelfth club's special draft (V0.9). */
   rivalProtect?: PlayerId[];
+  /** Our players who wanted to retire and agreed to play on (V0.11). */
+  stay?: PlayerId[];
 }
 
 /** A spot in the batting order the general manager fixed: who bats there and where he plays. */

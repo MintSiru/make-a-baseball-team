@@ -14,7 +14,7 @@ import { BoxScore } from './BoxScore';
 import { StorySettings } from './StorySettings';
 import { DisplaySettings } from './DisplaySettings';
 import { ClubSummary } from './ClubSummary';
-import { AlertPopup, useAlertPopups } from './Alerts';
+import { AlertPopup, poppingAlerts, useAlertPopups, useArticlePopups } from './Alerts';
 import { TutorialCard } from './Tutorial';
 import { tutorialPaused } from './tutorial';
 import { unseenAlerts } from '../league/alerts';
@@ -98,6 +98,7 @@ export function App() {
   const usage = useRef({ input: 0, output: 0, articles: 0 });
   // Event pop-ups (V0.7.4): shown when they are on, or when the player opens them from the header.
   const [popups] = useAlertPopups();
+  const [articles] = useArticlePopups();
   const [alertsOpen, setAlertsOpen] = useState(false);
   const autoTried = useRef(new Set<string>());
   const autoTries = useRef(new Map<string, number>());
@@ -371,7 +372,8 @@ export function App() {
   );
 
   const userTeam = league.user ? league.teams.find((t) => t.id === league.user!.teamId) : null;
-  const unseen = league.user ? unseenAlerts(league) : [];
+  const unseenAll = league.user ? unseenAlerts(league) : [];
+  const unseen = poppingAlerts(unseenAll, articles);
 
   return (
     <div class="app" style={userTeam ? ({ '--accent': userTeam.color } as Record<string, string>) : undefined}>
@@ -449,7 +451,8 @@ export function App() {
           alerts={unseen}
           onDone={(ids) => {
             setAlertsOpen(false);
-            void act({ kind: 'alertsSeen', ids }, '알림 확인', false);
+            // Articles left out of the pop-ups count as read with the rest (they stay in the list).
+            void act({ kind: 'alertsSeen', ids: [...ids, ...unseenAll.filter((a) => a.minor && !unseen.includes(a)).map((a) => a.id)] }, '알림 확인', false);
           }}
         />
       )}

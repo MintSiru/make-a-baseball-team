@@ -191,7 +191,8 @@ describe('life off the field', () => {
       const id = lifeDay(c, date);
       const news = id ? c.news!.find((n) => n.id === `life-${date}-${id}`) : undefined;
       if (news && /득남|득녀|(부친|모친|조부|조모)상/.test(news.title)) family++;
-      const alert = c.alerts?.find((a) => a.id === `life-${date}-${id}`);
+      // Every article about our players is a minor alert since 0.11; the full pop-up is for a player who is out.
+      const alert = c.alerts?.find((a) => a.id === `life-${date}-${id}` && !a.minor);
       if (alert && id) expect(!!c.away[id] && !before.has(id) || !!c.injuries[id]).toBe(true);
       if (id) delete c.away[id];
     }

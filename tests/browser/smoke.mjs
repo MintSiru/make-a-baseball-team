@@ -171,6 +171,9 @@ try {
   check((await page.evaluate(() => document.documentElement.style.getPropertyValue('--grade-4'))) !== '', 'bar colours by grade tier are applied');
   await page.getByRole('checkbox', { name: /선수 표의 현재·미래 능력치/ }).check();
   check((await page.evaluate(() => document.documentElement.dataset.gradeTables)) === 'on', 'grades in the tables can be coloured');
+  // 0.11: the articles about our club pop up too, with a switch of their own.
+  const articles = page.getByRole('checkbox', { name: /우리 구단 기사/ });
+  check(await articles.isChecked(), 'articles about our club pop up by default');
   await page.screenshot({ path: join(shots, 'display-settings.png'), fullPage: false });
   await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
   const log = [];
