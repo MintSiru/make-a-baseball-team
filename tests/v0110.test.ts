@@ -18,6 +18,7 @@ import { resolveAnnual } from '../src/league/userclub';
 import { altPositions, type Position } from '../src/model/position';
 import type { Player } from '../src/model/types';
 import { migrateState } from '../src/save/migrate';
+import { endRegular } from './helpers';
 
 let s: LeagueState;
 let retireSeen: { id: string; chance: number }[] = [];
@@ -35,7 +36,7 @@ beforeAll(() => {
     settings: { name: '울산 고래단', short: '고래', color: '#1f6fb2', cityId: 'ulsan', parentType: 'conglomerate', parentName: '가상', stadium: 'existing', promotion: 'immediate', difficulty: 'normal', scenario: null },
   });
   while (pending()) apply(s, { kind: 'decide', input: autoDecision(s)! });
-  apply(s, { kind: 'regularEnd' });
+  endRegular(s);
   apply(s, { kind: 'postseason' });
   // Two of our veterans want to retire this winter: one is talked round, the other goes.
   const next = s.year + 1;

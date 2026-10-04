@@ -14,6 +14,7 @@ import { electMayor, ownerEvents, sponsorOffers, sponsorReview } from '../src/le
 import { faGrades, parentGiftFor } from '../src/league/market';
 import { guaranteed, splitOffer } from '../src/league/fa';
 import { freeAgentsFor } from '../src/league/offseason';
+import { endRegular } from './helpers';
 
 let s: LeagueState;
 beforeAll(() => {
@@ -99,7 +100,7 @@ describe('the military grade after an operation', () => {
       settings: { name: '울산 고래단', short: '고래', color: '#1f6fb2', cityId: 'ulsan', parentType: 'conglomerate', parentName: '가상', stadium: 'existing', promotion: 'immediate', difficulty: 'normal', scenario: null },
     });
     while (u.pending) apply(u, { kind: 'decide', input: autoDecision(u)! });
-    apply(u, { kind: 'regularEnd' });
+    endRegular(u);
     apply(u, { kind: 'postseason' });
     apply(u, { kind: 'nextSeason' });
     // Make one of ours an operated, unserved 22-year-old before the military decision comes up.
@@ -225,7 +226,7 @@ describe('owners (V0.7.7)', () => {
     const c = found('conglomerate', 'v077-gift');
     // The first winter with a free-agent market for the club (the one before the first team has its own rules).
     c.user!.firstTeamYear = 2020;
-    apply(c, { kind: 'regularEnd' });
+    endRegular(c);
     apply(c, { kind: 'postseason' });
     apply(c, { kind: 'nextSeason' });
     while (c.pending && c.pending.kind !== 'faRound') apply(c, { kind: 'decide', input: autoDecision(c)! });

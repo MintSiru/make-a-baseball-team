@@ -8,34 +8,71 @@ export type Position = Exclude<FieldPos, 'DH'>;
 
 const g = (t: Tools, k: keyof Tools) => t[k] ?? 40;
 
-export function assignPosition(role: Role, future: Tools, tieBreak: number): Position | null {
-  if (role === 'SP' || role === 'RP') return null;
-  if (role === 'C') return 'C';
+/** How well a player of `role` suits each spot of his group, from public future grades (no tie-break). */
+export function positionScores(role: Role, future: Tools): [Position, number][] {
   // Scores on z-scores so an average player could go anywhere; the glove pulls toward the middle of
-  // the diamond, the bat toward the corners. Offsets keep the four infield and three outfield spots
-  // roughly equally filled across a draft class.
+  // the diamond, the bat toward the corners.
   const z = (k: keyof Tools) => (g(future, k) - 50) / 10;
   const def = z('defense'),
     spd = z('speed'),
     pow = z('power'),
     con = z('contact');
-  const options: [Position, number][] =
-    role === 'IF'
-      ? [
-          ['SS', def + 0.4 * spd],
-          ['2B', 0.6 * def + 0.3 * spd + 0.3 * con + 0.1],
-          ['3B', 0.3 * def + 0.6 * pow + 0.3],
-          ['1B', 0.6 * pow + 0.4 * con - 0.6 * def - 0.25],
-        ]
-      : [
-          ['CF', 0.6 * spd + 0.6 * def],
-          ['RF', 0.3 * def + 0.5 * pow + 0.35],
-          ['LF', 0.5 * pow + 0.4 * con - 0.4 * def - 0.1],
-        ];
+  return role === 'IF'
+    ? [
+        ['SS', def + 0.4 * spd],
+        ['2B', 0.6 * def + 0.3 * spd + 0.3 * con + 0.1],
+        ['3B', 0.3 * def + 0.6 * pow + 0.3],
+        ['1B', 0.6 * pow + 0.4 * con - 0.6 * def - 0.25],
+      ]
+    : [
+        ['CF', 0.6 * spd + 0.6 * def],
+        ['RF', 0.3 * def + 0.5 * pow + 0.35],
+        ['LF', 0.5 * pow + 0.4 * con - 0.4 * def - 0.1],
+      ];
+}
+
+export function assignPosition(role: Role, future: Tools, tieBreak: number): Position | null {
+  if (role === 'SP' || role === 'RP') return null;
+  if (role === 'C') return 'C';
+  const options = positionScores(role, future);
   // A per-player nudge spreads near-ties across positions.
   options.forEach((o, i) => (o[1] += (((tieBreak * (i + 3) * 7.13) % 1) - 0.5) * 1.2));
   options.sort((a, b) => b[1] - a[1]);
   return options[0]![0];
+}
+
+/**
+ * Spots for a whole class of amateurs (V0.12): each group (infield, outfield) is shared out in KBO-like numbers,
+ * the hardest spot first to the players who suit it best (short to the best glove and legs, centre to the
+ * fastest outfielders), the corners last. A player's own `assignPosition` read ignores the rest of the class
+ * and sent far too many to centre field and the middle infield.
+ */
+export const POSITION_SHARES: Record<'IF' | 'OF', [Position, number][]> = {
+  IF: [
+    ['SS', 0.27],
+    ['2B', 0.26],
+    ['3B', 0.25],
+    ['1B', 0.22],
+  ],
+  OF: [
+    ['CF', 0.3],
+    ['RF', 0.37],
+    ['LF', 0.33],
+  ],
+};
+
+export function balancePositions<P extends { role: Role; position: Position | null; scouting: { futureTools: Tools } }>(players: P[], set: (p: P, pos: Position) => void) {
+  for (const role of ['IF', 'OF'] as const) {
+    const group = players.filter((p) => p.role === role);
+    const left = [...group];
+    const shares = POSITION_SHARES[role];
+    shares.forEach(([pos, share], i) => {
+      const n = i === shares.length - 1 ? left.length : Math.round(group.length * share);
+      const score = (p: P) => positionScores(role, p.scouting.futureTools).find(([x]) => x === pos)![1];
+      left.sort((a, b) => score(b) - score(a));
+      for (const p of left.splice(0, n)) set(p, pos);
+    });
+  }
 }
 
 /** Defense penalty (grade points) for playing `at` when his position is `home`. */

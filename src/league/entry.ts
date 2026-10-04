@@ -36,7 +36,7 @@ export function canMove(s: LeagueState, id: PlayerId, to: Squad): string | null 
   if (to === 'active') {
     if (!r.active.length && s.year < u.firstTeamYear) return '아직 1군에 들어가지 않았습니다.';
     if (isDevelopment(p)) return '육성선수는 정식선수로 등록한 뒤에 1군에 올릴 수 있습니다.';
-    if (offRoster(s, id)) return s.away[id] ? '대표팀 소집이나 경조사 휴가 중입니다.' : '부상 중입니다.';
+    if (offRoster(s, id)) return s.suspended?.[id] ? 'KBO 징계로 출장정지 중입니다.' : s.away[id] ? '대표팀 소집이나 경조사 휴가 중입니다.' : '부상 중입니다.';
     if (r.active.length >= firstTeamSize(s, u.teamId)) return `1군 엔트리 ${firstTeamSize(s, u.teamId)}명이 찼습니다. 먼저 한 명을 말소하세요.`;
     const back = s.demoted?.[id];
     if (back && date < addDays(back, REREGISTER_DAYS)) return `말소 후 ${REREGISTER_DAYS}일이 지나야 다시 등록할 수 있습니다 (${addDays(back, REREGISTER_DAYS)}부터).`;

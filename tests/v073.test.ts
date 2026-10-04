@@ -12,6 +12,7 @@ import { goAbroad } from '../src/league/returnees';
 import { orgPlayers, type LeagueState } from '../src/league/state';
 import { foreignMarket } from '../src/league/trade';
 import { KBO_2026 } from '../src/rules/kbo2026';
+import { endRegular } from './helpers';
 
 let s: LeagueState;
 const decideAll = (watch?: () => void) => {
@@ -21,7 +22,7 @@ const decideAll = (watch?: () => void) => {
   }
 };
 const winter = (watch?: () => void) => {
-  apply(s, { kind: 'regularEnd' });
+  endRegular(s);
   apply(s, { kind: 'postseason' });
   apply(s, { kind: 'nextSeason' });
   decideAll(watch);
@@ -131,7 +132,7 @@ describe('event alerts (V0.7.4)', () => {
     const kinds = new Set((s.alerts ?? []).map((a) => a.kind));
     for (const k of ['season', 'award', 'owner', 'fa', 'national', 'achievement'] as const) expect(kinds.has(k), k).toBe(true);
     // The LA Olympics end in the 2028 season: the result is told the day after.
-    const la = s.alerts!.find((a) => a.id === 'intl-result-2028')!;
+    const la = s.alerts!.find((a) => a.id === 'intl-result-2028-olympics')!;
     expect(la.date).toBe('2028-07-30');
     const awards = s.alerts!.find((a) => a.id === 'awards-2027')!;
     expect(awards.lines.some((l) => l.startsWith('MVP'))).toBe(true);

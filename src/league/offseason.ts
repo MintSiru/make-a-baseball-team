@@ -10,7 +10,6 @@ import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { budgetBonus, foreignContract, MANWON_PER_USD, renewSalary, rookieContract, salaryIn, slotBonus, usdTotal } from './contracts';
 import { splitContract } from './foreign';
-import { INTERNATIONAL } from './international';
 import { foreignSlots } from './manager';
 import { champion } from './postseason';
 import { medicalReview, socialOnly } from './military';
@@ -26,7 +25,8 @@ import { standings } from './standings';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, orgIds, orgPlayers, registeredIds, type Decision, type DraftSlot, type DraftState, type LeagueState, type SeasonSummary } from './state';
 import { batterWar, leagueContext, pitcherWar } from './stats';
 import { maybeRetireNumber } from './numbers';
-import { learnPositions } from './positions';
+import { balanceDepth, changePosition, learnPositions, positionMove } from './positions';
+import { driftPotential } from './scouting';
 import { applyDemotionCuts, settleFinances } from './finance';
 import { awardHonours, computeAwards, hallOfFameCheck } from './awards';
 import { seasonMoments } from './milestones';
@@ -37,7 +37,8 @@ import { runAiPosting } from './posting';
 import { FUTURES, OFFSEASON as O, STAFF } from './tuning';
 import { aiTakesKnown, expireForeignPool, foreignPoolAsk, leavePool, poolChoice, toForeignPool } from './foreignpool';
 import { draftReturnees } from './returnees';
-import { awardAlert, nationalPickAlert, nationalResultAlert, retirementAlert, seasonAlert } from './alerts';
+import { awardAlert, retirementAlert, seasonAlert } from './alerts';
+import { applyInternational, asianGamesSoon, marchEvents, novemberEvents, winterSquads } from './national';
 import { staffEdge, staffRating } from './staff';
 import { gmDraftWeights, gmOf, twoLeagues } from './twelve';
 import { closeRivalry } from './rivalry';
@@ -235,7 +236,10 @@ export function rescout(p: Player, season: number, yearIndex: number, r: () => n
     floor: Math.max(20, seen.ready - (age <= 24 ? 5 : 0)),
     ceiling: Math.max(fv, toGrade(fv + (age <= 24 ? 5 : 0))),
     uncertainty: yearIndex <= 1 ? '높음' : yearIndex <= 4 ? '보통' : '낮음',
+    // The season's revisions start again from this report (V0.12).
+    base: fv,
   });
+  delete p.scouting.moved;
 }
 
 // ── Leaving the league ───────────────────────────────────────────────────────────────────────────
@@ -303,48 +307,6 @@ export function persuadeChance(p: Player, season: number): number {
 
 // ── Military service and national teams ─────────────────────────────────────────────────────────
 
-/** Picks the national team for `year`'s event and its result (once per event). */
-export function selectNationalTeam(s: LeagueState, year: number) {
-  const event = INTERNATIONAL.find((e) => e.year === year);
-  if (!event) return null;
-  const existing = s.international.find((e) => e.year === year);
-  if (existing) return existing;
-  const r = rng(`${s.seed}|international|${year}`);
-  const pool = Object.values(s.players).filter((p) => (p.status === 'active' || p.status === 'military') && p.teamId && !isForeign(p));
-  const age = (p: Player) => year - Number(p.birthday.slice(0, 4));
-  const byGrade = (a: Player, b: Player) => b.scouting.current - a.scouting.current;
-  const L = event.limit;
-  const squad = L
-    ? pool.filter((p) => age(p) <= L.maxAge || year - p.proSince < L.maxProYears).sort(byGrade).slice(0, event.squad - L.wildcards)
-    : pool.sort(byGrade).slice(0, event.squad);
-  if (L) squad.push(...pool.filter((p) => !squad.includes(p) && age(p) <= L.wildcardMaxAge).sort(byGrade).slice(0, L.wildcards));
-  const medal = event.result ? event.result === 'medal' : r() < event.medalChance;
-  const entry = { year, name: event.name, medal, squad: squad.map((p) => p.id) };
-  s.international.push(entry);
-  nationalPickAlert(s, event, entry, event.dates?.from ?? `${year}-11-01`);
-  return entry;
-}
-
-/** After the event: a medal exempts the squad from military service (예술체육요원, RULES.md §11). */
-export function applyInternational(s: LeagueState, year: number) {
-  const entry = selectNationalTeam(s, year);
-  // An event held in the season has told its result already (season.ts); a winter one tells it now.
-  const event = INTERNATIONAL.find((e) => e.year === year);
-  if (entry && event) nationalResultAlert(s, event, entry, event.dates?.to ?? `${year}-11-01`);
-  if (!entry?.medal) return;
-  for (const p of entry.squad.map((id) => s.players[id]).filter((p): p is Player => !!p)) {
-    if (p.service.military === 'pending' || p.service.military === 'serving') {
-      if (p.status === 'military') {
-        p.status = 'active';
-        if (p.teamId) s.rosters[p.teamId]!.futures.push(p.id);
-      }
-      p.service.military = 'exempt';
-      delete p.service.route;
-      delete p.service.returnsOn;
-    }
-  }
-}
-
 /** The twelfth club before its first first-team season (V0.9): it keeps its few players out of the army. */
 const founding = (s: LeagueState, teamId: TeamId, next: number) => !!s.twelve && s.twelve.teamId === teamId && next <= s.twelve.firstTeam;
 
@@ -361,7 +323,7 @@ export function enlist(s: LeagueState, p: Player, next: number, r: () => number,
     const route = lost >= 105 ? 'rehab' : days >= 120 && (last?.war ?? 0) >= 1.5 ? 'regular' : days >= 60 ? 'backup' : days > 0 ? 'cameo' : 'futures';
     const factor = M.byAge.find(([maxAge]) => age <= maxAge)?.[1] ?? M.byAge[M.byAge.length - 1]![1];
     // Clubs hold back likely picks when Asian Games are this season or next.
-    const games = INTERNATIONAL.find((e) => (e.year === next || e.year === next + 1) && e.kind === 'asianGames');
+    const games = asianGamesSoon(next);
     if (games && p.scouting.current >= M.holdForGames && age <= (games.limit?.maxAge ?? 99)) return;
     // A 4급 player in a long rehab serves now: the service and the rehab run together.
     const rehab = socialOnly(p) && (s.injuries[p.id]?.until ?? '') > `${next}-05-01`;
@@ -781,6 +743,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
     }
     switch (step) {
       case 'international':
+        // November events: named and played now (V0.12); anything else of the year left unfinished too.
+        winterSquads(s, novemberEvents(year));
         applyInternational(s, year);
         break;
       case 'develop': {
@@ -788,9 +752,14 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         for (const p of Object.values(s.players)) {
           if (p.status === 'retired' || p.status === 'overseas' || p.status === 'amateur') continue;
           if (p.proSince > year) continue; // drafted this fall, first season still ahead
+          // The ceiling moves first (V0.12): a breakout, a stall, a little drift.
+          driftPotential(p, year, rng(`${s.seed}|potential|${year}|${p.id}`));
           developPlayer(p, year, s.lines[p.id]?.lost ?? 0, rng(`${s.seed}|develop|${year}|${p.id}`), growthScale(p, year, futuresLeague), coachingFor(s, p, year), facilityAging(s, p));
           // A season of regular play at a new position adds it to his list (V0.11).
           learnPositions(p, s.lines[p.id]?.bat?.posG);
+          // Other clubs move a player who has lost the glove or legs for his spot (V0.12); ours is the user's call (camp).
+          const to = p.teamId !== s.user?.teamId ? positionMove(p) : null;
+          if (to) changePosition(p, to);
         }
         break;
       }
@@ -900,8 +869,11 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
       case 'check':
         break; // the user's club over the limit after foreign signings: a user decision (expansion.ts)
       case 'camp':
-        // Spring camp plans are a user decision only (AI clubs keep balanced plans). Opening day is near: the
-        // reinforcements promised to free agents are judged.
+        // Spring camp plans are a user decision only (AI clubs keep balanced plans), but AI clubs set their depth
+        // chart here, newcomers included (V0.12). Opening day is near: the reinforcements promised to free agents are judged.
+        for (const t of s.teams) if (s.rosters[t.id] && t.id !== s.user?.teamId) balanceDepth(orgPlayers(s, t.id).filter((p) => p.status === 'active'));
+        // The March tournament's squad is named before camp ends (V0.12).
+        winterSquads(s, marchEvents(next));
         judgeReinforcePromises(s, o.fa, next);
         break;
     }

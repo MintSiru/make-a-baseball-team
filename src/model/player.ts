@@ -1,6 +1,6 @@
 /* Building league players and the public view of them. */
 import { hashUnit, rng, servedBeforeDraft, type DraftProspect } from '../draftroom';
-import { altPositions, assignPosition } from './position';
+import { altPositions, assignPosition, balancePositions } from './position';
 import type { Player, PlayerId } from './types';
 
 /**
@@ -70,6 +70,17 @@ export function fromDraftProspect(p: DraftProspect, draftYear: number, poolSeed:
     proSince: draftYear + 1,
     career: [],
   };
+}
+
+/** A class of amateurs placed together (V0.12): KBO-like numbers at each spot, the best fits at the hard ones;
+    their other positions follow the new main one. */
+export function placeClass(players: Player[], poolSeed: string): Player[] {
+  balancePositions(players, (p, pos) => {
+    if (p.position === pos) return;
+    p.position = pos;
+    p.alt = altPositions(pos, p.scouting.futureTools, rng(`${poolSeed}|alt|${p.id}`));
+  });
+  return players;
 }
 
 export type PublicPlayer = Omit<Player, 'hidden'>;

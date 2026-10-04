@@ -156,11 +156,11 @@ function pick(list: InjuryType[], r: () => number, weight: (t: InjuryType) => nu
 }
 
 /** Out of the lineup today for any reason (injured, a knock, the national team). */
-export const sidelined = (s: LeagueState, id: PlayerId) => !!s.injuries[id] || !!s.away?.[id] || !!s.abroad?.[id];
+export const sidelined = (s: LeagueState, id: PlayerId) => !!s.injuries[id] || !!s.away?.[id] || !!s.abroad?.[id] || !!s.suspended?.[id];
 /** Off the first team: on the injured list, in rehab or with the national team (a knock does not count). */
 export const offRoster = (s: LeagueState, id: PlayerId) => {
   const i = s.injuries[id];
-  return (!!i && !i.dtd) || !!s.away?.[id] || !!s.abroad?.[id];
+  return (!!i && !i.dtd) || !!s.away?.[id] || !!s.abroad?.[id] || !!s.suspended?.[id];
 };
 
 /** A major operation's lasting mark on the player: hidden ability, and a little more fragile. */

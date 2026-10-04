@@ -123,7 +123,7 @@ export function clubReport(s: LeagueState, teamId: TeamId, year: number, shares:
       payroll(s, teamId, year) +
       (teamId === s.user?.teamId ? (s.user.deadMoney ?? []).filter((d) => d.season === year).reduce((a, d) => a + d.amount, 0) : faCash(s, teamId, year)),
     staff: staffCost(s, teamId),
-    frontOffice: Math.round(F.frontOffice * (inFirstTeam ? 1 : F.futuresYear)),
+    frontOffice: Math.round((F.frontOffice.base + (c.popularity / 1000) * F.frontOffice.perThousandFans) * (inFirstTeam ? 1 : F.futuresYear)),
     gameDays: homeGames * F.perHomeGame,
     ballpark: (longTerm ? F.ballpark.operator : F.ballpark.tenant) + (dome ? F.ballpark.dome : 0) + Math.round(team.stadium.capacity * F.ballpark.perSeat) + upkeep.ballpark,
     farm: F.farm + upkeep.training,
@@ -165,11 +165,21 @@ export function settleFinances(s: LeagueState, year: number, table: { teamId: Te
         .filter((l) => !l.settlement && !l.capital)
         .reduce((a, l) => a + l.amount, 0);
       report.cashFlows = cash;
-      const deficit = -(report.operating + Math.min(0, cash));
-      report.support = parentSupport(s, t.id, deficit, year);
-      u.fund += report.operating + report.support;
-      u.ledger.push({ year, label: `${year} 시즌 운영 결산 (수입 − 지출)`, amount: report.operating, settlement: true });
-      if (report.support) u.ledger.push({ year, label: supportLabel(t.parent.type), amount: report.support, settlement: true });
+      const budget = u.seasonSupport?.year === year ? u.seasonSupport : null;
+      if (budget) {
+        // V0.12: the owner paid its budget at opening; the club lives with the result (season tickets were
+        // banked at opening too), and an empty fund is topped up at a cost in trust.
+        const tickets = clubState(s, t.id).seasonTickets;
+        u.fund += report.operating - (tickets?.year === year ? tickets.paid : 0);
+        u.ledger.push({ year, label: `${year} 시즌 운영 결산 (수입 − 지출${tickets?.year === year ? ', 시즌권 선판매분 제외' : ''})`, amount: report.operating - (tickets?.year === year ? tickets.paid : 0), settlement: true });
+        report.support = budget.amount + emergencySupport(s, year);
+      } else {
+        const deficit = -(report.operating + Math.min(0, cash));
+        report.support = parentSupport(s, t.id, deficit, year);
+        u.fund += report.operating + report.support;
+        u.ledger.push({ year, label: `${year} 시즌 운영 결산 (수입 − 지출)`, amount: report.operating, settlement: true });
+        if (report.support) u.ledger.push({ year, label: supportLabel(t.parent.type), amount: report.support, settlement: true });
+      }
       u.settledAt = u.ledger.length;
     } else report.support = parentSupport(s, t.id, -report.operating);
     const reports = clubState(s, t.id).reports;
@@ -178,6 +188,63 @@ export function settleFinances(s: LeagueState, year: number, table: { teamId: Te
   }
   s.gate = {};
   s.postseasonGate = 0;
+}
+
+/** An empty fund after the season: the owner tops it up to zero and trusts the general manager less (V0.12). */
+function emergencySupport(s: LeagueState, year: number): number {
+  const u = s.user!;
+  if (u.fund >= 0) return 0;
+  const amount = -u.fund;
+  u.fund = 0;
+  const E = F.emergency;
+  const drop = Math.min(E.most, E.base + Math.floor(amount / E.per));
+  u.trust = Math.max(0, (u.trust ?? 60) - drop);
+  u.ledger.push({ year, label: `모기업 긴급 지원 (예산 초과, 신뢰도 −${drop})`, amount, settlement: true });
+  return amount;
+}
+
+/**
+ * Opening day (V0.12, docs/FINANCE.md ①): the owner fixes the season's support from the expected result (less payroll
+ * over the budget it set) and what the fund spent over the winter, within its limit, and pays it now. Season tickets
+ * sold for the season come in too (③). Before the first first-team season the owner still covers everything after it.
+ */
+export function openBooks(s: LeagueState) {
+  const u = s.user;
+  if (!u || s.year < u.firstTeamYear || !firstTeamIds(s, s.year).includes(u.teamId)) return;
+  // The owner budgets on an ordinary season; the season-ticket discount is the club's own bet.
+  const operating = projectedReport(s, u.teamId).operating;
+  sellSeasonTickets(s);
+  const tickets = clubState(s, u.teamId).seasonTickets;
+  const over = Math.max(0, payroll(s, u.teamId, s.year) - u.payrollBudget);
+  const cash = u.ledger
+    .slice(u.settledAt ?? 0)
+    .filter((l) => !l.settlement && !l.capital)
+    .reduce((a, l) => a + l.amount, 0);
+  const need = Math.max(0, -operating - over - Math.min(0, cash));
+  const amount = Math.min(u.support ?? need, Math.round(need / 1000) * 1000);
+  u.seasonSupport = { year: s.year, amount };
+  u.fund += amount;
+  u.ledger.push({ year: s.year, label: `${s.year} ${supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type)} (시즌 예산 확정)`, amount, settlement: true });
+  if (tickets?.year === s.year && tickets.paid) {
+    u.fund += tickets.paid;
+    u.ledger.push({ year: s.year, label: `${s.year} 시즌권 ${tickets.sold.toLocaleString('ko-KR')}석 판매 (할인 ${Math.round(tickets.discount * 100)}%)`, amount: tickets.paid, settlement: true });
+  }
+}
+
+/** Season tickets at opening: how many sell at the discount set in the winter, paid for every home game now. */
+function sellSeasonTickets(s: LeagueState) {
+  const u = s.user!;
+  const c = clubState(s, u.teamId);
+  const team = s.teams.find((t) => t.id === u.teamId)!;
+  const discount = c.seasonTicketDiscount ?? 0;
+  const T = F.seasonTickets;
+  const sold = Math.round(Math.min(team.stadium.capacity * T.maxShare, c.popularity * boom(s.year) * (T.share[discount] ?? T.share[0]!) * Math.max(0.5, 1 + c.interest)));
+  const home = s.schedule.filter((g) => g.home === u.teamId).length;
+  const paid = Math.round(sold * home * leaguePrice(s.year) * c.price * (1 - discount));
+  c.seasonTickets = { year: s.year, discount, sold, paid };
+  // The money counts as this season's ticket revenue.
+  const gate = ((s.gate ??= {})[u.teamId] ??= { games: 0, fans: 0, sellouts: 0, revenue: 0 });
+  gate.revenue += paid;
 }
 
 export const supportLabel = (type: string) =>
@@ -196,8 +263,12 @@ export function projectedReport(s: LeagueState, teamId: TeamId): ClubReport {
     ? gate.fans / gate.games
     : Math.min(team.stadium.capacity, c.popularity * boom(s.year) * Math.max(0.45, 1 + FANS.moodWeight * c.interest) * c.price ** -FANS.elasticity);
   const fans = Math.round(perGame * home);
+  // What is in already (season tickets included, V0.12), and the walk-up tickets of the home games to come.
+  const tickets = c.seasonTickets?.year === s.year ? c.seasonTickets : null;
+  const walkUp = Math.max(0, perGame - (tickets ? tickets.sold * F.seasonTickets.show : 0));
+  const later = (home - (gate?.games ?? 0)) * walkUp * leaguePrice(s.year) * c.price * (1 + premiumShare(s, teamId));
   const saved = s.gate;
-  s.gate = { ...(saved ?? {}), [teamId]: { games: home, fans, sellouts: 0, revenue: Math.round(fans * leaguePrice(s.year) * c.price * (1 + premiumShare(s, teamId))) } };
+  s.gate = { ...(saved ?? {}), [teamId]: { games: home, fans, sellouts: 0, revenue: Math.round((gate?.revenue ?? 0) + later) } };
   try {
     return clubReport(s, teamId, s.year, {});
   } finally {

@@ -7,9 +7,12 @@ import { SIM_VERSION } from '../core/version';
 import type { Player } from '../model/types';
 import { existingTeams } from './clubs';
 import { estimatedSalary, freeAgentContract } from './contracts';
-import { applyInternational, closeSeason, developPlayer, enforceLimits, enlist, leaveLeague, refreshForeigners, retirementChance, runOffseason, runWholeDraft } from './offseason';
+import { closeSeason, developPlayer, enforceLimits, enlist, leaveLeague, refreshForeigners, retirementChance, runOffseason, runWholeDraft } from './offseason';
+import { applyInternational } from './national';
 import { playPostseason } from './postseason';
 import { currentValue, isForeign } from './players';
+import { balanceDepth, changePosition, positionMove } from './positions';
+import { driftPotential } from './scouting';
 import { playRegularSeason, startSeason } from './season';
 import { emptyRoster, orgPlayers, type LeagueState } from './state';
 
@@ -70,7 +73,11 @@ function fastOffseason(s: LeagueState) {
   for (const p of Object.values(s.players)) {
     if (p.status !== 'active' && p.status !== 'military') continue;
     if (p.proSince > year) continue;
+    driftPotential(p, year, rng(`${s.seed}|potential|${year}|${p.id}`));
     developPlayer(p, year, 0, rng(`${s.seed}|develop|${year}|${p.id}`));
+    // Down the defensive spectrum as the glove and legs go (V0.12).
+    const to = positionMove(p);
+    if (to) changePosition(p, to);
   }
   const r = rng(`${s.seed}|bootstrap|${year}`);
   for (const p of Object.values(s.players)) {
@@ -90,6 +97,7 @@ function fastOffseason(s: LeagueState) {
   const order = s.teams.map((t) => t.id).sort(() => r() - 0.5);
   runWholeDraft(s, year, order);
   enforceLimits(s, next, r);
+  for (const t of s.teams) if (s.rosters[t.id]) balanceDepth(orgPlayers(s, t.id).filter((p) => p.status === 'active'));
   s.year = next;
 }
 

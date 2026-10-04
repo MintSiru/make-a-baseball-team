@@ -1,7 +1,7 @@
 /* League-side player helpers: ages, the values clubs judge players by (public scouting only), yearly
    draft pools, and foreign players. */
 import { generateDraftPool, isPitcherRole, overall, rng, toGrade, type DraftProspect, type Role, type Tools } from '../draftroom';
-import { ageOn, fromDraftProspect } from '../model/player';
+import { ageOn, fromDraftProspect, placeClass } from '../model/player';
 import { altPositions, type Position } from '../model/position';
 import { background, careerText, foreignAsk, foreignName, LEVEL_LABELS } from './foreign';
 import type { Player } from '../model/types';
@@ -62,7 +62,10 @@ export const poolSeed = (seed: string, draftYear: number) => (draftYear === DRAF
 export function draftClass(seed: string, draftYear: number): Player[] {
   const ps = poolSeed(seed, draftYear);
   const pool = generateDraftPool(ps);
-  return pool.players.map((p) => fromDraftProspect(shiftProspect(p, draftYear - DRAFT_ROOM_YEAR), draftYear, ps));
+  return placeClass(
+    pool.players.map((p) => fromDraftProspect(shiftProspect(p, draftYear - DRAFT_ROOM_YEAR), draftYear, ps)),
+    ps,
+  );
 }
 
 // ── Foreign players (names and backgrounds in foreign.ts) ───────────────────────────────────────

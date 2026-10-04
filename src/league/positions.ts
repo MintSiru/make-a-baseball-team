@@ -6,7 +6,7 @@
 import type { FieldPos } from './engine/types';
 import type { Player } from '../model/types';
 import { POSITION_FIT } from './tuning';
-import { outOfPosition, type Position } from '../model/position';
+import { outOfPosition, positionScores, type Position } from '../model/position';
 import type { LeagueState } from './state';
 
 export const POSITIONS: Position[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
@@ -74,4 +74,79 @@ export function migrateAlt(p: Player, drawn: Position[]) {
   const games = positionGames(null, p);
   const played = POSITIONS.filter((pos) => pos !== p.position && (games[pos] ?? 0) >= EXPERIENCED).sort((a, b) => (games[b] ?? 0) - (games[a] ?? 0));
   p.alt = [...new Set([...played, ...drawn])].slice(0, POSITION_FIT.most);
+}
+
+/**
+ * Where a hitter who no longer fits his position moves (V0.12), down the defensive spectrum: short to second or
+ * third, second and third to first, centre to a corner, right to left, left to first. Read from his public
+ * grades now, so the move follows the glove and legs he has lost with the years. Catchers stay. Null: he fits.
+ */
+export function positionMove(p: Pick<Player, 'position' | 'scouting'>): Position | null {
+  const M = POSITION_FIT.move;
+  const def = p.scouting.tools.defense ?? 40,
+    spd = p.scouting.tools.speed ?? 40,
+    pow = p.scouting.tools.power ?? 40,
+    con = p.scouting.tools.contact ?? 40;
+  const fits = (pos: Position) =>
+    pos === 'SS' ? def >= M.ss.defense && spd >= M.ss.speed : pos === 'CF' ? def >= M.cf.defense && spd >= M.cf.speed : pos === '2B' || pos === '3B' || pos === 'RF' ? def >= M.corner : pos === 'LF' ? def >= M.left : true;
+  const at = p.position;
+  if (!at || at === 'C' || at === '1B' || fits(at)) return null;
+  const down: Record<Exclude<Position, 'C' | '1B'>, Position[]> = {
+    SS: pow > con ? ['3B', '2B', '1B'] : ['2B', '3B', '1B'],
+    '2B': ['1B'],
+    '3B': ['1B'],
+    CF: ['RF', 'LF', '1B'],
+    RF: ['LF', '1B'],
+    LF: ['1B'],
+  };
+  return down[at].find(fits) ?? '1B';
+}
+
+/** Moves him to `to`; his old spot stays one he can play (V0.11, up to three). */
+export function changePosition(p: Player, to: Position) {
+  p.alt = [...new Set([...(p.position ? [p.position] : []), ...(p.alt ?? [])])].filter((x) => x !== to).slice(0, POSITION_FIT.most);
+  p.position = to;
+}
+
+/** How well his public grades suit each spot (both groups: an infielder can go to an outfield corner). */
+const suits = (p: Pick<Player, 'scouting'>) => new Map([...positionScores('IF', p.scouting.tools), ...positionScores('OF', p.scouting.tools)]);
+/** Moves a club makes to fill a short spot: anyone can go to a corner or first; the middle needs the right group. */
+const CAN_GO: Record<Exclude<Position, 'C'>, Position[]> = {
+  SS: ['2B', '3B', '1B'],
+  '2B': ['SS', '3B', '1B', 'LF'],
+  '3B': ['1B', '2B', 'LF', 'RF'],
+  '1B': ['3B', 'LF', 'RF'],
+  CF: ['LF', 'RF'],
+  RF: ['LF', 'CF', '1B'],
+  LF: ['RF', '1B'],
+};
+
+/**
+ * A club's depth chart each winter (V0.12): an AI club spreads its hitters (catchers aside) over the field in
+ * KBO-like numbers. While a spot has more players than it needs and another fewer, the player who suits the
+ * crowded spot least (against the short one) moves over; a few moves a winter at most. Draft rooms prize gloves
+ * and legs, so without this the league fills up with shortstops and centre fielders and runs out of first basemen.
+ */
+export function balanceDepth(players: Player[]) {
+  const D = POSITION_FIT.depth;
+  const field = players.filter((p) => p.position && p.position !== 'C');
+  const want = (pos: Position) => Math.max(1, Math.round(field.length * D.shares[pos as keyof typeof D.shares]));
+  for (let moves = 0; moves < D.moves; moves++) {
+    const count = (pos: Position) => field.filter((p) => p.position === pos).length;
+    const spots = Object.keys(D.shares) as Exclude<Position, 'C'>[];
+    const short = spots.filter((pos) => count(pos) < want(pos)).sort((a, b) => count(a) / want(a) - count(b) / want(b));
+    const over = spots.filter((pos) => count(pos) > want(pos));
+    let best: { p: Player; to: Position; cost: number } | null = null;
+    for (const to of short)
+      for (const from of over) {
+        if (!CAN_GO[from].includes(to)) continue;
+        for (const p of field.filter((x) => x.position === from)) {
+          const fit = suits(p);
+          const cost = fit.get(from)! - fit.get(to)!;
+          if (!best || cost < best.cost) best = { p, to, cost };
+        }
+      }
+    if (!best) return;
+    changePosition(best.p, best.to);
+  }
 }

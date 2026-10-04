@@ -499,7 +499,15 @@ export function App() {
           story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }}
         />
       )}
-      {playerId && league && <PlayerPanel league={league} id={playerId} onClose={() => setPlayerId(null)} onInterview={(pid) => act({ kind: 'interview', id: pid }, '인터뷰 중', false)} />}
+      {playerId && league && (
+        <PlayerPanel
+          league={league}
+          id={playerId}
+          onClose={() => setPlayerId(null)}
+          onInterview={(pid) => act({ kind: 'interview', id: pid }, '인터뷰 중', false)}
+          onAct={(a) => act(a, '처리 중', false)}
+        />
+      )}
     </div>
   );
 }

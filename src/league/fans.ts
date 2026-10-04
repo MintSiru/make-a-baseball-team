@@ -10,7 +10,7 @@ import { cityById } from '../club/cities';
 import { ageIn, isForeign } from './players';
 import type { GameScore } from './standings';
 import { firstTeamIds, orgPlayers, type ClubState, type LeagueState } from './state';
-import { FANS, PARENT, RIVAL } from './tuning';
+import { FANS, FINANCE, PARENT, RIVAL } from './tuning';
 import { isRivalry } from './twelve';
 import { premiumShare, scoreboardDemand } from './facilities';
 
@@ -102,7 +102,9 @@ export function attendance(s: LeagueState, g: Pick<GameScore, 'id' | 'date' | 'h
   // The user's new scoreboard (V0.10).
   const venue = 1 + scoreboardDemand(s, g.home);
   const demand = home.popularity * boom(s.year) * Math.max(0.45, 1 + FANS.moodWeight * mood) * day * month * visitors * rivalry * venue * home.price ** -FANS.elasticity * (0.92 + r() * 0.16);
-  return Math.round(Math.min(team.stadium.capacity, demand));
+  // Season-ticket holders come whatever the record (V0.12, the user's club).
+  const holders = g.home === s.user?.teamId && home.seasonTickets?.year === s.year ? home.seasonTickets.sold * FINANCE.seasonTickets.show : 0;
+  return Math.round(Math.min(team.stadium.capacity, Math.max(demand, holders)));
 }
 
 export interface GateLine {
@@ -120,8 +122,10 @@ export function recordGate(s: LeagueState, home: TeamId, fans: number) {
   gate.games++;
   gate.fans += fans;
   if (fans >= team.stadium.capacity) gate.sellouts++;
-  // Premium seats (V0.10, the user's club) earn more per fan.
-  gate.revenue += Math.round(fans * leaguePrice(s.year) * clubState(s, home).price * (1 + premiumShare(s, home)));
+  // Premium seats (V0.10, the user's club) earn more per fan; season-ticket holders paid at opening (V0.12).
+  const c = clubState(s, home);
+  const holders = home === s.user?.teamId && c.seasonTickets?.year === s.year ? Math.min(fans, Math.round(c.seasonTickets.sold * FINANCE.seasonTickets.show)) : 0;
+  gate.revenue += Math.round((fans - holders) * leaguePrice(s.year) * c.price * (1 + premiumShare(s, home)));
 }
 
 /** Players who make fans come: stars (last season's WAR) and home-grown favourites. */

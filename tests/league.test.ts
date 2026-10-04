@@ -79,8 +79,13 @@ describe('league structure at 2026 opening day', () => {
   it('has soldiers away and exemptions from the real 2018 and 2023 Asian Games golds', () => {
     const players = Object.values(league.players);
     expect(players.some((p) => p.status === 'military')).toBe(true);
-    expect(league.international.filter((e) => e.year === 2018 || e.year === 2023).every((e) => e.medal)).toBe(true);
+    const games = league.international.filter((e) => e.kind === 'asianGames' && (e.year === 2018 || e.year === 2023));
+    expect(games).toHaveLength(2);
+    expect(games.every((e) => e.medal)).toBe(true);
     expect(league.international.find((e) => e.year === 2021)?.medal).toBe(false);
+    // V0.12: the WBC, the Premier12 and the APBC are played too, with their real results, and spare nobody the army.
+    expect(league.international.find((e) => e.id === '2019-premier12')).toMatchObject({ finish: 'runnerUp', medal: false });
+    expect(league.international.find((e) => e.id === '2023-wbc')?.squad).toHaveLength(30);
     expect(players.some((p) => p.service.military === 'exempt' && !isForeign(p))).toBe(true);
   });
 

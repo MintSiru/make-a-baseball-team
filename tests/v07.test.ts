@@ -6,6 +6,7 @@ import { createLeague } from '../src/league/history';
 import { positionGrades } from '../src/league/positions';
 import type { LeagueState } from '../src/league/state';
 import { boxView, lineupView, recordRoom } from '../src/league/views';
+import { endRegular } from './helpers';
 
 let s: LeagueState;
 beforeAll(() => {
@@ -16,7 +17,7 @@ beforeAll(() => {
     settings: { name: '울산 고래단', short: '고래', color: '#1f6fb2', cityId: 'ulsan', parentType: 'conglomerate', parentName: '가상', stadium: 'existing', promotion: 'immediate', difficulty: 'normal', scenario: null },
   });
   while (s.pending) apply(s, { kind: 'decide', input: autoDecision(s)! });
-  apply(s, { kind: 'regularEnd' });
+  endRegular(s);
   apply(s, { kind: 'postseason' });
   apply(s, { kind: 'nextSeason' });
   while (s.pending) apply(s, { kind: 'decide', input: autoDecision(s)! });

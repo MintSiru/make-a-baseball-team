@@ -9,6 +9,7 @@ import { isForeign } from '../src/league/players';
 import { orgPlayers, registeredIds, type LeagueState } from '../src/league/state';
 import { checkTrade, foreignMarket, tradeValue, tradeWindow } from '../src/league/trade';
 import { numbersCheck } from '../src/story/writer';
+import { endRegular } from './helpers';
 
 /** The latest transaction article about `id` (V0.7.2). */
 const moveAbout = (id: string) => [...(s.news ?? [])].reverse().find((n) => n.kind === 'move' && n.players.includes(id));
@@ -26,7 +27,7 @@ beforeAll(() => {
     settings: { name: '테스트', short: '테스트', color: '#1f6fb2', cityId: 'ulsan', parentType: 'conglomerate', parentName: '가상', stadium: 'existing', promotion: 'immediate', difficulty: 'normal', scenario: null },
   });
   decideAll();
-  apply(s, { kind: 'regularEnd' });
+  endRegular(s);
   apply(s, { kind: 'postseason' });
   apply(s, { kind: 'nextSeason' });
   decideAll();

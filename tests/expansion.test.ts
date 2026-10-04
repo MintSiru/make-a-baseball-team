@@ -9,6 +9,7 @@ import { isForeign } from '../src/league/players';
 import { developmentIds, firstTeamIds, registeredIds, type Decision, type ExpansionSettings, type LeagueState } from '../src/league/state';
 import { EXPANSION_DEFAULTS } from '../src/rules/kbo2026';
 import { OFFSEASON } from '../src/league/tuning';
+import { endRegular } from './helpers';
 
 let base = '';
 beforeAll(() => {
@@ -40,7 +41,7 @@ function playTo(s: LeagueState, year: number, onDecision?: (d: Decision, s: Leag
   };
   decide();
   while (s.year < year) {
-    apply(s, { kind: 'regularEnd' });
+    endRegular(s);
     apply(s, { kind: 'postseason' });
     apply(s, { kind: 'nextSeason' });
     decide();
@@ -120,7 +121,10 @@ describe('expansion after a futures year (NC/KT path)', () => {
     expect(specialPicks.length).toBeGreaterThan(0);
     expect(specialPicks.length).toBeLessThanOrEqual(10);
     for (const l of specialPicks) expect(l.amount).toBe(-EXPANSION_DEFAULTS.specialDraft.feePerPlayer);
-    expect(s.user!.fund).toBeLessThan(fundBeforeSpecial);
+    // V0.12: the owner's budget at the next opening covers the winter's spending, so the fund is not lower afterwards;
+    // the fees are on the books and the budget came.
+    expect(s.user!.ledger.some((l) => l.label.includes('시즌 예산 확정'))).toBe(s.year >= 2028 && s.phase === 'regular');
+    void fundBeforeSpecial;
     expect(s.history.find((h) => h.year === 2027)?.userFutures).toBeDefined();
   }, 60_000);
 

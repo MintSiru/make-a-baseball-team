@@ -11,6 +11,7 @@ import { signSponsor } from '../src/league/parent';
 import { staffOf, STAFF_ROLES } from '../src/league/staff';
 import type { LeagueState } from '../src/league/state';
 import { rng } from '../src/draftroom';
+import { endRegular } from './helpers';
 
 let s: LeagueState;
 beforeAll(() => {
@@ -86,7 +87,7 @@ describe('the user club', () => {
     });
     while (u.pending) apply(u, { kind: 'decide', input: autoDecision(u)! });
     for (let i = 0; i < 2; i++) {
-      apply(u, { kind: 'regularEnd' });
+      endRegular(u);
       apply(u, { kind: 'postseason' });
       apply(u, { kind: 'nextSeason' });
       while (u.pending) apply(u, { kind: 'decide', input: autoDecision(u)! });
@@ -116,7 +117,7 @@ describe('the user club', () => {
   });
 
   it('starts ballpark work in the winter while a decision waits, and it opens with the next season', () => {
-    apply(u, { kind: 'regularEnd' });
+    endRegular(u);
     apply(u, { kind: 'postseason' });
     apply(u, { kind: 'nextSeason' });
     expect(u.pending).toBeTruthy();

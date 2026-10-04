@@ -6,6 +6,7 @@ import { createLeague } from '../src/league/history';
 import { rosterLimit } from '../src/league/offseason';
 import { developmentIds, registeredIds, type Decision, type LeagueState } from '../src/league/state';
 import { OFFSEASON } from '../src/league/tuning';
+import { endRegular } from './helpers';
 
 let s: LeagueState;
 const seen: Decision[] = [];
@@ -28,7 +29,7 @@ beforeAll(() => {
   });
   decideAll();
   while (s.year < 2031) {
-    apply(s, { kind: 'regularEnd' });
+    endRegular(s);
     apply(s, { kind: 'postseason' });
     apply(s, { kind: 'nextSeason' });
     decideAll();
@@ -48,7 +49,8 @@ describe('the user club every winter', () => {
     expect(developmentIds(s, EXPANSION_ID).length).toBeGreaterThan(0);
     expect(s.user!.fund).toBeGreaterThan(0);
     expect(s.user!.ledger.some((l) => l.label.includes('운영 결산'))).toBe(true);
-    expect(s.user!.ledger.some((l) => l.label.startsWith('모기업 지원'))).toBe(true);
+    // V0.12: the owner's support is fixed and paid at opening ("{year} 모기업 지원 … (시즌 예산 확정)").
+    expect(s.user!.ledger.some((l) => l.label.includes('모기업 지원'))).toBe(true);
     expect(s.user!.ledger.some((l) => l.label.startsWith('신인 계약금'))).toBe(true);
   });
 

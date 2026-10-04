@@ -115,9 +115,16 @@ async function decideAll(page, log) {
   failures.push('too many decisions');
 }
 
-async function playSeason(page) {
-  await page.getByRole('button', { name: '정규시즌 끝까지' }).click();
-  await page.getByRole('button', { name: '포스트시즌 진행' }).waitFor({ timeout: 90_000 });
+async function playSeason(page, log = []) {
+  // V0.12: the season can stop for a decision (a national-team call-up, a disciplined player); answer and go on.
+  for (let i = 0; i < 10; i++) {
+    await page.getByRole('button', { name: '정규시즌 끝까지' }).click();
+    const post = page.getByRole('button', { name: '포스트시즌 진행' });
+    const decision = page.locator('#decision-title');
+    await post.or(decision).first().waitFor({ timeout: 90_000 });
+    if (await post.count()) break;
+    await decideAll(page, log);
+  }
   await page.getByRole('button', { name: '포스트시즌 진행' }).click();
   await page.getByRole('button', { name: '다음 시즌으로' }).waitFor({ timeout: 90_000 });
   await page.getByRole('button', { name: '다음 시즌으로' }).click();
@@ -232,6 +239,9 @@ try {
     if (sec === '관중 · 티켓') {
       await page.getByLabel('티켓 가격').selectOption('1.20');
       await page.waitForFunction(() => document.querySelector('select[aria-label="티켓 가격"]')?.value === '1.20');
+      // 0.12: season tickets for the next opening.
+      await page.getByLabel('시즌권 할인율').selectOption('0.2');
+      await page.waitForFunction(() => document.querySelector('select[aria-label="시즌권 할인율"]')?.value === '0.2');
     }
   }
   await page.getByRole('button', { name: '순위', exact: true }).click();
@@ -349,6 +359,12 @@ try {
   await page.locator('.squad-table .link').first().click();
   await page.getByRole('dialog').waitFor();
   check((await page.locator('.velocity').count()) === 1, 'pitcher profile shows velocity');
+  // 0.12: the general manager gives him a number (a teammate wearing it swaps).
+  const numberBox = page.getByRole('spinbutton', { name: '등번호' });
+  await numberBox.fill('77');
+  await page.locator('.number-form button').click();
+  await page.waitForFunction(() => document.querySelector('.profile-number')?.textContent === '77');
+  check((await page.locator('.profile-number').textContent()) === '77', 'the uniform number can be set');
   await page.screenshot({ path: join(shots, 'player.png') });
   for (const t of ['통산 · 커리어 하이', '좌우 기록', '부상 이력', '연도별 기록']) await page.getByRole('tab', { name: t }).click();
   await page.keyboard.press('Escape');

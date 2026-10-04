@@ -6,12 +6,11 @@
    Only in a game with the player's club, and never part of the simulation. */
 import type { Player, PlayerId, TeamId } from '../model/types';
 import type { SeasonAwards } from './awards';
-import type { InternationalEvent } from './international';
 import type { NewsItem, NewsKind } from './news';
 import { ageIn } from './players';
 import type { LeagueState } from './state';
 
-export type AlertKind = 'national' | 'fa' | 'award' | 'hall' | 'season' | 'owner' | 'posting' | 'achievement' | 'injury' | 'military' | 'retire' | 'move' | 'life' | 'game' | 'record';
+export type AlertKind = 'national' | 'fa' | 'award' | 'hall' | 'season' | 'owner' | 'posting' | 'achievement' | 'injury' | 'military' | 'retire' | 'move' | 'life' | 'game' | 'record' | 'scandal' | 'dispute';
 
 export interface Alert {
   id: string;
@@ -65,55 +64,6 @@ export function markAlertsSeen(s: LeagueState, ids?: string[]) {
 const short = (s: LeagueState, id: TeamId | null | undefined) => s.teams.find((t) => t.id === id)?.short ?? '';
 const POS: Record<string, string> = { C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' };
 const posOf = (p: Player) => (p.position ? POS[p.position]! : p.role === 'SP' ? '선발투수' : '불펜투수');
-
-// ── National team ────────────────────────────────────────────────────────────────────────────────
-
-type Squad = { year: number; name: string; medal: boolean; squad: PlayerId[] };
-
-/** The squad is named: which of our players go, and who could earn the military exemption. */
-export function nationalPickAlert(s: LeagueState, e: InternationalEvent, entry: Squad, date: string) {
-  const u = s.user;
-  if (!u) return;
-  const ours = entry.squad.map((id) => s.players[id]).filter((p): p is Player => !!p && p.teamId === u.teamId);
-  if (!ours.length) return;
-  const exempt = ours.filter((p) => p.service.military === 'pending' || p.service.military === 'serving');
-  addAlert(s, {
-    id: `intl-pick-${entry.year}`,
-    date,
-    kind: 'national',
-    title: `국가대표 선발 · ${e.name}`,
-    lines: [
-      `대표팀 ${entry.squad.length}명 가운데 우리 선수 ${ours.length}명이 뽑혔습니다.`,
-      ...ours.map((p) => `${p.name} (${posOf(p)}${p.service.military === 'pending' ? ', 미필' : ''})`),
-      ...(exempt.length ? [`${e.kind === 'asianGames' ? '금메달' : '메달'}을 따면 미필 ${exempt.length}명이 병역 특례를 받습니다.`] : []),
-      ...(e.dates ? [`대회 기간(${e.dates.from.slice(5)}~${e.dates.to.slice(5)})에는 팀을 떠납니다.`] : []),
-    ],
-    tone: 'good',
-    players: ours.map((p) => p.id),
-  });
-}
-
-/** The event is over: the result, and our players who earned the exemption. */
-export function nationalResultAlert(s: LeagueState, e: InternationalEvent, entry: Squad, date: string) {
-  const u = s.user;
-  if (!u) return;
-  const ours = entry.squad.map((id) => s.players[id]).filter((p): p is Player => !!p && p.teamId === u.teamId);
-  const exempt = entry.medal ? ours.filter((p) => p.service.military === 'pending' || p.service.military === 'serving') : [];
-  const medal = e.kind === 'asianGames' ? '금메달' : '메달';
-  addAlert(s, {
-    id: `intl-result-${entry.year}`,
-    date,
-    kind: 'national',
-    title: `${e.name} ${entry.medal ? `${medal} 획득` : `${medal} 실패`}`,
-    lines: [
-      entry.medal ? `대표팀이 ${medal}을 땄습니다.` : `대표팀이 ${medal}을 따지 못했습니다.`,
-      ...(ours.length ? [`우리 선수: ${ours.map((p) => p.name).join(', ')}`] : []),
-      ...(exempt.length ? [`병역 특례(예술체육요원): ${exempt.map((p) => p.name).join(', ')}`] : entry.medal && ours.length ? ['우리 선수 가운데 병역 특례 대상(미필)은 없습니다.'] : []),
-    ],
-    tone: entry.medal ? 'good' : ours.length ? 'bad' : undefined,
-    players: ours.map((p) => p.id),
-  });
-}
 
 // ── The free-agent market ────────────────────────────────────────────────────────────────────────
 

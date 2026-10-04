@@ -21,8 +21,10 @@ export const ALERT_LABEL: Record<AlertKind, string> = {
   life: '선수 소식',
   game: '경기',
   record: '기록',
+  scandal: '징계',
+  dispute: '지분 분쟁',
 };
-const ICON: Record<AlertKind, string> = { national: '⚾', fa: '✍️', award: '🏆', hall: '🏛️', season: '📅', owner: '🏢', posting: '✈️', achievement: '🎖️', injury: '🩹', military: '🪖', retire: '👋', move: '🔁', life: '💬', game: '📰', record: '📈' };
+const ICON: Record<AlertKind, string> = { national: '⚾', fa: '✍️', award: '🏆', hall: '🏛️', season: '📅', owner: '🏢', posting: '✈️', achievement: '🎖️', injury: '🩹', military: '🪖', retire: '👋', move: '🔁', life: '💬', game: '📰', record: '📈', scandal: '⚖️', dispute: '📜' };
 
 // ── Whether new alerts pop up (per-browser preferences; the list is always there) ─────────────────
 

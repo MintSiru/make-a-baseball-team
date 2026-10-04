@@ -15,9 +15,11 @@ import { attendance, clubState, recordGate } from './fans';
 import { staffOf } from './staff';
 import { setGoals } from './parent';
 import { aiForeignChanges, aiTrades, processWaivers } from './trade';
-import { INTERNATIONAL } from './international';
-import { nationalResultAlert } from './alerts';
-import { rosterLimit, selectNationalTeam } from './offseason';
+import { scoutMonth } from './scouting';
+import { scandalDay, serveSuspensions } from './scandals';
+import { openBooks } from './finance';
+import { rosterLimit } from './offseason';
+import { finishEvent, marchEvents, nationalTeamBack, nationalTeamCalls, nationalTeamLeaves } from './national';
 import { currentValue, isForeign } from './players';
 import { makeSchedule } from './schedule';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, registeredIds, type FuturesSeason, type LeagueState, type SeasonLine } from './state';
@@ -52,6 +54,8 @@ export function startSeason(s: LeagueState) {
   s.countedThrough = null;
   // Operations from last season can run past opening day (injuries.ts).
   carryOverInjuries(s, s.schedule[0]?.date);
+  // The March tournament is over before opening day; a few come back hurt (V0.12).
+  for (const e of marchEvents(s.year)) finishEvent(s, e);
   // Winter programmes abroad are over before camp (V0.10).
   finishTrips(s, s.schedule[0]?.date ?? `${s.year}-03-01`);
   for (const id of firstTeamIds(s)) setActive(s, id, chooseActive(s, id));
@@ -72,6 +76,8 @@ export function startSeason(s: LeagueState) {
   s.pbp = {};
   setGoals(s, s.year);
   if (s.user && s.user.firstTeamYear === s.year) milestone(s, s.year, `${s.year} 1군 첫 시즌 개막`, 'firstTeam');
+  // The owner's budget for the season and season tickets (V0.12).
+  openBooks(s);
 }
 
 // ── Futures league ──────────────────────────────────────────────────────────────────────────────
@@ -233,19 +239,29 @@ export function playGame(s: LeagueState, homeId: TeamId, awayId: TeamId, id: str
 /** Plays every game on the next date. Returns false when the regular season is over. */
 export function playDay(s: LeagueState): boolean {
   if (s.phase !== 'regular' || s.next >= s.schedule.length) return false;
+  // The game waits while the user has something to decide (an in-season decision, V0.12).
+  if (s.pending) return false;
   const date = s.schedule[s.next]!.date;
+  // A national team named today may need the user's word on his players first (V0.12): the day waits.
+  if (nationalTeamCalls(s, date)) return false;
   countDays(s, date);
   // The user's players back from training abroad, and what happened off the field today (V0.10).
   finishTrips(s, date);
   lifeDay(s, date);
+  // Now and then something worse (V0.12): the club answers before the next day.
+  scandalDay(s, date);
   returnFromService(s, date);
-  nationalTeamLeaves(s, date);
+  nationalTeamAway(s, date);
   nationalTeamBack(s, date);
   processWaivers(s, date);
   marketEvents(s, date);
   const day = s.next;
   // The first game day of a month: last month's story.
-  if (day > 0 && s.schedule[day - 1]!.date.slice(5, 7) !== date.slice(5, 7)) monthNews(s, date);
+  if (day > 0 && s.schedule[day - 1]!.date.slice(5, 7) !== date.slice(5, 7)) {
+    monthNews(s, date);
+    // The scouts look again at the young players (V0.12).
+    scoutMonth(s, date);
+  }
   while (s.next < s.schedule.length && s.schedule[s.next]!.date === date) {
     const g = s.schedule[s.next]!;
     const log: PlayEvent[] | undefined = isUserGame(s, g.home, g.away) ? [] : undefined;
@@ -254,6 +270,8 @@ export function playDay(s: LeagueState): boolean {
     if (!out) continue;
     record(s, out.home, date);
     record(s, out.away, date);
+    serveSuspensions(s, g.home);
+    serveSuspensions(s, g.away);
     const att = attendance(s, { id: g.id, date, home: g.home, away: g.away });
     recordGate(s, g.home, att);
     s.scores.push({ id: g.id, date, home: g.home, away: g.away, hs: out.home.runs, as: out.away.runs, att });
@@ -287,21 +305,8 @@ function marketEvents(s: LeagueState, date: string) {
 }
 
 /** An in-season national team leaves its clubs on its date; clubs call up replacements (maintainRosters). */
-function nationalTeamLeaves(s: LeagueState, date: string) {
-  const event = INTERNATIONAL.find((e) => e.year === s.year && e.dates);
-  if (!event?.dates || date < event.dates.from || s.international.some((e) => e.year === s.year)) return;
-  const entry = selectNationalTeam(s, s.year);
-  if (!entry) return;
-  for (const id of entry.squad) if (s.players[id]?.status === 'active') s.away[id] = event.dates.to;
-  maintainRosters(s, date, false);
-}
-
-/** The day after an in-season event ends, the user hears how it went (alerts.ts). */
-function nationalTeamBack(s: LeagueState, date: string) {
-  const event = INTERNATIONAL.find((e) => e.year === s.year && e.dates);
-  if (!s.user || !event?.dates || date <= event.dates.to) return;
-  const entry = s.international.find((e) => e.year === s.year);
-  if (entry) nationalResultAlert(s, event, entry, event.dates.to);
+function nationalTeamAway(s: LeagueState, date: string) {
+  if (nationalTeamLeaves(s, date)) maintainRosters(s, date, false);
 }
 
 /** Soldiers discharged during the season rejoin their club's futures roster. */

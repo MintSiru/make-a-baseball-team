@@ -177,6 +177,10 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
   const goals = u.goals;
   const avgNow = gate?.games ? gate.fans / gate.games : null;
   const priceWon = (level: number) => Math.round(leaguePrice(league.year) * level * 10000);
+  // V0.12: the owner's budget paid at opening, and where the fund should end the season.
+  const budget = u.seasonSupport?.year === league.year && inSeason ? u.seasonSupport : null;
+  const tickets = club?.seasonTickets?.year === league.year ? club.seasonTickets : null;
+  const expectedFund = u.fund + (current?.operating ?? 0) - (tickets?.paid ?? 0);
 
   return (
     <>
@@ -194,9 +198,16 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
             <p class="card-label">구단 자금</p>
             <p class="card-value">{u.fund < 0 ? `−${money(-u.fund)}` : money(u.fund)}</p>
             <p class="card-sub">
-              올해 지원 한도 {money(u.support ?? 0)} ({PARENT_COMPANY_TYPES[u.settings.parentType].label})
+              {budget ? `올해 모기업 지원 ${money(budget.amount)} (개막 때 확정)` : `지원 한도 ${money(u.support ?? 0)}`} ({PARENT_COMPANY_TYPES[u.settings.parentType].label})
             </p>
           </div>
+          {budget && current && (
+            <div class="card">
+              <p class="card-label">{league.year} 예상 연말 자금</p>
+              <p class={`card-value ${expectedFund < 0 ? 'minus' : ''}`}>{expectedFund < 0 ? `−${money(-expectedFund)}` : money(expectedFund)}</p>
+              <p class="card-sub">{expectedFund < 0 ? '모자라면 모기업이 긴급 지원하지만 신뢰도가 떨어집니다' : '남는 돈은 구단 자금으로 쌓입니다'}</p>
+            </div>
+          )}
           <div class="card">
             <p class="card-label">{payYear}년 연봉 / 예산</p>
             <p class="card-value">{money(projectedPayroll(league, u.teamId, payYear))}</p>
@@ -250,7 +261,7 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
             <div class="card">
               <p class="card-label">올해 지원 한도</p>
               <p class="card-value">{money(u.support ?? 0)}</p>
-              <p class="card-sub">{supportLabel(u.settings.parentType)} · 적자를 이만큼까지 메워 줌</p>
+              <p class="card-sub">{supportLabel(u.settings.parentType)} · 개막 때 예상 적자만큼 이 한도 안에서 미리 줌</p>
             </div>
             <div class="card">
               <p class="card-label">신뢰도</p>
@@ -343,8 +354,9 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
       {section === 'money' && (
         <>
           <Help title="결산 방식">
-            시즌이 끝나면 결산합니다. 수입에서 지출을 뺀 운영 결과와 한 해 동안 자금에서 쓴 돈(계약금·위약금 등)을 합쳐 적자가 나면 모기업이 지원 한도까지 메우고, 넘는 만큼은 구단 자금에서 나갑니다. 흑자는
-            구단 자금으로 쌓입니다. 구장 공사비는 지원 대상이 아니라 자금에서 바로 나갑니다.
+            1군 시즌 개막 때 모기업이 그해 예산을 확정해 미리 줍니다: 예상 운영 적자와 겨울에 자금에서 쓴 돈(계약금 등)만큼, 지원 한도 안에서. 연봉 예산을 넘겨 쓴 몫은 넣어 주지 않습니다.
+            시즌이 끝나면 실제 운영 결과(수입 − 지출)가 구단 자금에 더해집니다. 예상보다 잘하면 남는 돈은 구단 몫, 못하면 자금에서 나갑니다. 연말에 자금이 마이너스면 모기업이 0까지 긴급
+            지원하지만 신뢰도가 떨어집니다. 1군 진입 전에는 모기업이 적자를 모두 메웁니다. 구장 공사비는 지원 대상이 아니라 자금에서 바로 나갑니다.
           </Help>
           {current || reports.length ? (
             <ReportTable
@@ -402,6 +414,22 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
               {Array.from({ length: Math.round((FANS.priceMax - FANS.priceMin) / 0.05) + 1 }, (_, i) => Math.round((FANS.priceMin + i * 0.05) * 100) / 100).map((lv) => (
                 <option key={lv} value={lv.toFixed(2)}>
                   {Math.round(lv * 100)}% · {priceWon(lv).toLocaleString('ko-KR')}원
+                </option>
+              ))}
+            </select>
+          </label>
+          <h3>시즌권</h3>
+          <p class="muted">
+            할인율을 정하면 다음 개막 때 팬 규모와 분위기에 따라 시즌권이 팔리고, 판매액이 개막 때 바로 구단 자금으로 들어옵니다. 시즌권 관중은 성적과 상관없이 경기의 90%를 찾아오지만, 그만큼은 할인된 값만
+            받습니다.
+            {tickets ? ` 올해: ${tickets.sold.toLocaleString('ko-KR')}석 (할인 ${Math.round(tickets.discount * 100)}%), ${money(tickets.paid)}.` : ''}
+          </p>
+          <label class="inline-form">
+            {inSeason ? '다음 시즌 할인율' : '할인율'}
+            <select value={String(club.seasonTicketDiscount ?? 0)} onChange={(e) => act({ kind: 'seasonTickets', discount: Number((e.currentTarget as HTMLSelectElement).value) })} aria-label="시즌권 할인율">
+              {[0, 0.1, 0.2, 0.3].map((d) => (
+                <option key={d} value={String(d)}>
+                  {d ? `${Math.round(d * 100)}% 할인` : '할인 없음 (조금만 팔림)'}
                 </option>
               ))}
             </select>

@@ -52,6 +52,43 @@ function teamNumbers(s: LeagueState, teamId: TeamId) {
   }
 }
 
+/** Why `n` cannot be his number, or null (V0.12): our player, the right range, not retired here. A teammate's
+    number is fine: they swap. */
+export function checkNumber(s: LeagueState, id: string, n: number): string | null {
+  const p = s.players[id];
+  const u = s.user;
+  if (!p || !u || p.teamId !== u.teamId) return '우리 구단 선수만 등번호를 바꿀 수 있습니다.';
+  if (!Number.isInteger(n)) return '등번호는 정수입니다.';
+  if (!fits(p, n)) return isDevelopment(p) ? '육성선수는 100~199번을 답니다.' : '정식선수는 0~99번을 답니다.';
+  const team = s.teams.find((t) => t.id === u.teamId)!;
+  const retired = team.retiredNumbers?.find((x) => x.number === n);
+  if (retired) return `${n}번은 ${retired.name}의 영구결번입니다.`;
+  return null;
+}
+
+/** Who at `teamId` wears `n` (a soldier included), other than `except`. */
+export const numberHolder = (s: LeagueState, teamId: TeamId, n: number, except?: string) =>
+  Object.values(s.players).find((q) => q.id !== except && q.teamId === teamId && q.numberTeam === teamId && q.number === n && q.status !== 'retired');
+
+/** Gives one of our players number `n`; a teammate wearing it takes his old number if it suits him, or a new one. */
+export function setNumber(s: LeagueState, id: string, n: number): string | null {
+  const problem = checkNumber(s, id, n);
+  if (problem) return problem;
+  const p = s.players[id]!;
+  const teamId = p.teamId!;
+  const old = p.numberTeam === teamId ? p.number : undefined;
+  // Anyone of ours wearing it, a soldier included (he would claim it back when he returns).
+  const other = numberHolder(s, teamId, n, id);
+  p.number = n;
+  p.numberTeam = teamId;
+  if (other) {
+    if (old != null && fits(other, old)) other.number = old;
+    else delete other.number;
+    teamNumbers(s, teamId);
+  }
+  return null;
+}
+
 /** Gives every player at every club a number of his own. */
 export function ensureNumbers(s: LeagueState) {
   for (const t of s.teams) if (s.rosters[t.id]) teamNumbers(s, t.id);
