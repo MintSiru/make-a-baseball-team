@@ -4,7 +4,7 @@
    spectator path on a phone-sized screen.
    Run `npm run build` first. Uses CHROMIUM_BIN when set, else Playwright's own browser lookup.
    Screenshots go to tests/browser/screenshots/ (git-ignored). */
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { chromium } from 'playwright-core';
@@ -172,8 +172,10 @@ try {
   await page.locator('.tutorial').getByRole('button', { name: '알겠어요' }).click();
   await page.waitForFunction(() => document.querySelector('.tutorial h2')?.textContent === '결정할 일');
   check((await page.locator('h1').textContent()) === '울산 고래단', 'masthead shows the club');
-  // Display settings (V0.7.6): the bar colours by grade tier, kept in this browser.
-  await page.getByRole('button', { name: '화면 설정', exact: true }).click();
+  // Display settings (V0.7.6): the bar colours by grade tier, kept in this browser. Since 0.13 they live in
+  // the settings tab, opened from the masthead.
+  await page.locator('.masthead').getByRole('button', { name: '설정', exact: true }).click();
+  await page.locator('#settings-display').waitFor();
   await page.getByRole('radio', { name: /등급별 색/ }).check();
   check((await page.evaluate(() => document.documentElement.style.getPropertyValue('--grade-4'))) !== '', 'bar colours by grade tier are applied');
   await page.getByRole('checkbox', { name: /선수 표의 현재·미래 능력치/ }).check();
@@ -182,7 +184,18 @@ try {
   const articles = page.getByRole('checkbox', { name: /우리 구단 기사/ });
   check(await articles.isChecked(), 'articles about our club pop up by default');
   await page.screenshot({ path: join(shots, 'display-settings.png'), fullPage: false });
-  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
+  // 0.13: the clubs can take the fictional names (and back); the standings follow.
+  await page.getByRole('button', { name: '가상 이름 세트 넣기' }).click();
+  await page.getByRole('button', { name: '이름 적용' }).click();
+  await page.locator('nav.tabs').getByRole('button', { name: '순위', exact: true }).click();
+  check((await page.locator('.standings').first().textContent())?.includes('솔빛'), 'standings show the renamed clubs');
+  await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
+  await page.locator('#settings-clubs').screenshot({ path: join(shots, 'club-names.png') });
+  await page.getByRole('button', { name: '실제 이름 넣기' }).click();
+  await page.getByRole('button', { name: '이름 적용' }).click();
+  await page.locator('nav.tabs').getByRole('button', { name: '순위', exact: true }).click();
+  check((await page.locator('.standings').first().textContent())?.includes('KIA'), 'the real names come back');
+  await page.getByRole('button', { name: /결정할 일/ }).click();
   const log = [];
   await decideAll(page, log);
 
@@ -326,10 +339,33 @@ try {
   await page.getByRole('group', { name: '이야기' }).getByRole('button', { name: '뉴스', exact: true }).click();
   for (const v of ['이적', '경기', '전체']) await page.getByRole('group', { name: '기사 종류' }).getByRole('button', { name: v, exact: true }).click();
   await page.screenshot({ path: join(shots, 'story.png'), fullPage: false });
-  await page.getByRole('button', { name: /^AI 기사 설정/ }).click();
-  await page.getByRole('dialog').waitFor();
-  await page.getByLabel('제공자').selectOption('gemini');
-  await page.getByRole('dialog').getByRole('button', { name: '닫기' }).click();
+  // 0.13: AI settings in the settings tab. A key typed there must never reach a save (the autosave or a file).
+  await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
+  const storyBlock = page.locator('#settings-story');
+  await storyBlock.getByLabel('제공자').selectOption('gemini');
+  const SECRET = 'test-key-never-saved-0130';
+  await storyBlock.getByLabel('API 키').fill(SECRET);
+  await storyBlock.getByRole('button', { name: '저장', exact: true }).click();
+  await page.locator('nav.tabs').getByRole('button', { name: '순위', exact: true }).click();
+  await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
+  const [download] = await Promise.all([page.waitForEvent('download'), page.locator('#settings-save').getByRole('button', { name: '진행 파일 저장' }).click()]);
+  const file = readFileSync(await download.path(), 'utf8');
+  check(file.length > 1000 && !file.includes(SECRET), 'an exported save holds no API key');
+  const stored = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const open = indexedDB.open('kbo-expansion');
+        open.onsuccess = () => {
+          const req = open.result.transaction('saves').objectStore('saves').getAll();
+          req.onsuccess = () => resolve(JSON.stringify(req.result));
+          req.onerror = () => resolve('');
+        };
+        open.onerror = () => resolve('');
+      }),
+  );
+  check(!stored.includes(SECRET), 'the autosave holds no API key');
+  check((await page.locator('#settings-save').textContent())?.includes('마지막 진행 파일 저장'), 'the settings show the last export');
+  await storyBlock.getByRole('button', { name: '키 지우기' }).click();
   await page.getByRole('button', { name: '역대', exact: true }).click();
   for (const v of ['시상', '기록실', '명예의 전당', '시즌']) await page.getByRole('group', { name: '역대' }).getByRole('button', { name: v, exact: true }).click();
   await page.getByRole('group', { name: '역대' }).getByRole('button', { name: '기록실', exact: true }).click();
@@ -383,8 +419,8 @@ try {
   // 7. Layouts.
   for (const [width, height] of SIZES) {
     await page.setViewportSize({ width, height });
-    for (const tab of ['우리 구단', '이적시장', '경기', '순위', '기록', '구단', '역대', '드래프트 후보']) {
-      await page.getByRole('button', { name: tab, exact: true }).click();
+    for (const tab of ['우리 구단', '이적시장', '경기', '순위', '기록', '구단', '역대', '드래프트 후보', '설정']) {
+      await page.locator('nav.tabs').getByRole('button', { name: tab, exact: true }).click();
       await noOverflow(page, `${width}x${height} ${tab}`);
     }
     await page.getByRole('button', { name: '우리 구단', exact: true }).click();

@@ -13,6 +13,8 @@ import { openStore, type SaveStore } from '../save/store';
 import { BoxScore } from './BoxScore';
 import { StorySettings } from './StorySettings';
 import { DisplaySettings } from './DisplaySettings';
+import { noteExport, Settings } from './Settings';
+import { DISCLAIMER } from '../core/about';
 import { ClubSummary } from './ClubSummary';
 import { AlertPopup, poppingAlerts, useAlertPopups, useArticlePopups } from './Alerts';
 import { TutorialCard } from './Tutorial';
@@ -39,7 +41,7 @@ import { TeamRoster } from './TeamRoster';
 const AUTO_SLOT = 'auto';
 const newSeed = () => `kbo-${Math.floor(Math.random() * 36 ** 6).toString(36)}`;
 
-type Tab = 'decision' | 'club' | 'market' | 'games' | 'standings' | 'leaders' | 'team' | 'history' | 'draft';
+type Tab = 'decision' | 'club' | 'market' | 'games' | 'standings' | 'leaders' | 'team' | 'history' | 'draft' | 'settings';
 const TABS: { id: Tab; label: string; userOnly?: boolean; waiting?: boolean }[] = [
   // Only while the game waits for a decision (the winter's steps): the other screens stay open beside it.
   { id: 'decision', label: '결정할 일', waiting: true },
@@ -51,6 +53,7 @@ const TABS: { id: Tab; label: string; userOnly?: boolean; waiting?: boolean }[] 
   { id: 'team', label: '구단' },
   { id: 'history', label: '역대' },
   { id: 'draft', label: '드래프트 후보' },
+  { id: 'settings', label: '설정' },
 ];
 
 const AUTO_KINDS: NewsItem['kind'][] = ['season', 'award', 'month', 'interview'];
@@ -311,6 +314,7 @@ export function App() {
     a.click();
     a.remove();
     URL.revokeObjectURL(a.href);
+    noteExport(league.seed);
   };
 
   const importSave = async (file: File | undefined) => {
@@ -325,6 +329,12 @@ export function App() {
     } catch (e) {
       setNotice(e instanceof SaveError ? e.message : '진행 파일을 읽지 못했습니다.');
     }
+  };
+
+  const saveStory = (s: StorySettingsT) => {
+    setStorySettings(s);
+    saveSettings(s);
+    setNotice('AI 기사 설정을 저장했습니다.');
   };
 
   const newGame = () => {
@@ -398,14 +408,8 @@ export function App() {
                 새 알림 {unseen.length}
               </button>
             )}
-            <button type="button" onClick={() => setDisplayOpen(true)}>
-              화면 설정
-            </button>
-            <button type="button" onClick={() => setStoryOpen(true)}>
-              AI 기사 설정{hasKey(storySettings) ? ' ✓' : ''}
-            </button>
-            <button type="button" onClick={newGame} disabled={!!busy}>
-              새 게임
+            <button type="button" aria-current={tab === 'settings' ? 'page' : undefined} onClick={() => setTab('settings')}>
+              설정
             </button>
           </div>
         </header>
@@ -428,10 +432,9 @@ export function App() {
             </label>
             <span class="muted">{store.kind === 'indexedDB' ? '자동 저장됨' : '이 브라우저에서는 자동 저장을 쓸 수 없습니다. 진행 파일로 저장하세요.'}</span>
           </div>
-          <p class="muted small">선수·학교·기록은 모두 가상입니다. 구단명과 구장 외에는 실제와 관계없습니다.</p>
+          <p class="muted small">{DISCLAIMER}</p>
         </footer>
       </aside>
-      {displayOpen && <DisplaySettings onClose={() => setDisplayOpen(false)} />}
       {storyOpen && (
         <StorySettings
           settings={storySettings}
@@ -439,8 +442,7 @@ export function App() {
           pausedUntil={storySettings.auto ? autoPause.current : 0}
           onClose={() => setStoryOpen(false)}
           onSave={(s) => {
-            setStorySettings(s);
-            saveSettings(s);
+            saveStory(s);
             setStoryOpen(false);
           }}
         />
@@ -479,6 +481,18 @@ export function App() {
         {tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} />}
         {tab === 'team' && <TeamRoster league={league} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />}
         {tab === 'history' && <History league={league} onPlayer={setPlayerId} />}
+        {tab === 'settings' && (
+          <Settings
+            league={league}
+            store={store}
+            busy={!!busy}
+            story={{ settings: storySettings, usage: usage.current, pausedUntil: storySettings.auto ? autoPause.current : 0, onSave: saveStory }}
+            onAct={(a) => act(a, '처리 중', false)}
+            onExport={exportSave}
+            onImport={importSave}
+            onNewGame={newGame}
+          />
+        )}
         {tab === 'draft' && (
           <div class="layout">
             <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} ourView={league?.user ? (p) => scoutView(league!, p) : undefined} />

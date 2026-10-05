@@ -2389,3 +2389,74 @@ ul.plain li {
 .search-table td {
   white-space: nowrap;
 }
+
+/* Settings tab (V0.13): one long page, a jump bar at the top, a block per subject. */
+.settings-jump {
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.settings-jump a {
+  padding: 4px 12px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 14px;
+}
+.settings-jump a:hover,
+.settings-jump a:focus-visible {
+  border-color: var(--accent);
+}
+.settings-block {
+  border-top: 1px solid var(--rule);
+  padding: 8px 0 16px;
+  scroll-margin-top: 12px;
+}
+.settings-block > h2 {
+  margin-bottom: 4px;
+}
+.settings-block .facts {
+  max-width: 640px;
+}
+.club-names {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+.club-name {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 6px 12px 10px;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.club-name legend {
+  font-weight: 600;
+  padding: 0 4px;
+}
+.club-name label {
+  display: grid;
+  grid-template-columns: 4.5em minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.club-name input:not([type='color']) {
+  width: 100%;
+  min-width: 0;
+}
+.club-name input[type='color'] {
+  width: 48px;
+  height: 28px;
+  padding: 0;
+}
+ul.notice {
+  padding-left: 28px;
+}
+.settings-block .check,
+.dialog .check {
+  display: flex;
+}

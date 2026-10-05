@@ -1,13 +1,15 @@
 import { useState } from 'preact/hooks';
 import { CITIES, cityById } from '../club/cities';
 import { PARENT_COMPANY_TYPES, type ParentCompanyType } from '../club/types';
+import { existingTeams } from '../league/clubs';
 import { budgetFor, difficultyStars, STADIUM_PLANS } from '../league/expansion';
 import type { Difficulty, ExpansionSettings, Promotion, TwelveSetting } from '../league/state';
 import { money } from './format';
 import { TwelveSettingField } from './Twelve';
 
 const COLORS = ['#0f6e8c', '#1b7f5a', '#6b3fa0', '#c2572b', '#2f4858', '#b3261e', '#0b5394', '#8a6d1d'];
-const TAKEN = ['키움', 'NC', '한화', '롯데', 'SSG', 'KT', '두산', 'LG', '삼성', 'KIA'];
+/** The existing clubs' short names, as a new league has them (renamed later in the settings, if at all). */
+const TAKEN = existingTeams().map((t) => t.short);
 
 type Stadium = ExpansionSettings['stadium'];
 
