@@ -1,6 +1,6 @@
 /* The user's club in three views: an overview you can read at a glance, the squads (with the general
    manager's moves), and the front office (money, ballpark, club facts). */
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { accentStyle } from './display';
 import { useDark } from './useDisplay';
 import { cityById } from '../club/cities';
@@ -23,7 +23,7 @@ import { Story } from './Story';
 import { Training } from './Training';
 import type { NewsItem } from '../league/news';
 
-type View = 'overview' | 'squad' | 'lineup' | 'training' | 'story' | 'office';
+export type View = 'overview' | 'squad' | 'lineup' | 'training' | 'story' | 'office';
 
 export interface StoryHooks {
   onRewrite?: (item: NewsItem) => void;
@@ -31,9 +31,23 @@ export interface StoryHooks {
   busyId?: string | null;
 }
 
-export function MyClub({ league, onPlayer, onAct, story = {} }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void; story?: StoryHooks }) {
+export function MyClub({
+  league,
+  onPlayer,
+  onAct,
+  onView,
+  story = {},
+}: {
+  league: LeagueState;
+  onPlayer: (id: string) => void;
+  onAct: (a: Action) => void;
+  /** Tells the page which view is open (the tutorial has a lesson for some, V0.16). */
+  onView?: (view: View) => void;
+  story?: StoryHooks;
+}) {
   const dark = useDark();
   const [view, setView] = useState<View>('overview');
+  useEffect(() => onView?.(view), [view]);
   const [msg, setMsg] = useState('');
   const u = league.user!;
   const team = league.teams.find((t) => t.id === u.teamId)!;

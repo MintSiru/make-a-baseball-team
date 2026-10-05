@@ -94,6 +94,7 @@ export function App() {
   const [progress, setProgress] = useState('');
   const [notice, setNotice] = useState('');
   const [tab, setTab] = useState<Tab>('club');
+  const [clubView, setClubView] = useState('overview');
   const [boxId, setBoxId] = useState<string | null>(null);
   const [teamId, setTeamId] = useState<string>('kia');
   const [playerId, setPlayerId] = useState<PlayerId | null>(null);
@@ -517,9 +518,9 @@ export function App() {
             {notice}
           </p>
         )}
-        <TutorialCard league={league} tab={tab} onAct={(a) => act(a, '튜토리얼', false)} />
+        <TutorialCard league={league} tab={tab} view={tab === 'club' ? clubView : undefined} onAct={(a) => act(a, '튜토리얼', false)} />
         {tab === 'decision' && league.pending && <Decision league={league} onPlayer={setPlayerId} onSubmit={(input) => act({ kind: 'decide', input }, '진행 중', false)} />}
-        {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }} />}
+        {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} onView={setClubView} story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }} />}
         {tab === 'market' && league.user && <Market league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
         {tab === 'games' && <Games league={league} onOpen={setBoxId} />}
         {tab === 'standings' && <Standings league={league} onTeam={openTeam} />}

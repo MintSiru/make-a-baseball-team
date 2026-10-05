@@ -674,7 +674,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
               : '지명한 선수마다 계약금을 한 번 제시합니다. 선수는 받아들이거나, 더 요구하거나, 거절하고 떠납니다. 진학 희망·해외 관심 선수는 거절하기 쉽습니다.'}
           </p>
           <p class="muted">
-            구단 자금 {money(u.fund)} · 제시 합계 {money(total)}
+            구단 자금 {money(u.fund)} · 제시 합계 {money(total)} · 슬롯 금액까지는 자금이 모자라도 줄 수 있습니다(시즌 뒤 모기업이 메우고 신뢰도가 조금 떨어짐)
           </p>
           <BulkBar
             options={[['ask', '모두 요구액'], ...(d.final ? [] : ([['slot', '모두 슬롯 금액']] as [string, string][])), ['none', '모두 포기']]}

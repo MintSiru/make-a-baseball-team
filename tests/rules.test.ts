@@ -5,7 +5,9 @@ describe('2026 KBO rules', () => {
   it('keeps the announced salary caps and continues 5% steps after 2028', () => {
     expect(salaryCapFor(2026)).toBe(1439723);
     expect(salaryCapFor(2028)).toBe(1587294);
-    expect(salaryCapFor(2029)).toBe(Math.round(1587294 * 1.05));
+    // After the announced steps the game keeps money in today's terms (V0.16).
+    expect(salaryCapFor(2029)).toBe(1587294);
+    expect(salaryCapFor(2040)).toBe(1587294);
     expect(salaryCapFor(2020)).toBe(1371165);
   });
 

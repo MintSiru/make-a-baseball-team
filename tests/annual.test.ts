@@ -10,10 +10,13 @@ import { endRegular } from './helpers';
 
 let s: LeagueState;
 const seen: Decision[] = [];
+/** The league at the first rookie bonus talks (V0.16). */
+let bonusTalks: LeagueState | null = null;
 
 function decideAll() {
   while (s.pending) {
     seen.push(s.pending);
+    if (s.pending.kind === 'rookieBonus' && !bonusTalks) bonusTalks = structuredClone(s);
     const input = autoDecision(s)!;
     expect(checkDecision(s, input), `${s.pending.kind} suggestion must be valid`).toBeNull();
     apply(s, { kind: 'decide', input });
@@ -52,6 +55,18 @@ describe('the user club every winter', () => {
     // V0.12: the owner's support is fixed and paid at opening ("{year} 모기업 지원 … (시즌 예산 확정)").
     expect(s.user!.ledger.some((l) => l.label.includes('모기업 지원'))).toBe(true);
     expect(s.user!.ledger.some((l) => l.label.startsWith('신인 계약금'))).toBe(true);
+  });
+
+  it('pays its picks their slot even with an empty fund; only more than that needs the money (V0.16)', () => {
+    const x = bonusTalks!;
+    const d = x.pending as Extract<Decision, { kind: 'rookieBonus' }>;
+    x.user!.fund = 0;
+    const slots = Object.fromEntries(d.picks.map((pk) => [pk.id, pk.slot]));
+    expect(checkDecision(x, { kind: 'rookieBonus', offers: slots })).toBeNull();
+    expect(checkDecision(x, { kind: 'rookieBonus', offers: { ...slots, [d.picks[0]!.id]: d.picks[0]!.slot + 1000 } })).toMatch(/자금/);
+    // The scouts offer at least the slot to every pick.
+    const auto = autoDecision(x)! as { offers: Record<string, number> };
+    for (const pk of d.picks) expect(auto.offers[pk.id]).toBeGreaterThanOrEqual(pk.slot);
   });
 
   it('sends players to the army and 상무, who play for 상무 in the futures league', () => {

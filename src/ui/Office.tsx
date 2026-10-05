@@ -406,7 +406,7 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
           </ol>
           <h3>티켓 가격</h3>
           <p class="muted">
-            리그 평균 객단가 {priceWon(1).toLocaleString('ko-KR')}원 기준. 가격을 올리면 경기당 수입은 늘지만 관중이 줄고, 매진되는 구단이라면 올려도 빈자리가 덜 생깁니다. 바로 적용됩니다.
+            리그 평균 객단가 {priceWon(1).toLocaleString('ko-KR')}원 기준. 올리면 표 한 장 값은 오르지만 관중이 줄어 굿즈·매점 수입도 줄고, 내리면 그 반대입니다. 늘 매진되는 구단이라면 올려도 빈자리가 덜 생깁니다. 바로 적용됩니다.
           </p>
           <label class="inline-form">
             객단가

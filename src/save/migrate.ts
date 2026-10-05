@@ -13,9 +13,10 @@ import { attendance, recordGate } from '../league/fans';
 import { baseSupport, setGoals } from '../league/parent';
 import { staffOf } from '../league/staff';
 import { openMarket, roundDecision } from '../league/fa';
+import { DIFFICULTY } from '../league/tuning';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0'];
 
 type Loose = Record<string, unknown>;
 
@@ -60,7 +61,7 @@ export function migrateState(raw: unknown, from: string): LeagueState {
       }
     const u = s.user;
     if (u) {
-      u.support ??= Math.round(baseSupport(u.settings.parentType) * ({ easy: 1.1, normal: 1, hard: 0.9 } as const)[u.settings.difficulty]);
+      u.support ??= Math.round(baseSupport(u.settings.parentType) * DIFFICULTY.money[u.settings.difficulty]);
       u.trust ??= 60;
       u.budgetScale ??= 1;
       if (s.phase === 'regular') setGoals(s, s.year);

@@ -221,7 +221,11 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
             구단 없이 리그만 관전
           </button>
         </div>
-        {busy && <p class="status">{busy}</p>}
+        {busy && (
+          <p class="status" role="status">
+            {busy}
+          </p>
+        )}
       </section>
     </main>
   );

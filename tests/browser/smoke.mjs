@@ -63,6 +63,8 @@ async function decideAll(page, log) {
         batch.fa = true;
         // 0.10.1: the name opens his profile (grades and stats are in the list too); talks open from the button.
         check(/\d/.test((await page.locator('.fa-table tbody tr').first().locator('td').nth(4).textContent()) ?? ''), 'the free-agent list shows his grade');
+        // 0.16: what the foreign players, signed after the market, will need from the same budget.
+        check(/외국인 몫/.test((await page.locator('.fa-summary').textContent()) ?? ''), 'the market keeps the foreign players in view');
         await page.locator('.fa-table tbody .link').first().click();
         await page.locator('.dialog.profile').waitFor();
         await page.keyboard.press('Escape');
@@ -314,6 +316,15 @@ try {
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
   await page.getByRole('button', { name: '라인업', exact: true }).click();
   check((await page.locator('svg.diamond .spot').count()) === 9, 'nine players on the diamond');
+  // 0.16: the tutorial (still on) explains the part of the club screen that is open, once the lessons before it are read.
+  const lessonNow = () => page.evaluate(() => document.querySelector('.tutorial h2')?.textContent ?? '');
+  for (let i = 0; i < 6; i++) {
+    const title = await lessonNow();
+    if (!title || title === '라인업') break;
+    await page.locator('.tutorial').getByRole('button', { name: '알겠어요' }).click();
+    await page.waitForFunction((t) => (document.querySelector('.tutorial h2')?.textContent ?? '') !== t, title, { timeout: 10_000 }).catch(() => {});
+  }
+  check((await lessonNow()) === '라인업', `the tutorial explains the lineup view when it is opened (${await lessonNow()})`);
   await page.getByRole('button', { name: '상대 좌완 선발' }).click();
   // The general manager's lineup card (V0.8): fix today's lineup, save it, and play a week with it.
   await page.getByRole('button', { name: '직접 짜기' }).click();

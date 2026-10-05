@@ -46,6 +46,12 @@ describe('tutorial mode', () => {
     expect(s.user!.tutorialSeen).toContain('welcome');
   });
 
+  it('explains the parts of the club screen as they are opened (V0.16)', () => {
+    apply(s, { kind: 'tutorial', seen: 'tab-club' });
+    for (const view of ['squad', 'lineup', 'training', 'office']) expect(nextLesson(s, { tab: 'club', view })?.id).toBe(`club-${view}`);
+    expect(nextLesson(s, { tab: 'club', view: 'overview' })).toBeNull();
+  });
+
   it('stays out of a game without tutorial mode', () => {
     const plain = structuredClone(s);
     delete plain.user!.settings.tutorial;

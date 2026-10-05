@@ -224,7 +224,8 @@ export const sponsorDue = (s: LeagueState, year: number) => {
 
 // ── Naming sponsor ────────────────────────────────────────────────────────────────────────────────
 
-const SPONSORS = ['한빛증권', '대한생명', '새솔은행', '누리통신', '다온캐피탈', '한결제약', '미래에셋투자', '온누리게임즈', '태평양물산', '청운건설'];
+// Fictional names only (V0.16: two real companies had slipped in).
+const SPONSORS = ['한빛증권', '한누리생명', '새솔은행', '누리통신', '다온캐피탈', '한결제약', '새벽투자', '온누리게임즈', '태평양물산', '청운건설'];
 
 /** Offers when a naming deal ends: the current sponsor's renewal and two newcomers, each with its own fee,
     goal and patience (V0.7.7): the more a sponsor pays, the more it wants and the sooner it walks out. */

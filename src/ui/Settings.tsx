@@ -25,9 +25,9 @@ const SECTIONS: [string, string][] = [
 
 export const DIFFICULTY_LABEL = { easy: '쉬움', normal: '보통', hard: '어려움' } as const;
 export const DIFFICULTY_NOTE = {
-  easy: '모기업 예산 +10%, 선수들이 우리 제안을 조금 더 잘 받아들이고, 스카우트 눈이 밝고, 트레이드 상대가 덜 까다롭고, 모기업 신뢰가 천천히 떨어집니다.',
+  easy: '모기업 돈(창단 자금·연봉 예산·지원 한도) +25%, 선수들이 우리 제안을 조금 더 잘 받아들이고, 스카우트 눈이 밝고, 트레이드 상대가 덜 까다롭고, 모기업 신뢰가 천천히 떨어집니다.',
   normal: '기준입니다.',
-  hard: '모기업 예산 −10%, 협상이 더 어렵고, 스카우트의 미래 평가가 흐리며, 트레이드 상대가 더 까다롭고, 모기업 신뢰가 빨리 떨어집니다.',
+  hard: '모기업 돈 −15%, 협상이 더 어렵고, 스카우트의 미래 평가가 흐리며, 트레이드 상대가 더 까다롭고, 모기업 신뢰가 빨리 떨어집니다.',
 } as const;
 
 /** When this browser last saved a file of this game (kept per browser, for the reminder). */

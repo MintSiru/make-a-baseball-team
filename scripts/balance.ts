@@ -5,10 +5,11 @@
 
    Usage:
      npx tsx scripts/balance.ts run A [seeds=200] [seasons=20] [jobs=4] [label=baseline]
-     npx tsx scripts/balance.ts run B [perCell=8] [seasons=20] [jobs=4] [label=baseline]
+     npx tsx scripts/balance.ts run B [perCell=8] [seasons=20] [jobs=4] [label=baseline] [scouts|fa]
      npx tsx scripts/balance.ts one A <seed> <seasons> <file>            (one run, used by `run`)
-     npx tsx scripts/balance.ts one B <seed> <seasons> <file> <difficulty> <parent> <city>
-     npx tsx scripts/balance.ts report [label=baseline]                  (prints Markdown tables) */
+     npx tsx scripts/balance.ts one B <seed> <seasons> <file> <difficulty> <parent> <city> [scouts|fa]
+     npx tsx scripts/balance.ts report [label=baseline] [base]           (prints Markdown tables; base: a batch to compare)
+     npx tsx scripts/balance.ts check [label=baseline]                   (exit code 1 if any run failed) */
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -16,10 +17,11 @@ import { SIM_VERSION } from '../src/core/version';
 import { apply, regularOver } from '../src/league/actions';
 import { capTotal } from '../src/league/cap';
 import { salaryIn } from '../src/league/contracts';
-import { autoDecision, EXPANSION_ID } from '../src/league/expansion';
+import { autoDecision, EXPANSION_ID, foreignReserve } from '../src/league/expansion';
+import { autoRound, checkRound, guaranteed, maxGuaranteed, meetTerms, openCommitments, payrollBeforeOffers, userOffers, wouldStart } from '../src/league/fa';
 import { createLeague } from '../src/league/history';
 import { closeSeason, runOffseason } from '../src/league/offseason';
-import { ageIn, isForeign, isPitcher } from '../src/league/players';
+import { ageIn, isForeign, isPitcher, keepValue } from '../src/league/players';
 import { playPostseason } from '../src/league/postseason';
 import { playRegularSeason, startSeason } from '../src/league/season';
 import type { LeagueState } from '../src/league/state';
@@ -106,6 +108,8 @@ function seasonMetrics(s: LeagueState, year: number) {
     capOver,
     attendance: round(mean(reports.map((r) => r!.fans / Math.max(1, r!.homeGames))), 0),
     aiOperating: { min: Math.min(...ai.map((r) => r!.operating)), max: Math.max(...ai.map((r) => r!.operating)), support: Math.round(mean(ai.map((r) => r!.support))!) },
+    // Each club's operating result before support (억).
+    operating: Object.fromEntries(s.teams.map((t) => [t.id, s.clubs?.[t.id]?.reports.find((r) => r.year === year)?.operating]).filter(([, x]) => x !== undefined).map(([id, x]) => [id, Math.round((x as number) / 10_000)])),
   };
 }
 
@@ -135,9 +139,11 @@ function population(s: LeagueState, year: number) {
 /** Free agents and retirements of the winter that just ran (compares before and after). */
 function winter(before: Map<string, string>, s: LeagueState, year: number, hofBefore: number) {
   const retired = Object.values(s.players).filter((p) => p.status === 'retired' && before.get(p.id) === 'active');
-  const deals = Object.values(s.players)
-    .filter((p) => p.contract?.fa && p.contract.signedIn >= year && !before.get(`${p.id}|fa|${p.contract.signedIn}`))
-    .map((p) => (p.contract!.signingBonus + p.contract!.salaries.reduce((a, x) => a + x.amount, 0)) / 10_000);
+  const signed = Object.values(s.players).filter((p) => p.contract?.fa && p.contract.signedIn >= year && !before.get(`${p.id}|fa|${p.contract.signedIn}`));
+  const deals = signed.map((p) => (p.contract!.signingBonus + p.contract!.salaries.reduce((a, x) => a + x.amount, 0)) / 10_000);
+  // Free-agent money by club (억), to see whether the same clubs sweep the market (finance ⑦).
+  const faClubs: Record<string, number> = {};
+  signed.forEach((p, i) => (faClubs[p.contract!.teamId] = round((faClubs[p.contract!.teamId] ?? 0) + deals[i]!, 1)!));
   return {
     retired: retired.length,
     retireAge: round(mean(retired.map((p) => ageIn(p, year))), 1),
@@ -145,6 +151,7 @@ function winter(before: Map<string, string>, s: LeagueState, year: number, hofBe
     fa: deals.length,
     faTop: round(Math.max(0, ...deals), 1),
     fa100: deals.filter((x) => x >= 100).length,
+    faClubs,
     // Inductions happen at retirement, in the winter (counted here, not with the season).
     hof: (s.hallOfFame ?? []).length - hofBefore,
   };
@@ -178,7 +185,38 @@ function runA(seed: string, seasons: number) {
   return out;
 }
 
-function runB(seed: string, seasons: number, difficulty: Difficulty, parentType: ParentCompanyType, cityId: string) {
+/** How track B's general manager decides: the scouts' advice for everything ('scouts'), or that plus going after
+    other clubs' free agents ('fa') — the advice only keeps the club's own. */
+type Style = 'scouts' | 'fa';
+
+/** The scouts' free-agent advice, plus offers to other clubs' free agents who would start for us in the first
+    team (the best first), on their own terms with room to rise 15%, while the winter's limit and the budget allow —
+    keeping room for the foreign players who sign after them. */
+function activeRound(s: LeagueState) {
+  const m = s.offseason!.fa!;
+  const next = s.offseason!.year + 1;
+  const me = s.user!.teamId;
+  const input = autoRound(s, m, next);
+  // Not for a season in the futures league.
+  if (next < s.user!.firstTeamYear) return input;
+  const targets = m.order
+    .map((id) => m.talks[id]!)
+    .filter((t) => t.from !== me && !t.signed && !t.gone && !t.offers[me] && ageIn(s.players[t.id]!, next) <= 33 && wouldStart(s, me, s.players[t.id]!))
+    .sort((a, b) => keepValue(s.players[b.id]!, next) - keepValue(s.players[a.id]!, next));
+  for (const t of targets) {
+    if (keepValue(s.players[t.id]!, next) < 50) break;
+    const o = meetTerms(s, m, t, next);
+    const offers = { ...input.offers, [t.id]: o };
+    if (checkRound(s, m, { ...input, offers }, next) !== null) continue;
+    const firm = Object.fromEntries(Object.entries(offers).filter((x): x is [string, NonNullable<typeof o>] => !!x[1]));
+    const spent = payrollBeforeOffers(s, m, next) + openCommitments(s, m, { ...userOffers(s, m), ...firm }).budget * 1.15;
+    if (spent + foreignReserve(s, me, next) > s.user!.payrollBudget) continue;
+    input.offers = { ...offers, [t.id]: { ...o, ceiling: Math.max(guaranteed(o), Math.min(Math.round(guaranteed(o) * 1.15), maxGuaranteed(s, m, t, o, next, firm))) } };
+  }
+  return input;
+}
+
+function runB(seed: string, seasons: number, difficulty: Difficulty, parentType: ParentCompanyType, cityId: string, style: Style = 'scouts') {
   const s = createLeague(seed);
   apply(s, { kind: 'toFounding' });
   const settings: ExpansionSettings = { name: '검증 구단', short: '검증', color: '#1f6fb2', cityId, parentType, parentName: '검증', stadium: 'existing', promotion: 'afterFutures', difficulty, scenario: null };
@@ -189,7 +227,7 @@ function runB(seed: string, seasons: number, difficulty: Difficulty, parentType:
   const end = 2026 + seasons;
   for (let guard = 0; guard < 200_000 && s.year < end; guard++) {
     if (s.pending) {
-      apply(s, { kind: 'decide', input: autoDecision(s)! });
+      apply(s, { kind: 'decide', input: style === 'fa' && s.pending.kind === 'faRound' ? activeRound(s) : autoDecision(s)! });
       if (++decisions > 3000) throw new Error(`stuck on ${s.pending?.kind ?? '?'} in ${s.year}`);
       continue;
     }
@@ -227,21 +265,21 @@ function runB(seed: string, seasons: number, difficulty: Difficulty, parentType:
 }
 
 function one(args: string[]) {
-  const [track, seed, seasonsText, file, difficulty, parent, city] = args;
+  const [track, seed, seasonsText, file, difficulty, parent, city, style] = args;
   const seasons = Number(seasonsText);
   const t = Date.now();
   let seasonsOut: unknown[] = [];
   let error: string | null = null;
   try {
-    seasonsOut = track === 'A' ? runA(seed!, seasons) : runB(seed!, seasons, difficulty as Difficulty, parent as ParentCompanyType, city!);
+    seasonsOut = track === 'A' ? runA(seed!, seasons) : runB(seed!, seasons, difficulty as Difficulty, parent as ParentCompanyType, city!, (style as Style) ?? 'scouts');
   } catch (e) {
     error = e instanceof Error ? `${e.message}\n${(e.stack ?? '').split('\n').slice(1, 6).join('\n')}` : String(e);
   }
-  writeFileSync(file!, JSON.stringify({ track, seed, sim: SIM_VERSION, difficulty, parent, city, ms: Date.now() - t, error, seasons: seasonsOut }));
+  writeFileSync(file!, JSON.stringify({ track, seed, sim: SIM_VERSION, difficulty, parent, city, style: style ?? 'scouts', ms: Date.now() - t, error, seasons: seasonsOut }));
 }
 
 async function run(args: string[]) {
-  const [track, nText, seasonsText, jobsText, label = 'baseline'] = args;
+  const [track, nText, seasonsText, jobsText, label = 'baseline', style = 'scouts'] = args;
   const seasons = Number(seasonsText ?? 20),
     jobs = Number(jobsText ?? 4);
   const dir = join(ROOT, label);
@@ -250,10 +288,11 @@ async function run(args: string[]) {
   if (track === 'A') {
     for (let i = 0; i < Number(nText ?? 200); i++) work.push(['A', `bal-a-${i}`, String(seasons), join(dir, `A-${i}.json`)]);
   } else {
-    let i = 0;
-    for (const d of DIFFICULTIES)
-      for (const p of PARENTS)
-        for (let k = 0; k < Number(nText ?? 8); k++, i++) work.push(['B', `bal-b-${i}`, String(seasons), join(dir, `B-${d}-${p}-${k}.json`), d, p, CITIES[i % CITIES.length]!]);
+    // Paired: the three difficulties of an owner type play the same leagues from the same cities, so the
+    // difference between them is the difficulty, not the luck of the league.
+    for (const [pi, p] of PARENTS.entries())
+      for (let k = 0; k < Number(nText ?? 8); k++)
+        for (const d of DIFFICULTIES) work.push(['B', `bal-b-${p}-${k}`, String(seasons), join(dir, `B-${d}-${p}-${k}.json`), d, p, CITIES[(pi * 3 + k) % CITIES.length]!, style]);
   }
   const todo = work.filter((w) => !existsSync(w[3]!));
   console.log(`${track}: ${work.length - todo.length} done, ${todo.length} to run, ${jobs} at a time`);
@@ -266,7 +305,11 @@ async function run(args: string[]) {
         const w = todo[next++]!;
         await new Promise<void>((resolve) => {
           const child = spawn(process.execPath, [...process.execArgv, process.argv[1]!, 'one', ...w], { stdio: ['ignore', 'ignore', 'inherit'] });
-          child.on('exit', () => resolve());
+          // A run that died without writing its file (out of memory, killed) is recorded as an error.
+          child.on('exit', (code, signal) => {
+            if (!existsSync(w[3]!)) writeFileSync(w[3]!, JSON.stringify({ track: w[0], seed: w[1], sim: SIM_VERSION, difficulty: w[4], parent: w[5], city: w[6], ms: 0, error: `process ended (${signal ?? code})`, seasons: [] }));
+            resolve();
+          });
         });
         done++;
         const per = (Date.now() - started) / done;
@@ -293,16 +336,20 @@ function load(label: string, track: string) {
     .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')));
 }
 
-function report(label: string) {
+/** Markdown tables of a batch; with `base`, the league metrics of another batch beside them (before → after). */
+function report(label: string, base?: string) {
   const lines: string[] = [];
   const A = load(label, 'A');
+  const baseSeasons = base ? load(base, 'A').filter((r) => !r.error).flatMap((r) => r.seasons) : [];
   if (A.length) {
     const errors = A.filter((r) => r.error);
     const seasons = A.flatMap((r) => r.seasons);
     lines.push(`### 검증 A — 관전 리그 (${A.length}시드, ${seasons.length}시즌, 시뮬레이션 ${A[0].sim})`, '');
     lines.push(`예외: ${errors.length}건${errors.length ? ` — ${errors.map((e) => `${e.seed}: ${e.error.split('\n')[0]}`).join(' / ')}` : ''}. 시드당 평균 ${fmt((mean(A.map((r) => r.ms)) ?? 0) / 1000, 0)}초.`, '');
-    const metric = (name: string, get: (x: any) => number, d = 3) => lines.push(`| ${name} | ${band(seasons.map(get).filter((x: number) => Number.isFinite(x)), d)} |`);
-    lines.push('| 지표 | 평균 (5%–95%) |', '|---|---|');
+    const of = (xs: any[], get: (x: any) => number, d: number) => band(xs.map(get).filter((x: number) => Number.isFinite(x)), d);
+    const metric = (name: string, get: (x: any) => number, d = 3) => lines.push(`| ${name} | ${of(seasons, get, d)} |${baseSeasons.length ? ` ${of(baseSeasons, get, d)} |` : ''}`);
+    if (baseSeasons.length) lines.push(`| 지표 | ${label} 평균 (5%–95%) | ${base} (${baseSeasons.length}시즌) |`, '|---|---|---|');
+    else lines.push('| 지표 | 평균 (5%–95%) |', '|---|---|');
     metric('타율', (x) => x.avg);
     metric('출루율', (x) => x.obp);
     metric('장타율', (x) => x.slg);
@@ -348,11 +395,11 @@ function report(label: string) {
     lines.push('');
     // Seasons 1, 10 and 20 for drift over time.
     const byIndex = (i: number) => A.filter((r) => r.seasons[i]).map((r) => r.seasons[i]);
-    lines.push('| 시즌 | 타율 | ERA | 평균 연봉 (억) | 최고 연봉 (억) | 현역 | 평균 나이 | 외국인 등급 |', '|---|---|---|---|---|---|---|---|');
+    lines.push('| 시즌 | 타율 | ERA | 평균 연봉 (억) | 최고 연봉 (억) | AI 최고 흑자 (억) | AI 최대 적자 (억) | 현역 | 평균 나이 | 외국인 등급 |', '|---|---|---|---|---|---|---|---|---|---|');
     for (const i of [0, 4, 9, 14, 19]) {
       const xs = byIndex(i);
       if (!xs.length) continue;
-      lines.push(`| ${xs[0].year} | ${fmt(mean(xs.map((x) => x.avg))!)} | ${fmt(mean(xs.map((x) => x.era))!, 2)} | ${fmt(mean(xs.map((x) => x.pop.salaryAvg / 10_000))!, 2)} | ${fmt(mean(xs.map((x) => x.pop.salaryMax / 10_000))!, 1)} | ${fmt(mean(xs.map((x) => x.pop.active))!, 0)} | ${fmt(mean(xs.map((x) => x.pop.age))!, 1)} | ${fmt(mean(xs.map((x) => x.pop.foreignGrade))!, 1)} |`);
+      lines.push(`| ${xs[0].year} | ${fmt(mean(xs.map((x) => x.avg))!)} | ${fmt(mean(xs.map((x) => x.era))!, 2)} | ${fmt(mean(xs.map((x) => x.pop.salaryAvg / 10_000))!, 2)} | ${fmt(mean(xs.map((x) => x.pop.salaryMax / 10_000))!, 1)} | ${fmt(mean(xs.map((x) => x.aiOperating.max / 10_000))!, 0)} | ${fmt(mean(xs.map((x) => x.aiOperating.min / 10_000))!, 0)} | ${fmt(mean(xs.map((x) => x.pop.active))!, 0)} | ${fmt(mean(xs.map((x) => x.pop.age))!, 1)} | ${fmt(mean(xs.map((x) => x.pop.foreignGrade))!, 1)} |`);
     }
     lines.push('');
     // Competitive balance: titles per club over each run, the longest streak of titles.
@@ -374,11 +421,31 @@ function report(label: string) {
     const posTotals: Record<string, number[]> = {};
     for (const x of seasons) for (const [k, v] of Object.entries(x.pop.positions as Record<string, number>)) (posTotals[k] ??= []).push(v);
     lines.push(`국내 타자 포지션 (현역, 평균): ${Object.entries(posTotals).sort().map(([k, v]) => `${k} ${fmt(mean(v)!, 0)}`).join(' · ')}.`, '');
+    // Finance ⑦: does free-agent money pile up at the same clubs? Per run, the biggest spender's share of all
+    // the free-agent money of the twenty winters, and how many different clubs were a winter's biggest spender.
+    const runs = A.filter((r) => !r.error && r.seasons[0]?.faClubs);
+    if (runs.length) {
+      const share: number[] = [],
+        leaders: number[] = [];
+      for (const r of runs) {
+        const total: Record<string, number> = {};
+        const top = new Set<string>();
+        for (const x of r.seasons) {
+          const winter = Object.entries(x.faClubs as Record<string, number>).sort((a, b) => b[1] - a[1]);
+          if (winter[0]) top.add(winter[0][0]);
+          for (const [k, v] of winter) total[k] = (total[k] ?? 0) + v;
+        }
+        const all = Object.values(total).reduce((a, b) => a + b, 0);
+        if (all) share.push((100 * Math.max(...Object.values(total))) / all);
+        leaders.push(top.size);
+      }
+      lines.push(`FA 쏠림 (시드당 ${runs[0].seasons.length}겨울): FA에 가장 많이 쓴 구단의 비중 ${band(share, 0)}% (고르면 10%), 겨울마다 가장 많이 쓴 구단이 몇 곳이었나 ${band(leaders, 1)}.`, '');
+    }
   }
   const B = load(label, 'B');
   if (B.length) {
     const errors = B.filter((r) => r.error);
-    lines.push(`### 검증 B — 신생구단 (${B.length}회, 스카우트 추천 결정)`, '');
+    lines.push(`### 검증 B — 신생구단 (${B.length}회, ${B[0].style === 'fa' ? '스카우트 추천 + 다른 구단 FA 영입' : '스카우트 추천 결정'}, 시뮬레이션 ${B[0].sim})`, '');
     lines.push(`예외·멈춤: ${errors.length}건${errors.length ? ` — ${errors.map((e) => `${e.seed}(${e.difficulty}/${e.parent}): ${e.error.split('\n')[0]}`).join(' / ')}` : ''}.`, '');
     lines.push('| 난이도 | 모기업 | 회 | 1군 5년 안 가을야구 | 1군 첫 가을야구까지 (해) | 1군 10년 승률 | 우승 (회당) | 10년 뒤 자금 (억) | 최저 신뢰도 |', '|---|---|---|---|---|---|---|---|---|');
     for (const d of DIFFICULTIES)
@@ -399,12 +466,38 @@ function report(label: string) {
         lines.push(`| ${d} | ${p} | ${rs.length} | ${(100 * in5).toFixed(0)}% | ${reached.length ? fmt(mean(reached)!, 1) : '—'} (${reached.length}/${rs.length}) | ${fmt(mean(pct10.filter(Number.isFinite))!)} | ${fmt(mean(champs)!, 2)} | ${fmt(mean(fund10.filter(Number.isFinite))!, 0)} | ${fmt(mean(trust)!, 0)} |`);
       }
     lines.push('');
+    // Each difficulty over every owner type, and (when the runs are paired: the same league and city for the
+    // three difficulties) how far easy and hard sit from normal in the same league.
+    const first5 = (r: any) => r.seasons.filter((x: any) => x.first).slice(0, 5);
+    const pct5 = (r: any) => mean(first5(r).map((x: any) => x.pct)) ?? NaN;
+    lines.push('| 난이도 | 회 | 1군 5년 안 가을야구 | 1군 5년 승률 | 같은 리그의 보통과 차이 (5년 승률) |', '|---|---|---|---|---|');
+    const ok = B.filter((r) => !r.error);
+    const key = (r: any) => `${r.parent}|${r.seed}`;
+    const normal = new Map(ok.filter((r) => r.difficulty === 'normal').map((r) => [key(r), r]));
+    for (const d of DIFFICULTIES) {
+      const rs = ok.filter((r) => r.difficulty === d);
+      if (!rs.length) continue;
+      const in5 = rs.filter((r) => first5(r).some((x: any) => x.post)).length / rs.length;
+      const diffs = rs.filter((r) => normal.has(key(r))).map((r) => pct5(r) - pct5(normal.get(key(r))));
+      lines.push(`| ${d} | ${rs.length} | ${(100 * in5).toFixed(0)}% | ${fmt(mean(rs.map(pct5))!)} | ${d === 'normal' || !diffs.length ? '—' : `${band(diffs)} (${diffs.length}쌍)`} |`);
+    }
+    lines.push('');
   }
   console.log(lines.join('\n'));
+}
+
+/** Fails (exit code 1) when there are no runs or any run threw, stalled or died — the CI workflow's last step. */
+function check(label: string) {
+  const runs = [...load(label, 'A'), ...load(label, 'B')];
+  const bad = runs.filter((r) => r.error);
+  for (const r of bad) console.error(`${r.track} ${r.seed}${r.difficulty ? ` (${r.difficulty}/${r.parent})` : ''}: ${r.error.split('\n')[0]}`);
+  console.log(`${runs.length} runs, ${bad.length} with errors`);
+  if (!runs.length || bad.length) process.exit(1);
 }
 
 const [cmd, ...rest] = process.argv.slice(2);
 if (cmd === 'one') one(rest);
 else if (cmd === 'run') await run(rest);
-else if (cmd === 'report') report(rest[0] ?? 'baseline');
-else console.log('usage: balance.ts run A|B … | one … | report [label]');
+else if (cmd === 'report') report(rest[0] ?? 'baseline', rest[1]);
+else if (cmd === 'check') check(rest[0] ?? 'baseline');
+else console.log('usage: balance.ts run A|B … | one … | report [label] | check [label]');
