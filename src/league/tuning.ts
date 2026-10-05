@@ -654,3 +654,18 @@ export const FOREIGN = {
     { pos: 'SS', share: 0.06, defense: 58, speed: 52, power: -7, contact: 1 },
   ] as { pos: import('../model/position').Position; share: number; defense: number; speed: number; power: number; contact: number }[],
 };
+
+/** Basic difficulty beyond money (V0.14, docs/PLAN-1.0.md §4 C). Only the user's club feels it, so the
+    league alone and the golden master do not move; normal changes nothing. Game assumptions. */
+export const DIFFICULTY = {
+  /** Added to how much a free agent likes our offer (his fit, 1 = as offered). */
+  faFit: { easy: 0.05, normal: 0, hard: -0.05 },
+  /** Added to the chance a player takes our salary figure, a freeze or an extension. */
+  salaryAccept: { easy: 0.1, normal: 0, hard: -0.1 },
+  /** Our scouts' read of the future: added to their accuracy (0 = the public grade, 1 = the truth). */
+  scoutEdge: { easy: 0.2, normal: 0, hard: -0.2 },
+  /** The premium an AI club wants on top before it says yes to our trade. */
+  tradePremium: { easy: 0.94, normal: 1, hard: 1.08 },
+  /** The owner's trust: what it loses after a bad season or an event, × this. */
+  trustLoss: { easy: 0.75, normal: 1, hard: 1.25 },
+} as const;

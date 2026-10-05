@@ -6,6 +6,7 @@ import { budgetFor, difficultyStars, STADIUM_PLANS } from '../league/expansion';
 import type { Difficulty, ExpansionSettings, Promotion, TwelveSetting } from '../league/state';
 import { money } from './format';
 import { TwelveSettingField } from './Twelve';
+import { DIFFICULTY_LABEL, DIFFICULTY_NOTE } from './Settings';
 
 const COLORS = ['#0f6e8c', '#1b7f5a', '#6b3fa0', '#c2572b', '#2f4858', '#b3261e', '#0b5394', '#8a6d1d'];
 /** The existing clubs' short names, as a new league has them (renamed later in the settings, if at all). */
@@ -168,10 +169,11 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
         <div class="segmented" role="group" aria-label="기본 난이도">
           {(['easy', 'normal', 'hard'] as Difficulty[]).map((d) => (
             <button key={d} type="button" aria-pressed={difficulty === d} onClick={() => setDifficulty(d)}>
-              {{ easy: '쉬움', normal: '보통', hard: '어려움' }[d]}
+              {DIFFICULTY_LABEL[d]}
             </button>
           ))}
         </div>
+        <p class="muted small">{DIFFICULTY_NOTE[difficulty]} 게임 중에도 설정 탭에서 바꿀 수 있습니다.</p>
         <label class="check">
           <input type="checkbox" checked={firing} onChange={(e) => setFiring((e.currentTarget as HTMLInputElement).checked)} /> 성적이 나쁘면 모기업이 단장을 해임할 수 있음 (끄면 샌드박스)
         </label>

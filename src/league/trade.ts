@@ -18,7 +18,7 @@ import { currentStandings } from './season';
 import { firstTeamIds, orgPlayers, registeredIds, type DraftSlot, type LeagueState, type TradeExtras } from './state';
 import { crossing } from './rivalry';
 import { farewell } from './life';
-import { TRADES } from './tuning';
+import { TRADES, DIFFICULTY } from './tuning';
 import { moveNews } from './movenews';
 import { capRoom, chargeForeign } from './foreigncap';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry, toForeignPool } from './foreignpool';
@@ -147,7 +147,7 @@ export function checkTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get
   if (theirs > limit) return no(`상대 구단 소속선수가 ${limit}명을 넘게 됩니다.`);
   const inValue = gives.reduce((a, p) => a + tradeValue(s, p!), 0) + cashValue(cashOut) + picksOut.reduce((a, r) => a + pickValue(s, u.teamId, r), 0);
   const outValue = gets.reduce((a, p) => a + tradeValue(s, p!), 0) + cashValue(cashIn) + picksIn.reduce((a, r) => a + pickValue(s, teamId, r), 0);
-  const margin = Math.round((inValue - outValue * TRADES.accept.premium - TRADES.accept.fixed) * 10) / 10;
+  const margin = Math.round((inValue - outValue * TRADES.accept.premium * DIFFICULTY.tradePremium[u.settings.difficulty] - TRADES.accept.fixed) * 10) / 10;
   return { problem: null, margin, accepted: margin >= 0 };
 }
 

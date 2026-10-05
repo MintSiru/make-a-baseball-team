@@ -20,7 +20,7 @@ import { moveNews } from './movenews';
 import { freeAgentsFor, leaveLeague, removeFromRoster } from './offseason';
 import { ageIn, currentValue, isForeign, isPitcher, keepValue } from './players';
 import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from './state';
-import { FA, MARKET } from './tuning';
+import { FA, MARKET, DIFFICULTY } from './tuning';
 import { gmAppetite, gmOf } from './twelve';
 import { crossing } from './rivalry';
 import { farewell } from './life';
@@ -336,7 +336,7 @@ export function fitOf(s: LeagueState, t: FaTalk, teamId: TeamId, o: FaOffer, nex
     }
   }
   if (teamId === t.from) k += t.loyalty;
-  if (user) k -= doubt;
+  if (user) k += DIFFICULTY.faFit[s.user!.settings.difficulty] - doubt;
   return { k, wants, good };
 }
 

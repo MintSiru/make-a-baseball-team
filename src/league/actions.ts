@@ -14,7 +14,8 @@ import { gameRecap, interviewNews, type NewsItem } from './news';
 import { renameStadium } from './userclub';
 import { renameClubs, type ClubLabel } from './clubs';
 import { markAlertsSeen } from './alerts';
-import type { ExpansionSettings, FacilityKind, LeagueState, LineupCard, SiteId, Squad, TradeExtras, TwelveSetting } from './state';
+import type { Difficulty, ExpansionSettings, FacilityKind, LeagueState, LineupCard, SiteId, Squad, TradeExtras, TwelveSetting } from './state';
+import { milestone } from './milestones';
 
 /** A new scoreboard's lift to the fans' mood in its first season (V0.10, facilities.ts). */
 const SCOREBOARD_BUZZ = 0.03;
@@ -43,6 +44,8 @@ export type Action =
   | { kind: 'renameStadium'; name: string; which: 'current' | 'new' }
   /** Names of the ten existing clubs (V0.13, settings). */
   | { kind: 'clubNames'; labels: Record<TeamId, ClubLabel> }
+  /** The basic difficulty, changed mid-game (V0.14): noted on the club's timeline. */
+  | { kind: 'difficulty'; level: Difficulty }
   // The business side (V0.6)
   | { kind: 'ticketPrice'; level: number }
   | { kind: 'marketing'; amount: number }
@@ -85,7 +88,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets'];
+const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -151,6 +154,14 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     case 'clubNames':
       renameClubs(s.teams, action.labels);
       break;
+    case 'difficulty': {
+      const u = s.user;
+      if (!u || u.settings.difficulty === action.level) break;
+      const label = { easy: '쉬움', normal: '보통', hard: '어려움' } as const;
+      milestone(s, s.offseason?.year ?? s.year, `난이도 변경: ${label[u.settings.difficulty]} → ${label[action.level]}`);
+      u.settings.difficulty = action.level;
+      break;
+    }
     case 'ticketPrice':
     case 'marketing': {
       if (!s.user) break;

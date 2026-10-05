@@ -41,7 +41,7 @@ import { ownerAlert } from './alerts';
 import { splitContract } from './foreign';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type SalaryRow, type StaffRole, type UserClub } from './state';
-import { OFFSEASON as O, TALKS } from './tuning';
+import { OFFSEASON as O, TALKS, DIFFICULTY } from './tuning';
 import { lifeWinter } from './life';
 import { autoNational, marchEvents, nextNationalDecision, novemberEvents, resolveNational } from './national';
 import { autoScandal, resolveScandal } from './scandals';
@@ -835,8 +835,9 @@ function settleSalaries(s: LeagueState, d: Extract<Decision, { kind: 'salaries' 
     if (!p || p.teamId !== u.teamId) continue;
     const choice = choices[row.id] ?? 'merit';
     const r = rng(`${s.seed}|salary|${year}|${row.id}`);
+    const easier = DIFFICULTY.salaryAccept[u.settings.difficulty];
     if (choice === 'extension' && row.extension) {
-      if (r() < T.extension.accept) {
+      if (r() < T.extension.accept + easier) {
         p.contract = { teamId: u.teamId, kind: 'multiYear', signedIn: year, signingBonus: 0, salaries: Array.from({ length: row.extension.years }, (_, i) => ({ season: next + i, amount: row.extension!.annual })) };
         note(u, year, `${p.name} 비FA 다년계약 ${row.extension.years}년 연 ${Math.round(row.extension.annual / 1000) / 10}억`);
         continue;
@@ -850,7 +851,7 @@ function settleSalaries(s: LeagueState, d: Extract<Decision, { kind: 'salaries' 
       setSalary(p, next, offer);
       continue;
     }
-    const accept = choice === 'freeze' ? T.acceptFreeze : T.acceptMerit;
+    const accept = (choice === 'freeze' ? T.acceptFreeze : T.acceptMerit) + easier;
     if (r() < accept) {
       setSalary(p, next, offer);
       continue;

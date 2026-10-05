@@ -92,7 +92,29 @@ export function publicView(p: Player): PublicPlayer {
 }
 
 export function ageOn(birthday: string, date: string): number {
-  const [by, bm, bd] = birthday.split('-').map(Number) as [number, number, number];
-  const [y, m, d] = date.split('-').map(Number) as [number, number, number];
-  return y - by - (m < bm || (m === bm && d < bd) ? 1 : 0);
+  // Called millions of times while a league is built (V0.14: a fifth of the time went to splitting strings),
+  // so both dates are read digit by digit as y·10000 + m·100 + d.
+  const born = ymd(birthday),
+    on = ymd(date);
+  return Math.floor(on / 10000) - Math.floor(born / 10000) - (on % 10000 < born % 10000 ? 1 : 0);
+}
+
+/** "2027-04-01" → 20270401, without making arrays; stops at anything that is not a digit or a dash. */
+function ymd(s: string): number {
+  let y = 0,
+    m = 0,
+    d = 0,
+    part = 0;
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    if (c === 45) {
+      if (++part > 2) break;
+      continue;
+    }
+    if (c < 48 || c > 57) break;
+    if (part === 0) y = y * 10 + c - 48;
+    else if (part === 1) m = m * 10 + c - 48;
+    else d = d * 10 + c - 48;
+  }
+  return y * 10000 + m * 100 + d;
 }

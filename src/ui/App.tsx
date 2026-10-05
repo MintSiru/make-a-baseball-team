@@ -10,10 +10,12 @@ import { ageOn, publicView } from '../model/player';
 import type { CalendarPhase, Player, PlayerId } from '../model/types';
 import { makeSave, parseSave, SaveError, serializeSave } from '../save/format';
 import { openStore, type SaveStore } from '../save/store';
+import { autoSaver, type AutoSaver } from '../save/autosave';
+import { readSaveFile } from '../save/compress';
 import { BoxScore } from './BoxScore';
 import { StorySettings } from './StorySettings';
 import { DisplaySettings } from './DisplaySettings';
-import { noteExport, Settings } from './Settings';
+import { lastExport, noteExport, Settings } from './Settings';
 import { DISCLAIMER } from '../core/about';
 import { ClubSummary } from './ClubSummary';
 import { AlertPopup, poppingAlerts, useAlertPopups, useArticlePopups } from './Alerts';
@@ -125,6 +127,25 @@ export function App() {
       setNotice('진행을 자동 저장하지 못했습니다. 진행 파일로 저장해 두세요.');
     }
   };
+  // V0.14: everyday steps save a moment later, one write at a time (a burst of clicks is one write).
+  const saver = useRef<AutoSaver<LeagueState> | null>(null);
+  const saveSoon = (st: SaveStore, s: LeagueState) => (saver.current ??= autoSaver((x) => persist(st, x))).schedule(s);
+  /** A new or loaded game: saved at once, after anything still waiting (so an older state cannot land last). */
+  const saveNow = async (st: SaveStore, s: LeagueState) => {
+    saveSoon(st, s);
+    await saver.current!.flush();
+  };
+  useEffect(() => {
+    // Leaving the page (closing the tab, switching apps on a phone): write what is waiting now.
+    const flush = () => void saver.current?.flush();
+    const onHide = () => document.visibilityState === 'hidden' && flush();
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', onHide);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', onHide);
+    };
+  }, []);
 
   const build = (s: string) => {
     if (building.current?.seed !== s) building.current = { seed: s, promise: createInWorker(s, (year) => setProgress(`${year} 시즌`)) };
@@ -153,6 +174,20 @@ export function App() {
       setLoading(false);
     })();
   }, []);
+
+  // V0.14: browsers may clear a site's data (Safari after weeks without a visit), autosave and all. A long game
+  // gets a nudge, once a session, to keep a file of its own.
+  const reminded = useRef(false);
+  useEffect(() => {
+    if (!league?.user || reminded.current || store?.kind !== 'indexedDB' || league.year - 2026 < 2) return;
+    const at = lastExport(league.seed);
+    const days = at ? Math.floor((Date.now() - Date.parse(at)) / 86_400_000) : null;
+    if (days !== null && days < 14) return;
+    reminded.current = true;
+    setNotice(
+      `${days === null ? '이 게임을 아직 진행 파일로 저장한 적이 없습니다' : `마지막으로 진행 파일을 저장한 지 ${days}일 지났습니다`}. 브라우저가 사이트 데이터를 지우면 자동 저장도 함께 사라지니, 설정 → 저장에서 진행 파일로 보관해 두세요. 아이폰·아이패드는 홈 화면에 추가해서 열면 더 오래 남습니다.`,
+    );
+  }, [league?.seed, league?.year, store]);
 
   // Start building a league as soon as the founding form is on screen.
   useEffect(() => {
@@ -236,14 +271,14 @@ export function App() {
     if (!base || !store) return;
     const s = applyHere(base, { kind: 'storyText', id: item.id, ai: { ...out.text, provider: PROVIDERS[provider].label, model } });
     show(s);
-    await persist(store, s);
+    saveSoon(store, s);
   }
   async function revertStory(item: NewsItem) {
     const base = latest.current;
     if (!base || !store) return;
     const s = applyHere(base, { kind: 'storyText', id: item.id, ai: null });
     show(s);
-    await persist(store, s);
+    saveSoon(store, s);
   }
 
   const found = async (settings: ExpansionSettings, s: string) => {
@@ -254,7 +289,7 @@ export function App() {
     building.current = null;
     show(next);
     setTab('club');
-    await persist(store, next);
+    await saveNow(store, next);
     setBusy(null);
   };
 
@@ -264,7 +299,7 @@ export function App() {
     building.current = null;
     show(next);
     setTab('standings');
-    await persist(store, next);
+    await saveNow(store, next);
     setBusy(null);
   };
 
@@ -298,7 +333,7 @@ export function App() {
     try {
       const s = heavy ? await applyInWorker(league, action) : applyHere(league, action);
       show(s);
-      await persist(store, s);
+      saveSoon(store, s);
     } catch (e) {
       setNotice(e instanceof Error ? e.message : String(e));
     }
@@ -320,11 +355,11 @@ export function App() {
   const importSave = async (file: File | undefined) => {
     if (!file) return;
     try {
-      const save = parseSave(await file.text());
+      const save = parseSave(await readSaveFile(file));
       const state = save.snapshot?.state as LeagueState | undefined;
       if (!state?.teams) throw new SaveError('damaged', '진행 파일에 리그 상태가 없습니다.');
       show(state);
-      await persist(store, state);
+      await saveNow(store, state);
       setNotice(save.migratedFrom ? `이전 버전(시뮬레이션 ${save.migratedFrom})의 진행 파일을 ${RELEASE} 규칙으로 옮겨 불러왔습니다.` : '진행 파일을 불러왔습니다.');
     } catch (e) {
       setNotice(e instanceof SaveError ? e.message : '진행 파일을 읽지 못했습니다.');
@@ -428,7 +463,7 @@ export function App() {
             </button>
             <label class="file-button">
               불러오기
-              <input type="file" accept="application/json,.json" onChange={(e) => importSave((e.currentTarget as HTMLInputElement).files?.[0])} />
+              <input type="file" accept="application/json,.json,.gz" onChange={(e) => importSave((e.currentTarget as HTMLInputElement).files?.[0])} />
             </label>
             <span class="muted">{store.kind === 'indexedDB' ? '자동 저장됨' : '이 브라우저에서는 자동 저장을 쓸 수 없습니다. 진행 파일로 저장하세요.'}</span>
           </div>

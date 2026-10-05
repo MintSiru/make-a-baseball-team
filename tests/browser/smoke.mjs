@@ -195,6 +195,15 @@ try {
   await page.getByRole('button', { name: '이름 적용' }).click();
   await page.locator('nav.tabs').getByRole('button', { name: '순위', exact: true }).click();
   check((await page.locator('.standings').first().textContent())?.includes('KIA'), 'the real names come back');
+  // 0.14: the difficulty can change mid-game (confirmed, then noted on the timeline).
+  await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
+  page.once('dialog', (d) => d.accept());
+  await page.getByRole('group', { name: '난이도' }).getByRole('button', { name: '어려움', exact: true }).click();
+  await page.waitForFunction(() => document.querySelector('[aria-label="난이도"] [aria-pressed="true"]')?.textContent === '어려움');
+  page.once('dialog', (d) => d.accept());
+  await page.getByRole('group', { name: '난이도' }).getByRole('button', { name: '보통', exact: true }).click();
+  await page.waitForFunction(() => document.querySelector('[aria-label="난이도"] [aria-pressed="true"]')?.textContent === '보통');
+  check(true, 'difficulty switches back and forth');
   await page.getByRole('button', { name: /결정할 일/ }).click();
   const log = [];
   await decideAll(page, log);

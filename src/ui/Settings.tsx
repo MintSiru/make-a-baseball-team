@@ -10,6 +10,7 @@ import type { Action } from '../league/actions';
 import type { LeagueState } from '../league/state';
 import type { SaveStore } from '../save/store';
 import type { StorySettings as StorySettingsT } from '../story/settings';
+import { ro } from '../league/josa';
 import { DisplayOptions } from './DisplaySettings';
 import { StoryOptions } from './StorySettings';
 
@@ -22,7 +23,12 @@ const SECTIONS: [string, string][] = [
   ['settings-about', '정보'],
 ];
 
-const DIFFICULTY_LABEL = { easy: '쉬움', normal: '보통', hard: '어려움' } as const;
+export const DIFFICULTY_LABEL = { easy: '쉬움', normal: '보통', hard: '어려움' } as const;
+export const DIFFICULTY_NOTE = {
+  easy: '모기업 예산 +10%, 선수들이 우리 제안을 조금 더 잘 받아들이고, 스카우트 눈이 밝고, 트레이드 상대가 덜 까다롭고, 모기업 신뢰가 천천히 떨어집니다.',
+  normal: '기준입니다.',
+  hard: '모기업 예산 −10%, 협상이 더 어렵고, 스카우트의 미래 평가가 흐리며, 트레이드 상대가 더 까다롭고, 모기업 신뢰가 빨리 떨어집니다.',
+} as const;
 
 /** When this browser last saved a file of this game (kept per browser, for the reminder). */
 const EXPORT_KEY = 'kbo-last-export';
@@ -33,7 +39,7 @@ export function noteExport(seed: string) {
     // Private windows may refuse storage; the reminder just will not know.
   }
 }
-function lastExport(seed: string): string | null {
+export function lastExport(seed: string): string | null {
   try {
     const v = JSON.parse(localStorage.getItem(EXPORT_KEY) ?? 'null') as { seed: string; at: string } | null;
     return v && v.seed === seed ? v.at : null;
@@ -143,12 +149,27 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
   const u = league.user;
   return (
     <>
+      {u && (
+        <>
+          <h3>난이도</h3>
+          <div class="segmented" role="group" aria-label="난이도">
+            {(['easy', 'normal', 'hard'] as const).map((d) => (
+              <button
+                key={d}
+                type="button"
+                aria-pressed={u.settings.difficulty === d}
+                disabled={busy}
+                onClick={() => d !== u.settings.difficulty && window.confirm(`난이도를 ${ro(DIFFICULTY_LABEL[d])} 바꿀까요? 바꾼 사실은 구단 연표에 남습니다.`) && onAct({ kind: 'difficulty', level: d })}
+              >
+                {DIFFICULTY_LABEL[d]}
+              </button>
+            ))}
+          </div>
+          <p class="muted small">{DIFFICULTY_NOTE[u.settings.difficulty]} 예산은 다음 겨울부터, 나머지는 바로 바뀝니다.</p>
+        </>
+      )}
       {u ? (
         <dl class="facts">
-          <div>
-            <dt>난이도</dt>
-            <dd>{DIFFICULTY_LABEL[u.settings.difficulty]}</dd>
-          </div>
           <div>
             <dt>모기업</dt>
             <dd>{PARENT_COMPANY_TYPES[u.settings.parentType].label}</dd>
