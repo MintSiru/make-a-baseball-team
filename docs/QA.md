@@ -5,6 +5,7 @@
 
 - 주소: https://mintsiru.github.io/make-a-baseball-team/
 - 예상 시간: 30~40분 (첫 시즌까지)
+- 참고: Chromium에서 휴대폰 크기 + CPU 4배 감속으로 잰 값은 창단 약 16초(직후 한 번 1.2초 멈춤), 결정 제출 2초 안쪽, 1주 진행 2초 안쪽입니다(`scripts/mobile-perf.mjs`). 실기기가 이보다 많이 느리면 알려 주세요.
 
 ## 기기 정보
 

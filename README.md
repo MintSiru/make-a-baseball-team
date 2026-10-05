@@ -23,6 +23,7 @@ GitHub Pages로 배포하려면 저장소 설정 → Pages → Source를 "GitHub
 npm run typecheck
 npm test               # 단위·리그·밸런스·golden 테스트 + Draft Room 1.0.1 동일성 테스트
 npm run build && npm run test:browser   # 실제 Chromium: 창단부터 1군 진입, 4개 화면 크기, axe-core 접근성(WCAG 2 A·AA), 키보드, 다크 모드
+node scripts/mobile-perf.mjs           # 휴대폰 크기 + CPU 4배 감속에서 조작별 시간과 가장 긴 화면 멈춤
 ```
 
 밸런스를 바꿀 때:
