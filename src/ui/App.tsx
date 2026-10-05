@@ -15,7 +15,10 @@ import { readSaveFile } from '../save/compress';
 import { BoxScore } from './BoxScore';
 import { StorySettings } from './StorySettings';
 import { DisplaySettings } from './DisplaySettings';
+import { readableAccent } from './display';
+import { useDark } from './useDisplay';
 import { lastExport, noteExport, Settings } from './Settings';
+import { Manual } from './Manual';
 import { DISCLAIMER } from '../core/about';
 import { ClubSummary } from './ClubSummary';
 import { AlertPopup, poppingAlerts, useAlertPopups, useArticlePopups } from './Alerts';
@@ -43,7 +46,7 @@ import { TeamRoster } from './TeamRoster';
 const AUTO_SLOT = 'auto';
 const newSeed = () => `kbo-${Math.floor(Math.random() * 36 ** 6).toString(36)}`;
 
-type Tab = 'decision' | 'club' | 'market' | 'games' | 'standings' | 'leaders' | 'team' | 'history' | 'draft' | 'settings';
+type Tab = 'decision' | 'club' | 'market' | 'games' | 'standings' | 'leaders' | 'team' | 'history' | 'draft' | 'settings' | 'help';
 const TABS: { id: Tab; label: string; userOnly?: boolean; waiting?: boolean }[] = [
   // Only while the game waits for a decision (the winter's steps): the other screens stay open beside it.
   { id: 'decision', label: '결정할 일', waiting: true },
@@ -56,6 +59,7 @@ const TABS: { id: Tab; label: string; userOnly?: boolean; waiting?: boolean }[] 
   { id: 'history', label: '역대' },
   { id: 'draft', label: '드래프트 후보' },
   { id: 'settings', label: '설정' },
+  { id: 'help', label: '도움말' },
 ];
 
 const AUTO_KINDS: NewsItem['kind'][] = ['season', 'award', 'month', 'interview'];
@@ -105,6 +109,7 @@ export function App() {
   const [popups] = useAlertPopups();
   const [articles] = useArticlePopups();
   const [alertsOpen, setAlertsOpen] = useState(false);
+  const dark = useDark();
   const autoTried = useRef(new Set<string>());
   const autoTries = useRef(new Map<string, number>());
   // Automatic mode waits until this time (ms); the tick wakes it up.
@@ -417,11 +422,16 @@ export function App() {
   );
 
   const userTeam = league.user ? league.teams.find((t) => t.id === league.user!.teamId) : null;
+  // The club colour as the accent, made readable on this page (V0.15).
+  const accent = userTeam ? readableAccent(userTeam.color, dark) : null;
   const unseenAll = league.user ? unseenAlerts(league) : [];
   const unseen = poppingAlerts(unseenAll, articles);
 
   return (
-    <div class="app" style={userTeam ? ({ '--accent': userTeam.color } as Record<string, string>) : undefined}>
+    <div class="app" style={accent ? ({ '--accent': accent.accent, '--accent-ink': accent.ink } as Record<string, string>) : undefined}>
+      <a class="skip-link" href="#main">
+        본문으로 건너뛰기
+      </a>
       {/* V0.7.7: on a wide screen the club, the screens and the saves stay in a sidebar and only the page
           scrolls; on a phone everything flows top to bottom as before. */}
       <aside class="sidebar">
@@ -501,7 +511,7 @@ export function App() {
           {controls}
         </fieldset>
       </div>
-      <main class="page" data-version={version}>
+      <main class="page" id="main" tabIndex={-1} data-version={version}>
         {notice && (
           <p class="notice" role="status">
             {notice}
@@ -528,6 +538,7 @@ export function App() {
             onNewGame={newGame}
           />
         )}
+        {tab === 'help' && <Manual />}
         {tab === 'draft' && (
           <div class="layout">
             <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} ourView={league?.user ? (p) => scoutView(league!, p) : undefined} />

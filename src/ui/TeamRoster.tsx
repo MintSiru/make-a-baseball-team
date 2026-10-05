@@ -1,6 +1,8 @@
 import type { LeagueState } from '../league/state';
 import { standingsView, teamOf } from '../league/views';
 import { useState } from 'preact/hooks';
+import { accentStyle } from './display';
+import { useDark } from './useDisplay';
 import { Squad } from './Squad';
 import { Lineup } from './Lineup';
 
@@ -16,11 +18,12 @@ export function TeamRoster({
   onTeam: (id: string) => void;
   onPlayer: (id: string) => void;
 }) {
+  const dark = useDark();
   const team = teamOf(league, teamId)!;
   const [view, setView] = useState<'squad' | 'lineup'>('squad');
   const row = standingsView(league).find((r) => r.teamId === teamId);
   return (
-    <section aria-labelledby="team-title" style={{ '--accent': team.color } as Record<string, string>}>
+    <section aria-labelledby="team-title" style={accentStyle(team.color, dark)}>
       <div class="team-chips" role="group" aria-label="구단">
         {league.teams.map((t) => (
           <button key={t.id} type="button" aria-pressed={t.id === teamId} onClick={() => onTeam(t.id)}>

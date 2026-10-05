@@ -1,4 +1,6 @@
 import { useState } from 'preact/hooks';
+import { accentStyle } from './display';
+import { useDark } from './useDisplay';
 import { CITIES, cityById } from '../club/cities';
 import { PARENT_COMPANY_TYPES, type ParentCompanyType } from '../club/types';
 import { existingTeams } from '../league/clubs';
@@ -22,6 +24,7 @@ interface Props {
 }
 
 export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props) {
+  const dark = useDark();
   const [name, setName] = useState('');
   const [short, setShort] = useState('');
   const [color, setColor] = useState(COLORS[0]!);
@@ -68,7 +71,7 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
   ].filter(Boolean) as string[];
 
   return (
-    <main class="page new-game" style={{ '--accent': color } as Record<string, string>}>
+    <main class="page new-game" style={accentStyle(color, dark)}>
       <h2>2026년, KBO 11번째 구단 창단</h2>
       <p>
         7월 1일 창단 승인을 받는 순간부터 시작합니다. 9월 신인 드래프트에서 우선지명을 하고,{' '}

@@ -1,5 +1,6 @@
 /* AI article settings (V0.7): provider, the player's own API key, model, and automatic writing. */
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { useFocusTrap } from './modal';
 import { PROVIDERS } from '../story/writer';
 import type { StorySettings as Settings } from '../story/settings';
 import type { ProviderId } from '../story/types';
@@ -8,9 +9,14 @@ type Props = { settings: Settings; usage: { input: number; output: number; artic
 
 /** The dialog (a story button with no key yet); in a game the same options sit in the settings tab (V0.13). */
 export function StorySettings({ onClose, ...props }: Props & { onClose: () => void }) {
+  const box = useRef<HTMLDivElement>(null);
+  useFocusTrap(box, onClose);
+  useEffect(() => {
+    box.current?.querySelector('select')?.focus();
+  }, []);
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="story-settings-title">
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="story-settings-title" ref={box}>
         <button type="button" class="close" onClick={onClose} aria-label="닫기">
           닫기
         </button>

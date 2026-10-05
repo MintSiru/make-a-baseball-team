@@ -106,7 +106,6 @@ function seasonMetrics(s: LeagueState, year: number) {
     capOver,
     attendance: round(mean(reports.map((r) => r!.fans / Math.max(1, r!.homeGames))), 0),
     aiOperating: { min: Math.min(...ai.map((r) => r!.operating)), max: Math.max(...ai.map((r) => r!.operating)), support: Math.round(mean(ai.map((r) => r!.support))!) },
-    hof: (s.hallOfFame ?? []).filter((e) => e.year === year + 1 || e.year === year).length,
   };
 }
 
@@ -134,7 +133,7 @@ function population(s: LeagueState, year: number) {
 }
 
 /** Free agents and retirements of the winter that just ran (compares before and after). */
-function winter(before: Map<string, string>, s: LeagueState, year: number) {
+function winter(before: Map<string, string>, s: LeagueState, year: number, hofBefore: number) {
   const retired = Object.values(s.players).filter((p) => p.status === 'retired' && before.get(p.id) === 'active');
   const deals = Object.values(s.players)
     .filter((p) => p.contract?.fa && p.contract.signedIn >= year && !before.get(`${p.id}|fa|${p.contract.signedIn}`))
@@ -146,6 +145,8 @@ function winter(before: Map<string, string>, s: LeagueState, year: number) {
     fa: deals.length,
     faTop: round(Math.max(0, ...deals), 1),
     fa100: deals.filter((x) => x >= 100).length,
+    // Inductions happen at retirement, in the winter (counted here, not with the season).
+    hof: (s.hallOfFame ?? []).length - hofBefore,
   };
 }
 
@@ -168,8 +169,9 @@ function runA(seed: string, seasons: number) {
     closeSeason(s);
     const season = seasonMetrics(s, year);
     const before = snapshot(s);
+    const hofBefore = (s.hallOfFame ?? []).length;
     runOffseason(s);
-    const w = winter(before, s, year);
+    const w = winter(before, s, year, hofBefore);
     startSeason(s);
     out.push({ ...season, ...w, pop: population(s, s.year) });
   }

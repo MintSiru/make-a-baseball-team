@@ -1,5 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useMemo, useState } from 'preact/hooks';
+import { Help } from './Help';
+import { decisionTip } from './tutorial';
 import { draftContracts, TOOL_LABELS, type Difficulty } from '../draftroom';
 import { salaryIn, usdTotal } from '../league/contracts';
 import { usd } from '../league/foreign';
@@ -1242,6 +1244,13 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
   return (
     <section class="decision" aria-labelledby="decision-title">
       <h2 id="decision-title">{TITLES[d.kind]}</h2>
+      {decisionTip(d.kind) && (
+        <Help title="이 결정은?">
+          {decisionTip(d.kind)!.body.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+        </Help>
+      )}
       {body}
       <div class="actions">
         {d.kind === 'draftPick' ? (

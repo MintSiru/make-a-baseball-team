@@ -34,6 +34,17 @@ const noOverflow = async (page, label) => {
 
 /** Batch choices (V0.7.6) are tried once each: the select-all box and a row of one-click settings. */
 const batch = { all: false, bar: false, fa: false };
+// 0.15: axe-core (WCAG 2 A/AA) on a screen; serious and critical findings fail the run.
+const AXE = join(root, 'node_modules', 'axe-core', 'axe.min.js');
+async function axeCheck(page, label) {
+  if (!(await page.evaluate(() => !!window.axe))) await page.addScriptTag({ path: AXE });
+  const found = await page.evaluate(async () =>
+    (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa'] })).violations
+      .filter((v) => v.impact === 'serious' || v.impact === 'critical')
+      .map((v) => `${v.id} ×${v.nodes.length} (${v.nodes[0]?.target.join(' ')})`),
+  );
+  check(found.length === 0, `accessibility ${label}: ${found.join('; ')}`);
+}
 
 /** Makes every pending decision the way the scouts suggest (draft picks: the first one by hand). */
 async function decideAll(page, log) {
@@ -171,6 +182,7 @@ try {
   await page.screenshot({ path: join(shots, 'tutorial.png'), fullPage: false });
   await page.locator('.tutorial').getByRole('button', { name: '알겠어요' }).click();
   await page.waitForFunction(() => document.querySelector('.tutorial h2')?.textContent === '결정할 일');
+  check((await page.locator('.decision details.help summary').first().textContent()) === '이 결정은?', 'a decision explains itself (이 결정은?)');
   check((await page.locator('h1').textContent()) === '울산 고래단', 'masthead shows the club');
   // Display settings (V0.7.6): the bar colours by grade tier, kept in this browser. Since 0.13 they live in
   // the settings tab, opened from the masthead.
@@ -412,7 +424,11 @@ try {
   check((await page.locator('.profile-number').textContent()) === '77', 'the uniform number can be set');
   await page.screenshot({ path: join(shots, 'player.png') });
   for (const t of ['통산 · 커리어 하이', '좌우 기록', '부상 이력', '연도별 기록']) await page.getByRole('tab', { name: t }).click();
+  // 0.15: the keyboard stays inside the dialog, and Escape hands the focus back to the name that opened it.
+  for (let i = 0; i < 40; i++) await page.keyboard.press('Tab');
+  check(await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]')), 'Tab stays inside the player dialog');
   await page.keyboard.press('Escape');
+  check(await page.evaluate(() => !!document.activeElement?.closest('.squad-table')), 'closing the dialog returns the focus to the list');
   // A hitter's profile, and the bullpen role / platoon controls under manual entry.
   await page.locator('.squad-table').nth(1).locator('.link').first().click();
   await page.getByRole('dialog').waitFor();
@@ -428,14 +444,32 @@ try {
   // 7. Layouts.
   for (const [width, height] of SIZES) {
     await page.setViewportSize({ width, height });
-    for (const tab of ['우리 구단', '이적시장', '경기', '순위', '기록', '구단', '역대', '드래프트 후보', '설정']) {
+    for (const tab of ['우리 구단', '이적시장', '경기', '순위', '기록', '구단', '역대', '드래프트 후보', '설정', '도움말']) {
       await page.locator('nav.tabs').getByRole('button', { name: tab, exact: true }).click();
       await noOverflow(page, `${width}x${height} ${tab}`);
+      if (width === 1440 || width === 390) await axeCheck(page, `${width}x${height} ${tab}`);
     }
     await page.getByRole('button', { name: '우리 구단', exact: true }).click();
     await page.screenshot({ path: join(shots, `${width}x${height}.png`) });
     console.log(`ok ${width}x${height}`);
   }
+  // 0.15: the dark page (the system's, then the player's own pick in the settings) passes the same checks.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ colorScheme: 'dark' });
+  for (const tab of ['우리 구단', '이적시장', '순위', '구단', '설정']) {
+    await page.locator('nav.tabs').getByRole('button', { name: tab, exact: true }).click();
+    await axeCheck(page, `dark ${tab}`);
+  }
+  await page.screenshot({ path: join(shots, 'dark-390.png') });
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.getByRole('group', { name: '밝기' }).getByRole('button', { name: '어둡게' }).click();
+  check((await page.evaluate(() => document.documentElement.dataset.theme)) === 'dark', 'the player can pick dark over the system');
+  await axeCheck(page, 'picked dark settings');
+  await page.getByRole('group', { name: '글자 크기' }).getByRole('button', { name: '크게' }).click();
+  await noOverflow(page, '390 large text settings');
+  await page.screenshot({ path: join(shots, 'dark-large-390.png') });
+  await page.getByRole('group', { name: '밝기' }).getByRole('button', { name: '기기 설정 따르기' }).click();
+  await page.getByRole('group', { name: '글자 크기' }).getByRole('button', { name: '보통' }).click();
   check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
   await context.close();
 

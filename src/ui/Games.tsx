@@ -54,7 +54,7 @@ export function Games({ league, onOpen }: { league: LeagueState; onOpen: (id: st
       <h2 id="games-title">경기</h2>
       <div class={league.user ? 'split' : undefined}>
         {league.user && (
-          <div class="panel tall">
+          <div class="panel tall" tabIndex={0} aria-label="우리 구단 경기">
             <h3>우리 구단 ({league.year})</h3>
             <p class="muted">최근 10경기는 문자중계를 처음부터 다시 볼 수 있습니다.</p>
             <GameTable rows={list.mine} onOpen={onOpen} mine />

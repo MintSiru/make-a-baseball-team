@@ -1,8 +1,9 @@
 /* Display settings (V0.7.6): the colours of the ability bars by 20–80 tier, a preview, whether the grades in
    the tables are coloured too, and the event pop-ups. Changes show at once and stay in this browser. */
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { useFocusTrap } from './modal';
 import { PopupSettings } from './Alerts';
-import { DEFAULT_PREFS, gradeTier, loadDisplay, PRESETS, saveDisplay, TIER_LABELS, type BarPreset, type DisplayPrefs } from './display';
+import { DEFAULT_PREFS, gradeTier, loadDisplay, PRESETS, saveDisplay, SCALE_LABELS, THEME_LABELS, TIER_LABELS, type BarPreset, type DisplayPrefs, type Scale, type Theme } from './display';
 import { GradeBar } from './grades';
 
 const SAMPLE = [35, 45, 55, 65, 75];
@@ -13,11 +14,9 @@ const CLUB_STRIP = ['var(--rule)', 'var(--ink-2)', 'var(--ink-2)', 'var(--accent
 /** The dialog (before a game starts); in a game the same options sit in the settings tab (V0.13). */
 export function DisplaySettings({ onClose }: { onClose: () => void }) {
   const first = useRef<HTMLDivElement>(null);
+  useFocusTrap(first, onClose);
   useEffect(() => {
     first.current?.querySelector('input')?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
   }, []);
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -47,6 +46,25 @@ export function DisplayOptions() {
   return (
     <>
       <p class="muted">이 브라우저에만 저장되고 진행 파일에는 들어가지 않습니다.</p>
+
+      <h3>밝기</h3>
+      <div class="segmented" role="group" aria-label="밝기">
+        {(Object.keys(THEME_LABELS) as Theme[]).map((k) => (
+          <button key={k} type="button" aria-pressed={p.theme === k} onClick={() => set({ ...p, theme: k })}>
+            {THEME_LABELS[k]}
+          </button>
+        ))}
+      </div>
+      <p class="muted small">구단 색이 배경에 묻히면 읽을 수 있을 만큼 밝히거나 어둡게 바꿔 씁니다.</p>
+
+      <h3>글자 크기</h3>
+      <div class="segmented" role="group" aria-label="글자 크기">
+        {(Object.keys(SCALE_LABELS) as Scale[]).map((k) => (
+          <button key={k} type="button" aria-pressed={p.scale === k} onClick={() => set({ ...p, scale: k })}>
+            {SCALE_LABELS[k]}
+          </button>
+        ))}
+      </div>
 
       <h3>능력치 바 색</h3>
       <div class="preset-list" role="radiogroup" aria-label="능력치 바 색">

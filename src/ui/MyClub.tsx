@@ -1,6 +1,8 @@
 /* The user's club in three views: an overview you can read at a glance, the squads (with the general
    manager's moves), and the front office (money, ballpark, club facts). */
 import { useState } from 'preact/hooks';
+import { accentStyle } from './display';
+import { useDark } from './useDisplay';
 import { cityById } from '../club/cities';
 import { PARENT_COMPANY_TYPES } from '../club/types';
 import type { Action } from '../league/actions';
@@ -30,13 +32,14 @@ export interface StoryHooks {
 }
 
 export function MyClub({ league, onPlayer, onAct, story = {} }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void; story?: StoryHooks }) {
+  const dark = useDark();
   const [view, setView] = useState<View>('overview');
   const [msg, setMsg] = useState('');
   const u = league.user!;
   const team = league.teams.find((t) => t.id === u.teamId)!;
   const city = cityById(u.settings.cityId)!;
   return (
-    <section aria-labelledby="myclub-title" style={{ '--accent': team.color } as Record<string, string>}>
+    <section aria-labelledby="myclub-title" style={accentStyle(team.color, dark)}>
       <div class="page-head">
         <div>
           <h2 id="myclub-title">
@@ -159,7 +162,7 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
       )}
 
       <div class="dash-grid">
-        <section class="panel">
+        <section class="panel" tabIndex={0} aria-label="최근 경기">
           <h3>최근 경기</h3>
           {games.length ? (
             <ul class="results">
@@ -185,7 +188,7 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
             <p class="empty">아직 경기가 없습니다.</p>
           )}
         </section>
-        <section class="panel">
+        <section class="panel" tabIndex={0} aria-label="순위">
           <h3>순위</h3>
           {inFirstTeam && table.length ? (
             <table class="mini-table">
@@ -207,15 +210,15 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
             <p class="empty">1군에 들어가는 {u.firstTeamYear}년부터 순위가 나옵니다.</p>
           )}
         </section>
-        <section class="panel">
+        <section class="panel" tabIndex={0} aria-label="팀 리더">
           <h3>팀 리더</h3>
           <TeamLeaders league={league} onPlayer={onPlayer} />
         </section>
-        <section class="panel">
+        <section class="panel" tabIndex={0} aria-label="부상 · 결장">
           <h3>부상 · 결장</h3>
           <Absences league={league} onPlayer={onPlayer} />
         </section>
-        <section class="panel">
+        <section class="panel" tabIndex={0} aria-label="다가오는 경기">
           <h3>다가오는 경기</h3>
           {upcoming.length ? (
             <ul class="plain upcoming">
@@ -230,7 +233,7 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
             <p class="empty">{league.phase === 'regular' ? '남은 경기가 없습니다.' : '시즌이 끝났습니다.'}</p>
           )}
         </section>
-        <section class="panel">
+        <section class="panel" tabIndex={0} aria-label="구단 소식">
           <h3>구단 소식</h3>
           {u.log?.length ? (
             <ul class="club-log">
