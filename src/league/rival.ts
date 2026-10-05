@@ -10,7 +10,7 @@
 import { generateDraftPool, rng } from '../draftroom';
 import { CITIES, cityById } from '../club/cities';
 import type { ParentCompanyType } from '../club/types';
-import { fromDraftProspect } from '../model/player';
+import { fromDraftProspect, placeClass } from '../model/player';
 import type { Player, PlayerId, Team, TeamId } from '../model/types';
 import { EXPANSION_DEFAULTS, minimumSalaryFor } from '../rules/kbo2026';
 import { addAlert } from './alerts';
@@ -177,10 +177,13 @@ function rivalTryout(s: LeagueState, year: number): number {
   const seed = `${s.seed}|tryout|${RIVAL_ID}|${year}`;
   const next = year + 1;
   const gm = s.twelve!.gm;
-  const pool = generateDraftPool(seed)
-    .players.filter((p) => ['독립구단', '해외독립 복귀', '마이너 복귀', '대졸'].includes(p.pathway) && p.age >= 21)
-    .map((p) => fromDraftProspect(p, year, seed))
-    .map((p) => ({ ...p, id: `rt${year}-${p.origin.sourceId}` }));
+  const pool = placeClass(
+    generateDraftPool(seed)
+      .players.filter((p) => ['독립구단', '해외독립 복귀', '마이너 복귀', '대졸'].includes(p.pathway) && p.age >= 21)
+      .map((p) => fromDraftProspect(p, year, seed))
+      .map((p) => ({ ...p, id: `rt${year}-${p.origin.sourceId}` })),
+    seed,
+  );
   const released = Object.values(s.players).filter((p) => p.status === 'retired' && p.career.length && (p.career.at(-1)?.year ?? 0) >= year - 1 && ageIn(p, next) <= 33);
   const chosen = [...released, ...pool].sort((a, b) => gmValue(b, next, gm) - gmValue(a, next, gm)).slice(0, RIVAL.tryout);
   for (const p of chosen) {

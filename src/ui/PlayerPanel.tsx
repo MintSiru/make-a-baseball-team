@@ -4,6 +4,11 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { TOOL_LABELS } from '../draftroom';
 import type { Split, Splits } from '../league/engine/types';
+import type { Action } from '../league/actions';
+import { wagwa } from '../league/josa';
+import { checkNumber, numberHolder } from '../league/numbers';
+import { checkInspect } from '../league/scandals';
+import { SCANDAL } from '../league/tuning';
 import type { LeagueState } from '../league/state';
 import { playerCard, positionLabel, rateContextFor, rates, type PlayerCard } from '../league/views';
 import { usdTotal } from '../league/contracts';
@@ -231,7 +236,20 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
   );
 }
 
-export function PlayerPanel({ league, id, onClose, onInterview }: { league: LeagueState; id: string; onClose: () => void; onInterview?: (id: string) => void }) {
+export function PlayerPanel({
+  league,
+  id,
+  onClose,
+  onInterview,
+  onAct,
+}: {
+  league: LeagueState;
+  id: string;
+  onClose: () => void;
+  onInterview?: (id: string) => void;
+  /** Our players' uniform number and the club's answer to warning signs (V0.12). */
+  onAct?: (a: Action) => void;
+}) {
   const card = playerCard(league, id);
   const heading = useRef<HTMLHeadingElement>(null);
   const [tab, setTab] = useState<Tab>('seasons');
@@ -278,6 +296,23 @@ export function PlayerPanel({ league, id, onClose, onInterview }: { league: Leag
               인터뷰 요청
             </button>{' '}
             <span class="muted small">우리 구단 → 소식 → 뉴스에 실립니다.</span>
+          </p>
+        )}
+        {league.suspended?.[p.id] && (
+          <p class="notice warn">
+            {league.suspended[p.id]!.reason}:{' '}
+            {league.suspended[p.id]!.games ? `출장정지 ${league.suspended[p.id]!.games}경기 남음` : ''}
+            {league.suspended[p.id]!.until ? `${league.suspended[p.id]!.games ? ' · ' : ''}${league.suspended[p.id]!.until}까지 실격` : ''}
+          </p>
+        )}
+        {onAct && league.user && p.teamId === league.user.teamId && <NumberField league={league} id={p.id} current={wearing} onAct={onAct} />}
+        {onAct && league.user && p.teamId === league.user.teamId && (p.life?.suspicion?.signs ?? 0) > 0 && (
+          <p class="inline-form">
+            <span class="small">최근 기사로 금지약물 의혹이 나왔습니다.</span>
+            <button type="button" disabled={!!checkInspect(league, p.id)} title={checkInspect(league, p.id) ?? ''} onClick={() => onAct({ kind: 'inspect', id: p.id })}>
+              구단 자체 검사 ({SCANDAL.doping.inspectCost}만 원)
+            </button>
+            <span class="muted small">사실이면 KBO 검사 전에 막고, 아니면 선수가 서운해합니다.</span>
           </p>
         )}
 
@@ -397,6 +432,11 @@ export function PlayerPanel({ league, id, onClose, onInterview }: { league: Leag
               <GradeBar label="종합" now={s.current} future={s.futureValue} />
             </div>
             <p class="muted small">막대는 현재 등급, 눈금은 스카우트가 보는 미래 등급입니다 (20~80).</p>
+            {s.moved && (
+              <p class={`small ${s.moved.to > s.moved.from ? 'plus' : 'minus'}`}>
+                {s.moved.to > s.moved.from ? '▲' : '▼'} 시즌 중 스카우트 평가 {s.moved.from} → {s.moved.to} ({s.moved.date.slice(5).replace('-', '/')})
+              </p>
+            )}
           </section>
         </div>
 
@@ -405,10 +445,13 @@ export function PlayerPanel({ league, id, onClose, onInterview }: { league: Leag
             <h3>포지션 적성</h3>
             <div class="gradebars">
               {card.positions.map((x) => (
-                <GradeBar key={x.pos} label={`${POSITION_NAMES[x.pos]}${x.main ? ' (주)' : ''}`} now={x.grade} note={x.games ? `1군 ${x.games}경기 선발` : undefined} />
+                <GradeBar key={x.pos} label={`${POSITION_NAMES[x.pos]}${x.main ? ' (주)' : x.listed ? ' (부)' : ''}`} now={x.grade} note={x.games ? `1군 ${x.games}경기 선발` : undefined} />
               ))}
             </div>
-            <p class="muted small">수비 등급에서 포지션 차이만큼 빠집니다. 한 포지션에서 1군 30경기를 넘게 뛰면 그 포지션의 손해가 절반으로 줄어듭니다.</p>
+            <p class="muted small">
+              주 포지션과 부포지션(최대 3개)만 제대로 소화합니다. 부포지션에서는 포지션 차이의 절반만 빠지고, 그 밖의 포지션은 손해가 훨씬 큽니다. 새 포지션에서 한 시즌 1군 40경기를 뛰면 부포지션이
+              되고, 통산 30경기를 넘기면 손해가 절반으로 줄어듭니다.
+            </p>
           </section>
         )}
 
@@ -514,5 +557,26 @@ export function PlayerPanel({ league, id, onClose, onInterview }: { league: Leag
           ))}
       </div>
     </div>
+  );
+}
+
+/** Our player's uniform number, set by the general manager (V0.12): a teammate wearing it swaps. */
+function NumberField({ league, id, current, onAct }: { league: LeagueState; id: string; current: number | null; onAct: (a: Action) => void }) {
+  const [text, setText] = useState(current != null ? String(current) : '');
+  useEffect(() => setText(current != null ? String(current) : ''), [id, current]);
+  const n = Number(text);
+  const problem = text.trim() === '' ? '번호를 넣으세요.' : checkNumber(league, id, n);
+  const holder = !problem ? numberHolder(league, league.user!.teamId, n, id) : undefined;
+  return (
+    <p class="inline-form number-form">
+      <label>
+        등번호
+        <input type="number" inputMode="numeric" min={0} max={199} value={text} aria-label="등번호" onInput={(e) => setText((e.currentTarget as HTMLInputElement).value)} />
+      </label>
+      <button type="button" disabled={!!problem || n === current} onClick={() => onAct({ kind: 'number', id, number: n })}>
+        {holder ? `${wagwa(holder.name)} 맞바꾸기` : '바꾸기'}
+      </button>
+      {problem && text.trim() !== '' && <span class="muted small">{problem}</span>}
+    </p>
   );
 }

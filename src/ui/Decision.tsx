@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'preact/hooks';
 import { draftContracts, TOOL_LABELS, type Difficulty } from '../draftroom';
 import { salaryIn, usdTotal } from '../league/contracts';
 import { usd } from '../league/foreign';
+import { eventById } from '../league/international';
 import { kboLine, poolEntry } from '../league/foreignpool';
 import { autoDecision, checkDecision, projectedPayroll, type DecisionInput } from '../league/expansion';
 import { sangmuChance } from '../league/offseason';
@@ -55,6 +56,10 @@ const TITLES: Record<DecisionT['kind'], string> = {
   staff: '코칭스태프 · 프런트',
   rival: '12구단 창단',
   rivalProtect: '12구단 특별지명 · 보호선수 명단',
+  retire: '은퇴 의사 · 설득',
+  national: '국가대표 차출',
+  scandal: '징계 · 구단 대응',
+  dispute: '지분 분쟁',
 };
 
 /** What the scouts hear about major league interest, from the public grade. */
@@ -391,6 +396,10 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         return { kind: 'rival', settings: vote ? (rival ?? d.suggestion) : null };
       case 'rivalProtect':
         return { kind: 'rivalProtect', ids: [...selected] };
+      case 'scandal':
+        return { kind: 'scandal', answer: (choices.pick ?? 'extra') as 'release' | 'extra' | 'none' };
+      case 'dispute':
+        return { kind: 'dispute', answer: (choices.pick ?? 'settle') as 'settle' | 'fight' };
       default:
         return { kind: d.kind, ids: [...selected] } as DecisionInput;
     }
@@ -437,6 +446,10 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       case 'rival':
         setRival(a.settings);
         setVote(true);
+        break;
+      case 'scandal':
+      case 'dispute':
+        setChoices({ pick: a.answer });
         break;
       default:
         if ('ids' in a) setSelected(new Set(a.ids));
@@ -990,6 +1003,106 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       );
       break;
     }
+    case 'dispute': {
+      const pick = choices.pick ?? 'settle';
+      const options: [string, string, string][] = [
+        ['settle', '합의', `${money(d.settle)}을 주고 끝냅니다. 모기업이 없는 구단이라 투자자들의 신뢰가 조금 떨어집니다.`],
+        ['fight', '소송', `올겨울 소송비 ${money(d.legal)}. 내년 겨울 판정에서 이기면 신뢰가 오르고, 지면 ${money(d.loss)}에 지분을 되사야 하며 매각설로 팬 분위기가 가라앉습니다.`],
+      ];
+      body = (
+        <>
+          <p>
+            {d.firm} {d.investor} 회장이 창단 때 넣은 돈이 대여금이 아니라 지분 40%를 받기로 한 투자였다며 상사중재를 신청했습니다. 구단의 대응을 고르세요.
+          </p>
+          <div class="choice-grid" role="radiogroup" aria-label="지분 분쟁 대응">
+            {options.map(([k, label, note]) => (
+              <button key={k} type="button" class="choice" role="radio" aria-checked={pick === k} aria-pressed={pick === k} onClick={() => choose('pick', k)}>
+                <strong>{label}</strong>
+                <span class="muted small">{note}</span>
+              </button>
+            ))}
+          </div>
+          {budgetLine}
+        </>
+      );
+      break;
+    }
+    case 'scandal': {
+      const p = league.players[d.id];
+      const pick = choices.pick ?? 'extra';
+      const options: [string, string, string][] = [
+        ['release', '방출', '팬들은 단호한 대응을 반깁니다. 남은 연봉은 그대로 냅니다. 1군 최소 인원 때문에 지금 방출할 수 없으면 자체 징계로 바뀝니다.'],
+        ['extra', '구단 자체 징계', `KBO 징계에 ${20}경기 출장정지와 벌금을 더합니다. 팬들의 실망이 조금 누그러집니다.`],
+        ['none', 'KBO 징계만 따름', '선수를 지키지만 팬들의 비판을 받습니다.'],
+      ];
+      body = (
+        <>
+          <p>
+            {p ? (
+              <button type="button" class="link" onClick={() => onPlayer(p.id)}>
+                {p.name}
+              </button>
+            ) : (
+              '선수'
+            )}{' '}
+            · KBO 징계: {d.penalty}
+          </p>
+          <p>구단의 대응을 고르세요.</p>
+          <div class="choice-grid" role="radiogroup" aria-label="구단 대응">
+            {options.map(([k, label, note]) => (
+              <button key={k} type="button" class="choice" role="radio" aria-checked={pick === k} aria-pressed={pick === k} onClick={() => choose('pick', k)}>
+                <strong>{label}</strong>
+                <span class="muted small">{note}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      );
+      break;
+    }
+    case 'national': {
+      const e = eventById(d.event);
+      const row = Object.fromEntries(d.rows.map((r) => [r.id, r]));
+      body = (
+        <>
+          <p>
+            {e ? `${e.year} ${e.name}` : '국가대표'} 대표팀에 우리 선수 {d.rows.length}명이 뽑혔습니다. 구단은 차출을 거부할 수 없지만, 부상이나 컨디션을 이유로 제외를 요청할 수
+            있습니다. 다친 선수는 빠지고, 건강한 선수는 대표팀이 받아들일 때만 빠집니다. 건강한 선수를 빼 달라고 하면 팬들이 실망하고, 병역 특례가 걸린 대회라면 선수 본인도
+            서운해합니다. 제외를 요청할 선수를 고르세요 (선택 {selected.size}명).
+          </p>
+          {e && <p class="muted small">대회 기간 {e.dates.from} ~ {e.dates.to}</p>}
+          <PlayerTable
+            league={league}
+            players={d.rows.map((r) => league.players[r.id]!)}
+            selected={selected}
+            toggle={toggle}
+            onPlayer={onPlayer}
+            extra={{ title: '상태', value: (p) => [row[p.id]!.injured ? '부상' : '건강', row[p.id]!.exemption ? '병역 특례 기회' : ''].filter(Boolean).join(' · ') }}
+          />
+        </>
+      );
+      break;
+    }
+    case 'retire': {
+      const chance = Object.fromEntries(d.rows.map((r) => [r.id, r.chance]));
+      body = (
+        <>
+          <p>
+            올 시즌을 끝으로 은퇴하겠다는 우리 선수들입니다. 붙잡고 싶은 선수를 고르면 단장이 직접 만나 한 시즌 더 뛰어 달라고 설득합니다. 젊고 아직 잘하는 선수일수록 마음을 돌리기
+            쉽습니다. 고르지 않은 선수와 설득에 실패한 선수는 은퇴합니다. 선택 {selected.size}명
+          </p>
+          <PlayerTable
+            league={league}
+            players={d.rows.map((r) => league.players[r.id]!)}
+            selected={selected}
+            toggle={toggle}
+            onPlayer={onPlayer}
+            extra={{ title: '최근 WAR · 설득 가능성', value: (p) => `${lastWar(p)?.toFixed(1) ?? '-'} · ${pct(chance[p.id] ?? 0)}`, sort: (p) => chance[p.id] ?? 0 }}
+          />
+        </>
+      );
+      break;
+    }
     case 'faOptions':
       body = (
         <>
@@ -1111,6 +1224,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
                       {POSITIONS.map((pos) => (
                         <option key={pos} value={pos}>
                           {POSITION_NAMES[pos]}
+                          {pos === p.position ? ' (지금)' : (p.alt ?? []).includes(pos) ? ' (부포지션, 적응 없음)' : ''}
                         </option>
                       ))}
                     </select>

@@ -111,7 +111,23 @@ export const OFFSEASON = {
   veteranDecline: { from: 31, perYear: 0.3, steepFrom: 34, steepPerYear: 0.45, speed: 1.4, skill: 0.6 },
   scouting: { matureAge: 28, window: 7 },
   serviceDecline: { army: [0.8, 1.6] as [number, number], social: [0.3, 0.8] as [number, number] },
-  retirement: { from: 33, byAge: [0.05, 0.08, 0.14, 0.22, 0.34, 0.48, 0.64, 0.8] },
+  /** Retirement (offseason.ts retirementChance): the chance a year by age from `from`, at `old.age` and over (no
+      lower than `old.floor` of it however good he is), times the multiplier of his current grade (`byGrade`, best
+      first; `weak` below). V0.11: stars and regulars play longer. `persuade`: the user's club asking him to play on. */
+  retirement: {
+    from: 33,
+    byAge: [0.05, 0.08, 0.14, 0.22, 0.34, 0.48, 0.64, 0.8],
+    old: { age: 41, chance: 0.95, floor: 0.4 },
+    byGrade: [
+      [60, 0.12],
+      [55, 0.35],
+      [50, 0.8],
+      [45, 1.1],
+    ] as [number, number][],
+    weak: 1.8,
+    goodYear: 2.5,
+    persuade: { base: 0.85, from: 34, perYear: 0.08, perGrade: 0.01, min: 0.1, max: 0.9 },
+  },
   military: {
     mustAge: 28,
     minAge: 20,
@@ -336,10 +352,18 @@ export const FANS = {
 export const FINANCE = {
   sponsor: { base: 350_000, perThousandFans: 30_000 },
   naming: { base: 800_000 },
-  /** Merchandise margin per fan, and concessions per fan (the ballpark operator keeps more). */
-  merchPerFan: 0.3,
+  /** Merchandise margin per fan (V0.12: 0.3 → 0.45 for the 2024–25 goods boom, docs/FINANCE.md ④), and
+      concessions per fan (the ballpark operator keeps more). */
+  merchPerFan: 0.45,
   concessions: { operator: 0.25, tenant: 0.08 },
-  frontOffice: 1_800_000,
+  /** The front office (V0.12: by the size of the fan base, docs/FINANCE.md ②; 180억 for every club before). */
+  frontOffice: { base: 1_500_000, perThousandFans: 16_000 },
+  /** V0.12 (docs/FINANCE.md ①, ⑧): a winter's emergency support costs the owner's trust, `base` and a point per
+      `per` of it, at most `most`. */
+  emergency: { base: 4, per: 100_000, most: 15 },
+  /** Season tickets (V0.12, ③): the share of the fan base (times the mood) that buys at each discount, at most
+      `maxShare` of the seats; holders come to `show` of the games. */
+  seasonTickets: { share: { 0: 0.08, 0.1: 0.15, 0.2: 0.22, 0.3: 0.28 } as Record<number, number>, maxShare: 0.4, show: 0.9 },
   perHomeGame: 6_000,
   ballpark: { operator: 250_000, tenant: 150_000, dome: 400_000, perSeat: 5 },
   farm: 350_000,
@@ -449,10 +473,13 @@ export const INJURY = {
   riskScale: 0.1,
   ageFrom: 30,
   perYearOver: 0.06,
-  /** Futures games, relative to the first team. */
-  futures: 0.7,
+  /** Futures games, relative to the first team (V0.11: 0.7 → 0.55, fewer operations on the farm). */
+  futures: 0.55,
   riskAfterSurgery: 0.015,
   maxRisk: 0.2,
+  /** The same major operation again (V0.11, injuries.ts injuryWeight): its weight within `within` years of the
+      last one (`soon`) and after (`later`), times `again` for each earlier one beyond the first. */
+  repeat: { within: 2, soon: 0.08, later: 0.45, again: 0.3 },
   /** The user's player out this long makes the news. */
   newsFrom: 21,
 };
@@ -517,8 +544,113 @@ export const LIFE = {
   merch: 0.25,
 } as const;
 
+/** An investor's claim on a club without a parent (V0.12, dispute.ts; an easter egg): its chance a winter, the
+    settlement, the lawyers' fee, what losing costs (buying the 40 percent back), the chance the club wins, the trust
+    it moves and the fans' mood a loss costs. Money in 만 원. */
+export const DISPUTE = { chance: 0.006, settle: 250_000, legal: 30_000, loss: 800_000, win: 0.3, trust: { settle: 5, win: 5, loss: 15 }, fans: 0.03 };
+
+/** The dark side (V0.12, scandals.ts). Chances a season for our club (spread over `gameDays`), the KBO's penalties
+    (RULES.md §9, S73–S75; the fight's games are a game assumption), the fans' fondness for the player and the club's
+    mood it costs, and what the club's answer does to the mood. Doping: a clean player's rumours a season, the days
+    to the first sign and between signs, the signs a rumour shows at most and how long it lasts, the days before the
+    KBO's testers can find him and their chance a game day, the ability it lends, and the club's own test. */
+export const SCANDAL = {
+  gameDays: 170,
+  rates: { dui: 0.1, assault: 0.04, fixing: 0.003, doping: 0.05 } as Record<'dui' | 'assault' | 'fixing' | 'doping', number>,
+  dui: { games: 70, revoked: 0.35, hidden: 0.2, hidingGames: 10, foundAfter: [10, 40] as [number, number] },
+  assault: { games: 30, bad: 0.25, badGames: 50 },
+  doping: {
+    rumours: 0.08,
+    firstSign: [5, 12] as [number, number],
+    between: [7, 15] as [number, number],
+    rumourSigns: 2,
+    rumourDays: 45,
+    graceDays: 21,
+    test: 0.012,
+    boost: 3,
+    inspectCost: 500,
+    caughtGrudge: 6,
+    cleanGrudge: 3,
+  },
+  fans: { dui: 25, doping: 25, assault: 20, fixing: 30 } as Record<'dui' | 'assault' | 'fixing' | 'doping', number>,
+  clubMood: { dui: 0.03, doping: 0.03, assault: 0.02, fixing: 0.08 } as Record<'dui' | 'assault' | 'fixing' | 'doping', number>,
+  answer: { release: 0.02, extra: 0.01, none: -0.02 } as Record<'release' | 'extra' | 'none', number>,
+  extraGames: 20,
+};
+
+/** The national team (V0.12, national.ts; game assumptions). Fans' fondness for a player called up (more for a
+    title), a club's lift from a title, the March tournament's injuries (chance per player, days after the last game),
+    and a club's request to keep a player home: the chance a healthy player is let off, the fans' mood it costs, and
+    his own grudge (more when a medal would have spared him the army). */
+export const NATIONAL = {
+  fans: { called: 2, champion: 4 },
+  titleBuzz: 0.02,
+  springInjury: {
+    chance: 0.03,
+    days: [14, 35] as [number, number],
+    pitcher: ['팔꿈치 염증', '어깨 뭉침', '옆구리 근육 손상'],
+    hitter: ['햄스트링 손상', '옆구리 근육 손상', '손가락 인대 손상'],
+  },
+  excuse: { healthy: 0.4, fans: 0.01, grudge: 4, exemptionGrudge: 12 },
+};
+
+/** A future that moves (V0.12, scouting.ts; game assumptions). Players up to `maxAge`. Winter: chance of a breakout
+    or a stall of one or two abilities' ceilings (`jump` grade points), times `signalBoost` after a season that
+    points that way (first-team WAR, or futures OPS / ERA with enough play), and a drift of every ceiling (sd).
+    Month: the step on the winter's future grade from his numbers against his level (z in standard deviations;
+    OPS sd .09, ERA sd 1.3), with enough play; two steps for the youngest who tear up the first team. */
+export const SCOUTING = {
+  maxAge: 27,
+  winter: {
+    breakout: 0.04,
+    stall: 0.04,
+    signalBoost: 2.5,
+    jump: [4, 8] as [number, number],
+    drift: 1.2,
+    majorPA: 150,
+    majorOuts: 120,
+    goodWar: 2,
+    badWar: -0.5,
+    minorPA: 150,
+    goodOps: 0.85,
+    badOps: 0.6,
+    minorOuts: 120,
+    goodEra: 3.0,
+    badEra: 6.0,
+  },
+  month: { majorPA: 80, majorOuts: 60, minorPA: 100, minorOuts: 75, opsSd: 0.09, eraSd: 1.3, majorUp: 1.2, majorDown: 1.3, minorUp: 1.6, minorDown: 1.8, twoSteps: 2.2, twoStepsAge: 24 },
+};
+
+/** Fielding away from the main position (V0.11, positions.ts): extra grade points lost at a position he does not
+    list, games that make one his anyway (`experienced`, career) or add it to his list (`learn`, one season, up to
+    `most`), and games that show it on his profile. */
+export const POSITION_FIT = {
+  unlisted: 6,
+  experienced: 30,
+  learn: 40,
+  most: 3,
+  shown: 10,
+  /** V0.12: what a position asks of his public grades before he moves down the spectrum (positions.ts positionMove). */
+  move: { ss: { defense: 45, speed: 40 }, cf: { defense: 45, speed: 45 }, corner: 40, left: 35 },
+  /** V0.12: an AI club's spread of its non-catcher hitters (positions.ts balanceDepth), and moves a winter at most. */
+  depth: { shares: { '1B': 0.13, '2B': 0.14, '3B': 0.14, SS: 0.14, LF: 0.14, CF: 0.15, RF: 0.16 }, moves: 10 },
+};
+
 export const FOREIGN = {
   hitter: { contact: 62, power: 70, eye: 58 },
   pitcher: { stuff: 65, command: 60, breaking: 60, stamina: 64 },
   asiaShift: -4,
+  /** V0.11: a regular (not Asia-quota) signing is now and then a star, `shift` grade points better (the 70s). */
+  star: { chance: 0.07, shift: 7 },
+  /** V0.11: where foreign hitters play (share), with the fielding and speed that go with it and a shift to the bat
+      (a centre fielder or shortstop hits for less power). Shares follow recent KBO imports (RULES.md S72). */
+  hitterPositions: [
+    { pos: '1B', share: 0.24, defense: 42, speed: 38, power: 3, contact: 0 },
+    { pos: 'LF', share: 0.13, defense: 46, speed: 45, power: 1, contact: 0 },
+    { pos: 'RF', share: 0.2, defense: 49, speed: 46, power: 1, contact: 0 },
+    { pos: 'CF', share: 0.18, defense: 56, speed: 57, power: -5, contact: 1 },
+    { pos: '3B', share: 0.13, defense: 51, speed: 42, power: 0, contact: 0 },
+    { pos: '2B', share: 0.06, defense: 55, speed: 50, power: -6, contact: 2 },
+    { pos: 'SS', share: 0.06, defense: 58, speed: 52, power: -7, contact: 1 },
+  ] as { pos: import('../model/position').Position; share: number; defense: number; speed: number; power: number; contact: number }[],
 };

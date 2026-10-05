@@ -3,15 +3,19 @@
    everything simulated from here follows the new rules (the history already played stays as it was).
    Versions without a league snapshot (0.1) cannot be carried over. */
 import { SIM_VERSION } from '../core/version';
-import type { LeagueState } from '../league/state';
+import type { LeagueState, NationalEntry } from '../league/state';
+import { INTERNATIONAL } from '../league/international';
 import { batsFor } from '../model/player';
+import { altPositions } from '../model/position';
+import { migrateAlt } from '../league/positions';
+import { rng } from '../draftroom';
 import { attendance, recordGate } from '../league/fans';
 import { baseSupport, setGoals } from '../league/parent';
 import { staffOf } from '../league/staff';
 import { openMarket, roundDecision } from '../league/fa';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0'];
 
 type Loose = Record<string, unknown>;
 
@@ -71,6 +75,18 @@ export function migrateState(raw: unknown, from: string): LeagueState {
     delete o.faGift;
     o.fa = openMarket(s, o.year + 1);
     s.pending = roundDecision(o.fa);
+  }
+  // 0.11: a hitter's other positions became a list of up to three: where he has played most, then a draw.
+  for (const p of Object.values(s.players)) if (p.position && !p.alt) migrateAlt(p, altPositions(p.position, p.scouting.futureTools ?? p.scouting.tools, rng(`${s.seed}|alt|${p.id}`)));
+  // 0.12: several national-team events a year, each with an id, a result and the club's requests.
+  for (const e of s.international as (NationalEntry & Loose)[]) {
+    if (e.id) continue;
+    const ev = INTERNATIONAL.find((x) => x.year === e.year && (x.kind === 'asianGames' || x.kind === 'olympics'));
+    e.id = ev?.id ?? `${e.year}-asianGames`;
+    e.kind = ev?.kind ?? 'asianGames';
+    e.finish = ev?.finish ?? (e.medal ? (e.kind === 'olympics' ? 'third' : 'champion') : 'fourth');
+    e.left = true;
+    e.asked = true;
   }
   s.sim = SIM_VERSION;
   return s;

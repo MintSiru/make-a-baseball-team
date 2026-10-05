@@ -49,7 +49,7 @@ export function makeFuturesLeague(s: LeagueState): FuturesSeason | null {
 
 /** Who can play a futures game today for `teamId`. */
 export function futuresSquad(s: LeagueState, teamId: TeamId): PlayerId[] {
-  const healthy = (id: PlayerId) => s.players[id]?.status === 'active' && !s.injuries[id] && !s.away[id] && !s.abroad?.[id];
+  const healthy = (id: PlayerId) => s.players[id]?.status === 'active' && !s.injuries[id] && !s.away[id] && !s.abroad?.[id] && !s.suspended?.[id];
   if (teamId === SANGMU)
     return Object.values(s.players)
       .filter((p) => p.status === 'military' && p.service.route === 'sangmu' && !s.injuries[p.id])
@@ -91,8 +91,8 @@ export function assignSquads(s: LeagueState, teamId: TeamId) {
   const r = s.rosters[teamId]!;
   const rest = [...r.futures, ...r.third].map((id) => s.players[id]!);
   // Injured players rehab in the third squad, and players training abroad (V0.10) count among them.
-  const hurt = rest.filter((p) => s.injuries[p.id] || s.abroad?.[p.id]);
-  const healthy = rest.filter((p) => !s.injuries[p.id] && !s.abroad?.[p.id]).sort((a, b) => priority(s, b) - priority(s, a) || a.id.localeCompare(b.id));
+  const hurt = rest.filter((p) => s.injuries[p.id] || s.abroad?.[p.id] || s.suspended?.[p.id]);
+  const healthy = rest.filter((p) => !s.injuries[p.id] && !s.abroad?.[p.id] && !s.suspended?.[p.id]).sort((a, b) => priority(s, b) - priority(s, a) || a.id.localeCompare(b.id));
   const pitchers = healthy.filter(isPitcher).slice(0, FUTURES.squad.pitchers);
   const catchers = healthy.filter((p) => p.position === 'C').slice(0, FUTURES.squad.catchers);
   const hitters = healthy.filter((p) => !isPitcher(p) && !catchers.includes(p)).slice(0, FUTURES.squad.hitters - catchers.length);

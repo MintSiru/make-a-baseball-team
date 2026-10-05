@@ -6,7 +6,7 @@ import type { PlayerId, TeamId } from '../model/types';
 import { makeTrade, releasePlayer, replaceForeign, signFromPool } from './trade';
 import { movePlayer, registerPlayer, setLineupCard, setRole } from './entry';
 import type { BullpenRole } from './engine/types';
-import { ensureNumbers } from './numbers';
+import { ensureNumbers, setNumber } from './numbers';
 import { openProjects, startProject, type ProjectKind } from './ballpark';
 import { clubState } from './fans';
 import { FANS } from './tuning';
@@ -19,6 +19,7 @@ import type { ExpansionSettings, FacilityKind, LeagueState, LineupCard, SiteId, 
 const SCOREBOARD_BUZZ = 0.03;
 import { foundClub, FOUNDING_DATE, resolveDecision, type DecisionInput } from './expansion';
 import { finishTrips, sendTrip } from './training';
+import { inspect } from './scandals';
 import { openFacilities, startFacility } from './facilities';
 
 export type Action =
@@ -58,7 +59,13 @@ export type Action =
   | { kind: 'foreignSwap'; out: PlayerId; in: string }
   // Players and facilities (V0.10)
   | { kind: 'trip'; id: PlayerId; site: SiteId }
-  | { kind: 'facility'; facility: FacilityKind };
+  | { kind: 'facility'; facility: FacilityKind }
+  /** The general manager gives one of our players a uniform number (V0.12). */
+  | { kind: 'number'; id: PlayerId; number: number }
+  /** The club's own doping test on one of our players (V0.12). */
+  | { kind: 'inspect'; id: PlayerId }
+  /** The season-ticket discount for the coming season (V0.12). */
+  | { kind: 'seasonTickets'; discount: number };
 
 export const regularOver = (s: LeagueState) => s.phase === 'regular' && s.next >= s.schedule.length;
 
@@ -75,7 +82,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility'];
+const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -201,6 +208,15 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'facility':
       startFacility(s, action.facility);
+      break;
+    case 'number':
+      setNumber(s, action.id, action.number);
+      break;
+    case 'inspect':
+      inspect(s, action.id);
+      break;
+    case 'seasonTickets':
+      if (s.user && [0, 0.1, 0.2, 0.3].includes(action.discount)) clubState(s, s.user.teamId).seasonTicketDiscount = action.discount;
       break;
   }
   // Anyone who joined a club (or became a registered player) gets his number.

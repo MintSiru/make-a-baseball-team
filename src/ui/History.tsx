@@ -1,4 +1,5 @@
 import { useState } from 'preact/hooks';
+import { finishText } from '../league/international';
 import type { LeagueState } from '../league/state';
 import { awardsView, recordRoom, shortName, teamOf } from '../league/views';
 import { era, obp, slg } from '../league/stats';
@@ -210,11 +211,14 @@ function Seasons({ league }: { league: LeagueState }) {
         <>
           <h3>국가대표</h3>
           <ul class="series-list">
-            {league.international.map((e) => (
-              <li key={e.year}>
-                {e.year} {e.name}: {e.medal ? '병역 특례 획득' : '특례 없음'}
-              </li>
-            ))}
+            {league.international
+              .filter((e) => e.finish)
+              .map((e) => (
+                <li key={e.id}>
+                  {e.year} {e.name}: {finishText({ kind: e.kind ?? 'asianGames' }, e.finish!)}
+                  {e.medal ? ' · 병역 특례 획득' : ''}
+                </li>
+              ))}
           </ul>
         </>
       )}

@@ -45,7 +45,7 @@ const PITCHER: InjuryType[] = [
   { part: '팔꿈치 뼛조각 제거 수술', weight: 2.5, days: [60, 100], surgery: 'minor' },
   {
     part: '팔꿈치 인대 재건술 (토미존)',
-    weight: 5,
+    weight: 2.5,
     days: [365, 480],
     surgery: 'major',
     effects: [
@@ -135,18 +135,32 @@ export const INJURY_TYPES = { pitcher: PITCHER, hitter: HITTER };
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 
-function pick(list: InjuryType[], r: () => number): InjuryType {
-  let x = r() * list.reduce((a, t) => a + t.weight, 0);
-  for (const t of list) if ((x -= t.weight) < 0) return t;
+/**
+ * How likely this injury is for him. A major operation he has had before is much rarer the second time: a rebuilt
+ * elbow ligament gives way again in about one MLB pitcher in eight over a career (RULES.md S71), and hardly ever
+ * in the first two years; a third time is rarer still.
+ */
+export function injuryWeight(p: Player, t: InjuryType, date: string): number {
+  if (t.surgery !== 'major') return t.weight;
+  const before = (p.injuries ?? []).filter((x) => x.part === t.part);
+  if (!before.length) return t.weight;
+  const R = INJURY.repeat;
+  const years = (Date.parse(date) - Date.parse(before.at(-1)!.date)) / (365 * 86400000);
+  return t.weight * (years < R.within ? R.soon : R.later) * R.again ** (before.length - 1);
+}
+
+function pick(list: InjuryType[], r: () => number, weight: (t: InjuryType) => number = (t) => t.weight): InjuryType {
+  let x = r() * list.reduce((a, t) => a + weight(t), 0);
+  for (const t of list) if ((x -= weight(t)) < 0) return t;
   return list[list.length - 1]!;
 }
 
 /** Out of the lineup today for any reason (injured, a knock, the national team). */
-export const sidelined = (s: LeagueState, id: PlayerId) => !!s.injuries[id] || !!s.away?.[id] || !!s.abroad?.[id];
+export const sidelined = (s: LeagueState, id: PlayerId) => !!s.injuries[id] || !!s.away?.[id] || !!s.abroad?.[id] || !!s.suspended?.[id];
 /** Off the first team: on the injured list, in rehab or with the national team (a knock does not count). */
 export const offRoster = (s: LeagueState, id: PlayerId) => {
   const i = s.injuries[id];
-  return (!!i && !i.dtd) || !!s.away?.[id] || !!s.abroad?.[id];
+  return (!!i && !i.dtd) || !!s.away?.[id] || !!s.abroad?.[id] || !!s.suspended?.[id];
 };
 
 /** A major operation's lasting mark on the player: hidden ability, and a little more fragile. */
@@ -194,7 +208,7 @@ export function rollInjuries(s: LeagueState, box: TeamBox, date: string, r: () =
       s.injuries[id] = { until: addDays(date, days + 1), days, onList: false, dtd: true, part: list[Math.floor(r2() * list.length)]! };
       continue;
     }
-    const t = pick(INJURY_TYPES[pitcher ? 'pitcher' : 'hitter'], r2);
+    const t = pick(INJURY_TYPES[pitcher ? 'pitcher' : 'hitter'], r2, (x) => injuryWeight(p, x, date));
     const spread = (r2() + r2()) / 2;
     const quicker = STAFF.injuryDays * medical * (t.surgery === 'major' ? 0.5 : 1) + facilityRehab(s, p.teamId);
     const days = Math.max(7, Math.round((t.days[0] + (t.days[1] - t.days[0]) * spread) * (1 - quicker)));

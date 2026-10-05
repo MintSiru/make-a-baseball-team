@@ -12,6 +12,7 @@ import { firstTeamIds, registeredIds, type Decision, type LeagueState, type Riva
 import { assignLeagues, leagueTables, twelveGames } from '../src/league/twelve';
 import { currentStandings } from '../src/league/season';
 import { attendance, clubState } from '../src/league/fans';
+import { endRegular } from './helpers';
 
 let s: LeagueState;
 const pending = () => s.pending as LeagueState['pending'];
@@ -53,7 +54,7 @@ beforeAll(() => {
   decideAll();
   // 2026, 2027 (the rival is founded that winter), 2028 (its futures year; the special draft that winter).
   for (let i = 0; i < 3; i++) {
-    apply(s, { kind: 'regularEnd' });
+    endRegular(s);
     apply(s, { kind: 'postseason' });
     apply(s, { kind: 'nextSeason' });
     decideAll();
@@ -178,7 +179,7 @@ describe('twelve clubs', () => {
     const c = structuredClone(s);
     c.twelve!.format = 'two';
     c.twelve!.leagues = assignLeagues(c);
-    apply(c, { kind: 'regularEnd' });
+    endRegular(c);
     playPostseason(c);
     const t = leagueTables(currentStandings(c), c.twelve!.leagues!);
     const po = c.postseason.filter((x) => x.round === 'po');
@@ -193,7 +194,7 @@ describe('twelve clubs', () => {
 
   it('the rivalry: an article for each game, the season series kept, and a bigger crowd', () => {
     const c = structuredClone(s);
-    apply(c, { kind: 'regularEnd' });
+    endRegular(c);
     const rivalry = (c.news ?? []).filter((n) => n.title.startsWith('[라이벌전]'));
     expect(rivalry.length).toBeGreaterThanOrEqual(10);
     apply(c, { kind: 'postseason' });

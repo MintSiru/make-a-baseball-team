@@ -12,6 +12,7 @@ import { orgPlayers, type LeagueState } from '../src/league/state';
 import { checkTrip, finishTrips, SITES, tripGains } from '../src/league/training';
 import { clubState } from '../src/league/fans';
 import { statLine } from '../src/league/views';
+import { endRegular } from './helpers';
 
 let s: LeagueState;
 const pending = () => s.pending as LeagueState['pending'];
@@ -27,7 +28,7 @@ beforeAll(() => {
     settings: { name: '울산 고래단', short: '고래', color: '#1f6fb2', cityId: 'ulsan', parentType: 'conglomerate', parentName: '가상', stadium: 'existing', promotion: 'immediate', difficulty: 'normal', scenario: null },
   });
   decideAll();
-  apply(s, { kind: 'regularEnd' });
+  endRegular(s);
   apply(s, { kind: 'postseason' });
   apply(s, { kind: 'nextSeason' });
   decideAll();
@@ -89,7 +90,7 @@ describe('training abroad', () => {
 
   it('a winter programme runs in December and is over by opening day', () => {
     const c = structuredClone(s);
-    apply(c, { kind: 'regularEnd' });
+    endRegular(c);
     apply(c, { kind: 'postseason' });
     apply(c, { kind: 'nextSeason' });
     const p = mine(c).find((x) => !isPitcher(x))!;
@@ -110,7 +111,7 @@ describe('facilities', () => {
   it('are built in the winter, from the fund, and open the next season', () => {
     const c = structuredClone(s);
     expect(facilityOptions(c).every((o) => o.blocked)).toBe(true);
-    apply(c, { kind: 'regularEnd' });
+    endRegular(c);
     apply(c, { kind: 'postseason' });
     apply(c, { kind: 'nextSeason' });
     c.user!.fund = 5_000_000;
@@ -140,7 +141,7 @@ describe('facilities', () => {
 describe('life off the field', () => {
   it('a season brings a few dozen events to the user’s players, none to others', () => {
     const c = structuredClone(s);
-    apply(c, { kind: 'regularEnd' });
+    endRegular(c);
     const events = (c.news ?? []).filter((n) => n.id.startsWith('life-'));
     expect(events.length).toBeGreaterThanOrEqual(8);
     expect(events.length).toBeLessThanOrEqual(45);
@@ -191,7 +192,8 @@ describe('life off the field', () => {
       const id = lifeDay(c, date);
       const news = id ? c.news!.find((n) => n.id === `life-${date}-${id}`) : undefined;
       if (news && /득남|득녀|(부친|모친|조부|조모)상/.test(news.title)) family++;
-      const alert = c.alerts?.find((a) => a.id === `life-${date}-${id}`);
+      // Every article about our players is a minor alert since 0.11; the full pop-up is for a player who is out.
+      const alert = c.alerts?.find((a) => a.id === `life-${date}-${id}` && !a.minor);
       if (alert && id) expect(!!c.away[id] && !before.has(id) || !!c.injuries[id]).toBe(true);
       if (id) delete c.away[id];
     }
@@ -221,7 +223,9 @@ describe('the fans’ fondness', () => {
     const loved = kia.map((p) => ({ p, love: fanAffinity(s, p) })).sort((a, b) => b.love - a.love);
     const top = loved[0]!;
     expect(top.love).toBeGreaterThan(60);
-    expect(top.p.career.filter((c) => !c.level && c.teamId === 'kia').length).toBeGreaterThanOrEqual(3);
+    const seasons = (p: (typeof kia)[number]) => p.career.filter((c) => !c.level && c.teamId === 'kia').length;
+    const mean = (xs: typeof loved) => xs.reduce((a, x) => a + x.love, 0) / Math.max(1, xs.length);
+    expect(mean(loved.filter((x) => seasons(x.p) >= 3))).toBeGreaterThan(mean(loved.filter((x) => seasons(x.p) <= 1)));
     expect(loved.at(-1)!.love).toBeLessThan(top.love);
     expect(favouritesMerch(s, 'kia')).toBe(0);
     expect(favouritesMerch(s, EXPANSION_ID)).toBeGreaterThanOrEqual(0);

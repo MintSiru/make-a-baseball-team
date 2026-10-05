@@ -1,6 +1,6 @@
 /* Building league players and the public view of them. */
-import { hashUnit, servedBeforeDraft, type DraftProspect } from '../draftroom';
-import { assignPosition } from './position';
+import { hashUnit, rng, servedBeforeDraft, type DraftProspect } from '../draftroom';
+import { altPositions, assignPosition, balancePositions } from './position';
 import type { Player, PlayerId } from './types';
 
 /**
@@ -15,6 +15,7 @@ export const draftPlayerId = (draftYear: number, sourceId: string): PlayerId => 
 
 /** Turns a Draft Room prospect into an amateur league player, splitting hidden and public ability. */
 export function fromDraftProspect(p: DraftProspect, draftYear: number, poolSeed: string): Player {
+  const position = assignPosition(p.role, p.futureTools, hashUnit(p.id + p.name));
   return {
     id: draftPlayerId(draftYear, p.id),
     name: p.name,
@@ -25,7 +26,8 @@ export function fromDraftProspect(p: DraftProspect, draftYear: number, poolSeed:
     throws: p.throwHand,
     bats: batsFor(draftPlayerId(draftYear, p.id), p.throwHand, p.batHand),
     role: p.role,
-    position: assignPosition(p.role, p.futureTools, hashUnit(p.id + p.name)),
+    position,
+    alt: altPositions(position, p.futureTools, rng(`${poolSeed}|alt|${draftPlayerId(draftYear, p.id)}`)),
     archetype: p.archetype,
     personality: p.personality,
     velocity: p.velocity,
@@ -68,6 +70,17 @@ export function fromDraftProspect(p: DraftProspect, draftYear: number, poolSeed:
     proSince: draftYear + 1,
     career: [],
   };
+}
+
+/** A class of amateurs placed together (V0.12): KBO-like numbers at each spot, the best fits at the hard ones;
+    their other positions follow the new main one. */
+export function placeClass(players: Player[], poolSeed: string): Player[] {
+  balancePositions(players, (p, pos) => {
+    if (p.position === pos) return;
+    p.position = pos;
+    p.alt = altPositions(pos, p.scouting.futureTools, rng(`${poolSeed}|alt|${p.id}`));
+  });
+  return players;
 }
 
 export type PublicPlayer = Omit<Player, 'hidden'>;

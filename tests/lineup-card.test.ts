@@ -9,6 +9,7 @@ import { lineupFor, managerLean, matchInputs, rotationFor } from '../src/league/
 import { isPitcher } from '../src/league/players';
 import type { LeagueState, LineupCard } from '../src/league/state';
 import { lineupView } from '../src/league/views';
+import { endRegular } from './helpers';
 
 let s: LeagueState;
 const pending = () => s.pending as LeagueState['pending'];
@@ -21,7 +22,7 @@ beforeAll(() => {
     settings: { name: '울산 고래단', short: '고래', color: '#1f6fb2', cityId: 'ulsan', parentType: 'conglomerate', parentName: '가상', stadium: 'existing', promotion: 'immediate', difficulty: 'normal', scenario: null },
   });
   while (pending()) apply(s, { kind: 'decide', input: autoDecision(s)! });
-  apply(s, { kind: 'regularEnd' });
+  endRegular(s);
   apply(s, { kind: 'postseason' });
   apply(s, { kind: 'nextSeason' });
   while (pending()) apply(s, { kind: 'decide', input: autoDecision(s)! });

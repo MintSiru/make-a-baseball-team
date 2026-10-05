@@ -7,6 +7,7 @@ import { createLeague } from '../src/league/history';
 import { firstTeamSize } from '../src/league/manager';
 import { offRoster } from '../src/league/injuries';
 import { developmentIds, squadOf, type LeagueState } from '../src/league/state';
+import { endRegular } from './helpers';
 
 let s: LeagueState;
 beforeAll(() => {
@@ -20,7 +21,7 @@ beforeAll(() => {
     while (s.pending) apply(s, { kind: 'decide', input: autoDecision(s)! });
   };
   decide();
-  apply(s, { kind: 'regularEnd' });
+  endRegular(s);
   apply(s, { kind: 'postseason' });
   apply(s, { kind: 'nextSeason' });
   decide();

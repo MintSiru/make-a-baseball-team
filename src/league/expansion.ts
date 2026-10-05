@@ -9,7 +9,7 @@ import { baseSupport, electMayor } from './parent';
 import { capPlayers, foreignCap, foreignCost } from './foreigncap';
 import { milestone, unlock } from './milestones';
 import type { ParentCompanyType } from '../club/types';
-import { fromDraftProspect } from '../model/player';
+import { fromDraftProspect, placeClass } from '../model/player';
 import type { Player, PlayerId, Team, TeamId } from '../model/types';
 import { EXPANSION_DEFAULTS, minimumSalaryFor } from '../rules/kbo2026';
 import { foreignContract, renewSalary, salaryIn } from './contracts';
@@ -37,6 +37,8 @@ import {
 import { ageIn, isForeign, isPitcher, keepValue, makeForeign } from './players';
 import { OFFSEASON, PARENT } from './tuning';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './foreignpool';
+import { marchEvents, nextNationalDecision, novemberEvents } from './national';
+import { disputeDecision } from './dispute';
 import { homecomings } from './returnees';
 import { autoProtect, checkRival, checkRivalProtect, resolveRival, resolveRivalProtect, rivalDecision, rivalProtectDecision, rivalStep } from './rival';
 import {
@@ -46,6 +48,7 @@ import {
   developmentDecision,
   isAnnual,
   militaryDecision,
+  retireDecision,
   resolveAnnual,
   rookieBonusDecision,
   salariesDecision,
@@ -155,10 +158,13 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
 /** Independent-league players, overseas returnees and recently released pros for the founding tryout. */
 function tryoutPool(s: LeagueState): Player[] {
   const seed = `${s.seed}|tryout|2026`;
-  const pool = generateDraftPool(seed)
-    .players.filter((p) => ['독립구단', '해외독립 복귀', '마이너 복귀', '대졸'].includes(p.pathway) && p.age >= 21)
-    .map((p) => fromDraftProspect(p, 2026, seed))
-    .map((p) => ({ ...p, id: `t2026-${p.origin.sourceId}` }))
+  const pool = placeClass(
+    generateDraftPool(seed)
+      .players.filter((p) => ['독립구단', '해외독립 복귀', '마이너 복귀', '대졸'].includes(p.pathway) && p.age >= 21)
+      .map((p) => fromDraftProspect(p, 2026, seed))
+      .map((p) => ({ ...p, id: `t2026-${p.origin.sourceId}` })),
+    seed,
+  )
     .sort((a, b) => keepValue(b, 2027) - keepValue(a, 2027))
     .slice(0, 25);
   for (const p of pool) s.players[p.id] = p;
@@ -245,12 +251,15 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
     case 'military':
       return militaryDecision(s);
     case 'international':
-      return sponsorDecision(s, o.year);
+      // A November national team with our players first (V0.12), then the sponsor.
+      return nextNationalDecision(s, novemberEvents(o.year)) ?? sponsorDecision(s, o.year);
     case 'develop':
-      // The twelfth club (V0.9): founded this winter, or offered by the board.
-      return rivalDecision(s, o.year);
+      // The twelfth club (V0.9): founded this winter, or offered by the board; a naming-rights club's rare
+      // shareholder dispute (V0.12).
+      return rivalDecision(s, o.year) ?? disputeDecision(s, o.year);
     case 'retire':
-      return staffDecision(s, o.year);
+      // Staff first; our players who want to retire follow (V0.11, userclub.ts).
+      return staffDecision(s, o.year) ?? retireDecision(s);
     case 'posting': {
       // Posted players coming home first (their clubs hold the rights), then this winter's postings.
       const back = homecomings(s, next);
@@ -259,7 +268,8 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
     case 'renew':
       return salariesDecision(s);
     case 'camp':
-      return campDecision(s);
+      // The March tournament's squad (V0.12), then the camp plans.
+      return nextNationalDecision(s, marchEvents(next)) ?? campDecision(s);
     case 'freeAgency': {
       // Club options on free-agent deals that end now, before the market opens (the market itself runs in the step).
       const due = clubOptionsDue(s, u.teamId, next);

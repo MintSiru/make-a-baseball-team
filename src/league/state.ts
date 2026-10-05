@@ -97,6 +97,10 @@ export interface ClubState {
   /** Naming-rights clubs: the sponsor, its fee and the last season of the deal; since V0.7.7 its goal, the
       first season judged against it, and the seasons missed in a row (parent.ts). */
   sponsor?: { name: string; annual: number; until: number; goal?: SponsorGoal; risk?: number; from?: number; missed?: number };
+  /** Season tickets (V0.12, the user's club): the discount set for the coming season, and this season's sale
+      (seats sold, money taken at opening). */
+  seasonTicketDiscount?: number;
+  seasonTickets?: { year: number; discount: number; sold: number; paid: number };
 }
 
 /** What a naming sponsor wants for its money (V0.7.7). `risk`: the chance it walks out after a missed season. */
@@ -205,7 +209,15 @@ export type Decision =
   // The twelfth club (V0.9, rival.ts): design it (or, offered by the board, vote it down), then protect our players
   // from its special draft
   | { kind: 'rival'; year: number; event: boolean; suggestion: RivalSettings }
-  | { kind: 'rivalProtect'; candidates: PlayerId[]; protect: number; fee: number };
+  | { kind: 'rivalProtect'; candidates: PlayerId[]; protect: number; fee: number }
+  /** Our players who want to retire (V0.11): the chance each listens if the club asks him to play on. */
+  | { kind: 'retire'; rows: { id: PlayerId; chance: number }[] }
+  /** Our players named for a national team (V0.12): hurt, and whether the event could spare him the army. */
+  | { kind: 'national'; event: string; rows: { id: PlayerId; injured: boolean; exemption: boolean }[] }
+  /** One of our players was disciplined by the KBO (V0.12): the club's answer. */
+  | { kind: 'scandal'; id: PlayerId; offense: string; penalty: string }
+  /** An investor from the founding days claims part of the club (V0.12, dispute.ts). */
+  | { kind: 'dispute'; investor: string; firm: string; settle: number; legal: number; loss: number };
 
 // ── The twelfth club (V0.9) ───────────────────────────────────────────────────────────────────────
 
@@ -329,9 +341,27 @@ export interface OffseasonState {
   second?: import('./seconddraft').SecondDraftState | null;
   /** The user's club's protected players in the twelfth club's special draft (V0.9). */
   rivalProtect?: PlayerId[];
+  /** Our players who wanted to retire and agreed to play on (V0.11). */
+  stay?: PlayerId[];
 }
 
 /** A spot in the batting order the general manager fixed: who bats there and where he plays. */
+/** A national team named for an event (V0.12 adds the id, kind, result and the club's requests). */
+export interface NationalEntry {
+  id: string;
+  year: number;
+  name: string;
+  kind?: import('./international').EventKind;
+  /** The result earned the military exemption. */
+  medal: boolean;
+  finish?: import('./international').Finish;
+  squad: PlayerId[];
+  /** Players the clubs kept home, the squad left for the event, and the user's club was asked. */
+  excused?: PlayerId[];
+  left?: boolean;
+  asked?: boolean;
+}
+
 export interface LineupSlot {
   id: PlayerId;
   pos: import('./engine/types').FieldPos;
@@ -352,6 +382,8 @@ export interface LineupCard {
 /** The club the user runs (V0.3: an expansion club). Money in 만 원. */
 export interface UserClub {
   teamId: TeamId;
+  /** An investor's claim on the club (V0.12, naming-rights clubs): when it came, settled or the verdict's winter. */
+  dispute?: { year: number; investor: string; firm: string; settled?: number; verdictIn?: number; decided?: number };
   settings: ExpansionSettings;
   /** One-off founding fund left for fees, bonuses and special-draft payments. */
   fund: number;
@@ -394,6 +426,8 @@ export interface UserClub {
   achievements?: { id: string; year: number }[];
   /** Ledger length at the last settlement: later entries go into the next one. */
   settledAt?: number;
+  /** The season's support from the owner, fixed and paid at opening (V0.12, finance.ts). */
+  seasonSupport?: { year: number; amount: number };
   /** The general manager has picked staff once (the first winter always asks). */
   staffSeen?: boolean;
   /** Guaranteed salary still owed to players the club released (counts against the payroll budget). */
@@ -515,7 +549,9 @@ export interface LeagueState {
   countedThrough: string | null;
   postseason: SeriesResult[];
   history: SeasonSummary[];
-  international: { year: number; name: string; medal: boolean; squad: PlayerId[] }[];
+  international: NationalEntry[];
+  /** Players serving a KBO suspension or ban (V0.12, scandals.ts). */
+  suspended?: Record<PlayerId, import('./scandals').Suspension>;
   /** News articles (V0.7, news.ts). */
   news?: import('./news').NewsItem[];
   /** Pop-up alerts for the user's club (V0.7.4, alerts.ts). */

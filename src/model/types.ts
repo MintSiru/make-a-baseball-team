@@ -32,6 +32,10 @@ export interface ScoutingReport {
   tags: string[];
   strength: string;
   weakness: string;
+  /** The winter's future grade the season's revisions start from (V0.12, scouting.ts). */
+  base?: number;
+  /** The latest revision during the season. */
+  moved?: { date: string; from: number; to: number };
 }
 
 export type PlayerStatus = 'amateur' | 'active' | 'military' | 'freeAgent' | 'overseas' | 'retired';
@@ -195,6 +199,8 @@ export interface Player {
   role: Role;
   /** Everyday position for hitters; pitchers use `role` (SP/RP). */
   position: Exclude<FieldPos, 'DH'> | null;
+  /** Other positions he handles (V0.11, up to three; hitters only). Anywhere else costs him more in the field. */
+  alt?: Exclude<FieldPos, 'DH'>[];
   archetype: string;
   personality: string;
   /** Top velocity when he was drafted or signed (km/h); `velocityStuff` is his hidden 구위 then. */
@@ -244,6 +250,12 @@ export interface PlayerLife {
   conditioned?: number;
   /** What happened, newest last. */
   events?: { date: string; text: string; tone?: 'good' | 'bad' }[];
+  /** V0.12 (scandals.ts): offenses so far, drunk driving not yet known, a doping suspicion (real or a rumour; the
+      ability it lends while it lasts) and the season the club last tested him. */
+  offenses?: Partial<Record<'dui' | 'doping' | 'assault' | 'fixing', number>>;
+  hiding?: { date: string; found: string };
+  suspicion?: { since: string; signs: number; real: boolean; next: string; boost?: { tool: 'stuff' | 'power'; delta: number } };
+  inspected?: number;
 }
 
 export interface InjuryRecord {

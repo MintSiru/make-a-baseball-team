@@ -9,6 +9,7 @@ import { isForeign } from '../src/league/players';
 import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from '../src/league/state';
 import { applyPickTrades, checkTrade, makeTrade, pickValue, tradablePicks, tradeValue } from '../src/league/trade';
 import { KBO_2026 } from '../src/rules/kbo2026';
+import { endRegular } from './helpers';
 
 let s: LeagueState;
 beforeAll(() => {
@@ -22,7 +23,7 @@ beforeAll(() => {
     while (s.pending) apply(s, { kind: 'decide', input: autoDecision(s)! });
   };
   decide();
-  apply(s, { kind: 'regularEnd' });
+  endRegular(s);
   apply(s, { kind: 'postseason' });
   apply(s, { kind: 'nextSeason' });
   decide();

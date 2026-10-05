@@ -19,6 +19,9 @@ import {
   setSalary,
   enlistAs,
   removeFromRoster,
+  OFFSEASON_STEPS,
+  persuadeChance,
+  retiring,
   sangmuChance,
   sign,
 } from './offseason';
@@ -29,6 +32,7 @@ import { makeSecondPick } from './seconddraft';
 import { baseSupport, evaluate, goalText, nextBudget, ownerEvents, signSponsor, sponsorDue, sponsorOffers, sponsorReview } from './parent';
 import { clubState } from './fans';
 import { iga } from './josa';
+import { changePosition, positionMove } from './positions';
 import { STAFF_LABELS, STAFF_ROLES, staffCandidates, staffOf } from './staff';
 import { post, postingCandidates, postingNote } from './posting';
 import { toForeignPool } from './foreignpool';
@@ -39,6 +43,10 @@ import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type SalaryRow, type StaffRole, type UserClub } from './state';
 import { OFFSEASON as O, TALKS } from './tuning';
 import { lifeWinter } from './life';
+import { autoNational, marchEvents, nextNationalDecision, novemberEvents, resolveNational } from './national';
+import { autoScandal, resolveScandal } from './scandals';
+import { autoDispute, resolveDispute } from './dispute';
+import { canRelease, releasePlayer } from './trade';
 
 /** Difficulty scales the owner's money. */
 const DIFFICULTY_MONEY = { easy: 1.1, normal: 1, hard: 0.9 } as const;
@@ -72,7 +80,15 @@ export type AnnualInput =
   | { kind: 'posting'; id: PlayerId | null }
   | { kind: 'returnee'; ids: PlayerId[] }
   | { kind: 'sponsor'; index: number }
-  | { kind: 'staff'; hires: Partial<Record<StaffRole, string>> };
+  | { kind: 'staff'; hires: Partial<Record<StaffRole, string>> }
+  /** Our players who want to retire: the ones the club asks to play on (V0.11). */
+  | { kind: 'retire'; ids: PlayerId[] }
+  /** Our players named for the national team: the ones the club asks to keep home (V0.12). */
+  | { kind: 'national'; ids: PlayerId[] }
+  /** The club's answer to a disciplined player (V0.12). */
+  | { kind: 'scandal'; answer: 'release' | 'extra' | 'none' }
+  /** Settle with the investor or fight (V0.12). */
+  | { kind: 'dispute'; answer: 'settle' | 'fight' };
 
 /** The club's answer to each player: his ask, the club's merit figure, last year's pay, or a multi-year deal. */
 export type SalaryChoice = 'ask' | 'merit' | 'freeze' | 'extension';
@@ -254,6 +270,19 @@ export function postingDecision(s: LeagueState, next: number): Decision | null {
   return candidates.length ? { kind: 'posting', candidates, max: KBO_2026.posting.perClubPerWinter } : null;
 }
 
+/** Our players who have decided to retire this winter (V0.11): the club may ask them to play one more season. */
+export function retireDecision(s: LeagueState): Decision | null {
+  const u = s.user!;
+  const o = s.offseason;
+  if (!o) return null;
+  const next = o.year + 1;
+  const ours = retiring(s, o.year)
+    .map((id) => s.players[id]!)
+    .filter((p) => p.teamId === u.teamId)
+    .sort((a, b) => b.scouting.current - a.scouting.current);
+  return ours.length ? { kind: 'retire', rows: ours.map((p) => ({ id: p.id, chance: persuadeChance(p, next) })) } : null;
+}
+
 export function campDecision(s: LeagueState): Decision | null {
   const u = s.user!;
   const players = orgPlayers(s, u.teamId).filter((p) => p.status === 'active');
@@ -298,6 +327,20 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
       if (input.id && !dd.candidates.includes(input.id)) return '포스팅할 수 없는 선수입니다.';
       return null;
     }
+    case 'retire': {
+      const dd = d as Extract<Decision, { kind: 'retire' }>;
+      if (input.ids.some((id) => !dd.rows.some((r) => r.id === id))) return '명단에 없는 선수입니다.';
+      return null;
+    }
+    case 'national': {
+      const dd = d as Extract<Decision, { kind: 'national' }>;
+      if (input.ids.some((id) => !dd.rows.some((r) => r.id === id))) return '명단에 없는 선수입니다.';
+      return null;
+    }
+    case 'scandal':
+      return ['release', 'extra', 'none'].includes(input.answer) ? null : '대응을 고르세요.';
+    case 'dispute':
+      return ['settle', 'fight'].includes(input.answer) ? null : '대응을 고르세요.';
     case 'returnee': {
       const dd = d as Extract<Decision, { kind: 'returnee' }>;
       if (input.ids.some((id) => !dd.rows.some((r) => r.id === id))) return '명단에 없는 선수입니다.';
@@ -489,6 +532,42 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           note(u, year, `${STAFF_LABELS[row.role]} ${m.name} 재계약 (2년, 연 ${money(m.salary)})`);
         }
       }
+      // The same winter step: our players who want to retire come next.
+      return retireDecision(s);
+    }
+    case 'dispute':
+      resolveDispute(s, d as Extract<Decision, { kind: 'dispute' }>, input.answer, year);
+      return null;
+    case 'scandal': {
+      // The release needs the game not to be waiting on this decision any more.
+      s.pending = null;
+      resolveScandal(s, d as Extract<Decision, { kind: 'scandal' }>, input.answer, (id) => {
+        if (canRelease(s, id)) return false;
+        releasePlayer(s, id);
+        return true;
+      });
+      return null;
+    }
+    case 'national': {
+      resolveNational(s, d as Extract<Decision, { kind: 'national' }>, input.ids);
+      // The step goes on: another event's squad, then the step's own decision.
+      const o = s.offseason;
+      const step = o ? OFFSEASON_STEPS[o.step] : null;
+      if (o && step === 'international') return nextNationalDecision(s, novemberEvents(o.year)) ?? sponsorDecision(s, o.year);
+      if (o && step === 'camp') return nextNationalDecision(s, marchEvents(o.year + 1)) ?? campDecision(s);
+      return null;
+    }
+    case 'retire': {
+      const dd = d as Extract<Decision, { kind: 'retire' }>;
+      const o = s.offseason!;
+      for (const row of dd.rows) {
+        const p = s.players[row.id]!;
+        if (!input.ids.includes(row.id)) note(u, year, `${p.name} 은퇴 (${ageIn(p, next)}세)`);
+        else if (rng(`${s.seed}|persuade|${year}|${row.id}`)() < row.chance) {
+          (o.stay ??= []).push(row.id);
+          note(u, year, `${p.name} 설득 성공: 은퇴를 미루고 한 시즌 더 뛴다`);
+        } else note(u, year, `${p.name} 설득 실패: 뜻대로 은퇴`);
+      }
       return null;
     }
     case 'posting': {
@@ -570,10 +649,12 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           note(u, next, `${p.name} ${plan.role === 'SP' ? '선발' : '불펜'}으로 보직 변경`);
         }
         if (plan.position && plan.position !== p.position) {
-          note(u, next, `${p.name} 포지션 변경 ${p.position ?? ''} → ${plan.position} (한 시즌 적응)`);
-          p.position = plan.position;
+          // A position he already lists needs no season to adapt; his old spot stays one he can play (V0.11).
+          const known = (p.alt ?? []).includes(plan.position);
+          note(u, next, `${p.name} 포지션 변경 ${p.position ?? ''} → ${plan.position}${known ? '' : ' (한 시즌 적응)'}`);
+          changePosition(p, plan.position);
           p.role = POSITION_ROLE[plan.position];
-          p.plan = { focus: p.plan?.focus ?? 'balanced', adaptingIn: next };
+          p.plan = { focus: p.plan?.focus ?? 'balanced', ...(known ? {} : { adaptingIn: next }) };
         }
       }
       return null;
@@ -614,8 +695,24 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
       const ids = [...d.candidates].sort((a, b) => futureValue(s.players[b]!) - futureValue(s.players[a]!)).slice(0, Math.min(d.max, O.development.signings));
       return { kind: 'development', ids };
     }
-    case 'camp':
-      return { kind: 'camp', plans: {} };
+    case 'camp': {
+      // The coaches' advice (V0.12): a player who no longer fits his spot moves down the spectrum.
+      const plans: Record<PlayerId, CampPlan> = {};
+      for (const id of d.players) {
+        const to = positionMove(s.players[id]!);
+        if (to) plans[id] = { position: to };
+      }
+      return { kind: 'camp', plans };
+    }
+    case 'national':
+      return { kind: 'national', ids: autoNational(d) };
+    case 'scandal':
+      return { kind: 'scandal', answer: autoScandal(d) };
+    case 'dispute':
+      return { kind: 'dispute', answer: autoDispute() };
+    case 'retire':
+      // Ask the ones who can still help: a regular's grade, a fair chance to say yes.
+      return { kind: 'retire', ids: d.rows.filter((r) => s.players[r.id]!.scouting.current >= 50 && r.chance >= 0.3).map((r) => r.id) };
     case 'faRound':
       return autoRound(s, s.offseason!.fa!, next);
     case 'faOptions': {
@@ -688,7 +785,7 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
 }
 
 export const isAnnual = (kind: Decision['kind']) =>
-  ['military', 'rookieBonus', 'development', 'camp', 'faRound', 'faOptions', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting', 'returnee', 'sponsor', 'staff'].includes(kind);
+  ['military', 'rookieBonus', 'development', 'camp', 'faRound', 'faOptions', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting', 'returnee', 'sponsor', 'staff', 'retire', 'national', 'scandal', 'dispute'].includes(kind);
 
 // ── Salary talks ─────────────────────────────────────────────────────────────────────────────────
 

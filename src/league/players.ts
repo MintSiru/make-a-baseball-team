@@ -1,8 +1,8 @@
 /* League-side player helpers: ages, the values clubs judge players by (public scouting only), yearly
    draft pools, and foreign players. */
 import { generateDraftPool, isPitcherRole, overall, rng, toGrade, type DraftProspect, type Role, type Tools } from '../draftroom';
-import { ageOn, fromDraftProspect } from '../model/player';
-import { assignPosition } from '../model/position';
+import { ageOn, fromDraftProspect, placeClass } from '../model/player';
+import { altPositions, type Position } from '../model/position';
 import { background, careerText, foreignAsk, foreignName, LEVEL_LABELS } from './foreign';
 import type { Player } from '../model/types';
 import { FOREIGN } from './tuning';
@@ -62,7 +62,10 @@ export const poolSeed = (seed: string, draftYear: number) => (draftYear === DRAF
 export function draftClass(seed: string, draftYear: number): Player[] {
   const ps = poolSeed(seed, draftYear);
   const pool = generateDraftPool(ps);
-  return pool.players.map((p) => fromDraftProspect(shiftProspect(p, draftYear - DRAFT_ROOM_YEAR), draftYear, ps));
+  return placeClass(
+    pool.players.map((p) => fromDraftProspect(shiftProspect(p, draftYear - DRAFT_ROOM_YEAR), draftYear, ps)),
+    ps,
+  );
 }
 
 // ── Foreign players (names and backgrounds in foreign.ts) ───────────────────────────────────────
@@ -70,6 +73,7 @@ export function draftClass(seed: string, draftYear: number): Player[] {
 const pickFrom = <T>(xs: T[], r: () => number) => xs[Math.floor(r() * xs.length)]!;
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
 const clampGrade = (n: number) => Math.max(20, Math.min(80, n));
+const INFIELD: Position[] = ['1B', '2B', '3B', 'SS'];
 
 export interface ForeignSpec {
   kind: 'pitcher' | 'hitter';
@@ -86,8 +90,11 @@ export function makeForeign(seed: string, id: string, season: number, spec: Fore
   const birthday = `${season - age - 1}-${String(1 + Math.floor(r() * 12)).padStart(2, '0')}-${String(1 + Math.floor(r() * 28)).padStart(2, '0')}`;
   // Asia-quota signings are cheaper and a notch below; the background moves ability a little (and widens it for independent leagues).
   const F = FOREIGN;
-  const q = (spec.asiaQuota ? F.asiaShift : 0) + bg.shift + normal(r) * bg.spread;
+  // Now and then a club lands a big-league regular in his prime (V0.11): the KBO's aces and MVP imports.
+  const star = !spec.asiaQuota && r() < F.star.chance;
+  const q = (spec.asiaQuota ? F.asiaShift : 0) + bg.shift + normal(r) * bg.spread + (star ? F.star.shift : 0);
   let role: Role, tools: Tools;
+  let position: Position | null = null;
   if (spec.kind === 'pitcher') {
     const starter = spec.asiaQuota ? r() < 0.35 : r() < 0.92;
     role = starter ? 'SP' : 'RP';
@@ -98,18 +105,24 @@ export function makeForeign(seed: string, id: string, season: number, spec: Fore
       stamina: clampGrade((starter ? F.pitcher.stamina : 45) + normal(r) * 6),
     };
   } else {
-    role = r() < 0.55 ? 'IF' : 'OF';
+    // The position first, then a glove and legs that fit it (V0.11): first base and the outfield corners most, a
+    // centre fielder or third baseman often, a middle infielder now and then (KBO imports, RULES.md S72).
+    let x = r();
+    const spot = F.hitterPositions.find((row) => (x -= row.share) < 0) ?? F.hitterPositions[0]!;
+    position = spot.pos;
+    role = INFIELD.includes(spot.pos) ? 'IF' : 'OF';
     tools = {
-      contact: clampGrade(F.hitter.contact + q + normal(r) * 6),
-      power: clampGrade(F.hitter.power + q + normal(r) * 6),
+      contact: clampGrade(F.hitter.contact + q + spot.contact + normal(r) * 6),
+      power: clampGrade(F.hitter.power + q + spot.power + normal(r) * 6),
       eye: clampGrade(F.hitter.eye + q + normal(r) * 6),
-      speed: clampGrade(44 + normal(r) * 9),
-      defense: clampGrade(47 + normal(r) * 8),
+      speed: clampGrade(spot.speed + normal(r) * 7),
+      defense: clampGrade(spot.defense + normal(r) * 6),
     };
   }
   const graded = Object.fromEntries(Object.entries(tools).map(([k, v]) => [k, toGrade(v! + normal(r) * 3)])) as Tools;
   const current = toGrade(overall(graded, role));
-  const throwsLeft = r() < 0.3,
+  // Left-handed throwers do not play second, short or third.
+  const throwsLeft = !['2B', '3B', 'SS'].includes(position ?? '') && r() < 0.3,
     bats = throwsLeft ? (r() < 0.95 ? '좌' : '우') : r() < 0.3 ? '좌' : r() < 0.05 ? '양' : '우';
   const level = LEVEL_LABELS[bg.level];
   const text = careerText(bg.level, spec.kind === 'pitcher', age, current, r);
@@ -124,7 +137,8 @@ export function makeForeign(seed: string, id: string, season: number, spec: Fore
     throws: throwsLeft ? '좌' : '우',
     bats,
     role,
-    position: assignPosition(role, graded, r()),
+    position,
+    alt: altPositions(position, graded, rng(`${seed}|alt|${id}`)),
     archetype: spec.asiaQuota ? '아시아쿼터' : spec.kind === 'pitcher' ? '외국인 투수' : '외국인 타자',
     personality: '',
     velocity: spec.kind === 'pitcher' ? Math.round(146 + ((tools.stuff ?? 55) - 55) * 0.4 + normal(r) * 1.5) : null,

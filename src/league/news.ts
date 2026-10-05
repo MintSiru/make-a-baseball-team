@@ -12,6 +12,7 @@ import type { LeagueState } from './state';
 import type { PlayEvent } from './engine/types';
 import { gameDetail, monthDetail, seasonDetail } from './gamedetail';
 import { isRivalry, madePostseason, seasonSeries } from './twelve';
+import { newsAlert } from './alerts';
 
 export type NewsKind = 'game' | 'milestone' | 'month' | 'season' | 'award' | 'interview' | 'move' | 'injury';
 
@@ -50,6 +51,8 @@ export function addNews(s: LeagueState, item: Omit<NewsItem, 'id'> & { id?: stri
   if (news.some((n) => n.id === id)) return;
   news.push({ ...item, id });
   if (news.length > KEEP) news.splice(0, news.length - KEEP);
+  // Our club's articles pop up too (V0.11).
+  newsAlert(s, { ...item, id });
 }
 
 // ── Voices ───────────────────────────────────────────────────────────────────────────────────────

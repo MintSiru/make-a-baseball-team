@@ -266,7 +266,7 @@ export function lifeDay(s: LeagueState, date: string): PlayerId | null {
   addNews(s, { id: `life-${date}-${p.id}`, date, kind: 'interview', title, body, quotes, facts: { player: p.name, event: title }, players: [p.id], mine: true });
   // A pop-up only when it takes a first-team player out for a few days.
   if (onFirst && (kind === 'birth' || kind === 'loss' || kind === 'accident'))
-    addAlert(s, { id: `life-${date}-${p.id}`, date, kind: 'injury', title, lines: [body], ...(tone ? { tone } : {}), players: [p.id] });
+    addAlert(s, { id: `life-${date}-${p.id}`, date, kind: 'life', title, lines: [body], ...(tone ? { tone } : {}), players: [p.id] });
   return p.id;
 }
 
