@@ -16,7 +16,7 @@ import { openMarket, roundDecision } from '../league/fa';
 import { DIFFICULTY } from '../league/tuning';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0'];
 
 type Loose = Record<string, unknown>;
 
@@ -89,6 +89,7 @@ export function migrateState(raw: unknown, from: string): LeagueState {
     e.left = true;
     e.asked = true;
   }
+  // 1.0.0 is 0.16.0 renamed: the same simulation, so a 0.16.0 snapshot needs nothing more.
   s.sim = SIM_VERSION;
   return s;
 }
