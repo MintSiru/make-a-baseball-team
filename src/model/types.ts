@@ -17,6 +17,27 @@ export interface HiddenAbility {
   developmentRate: number;
   observerBias: number;
   injuryRisk: number;
+  /** 1.1.0 (league/traits.ts): growth type and character, 1–99 each. */
+  traits?: Traits;
+}
+
+/** 초조숙 · 조숙 · 보통 · 만성 · 초만성. */
+export type GrowthType = 'veryEarly' | 'early' | 'normal' | 'late' | 'veryLate';
+
+export interface Traits {
+  growth: GrowthType;
+  /** 천재성: how fast he learns. */
+  genius: number;
+  /** 성실성: work ethic. */
+  work: number;
+  /** 멘탈: composure on the big stage. */
+  mental: number;
+  /** 리더십. */
+  leadership: number;
+  /** 충성심: to his own club in free agency. */
+  loyalty: number;
+  /** 논란성: trouble off the field. */
+  controversy: number;
 }
 
 /** A scouting report: five-point 20–80 grades with observer error. */

@@ -427,7 +427,7 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
         onPlayer={(id) => poolEntry(league, id) && onPlayer(id)}
         extra={{
           title: '지금 계약 (총액)',
-          value: (p) => `${usd(foreignPriceNow(league, p))} · ${p.origin.asiaQuota ? '아시아 · ' : ''}${poolEntry(league, p.id) ? kboLine(league, p) : (p.origin.background?.text ?? '')}`,
+          value: (p) => `${usd(foreignPriceNow(league, p))} · ${p.origin.asiaQuota ? '아시아 · ' : ''}${p.archetype} · ${poolEntry(league, p.id) ? kboLine(league, p) : (p.origin.background?.text ?? '')}`,
           sort: (p) => foreignPriceNow(league, p),
         }}
         action={(p) => (

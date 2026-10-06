@@ -5,7 +5,6 @@
    rookie draft → (expansion special draft) → roster limits → released players → foreign players.
    The user's club can make the game wait at a step for a decision (see OffseasonHooks). */
 import { observe, overall, rng, toGrade, type Tools } from '../draftroom';
-import DraftSeason from '../draftroom/season.js';
 import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { budgetBonus, foreignContract, MANWON_PER_USD, renewSalary, rookieContract, salaryIn, slotBonus, usdTotal } from './contracts';
@@ -43,9 +42,8 @@ import { staffEdge, staffRating } from './staff';
 import { gmDraftWeights, gmOf, twoLeagues } from './twelve';
 import { closeRivalry } from './rivalry';
 import { facilityAging, facilityGrowth } from './facilities';
+import { declineOf, growTools, matureAge } from './traits';
 
-type Develop = (p: object, tools: Tools, yearIndex: number, age: number, daysLost: number, r: () => number, boost?: number, focus?: string, scale?: number) => Tools;
-const developTools = (DraftSeason as unknown as { developTools: Develop }).developTools;
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
 
@@ -194,7 +192,8 @@ export function developPlayer(p: Player, year: number, lostDays: number, r: () =
   } else if (isForeign(p)) {
     next = { ...h.current };
   } else {
-    next = developTools({ potentialTools: h.potential, growthCurve: h.growthCurve, developmentRate: h.developmentRate }, h.current, yearIndex, age, lostDays, r, 0, p.plan?.focus ?? 'balanced', scale);
+    // By his growth type, genius and work ethic (1.1.0, traits.ts).
+    next = growTools(p, age, lostDays, r, p.plan?.focus ?? 'balanced', scale);
   }
   // Coaches speed up (or slow down) the growth part.
   for (const k of Object.keys(next) as (keyof Tools)[]) {
@@ -202,9 +201,10 @@ export function developPlayer(p: Player, year: number, lostDays: number, r: () =
     const gain = next[k]! - before;
     if (gain > 0 && coaching[k]) next[k] = clamp(before + gain * (1 + coaching[k]!), 20, 80);
   }
-  // Late-career decline on top of Draft Room's aging (which was tuned for players under 33).
+  // Late-career decline on top of Draft Room's aging (which was tuned for players under 33), from an age that
+  // goes with his growth type (31 for 보통), eased by work ethic (1.1.0).
   const V = O.veteranDecline;
-  const extra = (Math.max(0, age - V.from) * V.perYear + Math.max(0, age - V.steepFrom) * V.steepPerYear) * (1 - slower);
+  const extra = declineOf(p, age, V.perYear, V.steepPerYear) * (1 - slower);
   if (extra > 0)
     for (const k of Object.keys(next) as (keyof Tools)[]) {
       const f = k === 'speed' ? V.speed : k === 'command' || k === 'eye' ? V.skill : 1;
@@ -219,7 +219,7 @@ export function rescout(p: Player, season: number, yearIndex: number, r: () => n
   const role = p.role;
   const seen = observe(p.hidden.current, role, { observerBias: p.hidden.observerBias }, yearIndex, r);
   const age = ageIn(p, season);
-  const room = clamp((O.scouting.matureAge + (p.hidden.growthCurve === 'late' ? 2 : 0) - age) / O.scouting.window, 0, 1) * Math.min(1, p.hidden.developmentRate);
+  const room = clamp((matureAge(p) - age) / O.scouting.window, 0, 1) * Math.min(1, p.hidden.developmentRate);
   const bias = p.hidden.observerBias / (1 + yearIndex);
   const future: Tools = {};
   for (const [k, v] of Object.entries(p.hidden.current) as [keyof Tools, number][]) {

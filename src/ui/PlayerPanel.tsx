@@ -19,8 +19,51 @@ import { usd } from '../league/foreign';
 import { handedness, militaryLabel, money, toolKeysFor } from './format';
 import { GradeBar } from './grades';
 import { serviceNote } from '../league/military';
+import type { TraitReport } from '../league/reports';
 
 const POSITION_NAMES: Record<string, string> = { C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' };
+
+/** Our coaches' read of our player, our scouts' of anyone else (1.1.0): hidden traits, as sure as the staff are. */
+function TraitReportBox({ report }: { report: TraitReport }) {
+  const tone = (r: TraitReport['reads'][number]) => {
+    if (r.level == null || r.key === 'growth') return '';
+    const bad = r.key === 'controversy' || r.key === 'injury';
+    return r.level >= 4 ? (bad ? 'minus' : 'plus') : r.level <= 2 ? (bad ? 'plus' : 'minus') : '';
+  };
+  return (
+    <section class="pitch-box trait-report">
+      <h3>{report.by === 'coach' ? '코치 평가' : '스카우트 평가'}</h3>
+      <p class="small">
+        성격 <strong>{report.character}</strong>
+        <span class="muted"> · {report.staff}</span>
+      </p>
+      <dl class="facts">
+        {report.reads.map((r) => (
+          <div key={r.key}>
+            <dt>{r.label}</dt>
+            <dd>
+              <span class={tone(r)}>{r.text ?? '파악 못 함'}</span>
+              <span class="muted small"> · 확신 {r.sure}</span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+      {report.growthNote && <p class="muted small">{report.growthNote}</p>}
+      {report.notes.length > 0 && (
+        <ul class="plain small">
+          {report.notes.map((n) => (
+            <li key={n}>{n}</li>
+          ))}
+        </ul>
+      )}
+      <p class="muted small">
+        {report.by === 'coach'
+          ? '코치진이 함께 지내며 본 판단입니다. 함께한 시즌이 길수록, 코치진 평가가 높을수록 정확해집니다.'
+          : '스카우트 팀의 판단이라 틀릴 수 있습니다. 프로에서 뛴 시즌이 쌓일수록, 스카우트 팀장 평가가 높을수록 정확해집니다.'}
+      </p>
+    </section>
+  );
+}
 
 type Tab = 'seasons' | 'highs' | 'splits' | 'injuries';
 const TABS: { key: Tab; label: string }[] = [
@@ -281,7 +324,7 @@ export function PlayerPanel({
           <div>
             <p class="muted">
               {card.team} · {positionLabel(p)} · {handedness(p)}
-              {foreign ? ` · ${p.origin.asiaQuota ? '아시아쿼터' : '외국인'} (${p.origin.nationality})` : ''}
+              {foreign ? ` · ${p.origin.asiaQuota ? '아시아쿼터' : '외국인'} (${p.origin.nationality}) · ${p.archetype}` : ''}
             </p>
             <h2 id="player-name" tabIndex={-1} ref={heading}>
               {p.name}
@@ -476,6 +519,8 @@ export function PlayerPanel({
             </div>
           </section>
         )}
+
+        {card.report && <TraitReportBox report={card.report} />}
 
         <div class="segmented profile-tabs" role="tablist" aria-label="기록">
           {TABS.map((x) => (

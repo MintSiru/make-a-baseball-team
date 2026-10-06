@@ -228,7 +228,7 @@ function PlayerTable({
                     : p.service.postedIn !== undefined
                       ? `메이저리그 (${p.service.postedIn}년 포스팅)`
                       : p.origin.kind === 'foreign'
-                        ? p.education.pathText
+                        ? `${p.archetype} · ${p.education.pathText}`
                         : p.career.length
                           ? '방출'
                           : p.origin.pathway}

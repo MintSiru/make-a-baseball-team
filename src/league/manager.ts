@@ -13,6 +13,7 @@ import { EXPANSION_DEFAULTS, KBO_2026 } from '../rules/kbo2026';
 import { platoonFactor } from './pitches';
 import { ENGINE, STAFF } from './tuning';
 import { formOf } from './life';
+import { bigGameEdge } from './traits';
 
 const STARTER_LIMIT = ENGINE.starterLimit;
 
@@ -204,7 +205,9 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
     // Days off: a resting catcher needs another catcher on the bench.
     const date = opts.date;
     const resting = new Set<PlayerId>();
-    for (const p of hitters) {
+    // The better players first: when two catchers' days off fall together, the regular gets his (1.1.0; before,
+    // the backup rested and the regular, with no catcher left behind him, never did).
+    for (const p of [...hitters].sort((a, b) => b.scouting.current - a.scouting.current || a.id.localeCompare(b.id))) {
       if (!restsToday(s, p, date) || (fixedIds.has(p.id) && opts.cardRest === false)) continue;
       if (p.position === 'C' && hitters.filter((q) => q.position === 'C' && q !== p && !resting.has(q.id)).length === 0) continue;
       resting.add(p.id);
@@ -420,17 +423,20 @@ export function managerLean(s: LeagueState, teamId: TeamId, base: Prefer = none)
 }
 
 /** Both clubs' engine inputs for one game: starters first, so each lineup can be set against the other starter. */
-/** A hot or cold spell, a newborn or a loss (V0.10, the user's players only) moves his main tools today. */
+/** A hot or cold spell, a newborn or a loss (V0.10, the user's players only) moves his main tools today; so does
+    his composure in a postseason game (1.1.0, every club). */
 function withForm(s: LeagueState, date: string, team: TeamIn): TeamIn {
+  const big = s.phase === 'postseason';
+  const today = (p: Player) => formOf(p, date) + (big ? bigGameEdge(p) : 0);
   for (const b of team.lineup) {
-    const f = formOf(s.players[b.id]!, date);
+    const f = today(s.players[b.id]!);
     if (!f) continue;
     b.contact += f;
     b.power += f;
     b.eye += f;
   }
   for (const a of [team.starter, ...team.bullpen]) {
-    const f = formOf(s.players[a.id]!, date);
+    const f = today(s.players[a.id]!);
     if (!f) continue;
     a.stuff += f;
     a.command += f;

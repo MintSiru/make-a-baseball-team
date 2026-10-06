@@ -1,13 +1,20 @@
 /* Pitch repertoire and velocity (V0.5.1). A pitcher's 변화구 tool stays the single number the engine
    reads; the repertoire splits it into pitches whose weighted grades average back to it (best pitch
-   60%, second 30%, the rest 10%), so a report can say "slider 65, changeup 50" without changing how
-   good he is. The mix is fixed per player (seeded by id). What the pitches change is the platoon
-   split: sliders and sweepers eat same-side hitters, changeups and forkballs travel to the other side.
+   60%, second 30%, the rest 10%; a two-pitch pitcher's one breaking ball is the tool itself), so a report can say
+   "slider 65, changeup 50" without changing how good he is. The mix is fixed per player (seeded by id). What the
+   pitches change is the platoon split: sliders and sweepers eat same-side hitters, changeups and forkballs travel
+   to the other side.
+
+   1.1.0 (the 1.0 feedback): more two-pitch pitchers (a third of relievers throw a fastball and one breaking ball),
+   a signature pitch that goes with his type (a curveballer's curve, a forkball reliever's forkball), and how often he
+   throws his secondaries varies from pitcher to pitcher — a power arm leans on the fastball, a breaking-ball
+   specialist throws it half the time or more.
 
    Velocity is public (a radar gun), so it follows the hidden 구위 as it grows or fades. */
 import { hashUnit, rng } from '../draftroom';
 import type { Player } from '../model/types';
 import { isForeign } from './players';
+import { PITCH_MIX as M } from './tuning';
 
 export type PitchType = 'SL' | 'SW' | 'CB' | 'CH' | 'FO' | 'CT' | 'SI';
 
@@ -24,8 +31,6 @@ export const PITCH_LABELS: Record<PitchType, string> = {
 /** Same-side platoon advantage by best pitch: >1 a wider split, <1 a pitcher who handles both sides. */
 const PLATOON: Record<PitchType, number> = { SL: 1.25, SW: 1.45, CB: 1.05, CH: 0.65, FO: 0.7, CT: 0.9, SI: 1.1 };
 
-/** Share of pitches thrown by rank (the fastball takes the rest). */
-const USAGE = [0.27, 0.14, 0.07, 0.04];
 const WEIGHTS = [0.6, 0.3, 0.1];
 
 export interface Pitch {
@@ -37,19 +42,37 @@ export interface Pitch {
 
 type Mix = [PitchType, number][];
 
-function mixFor(p: Player): Mix {
+function mixFor(p: Player, first: boolean): Mix {
   const lefty = p.throws === '좌';
   const japan = p.origin.nationality === '일본';
   const young = Number(p.birthday.slice(0, 4)) >= 1998;
+  // His signature pitch is likelier to be the best one.
+  const sig = first ? M.signature[p.archetype] : undefined;
+  const add = (t: PitchType) => (sig?.pitch === t ? sig.weight : 0);
   return [
-    ['SL', 40],
-    ['SW', young || isForeign(p) ? 8 : 2],
-    ['CB', 16],
-    ['CH', lefty ? 30 : 13],
-    ['FO', japan ? 34 : lefty ? 7 : 15],
-    ['CT', isForeign(p) ? 12 : 6],
-    ['SI', isForeign(p) ? 12 : 5],
+    ['SL', 40 + add('SL')],
+    ['SW', (young || isForeign(p) ? 8 : 2) + add('SW')],
+    ['CB', 16 + add('CB')],
+    ['CH', (lefty ? 30 : 13) + add('CH')],
+    ['FO', (japan ? 34 : lefty ? 7 : 15) + add('FO')],
+    ['CT', (isForeign(p) ? 12 : 6) + add('CT')],
+    ['SI', (isForeign(p) ? 12 : 5) + add('SI')],
   ];
+}
+
+/** How many secondary pitches: a share for one, two, three and four. */
+function countOf(p: Player, r: () => number): number {
+  let x = r();
+  const shares = p.role === 'SP' ? M.count.SP : M.count.RP;
+  const i = shares.findIndex((w) => (x -= w) < 0);
+  return 1 + (i < 0 ? shares.length - 1 : i);
+}
+
+/** Share of all his pitches that are secondaries (the fastball takes the rest). */
+function secondaryShare(p: Player, n: number): number {
+  const u = hashUnit(`mix-${p.id}`);
+  const base = (p.role === 'SP' ? M.share.SP : M.share.RP) + (M.share.byCount[n - 1] ?? 0) + (M.share.byType[p.archetype] ?? 0);
+  return Math.max(M.share.min, Math.min(M.share.max, base + (u * 2 - 1) * M.share.spread));
 }
 
 function pick(mix: Mix, r: () => number): PitchType {
@@ -68,21 +91,27 @@ export function repertoire(p: Player): Pitch[] {
   const hit = cache.get(key);
   if (hit) return hit;
   const r = rng(`pitches-${p.id}`);
-  const count = p.role === 'SP' ? 3 + (r() < 0.45 ? 1 : 0) : 2 + (r() < 0.4 ? 1 : 0);
-  let mix = mixFor(p);
+  const count = countOf(p, r);
+  let mix = mixFor(p, true);
   const types: PitchType[] = [];
   while (types.length < count && mix.length) {
     const t = pick(mix, r);
     types.push(t);
     // One slider-type pitch at most: a sweeper and a slider rarely share an arm.
-    mix = mix.filter(([x]) => x !== t && !(t === 'SW' && x === 'SL') && !(t === 'SL' && x === 'SW'));
+    if (types.length === 1) mix = mixFor(p, false);
+    mix = mix.filter(([x]) => !types.includes(x) && !(types.includes('SW') && x === 'SL') && !(types.includes('SL') && x === 'SW'));
   }
   const raw = types.map((_, i) => (i === 0 ? 5 + r() * 5 : i === 1 ? -1 - r() * 5 : -7 - r() * 7));
-  // Shift so the weighted grade equals the tool: 0.6·best + 0.3·second + 0.1·(mean of the rest).
+  // Shift so the weighted grade equals the tool: 0.6·best + 0.3·second + 0.1·(mean of the rest; the second
+  // again for a pitcher with two). A pitcher with one breaking ball throws it at the tool's grade.
   const rest = raw.slice(2);
-  const restMean = rest.length ? rest.reduce((a, b) => a + b, 0) / rest.length : raw[1]!;
-  const mean = WEIGHTS[0]! * raw[0]! + WEIGHTS[1]! * raw[1]! + WEIGHTS[2]! * restMean;
-  const out = types.map((type, i) => ({ type, offset: raw[i]! - mean, usage: USAGE[i] ?? 0.03 }));
+  const restMean = rest.length ? rest.reduce((a, b) => a + b, 0) / rest.length : raw[1];
+  const mean = raw.length === 1 ? raw[0]! : WEIGHTS[0]! * raw[0]! + WEIGHTS[1]! * raw[1]! + WEIGHTS[2]! * restMean!;
+  // How often each is thrown: his share of secondaries, split best first with some say of his own.
+  const share = secondaryShare(p, types.length);
+  const w = types.map((_, i) => M.decay ** i * (1 - M.jitter + 2 * M.jitter * r()));
+  const total = w.reduce((a, b) => a + b, 0);
+  const out = types.map((type, i) => ({ type, offset: raw[i]! - mean, usage: (share * w[i]!) / total }));
   cache.set(key, out);
   return out;
 }

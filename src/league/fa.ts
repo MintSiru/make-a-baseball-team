@@ -24,6 +24,7 @@ import { FA, MARKET, DIFFICULTY } from './tuning';
 import { gmAppetite, gmOf } from './twelve';
 import { crossing } from './rivalry';
 import { farewell } from './life';
+import { traitsOf } from './traits';
 
 // ── Offers ───────────────────────────────────────────────────────────────────────────────────────
 
@@ -538,7 +539,8 @@ export function openMarket(s: LeagueState, next: number): FaMarket {
       ask,
       floor: ask * FA.floorStart,
       demands: demandsFor(s, p, price, next, r),
-      loyalty: lerp(FA.loyalty, r()),
+      // Half chance, half his 충성심 (1.1.0).
+      loyalty: lerp(FA.loyalty, (r() + traitsOf(p).loyalty / 100) / 2),
       patience: Math.round(lerp(FA.patience, r())),
       offers: {},
       interest: {},

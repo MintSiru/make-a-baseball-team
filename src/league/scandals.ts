@@ -20,7 +20,8 @@ import { addNews } from './news';
 import { leaveLeague } from './offseason';
 import { ageIn, isForeign, isPitcher } from './players';
 import { orgPlayers, type Decision, type LeagueState } from './state';
-import { SCANDAL as S } from './tuning';
+import { GROWTH, SCANDAL as S } from './tuning';
+import { troubleFactor } from './traits';
 
 export type Offense = 'dui' | 'doping' | 'assault' | 'fixing';
 
@@ -64,7 +65,7 @@ function candidate(s: LeagueState, offense: Offense | 'rumour', r: () => number)
   const u = s.user!;
   const pool = orgPlayers(s, u.teamId).filter((p) => p.status === 'active' && !isForeign(p) && !suspended(s, p.id) && !p.life?.suspicion);
   if (!pool.length) return null;
-  const weight = (p: Player) => {
+  const base = (p: Player) => {
     const age = ageIn(p, s.year);
     if (offense === 'doping') {
       // A contract year, a comeback from an operation or a career on the line.
@@ -75,9 +76,17 @@ function candidate(s: LeagueState, offense: Offense | 'rumour', r: () => number)
     if (offense === 'fixing') return isPitcher(p) && p.scouting.current < 50 ? 3 : 0.3;
     return age >= 21 ? 1 : 0.3;
   };
+  // 논란성 (1.1.0): the likelier ones; a rumour finds anyone.
+  const weight = offense === 'rumour' ? base : (p: Player) => base(p) * troubleFactor(p);
   const total = pool.reduce((a, p) => a + weight(p), 0);
   let x = r() * total;
   return pool.find((p) => (x -= weight(p)) < 0) ?? pool.at(-1)!;
+}
+
+/** How much trouble the club's domestic players make, against the league's usual (1). */
+function clubTrouble(s: LeagueState, teamId: string): number {
+  const pool = orgPlayers(s, teamId).filter((p) => p.status === 'active' && !isForeign(p));
+  return pool.length ? pool.reduce((a, p) => a + troubleFactor(p), 0) / pool.length / GROWTH.controversy.mean : 1;
 }
 
 /** The day's chances (game days only). Returns true when the club must answer before the game goes on. */
@@ -86,6 +95,8 @@ export function scandalDay(s: LeagueState, date: string): boolean {
   if (!u) return false;
   liftBans(s, date);
   const r = rng(`${s.seed}|scandal|${date}`);
+  // A club of troublemakers has more trouble (1.1.0).
+  const k = clubTrouble(s, u.teamId);
   // Concealed drunk driving comes out.
   for (const p of orgPlayers(s, u.teamId)) {
     const hidden = p.life?.hiding;
@@ -94,10 +105,10 @@ export function scandalDay(s: LeagueState, date: string): boolean {
       if (incident(s, p, 'dui', date, r, true)) return true;
     }
   }
-  dopingDay(s, date, r);
+  dopingDay(s, date, r, k);
   if (s.pending) return true;
   for (const offense of ['dui', 'assault', 'fixing'] as Offense[]) {
-    if (r() >= S.rates[offense] / S.gameDays) continue;
+    if (r() >= (S.rates[offense] / S.gameDays) * k) continue;
     const p = candidate(s, offense, r);
     if (!p) continue;
     if (offense === 'dui' && r() < S.dui.hidden) {
@@ -123,11 +134,11 @@ const SIGNS: Record<'body' | 'trainer' | 'numbers' | 'supplement', (p: Player) =
 /** Signs of a real user, in order; a clean player under a rumour shows the first two at most. */
 const REAL_SIGNS: (keyof typeof SIGNS)[] = ['body', 'trainer', 'numbers', 'supplement'];
 
-function dopingDay(s: LeagueState, date: string, r: () => number) {
+function dopingDay(s: LeagueState, date: string, r: () => number, k: number) {
   const u = s.user!;
   // Someone starts, or a rumour starts about someone clean.
   for (const real of [true, false]) {
-    if (r() >= (real ? S.rates.doping : S.doping.rumours) / S.gameDays) continue;
+    if (r() >= ((real ? S.rates.doping : S.doping.rumours) / S.gameDays) * (real ? k : 1)) continue;
     const p = candidate(s, real ? 'doping' : 'rumour', r);
     if (!p) continue;
     const life = (p.life ??= {});

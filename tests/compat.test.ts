@@ -1,5 +1,5 @@
 /* Saves made by released versions keep working (V1.0, docs/PLAN-1.0.md §4 G). The fixtures are real autosaves
-   written by the 0.11.0, 0.12.0 and 0.16.0 code (a naming-rights club on hard, three weeks into its first first-team
+   written by the 0.11.0, 0.12.0, 0.16.0 and 1.0.0 code (a naming-rights club on hard, three weeks into its first first-team
    season, a rival club due in the winter of 2028), gzip-packed. Each is loaded the way the game loads a file and played
    through the rest of the season, the winter and into the next opening day. */
 import { readFileSync } from 'node:fs';
@@ -13,7 +13,7 @@ import { parseSave } from '../src/save/format';
 
 const load = (version: string) => parseSave(gunzipSync(readFileSync(new URL(`./fixtures/save-${version}.json.gz`, import.meta.url))).toString('utf8'));
 
-describe.each(['0.11.0', '0.12.0', '0.16.0'])('a %s save', (version) => {
+describe.each(['0.11.0', '0.12.0', '0.16.0', '1.0.0'])('a %s save', (version) => {
   it('loads, carried forward to the current rules when they changed', () => {
     const save = load(version);
     if (version === SIM_VERSION) expect(save.migratedFrom).toBeUndefined();

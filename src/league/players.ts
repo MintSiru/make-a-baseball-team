@@ -6,6 +6,7 @@ import { altPositions, type Position } from '../model/position';
 import { background, careerText, foreignAsk, foreignName, LEVEL_LABELS } from './foreign';
 import type { Player } from '../model/types';
 import { FOREIGN } from './tuning';
+import { rollPersonality, rollTraits } from './traits';
 
 export const ageIn = (p: Player, year: number) => ageOn(p.birthday, `${year}-04-01`);
 export const isPitcher = (p: Player) => isPitcherRole(p.role);
@@ -75,6 +76,38 @@ const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
 const clampGrade = (n: number) => Math.max(20, Math.min(80, n));
 const INFIELD: Position[] = ['1B', '2B', '3B', 'SS'];
 
+function pickWeighted(weights: Record<string, number>, r: () => number): string {
+  const list = Object.entries(weights);
+  let x = r() * list.reduce((a, [, w]) => a + w, 0);
+  return (list.find(([, w]) => (x -= w) < 0) ?? list.at(-1)!)[0];
+}
+
+/** The type of a foreign player signed before 1.1.0, read from what he is best at against the usual import. */
+export function foreignTypeOf(p: Player): string {
+  const t = p.hidden.current;
+  const F = FOREIGN;
+  const best = (devs: [string, number][]) => devs.sort((a, b) => b[1] - a[1])[0]![0];
+  if (isPitcherRole(p.role))
+    return best([
+      ['구위형', (t.stuff ?? 0) - F.pitcher.stuff],
+      ['제구형', (t.command ?? 0) - F.pitcher.command],
+      ['변화구형', (t.breaking ?? 0) - F.pitcher.breaking],
+      ...(p.role === 'SP' ? ([['이닝이터', (t.stamina ?? 0) - F.pitcher.stamina - 2]] as [string, number][]) : []),
+    ]);
+  const spot = F.hitterPositions.find((x) => x.pos === p.position) ?? F.hitterPositions[0]!;
+  return best([
+    ['거포형', (t.power ?? 0) - F.hitter.power - spot.power],
+    ['교타형', (t.contact ?? 0) - F.hitter.contact - spot.contact],
+    ['선구안형', (t.eye ?? 0) - F.hitter.eye],
+    ['호타준족', (t.speed ?? 0) - spot.speed - 1],
+    ['수비형', (t.defense ?? 0) - spot.defense],
+    ['유틸리티', (p.alt?.length ?? 0) >= 2 ? 1 : -99],
+  ]);
+}
+
+/** Foreign types (1.1.0); anything else is a domestic player's Draft Room archetype. */
+export const FOREIGN_TYPES = new Set(Object.keys(FOREIGN.types.shift));
+
 export interface ForeignSpec {
   kind: 'pitcher' | 'hitter';
   asiaQuota: boolean;
@@ -95,14 +128,19 @@ export function makeForeign(seed: string, id: string, season: number, spec: Fore
   const q = (spec.asiaQuota ? F.asiaShift : 0) + bg.shift + normal(r) * bg.spread + (star ? F.star.shift : 0);
   let role: Role, tools: Tools;
   let position: Position | null = null;
+  // His type (1.1.0), on a stream of its own.
+  const rt = rng(`${seed}|foreign-type|${id}`);
+  let type: string;
   if (spec.kind === 'pitcher') {
     const starter = spec.asiaQuota ? r() < 0.35 : r() < 0.92;
     role = starter ? 'SP' : 'RP';
+    type = pickWeighted(starter ? F.types.SP : F.types.RP, rt);
+    const sh = F.types.shift[type]!;
     tools = {
-      stuff: clampGrade(F.pitcher.stuff + q + normal(r) * 5),
-      command: clampGrade(F.pitcher.command + q + normal(r) * 6),
-      breaking: clampGrade(F.pitcher.breaking + q + normal(r) * 6),
-      stamina: clampGrade((starter ? F.pitcher.stamina : 45) + normal(r) * 6),
+      stuff: clampGrade(F.pitcher.stuff + q + (sh.stuff ?? 0) + normal(r) * 5),
+      command: clampGrade(F.pitcher.command + q + (sh.command ?? 0) + normal(r) * 6),
+      breaking: clampGrade(F.pitcher.breaking + q + (sh.breaking ?? 0) + normal(r) * 6),
+      stamina: clampGrade((starter ? F.pitcher.stamina : 45) + (sh.stamina ?? 0) + normal(r) * 6),
     };
   } else {
     // The position first, then a glove and legs that fit it (V0.11): first base and the outfield corners most, a
@@ -111,12 +149,14 @@ export function makeForeign(seed: string, id: string, season: number, spec: Fore
     const spot = F.hitterPositions.find((row) => (x -= row.share) < 0) ?? F.hitterPositions[0]!;
     position = spot.pos;
     role = INFIELD.includes(spot.pos) ? 'IF' : 'OF';
+    type = pickWeighted(F.types.hitter[spot.pos]!, rt);
+    const sh = F.types.shift[type]!;
     tools = {
-      contact: clampGrade(F.hitter.contact + q + spot.contact + normal(r) * 6),
-      power: clampGrade(F.hitter.power + q + spot.power + normal(r) * 6),
-      eye: clampGrade(F.hitter.eye + q + normal(r) * 6),
-      speed: clampGrade(spot.speed + normal(r) * 7),
-      defense: clampGrade(spot.defense + normal(r) * 6),
+      contact: clampGrade(F.hitter.contact + q + spot.contact + (sh.contact ?? 0) + normal(r) * 6),
+      power: clampGrade(F.hitter.power + q + spot.power + (sh.power ?? 0) + normal(r) * 6),
+      eye: clampGrade(F.hitter.eye + q + (sh.eye ?? 0) + normal(r) * 6),
+      speed: clampGrade(spot.speed + (sh.speed ?? 0) + normal(r) * 7),
+      defense: clampGrade(spot.defense + (sh.defense ?? 0) + normal(r) * 6),
     };
   }
   const graded = Object.fromEntries(Object.entries(tools).map(([k, v]) => [k, toGrade(v! + normal(r) * 3)])) as Tools;
@@ -127,6 +167,7 @@ export function makeForeign(seed: string, id: string, season: number, spec: Fore
   const level = LEVEL_LABELS[bg.level];
   const text = careerText(bg.level, spec.kind === 'pitcher', age, current, r);
   const ask = foreignAsk(current, spec.asiaQuota, bg.premium, r);
+  const personality = rollPersonality(seed, id);
   return {
     id,
     name,
@@ -138,9 +179,9 @@ export function makeForeign(seed: string, id: string, season: number, spec: Fore
     bats,
     role,
     position,
-    alt: altPositions(position, graded, rng(`${seed}|alt|${id}`)),
-    archetype: spec.asiaQuota ? '아시아쿼터' : spec.kind === 'pitcher' ? '외국인 투수' : '외국인 타자',
-    personality: '',
+    alt: altPositions(position, graded, rng(`${seed}|alt|${id}`), type === '유틸리티' ? 2 : 0),
+    archetype: type,
+    personality,
     velocity: spec.kind === 'pitcher' ? Math.round(146 + ((tools.stuff ?? 55) - 55) * 0.4 + normal(r) * 1.5) : null,
     twoWay: false,
     origin: { kind: 'foreign', pathway: '외국인', entryCategory: 'foreign', nationality, asiaQuota: spec.asiaQuota, background: { level: bg.level, text, ask } },
@@ -150,7 +191,7 @@ export function makeForeign(seed: string, id: string, season: number, spec: Fore
     teamId: null,
     contract: null,
     service: { creditedSeasons: 0, carriedDays: 0, military: 'exempt' },
-    hidden: { current: tools, potential: { ...tools }, growthCurve: 'normal', developmentRate: 1, observerBias: normal(r) * 2, injuryRisk: 0.08 },
+    hidden: { current: tools, potential: { ...tools }, growthCurve: 'normal', developmentRate: 1, observerBias: normal(r) * 2, injuryRisk: 0.08, traits: rollTraits(seed, id, personality) },
     scouting: {
       season,
       tools: graded,

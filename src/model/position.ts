@@ -156,10 +156,10 @@ const ALT_COUNT: [number, number][] = [
  * the glove or the legs, second base a decent glove; a catcher seldom has more than first base. `r` is the
  * player's own stream so the choice does not shift any other draw.
  */
-export function altPositions(home: Position | null, tools: Tools, r: () => number): Position[] {
+export function altPositions(home: Position | null, tools: Tools, r: () => number, min = 0): Position[] {
   if (!home) return [];
   let x = r();
-  const n = home === 'C' ? (x < 0.6 ? 0 : 1) : (ALT_COUNT.find(([, w]) => (x -= w) < 0)?.[0] ?? 0);
+  const n = Math.max(min, home === 'C' ? (x < 0.6 ? 0 : 1) : (ALT_COUNT.find(([, w]) => (x -= w) < 0)?.[0] ?? 0));
   const def = g(tools, 'defense'),
     spd = g(tools, 'speed');
   const fit = (pos: Position) => (pos === 'SS' ? (def >= 50 ? 1 : 0.15) : pos === 'CF' ? (spd >= 50 ? 1 : 0.15) : pos === '2B' ? (def >= 45 ? 1 : 0.3) : 1);

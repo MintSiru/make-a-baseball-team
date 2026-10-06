@@ -2,6 +2,7 @@
 import { hashUnit, rng, servedBeforeDraft, type DraftProspect } from '../draftroom';
 import { altPositions, assignPosition, balancePositions } from './position';
 import type { Player, PlayerId } from './types';
+import { rollTraits } from '../league/traits';
 
 /**
  * Left-handed throwers almost always bat left in the KBO (좌투우타 is a handful of players). Draft Room
@@ -53,6 +54,7 @@ export function fromDraftProspect(p: DraftProspect, draftYear: number, poolSeed:
       developmentRate: p.developmentRate,
       observerBias: p.observerBias,
       injuryRisk: p.risk,
+      traits: rollTraits(poolSeed, draftPlayerId(draftYear, p.id), p.personality, p.growthCurve),
     },
     scouting: {
       season: draftYear,

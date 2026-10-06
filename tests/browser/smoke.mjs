@@ -433,6 +433,10 @@ try {
   await page.locator('.squad-table .link').first().click();
   await page.getByRole('dialog').waitFor();
   check((await page.locator('.velocity').count()) === 1, 'pitcher profile shows velocity');
+  // 1.1.0: our coaches' read of his hidden side, and the growth type among it.
+  const report = page.locator('.trait-report');
+  check((await report.getByRole('heading', { name: '코치 평가' }).count()) === 1, 'our player shows the coaches\' report');
+  check(((await report.textContent()) ?? '').includes('성장 타입'), 'the report reads his growth type');
   // 0.12: the general manager gives him a number (a teammate wearing it swaps).
   const numberBox = page.getByRole('spinbutton', { name: '등번호' });
   await numberBox.fill('77');

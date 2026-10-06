@@ -87,7 +87,7 @@ export interface DraftPool {
   byId: Record<string, DraftProspect>;
 }
 
-const P = Prospects as unknown as { generatePool(seed: string): DraftPool; POOL_SIZE: number; rng(seed: string): () => number; hash(s: string): number };
+const P = Prospects as unknown as { generatePool(seed: string): DraftPool; POOL_SIZE: number; rng(seed: string): () => number; hash(s: string): number; PERSONALITIES: string[] };
 const G = Grades as unknown as {
   LABELS: Record<ToolKey, string>;
   ROLES: Record<Role, string>;
@@ -111,9 +111,22 @@ export const hashUnit = (s: string): number => P.hash(s) / 4294967296;
 
 const SERVED_AT_DRAFT = (Tuning as unknown as { TUNING: { service: { servedAtDraft: Record<string, number> } } }).TUNING.service.servedAtDraft;
 /** Whether the prospect finished military service before the draft, decided as Draft Room's career.create does. */
+/** Draft Room's growth constants, for the league's own growth by type (1.1.0, league/traits.ts). */
+export const DRAFT_GROWTH = (
+  Tuning as unknown as {
+    TUNING: {
+      growth: { speedShare: number; noise: number; minGain: number; maxGain: number; ageTaper: { floor: number }; agingPerYear: { speed: number; other: number } };
+      health: { growthDays: number; heavyInjuryDays: number; heavyInjuryGrowthPenalty: number };
+      focus: { chosen: number; others: number };
+    };
+  }
+).TUNING;
+
 export const servedBeforeDraft = (poolSeed: string, p: DraftProspect): boolean =>
   rng(poolSeed + '-served-' + p.id)() < (SERVED_AT_DRAFT[p.pathway] ?? 0);
 export const POOL_SIZE = P.POOL_SIZE;
+/** Draft Room's eight personalities. */
+export const PERSONALITIES: readonly string[] = P.PERSONALITIES;
 export const TOOL_LABELS = G.LABELS;
 export const ROLE_LABELS = G.ROLES;
 export const PITCHING_TOOLS: PitchingTool[] = ['stuff', 'command', 'breaking', 'stamina'];

@@ -15,6 +15,11 @@ import { cardFor, lineupFor, managerLean, penRoles, PEN_ROLE_LABELS, rotationFor
 import { isDevelopment, type LeagueState } from './state';
 import { avg, babip, babipAllowed, batterWar, era, fip, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
 import { addInto, emptyBat, emptyPit } from './state';
+import { traitsOf } from './traits';
+import { traitReport, type TraitReport } from './reports';
+
+/** 리더십 from which a senior counts as a clubhouse leader. */
+const LEADER = 68;
 
 export const teamOf = (s: LeagueState, id: TeamId | null) => s.teams.find((t) => t.id === id);
 export const shortName = (s: LeagueState, id: TeamId | null) => (id === SANGMU ? '상무' : (teamOf(s, id)?.short ?? '-'));
@@ -206,6 +211,8 @@ export interface PlayerCard {
   injuries: InjuryRecord[];
   /** Hitters: grade and first-team games at each position he can play. */
   positions: ReturnType<typeof positionGrades>;
+  /** Our coaches' or scouts' read of his hidden side (1.1.0). */
+  report: TraitReport | null;
 }
 
 const QUALIFY = { pa: 446, outs: 432 };
@@ -285,6 +292,7 @@ export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
     pitches: pitchGrades(p),
     injuries: [...(p.injuries ?? [])].reverse(),
     positions: positionGrades(s, p),
+    report: traitReport(s, p),
   };
 }
 
@@ -557,7 +565,8 @@ export function clubhouse(s: LeagueState, teamId: TeamId) {
   const lastRes = res.at(-1);
   for (let i = res.length - 1; i >= 0 && res[i] === lastRes; i--) streak++;
   const roster = s.rosters[teamId]?.active.map((id) => s.players[id]!) ?? [];
-  const leaders = roster.filter((p) => p.personality === '책임감 강한 리더' && ageIn(p, s.year) >= 29).length;
+  // Seniors with a leader's voice (1.1.0: 리더십, whatever the personality's label).
+  const leaders = roster.filter((p) => traitsOf(p).leadership >= LEADER && ageIn(p, s.year) >= 28).length;
   const makers = roster.filter((p) => p.personality === '밝은 분위기 메이커').length;
   const hurt = Object.entries(s.injuries).filter(([id, i]) => !i.dtd && s.players[id]?.teamId === teamId).length;
   const score = (w + l ? (w / (w + l) - 0.5) * 2 : 0) + leaders * 0.08 + makers * 0.05 - hurt * 0.03 + (lastRes === 'W' ? 0.03 : lastRes === 'L' ? -0.03 : 0) * Math.min(streak, 6);

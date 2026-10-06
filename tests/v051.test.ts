@@ -18,11 +18,15 @@ describe('pitches', () => {
     const pitchers = Object.values(s.players).filter((p) => isPitcher(p) && p.status === 'active');
     for (const p of pitchers.slice(0, 50)) {
       const r = repertoire(p);
-      expect(r.length).toBeGreaterThanOrEqual(2);
+      // 1.1.0: a two-pitch pitcher has one breaking ball, at the tool's grade.
+      expect(r.length).toBeGreaterThanOrEqual(1);
       expect(new Set(r.map((x) => x.type)).size).toBe(r.length);
-      const rest = r.slice(2);
-      const restMean = rest.length ? rest.reduce((a, x) => a + x.offset, 0) / rest.length : r[1]!.offset;
-      expect(0.6 * r[0]!.offset + 0.3 * r[1]!.offset + 0.1 * restMean).toBeCloseTo(0, 6);
+      if (r.length === 1) expect(r[0]!.offset).toBe(0);
+      else {
+        const rest = r.slice(2);
+        const restMean = rest.length ? rest.reduce((a, x) => a + x.offset, 0) / rest.length : r[1]!.offset;
+        expect(0.6 * r[0]!.offset + 0.3 * r[1]!.offset + 0.1 * restMean).toBeCloseTo(0, 6);
+      }
       expect(pitchGrades(p).every((g) => g.grade >= 20 && g.grade <= 80)).toBe(true);
       expect(topVelocity(p)).toBeGreaterThan(125);
     }
