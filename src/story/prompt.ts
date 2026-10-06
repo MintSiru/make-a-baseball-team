@@ -42,7 +42,7 @@ export const STORY_SCHEMA = {
   },
 } as const;
 
-const KIND: Record<NewsItem['kind'], string> = { game: '경기 기사', milestone: '기록 달성 기사', month: '월간 결산', season: '시즌 결산', award: '시상 기사', interview: '인터뷰 기사', move: '이적 기사', injury: '부상 기사' };
+const KIND: Record<NewsItem['kind'], string> = { game: '경기 기사', milestone: '기록 달성 기사', month: '월간 결산', season: '시즌 결산', award: '시상 기사', interview: '인터뷰 기사', move: '이적 기사', injury: '부상 기사', allstar: '올스타전 기사' };
 
 /** The user message: kind, facts and the template draft (public information only). */
 export function storyPrompt(item: NewsItem): string {

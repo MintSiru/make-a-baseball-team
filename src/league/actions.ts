@@ -22,6 +22,7 @@ const SCOREBOARD_BUZZ = 0.03;
 import { foundClub, FOUNDING_DATE, resolveDecision, type DecisionInput } from './expansion';
 import { finishTrips, sendTrip } from './training';
 import { inspect } from './scandals';
+import { runCampaign } from './allstar';
 import { openFacilities, startFacility } from './facilities';
 
 export type Action =
@@ -70,6 +71,10 @@ export type Action =
   | { kind: 'number'; id: PlayerId; number: number }
   /** The club's own doping test on one of our players (V0.12). */
   | { kind: 'inspect'; id: PlayerId }
+  /** 1.2.0: a drive for our All-Star candidates' fan ballots. */
+  | { kind: 'allStarCampaign' }
+  /** 1.2.0: the optional foreign veteran rule (seasons, or off). */
+  | { kind: 'foreignVeteran'; seasons: number | null }
   /** The season-ticket discount for the coming season (V0.12). */
   | { kind: 'seasonTickets'; discount: number };
 
@@ -88,7 +93,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets'];
+const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -231,6 +236,15 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'inspect':
       inspect(s, action.id);
+      break;
+    case 'foreignVeteran': {
+      if (!s.user || (action.seasons !== null && ![5, 8].includes(action.seasons)) || (s.foreignVeteran ?? null) === action.seasons) break;
+      s.foreignVeteran = action.seasons;
+      milestone(s, s.offseason?.year ?? s.year, action.seasons ? `외국인 장기 근속 규정: KBO ${action.seasons}시즌 이상은 외국인 엔트리 제외` : '외국인 장기 근속 규정 해제');
+      break;
+    }
+    case 'allStarCampaign':
+      runCampaign(s, s.phase === 'regular' ? (s.schedule[s.next]?.date ?? `${s.year}-07-01`) : `${s.year}-07-01`);
       break;
     case 'seasonTickets':
       if (s.user && [0, 0.1, 0.2, 0.3].includes(action.discount)) clubState(s, s.user.teamId).seasonTicketDiscount = action.discount;

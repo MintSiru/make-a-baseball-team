@@ -2,12 +2,14 @@ import { useState } from 'preact/hooks';
 import type { LeagueState } from '../league/state';
 import { leaders, rates, seasonStats } from '../league/views';
 import { positionKey, useSort } from './sort';
+import { AllStar } from './AllStar';
+import type { Action } from '../league/actions';
 
-type View = 'leaders' | 'batters' | 'pitchers';
+type View = 'leaders' | 'batters' | 'pitchers' | 'allstar';
 const f3 = rates.fmt3;
 const f2 = (x: number) => x.toFixed(2);
 
-export function Leaders({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
+export function Leaders({ league, onPlayer, onBox, onAct }: { league: LeagueState; onPlayer: (id: string) => void; onBox?: (id: string) => void; onAct?: (a: Action) => void }) {
   const [view, setView] = useState<View>('leaders');
   const [qualifiedOnly, setQualifiedOnly] = useState(true);
   const data = leaders(league);
@@ -40,6 +42,7 @@ export function Leaders({ league, onPlayer }: { league: LeagueState; onPlayer: (
             ['leaders', '부문별 순위'],
             ['batters', '타자 전체'],
             ['pitchers', '투수 전체'],
+            ['allstar', '올스타'],
           ] as [View, string][]
         ).map(([id, label]) => (
           <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>
@@ -47,7 +50,8 @@ export function Leaders({ league, onPlayer }: { league: LeagueState; onPlayer: (
           </button>
         ))}
       </div>
-      <p class="muted">
+      {view === 'allstar' && <AllStar league={league} onPlayer={onPlayer} onBox={onBox} onAct={onAct} />}
+      <p class="muted" hidden={view === 'allstar'}>
         비율 기록은 규정타석 {data.qualifying.pa}타석, 규정이닝 {data.qualifying.innings}이닝 이상. 제목을 누르면 정렬됩니다.
       </p>
       {view === 'leaders' && (
@@ -58,7 +62,7 @@ export function Leaders({ league, onPlayer }: { league: LeagueState; onPlayer: (
           <div class="leader-grid">{data.pitching.map((c) => block(c.title, c.rows))}</div>
         </>
       )}
-      {view !== 'leaders' && (
+      {(view === 'batters' || view === 'pitchers') && (
         <label class="check">
           <input type="checkbox" checked={qualifiedOnly} onChange={() => setQualifiedOnly(!qualifiedOnly)} /> 규정 {view === 'batters' ? '타석' : '이닝'} 채운 선수만
         </label>

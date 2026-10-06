@@ -24,8 +24,9 @@ export const ALERT_LABEL: Record<AlertKind, string> = {
   record: '기록',
   scandal: '징계',
   dispute: '지분 분쟁',
+  allstar: '올스타',
 };
-const ICON: Record<AlertKind, string> = { national: '⚾', fa: '✍️', award: '🏆', hall: '🏛️', season: '📅', owner: '🏢', posting: '✈️', achievement: '🎖️', injury: '🩹', military: '🪖', retire: '👋', move: '🔁', life: '💬', game: '📰', record: '📈', scandal: '⚖️', dispute: '📜' };
+const ICON: Record<AlertKind, string> = { national: '⚾', fa: '✍️', award: '🏆', hall: '🏛️', season: '📅', owner: '🏢', posting: '✈️', achievement: '🎖️', injury: '🩹', military: '🪖', retire: '👋', move: '🔁', life: '💬', game: '📰', record: '📈', scandal: '⚖️', dispute: '📜', allstar: '⭐' };
 
 // ── Whether new alerts pop up (per-browser preferences; the list is always there) ─────────────────
 

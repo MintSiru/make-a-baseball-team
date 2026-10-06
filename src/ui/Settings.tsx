@@ -174,6 +174,24 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
             ))}
           </div>
           <p class="muted small">{DIFFICULTY_NOTE[u.settings.difficulty]} 예산은 다음 겨울부터, 나머지는 바로 바뀝니다.</p>
+          <h3>외국인 장기 근속 규정 (가상)</h3>
+          <div class="segmented" role="group" aria-label="외국인 장기 근속 규정">
+            {([null, 5, 8] as const).map((n) => (
+              <button
+                key={String(n)}
+                type="button"
+                aria-pressed={(league.foreignVeteran ?? null) === n}
+                disabled={busy}
+                onClick={() => (league.foreignVeteran ?? null) !== n && onAct({ kind: 'foreignVeteran', seasons: n })}
+              >
+                {n ? `${n}시즌` : '끔'}
+              </button>
+            ))}
+          </div>
+          <p class="muted small">
+            켜면 KBO 1군에서 정한 시즌 이상 뛴 외국인 선수는 외국인 엔트리(슬롯)를 차지하지 않고 외국인 샐러리캡에서도 빠집니다. 일본 프로야구의 방식을 빌린 가상 규정으로, 모든 구단에
+            적용되고 다음 외국인 계약부터 반영됩니다.
+          </p>
         </>
       )}
       {u ? (

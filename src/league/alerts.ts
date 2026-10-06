@@ -10,7 +10,7 @@ import type { NewsItem, NewsKind } from './news';
 import { ageIn } from './players';
 import type { LeagueState } from './state';
 
-export type AlertKind = 'national' | 'fa' | 'award' | 'hall' | 'season' | 'owner' | 'posting' | 'achievement' | 'injury' | 'military' | 'retire' | 'move' | 'life' | 'game' | 'record' | 'scandal' | 'dispute';
+export type AlertKind = 'national' | 'fa' | 'award' | 'hall' | 'season' | 'owner' | 'posting' | 'achievement' | 'injury' | 'military' | 'retire' | 'move' | 'life' | 'game' | 'record' | 'scandal' | 'dispute' | 'allstar';
 
 export interface Alert {
   id: string;

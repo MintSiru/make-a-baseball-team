@@ -4,7 +4,7 @@
    Founding-only decisions live in expansion.ts, which also routes every decision through
    checkDecision / resolveDecision / autoDecision. Money in 만 원. */
 import { medicalReview, socialOnly } from './military';
-import { asiaCapFor, foreignCap } from './foreigncap';
+import { asiaCapFor, foreignCap, slotExempt } from './foreigncap';
 import { capFloorFor } from './cap';
 import { foreignSlots } from './manager';
 import { draftContracts, rng, type Difficulty, type Role, type ToolKey } from '../draftroom';
@@ -777,7 +777,7 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
       const slots = foreignSlots(s, u.teamId, next).regular;
       for (const id of keep) {
         const trial = [...ok, id];
-        const regular = trial.map((x) => s.players[x]!).filter((p) => !p.origin.asiaQuota);
+        const regular = trial.map((x) => s.players[x]!).filter((p) => !p.origin.asiaQuota && !slotExempt(s, p, next));
         const total = regular.reduce((a, p) => a + d.rows.find((r) => r.id === p.id)!.ask, 0);
         const reserve = Math.max(0, slots - regular.length) * O.foreign.newReserveUSD;
         if (checkAnnual(s, d, { kind: 'foreignRenew', keep: trial }) === null && total + reserve <= foreignCap(s, u.teamId, next, regular)) ok.push(id);

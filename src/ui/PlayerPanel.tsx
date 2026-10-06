@@ -20,6 +20,7 @@ import { handedness, militaryLabel, money, toolKeysFor } from './format';
 import { GradeBar } from './grades';
 import { serviceNote } from '../league/military';
 import type { TraitReport } from '../league/reports';
+import { kboSeasons } from '../league/foreigncap';
 
 const POSITION_NAMES: Record<string, string> = { C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' };
 
@@ -324,7 +325,7 @@ export function PlayerPanel({
           <div>
             <p class="muted">
               {card.team} · {positionLabel(p)} · {handedness(p)}
-              {foreign ? ` · ${p.origin.asiaQuota ? '아시아쿼터' : '외국인'} (${p.origin.nationality}) · ${p.archetype}` : ''}
+              {foreign ? ` · ${p.origin.asiaQuota ? '아시아쿼터' : '외국인'} (${p.origin.nationality}) · ${p.archetype}${league.foreignVeteran && kboSeasons(p, league.year) >= league.foreignVeteran ? ' · 외국인 엔트리 제외' : ''}` : ''}
             </p>
             <h2 id="player-name" tabIndex={-1} ref={heading}>
               {p.name}

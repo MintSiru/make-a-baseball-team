@@ -525,7 +525,7 @@ export function App() {
         {tab === 'market' && league.user && <Market league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
         {tab === 'games' && <Games league={league} onOpen={setBoxId} />}
         {tab === 'standings' && <Standings league={league} onTeam={openTeam} />}
-        {tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} />}
+        {tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} onBox={setBoxId} onAct={league.user ? (a) => act(a, '처리 중', false) : undefined} />}
         {tab === 'team' && <TeamRoster league={league} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />}
         {tab === 'history' && <History league={league} onPlayer={setPlayerId} />}
         {tab === 'settings' && (

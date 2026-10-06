@@ -299,7 +299,7 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
 
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 
-function armIn(p: Player, pitchLimit: number): PitcherIn {
+export function armIn(p: Player, pitchLimit: number): PitcherIn {
   return { id: p.id, throws: p.throws === '좌' ? 'L' : 'R', stuff: t(p, 'stuff'), command: t(p, 'command'), breaking: t(p, 'breaking'), stamina: t(p, 'stamina'), pitchLimit, platoon: platoonFactor(p) };
 }
 

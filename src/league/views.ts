@@ -22,7 +22,7 @@ import { traitReport, type TraitReport } from './reports';
 const LEADER = 68;
 
 export const teamOf = (s: LeagueState, id: TeamId | null) => s.teams.find((t) => t.id === id);
-export const shortName = (s: LeagueState, id: TeamId | null) => (id === SANGMU ? '상무' : (teamOf(s, id)?.short ?? '-'));
+export const shortName = (s: LeagueState, id: TeamId | null) => (id === SANGMU ? '상무' : id === 'dream' ? '드림' : id === 'nanum' ? '나눔' : (teamOf(s, id)?.short ?? '-'));
 
 export const positionLabel = (p: Pick<Player, 'role' | 'position'>) =>
   p.position ? ({ C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' } as const)[p.position] : ROLE_LABELS[p.role];
@@ -360,9 +360,9 @@ export function boxView(s: LeagueState, id: string) {
     const teamId = i === 0 ? b.away : b.home;
     return {
       teamId,
-      name: teamOf(s, teamId)?.name ?? teamId,
+      name: teamOf(s, teamId)?.name ?? (teamId === 'dream' ? '드림 올스타' : teamId === 'nanum' ? '나눔 올스타' : teamId),
       short: shortName(s, teamId),
-      color: teamOf(s, teamId)?.color ?? '#888',
+      color: teamOf(s, teamId)?.color ?? (teamId === 'dream' ? '#2563eb' : teamId === 'nanum' ? '#dc2626' : '#888'),
       line: b.line[i],
       rhe: b.rhe[i],
       bat: b.bat[i].map(([pid, pos, ab, r, h, rbi, hr, bb, k, d, t, sb], order) => ({ id: pid, order: order + 1, name: name(pid), pos: POS_KO[pos] ?? pos, ab, r, h, rbi, hr, bb, k, d, t, sb })),

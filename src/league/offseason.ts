@@ -18,7 +18,7 @@ import { queuedDecision } from './market';
 import { closeMarket, judgeReinforcePromises, judgeStarterPromises, openMarket, payIncentives, playRound, roundDecision, settlePeriodOptions } from './fa';
 import { aiTrades, applyPickTrades, clearPool } from './trade';
 import { applyPickDrop, settleCap } from './cap';
-import { applyForeignPickDrop, asiaCapFor, capPlayers, foreignCap, settleForeignCap } from './foreigncap';
+import { applyForeignPickDrop, asiaCapFor, capPlayers, foreignCap, settleForeignCap, slotExempt, slotForeigners } from './foreigncap';
 import { isSecondDraftYear, openSecondDraft, runSecondDraft, secondProtectDecision } from './seconddraft';
 import { standings } from './standings';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, orgIds, orgPlayers, registeredIds, type Decision, type DraftSlot, type DraftState, type LeagueState, type SeasonSummary } from './state';
@@ -29,7 +29,7 @@ import { driftPotential } from './scouting';
 import { applyDemotionCuts, settleFinances } from './finance';
 import { awardHonours, computeAwards, hallOfFameCheck } from './awards';
 import { seasonMoments } from './milestones';
-import { seasonNews } from './news';
+import { addNews, seasonNews } from './news';
 import { seasonFans } from './fans';
 import { aiStaffWinter } from './staff';
 import { runAiPosting } from './posting';
@@ -43,6 +43,8 @@ import { gmDraftWeights, gmOf, twoLeagues } from './twelve';
 import { closeRivalry } from './rivalry';
 import { facilityAging, facilityGrowth } from './facilities';
 import { declineOf, growTools, matureAge } from './traits';
+import { heroInterview } from './interviews';
+import type { SeasonAwards } from './awards';
 
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
@@ -121,6 +123,7 @@ export function closeSeason(s: LeagueState) {
   summary.awards = computeAwards(s, s.year, summary.table, summary.champion);
   awardHonours(s, s.year, summary.awards);
   awardAlert(s, s.year, summary.awards);
+  awardInterview(s, s.year, summary.awards);
   settleFinances(s, s.year, summary.table);
   seasonMoments(s, s.year, summary.awards);
   seasonNews(s, s.year);
@@ -212,6 +215,18 @@ export function developPlayer(p: Player, year: number, lostDays: number, r: () =
     }
   h.current = next;
   rescout(p, year + 1, yearIndex + 1, r);
+}
+
+/** Our biggest award winner of the season talks to the reporters (1.2.0): MVP, then 신인왕, then a golden glove. */
+function awardInterview(s: LeagueState, year: number, a: SeasonAwards) {
+  const u = s.user;
+  if (!u) return;
+  const ours = (id: PlayerId | null) => !!id && s.players[id]?.teamId === u.teamId;
+  const glove = a.goldenGloves.find((g) => ours(g.id));
+  const pick: [PlayerId, string] | null = ours(a.mvp) ? [a.mvp!, 'MVP'] : ours(a.rookie) ? [a.rookie!, '신인왕'] : glove ? [glove.id, '골든글러브'] : null;
+  if (!pick) return;
+  const iv = heroInterview(s, pick[0], `${year}-11-25`, { kind: 'award', label: pick[1] }, `award-${year}-${pick[0]}`);
+  if (iv) addNews(s, iv);
 }
 
 /** A new public report: current grades through Draft Room's observer, future value from reachable potential. */
@@ -620,7 +635,7 @@ export function renewForeigners(s: LeagueState, teamId: TeamId, next: number, r:
   );
   // The foreign salary cap (V0.7.8): the best seasons first; a keeper who would leave too little room for
   // the signings still to come is let go.
-  const regular = current.filter((p) => !p.origin.asiaQuota && wanted.has(p.id)).sort((a, b) => (lastRecord(b, next - 1)?.war ?? 0) - (lastRecord(a, next - 1)?.war ?? 0));
+  const regular = current.filter((p) => !p.origin.asiaQuota && wanted.has(p.id) && !slotExempt(s, p, next)).sort((a, b) => (lastRecord(b, next - 1)?.war ?? 0) - (lastRecord(a, next - 1)?.war ?? 0));
   const slots = foreignSlots(s, teamId, next).regular;
   const kept: Player[] = [];
   let total = 0;
@@ -663,7 +678,8 @@ export function refreshForeigners(s: LeagueState, next: number, r: () => number)
     if (t.id === s.user?.teamId) continue; // the user's club renews and signs in its own foreign decision
     if (!s.offseason?.foreignRenewed) renewForeigners(s, t.id, next, r);
     const slots = foreignSlots(s, t.id, next);
-    const staying = foreignOn(s, t.id);
+    // The veterans the optional rule exempts take no slot (1.2.0).
+    const staying = slotForeigners(s, t.id, next);
     const regular = staying.filter((p) => !p.origin.asiaQuota);
     const pitchers = regular.filter(isPitcher).length;
     let k = 0;

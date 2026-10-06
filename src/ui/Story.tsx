@@ -8,7 +8,7 @@ import { clubhouse } from '../league/views';
 import { AlertList } from './Alerts';
 
 type View = 'news' | 'timeline' | 'achievements' | 'alerts';
-type Filter = 'all' | 'game' | 'move' | 'injury' | 'review' | 'interview';
+type Filter = 'all' | 'game' | 'move' | 'injury' | 'review' | 'interview' | 'allstar';
 const FILTERS: [Filter, string, NewsItem['kind'][]][] = [
   ['all', '전체', []],
   ['game', '경기', ['game']],
@@ -16,9 +16,10 @@ const FILTERS: [Filter, string, NewsItem['kind'][]][] = [
   ['injury', '부상', ['injury']],
   ['review', '결산·기록', ['month', 'season', 'award', 'milestone']],
   ['interview', '인터뷰', ['interview']],
+  ['allstar', '올스타', ['allstar']],
 ];
 
-const KIND: Record<NewsItem['kind'], string> = { game: '경기', milestone: '기록', month: '월간', season: '시즌', award: '시상', interview: '인터뷰', move: '이적', injury: '부상' };
+const KIND: Record<NewsItem['kind'], string> = { game: '경기', milestone: '기록', month: '월간', season: '시즌', award: '시상', interview: '인터뷰', move: '이적', injury: '부상', allstar: '올스타' };
 
 export function NewsCard({ item, onRewrite, onRevert, busy }: { item: NewsItem; onRewrite?: (item: NewsItem) => void; onRevert?: (item: NewsItem) => void; busy?: boolean }) {
   const [original, setOriginal] = useState(false);

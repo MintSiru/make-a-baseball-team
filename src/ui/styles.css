@@ -2642,3 +2642,33 @@ main.page:focus {
     grid-template-columns: 1fr;
   }
 }
+
+/* 1.2.0: the All-Star page */
+.allstar-sides {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 24px;
+}
+.allstar-sides > p {
+  grid-column: 1 / -1;
+}
+.allstar tr.mine td,
+.allstar li.mine {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.allstar tr.strong td {
+  font-weight: 600;
+}
+.allstar-squad {
+  columns: 2;
+  column-gap: 16px;
+}
+.allstar-squad li {
+  break-inside: avoid;
+  padding: 1px 0;
+}
+@media (max-width: 760px) {
+  .allstar-sides {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

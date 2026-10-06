@@ -536,6 +536,12 @@ export interface LeagueState {
   transactions?: { date: string; text: string }[];
   /** One-off market events already run this season ("2027-trades-06"). */
   marketDone?: string[];
+  /** 1.2.0, an optional league rule (off when missing): a foreign player with this many first-team seasons in the
+      league no longer takes a foreign slot or counts against the foreign salary cap (NPB's way; foreigncap.ts). */
+  foreignVeteran?: number | null;
+  /** 1.2.0 (allstar.ts): this season's All-Star voting and game, and every finished year. */
+  allStar?: import('./allstar').AllStarState;
+  allStarHistory?: import('./allstar').AllStarRecord[];
   /** Competitive balance tax records by club, and clubs whose first-round pick drops, by draft year. */
   cap?: Record<TeamId, import('./cap').CapRecord[]>;
   pickDrop?: Record<number, TeamId[]>;

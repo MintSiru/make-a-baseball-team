@@ -427,6 +427,14 @@ try {
   await page.screenshot({ path: join(shots, 'search.png'), fullPage: false });
   for (const v of ['방출 · 자유계약', '외국인 교체', '이적 소식']) await page.getByRole('button', { name: v, exact: true }).click();
 
+  // 1.2.0: the All-Star page (the years before ours are on record), and the optional foreign veteran rule.
+  await page.locator('nav.tabs').getByRole('button', { name: '기록', exact: true }).click();
+  await page.getByRole('group', { name: '보기' }).getByRole('button', { name: '올스타', exact: true }).click();
+  check((await page.getByRole('heading', { name: '역대 올스타전' }).count()) === 1, 'the All-Star page lists the years before');
+  await page.screenshot({ path: join(shots, 'allstar.png'), fullPage: false });
+  await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
+  check((await page.getByRole('group', { name: '외국인 장기 근속 규정' }).count()) === 1, 'settings offer the foreign veteran rule');
+
   // 6. Every screen, the player dialog, reload.
   for (const tab of ['기록', '구단', '역대', '드래프트 후보', '우리 구단']) await page.getByRole('button', { name: tab, exact: true }).click();
   await page.getByRole('button', { name: '선수단', exact: true }).click();

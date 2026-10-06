@@ -18,7 +18,7 @@ import { rollPersonality, rollTraits } from '../league/traits';
 import { FOREIGN_TYPES, foreignTypeOf } from '../league/players';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0', '1.0.0'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0'];
 
 type Loose = Record<string, unknown>;
 
@@ -103,6 +103,8 @@ export function migrateState(raw: unknown, from: string): LeagueState {
     }
     p.hidden.traits ??= rollTraits(s.seed, p.id, p.personality, foreign ? undefined : p.hidden.growthCurve);
   }
+  // 1.2.0 adds the All-Star game (it starts with the next voting), interviews, more of life and an optional foreign
+  // veteran rule (off): nothing to fill in.
   s.sim = SIM_VERSION;
   return s;
 }

@@ -540,10 +540,26 @@ export const TRAINING = {
     moves his main tools. Family leave (경조사 휴가) is at most five days, counted as registered days (KBO 규정,
     2019~). Winter: marriage, charity and work on his own at these chances. `fans`: the fans' fondness, 0–100. */
 export const LIFE = {
-  daily: 0.12,
+  daily: 0.14,
   /** How often each kind comes up when something happens (0.10.1: births and deaths in the family made rarer,
-      about 1–1.5 a season for the club, a loss about one season in three). */
-  weights: { birth: 1, loss: 0.3, hot: 4, cold: 4, fanService: 3, charity: 2, row: 1.5, accident: 0.5 },
+      about 1–1.5 a season for the club, a loss about one season in three; 1.2.0 added the last seven). */
+  weights: {
+    birth: 1,
+    loss: 0.3,
+    hot: 4,
+    cold: 4,
+    fanService: 3,
+    charity: 2,
+    row: 1.5,
+    accident: 0.5,
+    extraWork: 1.5,
+    mentor: 1.2,
+    commercial: 0.8,
+    variety: 0.8,
+    hometownCheer: 0.8,
+    feud: 0.8,
+    grumble: 0.6,
+  },
   form: { hot: 2.5, cold: -2.5, baby: 2, loss: -2, row: -1 },
   leave: { birth: [2, 3], loss: [3, 5] } as Record<'birth' | 'loss', [number, number]>,
   winter: { marry: 0.12, charity: 0.08, selfWork: 0.1 },
@@ -781,4 +797,24 @@ export const PITCH_MIX = {
     '파워 불펜': { pitch: 'SL', weight: 20 },
     변화구형: { pitch: 'SL', weight: 10 },
   } as Record<string, { pitch: import('./pitches').PitchType; weight: number }>,
+};
+
+/** The All-Star game (1.2.0, league/allstar.ts). KBO practice: fans 70% and players 30% of the vote, 베스트12 a side,
+    the managers' picks to fill the squads; the dates and ballot sizes are game assumptions (the voting runs about four
+    weeks from early June, the game in the break). Fan ballots a day for a candidate: `fanBase` × his club's fans
+    against the league's (^ `clubPower`) × (base + WAR so far·war + fondness·loved + grade over 45·star); the players'
+    the same way, on how he plays. `campaign`: what our club's voting drive costs (만 원) and adds to our candidates'
+    fan ballots. The 홈런 레이스: the field, outs a round and a swing's home run chance by 장타 (hidden). */
+export const ALL_STAR = {
+  dates: { open: '06-08', tallies: ['06-15', '06-22', '06-29'], close: '07-05', game: '07-12' },
+  fanShare: 0.7,
+  fanBase: 22000,
+  clubPower: 1.1,
+  fan: { base: 0.35, war: 0.35, loved: 0.6, star: 0.35 },
+  playerBase: 3,
+  player: { base: 0.2, war: 0.8, star: 0.5 },
+  squad: 24,
+  pitchLimit: { starter: 35, reliever: 22 },
+  derby: { field: 8, outs: 7, base: 0.12, perPower: 0.008, min: 0.04, max: 0.42 },
+  campaign: { cost: 10_000, boost: 0.25 },
 };

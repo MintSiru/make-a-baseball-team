@@ -6,7 +6,7 @@
 import { generateDraftPool, rng } from '../draftroom';
 import { cityById } from '../club/cities';
 import { baseSupport, electMayor } from './parent';
-import { capPlayers, foreignCap, foreignCost } from './foreigncap';
+import { capPlayers, foreignCap, foreignCost, slotForeigners } from './foreigncap';
 import { milestone, unlock } from './milestones';
 import type { ParentCompanyType } from '../club/types';
 import { fromDraftProspect, placeClass } from '../model/player';
@@ -327,7 +327,8 @@ export function foreignReserve(s: LeagueState, teamId: TeamId, next: number): nu
   const slots = foreignSlots(s, teamId, next);
   const all = foreignOn(s, teamId);
   const ending = all.filter((p) => !p.contract?.salaries.some((x) => x.season >= next));
-  const count = (asia: boolean) => all.filter((p) => !!p.origin.asiaQuota === asia).length;
+  const taking = slotForeigners(s, teamId, next);
+  const count = (asia: boolean) => taking.filter((p) => !!p.origin.asiaQuota === asia).length;
   const usd =
     ending.reduce((a, p) => a + foreignRenewalAsk(p, next), 0) +
     Math.max(0, slots.regular - count(false)) * OFFSEASON.foreign.newReserveUSD +
@@ -339,7 +340,7 @@ export function foreignReserve(s: LeagueState, teamId: TeamId, next: number): nu
 export function foreignSigningDecision(s: LeagueState, next: number): Decision | null {
   const u = user(s);
   const slots = foreignSlots(s, u.teamId, next);
-  const have = foreignOn(s, u.teamId);
+  const have = slotForeigners(s, u.teamId, next);
   const regular = slots.regular - have.filter((p) => !p.origin.asiaQuota).length;
   const asia = slots.asia - have.filter((p) => p.origin.asiaQuota).length;
   if (regular <= 0 && asia <= 0) return null;
