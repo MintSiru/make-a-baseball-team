@@ -65,11 +65,40 @@ function usePref(key: string): [boolean, (on: boolean) => void] {
 }
 
 export const useAlertPopups = () => usePref(PREF);
+
+/** 1.0.1: kinds of alert the player does not want popping up (the list still has them). */
+const KINDS_OFF = 'kbo-expansion-alert-kinds-off';
+function kindsOff(): AlertKind[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(KINDS_OFF) ?? '[]');
+    return Array.isArray(v) ? v.filter((k): k is AlertKind => k in ALERT_LABEL) : [];
+  } catch {
+    return (memory[KINDS_OFF] as unknown as AlertKind[] | undefined) ?? [];
+  }
+}
+export function useAlertKindsOff(): [AlertKind[], (kind: AlertKind, popUp: boolean) => void] {
+  const [off, setOff] = useState(kindsOff);
+  useEffect(() => {
+    const sync = () => setOff(kindsOff());
+    window.addEventListener(KINDS_OFF, sync);
+    return () => window.removeEventListener(KINDS_OFF, sync);
+  }, []);
+  const set = (kind: AlertKind, popUp: boolean) => {
+    const next = popUp ? kindsOff().filter((k) => k !== kind) : [...new Set([...kindsOff(), kind])];
+    try {
+      localStorage.setItem(KINDS_OFF, JSON.stringify(next));
+    } catch {
+      (memory as Record<string, unknown>)[KINDS_OFF] = next;
+    }
+    window.dispatchEvent(new Event(KINDS_OFF));
+  };
+  return [off, set];
+}
 /** Articles about our club (games, records, injuries, moves, players' news) as pop-ups too. */
 export const useArticlePopups = () => usePref(MINOR);
 
-/** The alerts that pop up now: articles only when they are wanted. */
-export const poppingAlerts = (unseen: Alert[], articles: boolean) => (articles ? unseen : unseen.filter((a) => !a.minor));
+/** The alerts that pop up now: articles only when they are wanted, and none of the kinds turned off (1.0.1). */
+export const poppingAlerts = (unseen: Alert[], articles: boolean, off: AlertKind[] = []) => unseen.filter((a) => (articles || !a.minor) && !off.includes(a.kind));
 
 // ── The pop-up ───────────────────────────────────────────────────────────────────────────────────
 
@@ -161,10 +190,12 @@ export function AlertList({ alerts }: { alerts: Alert[] }) {
   );
 }
 
-/** The two pop-up switches (the club's news and the display settings). */
+/** The pop-up switches (the club's news and the display settings): pop-ups at all, our club's articles, and each
+    kind of alert (1.0.1). */
 export function PopupSettings() {
   const [on, setOn] = useAlertPopups();
   const [articles, setArticles] = useArticlePopups();
+  const [off, setKind] = useAlertKindsOff();
   return (
     <>
       <label class="check">
@@ -174,6 +205,14 @@ export function PopupSettings() {
         <input type="checkbox" checked={articles} disabled={!on} onChange={(e) => setArticles((e.currentTarget as HTMLInputElement).checked)} /> 우리 구단 기사(경기·기록·부상·선수 이동·선수
         소식)도 팝업으로 보기
       </label>
+      <fieldset class="alert-kinds" disabled={!on}>
+        <legend>팝업으로 볼 알림</legend>
+        {(Object.keys(ALERT_LABEL) as AlertKind[]).map((k) => (
+          <label key={k} class="check">
+            <input type="checkbox" checked={!off.includes(k)} onChange={(e) => setKind(k, (e.currentTarget as HTMLInputElement).checked)} /> {ALERT_LABEL[k]}
+          </label>
+        ))}
+      </fieldset>
     </>
   );
 }

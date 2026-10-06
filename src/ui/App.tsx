@@ -21,7 +21,7 @@ import { lastExport, noteExport, Settings } from './Settings';
 import { Manual } from './Manual';
 import { DISCLAIMER } from '../core/about';
 import { ClubSummary } from './ClubSummary';
-import { AlertPopup, poppingAlerts, useAlertPopups, useArticlePopups } from './Alerts';
+import { AlertPopup, poppingAlerts, useAlertKindsOff, useAlertPopups, useArticlePopups } from './Alerts';
 import { TutorialCard } from './Tutorial';
 import { tutorialPaused } from './tutorial';
 import { unseenAlerts } from '../league/alerts';
@@ -109,6 +109,7 @@ export function App() {
   // Event pop-ups (V0.7.4): shown when they are on, or when the player opens them from the header.
   const [popups] = useAlertPopups();
   const [articles] = useArticlePopups();
+  const [kindsOff] = useAlertKindsOff();
   const [alertsOpen, setAlertsOpen] = useState(false);
   const dark = useDark();
   const autoTried = useRef(new Set<string>());
@@ -426,7 +427,7 @@ export function App() {
   // The club colour as the accent, made readable on this page (V0.15).
   const accent = userTeam ? readableAccent(userTeam.color, dark) : null;
   const unseenAll = league.user ? unseenAlerts(league) : [];
-  const unseen = poppingAlerts(unseenAll, articles);
+  const unseen = poppingAlerts(unseenAll, articles, kindsOff);
 
   return (
     <div class="app" style={accent ? ({ '--accent': accent.accent, '--accent-ink': accent.ink } as Record<string, string>) : undefined}>
@@ -500,7 +501,7 @@ export function App() {
           onDone={(ids) => {
             setAlertsOpen(false);
             // Articles left out of the pop-ups count as read with the rest (they stay in the list).
-            void act({ kind: 'alertsSeen', ids: [...ids, ...unseenAll.filter((a) => a.minor && !unseen.includes(a)).map((a) => a.id)] }, '알림 확인', false);
+            void act({ kind: 'alertsSeen', ids: [...ids, ...unseenAll.filter((a) => !unseen.includes(a)).map((a) => a.id)] }, '알림 확인', false);
           }}
         />
       )}

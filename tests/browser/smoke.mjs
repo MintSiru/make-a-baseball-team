@@ -400,6 +400,12 @@ try {
   await storyBlock.getByRole('button', { name: '키 지우기' }).click();
   await page.getByRole('button', { name: '역대', exact: true }).click();
   for (const v of ['시상', '기록실', '명예의 전당', '시즌']) await page.getByRole('group', { name: '역대' }).getByRole('button', { name: v, exact: true }).click();
+  // 1.0.1: the national team's tournaments and the clubs' retired numbers have pages of their own.
+  await page.getByRole('group', { name: '역대' }).getByRole('button', { name: '국가대표', exact: true }).click();
+  check((await page.locator('table:has(caption) tbody tr').count()) > 0, 'the national team page lists the tournaments');
+  await page.screenshot({ path: join(shots, 'national.png'), fullPage: false });
+  await page.getByRole('group', { name: '역대' }).getByRole('button', { name: '영구결번', exact: true }).click();
+  check((await page.locator('.retired-card').count()) > 0 || (await page.locator('main').textContent())?.includes('아직 영구결번이 없습니다'), 'the retired numbers page opens');
   await page.getByRole('group', { name: '역대' }).getByRole('button', { name: '기록실', exact: true }).click();
   await page.screenshot({ path: join(shots, 'records.png'), fullPage: false });
 
@@ -481,6 +487,10 @@ try {
   await page.screenshot({ path: join(shots, 'dark-large-390.png') });
   await page.getByRole('group', { name: '밝기' }).getByRole('button', { name: '기기 설정 따르기' }).click();
   await page.getByRole('group', { name: '글자 크기' }).getByRole('button', { name: '보통' }).click();
+  // 1.0.1: on a phone the settings show one subject at a time, picked from the bar.
+  check(!(await page.locator('#settings-save').isVisible()), 'a phone shows one settings subject at a time');
+  await page.getByRole('group', { name: '설정 항목' }).getByRole('button', { name: '저장', exact: true }).click();
+  check((await page.locator('#settings-save').isVisible()) && !(await page.locator('#settings-display').isVisible()), 'the bar switches the settings subject');
   check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
   await context.close();
 

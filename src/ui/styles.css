@@ -2417,17 +2417,18 @@ ul.plain li {
   flex-wrap: wrap;
   margin-bottom: 8px;
 }
-.settings-jump a {
-  padding: 4px 12px;
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-  color: var(--ink);
-  text-decoration: none;
-  font-size: 14px;
-}
-.settings-jump a:hover,
-.settings-jump a:focus-visible {
-  border-color: var(--accent);
+/* 1.0.1: on a phone one subject at a time, picked from the bar (which stays at the top). */
+@media (max-width: 760px) {
+  .settings-jump {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--paper);
+    padding: 6px 0;
+  }
+  .settings-page .settings-block:not(.on) {
+    display: none;
+  }
 }
 .settings-block {
   border-top: 1px solid var(--rule);
@@ -2572,4 +2573,72 @@ main.page:focus {
 }
 .manual details.help p {
   margin: 6px 0;
+}
+
+/* 1.0.1: which kinds of alert pop up, a compact grid of checkboxes. */
+.alert-kinds {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 6px 10px 8px;
+  margin: 8px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 2px 12px;
+}
+.alert-kinds legend {
+  padding: 0 4px;
+  font-size: 14px;
+}
+.alert-kinds[disabled] {
+  opacity: 0.6;
+}
+
+/* Visually hidden, still read by screen readers (table captions). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Retired numbers (1.0.1): a card per number, the number large, ours marked in the club colour. */
+.retired-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+.retired-card {
+  position: relative;
+  padding-right: 64px;
+}
+.retired-card.mine {
+  border-color: var(--accent);
+}
+.retired-number {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  margin: 0;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.retired-card h3 {
+  margin: 0 0 4px;
+}
+.retired-story li + li {
+  margin-top: 2px;
+}
+@media (max-width: 400px) {
+  .retired-grid {
+    grid-template-columns: 1fr;
+  }
 }

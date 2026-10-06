@@ -12,6 +12,7 @@ import {
   maxGuaranteed,
   meetTerms,
   offerTotal,
+  openDrafts,
   openCommitments,
   payrollBeforeOffers,
   reaction,
@@ -33,6 +34,7 @@ import type { FaPromise, PlayerId } from '../model/types';
 import { salaryCapFor } from '../rules/kbo2026';
 import { money, moneyShort, parseEok } from './format';
 import { gradeClass } from './grades';
+import { positionKey, useSort } from './sort';
 
 interface Props {
   league: LeagueState;
@@ -107,7 +109,10 @@ export function FaMarket({ league, onSubmit, onPlayer }: Props) {
   const [filter, setFilter] = useState<'all' | 'open' | 'mine'>('all');
 
   const current = (id: PlayerId): FaOffer | null => (id in drafts ? drafts[id]! : (m.talks[id]!.offers[me] ?? null));
-  const input = (run: 'round' | 'news' | 'close'): DecisionInput => ({ kind: 'faRound', offers: drafts, run });
+  // A new day of the market (1.0.1): the drafts went out with the last submit, and keeping them blocked the buttons
+  // once one of their players had signed.
+  useEffect(() => setDrafts({}), [m.round, d.day]);
+  const input = (run: 'round' | 'news' | 'close'): DecisionInput => ({ kind: 'faRound', offers: openDrafts(m, drafts), run });
   const problem = checkDecision(league, input('round'));
 
   // What the open offers commit: next season's payroll budget (bonuses spread over the deals) and the salary cap.
@@ -128,6 +133,18 @@ export function FaMarket({ league, onSubmit, onPlayer }: Props) {
   const nextDay = FA.rounds[m.round + 1];
 
   const shown = talks.filter((t) => (filter === 'open' ? !t.signed && !t.gone : filter === 'mine' ? t.from === me || !!current(t.id) || t.signed?.teamId === me : true));
+  // 1.0.1: the list sorts by its headings, like the other player tables.
+  const GRADE_ORDER: Record<string, number> = { A: 3, B: 2, C: 1 };
+  const { sorted, th } = useSort(shown, {
+    name: { value: (t) => league.players[t.id]!.name },
+    position: { value: (t) => positionKey(positionLabel(league.players[t.id]!)), first: 1 },
+    age: { value: (t) => ageIn(league.players[t.id]!, next), first: 1 },
+    current: { value: (t) => league.players[t.id]!.scouting.current },
+    future: { value: (t) => league.players[t.id]!.scouting.futureValue },
+    war: { value: (t) => lastWar(league, t.id) ?? -99 },
+    grade: { value: (t) => (t.free ? 0 : (GRADE_ORDER[t.grade] ?? 0)), first: 1 },
+    price: { value: (t) => offerTotal(t.price) },
+  });
   const selected = sel ? m.talks[sel] : undefined;
 
   return (
@@ -193,20 +210,20 @@ export function FaMarket({ league, onSubmit, onPlayer }: Props) {
               <thead>
                 <tr>
                   <th>우리 제안</th>
-                  <th>선수</th>
-                  <th>포지션</th>
-                  <th class="num">나이</th>
-                  <th class="num">현재</th>
-                  <th class="num">미래</th>
+                  {th('name', '선수')}
+                  {th('position', '포지션')}
+                  {th('age', '나이', true)}
+                  {th('current', '현재', true)}
+                  {th('future', '미래', true)}
                   <th>최근 성적</th>
-                  <th class="num">WAR</th>
-                  <th>등급</th>
-                  <th class="num">시장가</th>
+                  {th('war', 'WAR', true)}
+                  {th('grade', '등급')}
+                  {th('price', '시장가', true)}
                   <th>상태</th>
                 </tr>
               </thead>
               <tbody>
-                {shown.map((t) => {
+                {sorted.map((t) => {
                   const p = league.players[t.id]!;
                   const o = current(t.id);
                   const open = !t.signed && !t.gone;

@@ -610,6 +610,11 @@ export function termsText(o: FaOffer) {
 
 const short = (s: LeagueState, id: TeamId) => s.teams.find((t) => t.id === id)?.short ?? id;
 const isOpen = (t: FaTalk) => !t.signed && !t.gone;
+
+/** The offers a club drafted on the market screen that can still go out (1.0.1): a player who has signed or left
+    since they were drafted drops out, instead of blocking the next round. */
+export const openDrafts = <T>(m: FaMarket, drafts: Record<PlayerId, T>): Record<PlayerId, T> =>
+  Object.fromEntries(Object.entries(drafts).filter(([id]) => !!m.talks[id] && isOpen(m.talks[id]!)));
 const outside = (m: FaMarket, t: FaTalk, teamId: TeamId) => teamId !== t.from;
 const limitOf = (s: LeagueState, m: FaMarket, teamId: TeamId) => (teamId === s.user?.teamId ? m.userLimit : teamId === m.newClub ? EXPANSION_DEFAULTS.freeAgentSigns : m.limit);
 

@@ -60,6 +60,14 @@ interface Props {
 }
 
 export function Settings({ league, store, busy, story, onAct, onExport, onImport, onNewGame }: Props) {
+  // 1.0.1: on a phone the page shows one subject at a time (the bar picks it); a wide screen shows them all and
+  // the bar jumps to one.
+  const [open, setOpen] = useState(SECTIONS[0]![0]);
+  const pick = (id: string) => {
+    setOpen(id);
+    if (typeof window !== 'undefined' && window.matchMedia?.('(min-width: 761px)').matches) document.getElementById(id)?.scrollIntoView({ block: 'start' });
+  };
+  const block = (id: string) => `settings-block${open === id ? ' on' : ''}`;
   return (
     <section class="settings-page" aria-labelledby="settings-title">
       <div class="page-head">
@@ -68,40 +76,40 @@ export function Settings({ league, store, busy, story, onAct, onExport, onImport
           <p class="muted">화면·AI 기사 설정은 이 브라우저에만 남고, 게임과 구단 이름은 진행 파일에 함께 저장됩니다.</p>
         </div>
       </div>
-      <nav class="segmented settings-jump" aria-label="설정 바로가기">
+      <div class="segmented settings-jump" role="group" aria-label="설정 항목">
         {SECTIONS.map(([id, label]) => (
-          <a key={id} href={`#${id}`} class="button-link">
+          <button key={id} type="button" aria-pressed={open === id} onClick={() => pick(id)}>
             {label}
-          </a>
+          </button>
         ))}
-      </nav>
+      </div>
 
-      <section id="settings-display" class="settings-block">
+      <section id="settings-display" class={block('settings-display')}>
         <h2>화면</h2>
         <DisplayOptions />
       </section>
 
-      <section id="settings-game" class="settings-block">
+      <section id="settings-game" class={block('settings-game')}>
         <h2>게임</h2>
         <GameOptions league={league} busy={busy} onAct={onAct} onNewGame={onNewGame} />
       </section>
 
-      <section id="settings-clubs" class="settings-block">
+      <section id="settings-clubs" class={block('settings-clubs')}>
         <h2>구단 이름</h2>
         <ClubNames league={league} busy={busy} onAct={onAct} />
       </section>
 
-      <section id="settings-save" class="settings-block">
+      <section id="settings-save" class={block('settings-save')}>
         <h2>저장</h2>
         <SaveOptions league={league} store={store} busy={busy} onExport={onExport} onImport={onImport} />
       </section>
 
-      <section id="settings-story" class="settings-block">
+      <section id="settings-story" class={block('settings-story')}>
         <h2>AI 기사</h2>
         <StoryOptions settings={story.settings} usage={story.usage} pausedUntil={story.pausedUntil} onSave={story.onSave} />
       </section>
 
-      <section id="settings-about" class="settings-block">
+      <section id="settings-about" class={block('settings-about')}>
         <h2>정보</h2>
         <dl class="facts">
           <div>
