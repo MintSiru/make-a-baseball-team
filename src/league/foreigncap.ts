@@ -27,9 +27,19 @@ export const tenureWith = (p: Player, teamId: TeamId, season: number) => p.caree
 /** An Asia quota player's own cap for `season`: $200K, and $100K more for each season with the club. */
 export const asiaCapFor = (p: Player, teamId: TeamId, season: number) => F.asiaQuotaCapUSD + F.asiaQuotaRaisePerYearUSD * tenureWith(p, teamId, season);
 
-/** The club's regular foreign players under contract for `season`. */
+/** First-team seasons he has played in the league before `season`. */
+export const kboSeasons = (p: Pick<Player, 'career'>, season: number) => new Set(p.career.filter((c) => !c.level && c.year < season).map((c) => c.year)).size;
+
+/** Under the optional veteran rule (1.2.0, LeagueState.foreignVeteran): a foreign player long enough in the league
+    to be counted as one of its own — no foreign slot, outside the foreign salary cap. */
+export const slotExempt = (s: LeagueState, p: Player, season: number) => !!s.foreignVeteran && isForeign(p) && kboSeasons(p, season) >= s.foreignVeteran;
+
+/** The club's foreign players who take a foreign slot in `season`. */
+export const slotForeigners = (s: LeagueState, teamId: TeamId, season: number) => orgPlayers(s, teamId).filter((p) => isForeign(p) && !slotExempt(s, p, season));
+
+/** The club's regular foreign players under contract for `season` (the veterans the rule exempts aside). */
 export const capPlayers = (s: LeagueState, teamId: TeamId, season: number) =>
-  orgPlayers(s, teamId).filter((p) => isForeign(p) && !p.origin.asiaQuota && p.contract?.salaries.some((x) => x.season === season));
+  slotForeigners(s, teamId, season).filter((p) => !p.origin.asiaQuota && p.contract?.salaries.some((x) => x.season === season));
 
 /** The club's cap for `season` with these players: $4M, the tenure raises, and an expansion club's extra slot. */
 export function foreignCap(s: LeagueState, teamId: TeamId, season: number, players = capPlayers(s, teamId, season)): number {

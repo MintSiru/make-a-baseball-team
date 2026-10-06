@@ -1,10 +1,10 @@
 import { useState } from 'preact/hooks';
-import { finishText } from '../league/international';
+import { nationalView, retiredNumbersView } from '../league/legacy';
 import type { LeagueState } from '../league/state';
 import { awardsView, recordRoom, shortName, teamOf } from '../league/views';
-import { era, obp, slg } from '../league/stats';
+import { avg, era, ip, obp, ops, slg } from '../league/stats';
 
-type View = 'seasons' | 'awards' | 'records' | 'hall';
+type View = 'seasons' | 'awards' | 'records' | 'hall' | 'retired' | 'national';
 
 export function History({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
   const [view, setView] = useState<View>('seasons');
@@ -18,6 +18,8 @@ export function History({ league, onPlayer }: { league: LeagueState; onPlayer: (
             ['awards', '시상'],
             ['records', '기록실'],
             ['hall', '명예의 전당'],
+            ['retired', '영구결번'],
+            ['national', '국가대표'],
           ] as [View, string][]
         ).map(([id, label]) => (
           <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>
@@ -29,6 +31,8 @@ export function History({ league, onPlayer }: { league: LeagueState; onPlayer: (
       {view === 'awards' && <Awards league={league} onPlayer={onPlayer} />}
       {view === 'records' && <Records league={league} onPlayer={onPlayer} />}
       {view === 'hall' && <Hall league={league} onPlayer={onPlayer} />}
+      {view === 'retired' && <Retired league={league} onPlayer={onPlayer} />}
+      {view === 'national' && <National league={league} onPlayer={onPlayer} />}
     </section>
   );
 }
@@ -156,14 +160,6 @@ function Hall({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string
       ) : (
         <p class="muted">아직 헌액된 선수가 없습니다.</p>
       )}
-      {league.teams.some((t) => t.retiredNumbers?.length) && (
-        <>
-          <h3>영구결번</h3>
-          <ul class="plain">
-            {league.teams.flatMap((t) => (t.retiredNumbers ?? []).map((x) => <li key={t.id + x.number}>{t.short} {x.number}번 · {x.name} ({x.year})</li>))}
-          </ul>
-        </>
-      )}
     </>
   );
 }
@@ -207,21 +203,6 @@ function Seasons({ league }: { league: LeagueState }) {
         </table>
       </div>
       {seasons.find((h) => h.futures) && <FuturesTable league={league} />}
-      {league.international.length > 0 && (
-        <>
-          <h3>국가대표</h3>
-          <ul class="series-list">
-            {league.international
-              .filter((e) => e.finish)
-              .map((e) => (
-                <li key={e.id}>
-                  {e.year} {e.name}: {finishText({ kind: e.kind ?? 'asianGames' }, e.finish!)}
-                  {e.medal ? ' · 병역 특례 획득' : ''}
-                </li>
-              ))}
-          </ul>
-        </>
-      )}
     </>
   );
 }
@@ -253,6 +234,118 @@ function FuturesTable({ league }: { league: LeagueState }) {
                 <td class="num">{r.l}</td>
                 <td class="num">{r.t}</td>
                 <td class="num">{r.pct.toFixed(3)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+/** Retired numbers (1.0.1): each club's, ours first, with the player's story and his numbers with the club. */
+function Retired({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
+  const list = retiredNumbersView(league);
+  if (!list.length) return <p class="muted">아직 영구결번이 없습니다. 한 구단에서 오래(10시즌 이상) 크게 활약한 선수가 은퇴하면 그 구단이 등번호를 영구결번합니다.</p>;
+  return (
+    <div class="retired-grid">
+      {list.map((r) => (
+        <article key={`${r.teamId}-${r.number}`} class={`card retired-card${r.teamId === league.user?.teamId ? ' mine' : ''}`}>
+          <p class="retired-number" aria-hidden="true">
+            {r.number}
+          </p>
+          <h3>
+            <button type="button" class="link" onClick={() => onPlayer(r.id)}>
+              {r.name}
+            </button>{' '}
+            <span class="muted small">
+              {r.team} · {r.position}
+            </span>
+          </h3>
+          <ul class="plain small retired-story">
+            {r.story.map((line, i) => (
+              <li key={i}>{line}</li>
+            ))}
+          </ul>
+          <dl class="facts small">
+            {r.bat && !r.pitcher && (
+              <div>
+                <dt>구단 통산 (타격)</dt>
+                <dd>
+                  {r.bat.g}경기 타율 {avg(r.bat).toFixed(3).replace(/^0/, '')} {r.bat.h}안타 {r.bat.hr}홈런 {r.bat.rbi}타점 {r.bat.sb}도루 · OPS {ops(r.bat).toFixed(3).replace(/^0/, '')}
+                </dd>
+              </div>
+            )}
+            {r.pit && r.pitcher && (
+              <div>
+                <dt>구단 통산 (투구)</dt>
+                <dd>
+                  {r.pit.g}경기 {r.pit.w}승 {r.pit.l}패 {r.pit.sv}세이브 {r.pit.hld}홀드 · {ip(r.pit.outs)}이닝 평균자책점 {era(r.pit).toFixed(2)} 탈삼진 {r.pit.k}
+                </dd>
+              </div>
+            )}
+            <div>
+              <dt>WAR</dt>
+              <dd>
+                구단 {r.war.toFixed(1)} · 통산 {r.careerWar.toFixed(1)}
+              </dd>
+            </div>
+          </dl>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+/** The national team (1.0.1): every finished tournament, the result, where the squad came from, ours. */
+function National({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
+  const v = nationalView(league);
+  if (!v.rows.length) return <p class="muted">아직 끝난 국제대회가 없습니다.</p>;
+  return (
+    <>
+      <p class="muted">
+        대회 {v.rows.length}번 · 우승(금메달) {v.wins}번 · 입상 {v.podiums}번 · 병역 특례 {v.exemptions}번
+      </p>
+      <div class="table-wrap" tabIndex={0}>
+        <table class="record-table">
+          <caption class="sr-only">국가대표 역대 성적</caption>
+          <thead>
+            <tr>
+              <th scope="col" class="num">
+                연도
+              </th>
+              <th scope="col">대회</th>
+              <th scope="col">성적</th>
+              <th scope="col" class="num">
+                엔트리
+              </th>
+              <th scope="col">구단별</th>
+              <th scope="col">우리 선수</th>
+            </tr>
+          </thead>
+          <tbody>
+            {v.rows.map((r) => (
+              <tr key={r.id}>
+                <td class="num">{r.year}</td>
+                <td>{r.name}</td>
+                <td class={r.result === '우승' || r.result === '금메달' ? 'strong' : ''}>
+                  {r.result}
+                  {r.medal && <span class="tag">병역 특례</span>}
+                </td>
+                <td class="num">{r.squad}</td>
+                <td class="small">{r.clubs.map((c) => `${c.team} ${c.n}`).join(' · ')}</td>
+                <td class="small">
+                  {r.ours.length
+                    ? r.ours.map((x, i) => (
+                        <span key={x.id}>
+                          {i > 0 && ', '}
+                          <button type="button" class="link" onClick={() => onPlayer(x.id)}>
+                            {x.name}
+                          </button>
+                        </span>
+                      ))
+                    : '-'}
+                </td>
               </tr>
             ))}
           </tbody>

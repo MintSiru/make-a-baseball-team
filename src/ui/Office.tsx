@@ -11,6 +11,7 @@ import { projectedPayroll, STADIUM_PLANS } from '../league/expansion';
 import { boom, leaguePrice } from '../league/fans';
 import { projectedReport, supportLabel } from '../league/finance';
 import { MANAGER_STYLES, STAFF_EFFECTS, STAFF_LABELS, STAFF_ROLES } from '../league/staff';
+import { AlumnusTag } from './Alumni';
 import { firstTeamIds, type ClubReport, type LeagueState } from '../league/state';
 import { booksOf } from '../league/foreigncap';
 import { usd } from '../league/foreign';
@@ -148,7 +149,7 @@ function ReportTable({ reports }: { reports: { title: string; r: ClubReport }[] 
   );
 }
 
-export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: (a: Action) => void; setMsg: (m: string) => void }) {
+export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueState; onAct: (a: Action) => void; setMsg: (m: string) => void; onPlayer?: (id: string) => void }) {
   const [section, setSection] = useState<Section>('summary');
   const u = league.user!;
   const team = league.teams.find((t) => t.id === u.teamId)!;
@@ -451,7 +452,10 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
 
       {section === 'staff' && club && (
         <>
-          <p class="muted">코칭스태프와 프런트 팀장은 겨울에 바꿉니다 (계약 만료자가 있거나 첫 겨울에 결정 화면이 나옵니다). 등급 50이 리그 평균입니다.</p>
+          <p class="muted">
+            코칭스태프와 프런트 팀장은 겨울에 바꿉니다 (계약 만료자가 있거나 첫 겨울에 결정 화면이 나옵니다). 등급 50이 리그 평균입니다. 은퇴한 선수가 지도자·프런트로 돌아오기도 하며, 현역 시절이
+            화려할수록 자주 돌아옵니다 — 지도자 능력은 이름값이 아니라 성실성·멘탈·리더십을 따릅니다.
+          </p>
           <div class="table-wrap" tabIndex={0}>
             <table class="record-table">
               <thead>
@@ -474,6 +478,7 @@ export function Office({ league, onAct, setMsg }: { league: LeagueState; onAct: 
                       <td>
                         {m?.name ?? '-'}
                         {m?.style && <span class="muted"> · {MANAGER_STYLES[m.style].label}</span>}
+                        <AlumnusTag league={league} m={m} onPlayer={onPlayer} />
                       </td>
                       <td class="num strong">{m?.rating ?? '-'}</td>
                       <td class="num">{m?.age ?? '-'}</td>

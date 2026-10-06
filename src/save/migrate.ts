@@ -14,9 +14,11 @@ import { baseSupport, setGoals } from '../league/parent';
 import { staffOf } from '../league/staff';
 import { openMarket, roundDecision } from '../league/fa';
 import { DIFFICULTY } from '../league/tuning';
+import { rollPersonality, rollTraits } from '../league/traits';
+import { FOREIGN_TYPES, foreignTypeOf } from '../league/players';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0', '1.2.0', '1.3.0'];
 
 type Loose = Record<string, unknown>;
 
@@ -89,7 +91,24 @@ export function migrateState(raw: unknown, from: string): LeagueState {
     e.left = true;
     e.asked = true;
   }
-  // 1.0.0 is 0.16.0 renamed: the same simulation, so a 0.16.0 snapshot needs nothing more.
+  // 1.0.0 is 0.16.0 renamed: the same simulation, so a 0.16.0 snapshot needs nothing more for it.
+  // 1.1.0: everyone gets a growth type and hidden traits (drawn as a new player's are: from his personality and
+  // Draft Room growth curve, on a stream of their own); foreign players, who came without, get a personality and a
+  // type read from their abilities.
+  for (const p of Object.values(s.players)) {
+    const foreign = p.origin.kind === 'foreign';
+    if (foreign) {
+      if (!p.personality) p.personality = rollPersonality(s.seed, p.id);
+      if (!FOREIGN_TYPES.has(p.archetype)) p.archetype = foreignTypeOf(p);
+    }
+    p.hidden.traits ??= rollTraits(s.seed, p.id, p.personality, foreign ? undefined : p.hidden.growthCurve);
+  }
+  // 1.2.0 adds the All-Star game (it starts with the next voting), interviews, more of life and an optional foreign
+  // veteran rule (off): nothing to fill in.
+  // 1.3.0: a postseason saved before it went game by game was played all at once already (no bracket: over); a
+  // foreign signing waiting without talks signs at the listed price; nothing to fill in either.
+  // 1.4.0: postseason lines start with the next postseason game (none were kept before); staff hired before were all
+  // strangers; nothing to fill in.
   s.sim = SIM_VERSION;
   return s;
 }

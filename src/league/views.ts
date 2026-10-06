@@ -1,5 +1,6 @@
 /* Read-only views of the league for the screens. Everything here is public: scouting grades, results
    and contracts, never hidden ability. */
+import { alumnusJob } from './alumni';
 import { ROLE_LABELS } from '../draftroom';
 import { publicView, type PublicPlayer } from '../model/player';
 import type { BatTotals, InjuryRecord, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
@@ -15,9 +16,14 @@ import { cardFor, lineupFor, managerLean, penRoles, PEN_ROLE_LABELS, rotationFor
 import { isDevelopment, type LeagueState } from './state';
 import { avg, babip, babipAllowed, batterWar, era, fip, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
 import { addInto, emptyBat, emptyPit } from './state';
+import { traitsOf } from './traits';
+import { traitReport, type TraitReport } from './reports';
+
+/** 리더십 from which a senior counts as a clubhouse leader. */
+const LEADER = 68;
 
 export const teamOf = (s: LeagueState, id: TeamId | null) => s.teams.find((t) => t.id === id);
-export const shortName = (s: LeagueState, id: TeamId | null) => (id === SANGMU ? '상무' : (teamOf(s, id)?.short ?? '-'));
+export const shortName = (s: LeagueState, id: TeamId | null) => (id === SANGMU ? '상무' : id === 'dream' ? '드림' : id === 'nanum' ? '나눔' : (teamOf(s, id)?.short ?? '-'));
 
 export const positionLabel = (p: Pick<Player, 'role' | 'position'>) =>
   p.position ? ({ C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' } as const)[p.position] : ROLE_LABELS[p.role];
@@ -206,6 +212,8 @@ export interface PlayerCard {
   injuries: InjuryRecord[];
   /** Hitters: grade and first-team games at each position he can play. */
   positions: ReturnType<typeof positionGrades>;
+  /** Our coaches' or scouts' read of his hidden side (1.1.0). */
+  report: TraitReport | null;
 }
 
 const QUALIFY = { pa: 446, outs: 432 };
@@ -258,7 +266,7 @@ function sumSplits(list: (Splits | undefined)[]): Splits | null {
 export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
   const p = s.players[id];
   if (!p) return null;
-  const status = p.status === 'military' ? `군 복무 중 (${p.service.route === 'sangmu' ? '상무' : p.service.route === 'social' ? '사회복무' : '현역'}, ${p.service.returnsOn} 전역)` : s.injuries[id] ? `${s.injuries[id]!.dtd ? '결장' : '부상'} (${injuryNote(s.injuries[id])})` : p.status === 'retired' ? '은퇴' : p.status === 'overseas' ? '해외 이적' : p.status === 'freeAgent' ? '자유계약 (새 구단을 찾는 중)' : '';
+  const status = p.status === 'military' ? `군 복무 중 (${p.service.route === 'sangmu' ? '상무' : p.service.route === 'social' ? '사회복무' : '현역'}, ${p.service.returnsOn} 전역)` : s.injuries[id] ? `${s.injuries[id]!.dtd ? '결장' : '부상'} (${injuryNote(s.injuries[id])})` : p.status === 'retired' ? (alumnusJob(s, id) ? `은퇴 · 현재 ${alumnusJob(s, id)}` : '은퇴') : p.status === 'overseas' ? '해외 이적' : p.status === 'freeAgent' ? '자유계약 (새 구단을 찾는 중)' : '';
   const career = careerView(s, p);
   const pitcher = isPitcher(p);
   const major = career.filter((r) => !r.futures);
@@ -285,6 +293,7 @@ export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
     pitches: pitchGrades(p),
     injuries: [...(p.injuries ?? [])].reverse(),
     positions: positionGrades(s, p),
+    report: traitReport(s, p),
   };
 }
 
@@ -352,9 +361,9 @@ export function boxView(s: LeagueState, id: string) {
     const teamId = i === 0 ? b.away : b.home;
     return {
       teamId,
-      name: teamOf(s, teamId)?.name ?? teamId,
+      name: teamOf(s, teamId)?.name ?? (teamId === 'dream' ? '드림 올스타' : teamId === 'nanum' ? '나눔 올스타' : teamId),
       short: shortName(s, teamId),
-      color: teamOf(s, teamId)?.color ?? '#888',
+      color: teamOf(s, teamId)?.color ?? (teamId === 'dream' ? '#2563eb' : teamId === 'nanum' ? '#dc2626' : '#888'),
       line: b.line[i],
       rhe: b.rhe[i],
       bat: b.bat[i].map(([pid, pos, ab, r, h, rbi, hr, bb, k, d, t, sb], order) => ({ id: pid, order: order + 1, name: name(pid), pos: POS_KO[pos] ?? pos, ab, r, h, rbi, hr, bb, k, d, t, sb })),
@@ -557,7 +566,8 @@ export function clubhouse(s: LeagueState, teamId: TeamId) {
   const lastRes = res.at(-1);
   for (let i = res.length - 1; i >= 0 && res[i] === lastRes; i--) streak++;
   const roster = s.rosters[teamId]?.active.map((id) => s.players[id]!) ?? [];
-  const leaders = roster.filter((p) => p.personality === '책임감 강한 리더' && ageIn(p, s.year) >= 29).length;
+  // Seniors with a leader's voice (1.1.0: 리더십, whatever the personality's label).
+  const leaders = roster.filter((p) => traitsOf(p).leadership >= LEADER && ageIn(p, s.year) >= 28).length;
   const makers = roster.filter((p) => p.personality === '밝은 분위기 메이커').length;
   const hurt = Object.entries(s.injuries).filter(([id, i]) => !i.dtd && s.players[id]?.teamId === teamId).length;
   const score = (w + l ? (w / (w + l) - 0.5) * 2 : 0) + leaders * 0.08 + makers * 0.05 - hurt * 0.03 + (lastRes === 'W' ? 0.03 : lastRes === 'L' ? -0.03 : 0) * Math.min(streak, 6);

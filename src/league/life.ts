@@ -3,8 +3,11 @@
 
    Events (the user's club only): a child is born or a family member dies (경조사 휴가: up to five days off the
    roster, counted as registered days — KBO 규정 since 2019), a hot or a cold spell, kindness to fans, a gift to
-   charity, a row on social media, a small accident at home; in the winter a wedding, a gift, work on his own. They
-   move his form for a while (grade points on his main tools in games), and the fans' fondness.
+   charity, a row on social media, a small accident at home; in the winter a wedding, a gift, work on his own. 1.2.0
+   added extra work after the game, a senior's advice to a young player, a commercial, a TV show, his home town in the
+   stands, a row in the dugout (a clubhouse leader settles it sooner) and a veteran in the futures who wants out; the
+   hidden traits pick who (trouble finds the troublemakers, good deeds the leaders and the loyal). They move his form
+   for a while (grade points on his main tools in games), and the fans' fondness.
 
    Fondness (0–100) is worked out from the record for any player: seasons with his club, recent WAR there, a
    home-grown or home-town player, honours; events add to it. The best-loved sell shirts, and fans feel it when one
@@ -18,6 +21,7 @@ import { addNews } from './news';
 import { ageIn, isPitcher } from './players';
 import { orgPlayers, type LeagueState } from './state';
 import { FANS, LIFE as L } from './tuning';
+import { traitsOf, troubleFactor } from './traits';
 
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
@@ -116,11 +120,11 @@ export function isMarried(s: LeagueState, p: Pick<Player, 'id' | 'birthday' | 'l
 /** Grade points his main tools move in today's games. */
 export const formOf = (p: Player, date: string) => (p.life?.form && p.life.form.until >= date ? p.life.form.delta : 0);
 
-const setForm = (p: Player, delta: number, from: string, days: number, why: string) => {
+export const setForm = (p: Player, delta: number, from: string, days: number, why: string) => {
   (p.life ??= {}).form = { delta, until: addDays(from, days), why };
 };
 
-const note = (p: Player, date: string, text: string, tone?: 'good' | 'bad') => {
+export const note = (p: Player, date: string, text: string, tone?: 'good' | 'bad') => {
   const life = (p.life ??= {});
   (life.events ??= []).push({ date, text, ...(tone ? { tone } : {}) });
   if (life.events.length > 12) life.events.splice(0, life.events.length - 12);
@@ -128,7 +132,9 @@ const note = (p: Player, date: string, text: string, tone?: 'good' | 'bad') => {
 
 // ── Events in the season ─────────────────────────────────────────────────────────────────────────
 
-type Kind = 'birth' | 'loss' | 'hot' | 'cold' | 'fanService' | 'charity' | 'row' | 'accident';
+type Kind = 'birth' | 'loss' | 'hot' | 'cold' | 'fanService' | 'charity' | 'row' | 'accident' | Extra;
+/** 1.2.0: more of life, leaning on the hidden traits (traits.ts). */
+type Extra = 'extraWork' | 'mentor' | 'commercial' | 'variety' | 'hometownCheer' | 'feud' | 'grumble';
 const WEIGHTS = Object.entries(L.weights) as [Kind, number][];
 
 const FAN_SERVICE = ['경기 뒤 1시간 넘게 사인을 해 줘', '병원에 있는 어린이 팬을 찾아가', '홈런 공을 주운 어린이 팬에게 배트를 선물해', '비 오는 날 우비를 입고 끝까지 팬 사인회를 지켜'];
@@ -136,6 +142,13 @@ const CHARITY = ['모교에 야구용품을', '지역 아동센터에 성금을'
 const ROWS = ['SNS 발언이 논란이 돼', '팬과의 말다툼 영상이 퍼져', '경기 중 행동이 비매너 논란을 불러'];
 const ACCIDENTS = ['집에서 손가락을 베여', '가벼운 교통사고로 목 근육을 다쳐', '훈련 중 발목을 접질려'];
 const FAMILY = ['부친상', '모친상', '조부상', '조모상'];
+const EXTRA_WORK: Record<'pitcher' | 'hitter', string[]> = {
+  pitcher: ['경기 뒤 불펜에서 공 50개를 더 던지며', '새벽 6시에 구장에 나와 투구 영상을 돌려 보며', '휴식일에도 나와 하체 훈련을 하며'],
+  hitter: ['경기 뒤 특타를 자청해 배트를 300번 넘게 휘두르며', '새벽 6시에 구장에 나와 티 배팅을 하며', '휴식일에도 실내 연습장에서 스윙을 다듬으며'],
+};
+const COMMERCIALS = ['스포츠음료', '치킨 프랜차이즈', '지역 은행', '야구 게임', '아웃도어 브랜드'];
+const SHOWS = ['예능 프로그램', '유튜브 야구 채널', '라디오 프로그램', '먹방 콘텐츠'];
+const FEUDS = ['더그아웃에서 언성을 높이며', '수비 실책을 두고 말다툼을 벌이며', '훈련 방식을 두고 부딪히며'];
 
 const pickOf = <T,>(xs: readonly T[], r: () => number) => xs[Math.floor(r() * xs.length)]!;
 
@@ -159,6 +172,48 @@ function eligible(s: LeagueState, kind: Kind, p: Player, year: number, date: str
       return active || age >= 25;
     case 'accident':
       return true;
+    case 'extraWork':
+      return active && traitsOf(p).work >= 60 && !formOf(p, date);
+    case 'mentor':
+      return active && age <= 24 && !formOf(p, date) && !!mentorFor(s, p, year);
+    case 'commercial':
+      return fanAffinity(s, p) >= 55;
+    case 'variety':
+      return age >= 22 && (active || fanAffinity(s, p) >= 45);
+    case 'hometownCheer':
+      return active && hometownOf(s, p);
+    case 'feud':
+      return active && age >= 21 && traitsOf(p).controversy >= 35;
+    case 'grumble':
+      // A veteran stuck in the futures who would rather play elsewhere.
+      return !active && age >= 26 && traitsOf(p).loyalty < 40 && p.scouting.current >= 45;
+  }
+}
+
+/** A senior on our first team with a leader's voice to take a young player aside. */
+function mentorFor(s: LeagueState, young: Player, year: number): Player | undefined {
+  const active = s.rosters[s.user!.teamId]!.active;
+  return active
+    .map((id) => s.players[id]!)
+    .filter((q) => q.id !== young.id && ageIn(q, year) >= 30 && traitsOf(q).leadership >= 60 && isPitcher(q) === isPitcher(young))
+    .sort((a, b) => traitsOf(b).leadership - traitsOf(a).leadership)[0];
+}
+
+/** How likely each eligible player is to be the one (1.2.0): trouble finds the troublemakers, good deeds the
+    leaders and the loyal, extra work the hard workers. */
+function leanOf(kind: Kind, p: Player): number {
+  const t = traitsOf(p);
+  switch (kind) {
+    case 'row':
+    case 'feud':
+      return troubleFactor(p);
+    case 'fanService':
+    case 'charity':
+      return 1 + Math.max(0, t.leadership - 50) / 50 + Math.max(0, t.loyalty - 50) / 50;
+    case 'extraWork':
+      return 1 + (t.work - 60) / 20;
+    default:
+      return 1;
   }
 }
 
@@ -178,7 +233,9 @@ export function lifeDay(s: LeagueState, date: string): PlayerId | null {
   const kind = WEIGHTS.find(([, w]) => (x -= w) < 0)?.[0] ?? 'hot';
   const pool = people.filter((p) => eligible(s, kind, p, year, date));
   if (!pool.length) return null;
-  const p = pickOf(pool, r);
+  const weights = pool.map((q) => leanOf(kind, q));
+  let y = r() * weights.reduce((a, b) => a + b, 0);
+  const p = pool[weights.findIndex((w) => (y -= w) < 0)] ?? pool.at(-1)!;
   const onFirst = s.rosters[u.teamId]!.active.includes(p.id);
   const main = isPitcher(p) ? '구위' : '타격감';
   let title = '',
@@ -258,6 +315,74 @@ export function lifeDay(s: LeagueState, date: string): PlayerId | null {
       s.injuries[p.id] = { until: addDays(date, days + 1), days, onList: false, dtd: true, part: '일상 중 부상' };
       title = `${p.name}, ${days}일 안팎 결장`;
       body = `${iga(p.name)} ${what} ${days}일쯤 쉬어 간다. 큰 부상은 아니다.`;
+      tone = 'bad';
+      break;
+    }
+    case 'extraWork': {
+      setForm(p, L.form.hot * 0.6, addDays(date, 2), 10, '특훈');
+      adjustFans(p, 2);
+      title = `${p.name}, 특훈 자청`;
+      body = `${iga(p.name)} ${pickOf(EXTRA_WORK[isPitcher(p) ? 'pitcher' : 'hitter'], r)} 땀을 흘리고 있다. 코치진은 "말리지 않으면 쉬지를 않는다"며 웃었다.`;
+      quotes.push({ who: p.name, role: 'player', text: '잘될 때 더 해 둬야 안 될 때 버틸 수 있습니다.' });
+      tone = 'good';
+      break;
+    }
+    case 'mentor': {
+      const vet = mentorFor(s, p, year)!;
+      setForm(p, L.form.hot * 0.8, date, 12, `${vet.name}의 조언`);
+      adjustFans(vet, 2);
+      note(vet, date, `후배 ${p.name}에게 조언`, 'good');
+      title = `${p.name}, 선배 ${vet.name}의 조언에 반등`;
+      body = `${iga(p.name)} ${vet.name}의 조언을 듣고 달라졌다. ${iga(vet.name)} ${isPitcher(p) ? '투구 템포와 마운드 위 마음가짐' : '타석에서의 노림수와 루틴'}을 짚어 줬다고 한다.`;
+      quotes.push({ who: p.name, role: 'player', text: `${vet.name} 선배님이 하신 말씀을 매일 되새기고 있습니다.` });
+      tone = 'good';
+      break;
+    }
+    case 'commercial': {
+      adjustFans(p, 3);
+      title = `${p.name}, 광고 모델 발탁`;
+      body = `${iga(p.name)} ${pickOf(COMMERCIALS, r)} 광고 모델이 됐다. 구단 상품 판매에도 도움이 될 전망이다.`;
+      quotes.push({ who: '팬', role: 'fan', text: '광고 보고 바로 유니폼 샀다' });
+      tone = 'good';
+      break;
+    }
+    case 'variety': {
+      adjustFans(p, 3);
+      title = `${p.name}, ${pickOf(SHOWS, r)} 출연으로 화제`;
+      body = `${iga(p.name)} 쉬는 날 출연한 방송이 화제가 됐다. 야구장 밖 모습에 새 팬이 늘었다는 평이다.`;
+      quotes.push({ who: '팬', role: 'fan', text: '이렇게 웃긴 사람인 줄 몰랐다' });
+      tone = 'good';
+      break;
+    }
+    case 'hometownCheer': {
+      adjustFans(p, 3);
+      setForm(p, 1, date, 5, '고향 팬 응원');
+      title = `${p.name}의 고향 팬들, 단체 응원`;
+      body = `${p.name}의 고향 사람들이 버스를 빌려 야구장을 찾았다. 응원 현수막이 외야를 채웠다.`;
+      quotes.push({ who: p.name, role: 'player', text: '어릴 때부터 저를 봐 주신 분들이라 더 힘이 났습니다.' });
+      tone = 'good';
+      break;
+    }
+    case 'feud': {
+      const other = pickOf(
+        s.rosters[u.teamId]!.active.filter((id) => id !== p.id).map((id) => s.players[id]!),
+        r,
+      );
+      const leader = s.rosters[u.teamId]!.active.map((id) => s.players[id]!).find((q) => q !== p && q !== other && ageIn(q, year) >= 28 && traitsOf(q).leadership >= 70);
+      const hit = leader ? L.form.row / 2 : L.form.row * 1.5;
+      setForm(p, hit, date, 7, '불화');
+      if (other && !formOf(other, date)) setForm(other, hit, date, 7, '불화');
+      adjustFans(p, -2);
+      title = `${p.name}, ${other?.name ?? '동료'}와 신경전`;
+      body = `${iga(p.name)} ${other?.name ?? '동료'}와 ${pickOf(FEUDS, r)} 분위기가 얼어붙었다.${leader ? ` ${iga(leader.name)} 둘을 불러 이야기를 나눴고, 이튿날 둘은 웃으며 훈련했다.` : ' 감독이 직접 면담에 나섰다.'}`;
+      tone = 'bad';
+      break;
+    }
+    case 'grumble': {
+      adjustFans(p, -1);
+      title = `${p.name}, 출전 기회 아쉬움 토로`;
+      body = `퓨처스에 머무는 ${iga(p.name)} 지인들에게 "1군에서 뛸 수 있는 곳이라면 어디든 가고 싶다"는 속내를 털어놓은 것으로 알려졌다.`;
+      quotes.push({ who: '팬', role: 'fan', text: '기회 한번 줘 보자' });
       tone = 'bad';
       break;
     }

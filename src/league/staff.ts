@@ -14,10 +14,11 @@
    assistants' payroll per department (game estimate). */
 import { overall, rng, toGrade } from '../draftroom';
 import DraftNames from '../draftroom/names.js';
-import type { TeamId } from '../model/types';
+import type { PlayerId, TeamId } from '../model/types';
+import { alumnusHired, alumnusStaff, legendFired, ownLegend, pickAlumnus } from './alumni';
 import type { LeagueState, StaffMember, StaffRole, ManagerStyle } from './state';
 import { clubState } from './fans';
-import { STAFF, DIFFICULTY } from './tuning';
+import { ALUMNI, COMBINE, STAFF, DIFFICULTY } from './tuning';
 
 const names = DraftNames as unknown as { makeName: (r: () => number, used: Set<string>) => { name: string } };
 
@@ -61,7 +62,10 @@ export function staffSalary(role: StaffRole, rating: number): number {
   return Math.round((base * (0.6 + ((rating - 20) / 60) * 1.4)) / 1000) * 1000;
 }
 
-export function makeStaff(s: LeagueState, role: StaffRole, key: string, year: number, quality = 0): StaffMember {
+/** A hire for `role`: since 1.4.0 often one of the league's retired players (alumni.ts), else a stranger. */
+export function makeStaff(s: LeagueState, role: StaffRole, key: string, year: number, quality = 0, opts: { club?: TeamId | null; exclude?: Set<PlayerId> } = {}): StaffMember {
+  const alumnus = pickAlumnus(s, role, key, year, opts.club ?? null, opts.exclude);
+  if (alumnus) return alumnusStaff(s, alumnus, role, key, year, quality, staffSalary);
   const r = rng(`${s.seed}|staff|${key}`);
   const used = new Set(Object.values(s.clubs ?? {}).flatMap((c) => Object.values(c.staff ?? {}).map((m) => m!.name)));
   const rating = round5(50 + quality + (r() + r() + r() - 1.5) * 18);
@@ -83,7 +87,7 @@ export function makeStaff(s: LeagueState, role: StaffRole, key: string, year: nu
 export function staffOf(s: LeagueState, teamId: TeamId): Record<StaffRole, StaffMember> {
   const c = clubState(s, teamId);
   c.staff ??= {};
-  for (const role of STAFF_ROLES) c.staff[role] ??= makeStaff(s, role, `${teamId}-${role}-init`, s.year);
+  for (const role of STAFF_ROLES) c.staff[role] ??= makeStaff(s, role, `${teamId}-${role}-init`, s.year, 0, { club: teamId });
   return c.staff as Record<StaffRole, StaffMember>;
 }
 
@@ -103,11 +107,20 @@ export function staffCost(s: LeagueState, teamId: TeamId): number {
 }
 
 /** Candidates for a role this winter (the same ones all winter). */
-export function staffCandidates(s: LeagueState, role: StaffRole, year: number): StaffMember[] {
-  return Array.from({ length: STAFF.candidates }, (_, i) => {
-    const m = makeStaff(s, role, `market-${year}-${role}-${i}`, year, i === 0 ? 8 : i === 1 ? 3 : 0);
+export function staffCandidates(s: LeagueState, role: StaffRole, year: number, taken = new Set<PlayerId>()): StaffMember[] {
+  const club = s.user?.teamId ?? null;
+  const list = Array.from({ length: STAFF.candidates }, (_, i) => {
+    const m = makeStaff(s, role, `market-${year}-${role}-${i}`, year, i === 0 ? 8 : i === 1 ? 3 : 0, { club, exclude: taken });
+    if (m.playerId) taken.add(m.playerId);
     return { ...m, id: `st-market-${year}-${role}-${i}` };
   });
+  // 1.4.0: one of our own legends, free for the post, is always among the candidates.
+  const legend = club && role !== 'medical' ? ownLegend(s, role, club, year, taken) : null;
+  if (legend) {
+    taken.add(legend.p.id);
+    list.push({ ...alumnusStaff(s, legend, role, `market-${year}-${role}-legend`, year, 0, staffSalary), id: `st-market-${year}-${role}-legend` });
+  }
+  return list;
 }
 
 /**
@@ -124,28 +137,43 @@ export function aiStaffWinter(s: LeagueState, year: number, table: { teamId: Tea
       const m = staff[role];
       const fired = role === 'manager' && rank >= table.length - 2 && r() < STAFF.aiFireManager;
       if (m.until > year && !fired) continue;
-      if (!fired && r() < STAFF.aiRenew && m.rating >= 45) {
+      // 1.4.0: a franchise legend free for the post comes home in place of a renewal, half the time.
+      const legend = role === 'medical' ? null : ownLegend(s, role, t.id, year);
+      if (legend && rng(`${s.seed}|alumni-home|${t.id}|${role}|${year}`)() < ALUMNI.homePull) {
+        const back = alumnusStaff(s, legend, role, `${t.id}-${role}-${year}-home`, year, 0, staffSalary);
+        if (role === 'manager' && t.id === s.twelve?.teamId) back.style = s.twelve.manager;
+        s.clubs[t.id]!.staff![role] = back;
+        alumnusHired(s, t.id, back, `${year}-10-25`);
+        continue;
+      }
+      // Since 1.4.0 a head past seventy steps down.
+      if (!fired && r() < STAFF.aiRenew && m.rating >= 45 && m.age < ALUMNI.retireAge) {
         m.until = year + 2;
         continue;
       }
-      const hire = makeStaff(s, role, `${t.id}-${role}-${year}`, year, r() * 10 - 3);
+      if (fired) legendFired(s, t.id, m, `${year}-10-20`);
+      const hire = makeStaff(s, role, `${t.id}-${role}-${year}`, year, r() * 10 - 3, { club: t.id });
       // The twelfth club hires managers of the style its front office chose (V0.9).
       if (role === 'manager' && t.id === s.twelve?.teamId) hire.style = s.twelve.manager;
       s.clubs[t.id]!.staff![role] = hire;
+      alumnusHired(s, t.id, hire, `${year}-10-25`);
     }
-    for (const m of Object.values(staff)) m.age++;
   }
+  // Everyone a year older, our club's staff too (1.4.0).
+  for (const c of Object.values(s.clubs ?? {})) for (const m of Object.values(c.staff ?? {})) if (m) m.age++;
 }
 
 /**
  * The user's own scouts' future grade for an amateur: the public report moved toward the truth by the
  * scouting director (a third of the way at 50, three fifths at 80).
  */
-export function scoutView(s: LeagueState, p: { role: import('../draftroom').Role; scouting: { futureValue: number }; hidden: { potential: import('../draftroom').Tools } }): number | null {
+export function scoutView(s: LeagueState, p: { id?: string; role: import('../draftroom').Role; scouting: { futureValue: number }; hidden: { potential: import('../draftroom').Tools } }): number | null {
   const u = s.user;
   if (!u) return null;
   const staff = Math.max(0, Math.min(STAFF.scoutMax, STAFF.scoutBase + STAFF.scoutSpan * staffEdge(staffRating(s, u.teamId, 'scouting'))));
-  const acc = Math.max(0, Math.min(1, staff + DIFFICULTY.scoutEdge[u.settings.difficulty]));
+  // A prospect we worked out (1.3.0) is read better.
+  const worked = !!p.id && Object.values(u.workouts ?? {}).some((ids) => ids.includes(p.id!)) ? COMBINE.workoutRead : 0;
+  const acc = Math.max(0, Math.min(1, staff + DIFFICULTY.scoutEdge[u.settings.difficulty] + worked));
   const truth = toGrade(overall(p.hidden.potential, p.role));
   return Math.max(20, Math.min(80, Math.round((p.scouting.futureValue + (truth - p.scouting.futureValue) * acc) / 5) * 5));
 }

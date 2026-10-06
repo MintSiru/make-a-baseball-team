@@ -4,7 +4,8 @@
    Founding-only decisions live in expansion.ts, which also routes every decision through
    checkDecision / resolveDecision / autoDecision. Money in 만 원. */
 import { medicalReview, socialOnly } from './military';
-import { asiaCapFor, foreignCap } from './foreigncap';
+import { asiaCapFor, foreignCap, slotExempt } from './foreigncap';
+import { renewAccepts } from './foreigntalks';
 import { capFloorFor } from './cap';
 import { foreignSlots } from './manager';
 import { draftContracts, rng, type Difficulty, type Role, type ToolKey } from '../draftroom';
@@ -35,6 +36,7 @@ import { clubState } from './fans';
 import { iga } from './josa';
 import { changePosition, positionMove } from './positions';
 import { STAFF_LABELS, STAFF_ROLES, staffCandidates, staffOf } from './staff';
+import { alumnusHired, employedAlumni, legendFired } from './alumni';
 import { post, postingCandidates, postingNote } from './posting';
 import { toForeignPool } from './foreignpool';
 import { goAbroad, releaseReturnee, signReturnee } from './returnees';
@@ -77,7 +79,8 @@ export type AnnualInput =
   | { kind: 'salaries'; choices: Record<PlayerId, SalaryChoice> }
   | { kind: 'secondProtect'; ids: PlayerId[] }
   | { kind: 'secondPick'; id: PlayerId | null }
-  | { kind: 'foreignRenew'; keep: PlayerId[] }
+  /** `offers`: a figure (US dollars a season) and years for any of them (1.3.0; his ask for one year when missing). */
+  | { kind: 'foreignRenew'; keep: PlayerId[]; offers?: Record<PlayerId, { amount: number; years: 1 | 2 }> }
   | { kind: 'posting'; id: PlayerId | null }
   | { kind: 'returnee'; ids: PlayerId[] }
   | { kind: 'sponsor'; index: number }
@@ -250,10 +253,12 @@ export function staffDecision(s: LeagueState, year: number): Decision | null {
   const u = s.user!;
   const staff = staffOf(s, u.teamId);
   const first = !u.staffSeen;
+  // A former player is a candidate for one post at most (1.4.0).
+  const taken = new Set<string>();
   const rows = STAFF_ROLES.map((role) => {
     const current = staff[role];
     const expiring = current.until <= year;
-    return { role, current, expiring, buyout: expiring ? 0 : (current.until - year) * current.salary, candidates: staffCandidates(s, role, year) };
+    return { role, current, expiring, buyout: expiring ? 0 : (current.until - year) * current.salary, candidates: staffCandidates(s, role, year, taken) };
   });
   if (!first && !rows.some((r) => r.expiring)) return null;
   return { kind: 'staff', rows };
@@ -398,7 +403,8 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
     case 'foreignRenew': {
       const dd = d as Extract<Decision, { kind: 'foreignRenew' }>;
       if (input.keep.some((id) => !dd.rows.some((r) => r.id === id && !r.leaving))) return '재계약할 수 없는 선수입니다.';
-      const cost = input.keep.reduce((a, id) => a + Math.round(dd.rows.find((r) => r.id === id)!.ask * MANWON_PER_USD * 0.85), 0);
+      for (const [id, o] of Object.entries(input.offers ?? {})) if (!(o.amount > 0) || ![1, 2].includes(o.years)) return `${s.players[id]?.name ?? ''}: 제안이 잘못됐습니다.`;
+      const cost = input.keep.reduce((a, id) => a + Math.round((input.offers?.[id]?.amount ?? dd.rows.find((r) => r.id === id)!.ask) * MANWON_PER_USD * 0.85), 0);
       if (cost > 0 && payrollWithout(s, u.teamId, next, dd.rows.map((r) => r.id)) + cost > u.payrollBudget) return '연봉 예산을 넘습니다.';
       return null;
     }
@@ -530,9 +536,14 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           if (row.buyout) {
             u.fund -= row.buyout;
             u.ledger.push({ year, label: `${STAFF_LABELS[row.role]} ${row.current.name} 계약 해지 (잔여 연봉)`, amount: -row.buyout });
+            legendFired(s, u.teamId, row.current, `${year}-11-20`);
           }
-          club.staff![row.role] = { ...hire, id: `st-${u.teamId}-${row.role}-${year}`, until: year + (row.role === 'manager' ? 3 : 2) };
+          // A former player may meanwhile have gone to another club (1.4.0): then the club hires the post's next best.
+          const gone = !!hire.playerId && employedAlumni(s).has(hire.playerId);
+          const chosen = gone ? { ...hire, playerId: undefined, club: undefined, fame: undefined } : hire;
+          club.staff![row.role] = { ...chosen, id: `st-${u.teamId}-${row.role}-${year}`, until: year + (row.role === 'manager' ? 3 : 2) };
           note(u, year, `${STAFF_LABELS[row.role]} ${hire.name} 선임 (등급 ${hire.rating}, 연 ${money(hire.salary)})`);
+          alumnusHired(s, u.teamId, club.staff![row.role]!, `${year}-11-20`);
         } else if (row.expiring) {
           const m = club.staff![row.role]!;
           m.until = year + 2;
@@ -616,9 +627,16 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
       const dd = d as Extract<Decision, { kind: 'foreignRenew' }>;
       for (const row of dd.rows) {
         const p = s.players[row.id]!;
-        if (input.keep.includes(row.id)) {
-          p.contract = foreignContract(u.teamId, next, splitContract(row.ask, rng(`${s.seed}|foreign-renew|${year}|${row.id}`)), !!p.origin.asiaQuota, p.origin.asiaQuota ? asiaCapFor(p, u.teamId, next) : undefined);
-          note(u, year, `외국인 ${p.name} 재계약 (${usd(row.ask)})`);
+        const offer = input.offers?.[row.id] ?? { amount: row.ask, years: 1 as const };
+        // His ask for a year he always takes; less, or two years, as he sees it (1.3.0, foreigntalks.ts).
+        const yes = input.keep.includes(row.id) && ((offer.amount >= row.ask && offer.years === 1) || renewAccepts(p, row.ask, offer.amount, offer.years, ageIn(p, next)));
+        if (yes) {
+          p.contract = foreignContract(u.teamId, next, splitContract(offer.amount, rng(`${s.seed}|foreign-renew|${year}|${row.id}`)), !!p.origin.asiaQuota, p.origin.asiaQuota ? asiaCapFor(p, u.teamId, next) : undefined);
+          if (offer.years === 2) p.contract.salaries.push({ season: next + 1, amount: p.contract.salaries[0]!.amount });
+          note(u, year, `외국인 ${p.name} 재계약 (${usd(offer.amount)}${offer.years === 2 ? ', 2년' : ''})`);
+        } else if (input.keep.includes(row.id)) {
+          note(u, year, `외국인 ${p.name} 재계약 협상 결렬 (제안 ${usd(offer.amount)}${offer.years === 2 ? ', 2년' : ''}, 요구 ${usd(row.ask)})`);
+          if (!toForeignPool(s, p, year)) leaveLeague(s, p, 'overseas');
         } else {
           note(u, year, `외국인 ${p.name} ${row.leaving ? '해외 진출로 이별' : '재계약 안 함'}`);
           // Not re-signed: other clubs may sign him (the market of KBO-experienced foreigners).
@@ -777,7 +795,7 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
       const slots = foreignSlots(s, u.teamId, next).regular;
       for (const id of keep) {
         const trial = [...ok, id];
-        const regular = trial.map((x) => s.players[x]!).filter((p) => !p.origin.asiaQuota);
+        const regular = trial.map((x) => s.players[x]!).filter((p) => !p.origin.asiaQuota && !slotExempt(s, p, next));
         const total = regular.reduce((a, p) => a + d.rows.find((r) => r.id === p.id)!.ask, 0);
         const reserve = Math.max(0, slots - regular.length) * O.foreign.newReserveUSD;
         if (checkAnnual(s, d, { kind: 'foreignRenew', keep: trial }) === null && total + reserve <= foreignCap(s, u.teamId, next, regular)) ok.push(id);

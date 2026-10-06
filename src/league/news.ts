@@ -13,8 +13,9 @@ import type { PlayEvent } from './engine/types';
 import { gameDetail, monthDetail, seasonDetail } from './gamedetail';
 import { isRivalry, madePostseason, seasonSeries } from './twelve';
 import { newsAlert } from './alerts';
+import { heroInterview, type Occasion } from './interviews';
 
-export type NewsKind = 'game' | 'milestone' | 'month' | 'season' | 'award' | 'interview' | 'move' | 'injury';
+export type NewsKind = 'game' | 'milestone' | 'month' | 'season' | 'award' | 'interview' | 'move' | 'injury' | 'allstar';
 
 export interface Quote {
   who: string;
@@ -121,25 +122,32 @@ export function gameNews(s: LeagueState, box: StoredBox, log?: PlayEvent[] | nul
   const fourHits = bat.find((b) => b[4] >= 4);
   let title = '',
     body = '',
-    star: PlayerId | null = null;
+    star: PlayerId | null = null,
+    // The day a reporter wants a word with him (1.2.0, interviews.ts).
+    occasion: Occasion | null = null;
   if (noHit) {
     star = ace?.[0] ?? null;
+    occasion = { kind: 'noHit' };
     title = `${me}, ${opp} 상대로 노히트 노런`;
     body = `${iga(me)} ${box.date} ${opp}전에서 안타를 하나도 내주지 않았다. 선발 ${ace![1] >= 27 ? `${iga(name(ace![0]))} 9이닝을 혼자 막았다` : `${wagwa(name(ace![0]))} 불펜이 이어 던졌다`}. 삼진 ${pit.reduce((a, p) => a + p[6], 0)}개를 잡았다. 최종 스코어 ${rs}-${rt}.`;
   } else if (walkOff) {
     star = hero?.[0] ?? null;
+    occasion = { kind: 'walkOff' };
     title = `${me}, ${opp}에 끝내기 승리`;
     body = `${iga(me)} ${box.innings}회말 끝내기로 ${eulreul(opp)} ${rs}-${rt}로 꺾었다. ${hero ? `${iga(name(hero[0]))} ${hero[4]}안타 ${hero[5]}타점으로 앞장섰다.` : ''}`;
   } else if (multiHr) {
     star = multiHr[0];
+    occasion = { kind: 'multiHr', hr: multiHr[6] };
     title = `${name(multiHr[0])}, 한 경기 홈런 ${multiHr[6]}개`;
     body = `${iga(name(multiHr[0]))} ${opp}전에서 홈런 ${multiHr[6]}개를 쳤다. ${multiHr[5]}타점. ${eunneun(me)} ${rs}-${rt}로 ${won ? '이겼다' : rs < rt ? '졌다' : '비겼다'}.`;
   } else if (bigK) {
     star = bigK[0];
+    occasion = { kind: 'bigK', k: bigK[6] };
     title = `${name(bigK[0])}, 삼진 ${bigK[6]}개`;
     body = `${iga(name(bigK[0]))} ${opp} 타선을 상대로 ${Math.floor(bigK[1] / 3)}이닝 동안 삼진 ${bigK[6]}개를 잡았다. 실점 ${bigK[3]}. 팀은 ${rs}-${rt}로 ${won ? '이겼다' : rs < rt ? '졌다' : '비겼다'}.`;
   } else if (fourHits) {
     star = fourHits[0];
+    occasion = { kind: 'fourHits', h: fourHits[4] };
     title = `${name(fourHits[0])}, ${fourHits[4]}안타 맹타`;
     body = `${iga(name(fourHits[0]))} ${opp}전에서 ${fourHits[2]}타수 ${fourHits[4]}안타를 쳤다. ${eunneun(me)} ${rs}-${rt}로 ${won ? '이겼다' : rs < rt ? '졌다' : '비겼다'}.`;
   } else if (Math.abs(rs - rt) >= 9) {
@@ -168,6 +176,9 @@ export function gameNews(s: LeagueState, box: StoredBox, log?: PlayEvent[] | nul
   quotes.push(managerQuote(s, u.teamId, won, `${key}-m`), ...(rivalry ? [{ who: '팬', role: 'fan' as const, text: pick(won ? RIVAL_WIN : RIVAL_LOSS, `${key}-r`) }] : []), ...fanQuotes(won, `${key}-f`));
   if (star) facts.star = name(star);
   addNews(s, { id: `g-${box.id}`, date: box.date, kind: 'game', title, body, quotes, facts, detail: gameDetail(s, box, log), players: star ? [star] : [] });
+  // A no-hitter or a walk-off always, the other big days now and then: the hero's interview (not for a recap).
+  const iv = star && occasion && !recap ? heroInterview(s, star, box.date, occasion, box.id) : null;
+  if (iv) addNews(s, iv);
 }
 
 /** The box score's "기사로 쓰기": the game's article, written now if it had none. */
@@ -223,6 +234,8 @@ export function milestoneNews(s: LeagueState, date: string, ids: PlayerId[]) {
           facts: { player: p.name, milestone: `${step} ${m.label}`, date },
           players: [id],
         });
+        const iv = heroInterview(s, id, date, { kind: 'milestone', label: `${step}${m.label}` }, `m-${id}-${m.key}-${step}`);
+        if (iv) addNews(s, iv);
       }
     }
   }

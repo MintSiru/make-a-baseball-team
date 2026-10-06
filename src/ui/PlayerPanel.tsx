@@ -1,6 +1,6 @@
-/* A league player's page (V0.5.1 layout): who he is and what he throws at a glance, scouting grades as
-   bars, then tabs for season records (with career totals), career highs, left/right splits and
-   injuries. Everything shown is public: grades are scouting reports, velocity is the radar gun. */
+/* A league player's page (V0.5.1 layout; in parts since 1.4.0): who he is and his latest season at a glance on top,
+   then one part at a time — scouting grades as bars with positions or pitches, records, the staff's read, his
+   background and injuries. Everything shown is public: grades are scouting reports, velocity is the radar gun. */
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useFocusTrap } from './modal';
 import { TOOL_LABELS } from '../draftroom';
@@ -19,16 +19,74 @@ import { usd } from '../league/foreign';
 import { handedness, militaryLabel, money, toolKeysFor } from './format';
 import { GradeBar } from './grades';
 import { serviceNote } from '../league/military';
+import type { TraitReport } from '../league/reports';
+import { kboSeasons } from '../league/foreigncap';
+import { postRows, postTotals, type PostRow } from '../league/poststats';
 
 const POSITION_NAMES: Record<string, string> = { C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' };
 
-type Tab = 'seasons' | 'highs' | 'splits' | 'injuries';
-const TABS: { key: Tab; label: string }[] = [
-  { key: 'seasons', label: '연도별 기록' },
-  { key: 'highs', label: '통산 · 커리어 하이' },
-  { key: 'splits', label: '좌우 기록' },
-  { key: 'injuries', label: '부상 이력' },
+/** Our coaches' read of our player, our scouts' of anyone else (1.1.0): hidden traits, as sure as the staff are. */
+export function TraitReportBox({ report }: { report: TraitReport }) {
+  const tone = (r: TraitReport['reads'][number]) => {
+    if (r.level == null || r.key === 'growth') return '';
+    const bad = r.key === 'controversy' || r.key === 'injury';
+    return r.level >= 4 ? (bad ? 'minus' : 'plus') : r.level <= 2 ? (bad ? 'plus' : 'minus') : '';
+  };
+  return (
+    <section class="pitch-box trait-report">
+      <h3>{report.by === 'coach' ? '코치 평가' : '스카우트 평가'}</h3>
+      <p class="small">
+        성격 <strong>{report.character}</strong>
+        <span class="muted"> · {report.staff}</span>
+      </p>
+      <dl class="facts">
+        {report.reads.map((r) => (
+          <div key={r.key}>
+            <dt>{r.label}</dt>
+            <dd>
+              <span class={tone(r)}>{r.text ?? '파악 못 함'}</span>
+              <span class="muted small"> · 확신 {r.sure}</span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+      {report.growthNote && <p class="muted small">{report.growthNote}</p>}
+      {report.notes.length > 0 && (
+        <ul class="plain small">
+          {report.notes.map((n) => (
+            <li key={n}>{n}</li>
+          ))}
+        </ul>
+      )}
+      <p class="muted small">
+        {report.by === 'coach'
+          ? '코치진이 함께 지내며 본 판단입니다. 함께한 시즌이 길수록, 코치진 평가가 높을수록 정확해집니다.'
+          : '스카우트 팀의 판단이라 틀릴 수 있습니다. 프로에서 뛴 시즌이 쌓일수록, 스카우트 팀장 평가가 높을수록 정확해집니다.'}
+      </p>
+    </section>
+  );
+}
+
+/* 1.4.0 (from the 1.3 feedback): one part at a time — abilities, records, the staff's read, who he is, injuries —
+   with the records split again into the regular season, the postseason, career highs and left/right. The part
+   last opened stays open for the next player. */
+type Part = 'ability' | 'records' | 'report' | 'profile' | 'injuries';
+type RecordView = 'seasons' | 'post' | 'highs' | 'splits';
+const PARTS: { key: Part; label: string }[] = [
+  { key: 'ability', label: '능력치' },
+  { key: 'records', label: '기록' },
+  { key: 'report', label: '평가' },
+  { key: 'profile', label: '정보' },
+  { key: 'injuries', label: '부상' },
 ];
+const RECORD_VIEWS: { key: RecordView; label: string }[] = [
+  { key: 'seasons', label: '정규시즌' },
+  { key: 'post', label: '포스트시즌' },
+  { key: 'highs', label: '커리어 하이' },
+  { key: 'splits', label: '좌우 기록' },
+];
+let lastPart: Part = 'ability';
+let lastRecords: RecordView = 'seasons';
 
 const splitRates = (x: Split) => ({
   avg: x.ab ? x.h / x.ab : 0,
@@ -255,7 +313,10 @@ export function PlayerPanel({
   const heading = useRef<HTMLHeadingElement>(null);
   const box = useRef<HTMLDivElement>(null);
   useFocusTrap(box, onClose);
-  const [tab, setTab] = useState<Tab>('seasons');
+  const [part, setPartState] = useState<Part>(lastPart);
+  const [records, setRecordsState] = useState<RecordView>(lastRecords);
+  const setPart = (x: Part) => setPartState((lastPart = x));
+  const setRecords = (x: RecordView) => setRecordsState((lastRecords = x));
   useEffect(() => {
     heading.current?.focus();
   }, [id]);
@@ -264,12 +325,16 @@ export function PlayerPanel({
     s = p.scouting;
   const pitcher = p.role === 'SP' || p.role === 'RP';
   const foreign = p.origin.kind === 'foreign';
+  const ours = !!league.user && p.teamId === league.user.teamId;
   const wearing = p.number != null && p.numberTeam === p.teamId ? p.number : null;
   const hurtDays = card.injuries.reduce((a, x) => a + x.days, 0);
   // Life off the field (V0.10): today's form and his trips abroad.
   const today = league.phase === 'regular' ? (league.schedule[league.next]?.date ?? `${league.year}-10-01`) : `${league.year}-12-31`;
   const form = p.life?.form && p.life.form.until >= today && league.phase === 'regular' ? p.life.form : null;
   const trips = (league.user?.trips ?? []).filter((t) => t.id === p.id);
+  const post = postRows(league, league.players[id]!);
+  const postSum = postTotals(post);
+  const shown = part === 'report' && !card.report ? 'ability' : part;
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div class="dialog profile" role="dialog" aria-modal="true" aria-labelledby="player-name" ref={box}>
@@ -281,7 +346,7 @@ export function PlayerPanel({
           <div>
             <p class="muted">
               {card.team} · {positionLabel(p)} · {handedness(p)}
-              {foreign ? ` · ${p.origin.asiaQuota ? '아시아쿼터' : '외국인'} (${p.origin.nationality})` : ''}
+              {foreign ? ` · ${p.origin.asiaQuota ? '아시아쿼터' : '외국인'} (${p.origin.nationality}) · ${p.archetype}${league.foreignVeteran && kboSeasons(p, league.year) >= league.foreignVeteran ? ' · 외국인 엔트리 제외' : ''}` : ''}
             </p>
             <h2 id="player-name" tabIndex={-1} ref={heading}>
               {p.name}
@@ -289,15 +354,8 @@ export function PlayerPanel({
             </h2>
           </div>
         </div>
+        <SummaryStrip card={card} pitcher={pitcher} titles={postSum.titles} />
         {card.status && <p class="notice">{card.status}</p>}
-        {onInterview && league.user && p.teamId === league.user.teamId && (
-          <p>
-            <button type="button" onClick={() => onInterview(p.id)}>
-              인터뷰 요청
-            </button>{' '}
-            <span class="muted small">우리 구단 → 소식 → 뉴스에 실립니다.</span>
-          </p>
-        )}
         {league.suspended?.[p.id] && (
           <p class="notice warn">
             {league.suspended[p.id]!.reason}:{' '}
@@ -305,26 +363,157 @@ export function PlayerPanel({
             {league.suspended[p.id]!.until ? `${league.suspended[p.id]!.games ? ' · ' : ''}${league.suspended[p.id]!.until}까지 실격` : ''}
           </p>
         )}
-        {onAct && league.user && p.teamId === league.user.teamId && <NumberField league={league} id={p.id} current={wearing} onAct={onAct} />}
-        {onAct && league.user && p.teamId === league.user.teamId && (p.life?.suspicion?.signs ?? 0) > 0 && (
-          <p class="inline-form">
-            <span class="small">최근 기사로 금지약물 의혹이 나왔습니다.</span>
-            <button type="button" disabled={!!checkInspect(league, p.id)} title={checkInspect(league, p.id) ?? ''} onClick={() => onAct({ kind: 'inspect', id: p.id })}>
-              구단 자체 검사 ({SCANDAL.doping.inspectCost}만 원)
-            </button>
-            <span class="muted small">사실이면 KBO 검사 전에 막고, 아니면 선수가 서운해합니다.</span>
+        {onInterview && ours && (
+          <p>
+            <button type="button" onClick={() => onInterview(p.id)}>
+              인터뷰 요청
+            </button>{' '}
+            <span class="muted small">우리 구단 → 소식 → 뉴스에 실립니다.</span>
           </p>
         )}
 
-        <div class="profile-grid">
-          <section>
-            <h3>기본 정보</h3>
-            <dl class="facts one">
+        <div class="segmented profile-tabs profile-parts" role="tablist" aria-label="선수 정보">
+          {PARTS.filter((x) => x.key !== 'report' || card.report).map((x) => (
+            <button key={x.key} type="button" role="tab" aria-selected={shown === x.key} aria-pressed={shown === x.key} onClick={() => setPart(x.key)}>
+              {x.key === 'report' && card.report ? (card.report.by === 'coach' ? '코치 평가' : '스카우트 평가') : x.label}
+              {x.key === 'injuries' && card.injuries.length > 0 && <span class="count">{card.injuries.length}</span>}
+            </button>
+          ))}
+        </div>
+
+        {shown === 'ability' && (
+          <div class="profile-part" role="tabpanel" aria-label="능력치">
+            <section>
+              <h3>스카우팅 등급</h3>
+              <div class="gradebars">
+                {toolKeysFor(p.role).map((k) => (
+                  <GradeBar key={k} label={TOOL_LABELS[k]} now={s.tools[k]} future={s.futureTools[k]} />
+                ))}
+                <GradeBar label="종합" now={s.current} future={s.futureValue} />
+              </div>
+              <p class="muted small">막대는 현재 등급, 눈금은 스카우트가 보는 미래 등급입니다 (20~80).</p>
+              {s.moved && (
+                <p class={`small ${s.moved.to > s.moved.from ? 'plus' : 'minus'}`}>
+                  {s.moved.to > s.moved.from ? '▲' : '▼'} 시즌 중 스카우트 평가 {s.moved.from} → {s.moved.to} ({s.moved.date.slice(5).replace('-', '/')})
+                </p>
+              )}
+            </section>
+            {!pitcher && card.positions.length > 0 && (
+              <section class="pitch-box">
+                <h3>포지션 적성</h3>
+                <div class="gradebars">
+                  {card.positions.map((x) => (
+                    <GradeBar key={x.pos} label={`${POSITION_NAMES[x.pos]}${x.main ? ' (주)' : x.listed ? ' (부)' : ''}`} now={x.grade} note={x.games ? `1군 ${x.games}경기 선발` : undefined} />
+                  ))}
+                </div>
+                <p class="muted small">
+                  주 포지션과 부포지션(최대 3개)만 제대로 소화합니다. 부포지션에서는 포지션 차이의 절반만 빠지고, 그 밖의 포지션은 손해가 훨씬 큽니다. 새 포지션에서 한 시즌 1군 40경기를 뛰면 부포지션이
+                  되고, 통산 30경기를 넘기면 손해가 절반으로 줄어듭니다.
+                </p>
+              </section>
+            )}
+            {pitcher && (
+              <section class="pitch-box">
+                <h3>구속 · 구종</h3>
+                {card.velocity && (
+                  <p class="velocity">
+                    <span>
+                      최고 <strong>{card.velocity.top}</strong>km/h
+                    </span>
+                    <span>
+                      평균 <strong>{card.velocity.average}</strong>km/h
+                    </span>
+                  </p>
+                )}
+                <div class="gradebars">
+                  <GradeBar label="직구" now={s.tools.stuff} note={`구사율 ${Math.round((1 - card.pitches.reduce((a, x) => a + x.usage, 0)) * 100)}%`} />
+                  {card.pitches.map((x) => (
+                    <GradeBar key={x.type} label={x.label} now={x.grade} note={`구사율 ${Math.round(x.usage * 100)}%`} />
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        )}
+
+        {shown === 'records' && (
+          <div class="profile-part" role="tabpanel" aria-label="기록">
+            <div class="segmented record-views" role="group" aria-label="기록 보기">
+              {RECORD_VIEWS.map((x) => (
+                <button key={x.key} type="button" aria-pressed={records === x.key} onClick={() => setRecords(x.key)}>
+                  {x.label}
+                  {x.key === 'post' && post.length > 0 && <span class="count">{post.length}</span>}
+                </button>
+              ))}
+            </div>
+            {records === 'seasons' && (
+              <>
+                <SeasonTable league={league} card={card} pitcher={pitcher} />
+                <p class="muted small">WAR·FIP·wRC+는 게임 내 추정치입니다 (구장 보정 없음). 올해 WAR은 시즌이 끝나면 계산됩니다. 퓨처스 기록은 통산에 넣지 않습니다.</p>
+              </>
+            )}
+            {records === 'post' && (
+              <>
+                <PostTable rows={post} totals={postSum} pitcher={pitcher} />
+                <p class="muted small">포스트시즌 기록은 정규시즌 기록·통산과 따로 셉니다. 1.4.0 이전 버전에서 치른 포스트시즌은 기록이 남아 있지 않습니다.</p>
+              </>
+            )}
+            {records === 'highs' &&
+              (card.highs.length ? (
+                <dl class="highs">
+                  {card.highs.map((h) => (
+                    <div key={h.label}>
+                      <dt>{h.label}</dt>
+                      <dd>
+                        <strong>{h.value}</strong> <span class="muted">({h.year})</span>
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : (
+                <p class="muted">1군 기록이 없습니다.</p>
+              ))}
+            {records === 'splits' &&
+              (card.splits.season || card.splits.career ? (
+                <>
+                  <SplitTable title={`${league.year} 시즌`} splits={card.splits.season} pitcher={pitcher} />
+                  <SplitTable title="1군 통산" splits={card.splits.career} pitcher={pitcher} />
+                  <p class="muted small">좌우 기록은 0.5.1 이후 치른 1군 경기부터 쌓입니다. 양타자는 투수 반대편 타석으로 셉니다.</p>
+                </>
+              ) : (
+                <p class="muted">좌우 기록이 없습니다 (0.5.1 이후 1군 경기부터 기록).</p>
+              ))}
+          </div>
+        )}
+
+        {shown === 'report' && card.report && (
+          <div class="profile-part" role="tabpanel" aria-label="평가">
+            <TraitReportBox report={card.report} />
+          </div>
+        )}
+
+        {shown === 'profile' && (
+          <div class="profile-part" role="tabpanel" aria-label="정보">
+            {onAct && ours && <NumberField key={`${p.id}-${wearing ?? ''}`} league={league} id={p.id} current={wearing} onAct={onAct} />}
+            {onAct && ours && (p.life?.suspicion?.signs ?? 0) > 0 && (
+              <p class="inline-form">
+                <span class="small">최근 기사로 금지약물 의혹이 나왔습니다.</span>
+                <button type="button" disabled={!!checkInspect(league, p.id)} title={checkInspect(league, p.id) ?? ''} onClick={() => onAct({ kind: 'inspect', id: p.id })}>
+                  구단 자체 검사 ({SCANDAL.doping.inspectCost}만 원)
+                </button>
+                <span class="muted small">사실이면 KBO 검사 전에 막고, 아니면 선수가 서운해합니다.</span>
+              </p>
+            )}
+            <dl class="facts profile-facts">
               <div>
                 <dt>나이</dt>
                 <dd>
                   만 {card.age}세 ({p.birthday.slice(0, 4)}년생)
                 </dd>
+              </div>
+              <div>
+                <dt>출생</dt>
+                <dd>{p.birthplace}</dd>
               </div>
               <div>
                 <dt>체격</dt>
@@ -384,7 +573,7 @@ export function PlayerPanel({
                   </dd>
                 </div>
               )}
-              {league.user && p.teamId === league.user.teamId && (
+              {ours && (
                 <div>
                   <dt>가족</dt>
                   <dd>
@@ -395,175 +584,255 @@ export function PlayerPanel({
               )}
             </dl>
             <p class="muted small">{p.education.pathText}</p>
+            {!!p.honors?.length && (
+              <>
+                <h3>수상 · 타이틀</h3>
+                <div class="honors">
+                  {[...p.honors].reverse().map((h) => (
+                    <span key={h} class="tag">
+                      {h}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
             {(trips.length > 0 || (p.life?.events?.length ?? 0) > 0) && (
-              <ul class="plain small life-list">
-                {trips.map((t) => (
-                  <li key={`${t.season}-${t.site}`}>
-                    {t.from.slice(0, 7)} 해외 연수 · {SITES[t.site].name}: {t.result ? t.result.text + (t.result.injury ? ` (${t.result.injury})` : '') : `${t.until}까지`}
-                  </li>
-                ))}
-                {(p.life?.events ?? [])
-                  .slice(-5)
-                  .reverse()
-                  .map((e, i) => (
-                    <li key={i} class={e.tone === 'good' ? 'plus' : e.tone === 'bad' ? 'minus' : ''}>
-                      {e.date} {e.text}
+              <>
+                <h3>최근 일</h3>
+                <ul class="plain small life-list">
+                  {trips.map((t) => (
+                    <li key={`${t.season}-${t.site}`}>
+                      {t.from.slice(0, 7)} 해외 연수 · {SITES[t.site].name}: {t.result ? t.result.text + (t.result.injury ? ` (${t.result.injury})` : '') : `${t.until}까지`}
                     </li>
                   ))}
-              </ul>
-            )}
-            {!!p.honors?.length && (
-              <div class="honors">
-                {[...p.honors].reverse().map((h) => (
-                  <span key={h} class="tag">
-                    {h}
-                  </span>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section>
-            <h3>스카우팅 등급</h3>
-            <div class="gradebars">
-              {toolKeysFor(p.role).map((k) => (
-                <GradeBar key={k} label={TOOL_LABELS[k]} now={s.tools[k]} future={s.futureTools[k]} />
-              ))}
-              <GradeBar label="종합" now={s.current} future={s.futureValue} />
-            </div>
-            <p class="muted small">막대는 현재 등급, 눈금은 스카우트가 보는 미래 등급입니다 (20~80).</p>
-            {s.moved && (
-              <p class={`small ${s.moved.to > s.moved.from ? 'plus' : 'minus'}`}>
-                {s.moved.to > s.moved.from ? '▲' : '▼'} 시즌 중 스카우트 평가 {s.moved.from} → {s.moved.to} ({s.moved.date.slice(5).replace('-', '/')})
-              </p>
-            )}
-          </section>
-        </div>
-
-        {!pitcher && card.positions.length > 0 && (
-          <section class="pitch-box">
-            <h3>포지션 적성</h3>
-            <div class="gradebars">
-              {card.positions.map((x) => (
-                <GradeBar key={x.pos} label={`${POSITION_NAMES[x.pos]}${x.main ? ' (주)' : x.listed ? ' (부)' : ''}`} now={x.grade} note={x.games ? `1군 ${x.games}경기 선발` : undefined} />
-              ))}
-            </div>
-            <p class="muted small">
-              주 포지션과 부포지션(최대 3개)만 제대로 소화합니다. 부포지션에서는 포지션 차이의 절반만 빠지고, 그 밖의 포지션은 손해가 훨씬 큽니다. 새 포지션에서 한 시즌 1군 40경기를 뛰면 부포지션이
-              되고, 통산 30경기를 넘기면 손해가 절반으로 줄어듭니다.
-            </p>
-          </section>
-        )}
-
-        {pitcher && (
-          <section class="pitch-box">
-            <h3>구속 · 구종</h3>
-            {card.velocity && (
-              <p class="velocity">
-                <span>
-                  최고 <strong>{card.velocity.top}</strong>km/h
-                </span>
-                <span>
-                  평균 <strong>{card.velocity.average}</strong>km/h
-                </span>
-              </p>
-            )}
-            <div class="gradebars">
-              <GradeBar label="직구" now={s.tools.stuff} note={`구사율 ${Math.round((1 - card.pitches.reduce((a, x) => a + x.usage, 0)) * 100)}%`} />
-              {card.pitches.map((x) => (
-                <GradeBar key={x.type} label={x.label} now={x.grade} note={`구사율 ${Math.round(x.usage * 100)}%`} />
-              ))}
-            </div>
-          </section>
-        )}
-
-        <div class="segmented profile-tabs" role="tablist" aria-label="기록">
-          {TABS.map((x) => (
-            <button key={x.key} type="button" role="tab" aria-selected={tab === x.key} aria-pressed={tab === x.key} onClick={() => setTab(x.key)}>
-              {x.label}
-              {x.key === 'injuries' && card.injuries.length > 0 && <span class="count">{card.injuries.length}</span>}
-            </button>
-          ))}
-        </div>
-
-        {tab === 'seasons' && (
-          <>
-            <SeasonTable league={league} card={card} pitcher={pitcher} />
-            <p class="muted small">WAR·FIP·wRC+는 게임 내 추정치입니다 (구장 보정 없음). 올해 WAR은 시즌이 끝나면 계산됩니다. 퓨처스 기록은 통산에 넣지 않습니다.</p>
-          </>
-        )}
-
-        {tab === 'highs' &&
-          (card.highs.length ? (
-            <dl class="highs">
-              {card.highs.map((h) => (
-                <div key={h.label}>
-                  <dt>{h.label}</dt>
-                  <dd>
-                    <strong>{h.value}</strong> <span class="muted">({h.year})</span>
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          ) : (
-            <p class="muted">1군 기록이 없습니다.</p>
-          ))}
-
-        {tab === 'splits' &&
-          (card.splits.season || card.splits.career ? (
-            <>
-              <SplitTable title={`${league.year} 시즌`} splits={card.splits.season} pitcher={pitcher} />
-              <SplitTable title="1군 통산" splits={card.splits.career} pitcher={pitcher} />
-              <p class="muted small">좌우 기록은 0.5.1 이후 치른 1군 경기부터 쌓입니다. 양타자는 투수 반대편 타석으로 셉니다.</p>
-            </>
-          ) : (
-            <p class="muted">좌우 기록이 없습니다 (0.5.1 이후 1군 경기부터 기록).</p>
-          ))}
-
-        {tab === 'injuries' &&
-          (card.injuries.length ? (
-            <>
-              <p class="muted">
-                통산 {card.injuries.length}회, {hurtDays}일
-              </p>
-              <div class="table-wrap" tabIndex={0}>
-                <table class="record-table">
-                  <thead>
-                    <tr>
-                      <th>날짜</th>
-                      <th>부위</th>
-                      <th class="num">기간</th>
-                      <th>구분</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {card.injuries.map((x) => (
-                      <tr key={x.date + x.part}>
-                        <td>{x.date}</td>
-                        <td>{x.part}</td>
-                        <td class="num">{x.days}일</td>
-                        <td>
-                          {x.futures ? '퓨처스' : '1군 부상자 명단'}
-                          {x.surgery && <span class={`tag${x.surgery === 'major' ? ' warn' : ''}`}>{x.surgery === 'major' ? '큰 수술' : '수술'}</span>}
-                        </td>
-                      </tr>
+                  {(p.life?.events ?? [])
+                    .slice(-5)
+                    .reverse()
+                    .map((e, i) => (
+                      <li key={i} class={e.tone === 'good' ? 'plus' : e.tone === 'bad' ? 'minus' : ''}>
+                        {e.date} {e.text}
+                      </li>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          ) : (
-            <p class="muted">부상 기록이 없습니다.</p>
-          ))}
+                </ul>
+              </>
+            )}
+          </div>
+        )}
+
+        {shown === 'injuries' && (
+          <div class="profile-part" role="tabpanel" aria-label="부상">
+            {card.injuries.length ? (
+              <>
+                <p class="muted">
+                  통산 {card.injuries.length}회, {hurtDays}일
+                </p>
+                <div class="table-wrap" tabIndex={0}>
+                  <table class="record-table">
+                    <thead>
+                      <tr>
+                        <th>날짜</th>
+                        <th>부위</th>
+                        <th class="num">기간</th>
+                        <th>구분</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {card.injuries.map((x) => (
+                        <tr key={x.date + x.part}>
+                          <td>{x.date}</td>
+                          <td>{x.part}</td>
+                          <td class="num">{x.days}일</td>
+                          <td>
+                            {x.futures ? '퓨처스' : '1군 부상자 명단'}
+                            {x.surgery && <span class={`tag${x.surgery === 'major' ? ' warn' : ''}`}>{x.surgery === 'major' ? '큰 수술' : '수술'}</span>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            ) : (
+              <p class="muted">부상 기록이 없습니다.</p>
+            )}
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
+
+/** Always on top (1.4.0): age, the grade now and to come, and his latest season in a line. */
+function SummaryStrip({ card, pitcher, titles }: { card: PlayerCard; pitcher: boolean; titles: number }) {
+  const s = card.player.scouting;
+  const last = [...card.career].reverse().find((r) => !r.futures && (pitcher ? r.pit?.g : r.bat?.g));
+  const line = !last
+    ? '1군 기록 없음'
+    : pitcher
+      ? `${last.year} ${last.pit!.g}경기 ${last.pit!.w}승 ${last.pit!.l}패${last.pit!.sv ? ` ${last.pit!.sv}세` : ''}${last.pit!.hld ? ` ${last.pit!.hld}홀` : ''} · ERA ${last.pit!.outs ? rates.era(last.pit!).toFixed(2) : '-'} · ${rates.ip(last.pit!.outs)}이닝`
+      : `${last.year} ${last.bat!.g}경기 타율 ${last.bat!.ab ? rates.fmt3(rates.avg(last.bat!)) : '-'} · ${last.bat!.hr}홈런 · OPS ${last.bat!.pa ? rates.fmt3(rates.ops(last.bat!)) : '-'}`;
+  return (
+    <dl class="summary-strip">
+      <div>
+        <dt>나이</dt>
+        <dd>만 {card.age}세</dd>
+      </div>
+      <div>
+        <dt>종합</dt>
+        <dd>
+          <strong>{s.current}</strong> <span class="muted small">미래 {s.futureValue}</span>
+        </dd>
+      </div>
+      <div class="wide">
+        <dt>{last?.current ? '올 시즌' : '최근 시즌'}</dt>
+        <dd>{line}</dd>
+      </div>
+      {card.totals.seasons > 0 && (
+        <div>
+          <dt>1군 통산</dt>
+          <dd>
+            {card.totals.seasons}시즌 · WAR {card.totals.war.toFixed(1)}
+            {titles ? ` · 우승 ${titles}회` : ''}
+          </dd>
+        </div>
+      )}
+    </dl>
+  );
+}
+
+/** His postseasons (1.4.0), one row a year with how far his club went, and the totals. */
+function PostTable({ rows, totals, pitcher }: { rows: PostRow[]; totals: ReturnType<typeof postTotals>; pitcher: boolean }) {
+  if (!rows.length) return <p class="muted">포스트시즌 기록이 없습니다.</p>;
+  const t = totals;
+  if (pitcher)
+    return (
+      <div class="table-wrap" tabIndex={0}>
+        <table class="record-table career">
+          <thead>
+            <tr>
+              <th class="num">연도</th>
+              <th>구단</th>
+              <th>결과</th>
+              <th class="num">경기</th>
+              <th class="num">승</th>
+              <th class="num">패</th>
+              <th class="num">세</th>
+              <th class="num">홀</th>
+              <th class="num">이닝</th>
+              <th class="num">삼진</th>
+              <th class="num">볼넷</th>
+              <th class="num">ERA</th>
+              <th class="num">WHIP</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.year + r.team}>
+                <td class="num">{r.year}</td>
+                <td>{r.team}</td>
+                <td>{r.result === '우승' ? <strong>우승</strong> : r.result}</td>
+                <td class="num">{r.pit?.g ?? 0}</td>
+                <td class="num">{r.pit?.w ?? 0}</td>
+                <td class="num">{r.pit?.l ?? 0}</td>
+                <td class="num">{r.pit?.sv ?? 0}</td>
+                <td class="num">{r.pit?.hld ?? 0}</td>
+                <td class="num">{rates.ip(r.pit?.outs ?? 0)}</td>
+                <td class="num">{r.pit?.k ?? 0}</td>
+                <td class="num">{r.pit?.bb ?? 0}</td>
+                <td class="num strong">{r.pit?.outs ? rates.era(r.pit).toFixed(2) : '-'}</td>
+                <td class="num">{r.pit?.outs ? rates.whip(r.pit).toFixed(2) : '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+          {t.pit && (
+            <tfoot>
+              <tr>
+                <th colSpan={3}>
+                  포스트시즌 통산 ({t.years}회{t.titles ? ` · 우승 ${t.titles}회` : ''})
+                </th>
+                <td class="num">{t.pit.g}</td>
+                <td class="num">{t.pit.w}</td>
+                <td class="num">{t.pit.l}</td>
+                <td class="num">{t.pit.sv}</td>
+                <td class="num">{t.pit.hld}</td>
+                <td class="num">{rates.ip(t.pit.outs)}</td>
+                <td class="num">{t.pit.k}</td>
+                <td class="num">{t.pit.bb}</td>
+                <td class="num strong">{t.pit.outs ? rates.era(t.pit).toFixed(2) : '-'}</td>
+                <td class="num">{t.pit.outs ? rates.whip(t.pit).toFixed(2) : '-'}</td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
+      </div>
+    );
+  return (
+    <div class="table-wrap" tabIndex={0}>
+      <table class="record-table career">
+        <thead>
+          <tr>
+            <th class="num">연도</th>
+            <th>구단</th>
+            <th>결과</th>
+            <th class="num">경기</th>
+            <th class="num">타석</th>
+            <th class="num">안타</th>
+            <th class="num">타율</th>
+            <th class="num">출루율</th>
+            <th class="num">장타율</th>
+            <th class="num">홈런</th>
+            <th class="num">타점</th>
+            <th class="num">도루</th>
+            <th class="num">OPS</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.year + r.team}>
+              <td class="num">{r.year}</td>
+              <td>{r.team}</td>
+              <td>{r.result === '우승' ? <strong>우승</strong> : r.result}</td>
+              <td class="num">{r.bat?.g ?? 0}</td>
+              <td class="num">{r.bat?.pa ?? 0}</td>
+              <td class="num">{r.bat?.h ?? 0}</td>
+              <td class="num">{r.bat?.ab ? rates.fmt3(rates.avg(r.bat)) : '-'}</td>
+              <td class="num">{r.bat?.pa ? rates.fmt3(rates.obp(r.bat)) : '-'}</td>
+              <td class="num">{r.bat?.ab ? rates.fmt3(rates.slg(r.bat)) : '-'}</td>
+              <td class="num">{r.bat?.hr ?? 0}</td>
+              <td class="num">{r.bat?.rbi ?? 0}</td>
+              <td class="num">{r.bat?.sb ?? 0}</td>
+              <td class="num strong">{r.bat?.pa ? rates.fmt3(rates.ops(r.bat)) : '-'}</td>
+            </tr>
+          ))}
+        </tbody>
+        {t.bat && (
+          <tfoot>
+            <tr>
+              <th colSpan={3}>
+                포스트시즌 통산 ({t.years}회{t.titles ? ` · 우승 ${t.titles}회` : ''})
+              </th>
+              <td class="num">{t.bat.g}</td>
+              <td class="num">{t.bat.pa}</td>
+              <td class="num">{t.bat.h}</td>
+              <td class="num">{t.bat.ab ? rates.fmt3(rates.avg(t.bat)) : '-'}</td>
+              <td class="num">{t.bat.pa ? rates.fmt3(rates.obp(t.bat)) : '-'}</td>
+              <td class="num">{t.bat.ab ? rates.fmt3(rates.slg(t.bat)) : '-'}</td>
+              <td class="num">{t.bat.hr}</td>
+              <td class="num">{t.bat.rbi}</td>
+              <td class="num">{t.bat.sb}</td>
+              <td class="num strong">{t.bat.pa ? rates.fmt3(rates.ops(t.bat)) : '-'}</td>
+            </tr>
+          </tfoot>
+        )}
+      </table>
     </div>
   );
 }
 
 /** Our player's uniform number, set by the general manager (V0.12): a teammate wearing it swaps. */
 function NumberField({ league, id, current, onAct }: { league: LeagueState; id: string; current: number | null; onAct: (a: Action) => void }) {
+  // A new player or number remounts the field (keyed by both), so what is typed is never reset under the user.
   const [text, setText] = useState(current != null ? String(current) : '');
-  useEffect(() => setText(current != null ? String(current) : ''), [id, current]);
   const n = Number(text);
   const problem = text.trim() === '' ? '번호를 넣으세요.' : checkNumber(league, id, n);
   const holder = !problem ? numberHolder(league, league.user!.teamId, n, id) : undefined;

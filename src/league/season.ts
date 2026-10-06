@@ -16,6 +16,9 @@ import { staffOf } from './staff';
 import { setGoals } from './parent';
 import { aiForeignChanges, aiTrades, processWaivers } from './trade';
 import { scoutMonth } from './scouting';
+import { allStarDay } from './allstar';
+import { draftClass } from './players';
+import { applyCombine, combineDay } from './combine';
 import { scandalDay, serveSuspensions } from './scandals';
 import { openBooks } from './finance';
 import { rosterLimit } from './offseason';
@@ -30,6 +33,7 @@ import { openForeignBooks } from './foreigncap';
 import { assignLeagues, twelveClubs, twelveGames } from './twelve';
 import { finishTrips } from './training';
 import { lifeDay } from './life';
+import { alumniDay } from './alumni';
 
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
@@ -164,7 +168,8 @@ function addSplits(into: { split?: Splits }, from: Splits) {
   addInto(into.split.R, from.R);
 }
 
-function record(s: LeagueState, box: TeamBox, date: string, lines: Record<PlayerId, SeasonLine> | null = s.lines) {
+/** Adds a box score to the lines (the season's unless given) and to the pitchers' arm use. */
+export function record(s: LeagueState, box: TeamBox, date: string, lines: Record<PlayerId, SeasonLine> | null = s.lines) {
   const lineOf = (id: PlayerId, teamId: TeamId) => (lines ? (lines[id] ??= { teamId, days: 0, lost: 0, bat: null, pit: null }) : null);
   for (const b of box.batting) {
     const line = lineOf(b.id, box.teamId);
@@ -248,6 +253,8 @@ export function playDay(s: LeagueState): boolean {
   // The user's players back from training abroad, and what happened off the field today (V0.10).
   finishTrips(s, date);
   lifeDay(s, date);
+  // Our former-player manager and coaches (1.4.0).
+  alumniDay(s, date);
   // Now and then something worse (V0.12): the club answers before the next day.
   scandalDay(s, date);
   returnFromService(s, date);
@@ -255,6 +262,9 @@ export function playDay(s: LeagueState): boolean {
   nationalTeamBack(s, date);
   processWaivers(s, date);
   marketEvents(s, date);
+  // The All-Star voting and game (1.2.0), the draft combine (1.3.0).
+  allStarDay(s, date);
+  combineDay(s, date, () => applyCombine(s.seed, s.year, draftClass(s.seed, s.year)));
   const day = s.next;
   // The first game day of a month: last month's story.
   if (day > 0 && s.schedule[day - 1]!.date.slice(5, 7) !== date.slice(5, 7)) {

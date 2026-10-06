@@ -83,7 +83,7 @@ export function foreignContract(teamId: TeamId, season: number, parts: { bonus: 
   return { teamId, kind: asia ? 'asiaQuota' : 'foreign', signedIn: season - 1, signingBonus: 0, salaries: [{ season, amount }], usd };
 }
 
-export const usdTotal = (c: Contract | null) => (c?.usd ? c.usd.bonus + c.usd.salary + c.usd.options : 0);
+export const usdTotal = (c: Contract | null) => (c?.usd ? c.usd.bonus + c.usd.salary + c.usd.options + (c.usd.fee ?? 0) : 0);
 
 /** Salary for a veteran who enters the league through the pre-history bootstrap (no earlier records). */
 export function estimatedSalary(p: Player, season: number): number {

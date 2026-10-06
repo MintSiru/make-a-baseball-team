@@ -81,7 +81,8 @@ export const ENGINE = {
   /** A small-ball manager: steal attempts (logit) and bunts (multiplier). */
   smallBall: { steal: 0.35, bunt: 1.6 },
   /** Manager style: starter pitch limit change. */
-  hook: { quickHook: -8, patient: 6 },
+  /** 1.3.0: `allOut`, our postseason all-out plan (총력전), on top of the manager's own. */
+  hook: { quickHook: -8, patient: 6, allOut: -15 },
   /** Lineup score for the platoon side (batValue points); `half` for a player the GM set as a platoon half. */
   platoonLineup: { edge: 2.5, half: 40 },
   reliever: { maxOutsShort: 4, maxOutsMopUp: 6, maxOutsLong: 9, pitchLimitShort: 28, pitchLimitMopUp: 40, pitchLimitLong: 55, lefty: { starterPitches: 85 } },
@@ -108,8 +109,10 @@ export const Zr = (grade: number) => {
 
 /** Offseason: development, careers and roster turnover. Military numbers follow Draft Room's tuning. */
 export const OFFSEASON = {
-  veteranDecline: { from: 31, perYear: 0.3, steepFrom: 34, steepPerYear: 0.45, speed: 1.4, skill: 0.6 },
-  scouting: { matureAge: 28, window: 7 },
+  /** The decline starts at the growth type's age (GROWTH.types[…].decline; 31 for 보통), steeper three years on. */
+  veteranDecline: { perYear: 0.3, steepPerYear: 0.45, speed: 1.4, skill: 0.6 },
+  /** Scouts project growth up to the growth type's `zeroAt` (28 for 보통), closing over `window` years. */
+  scouting: { window: 7 },
   serviceDecline: { army: [0.8, 1.6] as [number, number], social: [0.3, 0.8] as [number, number] },
   /** Retirement (offseason.ts retirementChance): the chance a year by age from `from`, at `old.age` and over (no
       lower than `old.floor` of it however good he is), times the multiplier of his current grade (`byGrade`, best
@@ -538,10 +541,26 @@ export const TRAINING = {
     moves his main tools. Family leave (경조사 휴가) is at most five days, counted as registered days (KBO 규정,
     2019~). Winter: marriage, charity and work on his own at these chances. `fans`: the fans' fondness, 0–100. */
 export const LIFE = {
-  daily: 0.12,
+  daily: 0.14,
   /** How often each kind comes up when something happens (0.10.1: births and deaths in the family made rarer,
-      about 1–1.5 a season for the club, a loss about one season in three). */
-  weights: { birth: 1, loss: 0.3, hot: 4, cold: 4, fanService: 3, charity: 2, row: 1.5, accident: 0.5 },
+      about 1–1.5 a season for the club, a loss about one season in three; 1.2.0 added the last seven). */
+  weights: {
+    birth: 1,
+    loss: 0.3,
+    hot: 4,
+    cold: 4,
+    fanService: 3,
+    charity: 2,
+    row: 1.5,
+    accident: 0.5,
+    extraWork: 1.5,
+    mentor: 1.2,
+    commercial: 0.8,
+    variety: 0.8,
+    hometownCheer: 0.8,
+    feud: 0.8,
+    grumble: 0.6,
+  },
   form: { hot: 2.5, cold: -2.5, baby: 2, loss: -2, row: -1 },
   leave: { birth: [2, 3], loss: [3, 5] } as Record<'birth' | 'loss', [number, number]>,
   winter: { marry: 0.12, charity: 0.08, selfWork: 0.1 },
@@ -661,6 +680,34 @@ export const FOREIGN = {
     { pos: '2B', share: 0.06, defense: 55, speed: 50, power: -6, contact: 2 },
     { pos: 'SS', share: 0.06, defense: 58, speed: 52, power: -7, contact: 1 },
   ] as { pos: import('../model/position').Position; share: number; defense: number; speed: number; power: number; contact: number }[],
+  /** 1.1.0: foreign players come in types (the 1.0 feedback), each a few grade points up on what its name says and
+      down elsewhere (`shift`), so a club shops for what it lacks. Pitchers by role; hitters by the position drawn, so
+      the V0.11 position mix stays. Weights within each list. A utility man also handles two or more positions. */
+  types: {
+    SP: { 구위형: 3, 제구형: 3, 변화구형: 2.5, 이닝이터: 2.5 },
+    RP: { 구위형: 5, 제구형: 2, 변화구형: 3 },
+    hitter: {
+      '1B': { 거포형: 6, 교타형: 2, 선구안형: 2 },
+      LF: { 거포형: 4, 교타형: 2, 선구안형: 2, 호타준족: 2 },
+      RF: { 거포형: 4, 교타형: 2, 선구안형: 1, 호타준족: 3 },
+      CF: { 호타준족: 4, 수비형: 3, 교타형: 2, 유틸리티: 1 },
+      '3B': { 거포형: 4, 교타형: 2, 수비형: 2, 유틸리티: 2 },
+      '2B': { 수비형: 3, 유틸리티: 4, 교타형: 3 },
+      SS: { 수비형: 5, 유틸리티: 3, 교타형: 2 },
+    } as Record<string, Record<string, number>>,
+    shift: {
+      구위형: { stuff: 6, command: -4, breaking: -1 },
+      제구형: { command: 6, stuff: -3, breaking: -1 },
+      변화구형: { breaking: 6, stuff: -2, command: -2 },
+      이닝이터: { stamina: 8, stuff: -2, breaking: -1, command: 1 },
+      거포형: { power: 6, contact: -3, eye: -1, speed: -2 },
+      교타형: { contact: 6, power: -5, eye: 1 },
+      선구안형: { eye: 7, contact: 1, power: -3 },
+      호타준족: { speed: 7, power: 1, contact: -1, eye: -2 },
+      수비형: { defense: 7, speed: 2, power: -5, contact: -1 },
+      유틸리티: { defense: 3, speed: 2, power: -3, contact: 1 },
+    } as Record<string, Partial<Record<import('../draftroom').ToolKey, number>>>,
+  },
 };
 
 /** Basic difficulty beyond money (V0.14, docs/PLAN-1.0.md §4 C). Only the user's club feels it, so the
@@ -680,3 +727,166 @@ export const DIFFICULTY = {
   /** The owner's trust: what it loses after a bad season or an event, × this. */
   trustLoss: { easy: 0.75, normal: 1, hard: 1.25 },
 } as const;
+
+/** Growth types and hidden traits (1.1.0, league/traits.ts; game assumptions). Each growth type sets when a player's
+    growth starts in earnest (`start`; before it he closes `before` of his usual share), how long it runs at full
+    speed (`fullUntil`), the age by which it has stopped (`zeroAt`, down to Draft Room's floor), when aging sets in
+    (`aging`; speed three years sooner) and when the late-career decline starts (`decline`, steeper three years on).
+    Ages on 1 April. `rate` is the share of the gap to his ceiling closed in a full year, at most `cap` grade points
+    (Draft Room's 8 held a fast developer back). 보통 is the 1.0 growth. Tuned so that a draft class's first-team
+    value over a career (overall above 45, ages 21–37) comes within 4% of what the same players would have as 보통,
+    and a high-school draftee peaks near the same grade whatever his type: the types move when, not how much. */
+export const GROWTH = {
+  types: {
+    veryEarly: { rate: 0.58, start: 0, fullUntil: 20, zeroAt: 25, aging: 27, decline: 29, cap: 12.5 },
+    early: { rate: 0.43, start: 0, fullUntil: 21, zeroAt: 27, aging: 28, decline: 30, cap: 10 },
+    normal: { rate: 0.32, start: 0, fullUntil: 22, zeroAt: 28, aging: 29, decline: 31, cap: 8 },
+    late: { rate: 0.34, start: 22, fullUntil: 24, zeroAt: 29, aging: 30, decline: 32, cap: 8.5 },
+    veryLate: { rate: 0.34, start: 24, fullUntil: 26, zeroAt: 30, aging: 31, decline: 33, cap: 9 },
+  },
+  before: 0.4,
+  /** Share of Draft Room's early and late developers who are the extreme kind. */
+  extreme: 0.35,
+  /** Growth × (1 + (trait − 50) / 100 × this): 천재성 and 성실성. */
+  genius: 0.6,
+  work: 0.3,
+  /** The late-career decline × (1 − (성실성 − 50) / 100 × this). */
+  workDecline: 0.6,
+  /** A breakout winter is likelier for a genius: × (1 + max(0, 천재성 − 60) / 40). */
+  geniusBreakout: 1,
+  /** Grade points on his main tools in the postseason per point of 멘탈 over 50. */
+  mental: 0.05,
+  /** Who gets into trouble: × 2^((논란성 − pivot) / doubling); a club's chance × its players' average of that over
+      the league's (`mean`), so the league sees as much trouble as before. */
+  controversy: { pivot: 30, doubling: 15, mean: 1.35 },
+} as const;
+
+/** Pitch mix (1.1.0, league/pitches.ts; game assumptions). `count`: shares of pitchers with one, two, three and four
+    secondary pitches (a third of relievers are two-pitch pitchers). `share`: the part of his pitches that are not
+    fastballs — by role, by how many pitches he has and by his type, ± `spread` of his own. `decay` splits it between
+    his pitches, best first, each ± `jitter`. `signature`: the pitch his type makes likelier as his best (weight on
+    top of the usual mix). */
+export const PITCH_MIX = {
+  count: { SP: [0.05, 0.3, 0.43, 0.22], RP: [0.33, 0.45, 0.22] },
+  share: {
+    SP: 0.4,
+    RP: 0.36,
+    byCount: [-0.06, 0, 0.02, 0.05],
+    byType: {
+      '강속구 선발': -0.07,
+      '파워 불펜': -0.06,
+      '커맨드형 선발': 0.02,
+      '장신 커브볼러': 0.05,
+      '포크볼 불펜': 0.08,
+      '체인지업 좌완': 0.05,
+      구위형: -0.08,
+      변화구형: 0.12,
+      제구형: 0.03,
+    } as Record<string, number>,
+    spread: 0.1,
+    min: 0.18,
+    max: 0.66,
+  },
+  decay: 0.5,
+  jitter: 0.3,
+  signature: {
+    '장신 커브볼러': { pitch: 'CB', weight: 60 },
+    '포크볼 불펜': { pitch: 'FO', weight: 110 },
+    '체인지업 좌완': { pitch: 'CH', weight: 60 },
+    '땅볼 유도형 선발': { pitch: 'SI', weight: 40 },
+    '좌완 스페셜리스트': { pitch: 'SL', weight: 30 },
+    '파워 불펜': { pitch: 'SL', weight: 20 },
+    변화구형: { pitch: 'SL', weight: 10 },
+  } as Record<string, { pitch: import('./pitches').PitchType; weight: number }>,
+};
+
+/** The All-Star game (1.2.0, league/allstar.ts). KBO practice: fans 70% and players 30% of the vote, 베스트12 a side,
+    the managers' picks to fill the squads; the dates and ballot sizes are game assumptions (the voting runs about four
+    weeks from early June, the game in the break). Fan ballots a day for a candidate: `fanBase` × his club's fans
+    against the league's (^ `clubPower`) × (base + WAR so far·war + fondness·loved + grade over 45·star); the players'
+    the same way, on how he plays. `campaign`: what our club's voting drive costs (만 원) and adds to our candidates'
+    fan ballots. The 홈런 레이스: the field, outs a round and a swing's home run chance by 장타 (hidden). */
+export const ALL_STAR = {
+  dates: { open: '06-08', tallies: ['06-15', '06-22', '06-29'], close: '07-05', game: '07-12' },
+  fanShare: 0.7,
+  fanBase: 22000,
+  clubPower: 1.1,
+  fan: { base: 0.35, war: 0.35, loved: 0.6, star: 0.35 },
+  playerBase: 3,
+  player: { base: 0.2, war: 0.8, star: 0.5 },
+  squad: 24,
+  pitchLimit: { starter: 35, reliever: 22 },
+  derby: { field: 8, outs: 7, base: 0.12, perPower: 0.008, min: 0.04, max: 0.42 },
+  campaign: { cost: 10_000, boost: 0.25 },
+};
+
+/** Talks with foreign players (1.3.0, league/foreigntalks.ts; game assumptions). `fee`: the chance his club wants a
+    transfer fee and its range (US dollars) by where he played — part of the 100만 달러 (Asia quota 20만) of a new
+    signing. `guaranteedShare`: his guaranteed ask against his listed total; `give`: how far below it he goes;
+    `optionValue`: a dollar of options to him; `reach`: an offer below this share of his floor ends the talks; his
+    counter gives up to `counterGive` of the gap. `rival`: offers elsewhere (chance, and worth against his ask);
+    `elsewhere`: the chance one still talking signs elsewhere between rounds. `renew`: a re-signing takes ask ×
+    (base − 충성심/100 × loyalty), a second year worth that much more to an older player (from `olderFrom`), less to a
+    younger one. */
+export const FOREIGN_TALKS = {
+  fee: {
+    mlb: { chance: 0.6, min: 100_000, max: 300_000 },
+    mlbCup: { chance: 0.45, min: 50_000, max: 200_000 },
+    aaa: { chance: 0.3, min: 30_000, max: 120_000 },
+    npb: { chance: 0.5, min: 50_000, max: 200_000 },
+    indie: { chance: 0, min: 0, max: 0 },
+    asia: { chance: 0.25, min: 10_000, max: 40_000 },
+    other: { chance: 0.2, min: 20_000, max: 80_000 },
+  } as Record<string, { chance: number; min: number; max: number }>,
+  guaranteedShare: [0.82, 0.95] as [number, number],
+  give: [0.86, 0.98] as [number, number],
+  optionValue: 0.5,
+  patience: [2, 3] as [number, number],
+  reach: 0.85,
+  counterGive: 0.5,
+  rival: {
+    npb: { from: 60, chance: 0.25, value: [1.05, 1.6] as [number, number] },
+    mlb: { chance: 0.15, value: [0.75, 1] as [number, number] },
+    other: { chance: 0.1, value: [0.6, 0.85] as [number, number] },
+  },
+  elsewhere: { rival: 0.35, none: 0.12 },
+  rounds: 3,
+  renew: { base: 1, loyalty: 0.15, olderFrom: 31, twoYearsOlder: 0.06, twoYearsYounger: 0.04 },
+};
+
+/** The draft combine (1.3.0, league/combine.ts; a game assumption). The date in the draft year, how many by the
+    public ranking are invited and the share who stay away, the measurement noise (grade points), how far the public
+    report moves to the truth on what is measured (grades come in steps of five, so a half step is often lost); our private workouts a year, their fee (만 원) and how much better
+    our scouts read a prospect we worked out (added to their accuracy, 0–1). */
+export const COMBINE = { date: '08-25', invited: 60, skip: 0.12, noise: 3, reveal: 0.75, workouts: 5, workoutCost: 300, workoutRead: 0.3 };
+
+/** 1.4.0 (alumni.ts, from the 1.3 feedback; game assumptions): retired players back as staff. Fame (0–100) from a
+    first-team career: WAR (a pitcher's counts more: one golden glove a year among them), honours (MVP, golden gloves,
+    titles), the hall of fame, a retired number and seasons. A hire is a former player with chance
+    maxShare × W / (W + stranger), W the pool's weights (base + fame² share, so a legend is drawn tens of times as
+    often as a fringe player; the front office cares less for fame). Ages a role takes former players
+    at; a former player's rating leans on his work ethic and mind (a manager's on leadership), fame adds to the
+    salary he asks. Events for our club's former-player manager or coaches: how often a day, at most a season. */
+export const ALUMNI = {
+  fame: { war: 1.2, pitcherWar: 1.8, mvp: 10, goldenGlove: 4, title: 2, other: 1, hall: 25, retiredNumber: 15, season: 0.8 },
+  weight: { base: 0.01, fame: 3, front: 0.5, ownClub: 2, offense: 0.3 },
+  stranger: { manager: 15, coach: 15, front: 30 },
+  maxShare: 0.7,
+  ages: { manager: [40, 68], coach: [33, 65], farm: [36, 65], scouting: [30, 65], analytics: [30, 55] } as Record<string, [number, number]>,
+  lean: { work: 0.25, mental: 0.1, leadership: 0.35, spread: 14 },
+  famePremium: 0.5,
+  legend: 50,
+  /** An AI club whose head's contract runs out brings its own legend back instead, this often. */
+  homePull: 0.5,
+  retireAge: 70,
+  /** Fan interest: a legend comes home to manage, a legend manager let go, streaks under a legend. */
+  homecoming: 0.06,
+  legendHire: 0.03,
+  firedLegend: 0.05,
+  streak: { games: 7, buzz: 0.03 },
+  daily: 0.04,
+  perSeason: 3,
+  lesson: { delta: 3, days: 14 },
+  reunion: { delta: 2, days: 10 },
+  protest: { controversy: 65, chance: 0.02, fine: 200 },
+};

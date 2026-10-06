@@ -17,6 +17,27 @@ export interface HiddenAbility {
   developmentRate: number;
   observerBias: number;
   injuryRisk: number;
+  /** 1.1.0 (league/traits.ts): growth type and character, 1–99 each. */
+  traits?: Traits;
+}
+
+/** 초조숙 · 조숙 · 보통 · 만성 · 초만성. */
+export type GrowthType = 'veryEarly' | 'early' | 'normal' | 'late' | 'veryLate';
+
+export interface Traits {
+  growth: GrowthType;
+  /** 천재성: how fast he learns. */
+  genius: number;
+  /** 성실성: work ethic. */
+  work: number;
+  /** 멘탈: composure on the big stage. */
+  mental: number;
+  /** 리더십. */
+  leadership: number;
+  /** 충성심: to his own club in free agency. */
+  loyalty: number;
+  /** 논란성: trouble off the field. */
+  controversy: number;
 }
 
 /** A scouting report: five-point 20–80 grades with observer error. */
@@ -36,6 +57,8 @@ export interface ScoutingReport {
   base?: number;
   /** The latest revision during the season. */
   moved?: { date: string; from: number; to: number };
+  /** 1.3.0: the draft combine already moved this report (combine.ts). */
+  combine?: boolean;
 }
 
 export type PlayerStatus = 'amateur' | 'active' | 'military' | 'freeAgent' | 'overseas' | 'retired';
@@ -74,7 +97,8 @@ export interface Contract {
   signingBonus: number;
   salaries: { season: number; amount: number }[];
   /** Foreign contracts in US dollars: guaranteed bonus and salary, and options paid for a good season. */
-  usd?: { bonus: number; salary: number; options: number };
+  /** US dollars; `fee`: the transfer fee paid to his old club (1.3.0; part of the foreign caps, never his pay). */
+  usd?: { bonus: number; salary: number; options: number; fee?: number };
   /** Domestic free-agent deals (V0.8): incentives, a period option and promises beyond the money. */
   fa?: FaTerms;
 }
@@ -187,6 +211,14 @@ export interface SeasonRecord {
   war: number;
 }
 
+/** A postseason's line (1.4.0). */
+export interface PostRecord {
+  year: number;
+  teamId: TeamId;
+  bat: BatTotals | null;
+  pit: PitTotals | null;
+}
+
 export interface Player {
   id: PlayerId;
   name: string;
@@ -219,6 +251,8 @@ export interface Player {
   /** First professional season in the league. */
   proSince: number;
   career: SeasonRecord[];
+  /** 1.4.0: postseason lines, one a year he played in it (not in `career`, so season totals stay as they were). */
+  post?: PostRecord[];
   /** Awards and titles ("2027 MVP", "2027 홈런 1위 (38개)"). */
   honors?: string[];
   /** Injuries so far (first team and futures). */

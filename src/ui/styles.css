@@ -2417,17 +2417,18 @@ ul.plain li {
   flex-wrap: wrap;
   margin-bottom: 8px;
 }
-.settings-jump a {
-  padding: 4px 12px;
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-  color: var(--ink);
-  text-decoration: none;
-  font-size: 14px;
-}
-.settings-jump a:hover,
-.settings-jump a:focus-visible {
-  border-color: var(--accent);
+/* 1.0.1: on a phone one subject at a time, picked from the bar (which stays at the top). */
+@media (max-width: 760px) {
+  .settings-jump {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--paper);
+    padding: 6px 0;
+  }
+  .settings-page .settings-block:not(.on) {
+    display: none;
+  }
 }
 .settings-block {
   border-top: 1px solid var(--rule);
@@ -2572,4 +2573,330 @@ main.page:focus {
 }
 .manual details.help p {
   margin: 6px 0;
+}
+
+/* 1.0.1: which kinds of alert pop up, a compact grid of checkboxes. */
+.alert-kinds {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 6px 10px 8px;
+  margin: 8px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 2px 12px;
+}
+.alert-kinds legend {
+  padding: 0 4px;
+  font-size: 14px;
+}
+.alert-kinds[disabled] {
+  opacity: 0.6;
+}
+
+/* Visually hidden, still read by screen readers (table captions). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Retired numbers (1.0.1): a card per number, the number large, ours marked in the club colour. */
+.retired-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+.retired-card {
+  position: relative;
+  padding-right: 64px;
+}
+.retired-card.mine {
+  border-color: var(--accent);
+}
+.retired-number {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  margin: 0;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.retired-card h3 {
+  margin: 0 0 4px;
+}
+.retired-story li + li {
+  margin-top: 2px;
+}
+@media (max-width: 400px) {
+  .retired-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 1.2.0: the All-Star page */
+.allstar-sides {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 24px;
+}
+.allstar-sides > p {
+  grid-column: 1 / -1;
+}
+.allstar tr.mine td,
+.allstar li.mine {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.allstar tr.strong td {
+  font-weight: 600;
+}
+.allstar-squad {
+  columns: 2;
+  column-gap: 16px;
+}
+.allstar-squad li {
+  break-inside: avoid;
+  padding: 1px 0;
+}
+@media (max-width: 760px) {
+  .allstar-sides {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* 1.3.0: the postseason game by game */
+.live-postseason {
+  border-left: 3px solid var(--accent);
+  padding-left: 12px;
+  margin-bottom: 12px;
+}
+.live-series p {
+  margin: 6px 0 2px;
+}
+.post-plan {
+  margin-top: 10px;
+}
+.post-plan label {
+  margin-right: 12px;
+}
+.post-plan select {
+  max-width: 100%;
+}
+
+/* 1.3.0: foreign talks */
+.foreign-offers caption {
+  text-align: left;
+  font-weight: 600;
+  padding: 6px 0;
+}
+.foreign-offers .money-input {
+  width: 6em;
+}
+
+/* 1.4.0: the postseason bracket */
+.bracket {
+  margin: 8px 0 16px;
+}
+.bracket-ours {
+  margin: 4px 0 8px;
+}
+.bracket-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+}
+.bracket-steps li {
+  display: flex;
+  flex-direction: column;
+  min-width: 7em;
+  padding: 4px 10px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--card);
+  color: var(--ink-2);
+}
+.bracket-steps li.done {
+  color: var(--ink);
+}
+.bracket-steps li.done .step-state::before {
+  content: '✓ ';
+}
+.bracket-steps li.live {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+.bracket-steps .step-state {
+  font-size: 0.8em;
+}
+.bracket-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--rounds, 5), minmax(0, 1fr));
+  gap: 10px;
+  align-items: center;
+}
+.bracket-round h4 {
+  margin: 0 0 6px;
+}
+.bracket-round.waiting {
+  opacity: 0.75;
+}
+.bracket-card {
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--card);
+  padding: 6px 8px;
+  margin-bottom: 8px;
+}
+.bracket-card.live {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.bracket-card.mine {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.bracket-team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0;
+}
+.bracket-team .seed {
+  white-space: nowrap;
+}
+.bracket-team .wins {
+  margin-left: auto;
+  font-weight: 600;
+  min-width: 1.2em;
+  text-align: right;
+}
+.bracket-team.winner {
+  font-weight: 700;
+}
+.bracket-team.out {
+  color: var(--ink-2);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.bracket-team.out .link {
+  color: var(--ink-2);
+}
+.bracket-games {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+.game-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 4px;
+  border: 1px solid var(--rule);
+  border-bottom-width: 4px;
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.8em;
+  line-height: 1;
+}
+button.game-chip {
+  cursor: pointer;
+}
+.game-chip.t {
+  border-style: dashed;
+}
+@media (max-width: 900px) {
+  .bracket-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .bracket-round {
+    display: grid;
+    grid-template-columns: 8em minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+  }
+  .bracket-round .bracket-card + .bracket-card {
+    grid-column: 2;
+  }
+}
+@media (max-width: 480px) {
+  .bracket-round {
+    display: block;
+  }
+  .bracket-steps li {
+    min-width: 0;
+    flex: 1 1 4.5em;
+  }
+}
+
+/* 1.4.0: the player page one part at a time */
+.summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  margin: 10px 0 4px;
+  padding: 8px 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.summary-strip div {
+  min-width: 0;
+}
+.summary-strip dt {
+  color: var(--ink-2);
+  font-size: 12px;
+}
+.summary-strip dd {
+  margin: 1px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+.summary-strip strong {
+  font-size: 18px;
+}
+.segmented.profile-parts {
+  margin: 12px 0 6px;
+}
+.profile-part > section:first-child h3,
+.profile-part > .pitch-box:first-child h3 {
+  margin-top: 6px;
+}
+.segmented.record-views {
+  margin: 4px 0 10px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+.profile-facts {
+  margin: 6px 0;
+}
+.profile-facts dt {
+  white-space: nowrap;
+}
+/* 1.4.0: former players on the staff */
+button.tag.link {
+  cursor: pointer;
+  font: inherit;
+  font-size: 11.5px;
+}
+.tag.legend {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
 }

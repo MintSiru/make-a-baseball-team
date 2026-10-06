@@ -132,13 +132,23 @@ async function playSeason(page, log = []) {
   // V0.12: the season can stop for a decision (a national-team call-up, a disciplined player); answer and go on.
   for (let i = 0; i < 10; i++) {
     await page.getByRole('button', { name: '정규시즌 끝까지' }).click();
-    const post = page.getByRole('button', { name: '포스트시즌 진행' });
+    const post = page.getByRole('button', { name: '포스트시즌 시작' });
     const decision = page.locator('#decision-title');
     await post.or(decision).first().waitFor({ timeout: 90_000 });
     if (await post.count()) break;
     await decideAll(page, log);
   }
-  await page.getByRole('button', { name: '포스트시즌 진행' }).click();
+  // 1.3.0: the postseason goes game by game: the bracket, one game day, then the rest.
+  await page.getByRole('button', { name: '포스트시즌 시작' }).click();
+  await page.getByRole('button', { name: '다음 경기' }).click();
+  await page.waitForFunction(() => document.querySelector('.status')?.textContent?.includes('포스트시즌') && !document.querySelector('fieldset.controls')?.disabled, null, { timeout: 90_000 });
+  check(((await page.locator('.status').textContent()) ?? '').includes('포스트시즌'), 'the postseason goes a game day at a time');
+  // 1.4.0: the bracket on the standings tab shows the round being played and the games so far.
+  await page.locator('nav.tabs').getByRole('button', { name: '순위', exact: true }).click();
+  check((await page.locator('.bracket-steps li.live').count()) === 1, 'the bracket marks the round being played');
+  check((await page.locator('.bracket .game-chip').count()) >= 1, 'the bracket shows the games played');
+  await page.screenshot({ path: join(shots, 'bracket.png'), fullPage: false });
+  await page.getByRole('button', { name: '포스트시즌 끝까지' }).click();
   await page.getByRole('button', { name: '다음 시즌으로' }).waitFor({ timeout: 90_000 });
   await page.getByRole('button', { name: '다음 시즌으로' }).click();
   await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled && !document.querySelector('.status')?.textContent?.includes('진행 중'), null, { timeout: 90_000 });
@@ -149,7 +159,7 @@ try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const page = await context.newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => (errors.push(e.message), console.log('page error:', e.message)));
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 
   // 1. Found a club.
@@ -400,6 +410,12 @@ try {
   await storyBlock.getByRole('button', { name: '키 지우기' }).click();
   await page.getByRole('button', { name: '역대', exact: true }).click();
   for (const v of ['시상', '기록실', '명예의 전당', '시즌']) await page.getByRole('group', { name: '역대' }).getByRole('button', { name: v, exact: true }).click();
+  // 1.0.1: the national team's tournaments and the clubs' retired numbers have pages of their own.
+  await page.getByRole('group', { name: '역대' }).getByRole('button', { name: '국가대표', exact: true }).click();
+  check((await page.locator('table:has(caption) tbody tr').count()) > 0, 'the national team page lists the tournaments');
+  await page.screenshot({ path: join(shots, 'national.png'), fullPage: false });
+  await page.getByRole('group', { name: '역대' }).getByRole('button', { name: '영구결번', exact: true }).click();
+  check((await page.locator('.retired-card').count()) > 0 || (await page.locator('main').textContent())?.includes('아직 영구결번이 없습니다'), 'the retired numbers page opens');
   await page.getByRole('group', { name: '역대' }).getByRole('button', { name: '기록실', exact: true }).click();
   await page.screenshot({ path: join(shots, 'records.png'), fullPage: false });
 
@@ -421,20 +437,40 @@ try {
   await page.screenshot({ path: join(shots, 'search.png'), fullPage: false });
   for (const v of ['방출 · 자유계약', '외국인 교체', '이적 소식']) await page.getByRole('button', { name: v, exact: true }).click();
 
+  // 1.2.0: the All-Star page (the years before ours are on record), and the optional foreign veteran rule.
+  await page.locator('nav.tabs').getByRole('button', { name: '기록', exact: true }).click();
+  await page.getByRole('group', { name: '보기' }).getByRole('button', { name: '올스타', exact: true }).click();
+  check((await page.getByRole('heading', { name: '역대 올스타전' }).count()) === 1, 'the All-Star page lists the years before');
+  await page.screenshot({ path: join(shots, 'allstar.png'), fullPage: false });
+  await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
+  check((await page.getByRole('group', { name: '외국인 장기 근속 규정' }).count()) === 1, 'settings offer the foreign veteran rule');
+
   // 6. Every screen, the player dialog, reload.
   for (const tab of ['기록', '구단', '역대', '드래프트 후보', '우리 구단']) await page.getByRole('button', { name: tab, exact: true }).click();
   await page.getByRole('button', { name: '선수단', exact: true }).click();
   await page.locator('.squad-table .link').first().click();
   await page.getByRole('dialog').waitFor();
   check((await page.locator('.velocity').count()) === 1, 'pitcher profile shows velocity');
+  // 1.4.0: one part at a time; 1.1.0: our coaches' read of his hidden side, and the growth type among it.
+  check((await page.locator('.trait-report').count()) === 0, 'the player page shows one part at a time');
+  await page.getByRole('tab', { name: '코치 평가' }).click();
+  const report = page.locator('.trait-report');
+  check((await report.getByRole('heading', { name: '코치 평가' }).count()) === 1, 'our player shows the coaches\' report');
+  check(((await report.textContent()) ?? '').includes('성장 타입'), 'the report reads his growth type');
   // 0.12: the general manager gives him a number (a teammate wearing it swaps).
+  await page.getByRole('tab', { name: '정보' }).click();
   const numberBox = page.getByRole('spinbutton', { name: '등번호' });
   await numberBox.fill('77');
   await page.locator('.number-form button').click();
   await page.waitForFunction(() => document.querySelector('.profile-number')?.textContent === '77');
   check((await page.locator('.profile-number').textContent()) === '77', 'the uniform number can be set');
   await page.screenshot({ path: join(shots, 'player.png') });
-  for (const t of ['통산 · 커리어 하이', '좌우 기록', '부상 이력', '연도별 기록']) await page.getByRole('tab', { name: t }).click();
+  await page.getByRole('tab', { name: '기록' }).click();
+  const views = page.getByRole('group', { name: '기록 보기' });
+  for (const t of ['포스트시즌', '커리어 하이', '좌우 기록', '정규시즌']) await views.getByRole('button', { name: t }).click();
+  await page.getByRole('tab', { name: /^부상/ }).click();
+  await page.getByRole('tab', { name: '기록' }).click();
+  check((await page.locator('.dialog .record-table.career').count()) === 1, 'the records part shows the season table');
   // 0.15: the keyboard stays inside the dialog, and Escape hands the focus back to the name that opened it.
   for (let i = 0; i < 40; i++) await page.keyboard.press('Tab');
   check(await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]')), 'Tab stays inside the player dialog');
@@ -443,7 +479,7 @@ try {
   // A hitter's profile, and the bullpen role / platoon controls under manual entry.
   await page.locator('.squad-table').nth(1).locator('.link').first().click();
   await page.getByRole('dialog').waitFor();
-  await page.getByRole('tab', { name: '통산 · 커리어 하이' }).click();
+  await page.getByRole('group', { name: '기록 보기' }).getByRole('button', { name: '포스트시즌' }).click();
   await page.screenshot({ path: join(shots, 'hitter.png') });
   await page.keyboard.press('Escape');
   const saved = await status(page);
@@ -481,6 +517,10 @@ try {
   await page.screenshot({ path: join(shots, 'dark-large-390.png') });
   await page.getByRole('group', { name: '밝기' }).getByRole('button', { name: '기기 설정 따르기' }).click();
   await page.getByRole('group', { name: '글자 크기' }).getByRole('button', { name: '보통' }).click();
+  // 1.0.1: on a phone the settings show one subject at a time, picked from the bar.
+  check(!(await page.locator('#settings-save').isVisible()), 'a phone shows one settings subject at a time');
+  await page.getByRole('group', { name: '설정 항목' }).getByRole('button', { name: '저장', exact: true }).click();
+  check((await page.locator('#settings-save').isVisible()) && !(await page.locator('#settings-display').isVisible()), 'the bar switches the settings subject');
   check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
   await context.close();
 

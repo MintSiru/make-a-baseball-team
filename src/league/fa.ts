@@ -24,6 +24,7 @@ import { FA, MARKET, DIFFICULTY } from './tuning';
 import { gmAppetite, gmOf } from './twelve';
 import { crossing } from './rivalry';
 import { farewell } from './life';
+import { traitsOf } from './traits';
 
 // ── Offers ───────────────────────────────────────────────────────────────────────────────────────
 
@@ -538,7 +539,8 @@ export function openMarket(s: LeagueState, next: number): FaMarket {
       ask,
       floor: ask * FA.floorStart,
       demands: demandsFor(s, p, price, next, r),
-      loyalty: lerp(FA.loyalty, r()),
+      // Half chance, half his 충성심 (1.1.0).
+      loyalty: lerp(FA.loyalty, (r() + traitsOf(p).loyalty / 100) / 2),
       patience: Math.round(lerp(FA.patience, r())),
       offers: {},
       interest: {},
@@ -610,6 +612,11 @@ export function termsText(o: FaOffer) {
 
 const short = (s: LeagueState, id: TeamId) => s.teams.find((t) => t.id === id)?.short ?? id;
 const isOpen = (t: FaTalk) => !t.signed && !t.gone;
+
+/** The offers a club drafted on the market screen that can still go out (1.0.1): a player who has signed or left
+    since they were drafted drops out, instead of blocking the next round. */
+export const openDrafts = <T>(m: FaMarket, drafts: Record<PlayerId, T>): Record<PlayerId, T> =>
+  Object.fromEntries(Object.entries(drafts).filter(([id]) => !!m.talks[id] && isOpen(m.talks[id]!)));
 const outside = (m: FaMarket, t: FaTalk, teamId: TeamId) => teamId !== t.from;
 const limitOf = (s: LeagueState, m: FaMarket, teamId: TeamId) => (teamId === s.user?.teamId ? m.userLimit : teamId === m.newClub ? EXPANSION_DEFAULTS.freeAgentSigns : m.limit);
 

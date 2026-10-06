@@ -58,7 +58,7 @@ export function keepBox(s: LeagueState, box: StoredBox, log?: PlayEvent[]) {
   const days = [...new Set(Object.values(boxes).map((b) => b.date))].sort().slice(-KEEP_DAYS);
   for (const [id, b] of Object.entries(boxes)) {
     const mine = u && (b.home === u || b.away === u);
-    if (!mine && !id.includes('-wildcard-') && !id.includes('-semipo-') && !id.includes('-po-') && !id.includes('-ks-') && !days.includes(b.date)) delete boxes[id];
+    if (!mine && !id.endsWith('-allstar') && !id.includes('-wildcard-') && !id.includes('-semipo-') && !id.includes('-po-') && !id.includes('-ks-') && !days.includes(b.date)) delete boxes[id];
   }
   if (log) {
     const logs = (s.pbp ??= {});

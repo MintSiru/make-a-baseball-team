@@ -89,7 +89,8 @@ describe('the market opens', () => {
 
   it('prices by recent WAR and age: bonus-heavy for big deals, incentives on top', () => {
     const rows = m.order.map((id) => ({ p: s.players[id]!, o: faPrice(s.players[id]!, next()) }));
-    const big = rows.filter((x) => guaranteed(x.o) >= 400000);
+    // Rounding the bonus and salaries to 10 million won can lift a deal just under the 4-billion band over it.
+    const big = rows.filter((x) => guaranteed(x.o) >= 405000);
     for (const x of big) expect(x.o.bonus / guaranteed(x.o)).toBeGreaterThanOrEqual(0.44);
     for (const x of rows) expect(offerTotal(x.o)).toBeGreaterThan(guaranteed(x.o));
     const old = rows.find((x) => x.p.career.length && x.o.years <= 2);

@@ -9,6 +9,7 @@ import { ageIn, isForeign, isPitcher } from './players';
 import { addInto, emptyBat, emptyPit, type LeagueState, type SeasonLine } from './state';
 import { era, obp, slg } from './stats';
 import { SCOUTING as S } from './tuning';
+import { breakoutFactor } from './traits';
 
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
@@ -46,7 +47,7 @@ export function driftPotential(p: Player, year: number, r: () => number) {
   };
   const set = (k: (typeof keys)[number], v: number) => (p.hidden.potential[k] = clamp(v, p.hidden.current[k] ?? 20, 80));
   const roll = r();
-  const breakout = D.breakout * (signal > 0 ? D.signalBoost : 1) * (ageIn(p, year + 1) <= 23 ? 1.3 : 1);
+  const breakout = D.breakout * (signal > 0 ? D.signalBoost : 1) * (ageIn(p, year + 1) <= 23 ? 1.3 : 1) * breakoutFactor(p);
   const stall = D.stall * (signal < 0 ? D.signalBoost : 1);
   if (roll < breakout) for (const k of pickKeys()) set(k, (p.hidden.potential[k] ?? 40) + D.jump[0] + r() * (D.jump[1] - D.jump[0]));
   else if (roll < breakout + stall) for (const k of pickKeys()) set(k, (p.hidden.potential[k] ?? 40) - D.jump[0] - r() * (D.jump[1] - D.jump[0]));

@@ -2,6 +2,7 @@
 import { projectedPayroll } from '../league/expansion';
 import type { LeagueState } from '../league/state';
 import { rates, shortName, standingsView } from '../league/views';
+import { bracketView } from '../league/postseason';
 import { moneyShort } from './format';
 
 export function ClubSummary({ league, onTab }: { league: LeagueState; onTab: (tab: 'club' | 'decision') => void }) {
@@ -15,6 +16,8 @@ export function ClubSummary({ league, onTab }: { league: LeagueState; onTab: (ta
   const hurt = Object.entries(league.injuries).filter(([id, i]) => league.players[id]?.teamId === me && !i.dtd);
   const knocks = Object.entries(league.injuries).filter(([id, i]) => league.players[id]?.teamId === me && i.dtd);
   const soldiers = Object.values(league.players).filter((p) => p.teamId === me && p.status === 'military').length;
+  // 1.4.0: our postseason in a phrase while it is on and after it.
+  const post = league.phase === 'postseason' ? bracketView(league)?.ours : null;
   return (
     <section class="club-summary" aria-label="우리 구단 요약">
       <dl>
@@ -30,6 +33,14 @@ export function ClubSummary({ league, onTab }: { league: LeagueState; onTab: (ta
             )}
           </dd>
         </div>
+        {post && (
+          <div>
+            <dt>포스트시즌</dt>
+            <dd>
+              <strong>{post}</strong>
+            </dd>
+          </div>
+        )}
         {next && (
           <div>
             <dt>다음 경기</dt>
