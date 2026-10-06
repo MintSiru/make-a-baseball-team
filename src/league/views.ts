@@ -1,5 +1,6 @@
 /* Read-only views of the league for the screens. Everything here is public: scouting grades, results
    and contracts, never hidden ability. */
+import { alumnusJob } from './alumni';
 import { ROLE_LABELS } from '../draftroom';
 import { publicView, type PublicPlayer } from '../model/player';
 import type { BatTotals, InjuryRecord, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
@@ -265,7 +266,7 @@ function sumSplits(list: (Splits | undefined)[]): Splits | null {
 export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
   const p = s.players[id];
   if (!p) return null;
-  const status = p.status === 'military' ? `군 복무 중 (${p.service.route === 'sangmu' ? '상무' : p.service.route === 'social' ? '사회복무' : '현역'}, ${p.service.returnsOn} 전역)` : s.injuries[id] ? `${s.injuries[id]!.dtd ? '결장' : '부상'} (${injuryNote(s.injuries[id])})` : p.status === 'retired' ? '은퇴' : p.status === 'overseas' ? '해외 이적' : p.status === 'freeAgent' ? '자유계약 (새 구단을 찾는 중)' : '';
+  const status = p.status === 'military' ? `군 복무 중 (${p.service.route === 'sangmu' ? '상무' : p.service.route === 'social' ? '사회복무' : '현역'}, ${p.service.returnsOn} 전역)` : s.injuries[id] ? `${s.injuries[id]!.dtd ? '결장' : '부상'} (${injuryNote(s.injuries[id])})` : p.status === 'retired' ? (alumnusJob(s, id) ? `은퇴 · 현재 ${alumnusJob(s, id)}` : '은퇴') : p.status === 'overseas' ? '해외 이적' : p.status === 'freeAgent' ? '자유계약 (새 구단을 찾는 중)' : '';
   const career = careerView(s, p);
   const pitcher = isPitcher(p);
   const major = career.filter((r) => !r.futures);

@@ -34,7 +34,7 @@ import { Games } from './Games';
 import { DraftBoard } from './DraftBoard';
 import { History } from './History';
 import { Leaders } from './Leaders';
-import { ROUND_LABEL } from '../league/postseason';
+import { postseasonStatus } from '../league/postseason';
 import { applyCombine, attends, checkWorkout, combineHeld, combineLines, workoutsOf } from '../league/combine';
 import { traitReport } from '../league/reports';
 import { COMBINE } from '../league/tuning';
@@ -82,11 +82,8 @@ const snapshotSave = (s: LeagueState) => makeSave(s.seed, [], { at: { year: s.ye
 function statusLine(s: LeagueState) {
   if (s.pending) return `${s.offseason ? `${s.offseason.year} 오프시즌` : `${s.year}`} · 결정할 일이 있습니다`;
   if (s.phase === 'postseason') {
-    const b = s.bracket;
-    if (b && !b.done && b.live.length) {
-      const x = b.live.find((y) => y.hw < y.need && y.lw < y.need) ?? b.live[0]!;
-      return `${s.year} 포스트시즌 · ${ROUND_LABEL[x.round]} · 다음 경기 ${Number(x.date.slice(5, 7))}월 ${Number(x.date.slice(8))}일`;
-    }
+    const live = postseasonStatus(s);
+    if (live) return live;
     const ks = s.postseason.find((x) => x.round === 'ks');
     return `${s.year} 시즌 종료 · 우승 ${ks ? shortName(s, ks.winner) : '-'}`;
   }

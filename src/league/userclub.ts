@@ -36,6 +36,7 @@ import { clubState } from './fans';
 import { iga } from './josa';
 import { changePosition, positionMove } from './positions';
 import { STAFF_LABELS, STAFF_ROLES, staffCandidates, staffOf } from './staff';
+import { alumnusHired, employedAlumni, legendFired } from './alumni';
 import { post, postingCandidates, postingNote } from './posting';
 import { toForeignPool } from './foreignpool';
 import { goAbroad, releaseReturnee, signReturnee } from './returnees';
@@ -252,10 +253,12 @@ export function staffDecision(s: LeagueState, year: number): Decision | null {
   const u = s.user!;
   const staff = staffOf(s, u.teamId);
   const first = !u.staffSeen;
+  // A former player is a candidate for one post at most (1.4.0).
+  const taken = new Set<string>();
   const rows = STAFF_ROLES.map((role) => {
     const current = staff[role];
     const expiring = current.until <= year;
-    return { role, current, expiring, buyout: expiring ? 0 : (current.until - year) * current.salary, candidates: staffCandidates(s, role, year) };
+    return { role, current, expiring, buyout: expiring ? 0 : (current.until - year) * current.salary, candidates: staffCandidates(s, role, year, taken) };
   });
   if (!first && !rows.some((r) => r.expiring)) return null;
   return { kind: 'staff', rows };
@@ -533,9 +536,14 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           if (row.buyout) {
             u.fund -= row.buyout;
             u.ledger.push({ year, label: `${STAFF_LABELS[row.role]} ${row.current.name} 계약 해지 (잔여 연봉)`, amount: -row.buyout });
+            legendFired(s, u.teamId, row.current, `${year}-11-20`);
           }
-          club.staff![row.role] = { ...hire, id: `st-${u.teamId}-${row.role}-${year}`, until: year + (row.role === 'manager' ? 3 : 2) };
+          // A former player may meanwhile have gone to another club (1.4.0): then the club hires the post's next best.
+          const gone = !!hire.playerId && employedAlumni(s).has(hire.playerId);
+          const chosen = gone ? { ...hire, playerId: undefined, club: undefined, fame: undefined } : hire;
+          club.staff![row.role] = { ...chosen, id: `st-${u.teamId}-${row.role}-${year}`, until: year + (row.role === 'manager' ? 3 : 2) };
           note(u, year, `${STAFF_LABELS[row.role]} ${hire.name} 선임 (등급 ${hire.rating}, 연 ${money(hire.salary)})`);
+          alumnusHired(s, u.teamId, club.staff![row.role]!, `${year}-11-20`);
         } else if (row.expiring) {
           const m = club.staff![row.role]!;
           m.until = year + 2;

@@ -3,9 +3,10 @@ import type { LeagueState } from '../league/state';
 import { leaders, rates, seasonStats } from '../league/views';
 import { positionKey, useSort } from './sort';
 import { AllStar } from './AllStar';
+import { postseasonBoards } from '../league/poststats';
 import type { Action } from '../league/actions';
 
-type View = 'leaders' | 'batters' | 'pitchers' | 'allstar';
+type View = 'leaders' | 'batters' | 'pitchers' | 'postseason' | 'allstar';
 const f3 = rates.fmt3;
 const f2 = (x: number) => x.toFixed(2);
 
@@ -42,6 +43,7 @@ export function Leaders({ league, onPlayer, onBox, onAct }: { league: LeagueStat
             ['leaders', '부문별 순위'],
             ['batters', '타자 전체'],
             ['pitchers', '투수 전체'],
+            ['postseason', '포스트시즌'],
             ['allstar', '올스타'],
           ] as [View, string][]
         ).map(([id, label]) => (
@@ -51,7 +53,8 @@ export function Leaders({ league, onPlayer, onBox, onAct }: { league: LeagueStat
         ))}
       </div>
       {view === 'allstar' && <AllStar league={league} onPlayer={onPlayer} onBox={onBox} onAct={onAct} />}
-      <p class="muted" hidden={view === 'allstar'}>
+      {view === 'postseason' && <PostseasonBoards league={league} block={block} />}
+      <p class="muted" hidden={view === 'allstar' || view === 'postseason'}>
         비율 기록은 규정타석 {data.qualifying.pa}타석, 규정이닝 {data.qualifying.innings}이닝 이상. 제목을 누르면 정렬됩니다.
       </p>
       {view === 'leaders' && (
@@ -217,5 +220,20 @@ function PitcherTable({ league, onPlayer, qualifiedOnly }: { league: LeagueState
       </table>
       {!sorted.length && <p class="muted">아직 기록이 없습니다.</p>}
     </div>
+  );
+}
+
+/** 1.4.0: the latest postseason's leaders and every postseason's (postseason games stay out of the season's records). */
+function PostseasonBoards({ league, block }: { league: LeagueState; block: (title: string, rows: { id: string; name: string; team: string; value: string }[]) => preact.JSX.Element }) {
+  const b = postseasonBoards(league);
+  if (b.year == null) return <p class="muted">아직 포스트시즌 기록이 없습니다. 1.4.0부터 쌓입니다(그 전 버전의 진행 파일은 다음 포스트시즌부터).</p>;
+  return (
+    <>
+      <h3>{b.year} 포스트시즌</h3>
+      <div class="leader-grid">{b.latest.map((c) => block(c.label, c.rows))}</div>
+      <h3>포스트시즌 통산{b.since != null && b.since !== b.year ? ` (${b.since}~)` : ''}</h3>
+      <div class="leader-grid">{b.ever.map((c) => block(c.label, c.rows))}</div>
+      <p class="muted small">포스트시즌 기록은 정규시즌 기록·시상과 따로 셉니다. 1.4.0 이전 버전에서 치른 포스트시즌은 기록이 남아 있지 않습니다.</p>
+    </>
   );
 }

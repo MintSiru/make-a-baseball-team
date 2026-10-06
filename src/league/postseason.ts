@@ -1,13 +1,14 @@
 /* KBO postseason (RULES.md §1): wild card (4th vs 5th, 4th starts one win up and advances on a tie),
    semi-playoff (3rd, best of five), playoff (2nd, best of five), Korean Series (1st, best of seven).
-   Postseason games play until decided (game assumption; stats stay out of season totals).
+   Postseason games play until decided (game assumption; stats stay out of season totals — since 1.4.0 they are kept
+   as each player's postseason line).
 
    1.3.0: the postseason goes game day by game day (startPostseason, postseasonDay, postseasonRound) so the user can
    watch each game and choose our starter and an all-out plan before it (manager.ts); playPostseason plays it all
    through, with the same results as before. */
 import type { TeamId } from '../model/types';
-import { playGame, currentStandings } from './season';
-import type { LeagueState, SeriesResult } from './state';
+import { playGame, currentStandings, record } from './season';
+import { firstTeamIds, type LeagueState, type SeriesResult } from './state';
 import { leaguePrice } from './fans';
 import { FANS } from './tuning';
 import { compactBox, isUserGame, keepBox } from './boxscore';
@@ -64,12 +65,10 @@ function playSeriesGame(s: LeagueState, x: LiveSeries) {
   const log: PlayEvent[] | undefined = isUserGame(s, home, away) ? [] : undefined;
   const out = playGame(s, home, away, id, date, null, log);
   if (out) {
-    for (const box of [out.home, out.away])
-      for (const p of box.pitching) {
-        const arm = s.arms[p.id];
-        const streak = arm && Date.parse(date) - Date.parse(arm.lastDate) === 86400000 ? arm.streak + 1 : 1;
-        s.arms[p.id] = { lastDate: date, lastPitches: p.pitches, streak };
-      }
+    // 1.4.0: the players' postseason lines (and the arms' use, as before).
+    s.postLines ??= {};
+    record(s, out.home, date, s.postLines);
+    record(s, out.away, date, s.postLines);
     // Postseason games sell out; the ticket money goes to the league's pool (RULES.md §13).
     const seats = s.teams.find((t) => t.id === home)!.stadium.capacity;
     const att = Math.round(seats * (0.97 + (i % 3) * 0.01));
@@ -249,4 +248,146 @@ export function postseasonView(s: LeagueState) {
     };
   }
   return { live, done: !b, next, plan: u?.postPlan ?? {} };
+}
+
+// ── The bracket at a glance (1.4.0) ──────────────────────────────────────────────────────────────
+
+const ROUNDS: SeriesResult['round'][] = ['wildcard', 'semipo', 'po', 'ks'];
+
+export interface BracketSide {
+  teamId: TeamId | null;
+  /** "3위", "드림 1위", or who will fill it ("와일드카드 승자"). */
+  label: string;
+}
+
+export interface BracketSeries {
+  round: SeriesResult['round'];
+  high: BracketSide;
+  low: BracketSide;
+  hw: number;
+  lw: number;
+  need: number;
+  /** Each game from the higher seed's side: won, lost, tied, and the score that way round. */
+  games: { id: string; date: string; mark: 'w' | 'l' | 't'; score: string }[];
+  state: 'done' | 'live' | 'waiting';
+  winner: TeamId | null;
+  /** The next game's date and number while it is live. */
+  next: { date: string; game: number } | null;
+}
+
+export interface BracketRound {
+  round: SeriesResult['round'];
+  label: string;
+  state: 'done' | 'live' | 'waiting';
+  series: BracketSeries[];
+}
+
+export interface BracketView {
+  year: number;
+  rounds: BracketRound[];
+  champion: TeamId | null;
+  /** Our club this postseason, in a phrase (null in a spectator league). */
+  ours: string | null;
+}
+
+/** The whole postseason as a bracket: rounds played, the one being played, and the ones to come with who waits there. */
+export function bracketView(s: LeagueState): BracketView | null {
+  const b = s.bracket?.year === s.year ? s.bracket : null;
+  if (!b && !s.postseason.length) return null;
+  const done = s.postseason;
+  const liveNow = b && !b.done ? b.live : [];
+  const seedLabel = (id: TeamId | undefined, fallback: string): BracketSide => {
+    if (!id || !b) return { teamId: id ?? null, label: fallback };
+    const i = b.seeds.indexOf(id);
+    if (i < 0) return { teamId: id, label: fallback };
+    return { teamId: id, label: b.mode === 'one' ? `${i + 1}위` : `${i < 3 ? '드림' : '매직'} ${(i % 3) + 1}위` };
+  };
+  const marks = (high: TeamId, games: SeriesResult['games']) =>
+    games.map((g) => {
+      const [mine, theirs] = g.home === high ? [g.hs, g.as] : [g.as, g.hs];
+      return { id: g.id, date: g.date, mark: (mine > theirs ? 'w' : mine < theirs ? 'l' : 't') as 'w' | 'l' | 't', score: `${mine}-${theirs}` };
+    });
+  const fromResult = (x: SeriesResult): BracketSeries => ({
+    round: x.round,
+    high: seedLabel(x.high, ''),
+    low: seedLabel(x.low, ''),
+    hw: x.highWins,
+    lw: x.lowWins,
+    need: x.round === 'ks' || (x.round === 'po' && b?.mode === 'two') ? 4 : x.round === 'wildcard' || (x.round === 'semipo' && b?.mode === 'two') ? 2 : 3,
+    games: marks(x.high, x.games),
+    state: 'done',
+    winner: x.winner,
+    next: null,
+  });
+  const fromLive = (x: LiveSeries): BracketSeries =>
+    over(x)
+      ? fromResult(result(x))
+      : { round: x.round, high: seedLabel(x.high, ''), low: seedLabel(x.low, ''), hw: x.hw, lw: x.lw, need: x.need, games: marks(x.high, x.games), state: 'live', winner: null, next: { date: x.date, game: x.i + 1 } };
+  const waiting = (round: SeriesResult['round'], high: BracketSide, low: BracketSide, need: number): BracketSeries => ({ round, high, low, hw: 0, lw: 0, need, games: [], state: 'waiting', winner: null, next: null });
+  const winnerOf = (round: SeriesResult['round'], test: (x: SeriesResult) => boolean = () => true) => done.find((x) => x.round === round && test(x))?.winner;
+  const rounds: BracketRound[] = [];
+  for (const round of ROUNDS) {
+    const played = [...done.filter((x) => x.round === round).map(fromResult), ...liveNow.filter((x) => x.round === round).map(fromLive)];
+    let series = played;
+    if (!series.length && b) {
+      const [s0, s1, s2, s3, s4, s5] = b.seeds;
+      if (b.mode === 'one') {
+        if (round === 'wildcard') series = [waiting(round, seedLabel(s3, '4위'), seedLabel(s4, '5위'), 2)];
+        if (round === 'semipo') series = [waiting(round, seedLabel(s2, '3위'), winnerOf('wildcard') ? seedLabel(winnerOf('wildcard'), '') : { teamId: null, label: '와일드카드 승자' }, 3)];
+        if (round === 'po') series = [waiting(round, seedLabel(s1, '2위'), winnerOf('semipo') ? seedLabel(winnerOf('semipo'), '') : { teamId: null, label: '준PO 승자' }, 3)];
+        if (round === 'ks') series = [waiting(round, seedLabel(s0, '1위'), winnerOf('po') ? seedLabel(winnerOf('po'), '') : { teamId: null, label: 'PO 승자' }, 4)];
+      } else {
+        // Two leagues: the spots are played (or not) at the start; then each league winner's playoff, then the final.
+        if (round === 'po') {
+          const spot = (third: TeamId | undefined, second: TeamId | undefined) => {
+            const w = winnerOf('semipo', (x) => x.high === third && x.low === second);
+            return w ? seedLabel(w, '') : seedLabel(second, '');
+          };
+          series = [waiting(round, seedLabel(s0, '드림 1위'), spot(s2, s4), 4), waiting(round, seedLabel(s3, '매직 1위'), spot(s5, s1), 4)];
+        }
+        if (round === 'ks') {
+          const po = done.filter((x) => x.round === 'po').map((x) => x.winner);
+          series = [waiting(round, po[0] ? seedLabel(po[0], '') : { teamId: null, label: 'PO 승자' }, po[1] ? seedLabel(po[1], '') : { teamId: null, label: 'PO 승자' }, 4)];
+        }
+      }
+    }
+    if (!series.length) continue;
+    const state = series.every((x) => x.state === 'done') ? 'done' : series.some((x) => x.state !== 'waiting') ? 'live' : 'waiting';
+    rounds.push({ round, label: ROUND_NAME[round], state, series });
+  }
+  const champ = champion(s);
+  // Our club only once it plays in the first team (a futures year has no postseason to miss).
+  const ours = s.user && firstTeamIds(s).includes(s.user.teamId) ? oursIn(s, rounds, s.user.teamId, b) : null;
+  return { year: s.year, rounds, champion: champ, ours };
+}
+
+/** Our club's postseason in a phrase. */
+function oursIn(s: LeagueState, rounds: BracketRound[], me: TeamId, b: Bracket | null): string {
+  const all = rounds.flatMap((r) => r.series);
+  const mine = all.filter((x) => x.high.teamId === me || x.low.teamId === me);
+  if (!mine.length && !(b?.seeds.includes(me) ?? false)) return '포스트시즌 진출 실패';
+  const live = mine.find((x) => x.state === 'live');
+  if (live) {
+    const [w, l] = live.high.teamId === me ? [live.hw, live.lw] : [live.lw, live.hw];
+    return `${ROUND_NAME[live.round]} ${w}승 ${l}패${live.next ? ` · 다음 ${live.next.game}차전` : ''}`;
+  }
+  const lost = mine.find((x) => x.state === 'done' && x.winner !== me);
+  if (lost) return lost.round === 'ks' ? '한국시리즈 준우승' : `${ROUND_NAME[lost.round]} 탈락`;
+  if (mine.some((x) => x.round === 'ks' && x.winner === me)) return '한국시리즈 우승';
+  const wait = mine.find((x) => x.state === 'waiting');
+  return wait ? `${ROUND_NAME[wait.round]}에서 기다리는 중` : '다음 라운드를 기다리는 중';
+}
+
+/** The status bar's line while the postseason is on: the round, how far along, and our club. */
+export function postseasonStatus(s: LeagueState): string | null {
+  const v = bracketView(s);
+  const b = s.bracket;
+  if (!v || !b || b.done) return null;
+  const i = v.rounds.findIndex((r) => r.state === 'live');
+  const round = v.rounds[i];
+  if (!round) return null;
+  const next = round.series.find((x) => x.next)?.next;
+  const when = next ? ` · 다음 경기 ${Number(next.date.slice(5, 7))}월 ${Number(next.date.slice(8))}일` : '';
+  const ours = v.ours && v.ours !== '포스트시즌 진출 실패' ? ` · 우리 구단 ${v.ours}` : '';
+  return `${s.year} 포스트시즌 · ${round.label} (${i + 1}/${v.rounds.length}라운드)${ours}${when}`;
 }

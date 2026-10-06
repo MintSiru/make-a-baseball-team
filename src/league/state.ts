@@ -63,6 +63,10 @@ export interface StaffMember {
   /** Last season under contract. */
   until: number;
   style?: ManagerStyle;
+  /** 1.4.0 (alumni.ts): a former player — who he was, the club he played most for, and his fame then (0–100). */
+  playerId?: PlayerId;
+  club?: TeamId;
+  fame?: number;
 }
 
 /** One season's accounts (만 원). */
@@ -407,6 +411,8 @@ export interface UserClub {
   platoon?: Record<PlayerId, 'L' | 'R'>;
   /** The general manager's lineup card (V0.8): spots he fixed himself; the manager fills the rest. */
   lineup?: LineupCard;
+  /** 1.4.0 (alumni.ts): events with our former-player staff already told ("2028|lesson-p12", "ever|mark-p12-홈런"). */
+  alumniDone?: string[];
   /** 1.3.0: our plan for the next postseason game — the starter he chose (cleared after the game) and the all-out
       plan (kept until changed). */
   postPlan?: { starter?: PlayerId; allOut?: boolean };
@@ -552,6 +558,8 @@ export interface LeagueState {
   marketDone?: string[];
   /** 1.3.0 (postseason.ts): the postseason being played, game day by game day. */
   bracket?: import('./postseason').Bracket | null;
+  /** 1.4.0: this postseason's player lines (kept out of the season's), moved to each player's `post` when the books close. */
+  postLines?: Record<PlayerId, SeasonLine>;
   /** 1.2.0, an optional league rule (off when missing): a foreign player with this many first-team seasons in the
       league no longer takes a foreign slot or counts against the foreign salary cap (NPB's way; foreigncap.ts). */
   foreignVeteran?: number | null;

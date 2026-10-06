@@ -73,6 +73,12 @@ export function closeSeason(s: LeagueState) {
       p.service.creditedSeasons++;
     }
   }
+  // 1.4.0: the postseason's lines go to each player's postseason record.
+  for (const [id, line] of Object.entries(s.postLines ?? {})) {
+    const p = s.players[id];
+    if (p && (line.bat || line.pit)) (p.post ??= []).push({ year: s.year, teamId: line.teamId, bat: line.bat, pit: line.pit });
+  }
+  delete s.postLines;
   let userFutures: SeasonSummary['userFutures'];
   let futuresTable: SeasonSummary['futures'];
   const f = s.futures;

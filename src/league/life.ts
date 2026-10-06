@@ -120,11 +120,11 @@ export function isMarried(s: LeagueState, p: Pick<Player, 'id' | 'birthday' | 'l
 /** Grade points his main tools move in today's games. */
 export const formOf = (p: Player, date: string) => (p.life?.form && p.life.form.until >= date ? p.life.form.delta : 0);
 
-const setForm = (p: Player, delta: number, from: string, days: number, why: string) => {
+export const setForm = (p: Player, delta: number, from: string, days: number, why: string) => {
   (p.life ??= {}).form = { delta, until: addDays(from, days), why };
 };
 
-const note = (p: Player, date: string, text: string, tone?: 'good' | 'bad') => {
+export const note = (p: Player, date: string, text: string, tone?: 'good' | 'bad') => {
   const life = (p.life ??= {});
   (life.events ??= []).push({ date, text, ...(tone ? { tone } : {}) });
   if (life.events.length > 12) life.events.splice(0, life.events.length - 12);

@@ -33,6 +33,7 @@ import { openForeignBooks } from './foreigncap';
 import { assignLeagues, twelveClubs, twelveGames } from './twelve';
 import { finishTrips } from './training';
 import { lifeDay } from './life';
+import { alumniDay } from './alumni';
 
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
@@ -167,7 +168,8 @@ function addSplits(into: { split?: Splits }, from: Splits) {
   addInto(into.split.R, from.R);
 }
 
-function record(s: LeagueState, box: TeamBox, date: string, lines: Record<PlayerId, SeasonLine> | null = s.lines) {
+/** Adds a box score to the lines (the season's unless given) and to the pitchers' arm use. */
+export function record(s: LeagueState, box: TeamBox, date: string, lines: Record<PlayerId, SeasonLine> | null = s.lines) {
   const lineOf = (id: PlayerId, teamId: TeamId) => (lines ? (lines[id] ??= { teamId, days: 0, lost: 0, bat: null, pit: null }) : null);
   for (const b of box.batting) {
     const line = lineOf(b.id, box.teamId);
@@ -251,6 +253,8 @@ export function playDay(s: LeagueState): boolean {
   // The user's players back from training abroad, and what happened off the field today (V0.10).
   finishTrips(s, date);
   lifeDay(s, date);
+  // Our former-player manager and coaches (1.4.0).
+  alumniDay(s, date);
   // Now and then something worse (V0.12): the club answers before the next day.
   scandalDay(s, date);
   returnFromService(s, date);

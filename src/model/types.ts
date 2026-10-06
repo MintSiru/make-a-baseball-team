@@ -211,6 +211,14 @@ export interface SeasonRecord {
   war: number;
 }
 
+/** A postseason's line (1.4.0). */
+export interface PostRecord {
+  year: number;
+  teamId: TeamId;
+  bat: BatTotals | null;
+  pit: PitTotals | null;
+}
+
 export interface Player {
   id: PlayerId;
   name: string;
@@ -243,6 +251,8 @@ export interface Player {
   /** First professional season in the league. */
   proSince: number;
   career: SeasonRecord[];
+  /** 1.4.0: postseason lines, one a year he played in it (not in `career`, so season totals stay as they were). */
+  post?: PostRecord[];
   /** Awards and titles ("2027 MVP", "2027 홈런 1위 (38개)"). */
   honors?: string[];
   /** Injuries so far (first team and futures). */

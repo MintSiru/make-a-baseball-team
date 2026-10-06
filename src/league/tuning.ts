@@ -859,3 +859,34 @@ export const FOREIGN_TALKS = {
     report moves to the truth on what is measured (grades come in steps of five, so a half step is often lost); our private workouts a year, their fee (만 원) and how much better
     our scouts read a prospect we worked out (added to their accuracy, 0–1). */
 export const COMBINE = { date: '08-25', invited: 60, skip: 0.12, noise: 3, reveal: 0.75, workouts: 5, workoutCost: 300, workoutRead: 0.3 };
+
+/** 1.4.0 (alumni.ts, from the 1.3 feedback; game assumptions): retired players back as staff. Fame (0–100) from a
+    first-team career: WAR (a pitcher's counts more: one golden glove a year among them), honours (MVP, golden gloves,
+    titles), the hall of fame, a retired number and seasons. A hire is a former player with chance
+    maxShare × W / (W + stranger), W the pool's weights (base + fame² share, so a legend is drawn tens of times as
+    often as a fringe player; the front office cares less for fame). Ages a role takes former players
+    at; a former player's rating leans on his work ethic and mind (a manager's on leadership), fame adds to the
+    salary he asks. Events for our club's former-player manager or coaches: how often a day, at most a season. */
+export const ALUMNI = {
+  fame: { war: 1.2, pitcherWar: 1.8, mvp: 10, goldenGlove: 4, title: 2, other: 1, hall: 25, retiredNumber: 15, season: 0.8 },
+  weight: { base: 0.01, fame: 3, front: 0.5, ownClub: 2, offense: 0.3 },
+  stranger: { manager: 15, coach: 15, front: 30 },
+  maxShare: 0.7,
+  ages: { manager: [40, 68], coach: [33, 65], farm: [36, 65], scouting: [30, 65], analytics: [30, 55] } as Record<string, [number, number]>,
+  lean: { work: 0.25, mental: 0.1, leadership: 0.35, spread: 14 },
+  famePremium: 0.5,
+  legend: 50,
+  /** An AI club whose head's contract runs out brings its own legend back instead, this often. */
+  homePull: 0.5,
+  retireAge: 70,
+  /** Fan interest: a legend comes home to manage, a legend manager let go, streaks under a legend. */
+  homecoming: 0.06,
+  legendHire: 0.03,
+  firedLegend: 0.05,
+  streak: { games: 7, buzz: 0.03 },
+  daily: 0.04,
+  perSeason: 3,
+  lesson: { delta: 3, days: 14 },
+  reunion: { delta: 2, days: 10 },
+  protest: { controversy: 65, chance: 0.02, fine: 200 },
+};

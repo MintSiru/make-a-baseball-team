@@ -143,6 +143,11 @@ async function playSeason(page, log = []) {
   await page.getByRole('button', { name: '다음 경기' }).click();
   await page.waitForFunction(() => document.querySelector('.status')?.textContent?.includes('포스트시즌') && !document.querySelector('fieldset.controls')?.disabled, null, { timeout: 90_000 });
   check(((await page.locator('.status').textContent()) ?? '').includes('포스트시즌'), 'the postseason goes a game day at a time');
+  // 1.4.0: the bracket on the standings tab shows the round being played and the games so far.
+  await page.locator('nav.tabs').getByRole('button', { name: '순위', exact: true }).click();
+  check((await page.locator('.bracket-steps li.live').count()) === 1, 'the bracket marks the round being played');
+  check((await page.locator('.bracket .game-chip').count()) >= 1, 'the bracket shows the games played');
+  await page.screenshot({ path: join(shots, 'bracket.png'), fullPage: false });
   await page.getByRole('button', { name: '포스트시즌 끝까지' }).click();
   await page.getByRole('button', { name: '다음 시즌으로' }).waitFor({ timeout: 90_000 });
   await page.getByRole('button', { name: '다음 시즌으로' }).click();
@@ -446,18 +451,26 @@ try {
   await page.locator('.squad-table .link').first().click();
   await page.getByRole('dialog').waitFor();
   check((await page.locator('.velocity').count()) === 1, 'pitcher profile shows velocity');
-  // 1.1.0: our coaches' read of his hidden side, and the growth type among it.
+  // 1.4.0: one part at a time; 1.1.0: our coaches' read of his hidden side, and the growth type among it.
+  check((await page.locator('.trait-report').count()) === 0, 'the player page shows one part at a time');
+  await page.getByRole('tab', { name: '코치 평가' }).click();
   const report = page.locator('.trait-report');
   check((await report.getByRole('heading', { name: '코치 평가' }).count()) === 1, 'our player shows the coaches\' report');
   check(((await report.textContent()) ?? '').includes('성장 타입'), 'the report reads his growth type');
   // 0.12: the general manager gives him a number (a teammate wearing it swaps).
+  await page.getByRole('tab', { name: '정보' }).click();
   const numberBox = page.getByRole('spinbutton', { name: '등번호' });
   await numberBox.fill('77');
   await page.locator('.number-form button').click();
   await page.waitForFunction(() => document.querySelector('.profile-number')?.textContent === '77');
   check((await page.locator('.profile-number').textContent()) === '77', 'the uniform number can be set');
   await page.screenshot({ path: join(shots, 'player.png') });
-  for (const t of ['통산 · 커리어 하이', '좌우 기록', '부상 이력', '연도별 기록']) await page.getByRole('tab', { name: t }).click();
+  await page.getByRole('tab', { name: '기록' }).click();
+  const views = page.getByRole('group', { name: '기록 보기' });
+  for (const t of ['포스트시즌', '커리어 하이', '좌우 기록', '정규시즌']) await views.getByRole('button', { name: t }).click();
+  await page.getByRole('tab', { name: /^부상/ }).click();
+  await page.getByRole('tab', { name: '기록' }).click();
+  check((await page.locator('.dialog .record-table.career').count()) === 1, 'the records part shows the season table');
   // 0.15: the keyboard stays inside the dialog, and Escape hands the focus back to the name that opened it.
   for (let i = 0; i < 40; i++) await page.keyboard.press('Tab');
   check(await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]')), 'Tab stays inside the player dialog');
@@ -466,7 +479,7 @@ try {
   // A hitter's profile, and the bullpen role / platoon controls under manual entry.
   await page.locator('.squad-table').nth(1).locator('.link').first().click();
   await page.getByRole('dialog').waitFor();
-  await page.getByRole('tab', { name: '통산 · 커리어 하이' }).click();
+  await page.getByRole('group', { name: '기록 보기' }).getByRole('button', { name: '포스트시즌' }).click();
   await page.screenshot({ path: join(shots, 'hitter.png') });
   await page.keyboard.press('Escape');
   const saved = await status(page);

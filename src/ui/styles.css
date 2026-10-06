@@ -2701,3 +2701,202 @@ main.page:focus {
 .foreign-offers .money-input {
   width: 6em;
 }
+
+/* 1.4.0: the postseason bracket */
+.bracket {
+  margin: 8px 0 16px;
+}
+.bracket-ours {
+  margin: 4px 0 8px;
+}
+.bracket-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+}
+.bracket-steps li {
+  display: flex;
+  flex-direction: column;
+  min-width: 7em;
+  padding: 4px 10px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--card);
+  color: var(--ink-2);
+}
+.bracket-steps li.done {
+  color: var(--ink);
+}
+.bracket-steps li.done .step-state::before {
+  content: '✓ ';
+}
+.bracket-steps li.live {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+.bracket-steps .step-state {
+  font-size: 0.8em;
+}
+.bracket-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--rounds, 5), minmax(0, 1fr));
+  gap: 10px;
+  align-items: center;
+}
+.bracket-round h4 {
+  margin: 0 0 6px;
+}
+.bracket-round.waiting {
+  opacity: 0.75;
+}
+.bracket-card {
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--card);
+  padding: 6px 8px;
+  margin-bottom: 8px;
+}
+.bracket-card.live {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.bracket-card.mine {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.bracket-team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0;
+}
+.bracket-team .seed {
+  white-space: nowrap;
+}
+.bracket-team .wins {
+  margin-left: auto;
+  font-weight: 600;
+  min-width: 1.2em;
+  text-align: right;
+}
+.bracket-team.winner {
+  font-weight: 700;
+}
+.bracket-team.out {
+  color: var(--ink-2);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.bracket-team.out .link {
+  color: var(--ink-2);
+}
+.bracket-games {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+.game-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 4px;
+  border: 1px solid var(--rule);
+  border-bottom-width: 4px;
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.8em;
+  line-height: 1;
+}
+button.game-chip {
+  cursor: pointer;
+}
+.game-chip.t {
+  border-style: dashed;
+}
+@media (max-width: 900px) {
+  .bracket-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .bracket-round {
+    display: grid;
+    grid-template-columns: 8em minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+  }
+  .bracket-round .bracket-card + .bracket-card {
+    grid-column: 2;
+  }
+}
+@media (max-width: 480px) {
+  .bracket-round {
+    display: block;
+  }
+  .bracket-steps li {
+    min-width: 0;
+    flex: 1 1 4.5em;
+  }
+}
+
+/* 1.4.0: the player page one part at a time */
+.summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  margin: 10px 0 4px;
+  padding: 8px 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.summary-strip div {
+  min-width: 0;
+}
+.summary-strip dt {
+  color: var(--ink-2);
+  font-size: 12px;
+}
+.summary-strip dd {
+  margin: 1px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+.summary-strip strong {
+  font-size: 18px;
+}
+.segmented.profile-parts {
+  margin: 12px 0 6px;
+}
+.profile-part > section:first-child h3,
+.profile-part > .pitch-box:first-child h3 {
+  margin-top: 6px;
+}
+.segmented.record-views {
+  margin: 4px 0 10px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+.profile-facts {
+  margin: 6px 0;
+}
+.profile-facts dt {
+  white-space: nowrap;
+}
+/* 1.4.0: former players on the staff */
+button.tag.link {
+  cursor: pointer;
+  font: inherit;
+  font-size: 11.5px;
+}
+.tag.legend {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}

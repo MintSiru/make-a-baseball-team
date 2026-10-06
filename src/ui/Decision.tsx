@@ -1,3 +1,5 @@
+import { AlumnusTag } from './Alumni';
+import { isLegend } from '../league/alumni';
 import type { ComponentChildren } from 'preact';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { Help } from './Help';
@@ -956,6 +958,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
                     <td>
                       {row.current.name}
                       {row.current.style && <span class="muted"> · {MANAGER_STYLES[row.current.style].label}</span>}
+                      <AlumnusTag league={league} m={row.current} onPlayer={onPlayer} />
                     </td>
                     <td class="num strong">{row.current.rating}</td>
                     <td class="num">{money(row.current.salary)}</td>
@@ -965,6 +968,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
                         <option value="">{row.expiring ? '재계약' : '유지'}</option>
                         {row.candidates.map((c) => (
                           <option key={c.id} value={c.id}>
+                            {c.playerId ? (isLegend(c) ? '[레전드] ' : '[선수 출신] ') : ''}
                             {c.name} · 등급 {c.rating} · 연 {money(c.salary)}
                             {c.style ? ` · ${MANAGER_STYLES[c.style].label}` : ''}
                             {row.buyout ? ` (위약금 ${money(row.buyout)})` : ''}
@@ -977,6 +981,24 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
               </tbody>
             </table>
           </div>
+          {d.rows.some((r) => r.candidates.some((c) => c.playerId)) && (
+            <>
+              <h4>선수 출신 후보</h4>
+              <ul class="plain small">
+                {d.rows.flatMap((r) =>
+                  r.candidates
+                    .filter((c) => c.playerId)
+                    .map((c) => (
+                      <li key={c.id}>
+                        <strong>{STAFF_LABELS[r.role]}</strong> {c.name} (등급 {c.rating})
+                        <AlumnusTag league={league} m={c} onPlayer={onPlayer} />
+                      </li>
+                    )),
+                )}
+              </ul>
+              <p class="muted small">쉬고 있는 구단 레전드는 자리마다 후보로 나옵니다. 레전드를 친정에 데려오면 팬들이 반기고, 계약 기간 중에 내보내면 실망합니다. 지도자 능력은 등급으로 보세요.</p>
+            </>
+          )}
         </>
       );
       break;

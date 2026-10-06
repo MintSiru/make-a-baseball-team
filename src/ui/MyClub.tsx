@@ -86,7 +86,7 @@ export function MyClub({
       {view === 'lineup' && <Lineup league={league} teamId={u.teamId} onPlayer={onPlayer} onAct={onAct} />}
       {view === 'training' && <Training league={league} onAct={onAct} onPlayer={onPlayer} />}
       {view === 'story' && <Story league={league} {...story} />}
-      {view === 'office' && <Office league={league} onAct={onAct} setMsg={setMsg} />}
+      {view === 'office' && <Office league={league} onAct={onAct} setMsg={setMsg} onPlayer={onPlayer} />}
       {msg && (
         <p class="toast" role="status">
           {msg}
