@@ -1,5 +1,6 @@
 /* Where saves live: IndexedDB in the browser (localStorage's ~5MB is too small for decades of league
-   history), memory as a fallback and for tests. Stores the serialized text and validates on read. */
+   history), memory as a fallback and for tests. Stores the serialized save (gzip-packed in IndexedDB since V0.14) and validates on read. */
+import { gunzipText, packText } from './compress';
 import { parseSave, serializeSave, type SaveFile } from './format';
 
 export interface SaveSummary {
@@ -22,8 +23,19 @@ interface Row {
   slot: string;
   seed: string;
   savedAt: string;
-  text: string;
+  /** The save as text (before V0.14, or where the browser cannot compress). */
+  text?: string;
+  /** The save packed with gzip (V0.14): about a fifth of the text. */
+  gz?: Uint8Array;
 }
+
+/** A row to store: packed when the browser can (and the packing checks out), else plain. */
+async function rowOf(slot: string, save: SaveFile): Promise<Row> {
+  const text = serializeSave(save);
+  const gz = await packText(text);
+  return { slot, seed: save.seed, savedAt: save.savedAt, ...(gz ? { gz } : { text }) };
+}
+const textOf = async (row: Row) => (row.gz ? gunzipText(row.gz) : (row.text ?? ''));
 
 const summaryOf = ({ slot, seed, savedAt }: Row): SaveSummary => ({ slot, seed, savedAt });
 const byNewest = (a: SaveSummary, b: SaveSummary) => b.savedAt.localeCompare(a.savedAt);
@@ -34,7 +46,7 @@ export function memoryStore(): SaveStore {
     kind: 'memory',
     get: async (slot) => {
       const row = rows.get(slot);
-      return row ? parseSave(row.text) : null;
+      return row ? parseSave(row.text ?? '') : null;
     },
     put: async (slot, save) => {
       rows.set(slot, { slot, seed: save.seed, savedAt: save.savedAt, text: serializeSave(save) });
@@ -71,10 +83,10 @@ export async function indexedDbStore(name = 'kbo-expansion', factory: IDBFactory
     kind: 'indexedDB',
     get: async (slot) => {
       const row = (await request(store('readonly').get(slot))) as Row | undefined;
-      return row ? parseSave(row.text) : null;
+      return row ? parseSave(await textOf(row)) : null;
     },
     put: async (slot, save) => {
-      const row: Row = { slot, seed: save.seed, savedAt: save.savedAt, text: serializeSave(save) };
+      const row = await rowOf(slot, save);
       await request(store('readwrite').put(row));
     },
     remove: async (slot) => {

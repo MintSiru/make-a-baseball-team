@@ -1,13 +1,18 @@
 import { useState } from 'preact/hooks';
+import { accentStyle } from './display';
+import { useDark } from './useDisplay';
 import { CITIES, cityById } from '../club/cities';
 import { PARENT_COMPANY_TYPES, type ParentCompanyType } from '../club/types';
+import { existingTeams } from '../league/clubs';
 import { budgetFor, difficultyStars, STADIUM_PLANS } from '../league/expansion';
 import type { Difficulty, ExpansionSettings, Promotion, TwelveSetting } from '../league/state';
 import { money } from './format';
 import { TwelveSettingField } from './Twelve';
+import { DIFFICULTY_LABEL, DIFFICULTY_NOTE } from './Settings';
 
 const COLORS = ['#0f6e8c', '#1b7f5a', '#6b3fa0', '#c2572b', '#2f4858', '#b3261e', '#0b5394', '#8a6d1d'];
-const TAKEN = ['키움', 'NC', '한화', '롯데', 'SSG', 'KT', '두산', 'LG', '삼성', 'KIA'];
+/** The existing clubs' short names, as a new league has them (renamed later in the settings, if at all). */
+const TAKEN = existingTeams().map((t) => t.short);
 
 type Stadium = ExpansionSettings['stadium'];
 
@@ -19,6 +24,7 @@ interface Props {
 }
 
 export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props) {
+  const dark = useDark();
   const [name, setName] = useState('');
   const [short, setShort] = useState('');
   const [color, setColor] = useState(COLORS[0]!);
@@ -65,7 +71,7 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
   ].filter(Boolean) as string[];
 
   return (
-    <main class="page new-game" style={{ '--accent': color } as Record<string, string>}>
+    <main class="page new-game" style={accentStyle(color, dark)}>
       <h2>2026년, KBO 11번째 구단 창단</h2>
       <p>
         7월 1일 창단 승인을 받는 순간부터 시작합니다. 9월 신인 드래프트에서 우선지명을 하고,{' '}
@@ -166,10 +172,11 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
         <div class="segmented" role="group" aria-label="기본 난이도">
           {(['easy', 'normal', 'hard'] as Difficulty[]).map((d) => (
             <button key={d} type="button" aria-pressed={difficulty === d} onClick={() => setDifficulty(d)}>
-              {{ easy: '쉬움', normal: '보통', hard: '어려움' }[d]}
+              {DIFFICULTY_LABEL[d]}
             </button>
           ))}
         </div>
+        <p class="muted small">{DIFFICULTY_NOTE[difficulty]} 게임 중에도 설정 탭에서 바꿀 수 있습니다.</p>
         <label class="check">
           <input type="checkbox" checked={firing} onChange={(e) => setFiring((e.currentTarget as HTMLInputElement).checked)} /> 성적이 나쁘면 모기업이 단장을 해임할 수 있음 (끄면 샌드박스)
         </label>
@@ -214,7 +221,11 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
             구단 없이 리그만 관전
           </button>
         </div>
-        {busy && <p class="status">{busy}</p>}
+        {busy && (
+          <p class="status" role="status">
+            {busy}
+          </p>
+        )}
       </section>
     </main>
   );

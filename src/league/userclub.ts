@@ -5,6 +5,7 @@
    checkDecision / resolveDecision / autoDecision. Money in 만 원. */
 import { medicalReview, socialOnly } from './military';
 import { asiaCapFor, foreignCap } from './foreigncap';
+import { capFloorFor } from './cap';
 import { foreignSlots } from './manager';
 import { draftContracts, rng, type Difficulty, type Role, type ToolKey } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
@@ -41,7 +42,7 @@ import { ownerAlert } from './alerts';
 import { splitContract } from './foreign';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type SalaryRow, type StaffRole, type UserClub } from './state';
-import { OFFSEASON as O, TALKS } from './tuning';
+import { OFFSEASON as O, PARENT, TALKS, DIFFICULTY } from './tuning';
 import { lifeWinter } from './life';
 import { autoNational, marchEvents, nextNationalDecision, novemberEvents, resolveNational } from './national';
 import { autoScandal, resolveScandal } from './scandals';
@@ -49,7 +50,7 @@ import { autoDispute, resolveDispute } from './dispute';
 import { canRelease, releasePlayer } from './trade';
 
 /** Difficulty scales the owner's money. */
-const DIFFICULTY_MONEY = { easy: 1.1, normal: 1, hard: 0.9 } as const;
+const DIFFICULTY_MONEY = DIFFICULTY.money;
 
 export const FOCUS_KEYS: Record<'pitcher' | 'hitter', ToolKey[]> = {
   pitcher: ['stuff', 'command', 'breaking', 'stamina'],
@@ -189,8 +190,12 @@ export function yearlyGrant(s: LeagueState) {
   );
   u.support = b.support;
   // Free agents the owner paid for: their salary comes on top of the budget while they are under contract.
-  u.payrollBudget = b.payroll + giftPayroll(u, next);
+  u.payrollBudget = Math.max(b.payroll, payrollFloor(next, k)) + giftPayroll(u, next);
 }
+
+/** The least an owner budgets for pay (V0.16): enough over the league's floor for the foreign players and a
+    domestic roster, however poor the evaluations — below it a club could only sink further (× the difficulty). */
+export const payrollFloor = (season: number, k = 1) => Math.round(((capFloorFor(season) ?? 0) * PARENT.payrollFloor * k) / 1000) * 1000;
 
 /** Salary the owner covers in `season` for the free agents it bought (V0.7.7). */
 export const giftPayroll = (u: UserClub, season: number) => (u.parentGifts ?? []).filter((g) => g.from <= season && season <= g.to).reduce((a, g) => a + g.annual, 0);
@@ -313,7 +318,10 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
       if (Object.keys(input.offers).some((id) => !ids.includes(id))) return '명단에 없는 선수입니다.';
       if (Object.values(input.offers).some((x) => !Number.isFinite(x) || x < 0)) return '금액이 올바르지 않습니다.';
       const total = Object.values(input.offers).reduce((a, b) => a + b, 0);
-      if (total > 0 && total > u.fund) return `구단 자금이 부족합니다 (제시 합계 ${Math.round(total / 1000) / 10}억).`;
+      // V0.16: up to the slot a pick can always be paid, into the red if need be (the owner tops up an empty fund
+      // after the season, at a cost in trust); only more than that needs the money.
+      const slots = dd.picks.reduce((a, pk) => a + Math.min(input.offers[pk.id] ?? 0, pk.slot), 0);
+      if (total > 0 && total > Math.max(0, u.fund) + slots) return `구단 자금이 부족합니다 (제시 합계 ${Math.round(total / 1000) / 10}억, 슬롯 금액을 넘는 몫은 자금 안에서).`;
       return null;
     }
     case 'development': {
@@ -685,7 +693,8 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
       const offers: Record<PlayerId, number> = {};
       let left = u.fund;
       for (const pick of d.picks) {
-        const amount = left >= pick.ask ? pick.ask : left >= pick.slot ? pick.slot : 0;
+        // The slot even with an empty fund (V0.16): a club short of money no longer loses its whole draft class.
+        const amount = left >= pick.ask ? pick.ask : pick.slot;
         offers[pick.id] = amount;
         left -= amount;
       }
@@ -835,8 +844,9 @@ function settleSalaries(s: LeagueState, d: Extract<Decision, { kind: 'salaries' 
     if (!p || p.teamId !== u.teamId) continue;
     const choice = choices[row.id] ?? 'merit';
     const r = rng(`${s.seed}|salary|${year}|${row.id}`);
+    const easier = DIFFICULTY.salaryAccept[u.settings.difficulty];
     if (choice === 'extension' && row.extension) {
-      if (r() < T.extension.accept) {
+      if (r() < T.extension.accept + easier) {
         p.contract = { teamId: u.teamId, kind: 'multiYear', signedIn: year, signingBonus: 0, salaries: Array.from({ length: row.extension.years }, (_, i) => ({ season: next + i, amount: row.extension!.annual })) };
         note(u, year, `${p.name} 비FA 다년계약 ${row.extension.years}년 연 ${Math.round(row.extension.annual / 1000) / 10}억`);
         continue;
@@ -850,7 +860,7 @@ function settleSalaries(s: LeagueState, d: Extract<Decision, { kind: 'salaries' 
       setSalary(p, next, offer);
       continue;
     }
-    const accept = choice === 'freeze' ? T.acceptFreeze : T.acceptMerit;
+    const accept = (choice === 'freeze' ? T.acceptFreeze : T.acceptMerit) + easier;
     if (r() < accept) {
       setSalary(p, next, offer);
       continue;

@@ -17,7 +17,7 @@ import DraftNames from '../draftroom/names.js';
 import type { TeamId } from '../model/types';
 import type { LeagueState, StaffMember, StaffRole, ManagerStyle } from './state';
 import { clubState } from './fans';
-import { STAFF } from './tuning';
+import { STAFF, DIFFICULTY } from './tuning';
 
 const names = DraftNames as unknown as { makeName: (r: () => number, used: Set<string>) => { name: string } };
 
@@ -144,7 +144,8 @@ export function aiStaffWinter(s: LeagueState, year: number, table: { teamId: Tea
 export function scoutView(s: LeagueState, p: { role: import('../draftroom').Role; scouting: { futureValue: number }; hidden: { potential: import('../draftroom').Tools } }): number | null {
   const u = s.user;
   if (!u) return null;
-  const acc = Math.max(0, Math.min(STAFF.scoutMax, STAFF.scoutBase + STAFF.scoutSpan * staffEdge(staffRating(s, u.teamId, 'scouting'))));
+  const staff = Math.max(0, Math.min(STAFF.scoutMax, STAFF.scoutBase + STAFF.scoutSpan * staffEdge(staffRating(s, u.teamId, 'scouting'))));
+  const acc = Math.max(0, Math.min(1, staff + DIFFICULTY.scoutEdge[u.settings.difficulty]));
   const truth = toGrade(overall(p.hidden.potential, p.role));
   return Math.max(20, Math.min(80, Math.round((p.scouting.futureValue + (truth - p.scouting.futureValue) * acc) / 5) * 5));
 }

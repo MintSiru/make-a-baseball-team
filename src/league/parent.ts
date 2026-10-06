@@ -21,7 +21,7 @@ import { clubState } from './fans';
 import { addAlert } from './alerts';
 import { eunneun, ro, wagwa } from './josa';
 import { firstTeamIds, type Evaluation, type LeagueState, type Mayor, type SeasonGoals, type SponsorGoal, type SponsorOffer } from './state';
-import { PARENT } from './tuning';
+import { PARENT, DIFFICULTY } from './tuning';
 
 const money = (n: number) => `${Math.round(n / 10000)}억`;
 
@@ -69,7 +69,8 @@ export function evaluate(s: LeagueState, year: number): Evaluation | null {
   const score = Math.round(lines.reduce((a, l) => a + (l.ok ? l.w : -l.w), 0) * 100) / 100;
   const champion = s.history.find((h) => h.year === year)?.champion === u.teamId;
   const change = Math.max(-PARENT.maxChange, Math.min(PARENT.maxChange, score * PARENT.maxChange + (champion ? 0.05 : 0)));
-  const trust = Math.max(0, Math.min(100, (u.trust ?? PARENT.startTrust) + score * PARENT.trustStep[type] + (champion ? 15 : 0)));
+  const step = score * PARENT.trustStep[type];
+  const trust = Math.max(0, Math.min(100, (u.trust ?? PARENT.startTrust) + (step < 0 ? step * DIFFICULTY.trustLoss[u.settings.difficulty] : step) + (champion ? 15 : 0)));
   u.trust = trust;
   const ev: Evaluation = { year, score, lines: lines.map(({ w: _w, ...l }) => l), change, trust };
   (u.evaluations ??= []).push(ev);
@@ -192,7 +193,7 @@ function deficitEvents(s: LeagueState, year: number): number {
   let factor = 1;
   if (ev.budget) applyBudgetChange(s, -ev.budget * hard);
   if (ev.support) factor = 1 - ev.support * hard;
-  if (ev.trust) u.trust = Math.max(0, (u.trust ?? PARENT.startTrust) - ev.trust * hard);
+  if (ev.trust) u.trust = Math.max(0, (u.trust ?? PARENT.startTrust) - ev.trust * hard * DIFFICULTY.trustLoss[u.settings.difficulty]);
   if (ev.fans) c.popularity = Math.round(c.popularity * (1 - ev.fans * hard));
   const why = big && lasting ? `큰 적자가 ${deficitYears(s, year)}년째 이어져` : big ? `올해 적자(${money(deficitOf(s, year))})가 지원 한도를 넘어` : `적자가 ${deficitYears(s, year)}년째 이어져`;
   note(s, year, `${ev.title}: ${why}`);
@@ -223,7 +224,8 @@ export const sponsorDue = (s: LeagueState, year: number) => {
 
 // ── Naming sponsor ────────────────────────────────────────────────────────────────────────────────
 
-const SPONSORS = ['한빛증권', '대한생명', '새솔은행', '누리통신', '다온캐피탈', '한결제약', '미래에셋투자', '온누리게임즈', '태평양물산', '청운건설'];
+// Fictional names only (V0.16: two real companies had slipped in).
+const SPONSORS = ['한빛증권', '한누리생명', '새솔은행', '누리통신', '다온캐피탈', '한결제약', '새벽투자', '온누리게임즈', '태평양물산', '청운건설'];
 
 /** Offers when a naming deal ends: the current sponsor's renewal and two newcomers, each with its own fee,
     goal and patience (V0.7.7): the more a sponsor pays, the more it wants and the sooner it walks out. */

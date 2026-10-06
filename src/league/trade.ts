@@ -18,7 +18,7 @@ import { currentStandings } from './season';
 import { firstTeamIds, orgPlayers, registeredIds, type DraftSlot, type LeagueState, type TradeExtras } from './state';
 import { crossing } from './rivalry';
 import { farewell } from './life';
-import { TRADES } from './tuning';
+import { TRADES, DIFFICULTY } from './tuning';
 import { moveNews } from './movenews';
 import { capRoom, chargeForeign } from './foreigncap';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry, toForeignPool } from './foreignpool';
@@ -147,7 +147,7 @@ export function checkTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get
   if (theirs > limit) return no(`상대 구단 소속선수가 ${limit}명을 넘게 됩니다.`);
   const inValue = gives.reduce((a, p) => a + tradeValue(s, p!), 0) + cashValue(cashOut) + picksOut.reduce((a, r) => a + pickValue(s, u.teamId, r), 0);
   const outValue = gets.reduce((a, p) => a + tradeValue(s, p!), 0) + cashValue(cashIn) + picksIn.reduce((a, r) => a + pickValue(s, teamId, r), 0);
-  const margin = Math.round((inValue - outValue * TRADES.accept.premium - TRADES.accept.fixed) * 10) / 10;
+  const margin = Math.round((inValue - outValue * TRADES.accept.premium * DIFFICULTY.tradePremium[u.settings.difficulty] - TRADES.accept.fixed) * 10) / 10;
   return { problem: null, margin, accepted: margin >= 0 };
 }
 
@@ -288,7 +288,7 @@ export function releasePlayer(s: LeagueState, id: PlayerId) {
   const p = s.players[id]!;
   const cost = releaseCost(s, p);
   const owed = [...(cost.now ? [{ season: s.year, amount: cost.now }] : []), ...cost.later];
-  for (const x of owed) (u.deadMoney ??= []).push({ season: x.season, amount: x.amount, label: `${p.name} 잔여 연봉` });
+  for (const x of owed) (u.deadMoney ??= []).push({ season: x.season, amount: x.amount, label: `${p.name} 잔여 연봉`, id });
   removeFromRoster(s, p);
   p.teamId = null;
   if (s.phase === 'regular') {
@@ -332,8 +332,9 @@ export function processWaivers(s: LeagueState, date: string) {
       p.teamId = claimer;
       if (p.contract) p.contract.teamId = claimer;
       s.rosters[claimer]!.futures.push(p.id);
-      // The claiming club takes the contract: the releasing club no longer owes it.
-      if (s.user && w.from === s.user.teamId) s.user.deadMoney = (s.user.deadMoney ?? []).filter((x) => x.label !== `${p.name} 잔여 연봉`);
+      // The claiming club takes the contract: the releasing club no longer owes it (his own lines only — another
+      // released player can share his name; saves before V0.16 have no id on the line).
+      if (s.user && w.from === s.user.teamId) s.user.deadMoney = (s.user.deadMoney ?? []).filter((x) => (x.id ? x.id !== p.id : x.label !== `${p.name} 잔여 연봉`));
       logTransaction(s, `웨이버 영입: ${shortOf(s, claimer)} ${p.name} (${shortOf(s, w.from)}에서)`);
       moveNews(s, { type: 'claim', teamId: claimer, from: w.from, id: p.id }, date);
       if (w.from === s.user?.teamId) (s.user.log ??= []).push({ year: s.year, text: `${p.name} 웨이버로 ${ro(shortOf(s, claimer))} 이적` });
@@ -441,7 +442,7 @@ export function replaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, in
   const p = foreignMarket(s, teamId).find((x) => x.id === inId)!;
   if (s.user?.teamId === teamId) {
     const owed = Math.round(salaryIn(old, s.year) * seasonShareLeft(s));
-    if (owed) (s.user.deadMoney ??= []).push({ season: s.year, amount: owed, label: `${old.name} 잔여 연봉` });
+    if (owed) (s.user.deadMoney ??= []).push({ season: s.year, amount: owed, label: `${old.name} 잔여 연봉`, id: old.id });
   }
   const wasActive = s.rosters[teamId]!.active.includes(out);
   const price = foreignPriceNow(s, p);

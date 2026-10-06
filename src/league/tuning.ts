@@ -257,7 +257,9 @@ export const FA = {
     step: [0.03, 0.07] as [number, number],
     compensation: { A: 0.88, B: 0.94, C: 1 },
     clubOption: 0.5,
-    capSlack: 50000,
+    /** Room an AI club keeps under the cap when it bids (V0.16: it used to go 5억 over, and with money held
+        in today's terms raises then pushed three or four clubs a year over the cap). */
+    capSlack: -50000,
     /** His own club talks to a free agent worth keeping (keep value) almost always. */
     keepOwn: { value: 45, chance: 0.95 },
   },
@@ -322,6 +324,8 @@ export const FANS = {
   /** Average ticket price in 2025 (만 원): 2,046억 / 1,231만 명. */
   price2025: 1.66,
   priceGrowth: 0.03,
+  /** The last year prices rise (V0.16): money stays in 2026 terms after it. */
+  priceUntil: 2026,
   averagePopularity: 19_000,
   visitorWeight: 0.15,
   elasticity: 0.9,
@@ -393,7 +397,9 @@ export const STAFF = {
 
 /** Owners (V0.6, parent.ts). Support in 만 원 a year before difficulty. */
 export const PARENT = {
-  support: { conglomerate: 1_600_000, midsize: 1_200_000, namingRights: 400_000, citizen: 1_000_000 },
+  /** Support limits. V0.16 raised the mid-size, naming-rights and citizen ones (120·40·100억): a new club spending its
+      budget ran 30~50억 a year past them whatever it did, so the money goal could never be met. */
+  support: { conglomerate: 1_600_000, midsize: 1_500_000, namingRights: 600_000, citizen: 1_400_000 },
   rankGoal: { conglomerate: 5, midsize: 7, namingRights: 8, citizen: 8 },
   crowdGoal: 1.0,
   weights: {
@@ -408,6 +414,8 @@ export const PARENT = {
   fireBelow: 15,
   scaleMin: 0.6,
   scaleMax: 1.6,
+  /** The payroll budget never goes under the league's floor × this (V0.16). */
+  payrollFloor: 1.2,
   groupSwing: { chance: 0.15, size: 0.1 },
   midsizeReward: 0.05,
   /** Citizen clubs (V0.7.7): the mayor's stance (support factor every year, a budget shift when elected,
@@ -654,3 +662,21 @@ export const FOREIGN = {
     { pos: 'SS', share: 0.06, defense: 58, speed: 52, power: -7, contact: 1 },
   ] as { pos: import('../model/position').Position; share: number; defense: number; speed: number; power: number; contact: number }[],
 };
+
+/** Basic difficulty beyond money (V0.14, docs/PLAN-1.0.md §4 C). Only the user's club feels it, so the
+    league alone and the golden master do not move; normal changes nothing. Game assumptions. */
+export const DIFFICULTY = {
+  /** The owner's money (founding fund, payroll budget, support limit and the budget's floor), × this. V0.16 widened
+      it from ±10%: in the paired runs ±10% was lost in the luck of the league. */
+  money: { easy: 1.25, normal: 1, hard: 0.85 },
+  /** Added to how much a free agent likes our offer (his fit, 1 = as offered). */
+  faFit: { easy: 0.05, normal: 0, hard: -0.05 },
+  /** Added to the chance a player takes our salary figure, a freeze or an extension. */
+  salaryAccept: { easy: 0.1, normal: 0, hard: -0.1 },
+  /** Our scouts' read of the future: added to their accuracy (0 = the public grade, 1 = the truth). */
+  scoutEdge: { easy: 0.2, normal: 0, hard: -0.2 },
+  /** The premium an AI club wants on top before it says yes to our trade. */
+  tradePremium: { easy: 0.94, normal: 1, hard: 1.08 },
+  /** The owner's trust: what it loses after a bad season or an event, × this. */
+  trustLoss: { easy: 0.75, normal: 1, hard: 1.25 },
+} as const;

@@ -11,8 +11,8 @@ import { milestone, unlock } from './milestones';
 import type { ParentCompanyType } from '../club/types';
 import { fromDraftProspect, placeClass } from '../model/player';
 import type { Player, PlayerId, Team, TeamId } from '../model/types';
-import { EXPANSION_DEFAULTS, minimumSalaryFor } from '../rules/kbo2026';
-import { foreignContract, renewSalary, salaryIn } from './contracts';
+import { EXPANSION_DEFAULTS, KBO_2026, minimumSalaryFor } from '../rules/kbo2026';
+import { foreignContract, MANWON_PER_USD, renewSalary, salaryIn } from './contracts';
 import { splitContract } from './foreign';
 import { projectedPayroll as marketPayroll } from './market';
 import { clubOptionsDue } from './fa';
@@ -35,7 +35,7 @@ import {
   type OffseasonStep,
 } from './offseason';
 import { ageIn, isForeign, isPitcher, keepValue, makeForeign } from './players';
-import { OFFSEASON, PARENT } from './tuning';
+import { DIFFICULTY, OFFSEASON, PARENT } from './tuning';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './foreignpool';
 import { marchEvents, nextNationalDecision, novemberEvents } from './national';
 import { disputeDecision } from './dispute';
@@ -72,7 +72,7 @@ const PARENT_MONEY: Record<ParentCompanyType, { fund: number; payroll: number; d
   namingRights: { fund: 1_700_000, payroll: 700_000, developmentFund: 200_000 },
   citizen: { fund: 1_400_000, payroll: 550_000, developmentFund: 200_000 },
 };
-const DIFFICULTY_MONEY = { easy: 1.1, normal: 1, hard: 0.9 } as const;
+const DIFFICULTY_MONEY = DIFFICULTY.money;
 
 export const STADIUM_PLANS = {
   existing: { label: '연고지 구장 그대로 사용', seats: null as number | null, opens: null as number | null },
@@ -105,7 +105,10 @@ export function difficultyStars(settings: ExpansionSettings): number {
   const seats = settings.stadium === 'existing' ? city.stadium.seats : STADIUM_PLANS[settings.stadium].seats!;
   const park = seats < 10_000 ? 1 : seats < 15_000 ? 0.5 : 0;
   const base = { easy: -0.08, normal: 0, hard: 0.08 }[settings.difficulty];
-  return Math.max(1, Math.min(5, Math.round(1 + (money * 0.5 + market * 0.3 + park * 0.2 + base) * 5)));
+  // The owner beyond its money (V0.16): in the balance runs a citizen club was the hardest by far, more than its
+  // budget alone shows (docs/BALANCE.md).
+  const owner = { conglomerate: 0, midsize: 0.03, namingRights: 0.03, citizen: 0.12 }[settings.parentType];
+  return Math.max(1, Math.min(5, Math.round(1 + (money * 0.5 + market * 0.3 + park * 0.2 + base + owner) * 5)));
 }
 
 const user = (s: LeagueState): UserClub => {
@@ -313,6 +316,23 @@ export function foreignRenewDecision(s: LeagueState, next: number): Decision | n
     kind: 'foreignRenew',
     rows: ending.map((p) => ({ id: p.id, ask: foreignRenewalAsk(p, next), war: lastRecord(p, next - 1)?.war ?? 0, leaving: foreignLeaves(s, p, next) })),
   };
+}
+
+/**
+ * While the free-agent market is open (V0.16): about what next season's foreign players will add to the payroll
+ * budget, since they sign at the end of the winter, after the free agents — the asks of those whose deals end
+ * and a typical new signing for each slot still open. Offers that leave no room for them leave the club short.
+ */
+export function foreignReserve(s: LeagueState, teamId: TeamId, next: number): number {
+  const slots = foreignSlots(s, teamId, next);
+  const all = foreignOn(s, teamId);
+  const ending = all.filter((p) => !p.contract?.salaries.some((x) => x.season >= next));
+  const count = (asia: boolean) => all.filter((p) => !!p.origin.asiaQuota === asia).length;
+  const usd =
+    ending.reduce((a, p) => a + foreignRenewalAsk(p, next), 0) +
+    Math.max(0, slots.regular - count(false)) * OFFSEASON.foreign.newReserveUSD +
+    Math.max(0, slots.asia - count(true)) * KBO_2026.foreign.asiaQuotaCapUSD;
+  return Math.round(usd * MANWON_PER_USD);
 }
 
 /** New foreign signings for the open slots, or null when every slot is filled. */

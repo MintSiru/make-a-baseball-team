@@ -17,7 +17,7 @@ import { DEMOTION, FANS, FINANCE as F } from './tuning';
 import { concessionsShare, facilityUpkeep, premiumShare } from './facilities';
 import { favouritesMerch } from './life';
 
-/** The league's broadcast money for `year` (990억 for 2024–26; the next deal assumed 10% higher, then +3% a year). */
+/** The league's broadcast money for `year` (990억 for 2024–26; the next deal assumed 10% higher, then flat: V0.16). */
 export function broadcastPool(year: number): number {
   const B = KBO_2026.broadcast;
   if (year <= 2026) return Math.round(B.annual2024 * (year >= 2024 ? 1 : 0.55 + (year - 2015) * 0.04));

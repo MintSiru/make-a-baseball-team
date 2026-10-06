@@ -2,7 +2,7 @@
    club makes or changes offers (bonus, salary, incentives, a period option, promises), then lets the days run:
    to the next round, until one of its talks has news, or to the end of the market. */
 import { useEffect, useMemo, useState } from 'preact/hooks';
-import { autoDecision, checkDecision, type DecisionInput } from '../league/expansion';
+import { autoDecision, checkDecision, foreignReserve, type DecisionInput } from '../league/expansion';
 import {
   budgetUse,
   capHit,
@@ -118,6 +118,8 @@ export function FaMarket({ league, onSubmit, onPlayer }: Props) {
   }
   const c = openCommitments(league, m, mine).budget;
   const base = payrollBeforeOffers(league, m, next);
+  // V0.16: the foreign players sign after the free agents, from the same budget.
+  const reserve = foreignReserve(league, me, next);
   const cap = salaryCapFor(next);
   const capNow = cap - capRoomFor(league, me, next, new Set(talks.filter((t) => !t.signed && !t.gone).map((t) => t.id)));
   const capAdd = Object.values(mine).reduce((a, o) => a + capHit(o), 0);
@@ -147,12 +149,21 @@ export function FaMarket({ league, onSubmit, onPlayer }: Props) {
           </dd>
         </div>
         <div>
+          <dt>외국인 몫 (겨울 끝 계약)</dt>
+          <dd title="재계약할 외국인의 요구액과 빈자리 신규 계약 예상액">약 {moneyShort(reserve)}</dd>
+        </div>
+        <div>
           <dt>{next} 샐러리캡</dt>
           <dd class={capNow + capAdd > cap ? 'minus' : ''}>
             {moneyShort(Math.round(capNow + capAdd))} / {moneyShort(cap)}
           </dd>
         </div>
       </dl>
+      {base + c <= u.payrollBudget && base + c + reserve > u.payrollBudget && (
+        <p class="notice warn">
+          지금 제안이 모두 성사되면 외국인 선수 몫(약 {moneyShort(reserve)})을 남길 예산이 {moneyShort(base + c + reserve - u.payrollBudget)} 모자랍니다. 외국인 계약은 FA 다음에 하고, 연봉 예산을 넘으면 계약할 수 없습니다.
+        </p>
+      )}
       {m.gift && !m.talks[m.gift.id]!.signed && (
         <p class="notice good">
           <strong>모기업 지원</strong>: {league.players[m.gift.id]!.name} 영입 비용을 보장액 {money(m.gift.total)}까지 모기업이 냅니다 (자금·연봉 예산 밖).{' '}

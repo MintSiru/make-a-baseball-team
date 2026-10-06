@@ -1,0 +1,38 @@
+name: Balance
+
+# A short balance run, started by hand (Actions → Balance → Run workflow). The full 200-seed check runs in a
+# session and only its summary is committed (docs/BALANCE.md); this one is for a quick look after a change.
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: 'A: the league alone, B: an expansion club (each difficulty × owner type)'
+        type: choice
+        options: [A, B]
+        default: A
+      seeds:
+        description: 'Seeds (A) or seeds per cell (B)'
+        default: '3'
+      seasons:
+        description: 'Seasons from 2026'
+        default: '20'
+
+jobs:
+  balance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/balance.ts run ${{ inputs.track }} ${{ inputs.seeds }} ${{ inputs.seasons }} 4 ci
+      - run: npx tsx scripts/balance.ts report ci >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: balance-${{ inputs.track }}
+          path: .balance/ci
+      # Any run that threw or stalled fails the job.
+      - run: npx tsx scripts/balance.ts check ci

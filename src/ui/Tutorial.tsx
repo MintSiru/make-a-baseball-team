@@ -3,8 +3,8 @@ import type { Action } from '../league/actions';
 import type { LeagueState } from '../league/state';
 import { nextLesson } from './tutorial';
 
-export function TutorialCard({ league, tab, onAct }: { league: LeagueState; tab: string; onAct: (a: Action) => void }) {
-  const lesson = nextLesson(league, { tab });
+export function TutorialCard({ league, tab, view, onAct }: { league: LeagueState; tab: string; view?: string; onAct: (a: Action) => void }) {
+  const lesson = nextLesson(league, { tab, view });
   if (!lesson) return null;
   return (
     <aside class="tutorial" aria-labelledby="tutorial-title">

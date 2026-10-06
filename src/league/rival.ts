@@ -35,7 +35,8 @@ const eok = (manwon: number) => `${Math.round(manwon / 1000) / 10}억`;
 
 // ── The founding decision ────────────────────────────────────────────────────────────────────────
 
-const NICKNAMES = ['스톰', '나이츠', '팰컨스', '썬더스', '블레이즈', '코메츠', '레인저스', '스파크스', '오로라', '하운즈'];
+// None of the fictional set's nicknames (clubs.ts), so the two never look alike (V0.16).
+const NICKNAMES = ['스톰', '나이츠', '팰컨스', '썬더스', '블레이즈', '제츠', '레인저스', '스파크스', '오로라', '타이탄스'];
 const COLORS = ['#0b7a75', '#7b2d8e', '#c0392b', '#1b4f9c', '#d35400', '#2e7d32', '#455a64', '#8d6e63'];
 const COMPANIES = ['한빛그룹', '대륙건설', '새솔식품', '누리통신', '푸른에너지', '온누리유통'];
 const GM_KEYS: GmStyle[] = ['balanced', 'develop', 'winNow', 'moneyball'];

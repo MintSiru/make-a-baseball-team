@@ -17,9 +17,11 @@ const EXPERIENCED = POSITION_FIT.experienced;
 
 /** First-team games at each position: career plus this season. */
 export function positionGames(s: LeagueState | null, p: Player): Partial<Record<FieldPos, number>> {
+  // Read for every lineup of every game (V0.14: kept free of throwaway arrays).
   const out: Partial<Record<FieldPos, number>> = {};
   const add = (g?: Partial<Record<FieldPos, number>>) => {
-    for (const [k, v] of Object.entries(g ?? {})) out[k as FieldPos] = (out[k as FieldPos] ?? 0) + (v ?? 0);
+    if (!g) return;
+    for (const k in g) out[k as FieldPos] = (out[k as FieldPos] ?? 0) + (g[k as FieldPos] ?? 0);
   };
   for (const c of p.career) if (!c.level) add(c.bat?.posG);
   if (s) add(s.lines[p.id]?.bat?.posG);

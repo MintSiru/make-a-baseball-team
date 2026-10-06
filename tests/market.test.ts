@@ -5,7 +5,7 @@ import { autoDecision, EXPANSION_ID } from '../src/league/expansion';
 import { createLeague } from '../src/league/history';
 import { externalLimit, faGrades } from '../src/league/market';
 import { freeAgentsFor } from '../src/league/offseason';
-import { isForeign } from '../src/league/players';
+import { isForeign, keepValue } from '../src/league/players';
 import { orgPlayers, registeredIds, type LeagueState } from '../src/league/state';
 import { checkTrade, foreignMarket, tradeValue, tradeWindow } from '../src/league/trade';
 import { numbersCheck } from '../src/story/writer';
@@ -82,6 +82,21 @@ describe('releases and waivers', () => {
       expect(s.players[p.id]!.teamId).toBe(EXPANSION_ID);
       expect(moveAbout(p.id)?.title).toContain('자유계약선수');
     } else expect(moveAbout(p.id)?.title).toContain('웨이버로');
+  }, 60_000);
+
+  it('a claim clears the claimed player’s remaining salary only, not a namesake’s (V0.16)', () => {
+    const p = orgPlayers(s, EXPANSION_ID)
+      .filter((x) => !isForeign(x) && !s.rosters[EXPANSION_ID]!.active.includes(x.id))
+      .sort((a, b) => keepValue(b, s.year) - keepValue(a, s.year))[0]!;
+    apply(s, { kind: 'release', id: p.id });
+    expect(s.user!.deadMoney!.some((x) => x.id === p.id)).toBe(true);
+    // Another released player with the same name, still owed next year.
+    const namesake = { season: s.year + 1, amount: 1_000, label: `${p.name} 잔여 연봉`, id: 'namesake' };
+    s.user!.deadMoney!.push(namesake);
+    apply(s, { kind: 'days', days: 9 });
+    expect(s.players[p.id]!.teamId).not.toBeNull();
+    expect(s.user!.deadMoney!.some((x) => x.id === p.id)).toBe(false);
+    expect(s.user!.deadMoney).toContainEqual(namesake);
   }, 60_000);
 });
 

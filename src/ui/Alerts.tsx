@@ -3,6 +3,7 @@
    the articles about our club), and the list of all of them in the club's news. The pop-ups can be turned
    off, and the articles alone; the list stays. */
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { useFocusTrap } from './modal';
 import type { Alert, AlertKind } from '../league/alerts';
 
 export const ALERT_LABEL: Record<AlertKind, string> = {
@@ -76,21 +77,18 @@ export function AlertPopup({ alerts, onDone }: { alerts: Alert[]; onDone: (ids: 
   const [i, setI] = useState(0);
   const [, setPopups] = useAlertPopups();
   const ok = useRef<HTMLButtonElement>(null);
+  const box = useRef<HTMLDivElement>(null);
+  useFocusTrap(box, () => all());
   const a = alerts[Math.min(i, alerts.length - 1)];
   const all = () => onDone(alerts.map((x) => x.id));
   const last = i >= alerts.length - 1;
   useEffect(() => {
     ok.current?.focus();
   }, [a?.id]);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && all();
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [alerts]);
   if (!a) return null;
   return (
     <div class="overlay alert-overlay">
-      <div class={`dialog alert-dialog tone-${a.tone ?? 'info'}`} role="alertdialog" aria-modal="true" aria-labelledby="alert-title" aria-describedby="alert-lines">
+      <div class={`dialog alert-dialog tone-${a.tone ?? 'info'}`} role="alertdialog" aria-modal="true" aria-labelledby="alert-title" aria-describedby="alert-lines" ref={box}>
         <p class="alert-kind">
           <span class="alert-icon" aria-hidden="true">
             {ICON[a.kind]}

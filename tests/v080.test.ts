@@ -3,8 +3,8 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { SIM_VERSION } from '../src/core/version';
 import { apply } from '../src/league/actions';
-import { capPay, salaryIn } from '../src/league/contracts';
-import { autoDecision, checkDecision, EXPANSION_ID } from '../src/league/expansion';
+import { capPay, MANWON_PER_USD, salaryIn } from '../src/league/contracts';
+import { autoDecision, checkDecision, EXPANSION_ID, foreignReserve } from '../src/league/expansion';
 import {
   capHit,
   faContract,
@@ -28,12 +28,14 @@ import {
   type FaOffer,
 } from '../src/league/fa';
 import { demotionCut } from '../src/league/finance';
+import { foreignSlots } from '../src/league/manager';
+import { KBO_2026 } from '../src/rules/kbo2026';
 import { createLeague } from '../src/league/history';
 import { freeAgentsFor } from '../src/league/offseason';
 import { movePlayer } from '../src/league/market';
-import { ageIn } from '../src/league/players';
-import { emptyBat, type LeagueState } from '../src/league/state';
-import { FA } from '../src/league/tuning';
+import { ageIn, isForeign } from '../src/league/players';
+import { emptyBat, orgPlayers, type LeagueState } from '../src/league/state';
+import { FA, OFFSEASON } from '../src/league/tuning';
 import { makeSave, parseSave, serializeSave } from '../src/save/format';
 import { endRegular } from './helpers';
 
@@ -92,6 +94,16 @@ describe('the market opens', () => {
     for (const x of rows) expect(offerTotal(x.o)).toBeGreaterThan(guaranteed(x.o));
     const old = rows.find((x) => x.p.career.length && x.o.years <= 2);
     if (old) expect(old.o.years).toBeLessThan(4);
+  });
+});
+
+describe('room for the foreign players (V0.16)', () => {
+  it('the market shows what the foreign players, signed after it, will take from the budget', () => {
+    // The club enters the first team: no foreign player yet, every slot (one more for a new club) to fill.
+    expect(orgPlayers(s, EXPANSION_ID).filter(isForeign)).toHaveLength(0);
+    const slots = foreignSlots(s, EXPANSION_ID, next());
+    expect(slots.regular).toBe(KBO_2026.foreign.regular + 1);
+    expect(foreignReserve(s, EXPANSION_ID, next())).toBe(Math.round((slots.regular * OFFSEASON.foreign.newReserveUSD + slots.asia * KBO_2026.foreign.asiaQuotaCapUSD) * MANWON_PER_USD));
   });
 });
 

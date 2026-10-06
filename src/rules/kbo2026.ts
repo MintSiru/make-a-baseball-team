@@ -45,13 +45,13 @@ export const KBO_2026 = {
       { year: 2027, cap: 1511709 },
       { year: 2028, cap: 1587294 },
     ] satisfies SalaryCapYear[],
-    growthAfter2028: 0.05, // assumed: the announced 5% steps continue
+    growthAfter2028: 0, // assumed (V0.16): money stays in today's terms after the announced steps (RULES.md §9)
     firstOverageLevy: 0.3,
     /** Levy by consecutive seasons over the cap (1st, 2nd, 3rd+), and the 1st-round pick drop from the 3rd (S37). */
     levies: [0.3, 0.5, 1.0],
     pickDropFrom: 3,
     pickDrop: 9,
-    floor: { from: 2027, amount: 606538, growth: 0.05 },
+    floor: { from: 2027, amount: 606538, growth: 0 }, // growth assumed 0 (V0.16), like the cap after 2028
     exceptionPlayerShare: 0.5,
   },
 
@@ -113,8 +113,8 @@ export const KBO_2026 = {
     month: 9,
     order: 'reverse-standings' as const,
   },
-  /** Broadcast rights: terrestrial TV 540억 + CJ ENM (TVING) 450억 a year for 2024–26, shared equally (S41). The next deal is a game assumption. */
-  broadcast: { annual2024: 9_900_000, nextDeal: 1.1, growth: 0.03 },
+  /** Broadcast rights: terrestrial TV 540억 + CJ ENM (TVING) 450억 a year for 2024–26, shared equally (S41). The next deal is a game assumption (10% more from 2027, then flat: V0.16 keeps money in today's terms). */
+  broadcast: { annual2024: 9_900_000, nextDeal: 1.1, growth: 0 },
   /** Postseason ticket money (KBO 규정 제47조, S42): costs off the top, the regular-season winner 20%, then 50/24/14/9/3%. */
   postseasonShares: { costs: 0.4, regularSeasonWinner: 0.2, champion: 0.5, runnerUp: 0.24, third: 0.14, fourth: 0.09, fifth: 0.03 },
   /** KBO–MLB posting (2018 agreement): seven seasons, one player per club a winter, fee tiers on the guaranteed value (S39, S40). */

@@ -34,8 +34,10 @@ const BOOM: Record<number, number> = {
 };
 export const boom = (year: number) => BOOM[year] ?? 1;
 
-/** Average ticket price (만 원) for the league in `year`: 16,600원 in 2025 (2,046억 / 1,231만), +3% a year. */
-export const leaguePrice = (year: number) => FANS.price2025 * (1 + FANS.priceGrowth) ** (year - 2025);
+/** Average ticket price (만 원) for the league in `year`: 16,600원 in 2025 (2,046억 / 1,231만), +3% a year up to
+    2026. After that the game keeps money in today's terms (V0.16): salaries never inflated, so rising prices
+    alone made every club richer each year (docs/BALANCE.md). */
+export const leaguePrice = (year: number) => FANS.price2025 * (1 + FANS.priceGrowth) ** (Math.min(year, FANS.priceUntil) - 2025);
 
 export function initialClubState(s: LeagueState, teamId: TeamId): ClubState {
   const team = s.teams.find((t) => t.id === teamId)!;

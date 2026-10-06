@@ -2,6 +2,7 @@
    bars, then tabs for season records (with career totals), career highs, left/right splits and
    injuries. Everything shown is public: grades are scouting reports, velocity is the radar gun. */
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { useFocusTrap } from './modal';
 import { TOOL_LABELS } from '../draftroom';
 import type { Split, Splits } from '../league/engine/types';
 import type { Action } from '../league/actions';
@@ -252,12 +253,11 @@ export function PlayerPanel({
 }) {
   const card = playerCard(league, id);
   const heading = useRef<HTMLHeadingElement>(null);
+  const box = useRef<HTMLDivElement>(null);
+  useFocusTrap(box, onClose);
   const [tab, setTab] = useState<Tab>('seasons');
   useEffect(() => {
     heading.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
   }, [id]);
   if (!card) return null;
   const p = card.player,
@@ -272,7 +272,7 @@ export function PlayerPanel({
   const trips = (league.user?.trips ?? []).filter((t) => t.id === p.id);
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div class="dialog profile" role="dialog" aria-modal="true" aria-labelledby="player-name">
+      <div class="dialog profile" role="dialog" aria-modal="true" aria-labelledby="player-name" ref={box}>
         <button type="button" class="close" onClick={onClose} aria-label="닫기">
           닫기
         </button>

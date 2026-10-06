@@ -430,8 +430,9 @@ export interface UserClub {
   seasonSupport?: { year: number; amount: number };
   /** The general manager has picked staff once (the first winter always asks). */
   staffSeen?: boolean;
-  /** Guaranteed salary still owed to players the club released (counts against the payroll budget). */
-  deadMoney?: { season: number; amount: number; label: string }[];
+  /** Guaranteed salary still owed to players the club released (counts against the payroll budget). The
+      player's id is kept from V0.16 (older saves only have the label). */
+  deadMoney?: { season: number; amount: number; label: string; id?: PlayerId }[];
   /** Name for the new ballpark when it opens (STADIUM_PLANS); default "<city> 신구장". */
   newStadiumName?: string;
   /** Club news: military results, re-signings, refusals, position changes. */

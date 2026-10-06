@@ -4,7 +4,7 @@
    spectator path on a phone-sized screen.
    Run `npm run build` first. Uses CHROMIUM_BIN when set, else Playwright's own browser lookup.
    Screenshots go to tests/browser/screenshots/ (git-ignored). */
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { chromium } from 'playwright-core';
@@ -34,6 +34,17 @@ const noOverflow = async (page, label) => {
 
 /** Batch choices (V0.7.6) are tried once each: the select-all box and a row of one-click settings. */
 const batch = { all: false, bar: false, fa: false };
+// 0.15: axe-core (WCAG 2 A/AA) on a screen; serious and critical findings fail the run.
+const AXE = join(root, 'node_modules', 'axe-core', 'axe.min.js');
+async function axeCheck(page, label) {
+  if (!(await page.evaluate(() => !!window.axe))) await page.addScriptTag({ path: AXE });
+  const found = await page.evaluate(async () =>
+    (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa'] })).violations
+      .filter((v) => v.impact === 'serious' || v.impact === 'critical')
+      .map((v) => `${v.id} ×${v.nodes.length} (${v.nodes[0]?.target.join(' ')})`),
+  );
+  check(found.length === 0, `accessibility ${label}: ${found.join('; ')}`);
+}
 
 /** Makes every pending decision the way the scouts suggest (draft picks: the first one by hand). */
 async function decideAll(page, log) {
@@ -52,6 +63,8 @@ async function decideAll(page, log) {
         batch.fa = true;
         // 0.10.1: the name opens his profile (grades and stats are in the list too); talks open from the button.
         check(/\d/.test((await page.locator('.fa-table tbody tr').first().locator('td').nth(4).textContent()) ?? ''), 'the free-agent list shows his grade');
+        // 0.16: what the foreign players, signed after the market, will need from the same budget.
+        check(/외국인 몫/.test((await page.locator('.fa-summary').textContent()) ?? ''), 'the market keeps the foreign players in view');
         await page.locator('.fa-table tbody .link').first().click();
         await page.locator('.dialog.profile').waitFor();
         await page.keyboard.press('Escape');
@@ -171,9 +184,12 @@ try {
   await page.screenshot({ path: join(shots, 'tutorial.png'), fullPage: false });
   await page.locator('.tutorial').getByRole('button', { name: '알겠어요' }).click();
   await page.waitForFunction(() => document.querySelector('.tutorial h2')?.textContent === '결정할 일');
+  check((await page.locator('.decision details.help summary').first().textContent()) === '이 결정은?', 'a decision explains itself (이 결정은?)');
   check((await page.locator('h1').textContent()) === '울산 고래단', 'masthead shows the club');
-  // Display settings (V0.7.6): the bar colours by grade tier, kept in this browser.
-  await page.getByRole('button', { name: '화면 설정', exact: true }).click();
+  // Display settings (V0.7.6): the bar colours by grade tier, kept in this browser. Since 0.13 they live in
+  // the settings tab, opened from the masthead.
+  await page.locator('.masthead').getByRole('button', { name: '설정', exact: true }).click();
+  await page.locator('#settings-display').waitFor();
   await page.getByRole('radio', { name: /등급별 색/ }).check();
   check((await page.evaluate(() => document.documentElement.style.getPropertyValue('--grade-4'))) !== '', 'bar colours by grade tier are applied');
   await page.getByRole('checkbox', { name: /선수 표의 현재·미래 능력치/ }).check();
@@ -182,7 +198,27 @@ try {
   const articles = page.getByRole('checkbox', { name: /우리 구단 기사/ });
   check(await articles.isChecked(), 'articles about our club pop up by default');
   await page.screenshot({ path: join(shots, 'display-settings.png'), fullPage: false });
-  await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
+  // 0.13: the clubs can take the fictional names (and back); the standings follow.
+  await page.getByRole('button', { name: '가상 이름 세트 넣기' }).click();
+  await page.getByRole('button', { name: '이름 적용' }).click();
+  await page.locator('nav.tabs').getByRole('button', { name: '순위', exact: true }).click();
+  check((await page.locator('.standings').first().textContent())?.includes('솔빛'), 'standings show the renamed clubs');
+  await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
+  await page.locator('#settings-clubs').screenshot({ path: join(shots, 'club-names.png') });
+  await page.getByRole('button', { name: '실제 이름 넣기' }).click();
+  await page.getByRole('button', { name: '이름 적용' }).click();
+  await page.locator('nav.tabs').getByRole('button', { name: '순위', exact: true }).click();
+  check((await page.locator('.standings').first().textContent())?.includes('KIA'), 'the real names come back');
+  // 0.14: the difficulty can change mid-game (confirmed, then noted on the timeline).
+  await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
+  page.once('dialog', (d) => d.accept());
+  await page.getByRole('group', { name: '난이도' }).getByRole('button', { name: '어려움', exact: true }).click();
+  await page.waitForFunction(() => document.querySelector('[aria-label="난이도"] [aria-pressed="true"]')?.textContent === '어려움');
+  page.once('dialog', (d) => d.accept());
+  await page.getByRole('group', { name: '난이도' }).getByRole('button', { name: '보통', exact: true }).click();
+  await page.waitForFunction(() => document.querySelector('[aria-label="난이도"] [aria-pressed="true"]')?.textContent === '보통');
+  check(true, 'difficulty switches back and forth');
+  await page.getByRole('button', { name: /결정할 일/ }).click();
   const log = [];
   await decideAll(page, log);
 
@@ -280,6 +316,15 @@ try {
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
   await page.getByRole('button', { name: '라인업', exact: true }).click();
   check((await page.locator('svg.diamond .spot').count()) === 9, 'nine players on the diamond');
+  // 0.16: the tutorial (still on) explains the part of the club screen that is open, once the lessons before it are read.
+  const lessonNow = () => page.evaluate(() => document.querySelector('.tutorial h2')?.textContent ?? '');
+  for (let i = 0; i < 6; i++) {
+    const title = await lessonNow();
+    if (!title || title === '라인업') break;
+    await page.locator('.tutorial').getByRole('button', { name: '알겠어요' }).click();
+    await page.waitForFunction((t) => (document.querySelector('.tutorial h2')?.textContent ?? '') !== t, title, { timeout: 10_000 }).catch(() => {});
+  }
+  check((await lessonNow()) === '라인업', `the tutorial explains the lineup view when it is opened (${await lessonNow()})`);
   await page.getByRole('button', { name: '상대 좌완 선발' }).click();
   // The general manager's lineup card (V0.8): fix today's lineup, save it, and play a week with it.
   await page.getByRole('button', { name: '직접 짜기' }).click();
@@ -326,10 +371,33 @@ try {
   await page.getByRole('group', { name: '이야기' }).getByRole('button', { name: '뉴스', exact: true }).click();
   for (const v of ['이적', '경기', '전체']) await page.getByRole('group', { name: '기사 종류' }).getByRole('button', { name: v, exact: true }).click();
   await page.screenshot({ path: join(shots, 'story.png'), fullPage: false });
-  await page.getByRole('button', { name: /^AI 기사 설정/ }).click();
-  await page.getByRole('dialog').waitFor();
-  await page.getByLabel('제공자').selectOption('gemini');
-  await page.getByRole('dialog').getByRole('button', { name: '닫기' }).click();
+  // 0.13: AI settings in the settings tab. A key typed there must never reach a save (the autosave or a file).
+  await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
+  const storyBlock = page.locator('#settings-story');
+  await storyBlock.getByLabel('제공자').selectOption('gemini');
+  const SECRET = 'test-key-never-saved-0130';
+  await storyBlock.getByLabel('API 키').fill(SECRET);
+  await storyBlock.getByRole('button', { name: '저장', exact: true }).click();
+  await page.locator('nav.tabs').getByRole('button', { name: '순위', exact: true }).click();
+  await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
+  const [download] = await Promise.all([page.waitForEvent('download'), page.locator('#settings-save').getByRole('button', { name: '진행 파일 저장' }).click()]);
+  const file = readFileSync(await download.path(), 'utf8');
+  check(file.length > 1000 && !file.includes(SECRET), 'an exported save holds no API key');
+  const stored = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const open = indexedDB.open('kbo-expansion');
+        open.onsuccess = () => {
+          const req = open.result.transaction('saves').objectStore('saves').getAll();
+          req.onsuccess = () => resolve(JSON.stringify(req.result));
+          req.onerror = () => resolve('');
+        };
+        open.onerror = () => resolve('');
+      }),
+  );
+  check(!stored.includes(SECRET), 'the autosave holds no API key');
+  check((await page.locator('#settings-save').textContent())?.includes('마지막 진행 파일 저장'), 'the settings show the last export');
+  await storyBlock.getByRole('button', { name: '키 지우기' }).click();
   await page.getByRole('button', { name: '역대', exact: true }).click();
   for (const v of ['시상', '기록실', '명예의 전당', '시즌']) await page.getByRole('group', { name: '역대' }).getByRole('button', { name: v, exact: true }).click();
   await page.getByRole('group', { name: '역대' }).getByRole('button', { name: '기록실', exact: true }).click();
@@ -367,7 +435,11 @@ try {
   check((await page.locator('.profile-number').textContent()) === '77', 'the uniform number can be set');
   await page.screenshot({ path: join(shots, 'player.png') });
   for (const t of ['통산 · 커리어 하이', '좌우 기록', '부상 이력', '연도별 기록']) await page.getByRole('tab', { name: t }).click();
+  // 0.15: the keyboard stays inside the dialog, and Escape hands the focus back to the name that opened it.
+  for (let i = 0; i < 40; i++) await page.keyboard.press('Tab');
+  check(await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]')), 'Tab stays inside the player dialog');
   await page.keyboard.press('Escape');
+  check(await page.evaluate(() => !!document.activeElement?.closest('.squad-table')), 'closing the dialog returns the focus to the list');
   // A hitter's profile, and the bullpen role / platoon controls under manual entry.
   await page.locator('.squad-table').nth(1).locator('.link').first().click();
   await page.getByRole('dialog').waitFor();
@@ -383,14 +455,32 @@ try {
   // 7. Layouts.
   for (const [width, height] of SIZES) {
     await page.setViewportSize({ width, height });
-    for (const tab of ['우리 구단', '이적시장', '경기', '순위', '기록', '구단', '역대', '드래프트 후보']) {
-      await page.getByRole('button', { name: tab, exact: true }).click();
+    for (const tab of ['우리 구단', '이적시장', '경기', '순위', '기록', '구단', '역대', '드래프트 후보', '설정', '도움말']) {
+      await page.locator('nav.tabs').getByRole('button', { name: tab, exact: true }).click();
       await noOverflow(page, `${width}x${height} ${tab}`);
+      if (width === 1440 || width === 390) await axeCheck(page, `${width}x${height} ${tab}`);
     }
     await page.getByRole('button', { name: '우리 구단', exact: true }).click();
     await page.screenshot({ path: join(shots, `${width}x${height}.png`) });
     console.log(`ok ${width}x${height}`);
   }
+  // 0.15: the dark page (the system's, then the player's own pick in the settings) passes the same checks.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ colorScheme: 'dark' });
+  for (const tab of ['우리 구단', '이적시장', '순위', '구단', '설정']) {
+    await page.locator('nav.tabs').getByRole('button', { name: tab, exact: true }).click();
+    await axeCheck(page, `dark ${tab}`);
+  }
+  await page.screenshot({ path: join(shots, 'dark-390.png') });
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.getByRole('group', { name: '밝기' }).getByRole('button', { name: '어둡게' }).click();
+  check((await page.evaluate(() => document.documentElement.dataset.theme)) === 'dark', 'the player can pick dark over the system');
+  await axeCheck(page, 'picked dark settings');
+  await page.getByRole('group', { name: '글자 크기' }).getByRole('button', { name: '크게' }).click();
+  await noOverflow(page, '390 large text settings');
+  await page.screenshot({ path: join(shots, 'dark-large-390.png') });
+  await page.getByRole('group', { name: '밝기' }).getByRole('button', { name: '기기 설정 따르기' }).click();
+  await page.getByRole('group', { name: '글자 크기' }).getByRole('button', { name: '보통' }).click();
   check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
   await context.close();
 

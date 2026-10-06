@@ -1,6 +1,7 @@
 /* One game (V0.7): the line score, both clubs' batting and pitching, and for the user's games the text
    relay, which can be replayed play by play (관전 모드). */
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useFocusTrap } from './modal';
 import type { LeagueState } from '../league/state';
 import { boxView } from '../league/views';
 import type { Action } from '../league/actions';
@@ -34,11 +35,10 @@ export function BoxScore({
   const [shown, setShown] = useState<number | null>(null);
   const [speed, setSpeed] = useState(1100);
   const heading = useRef<HTMLHeadingElement>(null);
+  const box = useRef<HTMLDivElement>(null);
+  useFocusTrap(box, onClose);
   useEffect(() => {
     heading.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
   }, [id]);
   // Replay: one more play every tick until the end.
   useEffect(() => {
@@ -67,7 +67,7 @@ export function BoxScore({
   );
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div class="dialog box-dialog" role="dialog" aria-modal="true" aria-labelledby="box-title">
+      <div class="dialog box-dialog" role="dialog" aria-modal="true" aria-labelledby="box-title" ref={box}>
         <button type="button" class="close" onClick={onClose} aria-label="닫기">
           닫기
         </button>

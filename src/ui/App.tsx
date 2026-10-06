@@ -10,9 +10,16 @@ import { ageOn, publicView } from '../model/player';
 import type { CalendarPhase, Player, PlayerId } from '../model/types';
 import { makeSave, parseSave, SaveError, serializeSave } from '../save/format';
 import { openStore, type SaveStore } from '../save/store';
+import { autoSaver, type AutoSaver } from '../save/autosave';
+import { readSaveFile } from '../save/compress';
 import { BoxScore } from './BoxScore';
 import { StorySettings } from './StorySettings';
 import { DisplaySettings } from './DisplaySettings';
+import { readableAccent } from './display';
+import { useDark } from './useDisplay';
+import { lastExport, noteExport, Settings } from './Settings';
+import { Manual } from './Manual';
+import { DISCLAIMER } from '../core/about';
 import { ClubSummary } from './ClubSummary';
 import { AlertPopup, poppingAlerts, useAlertPopups, useArticlePopups } from './Alerts';
 import { TutorialCard } from './Tutorial';
@@ -39,7 +46,7 @@ import { TeamRoster } from './TeamRoster';
 const AUTO_SLOT = 'auto';
 const newSeed = () => `kbo-${Math.floor(Math.random() * 36 ** 6).toString(36)}`;
 
-type Tab = 'decision' | 'club' | 'market' | 'games' | 'standings' | 'leaders' | 'team' | 'history' | 'draft';
+type Tab = 'decision' | 'club' | 'market' | 'games' | 'standings' | 'leaders' | 'team' | 'history' | 'draft' | 'settings' | 'help';
 const TABS: { id: Tab; label: string; userOnly?: boolean; waiting?: boolean }[] = [
   // Only while the game waits for a decision (the winter's steps): the other screens stay open beside it.
   { id: 'decision', label: '결정할 일', waiting: true },
@@ -51,6 +58,8 @@ const TABS: { id: Tab; label: string; userOnly?: boolean; waiting?: boolean }[] 
   { id: 'team', label: '구단' },
   { id: 'history', label: '역대' },
   { id: 'draft', label: '드래프트 후보' },
+  { id: 'settings', label: '설정' },
+  { id: 'help', label: '도움말' },
 ];
 
 const AUTO_KINDS: NewsItem['kind'][] = ['season', 'award', 'month', 'interview'];
@@ -85,6 +94,7 @@ export function App() {
   const [progress, setProgress] = useState('');
   const [notice, setNotice] = useState('');
   const [tab, setTab] = useState<Tab>('club');
+  const [clubView, setClubView] = useState('overview');
   const [boxId, setBoxId] = useState<string | null>(null);
   const [teamId, setTeamId] = useState<string>('kia');
   const [playerId, setPlayerId] = useState<PlayerId | null>(null);
@@ -100,6 +110,7 @@ export function App() {
   const [popups] = useAlertPopups();
   const [articles] = useArticlePopups();
   const [alertsOpen, setAlertsOpen] = useState(false);
+  const dark = useDark();
   const autoTried = useRef(new Set<string>());
   const autoTries = useRef(new Map<string, number>());
   // Automatic mode waits until this time (ms); the tick wakes it up.
@@ -122,6 +133,25 @@ export function App() {
       setNotice('진행을 자동 저장하지 못했습니다. 진행 파일로 저장해 두세요.');
     }
   };
+  // V0.14: everyday steps save a moment later, one write at a time (a burst of clicks is one write).
+  const saver = useRef<AutoSaver<LeagueState> | null>(null);
+  const saveSoon = (st: SaveStore, s: LeagueState) => (saver.current ??= autoSaver((x) => persist(st, x))).schedule(s);
+  /** A new or loaded game: saved at once, after anything still waiting (so an older state cannot land last). */
+  const saveNow = async (st: SaveStore, s: LeagueState) => {
+    saveSoon(st, s);
+    await saver.current!.flush();
+  };
+  useEffect(() => {
+    // Leaving the page (closing the tab, switching apps on a phone): write what is waiting now.
+    const flush = () => void saver.current?.flush();
+    const onHide = () => document.visibilityState === 'hidden' && flush();
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', onHide);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', onHide);
+    };
+  }, []);
 
   const build = (s: string) => {
     if (building.current?.seed !== s) building.current = { seed: s, promise: createInWorker(s, (year) => setProgress(`${year} 시즌`)) };
@@ -150,6 +180,20 @@ export function App() {
       setLoading(false);
     })();
   }, []);
+
+  // V0.14: browsers may clear a site's data (Safari after weeks without a visit), autosave and all. A long game
+  // gets a nudge, once a session, to keep a file of its own.
+  const reminded = useRef(false);
+  useEffect(() => {
+    if (!league?.user || reminded.current || store?.kind !== 'indexedDB' || league.year - 2026 < 2) return;
+    const at = lastExport(league.seed);
+    const days = at ? Math.floor((Date.now() - Date.parse(at)) / 86_400_000) : null;
+    if (days !== null && days < 14) return;
+    reminded.current = true;
+    setNotice(
+      `${days === null ? '이 게임을 아직 진행 파일로 저장한 적이 없습니다' : `마지막으로 진행 파일을 저장한 지 ${days}일 지났습니다`}. 브라우저가 사이트 데이터를 지우면 자동 저장도 함께 사라지니, 설정 → 저장에서 진행 파일로 보관해 두세요. 아이폰·아이패드는 홈 화면에 추가해서 열면 더 오래 남습니다.`,
+    );
+  }, [league?.seed, league?.year, store]);
 
   // Start building a league as soon as the founding form is on screen.
   useEffect(() => {
@@ -233,14 +277,14 @@ export function App() {
     if (!base || !store) return;
     const s = applyHere(base, { kind: 'storyText', id: item.id, ai: { ...out.text, provider: PROVIDERS[provider].label, model } });
     show(s);
-    await persist(store, s);
+    saveSoon(store, s);
   }
   async function revertStory(item: NewsItem) {
     const base = latest.current;
     if (!base || !store) return;
     const s = applyHere(base, { kind: 'storyText', id: item.id, ai: null });
     show(s);
-    await persist(store, s);
+    saveSoon(store, s);
   }
 
   const found = async (settings: ExpansionSettings, s: string) => {
@@ -251,7 +295,7 @@ export function App() {
     building.current = null;
     show(next);
     setTab('club');
-    await persist(store, next);
+    await saveNow(store, next);
     setBusy(null);
   };
 
@@ -261,7 +305,7 @@ export function App() {
     building.current = null;
     show(next);
     setTab('standings');
-    await persist(store, next);
+    await saveNow(store, next);
     setBusy(null);
   };
 
@@ -295,7 +339,7 @@ export function App() {
     try {
       const s = heavy ? await applyInWorker(league, action) : applyHere(league, action);
       show(s);
-      await persist(store, s);
+      saveSoon(store, s);
     } catch (e) {
       setNotice(e instanceof Error ? e.message : String(e));
     }
@@ -311,20 +355,27 @@ export function App() {
     a.click();
     a.remove();
     URL.revokeObjectURL(a.href);
+    noteExport(league.seed);
   };
 
   const importSave = async (file: File | undefined) => {
     if (!file) return;
     try {
-      const save = parseSave(await file.text());
+      const save = parseSave(await readSaveFile(file));
       const state = save.snapshot?.state as LeagueState | undefined;
       if (!state?.teams) throw new SaveError('damaged', '진행 파일에 리그 상태가 없습니다.');
       show(state);
-      await persist(store, state);
+      await saveNow(store, state);
       setNotice(save.migratedFrom ? `이전 버전(시뮬레이션 ${save.migratedFrom})의 진행 파일을 ${RELEASE} 규칙으로 옮겨 불러왔습니다.` : '진행 파일을 불러왔습니다.');
     } catch (e) {
       setNotice(e instanceof SaveError ? e.message : '진행 파일을 읽지 못했습니다.');
     }
+  };
+
+  const saveStory = (s: StorySettingsT) => {
+    setStorySettings(s);
+    saveSettings(s);
+    setNotice('AI 기사 설정을 저장했습니다.');
   };
 
   const newGame = () => {
@@ -372,11 +423,16 @@ export function App() {
   );
 
   const userTeam = league.user ? league.teams.find((t) => t.id === league.user!.teamId) : null;
+  // The club colour as the accent, made readable on this page (V0.15).
+  const accent = userTeam ? readableAccent(userTeam.color, dark) : null;
   const unseenAll = league.user ? unseenAlerts(league) : [];
   const unseen = poppingAlerts(unseenAll, articles);
 
   return (
-    <div class="app" style={userTeam ? ({ '--accent': userTeam.color } as Record<string, string>) : undefined}>
+    <div class="app" style={accent ? ({ '--accent': accent.accent, '--accent-ink': accent.ink } as Record<string, string>) : undefined}>
+      <a class="skip-link" href="#main">
+        본문으로 건너뛰기
+      </a>
       {/* V0.7.7: on a wide screen the club, the screens and the saves stay in a sidebar and only the page
           scrolls; on a phone everything flows top to bottom as before. */}
       <aside class="sidebar">
@@ -398,14 +454,8 @@ export function App() {
                 새 알림 {unseen.length}
               </button>
             )}
-            <button type="button" onClick={() => setDisplayOpen(true)}>
-              화면 설정
-            </button>
-            <button type="button" onClick={() => setStoryOpen(true)}>
-              AI 기사 설정{hasKey(storySettings) ? ' ✓' : ''}
-            </button>
-            <button type="button" onClick={newGame} disabled={!!busy}>
-              새 게임
+            <button type="button" aria-current={tab === 'settings' ? 'page' : undefined} onClick={() => setTab('settings')}>
+              설정
             </button>
           </div>
         </header>
@@ -424,14 +474,13 @@ export function App() {
             </button>
             <label class="file-button">
               불러오기
-              <input type="file" accept="application/json,.json" onChange={(e) => importSave((e.currentTarget as HTMLInputElement).files?.[0])} />
+              <input type="file" accept="application/json,.json,.gz" onChange={(e) => importSave((e.currentTarget as HTMLInputElement).files?.[0])} />
             </label>
             <span class="muted">{store.kind === 'indexedDB' ? '자동 저장됨' : '이 브라우저에서는 자동 저장을 쓸 수 없습니다. 진행 파일로 저장하세요.'}</span>
           </div>
-          <p class="muted small">선수·학교·기록은 모두 가상입니다. 구단명과 구장 외에는 실제와 관계없습니다.</p>
+          <p class="muted small">{DISCLAIMER}</p>
         </footer>
       </aside>
-      {displayOpen && <DisplaySettings onClose={() => setDisplayOpen(false)} />}
       {storyOpen && (
         <StorySettings
           settings={storySettings}
@@ -439,8 +488,7 @@ export function App() {
           pausedUntil={storySettings.auto ? autoPause.current : 0}
           onClose={() => setStoryOpen(false)}
           onSave={(s) => {
-            setStorySettings(s);
-            saveSettings(s);
+            saveStory(s);
             setStoryOpen(false);
           }}
         />
@@ -464,21 +512,34 @@ export function App() {
           {controls}
         </fieldset>
       </div>
-      <main class="page" data-version={version}>
+      <main class="page" id="main" tabIndex={-1} data-version={version}>
         {notice && (
           <p class="notice" role="status">
             {notice}
           </p>
         )}
-        <TutorialCard league={league} tab={tab} onAct={(a) => act(a, '튜토리얼', false)} />
+        <TutorialCard league={league} tab={tab} view={tab === 'club' ? clubView : undefined} onAct={(a) => act(a, '튜토리얼', false)} />
         {tab === 'decision' && league.pending && <Decision league={league} onPlayer={setPlayerId} onSubmit={(input) => act({ kind: 'decide', input }, '진행 중', false)} />}
-        {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }} />}
+        {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} onView={setClubView} story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }} />}
         {tab === 'market' && league.user && <Market league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
         {tab === 'games' && <Games league={league} onOpen={setBoxId} />}
         {tab === 'standings' && <Standings league={league} onTeam={openTeam} />}
         {tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} />}
         {tab === 'team' && <TeamRoster league={league} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />}
         {tab === 'history' && <History league={league} onPlayer={setPlayerId} />}
+        {tab === 'settings' && (
+          <Settings
+            league={league}
+            store={store}
+            busy={!!busy}
+            story={{ settings: storySettings, usage: usage.current, pausedUntil: storySettings.auto ? autoPause.current : 0, onSave: saveStory }}
+            onAct={(a) => act(a, '처리 중', false)}
+            onExport={exportSave}
+            onImport={importSave}
+            onNewGame={newGame}
+          />
+        )}
+        {tab === 'help' && <Manual />}
         {tab === 'draft' && (
           <div class="layout">
             <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} ourView={league?.user ? (p) => scoutView(league!, p) : undefined} />
