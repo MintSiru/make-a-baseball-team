@@ -12,8 +12,9 @@ import type { ParentCompanyType } from '../club/types';
 import { fromDraftProspect, placeClass } from '../model/player';
 import type { Player, PlayerId, Team, TeamId } from '../model/types';
 import { EXPANSION_DEFAULTS, KBO_2026, minimumSalaryFor } from '../rules/kbo2026';
-import { foreignContract, MANWON_PER_USD, renewSalary, salaryIn } from './contracts';
-import { splitContract } from './foreign';
+import { foreignContract, MANWON_PER_USD, renewSalary, salaryIn, usdTotal } from './contracts';
+import { splitContract, usd } from './foreign';
+import { dealTotal, reply, signsElsewhere, suggestedOffer, termsFor, type ForeignOffer } from './foreigntalks';
 import { projectedPayroll as marketPayroll } from './market';
 import { clubOptionsDue } from './fa';
 import { foreignSlots } from './manager';
@@ -35,7 +36,7 @@ import {
   type OffseasonStep,
 } from './offseason';
 import { ageIn, isForeign, isPitcher, keepValue, makeForeign } from './players';
-import { DIFFICULTY, OFFSEASON, PARENT } from './tuning';
+import { DIFFICULTY, FOREIGN_TALKS, OFFSEASON, PARENT } from './tuning';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './foreignpool';
 import { marchEvents, nextNationalDecision, novemberEvents } from './national';
 import { disputeDecision } from './dispute';
@@ -344,7 +345,10 @@ export function foreignSigningDecision(s: LeagueState, next: number): Decision |
   const regular = slots.regular - have.filter((p) => !p.origin.asiaQuota).length;
   const asia = slots.asia - have.filter((p) => p.origin.asiaQuota).length;
   if (regular <= 0 && asia <= 0) return null;
-  return { kind: 'foreign', candidates: foreignCandidates(s, next).map((p) => p.id), regular, asia };
+  const candidates = foreignCandidates(s, next);
+  // 1.3.0: talks, not a price list (foreigntalks.ts): each one's ask, his club's fee, any offer elsewhere.
+  const terms = Object.fromEntries(candidates.map((p) => [p.id, termsFor(s.seed, next, p, usdTotal(p.contract))]));
+  return { kind: 'foreign', candidates: candidates.map((p) => p.id), regular, asia, terms, round: 1 };
 }
 
 setOffseasonHooks({ begin: yearlyGrant, draftSlots, decide, rookies: rookieBonusDecision, development: developmentDecision, auto: rivalStep });
@@ -356,7 +360,8 @@ export type DecisionInput =
   | { kind: 'draftPick'; id: PlayerId | null } // null: let the scouts pick
   | { kind: 'specialDraft'; picks: Record<TeamId, PlayerId> }
   | { kind: 'released'; ids: PlayerId[] }
-  | { kind: 'foreign'; ids: PlayerId[] }
+  /** `offers`: what we offer each (1.3.0; his ask within the cap when missing). */
+  | { kind: 'foreign'; ids: PlayerId[]; offers?: Record<PlayerId, ForeignOffer> }
   | { kind: 'roster'; ids: PlayerId[]; develop?: PlayerId[] }
   /** The twelfth club (V0.9): its design, or null to vote it down when the board offers it. */
   | { kind: 'rival'; settings: RivalSettings | null }
@@ -419,7 +424,22 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       const picked = input.ids.map((id) => s.players[id]!);
       if (picked.filter((p) => !p.origin.asiaQuota).length > dd.regular) return `외국인 선수는 ${dd.regular}명까지 더 계약할 수 있습니다.`;
       if (picked.filter((p) => p.origin.asiaQuota).length > dd.asia) return `아시아쿼터는 ${dd.asia}명까지입니다.`;
-      if (input.ids.length && payrollAfter(input.ids) > u.payrollBudget) return '연봉 예산을 넘습니다.';
+      let payroll = projectedPayroll(s, u.teamId, next),
+        fees = 0;
+      for (const p of picked) {
+        const t = dd.terms?.[p.id];
+        if (!t) {
+          payroll += salaryIn(p, next);
+          continue;
+        }
+        const o = input.offers?.[p.id] ?? suggestedOffer(t, newSigningCap(p));
+        if (!(o.guaranteed > 0) || !(o.options >= 0)) return `${p.name}: 제안 금액이 잘못됐습니다.`;
+        if (dealTotal(t, o) > newSigningCap(p)) return `${p.name}: 이적료까지 더한 총액이 ${usd(newSigningCap(p))}을 넘습니다.`;
+        payroll += Math.round(o.guaranteed * MANWON_PER_USD);
+        fees += Math.round(t.fee * MANWON_PER_USD);
+      }
+      if (input.ids.length && payroll > u.payrollBudget) return '연봉 예산을 넘습니다.';
+      if (fees > u.fund) return '이적료를 낼 구단 자금이 부족합니다.';
       return null;
     }
   }
@@ -493,22 +513,90 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
       }
       break;
     case 'foreign': {
-      for (const id of input.ids) {
-        const p = s.players[id]!;
-        leavePool(s, id);
-        sign(s, p, u.teamId, p.contract);
-      }
-      for (const id of (d as Extract<Decision, { kind: 'foreign' }>).candidates) {
-        if (input.ids.includes(id)) continue;
-        // New faces go away; KBO-experienced players stay on the market for the other clubs.
-        if (poolEntry(s, id)) s.players[id]!.contract = null;
-        else delete s.players[id];
+      const again = resolveForeign(s, d as Extract<Decision, { kind: 'foreign' }>, input, next);
+      // Another round of talks while slots are open and someone is still talking (1.3.0).
+      if (again) {
+        s.pending = again;
+        return;
       }
       break;
     }
   }
   s.pending = null;
   if (s.offseason) advanceOffseason(s);
+}
+
+/** The cap on a new foreign signing, transfer fee included (RULES.md §5). */
+export const newSigningCap = (p: Player) => (p.origin.asiaQuota ? KBO_2026.foreign.asiaQuotaCapUSD : KBO_2026.foreign.newContractCapUSD);
+
+/** A round of foreign talks (1.3.0): the offered answer, the others may sign elsewhere; the next round, or null when the
+    talks are over (every slot filled, nobody left, or three rounds). */
+function resolveForeign(s: LeagueState, dd: Extract<Decision, { kind: 'foreign' }>, input: Extract<DecisionInput, { kind: 'foreign' }>, next: number): Decision | null {
+  const u = user(s);
+  const round = dd.round ?? 1;
+  const log: string[] = [];
+  const talking = new Set(dd.candidates);
+  const signed: Player[] = [];
+  const drop = (id: PlayerId) => {
+    talking.delete(id);
+    // New faces go away; KBO-experienced players stay on the market for the other clubs.
+    if (poolEntry(s, id)) s.players[id]!.contract = null;
+    else delete s.players[id];
+  };
+  for (const id of input.ids) {
+    const p = s.players[id]!;
+    const t = dd.terms?.[id];
+    if (!t) {
+      // A decision from before the talks: signed as listed.
+      leavePool(s, id);
+      sign(s, p, u.teamId, p.contract);
+      talking.delete(id);
+      signed.push(p);
+      continue;
+    }
+    const offer = input.offers?.[id] ?? suggestedOffer(t, newSigningCap(p));
+    const answer = reply(t, offer, round, `${s.seed}|foreign-talk|${next}|${id}|${round}`);
+    if (answer.kind === 'accept') {
+      const bonus = Math.round((offer.guaranteed * 0.2) / 10_000) * 10_000;
+      const c = foreignContract(u.teamId, next, { bonus, salary: offer.guaranteed - bonus, options: offer.options }, !!p.origin.asiaQuota, newSigningCap(p));
+      if (t.fee) {
+        c.usd!.fee = t.fee;
+        const won = Math.round(t.fee * MANWON_PER_USD);
+        u.fund -= won;
+        u.ledger.push({ year: next - 1, label: `${p.name} 이적료`, amount: -won });
+      }
+      leavePool(s, id);
+      sign(s, p, u.teamId, c);
+      talking.delete(id);
+      signed.push(p);
+      log.push(`${p.name}: 보장 ${usd(offer.guaranteed)}${offer.options ? ` · 옵션 ${usd(offer.options)}` : ''}에 계약${t.fee ? ` (이적료 ${usd(t.fee)})` : ''}`);
+    } else if (answer.kind === 'counter') {
+      t.counter = answer.amount;
+      t.last = 'counter';
+      log.push(`${p.name}: 보장 ${usd(answer.amount)}을 역제안`);
+    } else {
+      log.push(`${p.name}: 협상 결렬`);
+      drop(id);
+    }
+  }
+  for (const line of log) (u.log ??= []).push({ year: next - 1, text: `외국인 협상 ${round}차: ${line}` });
+  // Those we did not talk to this round may sign somewhere else (on the talks' screen only).
+  for (const id of [...talking]) {
+    const t = dd.terms?.[id];
+    if (!t || input.ids.includes(id)) continue;
+    if (signsElsewhere(t, `${s.seed}|foreign-elsewhere|${next}|${id}|${round}`)) {
+      log.push(`${s.players[id]!.name}: ${t.rival?.label ?? '다른 구단'}과 계약`);
+      drop(id);
+    }
+  }
+  const regular = dd.regular - signed.filter((p) => !p.origin.asiaQuota).length;
+  const asia = dd.asia - signed.filter((p) => p.origin.asiaQuota).length;
+  const left = [...talking];
+  const wanted = left.some((id) => (s.players[id]!.origin.asiaQuota ? asia > 0 : regular > 0));
+  // No offer at all ends the talks.
+  if (dd.terms && input.ids.length && round < FOREIGN_TALKS.rounds && wanted) return { kind: 'foreign', candidates: left, regular, asia, terms: Object.fromEntries(left.map((id) => [id, dd.terms![id]!])), round: round + 1, log };
+  for (const id of left) drop(id);
+  return null;
 }
 
 /** What the scouts would choose, for an "auto" button and for tests. */
@@ -559,8 +647,14 @@ export function autoDecision(s: LeagueState): DecisionInput | null {
         const adding = trial.map((x) => s.players[x]!).filter((p) => !p.origin.asiaQuota);
         return foreignCost([...staying, ...adding]) <= foreignCap(s, user(s).teamId, next, [...staying, ...adding]);
       };
-      for (const id of wanted) if (checkDecision(s, { kind: 'foreign', ids: [...ids, id] }) === null && underCap([...ids, id])) ids.push(id);
-      return { kind: 'foreign', ids };
+      // His ask within the cap (or his counter), no options.
+      const offers: Record<PlayerId, ForeignOffer> = {};
+      for (const id of wanted) {
+        const t = d.terms?.[id];
+        if (t) offers[id] = suggestedOffer(t, newSigningCap(s.players[id]!));
+        if (checkDecision(s, { kind: 'foreign', ids: [...ids, id], offers }) === null && underCap([...ids, id])) ids.push(id);
+      }
+      return { kind: 'foreign', ids, offers: Object.fromEntries(ids.filter((id) => offers[id]).map((id) => [id, offers[id]!])) };
     }
     default:
       return null;

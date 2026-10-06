@@ -81,7 +81,8 @@ export const ENGINE = {
   /** A small-ball manager: steal attempts (logit) and bunts (multiplier). */
   smallBall: { steal: 0.35, bunt: 1.6 },
   /** Manager style: starter pitch limit change. */
-  hook: { quickHook: -8, patient: 6 },
+  /** 1.3.0: `allOut`, our postseason all-out plan (총력전), on top of the manager's own. */
+  hook: { quickHook: -8, patient: 6, allOut: -15 },
   /** Lineup score for the platoon side (batValue points); `half` for a player the GM set as a platoon half. */
   platoonLineup: { edge: 2.5, half: 40 },
   reliever: { maxOutsShort: 4, maxOutsMopUp: 6, maxOutsLong: 9, pitchLimitShort: 28, pitchLimitMopUp: 40, pitchLimitLong: 55, lefty: { starterPitches: 85 } },
@@ -818,3 +819,43 @@ export const ALL_STAR = {
   derby: { field: 8, outs: 7, base: 0.12, perPower: 0.008, min: 0.04, max: 0.42 },
   campaign: { cost: 10_000, boost: 0.25 },
 };
+
+/** Talks with foreign players (1.3.0, league/foreigntalks.ts; game assumptions). `fee`: the chance his club wants a
+    transfer fee and its range (US dollars) by where he played — part of the 100만 달러 (Asia quota 20만) of a new
+    signing. `guaranteedShare`: his guaranteed ask against his listed total; `give`: how far below it he goes;
+    `optionValue`: a dollar of options to him; `reach`: an offer below this share of his floor ends the talks; his
+    counter gives up to `counterGive` of the gap. `rival`: offers elsewhere (chance, and worth against his ask);
+    `elsewhere`: the chance one still talking signs elsewhere between rounds. `renew`: a re-signing takes ask ×
+    (base − 충성심/100 × loyalty), a second year worth that much more to an older player (from `olderFrom`), less to a
+    younger one. */
+export const FOREIGN_TALKS = {
+  fee: {
+    mlb: { chance: 0.6, min: 100_000, max: 300_000 },
+    mlbCup: { chance: 0.45, min: 50_000, max: 200_000 },
+    aaa: { chance: 0.3, min: 30_000, max: 120_000 },
+    npb: { chance: 0.5, min: 50_000, max: 200_000 },
+    indie: { chance: 0, min: 0, max: 0 },
+    asia: { chance: 0.25, min: 10_000, max: 40_000 },
+    other: { chance: 0.2, min: 20_000, max: 80_000 },
+  } as Record<string, { chance: number; min: number; max: number }>,
+  guaranteedShare: [0.82, 0.95] as [number, number],
+  give: [0.86, 0.98] as [number, number],
+  optionValue: 0.5,
+  patience: [2, 3] as [number, number],
+  reach: 0.85,
+  counterGive: 0.5,
+  rival: {
+    npb: { from: 60, chance: 0.25, value: [1.05, 1.6] as [number, number] },
+    mlb: { chance: 0.15, value: [0.75, 1] as [number, number] },
+    other: { chance: 0.1, value: [0.6, 0.85] as [number, number] },
+  },
+  elsewhere: { rival: 0.35, none: 0.12 },
+  rounds: 3,
+  renew: { base: 1, loyalty: 0.15, olderFrom: 31, twoYearsOlder: 0.06, twoYearsYounger: 0.04 },
+};
+
+/** The draft combine (1.3.0, league/combine.ts; a game assumption). The date in the draft year, how many by the
+    public ranking are invited and the share who stay away, the measurement noise (grade points), how far the public
+    report moves to the truth on what is measured (grades come in steps of five, so a half step is often lost); our private workouts a year, their fee (만 원) and how much better
+    our scouts read a prospect we worked out (added to their accuracy, 0–1). */
+export const COMBINE = { date: '08-25', invited: 60, skip: 0.12, noise: 3, reveal: 0.75, workouts: 5, workoutCost: 300, workoutRead: 0.3 };

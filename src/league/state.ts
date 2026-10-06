@@ -183,7 +183,16 @@ export type Decision =
   | { kind: 'draftPick'; overall: number; label: string }
   | { kind: 'specialDraft'; lists: Record<TeamId, PlayerId[]>; protectedCount: number; fee: number }
   | { kind: 'released'; candidates: PlayerId[]; max: number }
-  | { kind: 'foreign'; candidates: PlayerId[]; regular: number; asia: number }
+  | {
+      kind: 'foreign';
+      candidates: PlayerId[];
+      regular: number;
+      asia: number;
+      /** 1.3.0 (foreigntalks.ts): each candidate's terms, the round (1–3) and what happened last round. */
+      terms?: Record<PlayerId, import('./foreigntalks').ForeignTerms>;
+      round?: number;
+      log?: string[];
+    }
   | { kind: 'roster'; candidates: PlayerId[]; release: number; limit: number }
   // Every year (V0.4)
   /** `social`: graded 4급 after an operation (V0.7.7), who can only serve as social service agents. */
@@ -398,6 +407,11 @@ export interface UserClub {
   platoon?: Record<PlayerId, 'L' | 'R'>;
   /** The general manager's lineup card (V0.8): spots he fixed himself; the manager fills the rest. */
   lineup?: LineupCard;
+  /** 1.3.0: our plan for the next postseason game — the starter he chose (cleared after the game) and the all-out
+      plan (kept until changed). */
+  postPlan?: { starter?: PlayerId; allOut?: boolean };
+  /** 1.3.0 (combine.ts): prospects brought in for a private workout, by draft year. */
+  workouts?: Record<number, PlayerId[]>;
   /** First-team registrations: the manager's (auto) or the general manager's own (manual). */
   entry?: 'auto' | 'manual';
   /** Most the parent will pay this year to cover a deficit (V0.6; 만 원). */
@@ -536,6 +550,8 @@ export interface LeagueState {
   transactions?: { date: string; text: string }[];
   /** One-off market events already run this season ("2027-trades-06"). */
   marketDone?: string[];
+  /** 1.3.0 (postseason.ts): the postseason being played, game day by game day. */
+  bracket?: import('./postseason').Bracket | null;
   /** 1.2.0, an optional league rule (off when missing): a foreign player with this many first-team seasons in the
       league no longer takes a foreign slot or counts against the foreign salary cap (NPB's way; foreigncap.ts). */
   foreignVeteran?: number | null;

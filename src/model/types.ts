@@ -57,6 +57,8 @@ export interface ScoutingReport {
   base?: number;
   /** The latest revision during the season. */
   moved?: { date: string; from: number; to: number };
+  /** 1.3.0: the draft combine already moved this report (combine.ts). */
+  combine?: boolean;
 }
 
 export type PlayerStatus = 'amateur' | 'active' | 'military' | 'freeAgent' | 'overseas' | 'retired';
@@ -95,7 +97,8 @@ export interface Contract {
   signingBonus: number;
   salaries: { season: number; amount: number }[];
   /** Foreign contracts in US dollars: guaranteed bonus and salary, and options paid for a good season. */
-  usd?: { bonus: number; salary: number; options: number };
+  /** US dollars; `fee`: the transfer fee paid to his old club (1.3.0; part of the foreign caps, never his pay). */
+  usd?: { bonus: number; salary: number; options: number; fee?: number };
   /** Domestic free-agent deals (V0.8): incentives, a period option and promises beyond the money. */
   fa?: FaTerms;
 }

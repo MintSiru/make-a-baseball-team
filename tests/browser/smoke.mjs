@@ -132,13 +132,18 @@ async function playSeason(page, log = []) {
   // V0.12: the season can stop for a decision (a national-team call-up, a disciplined player); answer and go on.
   for (let i = 0; i < 10; i++) {
     await page.getByRole('button', { name: '정규시즌 끝까지' }).click();
-    const post = page.getByRole('button', { name: '포스트시즌 진행' });
+    const post = page.getByRole('button', { name: '포스트시즌 시작' });
     const decision = page.locator('#decision-title');
     await post.or(decision).first().waitFor({ timeout: 90_000 });
     if (await post.count()) break;
     await decideAll(page, log);
   }
-  await page.getByRole('button', { name: '포스트시즌 진행' }).click();
+  // 1.3.0: the postseason goes game by game: the bracket, one game day, then the rest.
+  await page.getByRole('button', { name: '포스트시즌 시작' }).click();
+  await page.getByRole('button', { name: '다음 경기' }).click();
+  await page.waitForFunction(() => document.querySelector('.status')?.textContent?.includes('포스트시즌') && !document.querySelector('fieldset.controls')?.disabled, null, { timeout: 90_000 });
+  check(((await page.locator('.status').textContent()) ?? '').includes('포스트시즌'), 'the postseason goes a game day at a time');
+  await page.getByRole('button', { name: '포스트시즌 끝까지' }).click();
   await page.getByRole('button', { name: '다음 시즌으로' }).waitFor({ timeout: 90_000 });
   await page.getByRole('button', { name: '다음 시즌으로' }).click();
   await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled && !document.querySelector('.status')?.textContent?.includes('진행 중'), null, { timeout: 90_000 });
@@ -149,7 +154,7 @@ try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const page = await context.newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => (errors.push(e.message), console.log('page error:', e.message)));
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 
   // 1. Found a club.

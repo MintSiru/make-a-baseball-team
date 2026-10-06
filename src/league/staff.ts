@@ -17,7 +17,7 @@ import DraftNames from '../draftroom/names.js';
 import type { TeamId } from '../model/types';
 import type { LeagueState, StaffMember, StaffRole, ManagerStyle } from './state';
 import { clubState } from './fans';
-import { STAFF, DIFFICULTY } from './tuning';
+import { COMBINE, STAFF, DIFFICULTY } from './tuning';
 
 const names = DraftNames as unknown as { makeName: (r: () => number, used: Set<string>) => { name: string } };
 
@@ -141,11 +141,13 @@ export function aiStaffWinter(s: LeagueState, year: number, table: { teamId: Tea
  * The user's own scouts' future grade for an amateur: the public report moved toward the truth by the
  * scouting director (a third of the way at 50, three fifths at 80).
  */
-export function scoutView(s: LeagueState, p: { role: import('../draftroom').Role; scouting: { futureValue: number }; hidden: { potential: import('../draftroom').Tools } }): number | null {
+export function scoutView(s: LeagueState, p: { id?: string; role: import('../draftroom').Role; scouting: { futureValue: number }; hidden: { potential: import('../draftroom').Tools } }): number | null {
   const u = s.user;
   if (!u) return null;
   const staff = Math.max(0, Math.min(STAFF.scoutMax, STAFF.scoutBase + STAFF.scoutSpan * staffEdge(staffRating(s, u.teamId, 'scouting'))));
-  const acc = Math.max(0, Math.min(1, staff + DIFFICULTY.scoutEdge[u.settings.difficulty]));
+  // A prospect we worked out (1.3.0) is read better.
+  const worked = !!p.id && Object.values(u.workouts ?? {}).some((ids) => ids.includes(p.id!)) ? COMBINE.workoutRead : 0;
+  const acc = Math.max(0, Math.min(1, staff + DIFFICULTY.scoutEdge[u.settings.difficulty] + worked));
   const truth = toGrade(overall(p.hidden.potential, p.role));
   return Math.max(20, Math.min(80, Math.round((p.scouting.futureValue + (truth - p.scouting.futureValue) * acc) / 5) * 5));
 }

@@ -1,6 +1,6 @@
 /* What the player can do, as state transitions. The UI and the worker both call these. */
 import { closeSeason, advanceOffseason, beginOffseason } from './offseason';
-import { playPostseason } from './postseason';
+import { playPostseason, postseasonDay, postseasonRound, startPostseason } from './postseason';
 import { playDay, startSeason } from './season';
 import type { PlayerId, TeamId } from '../model/types';
 import { makeTrade, releasePlayer, replaceForeign, signFromPool } from './trade';
@@ -23,12 +23,21 @@ import { foundClub, FOUNDING_DATE, resolveDecision, type DecisionInput } from '.
 import { finishTrips, sendTrip } from './training';
 import { inspect } from './scandals';
 import { runCampaign } from './allstar';
+import { workout } from './combine';
 import { openFacilities, startFacility } from './facilities';
 
 export type Action =
   | { kind: 'days'; days: number }
   | { kind: 'regularEnd' }
   | { kind: 'postseason' }
+  /** 1.3.0: the postseason step by step — draw the bracket, the next game day, the rest of the round. */
+  | { kind: 'postseasonStart' }
+  | { kind: 'postseasonDay' }
+  | { kind: 'postseasonRound' }
+  /** 1.3.0: our plan for the next postseason game (starter null: the manager's choice). */
+  | { kind: 'postPlan'; starter?: PlayerId | null; allOut?: boolean }
+  /** 1.3.0: a prospect in for a private workout before the draft. */
+  | { kind: 'workout'; draftYear: number; id: PlayerId; name: string }
   | { kind: 'nextSeason' }
   | { kind: 'toFounding' }
   | { kind: 'found'; settings: ExpansionSettings }
@@ -93,7 +102,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran'];
+const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -112,10 +121,33 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       foundClub(s, action.settings);
       break;
     case 'postseason':
-      if (regularOver(s)) playPostseason(s);
+      if (regularOver(s) || (s.phase === 'postseason' && s.bracket && !s.bracket.done)) playPostseason(s);
       break;
+    case 'postseasonStart':
+      if (regularOver(s)) startPostseason(s);
+      break;
+    case 'postseasonDay':
+      if (s.phase === 'postseason') postseasonDay(s);
+      break;
+    case 'postseasonRound':
+      if (s.phase === 'postseason') postseasonRound(s);
+      break;
+    case 'postPlan': {
+      const u = s.user;
+      if (!u || s.phase !== 'postseason') break;
+      const plan = (u.postPlan ??= {});
+      if (action.starter !== undefined) {
+        if (action.starter && s.players[action.starter]?.teamId === u.teamId && s.rosters[u.teamId]!.active.includes(action.starter)) plan.starter = action.starter;
+        else delete plan.starter;
+      }
+      if (action.allOut !== undefined) plan.allOut = action.allOut;
+      break;
+    }
     case 'nextSeason':
       if (s.phase === 'postseason') {
+        // A postseason still being played goes to its end first (1.3.0).
+        if (s.bracket && !s.bracket.done) playPostseason(s);
+        if (s.user) delete s.user.postPlan;
         // Programmes abroad still running end with the season (V0.10).
         finishTrips(s, `${s.year}-12-31`);
         closeSeason(s);
@@ -243,6 +275,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       milestone(s, s.offseason?.year ?? s.year, action.seasons ? `외국인 장기 근속 규정: KBO ${action.seasons}시즌 이상은 외국인 엔트리 제외` : '외국인 장기 근속 규정 해제');
       break;
     }
+    case 'workout':
+      workout(s, action.draftYear, action.id, action.name);
+      break;
     case 'allStarCampaign':
       runCampaign(s, s.phase === 'regular' ? (s.schedule[s.next]?.date ?? `${s.year}-07-01`) : `${s.year}-07-01`);
       break;

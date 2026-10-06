@@ -1,12 +1,12 @@
-import type { LeagueState, SeriesResult } from '../league/state';
+import type { LeagueState } from '../league/state';
 import { lastDayScores, shortName, standingsView } from '../league/views';
 import { LEAGUE_NAMES, leagueTables, seasonSeries, twelveClubs, twoLeagues } from '../league/twelve';
-
-const ROUND_LABEL: Record<SeriesResult['round'], string> = { wildcard: '와일드카드 결정전', semipo: '준플레이오프', po: '플레이오프', ks: '한국시리즈' };
+import { postseasonView, ROUND_LABEL } from '../league/postseason';
+import type { Action } from '../league/actions';
 
 type Row = ReturnType<typeof standingsView>[number];
 
-export function Standings({ league, onTeam }: { league: LeagueState; onTeam: (id: string) => void }) {
+export function Standings({ league, onTeam, onBox, onAct }: { league: LeagueState; onTeam: (id: string) => void; onBox?: (id: string) => void; onAct?: (a: Action) => void }) {
   const rows = standingsView(league);
   const scores = lastDayScores(league);
   // Two leagues (V0.9): a table for each, ranks and games behind inside the league.
@@ -42,6 +42,7 @@ export function Standings({ league, onTeam }: { league: LeagueState; onTeam: (id
           )}
         </div>
         <div>
+          <LivePostseason league={league} onBox={onBox} onAct={onAct} />
           {league.postseason.length > 0 && (
             <>
               <h3>{league.year} 포스트시즌</h3>
@@ -72,6 +73,69 @@ export function Standings({ league, onTeam }: { league: LeagueState; onTeam: (id
           )}
         </div>
       </div>
+    </section>
+  );
+}
+
+const md = (date: string) => `${Number(date.slice(5, 7))}/${Number(date.slice(8))}`;
+
+/** The postseason being played (1.3.0): each series game by game, and our plan for our next game. */
+function LivePostseason({ league, onBox, onAct }: { league: LeagueState; onBox?: (id: string) => void; onAct?: (a: Action) => void }) {
+  const v = postseasonView(league);
+  if (v.done) return null;
+  const n = v.next;
+  return (
+    <section class="live-postseason" aria-label="진행 중인 포스트시즌">
+      <h3>진행 중: {ROUND_LABEL[v.live[0]!.round]}</h3>
+      {v.live.map((x) => (
+        <div key={`${x.high}-${x.low}`} class="live-series">
+          <p>
+            <strong>
+              {shortName(league, x.high)} {x.hw} : {x.lw} {shortName(league, x.low)}
+            </strong>
+            <span class="muted small"> · {x.need}선승{x.round === 'wildcard' ? ' (4위가 1승 안고 시작, 비기면 4위 진출)' : ''}{x.over ? ' · 끝남' : ` · 다음 경기 ${md(x.date)}`}</span>
+          </p>
+          {x.games.length > 0 && (
+            <ul class="scores">
+              {x.games.map((g, i) => (
+                <li key={g.id} class="numbers">
+                  {i + 1}차전 {md(g.date)} {shortName(league, g.away)} {g.as} : {g.hs} {shortName(league, g.home)}{' '}
+                  {onBox && league.boxes?.[g.id] && (
+                    <button type="button" class="link" onClick={() => onBox(g.id)}>
+                      기록지
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+      {n && onAct && (
+        <div class="post-plan">
+          <h4>
+            우리 다음 경기: {md(n.date)} {n.game}차전 {n.home ? '홈' : '원정'} vs {shortName(league, n.opponent)} (시리즈 {n.wins}승 {n.losses}패)
+          </h4>
+          <label>
+            선발{' '}
+            <select value={v.plan.starter ?? ''} onChange={(e) => onAct({ kind: 'postPlan', starter: (e.currentTarget as HTMLSelectElement).value || null })}>
+              <option value="">감독에게 맡기기</option>
+              {n.arms.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name} ({a.role === 'SP' ? '선발' : '불펜'}, {a.rest >= 99 ? '등판 없음' : `${a.rest}일 휴식`})
+                </option>
+              ))}
+            </select>
+          </label>
+          <label class="check">
+            <input type="checkbox" checked={!!v.plan.allOut} onChange={(e) => onAct({ kind: 'postPlan', allOut: (e.currentTarget as HTMLInputElement).checked })} /> 총력전
+          </label>
+          <p class="muted small">
+            선발은 이 경기에만 적용됩니다(4일 이하 휴식이면 투구 수가 줄어듭니다). 총력전은 선발을 일찍 내리고, 이틀 안에 던지지 않은 다른 선발과 연투한 불펜까지 대기시킵니다 — 다음 경기 마운드가
+            지칠 수 있습니다. 라인업은 우리 구단 → 라인업 카드에서 정합니다.
+          </p>
+        </div>
+      )}
     </section>
   );
 }

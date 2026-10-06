@@ -34,6 +34,11 @@ import { Games } from './Games';
 import { DraftBoard } from './DraftBoard';
 import { History } from './History';
 import { Leaders } from './Leaders';
+import { ROUND_LABEL } from '../league/postseason';
+import { applyCombine, attends, checkWorkout, combineHeld, combineLines, workoutsOf } from '../league/combine';
+import { traitReport } from '../league/reports';
+import { COMBINE } from '../league/tuning';
+import { money } from './format';
 import { applyHere, applyInWorker, createInWorker } from './leagueClient';
 import { Market } from './Market';
 import { MyClub } from './MyClub';
@@ -77,6 +82,11 @@ const snapshotSave = (s: LeagueState) => makeSave(s.seed, [], { at: { year: s.ye
 function statusLine(s: LeagueState) {
   if (s.pending) return `${s.offseason ? `${s.offseason.year} 오프시즌` : `${s.year}`} · 결정할 일이 있습니다`;
   if (s.phase === 'postseason') {
+    const b = s.bracket;
+    if (b && !b.done && b.live.length) {
+      const x = b.live.find((y) => y.hw < y.need && y.lw < y.need) ?? b.live[0]!;
+      return `${s.year} 포스트시즌 · ${ROUND_LABEL[x.round]} · 다음 경기 ${Number(x.date.slice(5, 7))}월 ${Number(x.date.slice(8))}일`;
+    }
     const ks = s.postseason.find((x) => x.round === 'ks');
     return `${s.year} 시즌 종료 · 우승 ${ks ? shortName(s, ks.winner) : '-'}`;
   }
@@ -205,7 +215,14 @@ export function App() {
   const draftYear = league ? (league.phase === 'offseason' && league.offseason ? league.offseason.year : league.year) : 2026;
   // The class, plus draftees who went abroad and come back through this draft (V0.7.3).
   const draftPool = useMemo(
-    () => (league ? [...draftClass(league.seed, draftYear), ...Object.values(league.players).filter((p) => p.status === 'overseas' && p.abroad?.draft === draftYear)] : []),
+    () =>
+      league
+        ? [
+            // After the combine (1.3.0) the clubs know the class better.
+            ...(combineHeld(league, draftYear) ? applyCombine(league.seed, draftYear, draftClass(league.seed, draftYear)) : draftClass(league.seed, draftYear)),
+            ...Object.values(league.players).filter((p) => p.status === 'overseas' && p.abroad?.draft === draftYear),
+          ]
+        : [],
     [league?.seed, draftYear, version],
   );
   const prospect = useMemo(() => draftPool.find((p) => p.id === prospectId) ?? draftPool[0] ?? null, [draftPool, prospectId]);
@@ -398,14 +415,32 @@ export function App() {
     }
   };
 
-  const controls = league.pending ? null : league.phase === 'postseason' ? (
+  const postLive = league.phase === 'postseason' && !!league.bracket && !league.bracket.done;
+  const controls = league.pending ? null : postLive ? (
+    <>
+      <button type="button" onClick={() => act({ kind: 'postseasonDay' }, '경기 중', false)}>
+        다음 경기
+      </button>
+      <button type="button" onClick={() => act({ kind: 'postseasonRound' }, '포스트시즌 진행 중', false)}>
+        이번 라운드 끝까지
+      </button>
+      <button type="button" onClick={() => act({ kind: 'postseason' }, '포스트시즌 진행 중', true)}>
+        포스트시즌 끝까지
+      </button>
+    </>
+  ) : league.phase === 'postseason' ? (
     <button type="button" onClick={() => act({ kind: 'nextSeason' }, '오프시즌 진행 중', true)}>
       다음 시즌으로
     </button>
   ) : regularOver(league) ? (
-    <button type="button" onClick={() => act({ kind: 'postseason' }, '포스트시즌 진행 중', true)}>
-      포스트시즌 진행
-    </button>
+    <>
+      <button type="button" onClick={() => act({ kind: 'postseasonStart' }, '대진 추첨 중', false)}>
+        포스트시즌 시작
+      </button>
+      <button type="button" onClick={() => act({ kind: 'postseason' }, '포스트시즌 진행 중', true)}>
+        포스트시즌 끝까지
+      </button>
+    </>
   ) : (
     <>
       <button type="button" onClick={() => act({ kind: 'days', days: 1 }, '경기 중', false)}>
@@ -524,7 +559,7 @@ export function App() {
         {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} onView={setClubView} story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }} />}
         {tab === 'market' && league.user && <Market league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
         {tab === 'games' && <Games league={league} onOpen={setBoxId} />}
-        {tab === 'standings' && <Standings league={league} onTeam={openTeam} />}
+        {tab === 'standings' && <Standings league={league} onTeam={openTeam} onBox={setBoxId} onAct={league.user ? (a) => act(a, '처리 중', false) : undefined} />}
         {tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} onBox={setBoxId} onAct={league.user ? (a) => act(a, '처리 중', false) : undefined} />}
         {tab === 'team' && <TeamRoster league={league} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />}
         {tab === 'history' && <History league={league} onPlayer={setPlayerId} />}
@@ -544,7 +579,23 @@ export function App() {
         {tab === 'draft' && (
           <div class="layout">
             <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} ourView={league?.user ? (p) => scoutView(league!, p) : undefined} />
-            <PlayerProfile player={prospect && publicView(prospect)} age={prospect && prospectAge(prospect)} />
+            <PlayerProfile
+              player={prospect && publicView(prospect)}
+              age={prospect && prospectAge(prospect)}
+              combine={prospect && league && combineHeld(league, draftYear) && attends(league.seed, draftYear, prospect) ? combineLines(league.seed, draftYear, prospect) : null}
+              combineNote={league && !combineHeld(league, draftYear) ? `${draftYear}년 8월 25일 컴바인에서 측정합니다 (공개 순위 60위 안 초청).` : '컴바인에 나오지 않았습니다.'}
+              report={prospect && league?.user ? traitReport(league, prospect) : null}
+              workout={
+                prospect && league?.user
+                  ? {
+                      done: workoutsOf(league, draftYear).includes(prospect.id),
+                      blocked: checkWorkout(league, draftYear, prospect.id),
+                      cost: money(COMBINE.workoutCost),
+                      onClick: () => act({ kind: 'workout', draftYear, id: prospect.id, name: prospect.name }, '처리 중', false),
+                    }
+                  : undefined
+              }
+            />
           </div>
         )}
       </main>

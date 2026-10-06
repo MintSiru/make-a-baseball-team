@@ -13,7 +13,7 @@ import type { GrowthType, Player, TeamId } from '../model/types';
 import { ageIn, isPitcher } from './players';
 import type { LeagueState, StaffRole } from './state';
 import { GROWTH_LABELS, GROWTH_NOTES, GROWTH_ORDER, TRAIT_LABELS, traitsOf, type TraitKey } from './traits';
-import { DIFFICULTY } from './tuning';
+import { COMBINE, DIFFICULTY } from './tuning';
 
 export type ReadKey = 'growth' | 'injury' | TraitKey;
 
@@ -87,6 +87,8 @@ function accuracy(s: LeagueState, p: Player, key: ReadKey, teamId: TeamId, ours:
   // A pro's body shows in his injury record; a veteran's growth type is plain from his career.
   if (key === 'injury' && (p.injuries?.length ?? 0) > 0) a += 0.15;
   if (key === 'growth' && ageIn(p, s.year) >= 30) a = Math.max(a, 0.9);
+  // A prospect we brought in for a workout and an interview (1.3.0, combine.ts).
+  if (!ours && Object.values(s.user?.workouts ?? {}).some((ids) => ids.includes(p.id))) a += COMBINE.workoutRead;
   return clamp(a, 0.05, 0.95);
 }
 

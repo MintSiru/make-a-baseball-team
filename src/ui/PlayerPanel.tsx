@@ -25,7 +25,7 @@ import { kboSeasons } from '../league/foreigncap';
 const POSITION_NAMES: Record<string, string> = { C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' };
 
 /** Our coaches' read of our player, our scouts' of anyone else (1.1.0): hidden traits, as sure as the staff are. */
-function TraitReportBox({ report }: { report: TraitReport }) {
+export function TraitReportBox({ report }: { report: TraitReport }) {
   const tone = (r: TraitReport['reads'][number]) => {
     if (r.level == null || r.key === 'growth') return '';
     const bad = r.key === 'controversy' || r.key === 'injury';

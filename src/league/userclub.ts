@@ -5,6 +5,7 @@
    checkDecision / resolveDecision / autoDecision. Money in 만 원. */
 import { medicalReview, socialOnly } from './military';
 import { asiaCapFor, foreignCap, slotExempt } from './foreigncap';
+import { renewAccepts } from './foreigntalks';
 import { capFloorFor } from './cap';
 import { foreignSlots } from './manager';
 import { draftContracts, rng, type Difficulty, type Role, type ToolKey } from '../draftroom';
@@ -77,7 +78,8 @@ export type AnnualInput =
   | { kind: 'salaries'; choices: Record<PlayerId, SalaryChoice> }
   | { kind: 'secondProtect'; ids: PlayerId[] }
   | { kind: 'secondPick'; id: PlayerId | null }
-  | { kind: 'foreignRenew'; keep: PlayerId[] }
+  /** `offers`: a figure (US dollars a season) and years for any of them (1.3.0; his ask for one year when missing). */
+  | { kind: 'foreignRenew'; keep: PlayerId[]; offers?: Record<PlayerId, { amount: number; years: 1 | 2 }> }
   | { kind: 'posting'; id: PlayerId | null }
   | { kind: 'returnee'; ids: PlayerId[] }
   | { kind: 'sponsor'; index: number }
@@ -398,7 +400,8 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
     case 'foreignRenew': {
       const dd = d as Extract<Decision, { kind: 'foreignRenew' }>;
       if (input.keep.some((id) => !dd.rows.some((r) => r.id === id && !r.leaving))) return '재계약할 수 없는 선수입니다.';
-      const cost = input.keep.reduce((a, id) => a + Math.round(dd.rows.find((r) => r.id === id)!.ask * MANWON_PER_USD * 0.85), 0);
+      for (const [id, o] of Object.entries(input.offers ?? {})) if (!(o.amount > 0) || ![1, 2].includes(o.years)) return `${s.players[id]?.name ?? ''}: 제안이 잘못됐습니다.`;
+      const cost = input.keep.reduce((a, id) => a + Math.round((input.offers?.[id]?.amount ?? dd.rows.find((r) => r.id === id)!.ask) * MANWON_PER_USD * 0.85), 0);
       if (cost > 0 && payrollWithout(s, u.teamId, next, dd.rows.map((r) => r.id)) + cost > u.payrollBudget) return '연봉 예산을 넘습니다.';
       return null;
     }
@@ -616,9 +619,16 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
       const dd = d as Extract<Decision, { kind: 'foreignRenew' }>;
       for (const row of dd.rows) {
         const p = s.players[row.id]!;
-        if (input.keep.includes(row.id)) {
-          p.contract = foreignContract(u.teamId, next, splitContract(row.ask, rng(`${s.seed}|foreign-renew|${year}|${row.id}`)), !!p.origin.asiaQuota, p.origin.asiaQuota ? asiaCapFor(p, u.teamId, next) : undefined);
-          note(u, year, `외국인 ${p.name} 재계약 (${usd(row.ask)})`);
+        const offer = input.offers?.[row.id] ?? { amount: row.ask, years: 1 as const };
+        // His ask for a year he always takes; less, or two years, as he sees it (1.3.0, foreigntalks.ts).
+        const yes = input.keep.includes(row.id) && ((offer.amount >= row.ask && offer.years === 1) || renewAccepts(p, row.ask, offer.amount, offer.years, ageIn(p, next)));
+        if (yes) {
+          p.contract = foreignContract(u.teamId, next, splitContract(offer.amount, rng(`${s.seed}|foreign-renew|${year}|${row.id}`)), !!p.origin.asiaQuota, p.origin.asiaQuota ? asiaCapFor(p, u.teamId, next) : undefined);
+          if (offer.years === 2) p.contract.salaries.push({ season: next + 1, amount: p.contract.salaries[0]!.amount });
+          note(u, year, `외국인 ${p.name} 재계약 (${usd(offer.amount)}${offer.years === 2 ? ', 2년' : ''})`);
+        } else if (input.keep.includes(row.id)) {
+          note(u, year, `외국인 ${p.name} 재계약 협상 결렬 (제안 ${usd(offer.amount)}${offer.years === 2 ? ', 2년' : ''}, 요구 ${usd(row.ask)})`);
+          if (!toForeignPool(s, p, year)) leaveLeague(s, p, 'overseas');
         } else {
           note(u, year, `외국인 ${p.name} ${row.leaving ? '해외 진출로 이별' : '재계약 안 함'}`);
           // Not re-signed: other clubs may sign him (the market of KBO-experienced foreigners).

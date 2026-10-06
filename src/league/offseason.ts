@@ -44,6 +44,7 @@ import { closeRivalry } from './rivalry';
 import { facilityAging, facilityGrowth } from './facilities';
 import { declineOf, growTools, matureAge } from './traits';
 import { heroInterview } from './interviews';
+import { applyCombine } from './combine';
 import type { SeasonAwards } from './awards';
 
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
@@ -422,7 +423,8 @@ export const standardSlots = (order: TeamId[]): DraftSlot[] =>
 
 /** Puts the September draft of `draftYear` on the board. */
 export function openDraft(s: LeagueState, draftYear: number, slots: DraftSlot[]): DraftState {
-  const pool = draftClass(s.seed, draftYear);
+  // The class as the clubs know it after the combine (1.3.0).
+  const pool = applyCombine(s.seed, draftYear, draftClass(s.seed, draftYear));
   for (const p of pool) s.players[p.id] = p;
   // Draftees who went abroad and are back after the two-year wait (V0.7.3), ranked among this class.
   const back = draftReturnees(s, draftYear);

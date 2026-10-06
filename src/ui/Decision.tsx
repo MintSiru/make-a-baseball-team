@@ -5,6 +5,8 @@ import { decisionTip } from './tutorial';
 import { draftContracts, TOOL_LABELS, type Difficulty } from '../draftroom';
 import { salaryIn, usdTotal } from '../league/contracts';
 import { usd } from '../league/foreign';
+import { dealTotal } from '../league/foreigntalks';
+import { ForeignOffers, offerOf, offersFor, RenewOffers, renewOffersFor } from './ForeignTalks';
 import { eventById } from '../league/international';
 import { kboLine, poolEntry } from '../league/foreignpool';
 import { autoDecision, checkDecision, projectedPayroll, type DecisionInput } from '../league/expansion';
@@ -333,7 +335,9 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
             ? `${d.round}-${d.candidates.length}`
             : d.kind === 'rival'
               ? String(d.year)
-              : '';
+              : d.kind === 'foreign'
+                ? String(d.round ?? 1)
+                : '';
   useEffect(() => {
     setSelected(new Set());
     setSpecial({});
@@ -383,7 +387,11 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       case 'secondPick':
         return null;
       case 'foreignRenew':
-        return { kind: 'foreignRenew', keep: [...selected] };
+        return { kind: 'foreignRenew', keep: [...selected], offers: renewOffersFor(d.rows, [...selected], choices) };
+      case 'foreign': {
+        const ids = [...selected].filter((id) => d.candidates.includes(id));
+        return { kind: 'foreign', ids, offers: offersFor(league, ids, d.terms, choices) };
+      }
       case 'posting':
         return { kind: 'posting', id: choices.pick && choices.pick !== 'none' ? choices.pick : null };
       case 'sponsor':
@@ -537,14 +545,30 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         ['아시아쿼터', (p) => !!p.origin.asiaQuota],
       ];
       const cands = d.candidates.map((id) => league.players[id]!);
+      // Between rounds the old picks may name players who have left the talks, until the reset below runs.
+      const picked = [...selected].filter((id) => d.candidates.includes(id));
       body = (
         <>
           <p>
             외국인 {d.regular}명{d.asia ? `, 아시아쿼터 ${d.asia}명` : ''}을 더 계약할 수 있습니다. 신규 외국인은 총액 100만 달러, 아시아쿼터는 20만 달러까지입니다. 경력 칸에
             MLB·트리플A·일본·독립리그 이력이 있고, 다른 구단이 방출하거나 재계약하지 않은 KBO 경력 외국인은 KBO 기록이 나옵니다 (방출 뒤 재취업도 신규 계약이라 같은 상한).
           </p>
+          {(d.round ?? 1) > 1 && (
+            <div class="notice">
+              <strong>외국인 협상 {d.round}차 (최대 3차)</strong>
+              <ul class="plain small">
+                {(d.log ?? []).map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           {budgetLine}
-          <ForeignCapLine league={league} next={next} adding={[...selected].map((id) => ({ p: league.players[id]!, total: usdTotal(league.players[id]!.contract) }))} />
+          <ForeignCapLine
+            league={league}
+            next={next}
+            adding={picked.map((id) => ({ p: league.players[id]!, total: d.terms?.[id] ? dealTotal(d.terms[id]!, offerOf(league, id, d.terms[id]!, choices)) : usdTotal(league.players[id]!.contract) }))}
+          />
           {groups.map(([title, test]) => (
             <div key={title}>
               <h4>{title}</h4>
@@ -562,6 +586,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
               />
             </div>
           ))}
+          {d.terms && <ForeignOffers league={league} ids={picked} terms={d.terms} choices={choices} choose={choose} />}
           <p class="muted">계약금과 연봉은 보장액이고, 옵션은 좋은 시즌(투수 WAR 2.5, 타자 2.0 이상)을 보내면 시즌 뒤 구단 자금에서 나갑니다. 연봉 예산에는 보장액이 원화로 잡힙니다.</p>
         </>
       );
@@ -853,6 +878,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
               sort: (p) => byId[p.id]!.war,
             }}
           />
+          <RenewOffers league={league} rows={d.rows} ids={[...selected]} choices={choices} choose={choose} />
         </>
       );
       break;

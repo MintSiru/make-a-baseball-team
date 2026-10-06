@@ -343,10 +343,28 @@ export function starterFor(s: LeagueState, key: string, date: string, rotation: 
     pick = healthy.sort((a, b) => (s.arms[a.id]?.lastDate ?? '').localeCompare(s.arms[b.id]?.lastDate ?? ''))[0]!;
     rest = s.arms[pick.id] ? daysBetween(s.arms[pick.id]!.lastDate, date) : 99;
   }
-  const stamina = t(pick, 'stamina');
+  return { p: pick, limit: starterLimit(pick, date, rest, hook) };
+}
+
+/** How many pitches the manager gives today's starter: stamina, rest, April, the hook. */
+function starterLimit(p: Player, date: string, rest: number, hook: number): number {
+  const stamina = t(p, 'stamina');
   const month = Number(date.slice(5, 7));
   const limit = Math.round(STARTER_LIMIT.base + (stamina - 50) * STARTER_LIMIT.perStamina - (rest < 5 ? 18 : 0) - (month <= 4 ? 5 : 0) + hook);
-  return { p: pick, limit: Math.max(55, Math.min(118, limit)) };
+  return Math.max(55, Math.min(118, limit));
+}
+
+/**
+ * Our postseason plan for the next game (1.3.0): the starter the general manager chose, if he can pitch, and the
+ * all-out plan (총력전) — the starter on a short leash, the other starters ready in the bullpen unless they pitched in
+ * the last two days, and relievers who would normally rest available too.
+ */
+function postPlanFor(s: LeagueState, x: SquadSpec, ids: PlayerId[]) {
+  if (s.phase !== 'postseason' || x.ids || x.teamId !== s.user?.teamId) return null;
+  const plan = s.user.postPlan;
+  if (!plan) return null;
+  const chosen = plan.starter && ids.includes(plan.starter) && available(s, plan.starter) ? s.players[plan.starter]! : null;
+  return { chosen, allOut: !!plan.allOut };
 }
 
 export const PEN_ROLE_LABELS: Record<BullpenRole, string> = { CL: '마무리', SU: '셋업맨', HL: '필승조', MU: '추격조', LR: '롱릴리프', LO: '원 포인트' };
@@ -384,7 +402,7 @@ export function penRoles(s: LeagueState, teamId: TeamId, relievers: Player[], pr
 }
 
 /** Relievers who can pitch today, with their bullpen roles. */
-export function bullpenFor(s: LeagueState, teamId: TeamId, ids: PlayerId[], date: string, exclude: Set<PlayerId>, prefer: Prefer = none): RelieverIn[] {
+export function bullpenFor(s: LeagueState, teamId: TeamId, ids: PlayerId[], date: string, exclude: Set<PlayerId>, prefer: Prefer = none, allOut = false): RelieverIn[] {
   const pen = ids.map((id) => s.players[id]!).filter((p) => isPitcher(p) && !exclude.has(p.id));
   const roles = penRoles(s, teamId, pen, prefer);
   const arms = pen.filter((p) => available(s, p.id));
@@ -393,6 +411,8 @@ export function bullpenFor(s: LeagueState, teamId: TeamId, ids: PlayerId[], date
     if (!a) return true;
     const days = daysBetween(a.lastDate, date);
     if (days <= 0) return false;
+    // All out (our postseason plan): only a long outing yesterday rests him.
+    if (allOut) return !(days === 1 && a.lastPitches >= 45);
     if (days === 1 && (a.lastPitches >= 30 || a.streak >= 2)) return false;
     if (days <= 2 && a.lastPitches >= 50) return false;
     return true;
@@ -450,8 +470,11 @@ export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away:
     const { style, prefer } = managerLean(s, x.teamId, x.prefer);
     const card = cardFor(s, x);
     const rotation = rotationFor(s, ids, prefer, card?.rotation);
-    const hook = style === 'quickHook' ? ENGINE.hook.quickHook : style === 'patient' ? ENGINE.hook.patient : 0;
-    return { x, ids, prefer, rotation, style, card, sp: starterFor(s, x.rotationKey ?? x.teamId, date, rotation, hook) };
+    const pp = postPlanFor(s, x, ids);
+    const hook = (style === 'quickHook' ? ENGINE.hook.quickHook : style === 'patient' ? ENGINE.hook.patient : 0) + (pp?.allOut ? ENGINE.hook.allOut : 0);
+    const rest = (p: Player) => (s.arms[p.id] ? daysBetween(s.arms[p.id]!.lastDate, date) : 99);
+    const sp = pp?.chosen ? { p: pp.chosen, limit: starterLimit(pp.chosen, date, rest(pp.chosen), hook) } : starterFor(s, x.rotationKey ?? x.teamId, date, rotation, hook);
+    return { x, ids, prefer, rotation, style, card, sp, allOut: !!pp?.allOut, rest };
   };
   const h = plan(home),
     a = plan(away);
@@ -467,12 +490,13 @@ export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away:
       ...(me.card ? { card: me.card[vs ?? 'R'], cardRest: me.card.rest } : {}),
     });
     if (lineup.length < 9) return null;
-    const exclude = new Set(me.rotation.map((p) => p.id));
+    // All out: only today's starter and the starters who pitched in the last two days stay out of the bullpen.
+    const exclude = new Set(me.allOut ? [me.sp.p.id, ...me.rotation.filter((p) => me.rest(p) <= 2).map((p) => p.id)] : [...me.rotation.map((p) => p.id), me.sp.p.id]);
     return withForm(s, date, {
       teamId: me.x.teamId,
       lineup,
       starter: armIn(me.sp.p, me.sp.limit),
-      bullpen: bullpenFor(s, me.x.teamId, me.ids, date, exclude, me.prefer),
+      bullpen: bullpenFor(s, me.x.teamId, me.ids, date, exclude, me.prefer, me.allOut),
       fieldBonus: STAFF.fielding * staffEdge(staffRating(s, me.x.teamId, 'analytics')),
       ...(me.style === 'smallBall' ? { smallBall: true } : {}),
     });

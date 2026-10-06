@@ -17,6 +17,8 @@ import { setGoals } from './parent';
 import { aiForeignChanges, aiTrades, processWaivers } from './trade';
 import { scoutMonth } from './scouting';
 import { allStarDay } from './allstar';
+import { draftClass } from './players';
+import { applyCombine, combineDay } from './combine';
 import { scandalDay, serveSuspensions } from './scandals';
 import { openBooks } from './finance';
 import { rosterLimit } from './offseason';
@@ -256,8 +258,9 @@ export function playDay(s: LeagueState): boolean {
   nationalTeamBack(s, date);
   processWaivers(s, date);
   marketEvents(s, date);
-  // The All-Star voting and game (1.2.0).
+  // The All-Star voting and game (1.2.0), the draft combine (1.3.0).
   allStarDay(s, date);
+  combineDay(s, date, () => applyCombine(s.seed, s.year, draftClass(s.seed, s.year)));
   const day = s.next;
   // The first game day of a month: last month's story.
   if (day > 0 && s.schedule[day - 1]!.date.slice(5, 7) !== date.slice(5, 7)) {

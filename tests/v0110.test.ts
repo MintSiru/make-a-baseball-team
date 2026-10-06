@@ -45,8 +45,10 @@ beforeAll(() => {
     .slice(0, 2);
   for (const p of vets) {
     at(p, 41, next);
-    // Faded too: the winter's new report (before the retirement step) shows it.
+    // Faded too, and the scouts' report says so (the retirement roll reads the report; with a good one a 41-year-old
+    // could still want to play on).
     for (const k of Object.keys(p.hidden.current) as (keyof typeof p.hidden.current)[]) p.hidden.current[k] = 30;
+    p.scouting.current = 30;
   }
   [talked, left] = [vets[0]!.id, vets[1]!.id];
   apply(s, { kind: 'nextSeason' });

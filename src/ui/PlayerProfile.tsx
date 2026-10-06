@@ -1,17 +1,25 @@
 import { TOOL_LABELS } from '../draftroom';
 import type { PublicPlayer } from '../model/player';
+import type { CombineLine } from '../league/combine';
+import type { TraitReport } from '../league/reports';
 import { handedness, militaryLabel, recordLine, roleLabel, toolKeysFor } from './format';
+import { TraitReportBox } from './PlayerPanel';
 
 interface Props {
   player: PublicPlayer | null;
   age: number | null;
+  /** 1.3.0: his combine numbers (null: did not come or not yet held), our scouts' read, and the workout button. */
+  combine?: CombineLine[] | null;
+  combineNote?: string;
+  report?: TraitReport | null;
+  workout?: { done: boolean; blocked: string | null; cost: string; onClick: () => void };
 }
 
-export function PlayerProfile({ player: p, age }: Props) {
+export function PlayerProfile({ player: p, age, combine, combineNote, report, workout }: Props) {
   if (!p) return <aside class="profile empty">후보를 고르면 스카우팅 리포트가 나옵니다.</aside>;
   const s = p.scouting;
   return (
-    <aside class="profile" aria-labelledby="profile-name">
+    <aside class="profile" aria-labelledby="profile-name" tabIndex={0}>
       <p class="muted">
         공개 순위 {p.amateur.draftRank}위 · {p.origin.pathway}
       </p>
@@ -92,6 +100,29 @@ export function PlayerProfile({ player: p, age }: Props) {
           ))}
         </p>
       )}
+
+      <h3>드래프트 컴바인</h3>
+      {combine ? (
+        <dl class="facts">
+          {combine.map((l) => (
+            <div key={l.label}>
+              <dt>{l.label}</dt>
+              <dd>{l.value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <p class="muted small">{combineNote ?? '컴바인 기록이 없습니다.'}</p>
+      )}
+      {workout && (
+        <p class="inline-form">
+          <button type="button" disabled={workout.done || !!workout.blocked} title={workout.blocked ?? ''} onClick={workout.onClick}>
+            {workout.done ? '워크아웃 완료' : `개인 워크아웃 (${workout.cost})`}
+          </button>
+          <span class="muted small">불러서 직접 보고 면담하면 우리 스카우트가 이 선수를 훨씬 정확하게 봅니다.</span>
+        </p>
+      )}
+      {report && <TraitReportBox report={report} />}
 
       <h3>스카우트 메모</h3>
       <p>{s.strength}</p>
