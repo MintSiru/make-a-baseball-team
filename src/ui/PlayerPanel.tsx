@@ -494,7 +494,7 @@ export function PlayerPanel({
 
         {shown === 'profile' && (
           <div class="profile-part" role="tabpanel" aria-label="정보">
-            {onAct && ours && <NumberField league={league} id={p.id} current={wearing} onAct={onAct} />}
+            {onAct && ours && <NumberField key={`${p.id}-${wearing ?? ''}`} league={league} id={p.id} current={wearing} onAct={onAct} />}
             {onAct && ours && (p.life?.suspicion?.signs ?? 0) > 0 && (
               <p class="inline-form">
                 <span class="small">최근 기사로 금지약물 의혹이 나왔습니다.</span>
@@ -831,8 +831,8 @@ function PostTable({ rows, totals, pitcher }: { rows: PostRow[]; totals: ReturnT
 
 /** Our player's uniform number, set by the general manager (V0.12): a teammate wearing it swaps. */
 function NumberField({ league, id, current, onAct }: { league: LeagueState; id: string; current: number | null; onAct: (a: Action) => void }) {
+  // A new player or number remounts the field (keyed by both), so what is typed is never reset under the user.
   const [text, setText] = useState(current != null ? String(current) : '');
-  useEffect(() => setText(current != null ? String(current) : ''), [id, current]);
   const n = Number(text);
   const problem = text.trim() === '' ? '번호를 넣으세요.' : checkNumber(league, id, n);
   const holder = !problem ? numberHolder(league, league.user!.teamId, n, id) : undefined;
