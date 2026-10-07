@@ -2929,3 +2929,88 @@ button.tag.link {
   max-height: 240px;
   overflow: auto;
 }
+
+/* 1.5.0: the general manager's briefing */
+.briefing {
+  margin: 4px 0 14px;
+}
+.briefing h3 {
+  margin: 0 0 6px;
+}
+.brief-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+}
+.brief {
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--ink-2);
+  background: var(--card);
+  padding: 8px 12px;
+}
+.brief.warn {
+  border-left-color: var(--bad);
+}
+.brief.good {
+  border-left-color: var(--good);
+}
+.brief.info {
+  border-left-color: var(--accent);
+}
+.brief-title {
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+.brief ul {
+  margin: 0 0 6px;
+}
+.brief-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.brief-option {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
+/* 1.5.0: why the scouts recommend it */
+.advice {
+  margin-top: 12px;
+  border-left: 3px solid var(--accent);
+  padding: 6px 12px;
+  background: var(--card);
+}
+.advice h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+.advice p {
+  margin: 4px 0;
+}
+/* 1.5.0: the founding screen — a quick start, the start time and the guide apart, advanced settings folded */
+.quick-start {
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+  background: var(--card);
+  padding: 10px 14px;
+  margin: 10px 0 16px;
+}
+.quick-start h3 {
+  margin: 0 0 4px;
+}
+.advanced > summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 0;
+}
+.advanced[open] > summary {
+  margin-bottom: 8px;
+}
+.mode-grid + .mode-grid {
+  margin-top: 8px;
+}

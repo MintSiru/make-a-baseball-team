@@ -1,3 +1,4 @@
+import { adviceFor, type Advice } from '../league/advice';
 import { AlumnusTag } from './Alumni';
 import { isLegend } from '../league/alumni';
 import type { ComponentChildren } from 'preact';
@@ -325,6 +326,8 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
   const [plans, setPlans] = useState<Record<PlayerId, CampPlan>>({});
   const [rival, setRival] = useState<RivalSettings | null>(d.kind === 'rival' ? d.suggestion : null);
   const [vote, setVote] = useState(true);
+  // 1.5.0: why the scouts recommend it, shown once the recommendation is filled in.
+  const [advice, setAdvice] = useState<Advice | null>(null);
   // Consecutive decisions of one kind (draft picks, compensation per free agent) start from a clean slate.
   const stage =
     d.kind === 'draftPick'
@@ -348,6 +351,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
     setPlans({});
     setRival(d.kind === 'rival' ? d.suggestion : null);
     setVote(true);
+    setAdvice(null);
   }, [d.kind, stage]);
 
   const toggle = (id: PlayerId) =>
@@ -421,6 +425,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
   const recommend = () => {
     const a = autoDecision(league);
     if (!a) return;
+    setAdvice(adviceFor(league));
     switch (a.kind) {
       case 'specialDraft':
         setSpecial(a.picks);
@@ -1326,6 +1331,18 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         )}
         {problem && <span class="notice inline">{problem}</span>}
       </div>
+      {advice && (
+        <section class="advice" aria-label="추천 이유">
+          <h3>{d.kind === 'camp' ? '코치 추천 이유' : '스카우트 추천 이유'}</h3>
+          <p>{advice.rule}</p>
+          <ul class="plain small">
+            {advice.picks.map((x) => (
+              <li key={x}>{x}</li>
+            ))}
+          </ul>
+          <p class="muted small">다르게 고르면: {advice.tradeoff}</p>
+        </section>
+      )}
     </section>
   );
 }

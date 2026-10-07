@@ -41,6 +41,7 @@ import { COMBINE } from '../league/tuning';
 import { money } from './format';
 import { applyHere, applyInWorker, createInWorker } from './leagueClient';
 import { Market } from './Market';
+import { autoDecision, checkDecision } from '../league/expansion';
 import { FRESH_KEY, Guard, Recovery } from './Recovery';
 import { MyClub } from './MyClub';
 import { NewGame } from './NewGame';
@@ -104,6 +105,8 @@ export function App() {
   const [notice, setNotice] = useState('');
   const [tab, setTab] = useState<Tab>('club');
   const [clubView, setClubView] = useState('overview');
+  // 1.5.0: where the briefing sent the player in the market (n counts the visits so each opens fresh).
+  const [marketIntent, setMarketIntent] = useState<{ view: 'search' | 'trade' | 'release' | 'foreign'; spot?: string; n: number }>({ view: 'trade', n: 0 });
   const [boxId, setBoxId] = useState<string | null>(null);
   const [teamId, setTeamId] = useState<string>('kia');
   const [playerId, setPlayerId] = useState<PlayerId | null>(null);
@@ -264,6 +267,26 @@ export function App() {
     }
   }, [version, storySettings, storyBusy, busy, autoTick]);
 
+  // 1.5.0: with the decisions before the debut handed to the scouts, each one goes through on its recommendation.
+  // Stops (and leaves the screen to the player) when there is none, when it does not check out, or after many in a
+  // row on the same step, so nothing can loop.
+  const autoRun = useRef<{ key: string; n: number }>({ key: '', n: 0 });
+  const actRef = useRef<((action: Action, label: string, heavy: boolean) => Promise<void>) | null>(null);
+  useEffect(() => {
+    const s = league;
+    const u = s?.user;
+    if (!s?.pending || !u?.settings.autoPrep || busy || loading || !actRef.current) return;
+    if ((s.offseason?.year ?? s.year) >= u.firstTeamYear) return;
+    const key = `${s.year}|${s.offseason?.step ?? ''}|${s.pending.kind}`;
+    const run = autoRun.current;
+    run.n = run.key === key ? run.n + 1 : 1;
+    run.key = key;
+    if (run.n > 40) return;
+    const input = autoDecision(s);
+    if (!input || checkDecision(s, input)) return;
+    void actRef.current({ kind: 'decide', input }, '스카우트가 결정하는 중', false);
+  }, [version, busy, loading]);
+
   // A new decision brings its screen forward (the other tabs stay open beside it); once the winter is
   // done, its tab goes away.
   const waitingKey = league?.pending ? `${league.year}|${league.offseason?.step ?? ''}|${league.pending.kind}` : null;
@@ -418,6 +441,7 @@ export function App() {
     acting.current = acting.current.then(step, step);
     return acting.current;
   };
+  actRef.current = act;
 
   const exportSave = () => {
     const blob = new Blob([serializeSave(snapshotSave(league))], { type: 'application/json' });
@@ -598,8 +622,23 @@ export function App() {
         <Guard resetKey={`${tab}|${clubView}`} onBack={() => setTab(tab === 'standings' ? (league.user ? 'club' : 'leaders') : 'standings')}>
         <TutorialCard league={league} tab={tab} view={tab === 'club' ? clubView : undefined} onAct={(a) => act(a, '튜토리얼', false)} />
         {tab === 'decision' && league.pending && <Decision league={league} onPlayer={setPlayerId} onSubmit={(input) => act({ kind: 'decide', input }, '진행 중', false)} />}
-        {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} onView={setClubView} story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }} />}
-        {tab === 'market' && league.user && <Market league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
+        {tab === 'club' && league.user && (
+          <MyClub
+            league={league}
+            onPlayer={setPlayerId}
+            onAct={(a) => act(a, '처리 중', false)}
+            onView={setClubView}
+            onGo={(g) => {
+              if (g.tab !== 'market') return;
+              setMarketIntent((m) => ({ view: g.view, ...(g.spot ? { spot: g.spot } : {}), n: m.n + 1 }));
+              setTab('market');
+            }}
+            story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }}
+          />
+        )}
+        {tab === 'market' && league.user && (
+          <Market key={marketIntent.n} league={league} intent={marketIntent.n ? marketIntent : undefined} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />
+        )}
         {tab === 'games' && <Games league={league} onOpen={setBoxId} />}
         {tab === 'standings' && <Standings league={league} onTeam={openTeam} onBox={setBoxId} onAct={league.user ? (a) => act(a, '처리 중', false) : undefined} />}
         {tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} onBox={setBoxId} onAct={league.user ? (a) => act(a, '처리 중', false) : undefined} />}

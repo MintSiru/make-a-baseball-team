@@ -14,7 +14,7 @@ import { moneyShort } from './format';
 import { gradeClass } from './grades';
 import { positionKey, useSort } from './sort';
 
-type PosFilter = 'all' | 'SP' | 'RP' | 'P' | 'C' | '1B' | '2B' | '3B' | 'SS' | 'LF' | 'CF' | 'RF' | 'IF' | 'OF';
+export type PosFilter = 'all' | 'SP' | 'RP' | 'P' | 'C' | '1B' | '2B' | '3B' | 'SS' | 'LF' | 'CF' | 'RF' | 'IF' | 'OF';
 const POS_FILTERS: [PosFilter, string][] = [
   ['all', '전체'],
   ['P', '투수 전체'],
@@ -40,17 +40,20 @@ type ClubFilter = 'others' | 'pool' | TeamId;
 
 export function PlayerSearch({
   league,
+  initialPos,
   onPlayer,
   onAct,
   onTrade,
 }: {
   league: LeagueState;
+  /** 1.5.0: opened from the briefing for one position. */
+  initialPos?: PosFilter;
   onPlayer: (id: string) => void;
   onAct: (a: Action) => void;
   onTrade: (teamId: TeamId, id: PlayerId) => void;
 }) {
   const u = league.user!;
-  const [pos, setPos] = useState<PosFilter>('all');
+  const [pos, setPos] = useState<PosFilter>(initialPos ?? 'all');
   const [also, setAlso] = useState(true);
   const [club, setClub] = useState<ClubFilter>('others');
   const [maxAge, setMaxAge] = useState(99);

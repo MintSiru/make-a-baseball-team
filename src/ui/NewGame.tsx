@@ -23,6 +23,25 @@ interface Props {
   onSpectate: (seed: string) => void;
 }
 
+/** The recommended first game (1.5.0): a big parent, the existing ballpark, a futures year with the guide. */
+const NICKNAMES = ['웨일스', '블루스', '썬더스', '파이어스'];
+function recommended(cityId: string, cityName: string, color: string, name: string, short: string, parentName: string): ExpansionSettings {
+  const nick = NICKNAMES[Math.abs([...cityName].reduce((a, c) => a + c.charCodeAt(0), 0)) % NICKNAMES.length]!;
+  return {
+    name: name.trim() || `${cityName} ${nick}`,
+    short: short.trim() || cityName.slice(0, 4),
+    color,
+    cityId,
+    parentType: 'conglomerate',
+    parentName: parentName.trim() || `${cityName}그룹`,
+    stadium: 'existing',
+    promotion: 'afterFutures',
+    difficulty: 'normal',
+    scenario: null,
+    tutorial: true,
+  };
+}
+
 export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props) {
   const dark = useDark();
   const [name, setName] = useState('');
@@ -32,9 +51,11 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
   const [parentType, setParentType] = useState<ParentCompanyType>('conglomerate');
   const [parentName, setParentName] = useState('');
   const [stadium, setStadium] = useState<Stadium>('existing');
-  // Game mode (V0.7.5): the futures start comes with the tutorial; the immediate start without it.
-  const [mode, setMode] = useState<'tutorial' | 'immediate'>('tutorial');
-  const promotion: Promotion = mode === 'tutorial' ? 'afterFutures' : 'immediate';
+  // 1.5.0: when the club reaches the first team and whether the guide comes along are two choices (they were one
+  // game mode from V0.7.5 to 1.4); a third hands the decisions before the debut to the scouts.
+  const [promotion, setPromotion] = useState<Promotion>('afterFutures');
+  const [guide, setGuide] = useState(true);
+  const [autoPrep, setAutoPrep] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>('normal');
   const [firing, setFiring] = useState(false);
   const [seed, setSeed] = useState(initialSeed);
@@ -56,7 +77,8 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
     difficulty,
     scenario: null,
     ...(firing ? { firing } : {}),
-    ...(mode === 'tutorial' ? { tutorial: true } : {}),
+    ...(guide ? { tutorial: true } : {}),
+    ...(autoPrep ? { autoPrep: true } : {}),
     ...(twelveSetting.mode !== 'off' ? { twelve: twelveSetting } : {}),
   };
   const b = budgetFor(settings);
@@ -75,8 +97,20 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
       <h2>2026년, KBO 11번째 구단 창단</h2>
       <p>
         7월 1일 창단 승인을 받는 순간부터 시작합니다. 9월 신인 드래프트에서 우선지명을 하고,{' '}
-        {promotion === 'afterFutures' ? '2027년 퓨처스리그를 거쳐 2028년 1군에 들어가고, 그때까지 튜토리얼이 할 일을 안내합니다.' : '곧바로 2027년 1군에 들어갑니다.'}
+        {promotion === 'afterFutures' ? '2027년 퓨처스리그를 거쳐 2028년 1군에 들어갑니다.' : '곧바로 2027년 1군에 들어갑니다.'}
+        {guide ? ' 1군 데뷔까지 튜토리얼이 할 일을 안내합니다.' : ''}
       </p>
+
+      <section class="quick-start" aria-labelledby="ng-quick">
+        <h3 id="ng-quick">빠른 시작</h3>
+        <p class="muted small">
+          처음이라면 추천 조건으로 바로 시작하세요: {city.name} · 대기업 모기업 · 기존 구장 · 퓨처스 1년 뒤 2028년 1군 · 튜토리얼 안내 · 보통 난이도 · 해임 없음. 이름은 나중에 설정 탭에서 바꿀 수
+          있습니다.
+        </p>
+        <button type="button" class="primary" disabled={!!busy} onClick={() => onFound(recommended(city.id, city.name, color, name, short, parentName), seed.trim() || initialSeed)}>
+          추천 조건으로 바로 시작
+        </button>
+      </section>
 
       <section class="form-block" aria-labelledby="ng-identity">
         <h3 id="ng-identity">구단</h3>
@@ -136,6 +170,36 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
         </label>
       </section>
 
+      <section class="form-block" aria-labelledby="ng-mode">
+        <h3 id="ng-mode">시작 방식</h3>
+        <div class="choice-grid mode-grid" role="group" aria-label="1군 진입">
+          <button type="button" class="choice" aria-pressed={promotion === 'afterFutures'} onClick={() => setPromotion('afterFutures')}>
+            <strong>퓨처스 1년 뒤 · 2028년 1군</strong>
+            <span class="muted">2027년 퓨처스리그에서 선수단을 키운 뒤 1군에 들어갑니다 (NC·KT 선례). 준비할 시간이 넉넉합니다.</span>
+          </button>
+          <button type="button" class="choice" aria-pressed={promotion === 'immediate'} onClick={() => setPromotion('immediate')}>
+            <strong>바로 1군 · 2027년</strong>
+            <span class="muted">첫 겨울에 1군 전력을 한꺼번에 만들고 곧바로 1군에 들어갑니다. 빨리 1군 경기를 보고 싶다면.</span>
+          </button>
+        </div>
+        <div class="choice-grid mode-grid" role="group" aria-label="안내">
+          <button type="button" class="choice" aria-pressed={guide} onClick={() => setGuide(true)}>
+            <strong>튜토리얼 안내 받기</strong>
+            <span class="muted">처음 해 보는 일마다 무엇을 왜 하는지 알려 줍니다. 1군 데뷔까지, 언제든 끌 수 있습니다. 처음이라면 추천.</span>
+          </button>
+          <button type="button" class="choice" aria-pressed={!guide} onClick={() => setGuide(false)}>
+            <strong>안내 없이</strong>
+            <span class="muted">규칙을 아는 단장용. 결정 화면마다 "이 결정은?"과 스카우트 추천은 그대로 있습니다.</span>
+          </button>
+        </div>
+        <label class="check">
+          <input type="checkbox" checked={autoPrep} onChange={(e) => setAutoPrep((e.currentTarget as HTMLInputElement).checked)} /> 1군 데뷔 전 결정(트라이아웃·드래프트·특별지명·FA·외국인 등)은 스카우트 추천대로 처리
+        </label>
+        <p class="muted small">켜면 데뷔 전까지 결정 화면이 멈추지 않고 스카우트 추천으로 넘어갑니다. 설정 탭에서 언제든 끌 수 있습니다.</p>
+      </section>
+
+      <details class="form-block advanced">
+        <summary>고급 설정 — 홈구장 · 12구단 라이벌 · 난이도 · 해임 · 시드</summary>
       <section class="form-block" aria-labelledby="ng-stadium">
         <h3 id="ng-stadium">홈구장</h3>
         <div class="choice-grid">
@@ -145,20 +209,6 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
               <span class="muted">{k === 'existing' ? `${city.stadium.name} ${city.stadium.seats.toLocaleString('ko-KR')}석` : `${STADIUM_PLANS[k].opens}년 개장 예정, 그때까지 ${city.stadium.name}`}</span>
             </button>
           ))}
-        </div>
-      </section>
-
-      <section class="form-block" aria-labelledby="ng-mode">
-        <h3 id="ng-mode">게임 모드</h3>
-        <div class="choice-grid mode-grid">
-          <button type="button" class="choice" aria-pressed={mode === 'tutorial'} onClick={() => setMode('tutorial')}>
-            <strong>튜토리얼 · 퓨처스부터</strong>
-            <span class="muted">창단부터 2027년 퓨처스리그 1년까지 단계마다 안내를 받으며 구단을 꾸립니다. 2028년 1군 진입 (NC·KT 선례). 처음이라면 추천.</span>
-          </button>
-          <button type="button" class="choice" aria-pressed={mode === 'immediate'} onClick={() => setMode('immediate')}>
-            <strong>바로 1군</strong>
-            <span class="muted">안내 없이 곧바로 2027년 1군에 들어갑니다. 규칙을 아는 단장용.</span>
-          </button>
         </div>
       </section>
 
@@ -185,6 +235,8 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
           <input value={seed} spellcheck={false} onInput={(e) => setSeed((e.currentTarget as HTMLInputElement).value)} />
         </label>
       </section>
+
+      </details>
 
       <section class="summary" aria-labelledby="ng-summary">
         <h3 id="ng-summary">창단 조건</h3>

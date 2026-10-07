@@ -32,13 +32,24 @@ import { money } from './format';
 import { gradeClass } from './grades';
 import { positionKey, useSort } from './sort';
 import { Help } from './Help';
-import { PlayerSearch } from './PlayerSearch';
+import { PlayerSearch, type PosFilter } from './PlayerSearch';
 import { TRADES } from '../league/tuning';
 
 type View = 'trade' | 'search' | 'release' | 'foreign' | 'news';
 
-export function Market({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void }) {
-  const [view, setView] = useState<View>('trade');
+export function Market({
+  league,
+  onPlayer,
+  onAct,
+  intent,
+}: {
+  league: LeagueState;
+  onPlayer: (id: string) => void;
+  onAct: (a: Action) => void;
+  /** 1.5.0: opened from the briefing at a view (and a position for the search). */
+  intent?: { view: View; spot?: string };
+}) {
+  const [view, setView] = useState<View>(intent?.view ?? 'trade');
   // A player picked in the search goes straight into a trade proposal with his club (0.10.1).
   const [target, setTarget] = useState<{ teamId: TeamId; id: PlayerId } | null>(null);
   const u = league.user!;
@@ -72,6 +83,7 @@ export function Market({ league, onPlayer, onAct }: { league: LeagueState; onPla
       {view === 'search' && (
         <PlayerSearch
           league={league}
+          initialPos={intent?.spot as PosFilter | undefined}
           onPlayer={onPlayer}
           onAct={onAct}
           onTrade={(teamId, id) => {
