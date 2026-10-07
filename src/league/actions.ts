@@ -66,6 +66,8 @@ export type Action =
   | { kind: 'storyText'; id: string; ai: NonNullable<NewsItem['ai']> | null }
   | { kind: 'alertsSeen'; ids?: string[] }
   | { kind: 'tutorial'; seen?: string; off?: boolean; on?: boolean }
+  /** 1.5.0: hand the decisions before the first-team debut to the scouts, or take them back. */
+  | { kind: 'autoPrep'; on: boolean }
   /** When a twelfth club comes (V0.9), until it is founded. */
   | { kind: 'twelveSetting'; setting: TwelveSetting }
   // The market (V0.5)
@@ -102,7 +104,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -226,6 +228,13 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       if (action.seen && !(u.tutorialSeen ??= []).includes(action.seen)) u.tutorialSeen.push(action.seen);
       if (action.off) u.tutorialOff = true;
       if (action.on) delete u.tutorialOff;
+      break;
+    }
+    case 'autoPrep': {
+      const u = s.user;
+      if (!u) break;
+      if (action.on) u.settings.autoPrep = true;
+      else delete u.settings.autoPrep;
       break;
     }
     case 'twelveSetting': {

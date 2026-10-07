@@ -9,7 +9,7 @@ import { scoutView } from '../league/staff';
 import { ageOn, publicView } from '../model/player';
 import type { CalendarPhase, Player, PlayerId } from '../model/types';
 import { makeSave, parseSave, SaveError, serializeSave } from '../save/format';
-import { openStore, type SaveStore } from '../save/store';
+import { AUTO_SLOT, autosaveHold, BACKUP_EVERY, openStore, rotateBackups, setAsideDamaged, type SaveStore } from '../save/store';
 import { autoSaver, type AutoSaver } from '../save/autosave';
 import { readSaveFile } from '../save/compress';
 import { BoxScore } from './BoxScore';
@@ -41,6 +41,8 @@ import { COMBINE } from '../league/tuning';
 import { money } from './format';
 import { applyHere, applyInWorker, createInWorker } from './leagueClient';
 import { Market } from './Market';
+import { autoDecision, checkDecision } from '../league/expansion';
+import { FRESH_KEY, Guard, Recovery } from './Recovery';
 import { MyClub } from './MyClub';
 import { NewGame } from './NewGame';
 import { PlayerPanel } from './PlayerPanel';
@@ -48,7 +50,6 @@ import { PlayerProfile } from './PlayerProfile';
 import { Standings } from './Standings';
 import { TeamRoster } from './TeamRoster';
 
-const AUTO_SLOT = 'auto';
 const newSeed = () => `kbo-${Math.floor(Math.random() * 36 ** 6).toString(36)}`;
 
 type Tab = 'decision' | 'club' | 'market' | 'games' | 'standings' | 'leaders' | 'team' | 'history' | 'draft' | 'settings' | 'help';
@@ -97,11 +98,15 @@ export function App() {
   const [league, setLeague] = useState<LeagueState | null>(null);
   const [version, setVersion] = useState(0);
   const [loading, setLoading] = useState(true);
+  /** The founding screen shows the recovery choices (an autosave that would not open, or asked for). */
+  const [recovering, setRecovering] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [progress, setProgress] = useState('');
   const [notice, setNotice] = useState('');
   const [tab, setTab] = useState<Tab>('club');
   const [clubView, setClubView] = useState('overview');
+  // 1.5.0: where the briefing sent the player in the market (n counts the visits so each opens fresh).
+  const [marketIntent, setMarketIntent] = useState<{ view: 'search' | 'trade' | 'release' | 'foreign'; spot?: string; n: number }>({ view: 'trade', n: 0 });
   const [boxId, setBoxId] = useState<string | null>(null);
   const [teamId, setTeamId] = useState<string>('kia');
   const [playerId, setPlayerId] = useState<PlayerId | null>(null);
@@ -126,6 +131,7 @@ export function App() {
   const [autoTick, setAutoTick] = useState(0);
   const latest = useRef<LeagueState | null>(null);
   latest.current = league;
+  const acting = useRef<Promise<void>>(Promise.resolve());
   // A league built in the background while the player fills in the founding form.
   const building = useRef<{ seed: string; promise: Promise<LeagueState> } | null>(null);
 
@@ -134,8 +140,16 @@ export function App() {
     setVersion((v) => v + 1);
   };
 
+  // 1.4.1: the autosave goes behind into the backups every few minutes and before another game takes its place.
+  const backedUp = useRef<{ at: number; seed: string | null }>({ at: 0, seed: null });
   const persist = async (st: SaveStore, s: LeagueState) => {
+    if (autosaveHold.on) return;
     try {
+      const b = backedUp.current;
+      if (Date.now() - b.at >= BACKUP_EVERY || b.seed !== s.seed) {
+        await rotateBackups(st);
+        backedUp.current = { at: Date.now(), seed: s.seed };
+      }
       await st.put(AUTO_SLOT, snapshotSave(s));
     } catch {
       setNotice('진행을 자동 저장하지 못했습니다. 진행 파일로 저장해 두세요.');
@@ -170,8 +184,16 @@ export function App() {
     (async () => {
       const st = await openStore();
       setStore(st);
+      // A new game asked for from the recovery screen: the autosave stays, as the first backup once this game saves.
+      let fresh = false;
       try {
-        const saved = await st.get(AUTO_SLOT);
+        fresh = sessionStorage.getItem(FRESH_KEY) === '1';
+        sessionStorage.removeItem(FRESH_KEY);
+      } catch {
+        // No session storage: open the autosave as usual.
+      }
+      try {
+        const saved = fresh ? null : await st.get(AUTO_SLOT);
         const state = saved?.snapshot?.state as LeagueState | undefined;
         if (state?.teams) {
           show(state);
@@ -183,9 +205,13 @@ export function App() {
           }
         }
       } catch (e) {
-        if (e instanceof SaveError) setNotice(`자동 저장을 열지 못했습니다. ${e.message}`);
+        // 1.4.1: a damaged autosave is set aside (never copied over a good backup) and the recovery choices come up.
+        await setAsideDamaged(st).catch(() => undefined);
+        setNotice(`자동 저장을 열지 못했습니다. ${e instanceof Error ? e.message : String(e)} 아래에서 백업으로 되돌리거나 진행 파일을 불러올 수 있습니다.`);
+        setRecovering(true);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
   }, []);
 
@@ -240,6 +266,26 @@ export function App() {
       void writeStory(next, true);
     }
   }, [version, storySettings, storyBusy, busy, autoTick]);
+
+  // 1.5.0: with the decisions before the debut handed to the scouts, each one goes through on its recommendation.
+  // Stops (and leaves the screen to the player) when there is none, when it does not check out, or after many in a
+  // row on the same step, so nothing can loop.
+  const autoRun = useRef<{ key: string; n: number }>({ key: '', n: 0 });
+  const actRef = useRef<((action: Action, label: string, heavy: boolean) => Promise<void>) | null>(null);
+  useEffect(() => {
+    const s = league;
+    const u = s?.user;
+    if (!s?.pending || !u?.settings.autoPrep || busy || loading || !actRef.current) return;
+    if ((s.offseason?.year ?? s.year) >= u.firstTeamYear) return;
+    const key = `${s.year}|${s.offseason?.step ?? ''}|${s.pending.kind}`;
+    const run = autoRun.current;
+    run.n = run.key === key ? run.n + 1 : 1;
+    run.key = key;
+    if (run.n > 40) return;
+    const input = autoDecision(s);
+    if (!input || checkDecision(s, input)) return;
+    void actRef.current({ kind: 'decide', input }, '스카우트가 결정하는 중', false);
+  }, [version, busy, loading]);
 
   // A new decision brings its screen forward (the other tabs stay open beside it); once the winter is
   // done, its tab goes away.
@@ -324,6 +370,23 @@ export function App() {
     setBusy(null);
   };
 
+  const importSave = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      const save = parseSave(await readSaveFile(file));
+      const state = save.snapshot?.state as LeagueState | undefined;
+      if (!state?.teams) throw new SaveError('damaged', '진행 파일에 리그 상태가 없습니다.');
+      building.current = null;
+      setRecovering(false);
+      show(state);
+      setTab(state.user ? 'club' : 'standings');
+      await saveNow(store!, state);
+      setNotice(save.migratedFrom ? `이전 버전(시뮬레이션 ${save.migratedFrom})의 진행 파일을 ${RELEASE} 규칙으로 옮겨 불러왔습니다.` : '진행 파일을 불러왔습니다.');
+    } catch (e) {
+      setNotice(e instanceof SaveError ? e.message : '진행 파일을 읽지 못했습니다.');
+    }
+  };
+
   if (!league)
     return (
       <>
@@ -333,6 +396,14 @@ export function App() {
             <p class="muted">버전 {RELEASE}</p>
           </div>
           <div class="row-actions">
+            {/* 1.4.1: a game kept as a file, or one of the autosave's backups, can be picked up from the start. */}
+            <label class="file-button">
+              진행 파일 불러오기
+              <input type="file" accept="application/json,.json,.gz" onChange={(e) => importSave((e.currentTarget as HTMLInputElement).files?.[0])} />
+            </label>
+            <button type="button" aria-pressed={recovering} onClick={() => setRecovering((x) => !x)}>
+              백업에서 되돌리기
+            </button>
             <button type="button" onClick={() => setDisplayOpen(true)}>
               화면 설정
             </button>
@@ -340,26 +411,37 @@ export function App() {
         </header>
         {displayOpen && <DisplaySettings onClose={() => setDisplayOpen(false)} />}
         {notice && <p class="notice">{notice}</p>}
+        {recovering && <Recovery title="이전 진행으로 되돌리기" />}
         <NewGame seed={seed} busy={busy && `${busy}${progress ? ` · ${progress}` : ''}`} onFound={found} onSpectate={spectate} />
       </>
     );
 
-  const act = async (action: Action, label: string, heavy: boolean) => {
-    if (league.pending && !allowedWhileWaiting(action)) {
-      setNotice('먼저 결정할 일을 끝내세요. 기다리는 동안에는 구단 운영(티켓·마케팅·구장)과 기사만 바꿀 수 있습니다.');
-      return;
-    }
-    setBusy(label);
-    setNotice('');
-    try {
-      const s = heavy ? await applyInWorker(league, action) : applyHere(league, action);
-      show(s);
-      saveSoon(store, s);
-    } catch (e) {
-      setNotice(e instanceof Error ? e.message : String(e));
-    }
-    setBusy(null);
+  // 1.4.1: one change at a time, each on the newest league — a click during a long advance waits for it instead of
+  // working on the league from before and overwriting what the advance did.
+  const act = (action: Action, label: string, heavy: boolean) => {
+    const step = async () => {
+      const base = latest.current;
+      if (!base) return;
+      if (base.pending && !allowedWhileWaiting(action)) {
+        setNotice('먼저 결정할 일을 끝내세요. 기다리는 동안에는 구단 운영(티켓·마케팅·구장)과 기사만 바꿀 수 있습니다.');
+        return;
+      }
+      setBusy(label);
+      setNotice('');
+      try {
+        const s = heavy ? await applyInWorker(base, action) : applyHere(base, action);
+        latest.current = s;
+        show(s);
+        saveSoon(store, s);
+      } catch (e) {
+        setNotice(e instanceof Error ? e.message : String(e));
+      }
+      setBusy(null);
+    };
+    acting.current = acting.current.then(step, step);
+    return acting.current;
   };
+  actRef.current = act;
 
   const exportSave = () => {
     const blob = new Blob([serializeSave(snapshotSave(league))], { type: 'application/json' });
@@ -371,20 +453,6 @@ export function App() {
     a.remove();
     URL.revokeObjectURL(a.href);
     noteExport(league.seed);
-  };
-
-  const importSave = async (file: File | undefined) => {
-    if (!file) return;
-    try {
-      const save = parseSave(await readSaveFile(file));
-      const state = save.snapshot?.state as LeagueState | undefined;
-      if (!state?.teams) throw new SaveError('damaged', '진행 파일에 리그 상태가 없습니다.');
-      show(state);
-      await saveNow(store, state);
-      setNotice(save.migratedFrom ? `이전 버전(시뮬레이션 ${save.migratedFrom})의 진행 파일을 ${RELEASE} 규칙으로 옮겨 불러왔습니다.` : '진행 파일을 불러왔습니다.');
-    } catch (e) {
-      setNotice(e instanceof SaveError ? e.message : '진행 파일을 읽지 못했습니다.');
-    }
   };
 
   const saveStory = (s: StorySettingsT) => {
@@ -551,10 +619,26 @@ export function App() {
             {notice}
           </p>
         )}
+        <Guard resetKey={`${tab}|${clubView}`} onBack={() => setTab(tab === 'standings' ? (league.user ? 'club' : 'leaders') : 'standings')}>
         <TutorialCard league={league} tab={tab} view={tab === 'club' ? clubView : undefined} onAct={(a) => act(a, '튜토리얼', false)} />
         {tab === 'decision' && league.pending && <Decision league={league} onPlayer={setPlayerId} onSubmit={(input) => act({ kind: 'decide', input }, '진행 중', false)} />}
-        {tab === 'club' && league.user && <MyClub league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} onView={setClubView} story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }} />}
-        {tab === 'market' && league.user && <Market league={league} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />}
+        {tab === 'club' && league.user && (
+          <MyClub
+            league={league}
+            onPlayer={setPlayerId}
+            onAct={(a) => act(a, '처리 중', false)}
+            onView={setClubView}
+            onGo={(g) => {
+              if (g.tab !== 'market') return;
+              setMarketIntent((m) => ({ view: g.view, ...(g.spot ? { spot: g.spot } : {}), n: m.n + 1 }));
+              setTab('market');
+            }}
+            story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }}
+          />
+        )}
+        {tab === 'market' && league.user && (
+          <Market key={marketIntent.n} league={league} intent={marketIntent.n ? marketIntent : undefined} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />
+        )}
         {tab === 'games' && <Games league={league} onOpen={setBoxId} />}
         {tab === 'standings' && <Standings league={league} onTeam={openTeam} onBox={setBoxId} onAct={league.user ? (a) => act(a, '처리 중', false) : undefined} />}
         {tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} onBox={setBoxId} onAct={league.user ? (a) => act(a, '처리 중', false) : undefined} />}
@@ -595,6 +679,7 @@ export function App() {
             />
           </div>
         )}
+        </Guard>
       </main>
       {boxId && league && (
         <BoxScore

@@ -509,6 +509,8 @@ export interface ExpansionSettings {
   tutorial?: boolean;
   /** A twelfth club, the rival (V0.9). Off when missing. */
   twelve?: TwelveSetting;
+  /** 1.5.0: decisions before the first-team debut follow the scouts' recommendation (the page submits them). */
+  autoPrep?: boolean;
 }
 
 /** The season's futures league (from 2026): every club's futures squad plus 상무. */

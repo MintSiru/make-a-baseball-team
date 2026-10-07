@@ -4,6 +4,7 @@
    the inputs recorded after it. V0.1 has no decisions yet, so snapshots and inputs stay empty. */
 import { RELEASE, SIM_VERSION } from '../core/version';
 import { migrateState, MIGRATABLE } from './migrate';
+import { stateProblem } from './check';
 import type { GameDate } from '../model/types';
 
 export const SAVE_FORMAT = 'kbo-expansion-save';
@@ -82,8 +83,13 @@ export function parseSave(text: string): SaveFile {
     } catch {
       throw new SaveError('otherSim', `시뮬레이션 ${from}에서 만든 진행 파일을 옮기지 못했습니다.`, from);
     }
+    const problem = stateProblem(state);
+    if (problem) throw new SaveError('damaged', `진행 파일이 손상되었습니다: ${problem}`);
     return { ...(s as SaveFile), sim: SIM_VERSION, migratedFrom: from };
   }
+  // 1.4.1: the league inside must be whole too, or the page would break showing it.
+  const problem = s.snapshot ? stateProblem(s.snapshot.state) : null;
+  if (problem) throw new SaveError('damaged', `진행 파일이 손상되었습니다: ${problem}`);
   return s as SaveFile;
 }
 

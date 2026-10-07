@@ -22,6 +22,8 @@ import { Lineup } from './Lineup';
 import { Story } from './Story';
 import { Training } from './Training';
 import type { NewsItem } from '../league/news';
+import type { BriefGo } from '../league/briefing';
+import { Briefing } from './Briefing';
 
 export type View = 'overview' | 'squad' | 'lineup' | 'training' | 'story' | 'office';
 
@@ -36,11 +38,14 @@ export function MyClub({
   onPlayer,
   onAct,
   onView,
+  onGo,
   story = {},
 }: {
   league: LeagueState;
   onPlayer: (id: string) => void;
   onAct: (a: Action) => void;
+  /** 1.5.0: the briefing's buttons to screens outside the club (the market). */
+  onGo?: (g: BriefGo) => void;
   /** Tells the page which view is open (the tutorial has a lesson for some, V0.16). */
   onView?: (view: View) => void;
   story?: StoryHooks;
@@ -81,7 +86,19 @@ export function MyClub({
         </div>
       </div>
       {u.fired && <p class="notice warn">{u.fired}년 겨울, 모기업이 단장을 해임했습니다. 새 게임을 시작하거나 이 구단을 계속 지켜볼 수 있습니다.</p>}
-      {view === 'overview' && <Overview league={league} onPlayer={onPlayer} />}
+      {view === 'overview' && (
+        <>
+          <Briefing
+            league={league}
+            onGo={(g) => {
+              if (g.tab === 'club') setView(g.view);
+              else if (g.tab === 'player') onPlayer(g.id);
+              else onGo?.(g);
+            }}
+          />
+          <Overview league={league} onPlayer={onPlayer} />
+        </>
+      )}
       {view === 'squad' && <Management league={league} onPlayer={onPlayer} onAct={onAct} setMsg={setMsg} />}
       {view === 'lineup' && <Lineup league={league} teamId={u.teamId} onPlayer={onPlayer} onAct={onAct} />}
       {view === 'training' && <Training league={league} onAct={onAct} onPlayer={onPlayer} />}

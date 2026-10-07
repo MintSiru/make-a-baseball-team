@@ -115,6 +115,8 @@ async function decideAll(page, log) {
         check((await page.locator('.decision select').count()) > 0, `${title}: one-click setting leaves the per-player choices`);
       }
       await page.getByRole('button', { name: /추천으로 채우기/ }).click();
+      // 1.5.0: the recommendation comes with its reasons.
+      if (await page.locator('.decision .advice').count()) adviceSeen.push(title);
       const confirm = page.getByRole('button', { name: '확정' });
       if (await confirm.isDisabled()) {
         failures.push(`${title}: scout recommendation is not a valid decision (${await page.locator('.notice.inline').textContent()})`);
@@ -127,6 +129,8 @@ async function decideAll(page, log) {
   }
   failures.push('too many decisions');
 }
+
+const adviceSeen = [];
 
 async function playSeason(page, log = []) {
   // V0.12: the season can stop for a decision (a national-team call-up, a disciplined player); answer and go on.
@@ -162,6 +166,51 @@ try {
   page.on('pageerror', (e) => (errors.push(e.message), console.log('page error:', e.message)));
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 
+  // 0. 1.4.1: getting a game back. A save whose league is cut short brings up the recovery choices (it used to leave
+  // the page on "불러오는 중"), and a seed changed while the default league is being built is the one that opens.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const p = await ctx.newPage();
+    p.on('pageerror', (e) => (errors.push(e.message), console.log('page error:', e.message)));
+    await p.goto(url);
+    await p.getByRole('heading', { name: '2026년, KBO 11번째 구단 창단' }).waitFor();
+    check((await p.locator('header .file-button').filter({ hasText: '진행 파일 불러오기' }).count()) === 1, 'the founding screen can open a save file');
+    const sim = readFileSync(join(root, 'src', 'core', 'version.ts'), 'utf8').match(/SIM_VERSION = '([^']+)'/)[1];
+    const planted = await p.evaluate(async (sim) => {
+      try {
+        const db = await new Promise((res, rej) => {
+          const r = indexedDB.open('kbo-expansion', 1);
+          r.onupgradeneeded = () => r.result.objectStoreNames.contains('saves') || r.result.createObjectStore('saves', { keyPath: 'slot' });
+          r.onsuccess = () => res(r.result);
+          r.onerror = () => rej(r.error);
+        });
+        const save = { format: 'kbo-expansion-save', version: 1, sim, release: sim, seed: 'broken', savedAt: new Date().toISOString(), snapshot: { at: { year: 2027, phase: 'regularSeason' }, state: { teams: [{ id: 'kia' }], rosters: {} } }, inputs: [] };
+        await new Promise((res, rej) => {
+          const r = db.transaction('saves', 'readwrite').objectStore('saves').put({ slot: 'auto', seed: 'broken', savedAt: save.savedAt, text: JSON.stringify(save) });
+          r.onsuccess = res;
+          r.onerror = () => rej(r.error);
+        });
+        db.close();
+        return true;
+      } catch {
+        return false;
+      }
+    }, sim);
+    if (planted) {
+      await p.reload();
+      await p.locator('.recovery').waitFor({ timeout: 30_000 });
+      check(((await p.locator('.notice').first().textContent()) ?? '').includes('자동 저장을 열지 못했습니다'), 'a damaged autosave is reported, not left loading');
+      check((await p.getByRole('heading', { name: '2026년, KBO 11번째 구단 창단' }).count()) === 1, 'the founding screen stays usable beside the recovery choices');
+      await p.screenshot({ path: join(shots, 'recovery.png'), fullPage: false });
+    } else console.log('(IndexedDB not available on this page: damaged-autosave check skipped)');
+    await p.locator('details.advanced > summary').click();
+    await p.getByLabel('시드').fill('smoke-seed-race');
+    await p.getByRole('button', { name: '구단 없이 리그만 관전' }).click();
+    await p.waitForFunction(() => document.body.textContent?.includes('관전 모드'), null, { timeout: 180_000 });
+    check(((await p.locator('body').textContent()) ?? '').includes('시드 smoke-seed-race'), 'the league opens with the seed typed while the default one was being built');
+    await ctx.close();
+  }
+
   // 1. Found a club.
   const t0 = Date.now();
   await page.goto(url);
@@ -171,8 +220,12 @@ try {
   await page.getByLabel('약칭').fill('고래');
   await page.getByLabel('모기업 이름').fill('가상그룹');
   check((await page.locator('.stars').textContent())?.includes('★'), 'felt difficulty shown');
-  check((await page.getByRole('button', { name: /^튜토리얼 · 퓨처스부터/ }).getAttribute('aria-pressed')) === 'true', 'tutorial mode is the default');
-  // V0.9: a twelfth club, the rival, founded in a set winter.
+  // 1.5.0: the start time and the guide are chosen apart; a futures year with the guide is the default.
+  check((await page.getByRole('group', { name: '1군 진입' }).getByRole('button', { name: /^퓨처스 1년 뒤/ }).getAttribute('aria-pressed')) === 'true', 'a futures year first is the default');
+  check((await page.getByRole('group', { name: '안내' }).getByRole('button', { name: /^튜토리얼 안내 받기/ }).getAttribute('aria-pressed')) === 'true', 'the guide is on by default');
+  check((await page.getByRole('button', { name: '추천 조건으로 바로 시작' }).count()) === 1, 'a quick start with the recommended setup is offered');
+  // V0.9: a twelfth club, the rival, founded in a set winter (1.5.0: under the folded advanced settings).
+  await page.locator('details.advanced > summary').click();
   await page.getByRole('group', { name: '12구단 창단' }).getByRole('button', { name: '연도 지정' }).click();
   check((await page.getByLabel('창단 연도').inputValue()) === '2030', 'the rival comes in the winter of 2030 by default');
   await page.screenshot({ path: join(shots, 'new-game.png'), fullPage: true });
@@ -245,6 +298,8 @@ try {
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
   await page.getByRole('button', { name: '개요', exact: true }).click();
   check((await page.locator('.cards').first().textContent())?.includes('퓨처스'), 'futures record shown in 2027');
+  // 1.5.0: the general manager's briefing on top of the overview.
+  check((await page.getByRole('heading', { name: '단장 브리핑' }).count()) === 1, 'the overview opens with the briefing');
   await page.screenshot({ path: join(shots, 'my-club-futures.png'), fullPage: false });
 
   // 3. Into the first team: free agents, special draft, foreign players.
@@ -521,6 +576,7 @@ try {
   check(!(await page.locator('#settings-save').isVisible()), 'a phone shows one settings subject at a time');
   await page.getByRole('group', { name: '설정 항목' }).getByRole('button', { name: '저장', exact: true }).click();
   check((await page.locator('#settings-save').isVisible()) && !(await page.locator('#settings-display').isVisible()), 'the bar switches the settings subject');
+  check(adviceSeen.length > 3, `scout recommendations explain themselves (${adviceSeen.length} decisions)`);
   check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
   await context.close();
 

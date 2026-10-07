@@ -18,7 +18,10 @@ interface Ctx {
   view?: string;
 }
 
-type Rule = Lesson & { when: (s: LeagueState, ctx: Ctx) => boolean };
+type Rule = Omit<Lesson, 'body'> & { when: (s: LeagueState, ctx: Ctx) => boolean; body: string[] | ((s: LeagueState) => string[]) };
+/** 1.5.0: the guide is a choice of its own, so a club going straight to the first team can have it too — without the
+    futures-year lessons. */
+const futuresYear = (s: LeagueState) => s.user!.settings.promotion !== 'immediate';
 
 /** One short tip for each decision, the first time it comes up. */
 const DECISION_TIPS: Partial<Record<Decision['kind'], { title: string; body: string[] }>> = {
@@ -175,11 +178,18 @@ const RULES: Rule[] = [
     id: 'welcome',
     when: (s) => s.pending?.kind === 'tryout',
     title: '환영합니다, 단장님',
-    body: [
-      '튜토리얼 모드입니다. 창단(2026년 7월)부터 퓨처스리그 1년(2027년)까지, 처음 해 보는 일이 생길 때마다 이 안내가 나옵니다.',
-      '큰 흐름: 창단 트라이아웃 → 2026년 남은 시즌 관전 → 가을 신인 드래프트(우선지명) → 2027년 퓨처스리그 → 겨울 특별지명·FA 특례·외국인 선수 → 2028년 1군 데뷔.',
-      '안내가 필요 없으면 언제든 "튜토리얼 끄기"를 누르세요. 퓨처스 1년은 그대로 진행됩니다.',
-    ],
+    body: (s) =>
+      futuresYear(s)
+        ? [
+            '튜토리얼 모드입니다. 창단(2026년 7월)부터 퓨처스리그 1년(2027년)까지, 처음 해 보는 일이 생길 때마다 이 안내가 나옵니다.',
+            '큰 흐름: 창단 트라이아웃 → 2026년 남은 시즌 관전 → 가을 신인 드래프트(우선지명) → 2027년 퓨처스리그 → 겨울 특별지명·FA 특례·외국인 선수 → 2028년 1군 데뷔.',
+            '안내가 필요 없으면 언제든 "튜토리얼 끄기"를 누르세요. 퓨처스 1년은 그대로 진행됩니다.',
+          ]
+        : [
+            '튜토리얼 모드입니다. 창단(2026년 7월)부터 2027년 1군 데뷔까지, 처음 해 보는 일이 생길 때마다 이 안내가 나옵니다.',
+            '큰 흐름: 창단 트라이아웃 → 2026년 남은 시즌 관전 → 가을 신인 드래프트(우선지명) → 겨울 특별지명·FA 특례·외국인 선수 → 2027년 1군 데뷔. 퓨처스 1년이 없어 첫 겨울에 1군 전력을 한꺼번에 만듭니다.',
+            '안내가 필요 없으면 언제든 "튜토리얼 끄기"를 누르세요.',
+          ],
   },
   {
     id: 'decisions',
@@ -226,7 +236,7 @@ const RULES: Rule[] = [
   })),
   {
     id: 'foundingSeason',
-    when: (s) => !s.pending && s.phase === 'regular' && s.year < s.user!.firstTeamYear - 1 && !regularOver(s),
+    when: (s) => !s.pending && s.phase === 'regular' && s.year < s.user!.firstTeamYear - (futuresYear(s) ? 1 : 0) && !regularOver(s),
     title: '2026년 남은 시즌',
     body: [
       '올해는 우리 구단 경기가 없습니다. 다른 구단의 시즌을 지켜보며 가을 드래프트를 준비하세요.',
@@ -245,7 +255,7 @@ const RULES: Rule[] = [
   },
   {
     id: 'futures',
-    when: (s) => !s.pending && s.phase === 'regular' && s.year === s.user!.firstTeamYear - 1,
+    when: (s) => futuresYear(s) && !s.pending && s.phase === 'regular' && s.year === s.user!.firstTeamYear - 1,
     title: '2027년 퓨처스리그',
     body: [
       '올해 우리 구단은 퓨처스리그(2군)에서만 뜁니다. 1군 데뷔는 2028년입니다.',
@@ -255,7 +265,7 @@ const RULES: Rule[] = [
   },
   {
     id: 'futuresMid',
-    when: (s) => !s.pending && s.phase === 'regular' && s.year === s.user!.firstTeamYear - 1 && (s.schedule[s.next]?.date ?? '9999') >= `${s.year}-06-01`,
+    when: (s) => futuresYear(s) && !s.pending && s.phase === 'regular' && s.year === s.user!.firstTeamYear - 1 && (s.schedule[s.next]?.date ?? '9999') >= `${s.year}-06-01`,
     title: '시즌 중반',
     body: [
       '트레이드는 7월 31일에 마감됩니다. 1군 진입 전에 필요한 자리를 미리 채워 두세요.',
@@ -356,7 +366,7 @@ export function nextLesson(s: LeagueState, ctx: Ctx): (Lesson & { index: number 
   const seen = s.user!.tutorialSeen ?? [];
   if (seen.includes('graduate')) return null;
   const rule = RULES.find((r) => !seen.includes(r.id) && r.when(s, ctx));
-  return rule ? { id: rule.id, title: rule.title, body: rule.body, index: seen.length + 1 } : null;
+  return rule ? { id: rule.id, title: rule.title, body: typeof rule.body === 'function' ? rule.body(s) : rule.body, index: seen.length + 1 } : null;
 }
 
 /** Whether the guide can be turned back on: tutorial mode, turned off, and the first-team debut still ahead. */

@@ -218,6 +218,12 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
           보기
         </label>
       )}
+      {u && (league.offseason?.year ?? league.year) < u.firstTeamYear && (
+        <label class="check">
+          <input type="checkbox" checked={!!u.settings.autoPrep} disabled={busy} onChange={(e) => onAct({ kind: 'autoPrep', on: (e.currentTarget as HTMLInputElement).checked })} /> 1군 데뷔 전 결정은
+          스카우트 추천대로 처리
+        </label>
+      )}
       <div class="row-actions">
         <button type="button" onClick={onNewGame} disabled={busy}>
           새 게임
