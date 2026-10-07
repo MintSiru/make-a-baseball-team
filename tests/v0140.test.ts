@@ -101,7 +101,9 @@ describe('packed autosave in IndexedDB', () => {
   it('stores the save packed and reads it back; a plain row from before still reads', async () => {
     const factory = new IDBFactory();
     const store = await indexedDbStore('v0140-db', factory);
-    const save = makeSave('packed-seed', [], { at: { year: 2030, phase: 'regularSeason' }, state: { teams: [], rosters: {}, filler: 'x'.repeat(50_000) } });
+    // The smallest league a save may hold since 1.4.1 (save/check.ts), padded to make packing worth it.
+    const league = { seed: 'packed-seed', year: 2030, phase: 'regular', teams: [{ id: 'kia' }], players: {}, rosters: {}, lines: {}, arms: {}, injuries: {}, schedule: [], scores: [], history: [], postseason: [], next: 0, user: null, pending: null, offseason: null };
+    const save = makeSave('packed-seed', [], { at: { year: 2030, phase: 'regularSeason' }, state: { ...league, filler: 'x'.repeat(50_000) } });
     await store.put('auto', save);
     const raw = await new Promise<Record<string, unknown>>((resolve) => {
       const open = factory.open('v0140-db');

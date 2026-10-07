@@ -2900,3 +2900,32 @@ button.tag.link {
   color: var(--accent);
   font-weight: 600;
 }
+
+/* 1.4.1: getting a game back */
+.recovery {
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+  background: var(--card);
+  padding: 12px 16px;
+  margin: 12px 0;
+  max-width: 900px;
+}
+.recovery h2 {
+  margin-top: 0;
+}
+.backup-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  padding: 6px 0;
+  border-bottom: 1px dotted var(--rule);
+}
+.error-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  max-height: 240px;
+  overflow: auto;
+}

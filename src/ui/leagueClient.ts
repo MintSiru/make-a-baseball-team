@@ -18,31 +18,46 @@ function getWorker(): Worker | null {
   return worker;
 }
 
-function run(req: WorkerRequest, onProgress?: (year: number) => void): Promise<LeagueState> {
+type Job = { type: 'create'; seed: string } | { type: 'apply'; state: LeagueState; action: Action };
+let nextId = 0;
+
+const here = (job: Job, onProgress?: (year: number) => void) => (job.type === 'create' ? createLeague(job.seed, onProgress) : apply(job.state, job.action));
+
+/** One request to the worker. Replies are matched by id (1.4.1): a league still being built for an earlier seed
+    can finish first without answering this request. */
+function run(job: Job, onProgress?: (year: number) => void): Promise<LeagueState> {
   const w = getWorker();
-  if (!w) return Promise.resolve(req.type === 'create' ? createLeague(req.seed, onProgress) : apply(req.state, req.action));
+  if (!w) return Promise.resolve().then(() => here(job, onProgress));
+  const id = ++nextId;
   return new Promise((resolve, reject) => {
+    const done = () => {
+      w.removeEventListener('message', onMessage);
+      w.removeEventListener('error', onError);
+    };
     const onMessage = (e: MessageEvent<WorkerReply>) => {
       const m = e.data;
+      if (m.id !== id) return;
       if (m.type === 'progress') onProgress?.(m.year);
       else {
-        w.removeEventListener('message', onMessage);
-        w.removeEventListener('error', onError);
+        done();
         if (m.type === 'done') resolve(m.state);
         else reject(new Error(m.message));
       }
     };
     const onError = (e: ErrorEvent) => {
       // A worker that cannot start (blocked in this browser): do the work here instead.
-      w.removeEventListener('message', onMessage);
-      w.removeEventListener('error', onError);
+      done();
       e.preventDefault();
       worker = null;
-      resolve(req.type === 'create' ? createLeague(req.seed, onProgress) : apply(req.state, req.action));
+      try {
+        resolve(here(job, onProgress));
+      } catch (err) {
+        reject(err);
+      }
     };
     w.addEventListener('message', onMessage);
     w.addEventListener('error', onError);
-    w.postMessage(req);
+    w.postMessage({ id, ...job } as WorkerRequest);
   });
 }
 

@@ -162,6 +162,50 @@ try {
   page.on('pageerror', (e) => (errors.push(e.message), console.log('page error:', e.message)));
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 
+  // 0. 1.4.1: getting a game back. A save whose league is cut short brings up the recovery choices (it used to leave
+  // the page on "불러오는 중"), and a seed changed while the default league is being built is the one that opens.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const p = await ctx.newPage();
+    p.on('pageerror', (e) => (errors.push(e.message), console.log('page error:', e.message)));
+    await p.goto(url);
+    await p.getByRole('heading', { name: '2026년, KBO 11번째 구단 창단' }).waitFor();
+    check((await p.locator('header .file-button').filter({ hasText: '진행 파일 불러오기' }).count()) === 1, 'the founding screen can open a save file');
+    const sim = readFileSync(join(root, 'src', 'core', 'version.ts'), 'utf8').match(/SIM_VERSION = '([^']+)'/)[1];
+    const planted = await p.evaluate(async (sim) => {
+      try {
+        const db = await new Promise((res, rej) => {
+          const r = indexedDB.open('kbo-expansion', 1);
+          r.onupgradeneeded = () => r.result.objectStoreNames.contains('saves') || r.result.createObjectStore('saves', { keyPath: 'slot' });
+          r.onsuccess = () => res(r.result);
+          r.onerror = () => rej(r.error);
+        });
+        const save = { format: 'kbo-expansion-save', version: 1, sim, release: sim, seed: 'broken', savedAt: new Date().toISOString(), snapshot: { at: { year: 2027, phase: 'regularSeason' }, state: { teams: [{ id: 'kia' }], rosters: {} } }, inputs: [] };
+        await new Promise((res, rej) => {
+          const r = db.transaction('saves', 'readwrite').objectStore('saves').put({ slot: 'auto', seed: 'broken', savedAt: save.savedAt, text: JSON.stringify(save) });
+          r.onsuccess = res;
+          r.onerror = () => rej(r.error);
+        });
+        db.close();
+        return true;
+      } catch {
+        return false;
+      }
+    }, sim);
+    if (planted) {
+      await p.reload();
+      await p.locator('.recovery').waitFor({ timeout: 30_000 });
+      check(((await p.locator('.notice').first().textContent()) ?? '').includes('자동 저장을 열지 못했습니다'), 'a damaged autosave is reported, not left loading');
+      check((await p.getByRole('heading', { name: '2026년, KBO 11번째 구단 창단' }).count()) === 1, 'the founding screen stays usable beside the recovery choices');
+      await p.screenshot({ path: join(shots, 'recovery.png'), fullPage: false });
+    } else console.log('(IndexedDB not available on this page: damaged-autosave check skipped)');
+    await p.getByLabel('시드').fill('smoke-seed-race');
+    await p.getByRole('button', { name: '구단 없이 리그만 관전' }).click();
+    await p.waitForFunction(() => document.body.textContent?.includes('관전 모드'), null, { timeout: 180_000 });
+    check(((await p.locator('body').textContent()) ?? '').includes('시드 smoke-seed-race'), 'the league opens with the seed typed while the default one was being built');
+    await ctx.close();
+  }
+
   // 1. Found a club.
   const t0 = Date.now();
   await page.goto(url);
