@@ -317,9 +317,9 @@
 
 | 항목 | 첫 점검 | 최종 |
 |---|---|---|
-| 화면에 남은 한국어(시즌 중 저장, en) | 179 문자열, 깨진 혼합 번역 다수 | SCAN_MID_EN |
-| 화면에 남은 한국어(시즌 중 저장, ja) | — | SCAN_MID_JA |
-| 화면에 남은 한국어(FA 시장 저장, en/ja) | 185 / 196 | SCAN_FA |
+| 화면에 남은 한국어(시즌 중 저장, en) | 179 문자열, 깨진 혼합 번역 다수 | 6 (모두 판단 보류 1의 이어 붙인 기사와 도움말 단락) |
+| 화면에 남은 한국어(시즌 중 저장, ja) | — | 6 (같음) |
+| 화면에 남은 한국어(FA 시장 저장, en/ja) | 185 / 196 | 6 / 8 (같음. ja는 인터뷰 제목 인용 2건 추가) |
 | 잘린 라벨 | 0 | 0 |
 | 가로 스크롤 | 1 (en 휴대폰 순위표: 포스트시즌 대진표 "Champion" 상자 +3px) | 0 (CSS: 영어에서 상자 폭을 넓혀 두 줄로 내림) |
 | 두부(□) | 0 (일본어 글꼴은 Hiragino/Yu Gothic/Meiryo/Noto Sans JP 순, 점검 환경은 WenQuanYi로 가나·한자 모두 표시) | 0 |
@@ -332,7 +332,11 @@
 - `en-desktop-boxscore-pbp.png`, `ja-desktop-boxscore-pbp.png`: 문자중계.
 - `en-desktop-fa-talk.png`, `ja-desktop-fa-talk.png`: FA 협상(연봉 협상).
 - `en-desktop-player.png`, `ja-desktop-player.png`: 선수 상세.
-- `ja-phone-roster.png`: 일본어 휴대폰 선수단.
+- `ja-desktop-roster.png`: 일본어 선수단(選手一覧, 이번에 고친 탭 이름).
+- `ja-phone-my-club.png`: 일본어 휴대폰 구단 화면(GM 브리핑).
+- `en-desktop-trade.png`: 이적 시장(트레이드).
+- `ja-desktop-foreign-market.png`: 외국인 교체 후보(대만 이름 포함).
+- `en-desktop-draft-pool.png`, `ja-desktop-draft-pool.png`: 드래프트 후보.
 
 ## 6. 런타임 동작 (2단계 코드 검사 5–8 결과)
 
