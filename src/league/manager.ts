@@ -1,5 +1,6 @@
 /* The AI manager of every club. Decisions use public scouting grades and this season's results only;
    the engine input it builds carries true ability, because the engine plays the actual players. */
+import { ruleYear } from './era';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import type { Position } from '../model/position';
 import { fitPenalty, positionGames } from './positions';
@@ -17,13 +18,13 @@ import { bigGameEdge } from './traits';
 
 const STARTER_LIMIT = ENGINE.starterLimit;
 
-const baseFirstTeam = (year: number) => (year >= 2026 ? KBO_2026.league.firstTeam.registered : 28);
+const baseFirstTeam = (year: number) => (ruleYear(year) >= 2026 ? KBO_2026.league.firstTeam.registered : 28);
 /** First-team registration size; an expansion club gets one more spot during its benefit seasons. */
 export const firstTeamSize = (s: LeagueState, teamId: TeamId, year = s.year) => baseFirstTeam(year) + (hasBenefits(s, teamId, year) ? EXPANSION_DEFAULTS.extraFirstTeamSpots : 0);
 /** Foreign slots: three plus the Asia quota from 2026, and one more for an expansion club during its benefit seasons. */
 export const foreignSlots = (s: LeagueState, teamId: TeamId, year = s.year) => ({
   regular: KBO_2026.foreign.regular + (hasBenefits(s, teamId, year) ? EXPANSION_DEFAULTS.extraForeignPlayers : 0),
-  asia: year >= 2026 ? KBO_2026.foreign.asiaQuota : 0,
+  asia: ruleYear(year) >= 2026 ? KBO_2026.foreign.asiaQuota : 0,
 });
 
 const handOf = (h: string): Hand => (h === '좌' ? 'L' : h === '양' ? 'S' : 'R');
@@ -260,18 +261,25 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
     from.splice(from.indexOf(best), 1);
     return best;
   };
+  // 1.6.0: a catcher leads off only when there is nobody else to (before, a strong catcher sometimes did).
+  const takeLead = (from: typeof ranked) => {
+    const others = from.filter((x) => x.p.position !== 'C');
+    const best = [...(others.length ? others : from)].sort((a, b) => speedy(b.p) - speedy(a.p))[0]!;
+    from.splice(from.indexOf(best), 1);
+    return best;
+  };
   let order: typeof ranked;
   // Short-handed (a futures squad hit by injuries): best first; the game needs nine and will not start.
   if (ranked.length < 9) order = ranked;
   else if (opts.style === 'smallBall') {
     const rest = [...ranked];
-    const first = [takeBest(rest, speedy), takeBest(rest, onBase), takeBest(rest, (p) => power(p) + onBase(p) * 0.5), takeBest(rest, power), takeBest(rest, power)];
+    const first = [takeLead(rest), takeBest(rest, onBase), takeBest(rest, (p) => power(p) + onBase(p) * 0.5), takeBest(rest, power), takeBest(rest, power)];
     order = [...first, ...rest];
   } else {
     const top = ranked.slice(0, 3),
       next = ranked.slice(3, 5),
       rest = ranked.slice(5);
-    const lead = takeBest(top, speedy);
+    const lead = takeLead(top);
     const cleanup = takeBest(top, power);
     const fifth = takeBest(next, power);
     order = [lead, top[0]!, next[0]!, cleanup, fifth, ...rest];

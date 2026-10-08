@@ -113,6 +113,21 @@ export function adviceFor(s: LeagueState): Advice | null {
       return { rule: '올해 WAR이 기준 이상인 선수를 WAR 순으로, 새 외국인 몫을 남겨 두고 외국인 샐러리캡 안에서 재계약.', picks: none(input.keep, '재계약'), tradeoff: '재계약하지 않은 선수는 다른 구단이 데려갈 수 있습니다. 새 외국인은 검증이 안 됐지만 더 쌀 수 있습니다.' };
     case 'faCompensation':
       return { rule: '명단 맨 위 선수의 보유 가치가 50 이상이면 선수를, 아니면 돈으로 보상받습니다.', picks: input.player ? [who(input.player)] : ['보상금만'], tradeoff: '선수를 받으면 보상금이 줄어듭니다.' };
+    case 'national': {
+      const rows = d.kind === 'national' ? d.rows : [];
+      const exempt = rows.filter((r) => r.exemption).map((r) => r.id);
+      return {
+        rule: '다친 선수만 남게 해 달라고 요청하고, 건강한 선수는 보냅니다.',
+        picks: input.ids.length ? input.ids.map(who) : ['모두 보냄'],
+        tradeoff: `대표팀에 가면 그동안 경기에 못 나오지만 등록일수는 그대로 쌓입니다.${exempt.length ? ` 이 대회에서 메달을 따면 병역 혜택을 받을 수 있는 선수가 ${exempt.length}명 있습니다.` : ''} 건강한 선수를 빼 달라고 하면 팬들의 관심이 식고 선수 본인도 서운해하며, 대표팀이 거절할 수도 있습니다.`,
+      };
+    }
+    case 'meddle':
+      return {
+        rule: '구단주의 뜻을 따르는 것이 기본. 감독 교체 지시에서 구단주가 미는 사람이 지금 감독보다 등급이 10 넘게 낮고 신뢰도가 40을 넘을 때만 거절합니다.',
+        picks: [input.answer === 'obey' ? '따른다' : '거절한다'],
+        tradeoff: '따르면 신뢰도가 조금 오르지만 구단 운영이 구단주 뜻대로 흔들립니다. 거절하면 신뢰도가 깎이고, 신뢰도가 15 아래로 떨어진 겨울에는 해임됩니다.',
+      };
     default:
       return null;
   }

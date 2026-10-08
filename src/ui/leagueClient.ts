@@ -18,10 +18,10 @@ function getWorker(): Worker | null {
   return worker;
 }
 
-type Job = { type: 'create'; seed: string } | { type: 'apply'; state: LeagueState; action: Action };
+type Job = { type: 'create'; seed: string; era?: number } | { type: 'apply'; state: LeagueState; action: Action };
 let nextId = 0;
 
-const here = (job: Job, onProgress?: (year: number) => void) => (job.type === 'create' ? createLeague(job.seed, onProgress) : apply(job.state, job.action));
+const here = (job: Job, onProgress?: (year: number) => void) => (job.type === 'create' ? createLeague(job.seed, onProgress, job.era ?? 0) : apply(job.state, job.action));
 
 /** One request to the worker. Replies are matched by id (1.4.1): a league still being built for an earlier seed
     can finish first without answering this request. */
@@ -61,7 +61,7 @@ function run(job: Job, onProgress?: (year: number) => void): Promise<LeagueState
   });
 }
 
-export const createInWorker = (seed: string, onProgress?: (year: number) => void) => run({ type: 'create', seed }, onProgress);
+export const createInWorker = (seed: string, onProgress?: (year: number) => void, era = 0) => run({ type: 'create', seed, era }, onProgress);
 export const applyInWorker = (state: LeagueState, action: Action) => run({ type: 'apply', state, action });
 /** Small steps run on the page: posting a 3MB state back and forth costs more than a day of games. */
 export const applyHere = (state: LeagueState, action: Action) => apply(state, action);

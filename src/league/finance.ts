@@ -5,6 +5,7 @@
 
    Only the user's club lives with the result (its fund); AI clubs' parents always cover them, and their
    reports are there to compare. Money in 만 원. */
+import { ruleYear } from './era';
 import type { Player, TeamId } from '../model/types';
 import { salaryIn } from './contracts';
 import { isForeign } from './players';
@@ -20,6 +21,7 @@ import { favouritesMerch } from './life';
 /** The league's broadcast money for `year` (990억 for 2024–26; the next deal assumed 10% higher, then flat: V0.16). */
 export function broadcastPool(year: number): number {
   const B = KBO_2026.broadcast;
+  year = ruleYear(year);
   if (year <= 2026) return Math.round(B.annual2024 * (year >= 2024 ? 1 : 0.55 + (year - 2015) * 0.04));
   return Math.round(B.annual2024 * B.nextDeal * (1 + B.growth) ** (year - 2027));
 }

@@ -109,7 +109,7 @@ export const Zr = (grade: number) => {
 
 /** Offseason: development, careers and roster turnover. Military numbers follow Draft Room's tuning. */
 export const OFFSEASON = {
-  /** The decline starts at the growth type's age (GROWTH.types[…].decline; 31 for 보통), steeper three years on. */
+  /** The decline starts at the growth type's age (GROWTH.types[…].decline; 33 for 보통 since 1.6.0), steeper three years on. */
   veteranDecline: { perYear: 0.3, steepPerYear: 0.45, speed: 1.4, skill: 0.6 },
   /** Scouts project growth up to the growth type's `zeroAt` (28 for 보통), closing over `window` years. */
   scouting: { window: 7 },
@@ -296,8 +296,9 @@ export const TRADES = {
   /** An AI club says yes when what it gets beats what it gives × premium + fixed. */
   accept: { premium: 1.1, fixed: 1 },
   /** AI-to-AI trades: tries per season and the chance each goes ahead; a gap up to `evenOut` of the value
-      can be made up with cash or a pick (V0.7.8). */
-  ai: { perSeason: 6, chance: 0.5, evenOut: 0.45 },
+      can be made up with cash or a pick (V0.7.8). `deadline` (1.6.0): at most this many deals in late July in
+      which a contender buys a ready player for a prospect from a rebuilding club (strategy.ts). */
+  ai: { perSeason: 6, chance: 0.5, evenOut: 0.45, deadline: 2 },
   /** Cash in a trade (V0.7.8): value per 억 (1 = a club takes 1억 as one point of value), the most in one
       trade (만 원, a game limit; real deals: 손아섭 3억 + a pick, 2025; 박동원 10억 + a pick, 2022). */
   cash: { perEok: 1, max: 200_000, step: 10_000 },
@@ -310,6 +311,23 @@ export const TRADES = {
   /** AI clubs replace a foreign player with an ERA or OPS this bad by July (or out six weeks), with this chance. */
   foreign: { badEra: 6.2, badOps: 0.66, chance: 0.6 },
   logSize: 300,
+} as const;
+
+/** Each AI club's plan in trades (1.6.0, strategy.ts): ranks that contend or rebuild, how far out of the race (games)
+    or how old a core (years) makes a bottom club rebuild, how far below the league a spot must be to count as a need
+    (grade points), and how the plan moves the value of what it gets. A club keeps at least this many catchers and
+    starting pitchers on its registered roster. */
+export const STRATEGY = {
+  spots: 5,
+  contendRank: 3,
+  rebuildBottom: 3,
+  outOfRace: 10,
+  oldCore: 30,
+  needGap: 3,
+  need: 1.15,
+  contend: { now: 1.12, young: 0.9, picks: 0.8 },
+  rebuild: { young: 1.15, old: 0.8, picks: 1.25, cash: 1.1 },
+  keep: { C: 3, SP: 7 },
 } as const;
 
 /** The second draft (V0.5): an AI club picks only players at least this good (keep value), else passes. */
@@ -492,6 +510,9 @@ export const INJURY = {
       last one (`soon`) and after (`later`), times `again` for each earlier one beyond the first. */
   repeat: { within: 2, soon: 0.08, later: 0.45, again: 0.3 },
   /** The user's player out this long makes the news. */
+  /** 1.6.0: the chance a major operation ends a career: `base`, + `perYear` for each year past `from`, + `repeat` after
+      an earlier major one, at most `max`. A 25-year-old's Tommy John almost never does; a 36-year-old's second often. */
+  careerEnding: { base: 0.02, from: 30, perYear: 0.04, repeat: 0.15, max: 0.6 },
   newsFrom: 21,
 };
 
@@ -737,12 +758,18 @@ export const DIFFICULTY = {
     value over a career (overall above 45, ages 21–37) comes within 4% of what the same players would have as 보통,
     and a high-school draftee peaks near the same grade whatever his type: the types move when, not how much. */
 export const GROWTH = {
+  // 1.6.0: a 27–32 prime. 보통 keeps growing to 27, holds to 32 and falls from 33 (it peaked at 25–30 and fell from 31
+  // before); the other types move that a year or two either way. Tuned so a type's career value stays within 2% of
+  // 보통's and every type reaches the same level (scripts measured each type's mean ability by age).
+  // Since the 1.6.0 feedback the extreme types also differ in how long a career lasts: 초조숙 starts to fall at 30 and
+  // faster (`declineRate`), and thinks of retiring three years sooner (`career`, years added to his age in the
+  // retirement table); 초만성 holds on to 35 and plays three years longer.
   types: {
-    veryEarly: { rate: 0.58, start: 0, fullUntil: 20, zeroAt: 25, aging: 27, decline: 29, cap: 12.5 },
-    early: { rate: 0.43, start: 0, fullUntil: 21, zeroAt: 27, aging: 28, decline: 30, cap: 10 },
-    normal: { rate: 0.32, start: 0, fullUntil: 22, zeroAt: 28, aging: 29, decline: 31, cap: 8 },
-    late: { rate: 0.34, start: 22, fullUntil: 24, zeroAt: 29, aging: 30, decline: 32, cap: 8.5 },
-    veryLate: { rate: 0.34, start: 24, fullUntil: 26, zeroAt: 30, aging: 31, decline: 33, cap: 9 },
+    veryEarly: { rate: 0.45, start: 0, fullUntil: 21, zeroAt: 25, aging: 28, decline: 30, cap: 11, declineRate: 1.3, career: -3 },
+    early: { rate: 0.36, start: 0, fullUntil: 22, zeroAt: 26, aging: 30, decline: 31, cap: 9, declineRate: 1.1, career: -1 },
+    normal: { rate: 0.26, start: 0, fullUntil: 24, zeroAt: 28, aging: 31, decline: 33, cap: 7, declineRate: 1, career: 0 },
+    late: { rate: 0.28, start: 22, fullUntil: 25, zeroAt: 29, aging: 32, decline: 34, cap: 8, declineRate: 0.9, career: 1 },
+    veryLate: { rate: 0.3, start: 24, fullUntil: 27, zeroAt: 30, aging: 33, decline: 35, cap: 8.5, declineRate: 0.8, career: 3 },
   },
   before: 0.4,
   /** Share of Draft Room's early and late developers who are the extreme kind. */

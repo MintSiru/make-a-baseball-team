@@ -21,11 +21,11 @@ export const GROWTH_ORDER: GrowthType[] = ['veryEarly', 'early', 'normal', 'late
 export const GROWTH_LABELS: Record<GrowthType, string> = { veryEarly: '초조숙형', early: '조숙형', normal: '보통', late: '만성형', veryLate: '초만성형' };
 /** What each growth type means, for the profile and the manual. */
 export const GROWTH_NOTES: Record<GrowthType, string> = {
-  veryEarly: '입단하자마자 빠르게 커서 20대 초반에 거의 완성되고, 25세 무렵 성장이 멈춥니다. 29세 무렵부터 기량이 꺾입니다.',
-  early: '어릴 때 빨리 크고 27세 무렵 성장이 멈춥니다. 30세 무렵부터 기량이 꺾입니다.',
-  normal: '22세 무렵까지 꾸준히 크고 28세 무렵 완성됩니다. 31세 무렵부터 기량이 꺾입니다.',
-  late: '22세까지는 더디다가 그 뒤에 크고 29세 무렵 완성됩니다. 32세 무렵까지 기량을 지킵니다.',
-  veryLate: '24세까지는 더디고 20대 중반에야 본격적으로 커서 30세 무렵 완성됩니다. 33세 무렵까지 기량을 지킵니다.',
+  veryEarly: '입단하자마자 빠르게 커서 23세 무렵 거의 완성되지만, 29세 무렵부터 꺾이기 시작해 빨리 떨어지고 은퇴도 3년쯤 이릅니다.',
+  early: '어릴 때 빨리 커서 25세 무렵 완성되고, 30세까지 기량을 지키다 31세 무렵부터 꺾입니다. 은퇴가 조금 이릅니다.',
+  normal: '24세 무렵까지 꾸준히, 그 뒤로도 조금씩 커서 27세 무렵 완성됩니다. 27~32세가 전성기이고 33세 무렵부터 꺾입니다.',
+  late: '22세까지는 더디다가 그 뒤에 크고 28세 무렵 완성됩니다. 33세까지 기량을 지키다 34세 무렵부터 천천히 꺾입니다.',
+  veryLate: '24세까지는 더디고 20대 중반에야 본격적으로 커서 29세 무렵 완성됩니다. 35세 가까이 기량을 지키고 천천히 떨어져 선수 생활이 3년쯤 깁니다.',
 };
 
 export type TraitKey = Exclude<keyof Traits, 'growth'>;
@@ -136,8 +136,9 @@ export function growTools(p: Player, age: number, lostDays: number, r: () => num
 /** The late-career decline this year (grade points before each tool's weight): from his type's age, eased by work. */
 export function declineOf(p: Player, age: number, perYear: number, steepPerYear: number): number {
   const t = traitsOf(p);
-  const from = GROWTH.types[t.growth].decline;
-  const base = Math.max(0, age - from) * perYear + Math.max(0, age - from - 3) * steepPerYear;
+  const T = GROWTH.types[t.growth];
+  const from = T.decline;
+  const base = (Math.max(0, age - from) * perYear + Math.max(0, age - from - 3) * steepPerYear) * T.declineRate;
   return base * clamp(1 - ((t.work - 50) / 100) * GROWTH.workDecline, 0.5, 1.5);
 }
 

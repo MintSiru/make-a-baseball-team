@@ -17,7 +17,7 @@ import { eulreul, iga, ro, wagwa } from './josa';
 import { clubState } from './fans';
 import { aiCompensation, compensationCash, externalLimit, faGrades, moneyFor, parentGiftFor, projectedPayroll, protectedBy, type FaGrade, type FaQueueItem } from './market';
 import { moveNews } from './movenews';
-import { freeAgentsFor, leaveLeague, removeFromRoster } from './offseason';
+import { freeAgentsFor, removeFromRoster } from './offseason';
 import { ageIn, currentValue, isForeign, isPitcher, keepValue } from './players';
 import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from './state';
 import { FA, MARKET, DIFFICULTY } from './tuning';
@@ -887,7 +887,9 @@ function signTalk(s: LeagueState, m: FaMarket, t: FaTalk, teamId: TeamId, o: FaO
   else aiCompensation(s, item, protectedBy(s, teamId, t.grade, next), next);
 }
 
-/** The day before camp with no offer: his club takes him back on a one-year deal if it wants him, or he retires. */
+/** The day before camp with no offer: his club takes him back on a one-year deal if it wants him; otherwise, since
+    1.6.0, he waits as an unattached player (FA 미아) any club can sign at his ask, without talks, until the next
+    season ends (before, he retired at once). */
 function closeUnsigned(s: LeagueState, m: FaMarket, t: FaTalk, day: number, next: number) {
   const p = s.players[t.id]!;
   const me = s.user?.teamId;
@@ -897,9 +899,13 @@ function closeUnsigned(s: LeagueState, m: FaMarket, t: FaTalk, day: number, next
     return;
   }
   t.gone = true;
-  if (me && t.from === me) (s.user!.log ??= []).push({ year: m.year, text: `FA ${p.name} 계약 못 함, 은퇴` });
-  m.news.push({ day, text: `${p.name} 미계약 끝에 은퇴`, ...(t.from === me ? { mine: true } : {}) });
-  leaveLeague(s, p, 'retired');
+  if (me && t.from === me) (s.user!.log ??= []).push({ year: m.year, text: `FA ${p.name} 미계약 — 자유계약선수로` });
+  m.news.push({ day, text: `${p.name} 미계약 — 자유계약선수로 남아`, ...(t.from === me ? { mine: true } : {}) });
+  removeFromRoster(s, p);
+  p.teamId = null;
+  p.contract = null;
+  (p.life ??= {}).unsigned = m.year;
+  if (!(s.pool ??= []).includes(p.id)) s.pool.push(p.id);
 }
 
 /** After the last round: the owner's free agent, the winter's summary for the user. */
@@ -930,13 +936,13 @@ export function closeMarket(s: LeagueState, m: FaMarket, next: number) {
         lines.push(`영입 성공: ${p.name} (${short(s, t.from)}에서, ${terms})`);
         good = true;
       } else {
-        lines.push(`영입 실패: ${p.name} → ${to ? `${short(s, to)} (${terms})` : '은퇴'}`);
+        lines.push(`영입 실패: ${p.name} → ${to ? `${short(s, to)} (${terms})` : '미계약 (자유계약선수 명단)'}`);
         bad = true;
       }
     } else if (t.from === u.teamId) {
       if (to === u.teamId) lines.push(`잔류: ${p.name} (${terms})`);
       else {
-        lines.push(`이적: ${p.name} → ${to ? `${short(s, to)} (${terms})` : '은퇴'}`);
+        lines.push(`이적: ${p.name} → ${to ? `${short(s, to)} (${terms})` : '미계약 (자유계약선수 명단)'}`);
         bad = true;
       }
     }

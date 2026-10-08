@@ -33,7 +33,7 @@ const noOverflow = async (page, label) => {
 };
 
 /** Batch choices (V0.7.6) are tried once each: the select-all box and a row of one-click settings. */
-const batch = { all: false, bar: false, fa: false };
+const batch = { all: false, bar: false, fa: false, stops: 0 };
 // 0.15: axe-core (WCAG 2 A/AA) on a screen; serious and critical findings fail the run.
 const AXE = join(root, 'node_modules', 'axe-core', 'axe.min.js');
 async function axeCheck(page, label) {
@@ -134,14 +134,23 @@ const adviceSeen = [];
 
 async function playSeason(page, log = []) {
   // V0.12: the season can stop for a decision (a national-team call-up, a disciplined player); answer and go on.
-  for (let i = 0; i < 10; i++) {
+  // 1.6.0: it also stops at the moments that matter (a long injury, the deadline, the debut, the race): go on.
+  let stops = 0;
+  for (let i = 0; i < 30; i++) {
+    const before = (await page.locator('.status').textContent()) ?? '';
     await page.getByRole('button', { name: '정규시즌 끝까지' }).click();
     const post = page.getByRole('button', { name: '포스트시즌 시작' });
     const decision = page.locator('#decision-title');
-    await post.or(decision).first().waitFor({ timeout: 90_000 });
+    await page.waitForFunction(
+      (was) => !!document.querySelector('#decision-title') || [...document.querySelectorAll('button')].some((b) => b.textContent === '포스트시즌 시작') || (!document.querySelector('fieldset.controls')?.disabled && document.querySelector('.status')?.textContent !== was),
+      before,
+      { timeout: 90_000 },
+    );
     if (await post.count()) break;
-    await decideAll(page, log);
+    if (await decision.count()) await decideAll(page, log);
+    else stops++;
   }
+  batch.stops += stops;
   // 1.3.0: the postseason goes game by game: the bracket, one game day, then the rest.
   await page.getByRole('button', { name: '포스트시즌 시작' }).click();
   await page.getByRole('button', { name: '다음 경기' }).click();
@@ -215,11 +224,22 @@ try {
   const t0 = Date.now();
   await page.goto(url);
   await page.getByRole('heading', { name: '2026년, KBO 11번째 구단 창단' }).waitFor();
-  check((await page.locator('.choice-grid').first().locator('.choice').count()) >= 10, 'candidate cities listed');
+  check((await page.locator('section[aria-labelledby="ng-city"] .choice').count()) >= 10, 'candidate cities listed');
+  // 1.6.0: scenarios fix some conditions and lock them; going back to a free founding frees them again.
+  check((await page.getByRole('radiogroup', { name: '시나리오' }).getByRole('radio').count()) === 11, 'ten scenarios beside the free founding');
+  await page.getByRole('radio', { name: /돌격대의 귀환/ }).click();
+  check((await page.getByLabel('구단명').inputValue()) === '쌍방울 레이더스' && (await page.getByLabel('구단명').isDisabled()), 'a scenario fixes and locks the club name');
+  check(((await page.locator('.scenario-brief').textContent()) ?? '').includes('목표'), 'the scenario tells its story and goal');
+  await page.getByRole('radio', { name: /섬그늘에 야구하러 가면/ }).click();
+  check(((await page.locator('section[aria-labelledby="ng-city"]').textContent()) ?? '').includes('울릉'), 'the island scenario starts in 울릉');
+  check(((await page.locator('.risks').textContent()) ?? '').includes('시장 규모'), 'the risks of the combination are spelled out');
+  await page.screenshot({ path: join(shots, 'scenario.png'), fullPage: false });
+  await page.getByRole('radio', { name: /자유 창단/ }).click();
+  check((await page.getByLabel('구단명').inputValue()) === '' && !(await page.getByLabel('구단명').isDisabled()), 'a free founding frees the name again');
   await page.getByLabel('구단명').fill('울산 고래단');
   await page.getByLabel('약칭').fill('고래');
   await page.getByLabel('모기업 이름').fill('가상그룹');
-  check((await page.locator('.stars').textContent())?.includes('★'), 'felt difficulty shown');
+  check((await page.locator('.summary .stars').textContent())?.includes('★'), 'felt difficulty shown');
   // 1.5.0: the start time and the guide are chosen apart; a futures year with the guide is the default.
   check((await page.getByRole('group', { name: '1군 진입' }).getByRole('button', { name: /^퓨처스 1년 뒤/ }).getAttribute('aria-pressed')) === 'true', 'a futures year first is the default');
   check((await page.getByRole('group', { name: '안내' }).getByRole('button', { name: /^튜토리얼 안내 받기/ }).getAttribute('aria-pressed')) === 'true', 'the guide is on by default');
@@ -257,6 +277,8 @@ try {
   check((await page.evaluate(() => document.documentElement.style.getPropertyValue('--grade-4'))) !== '', 'bar colours by grade tier are applied');
   await page.getByRole('checkbox', { name: /선수 표의 현재·미래 능력치/ }).check();
   check((await page.evaluate(() => document.documentElement.dataset.gradeTables)) === 'on', 'grades in the tables can be coloured');
+  // 1.6.0: our games can open as a relay with the score hidden.
+  check((await page.getByRole('checkbox', { name: /우리 경기 결과 가리기/ }).count()) === 1, 'the score of our games can be hidden');
   // 0.11: the articles about our club pop up too, with a switch of their own.
   const articles = page.getByRole('checkbox', { name: /우리 구단 기사/ });
   check(await articles.isChecked(), 'articles about our club pop up by default');
@@ -281,6 +303,9 @@ try {
   await page.getByRole('group', { name: '난이도' }).getByRole('button', { name: '보통', exact: true }).click();
   await page.waitForFunction(() => document.querySelector('[aria-label="난이도"] [aria-pressed="true"]')?.textContent === '보통');
   check(true, 'difficulty switches back and forth');
+  // 1.6.0: the moments a run of days stops for, all on to begin with.
+  const stopsBox = page.getByRole('group', { name: '진행 중 멈출 순간' });
+  check((await stopsBox.getByRole('checkbox').count()) === 4 && (await stopsBox.getByRole('checkbox').first().isChecked()), 'the stops are listed and on');
   await page.getByRole('button', { name: /결정할 일/ }).click();
   const log = [];
   await decideAll(page, log);

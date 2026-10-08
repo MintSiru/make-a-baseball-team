@@ -46,7 +46,7 @@ describe('display settings', () => {
 describe('decision explanations', () => {
   const KINDS: Decision['kind'][] = [
     'camp', 'development', 'dispute', 'draftPick', 'faCompensation', 'faOptions', 'faProtect', 'faRound', 'foreign', 'foreignRenew', 'military', 'national', 'posting', 'released',
-    'retire', 'returnee', 'rival', 'rivalProtect', 'rookieBonus', 'roster', 'salaries', 'scandal', 'secondPick', 'secondProtect', 'specialDraft', 'sponsor', 'staff', 'tryout',
+    'retire', 'returnee', 'rival', 'rivalProtect', 'rookieBonus', 'roster', 'salaries', 'scandal', 'secondPick', 'secondProtect', 'specialDraft', 'sponsor', 'staff', 'tryout', 'meddle', 'fantasyPick',
   ];
   it('every decision has a title and a few lines (shown as "이 결정은?" and in the help tab)', () => {
     for (const k of KINDS) {

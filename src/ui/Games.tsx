@@ -1,6 +1,7 @@
 /* Games (V0.7): the user's games this season and the league's last few days; each opens its box score. */
 import type { LeagueState } from '../league/state';
 import { gameList } from '../league/views';
+import { spoilerHidden } from './display';
 
 type Row = ReturnType<typeof gameList>['mine'][number];
 
@@ -21,26 +22,27 @@ function GameTable({ rows, onOpen, mine }: { rows: Row[]; onOpen: (id: string) =
           </tr>
         </thead>
         <tbody>
-          {rows.map((g) => (
+          {rows.map((g) => {
+            const hide = mine && spoilerHidden(g.id, true, !!g.pbp);
+            return (
             <tr key={g.id} class="player-row">
               <td>
                 {g.date.slice(5)}
                 {g.post && <span class="tag">PS</span>}
               </td>
-              <td class={g.as > g.hs ? 'strong' : ''}>{g.away}</td>
-              <td class="num">
-                {g.as} : {g.hs}
-              </td>
-              <td class={g.hs > g.as ? 'strong' : ''}>{g.home}</td>
-              {mine && <td class={g.result === '승' ? 'plus' : g.result === '패' ? 'minus' : ''}>{g.result}</td>}
+              <td class={!hide && g.as > g.hs ? 'strong' : ''}>{g.away}</td>
+              <td class="num">{hide ? '? : ?' : `${g.as} : ${g.hs}`}</td>
+              <td class={!hide && g.hs > g.as ? 'strong' : ''}>{g.home}</td>
+              {mine && <td class={hide ? 'muted' : g.result === '승' ? 'plus' : g.result === '패' ? 'minus' : ''}>{hide ? '미관전' : g.result}</td>}
               <td class="num">{g.att ? g.att.toLocaleString('ko-KR') : '-'}</td>
               <td>
                 <button type="button" class="link" onClick={() => onOpen(g.id)}>
-                  {g.pbp ? '기록지 · 중계' : '기록지'}
+                  {hide ? '중계 보기' : g.pbp ? '기록지 · 중계' : '기록지'}
                 </button>
               </td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>

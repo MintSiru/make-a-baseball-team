@@ -86,7 +86,12 @@ describe('Tommy John', () => {
 });
 
 describe('retirement', () => {
-  const someone = () => structuredClone(Object.values(s.players).find((p) => p.status === 'active' && p.origin.kind !== 'foreign' && !isPitcher(p))!);
+  // A 보통 grower: since 1.6.0 the extreme growth types retire years earlier or later.
+  const someone = () => {
+    const p = structuredClone(Object.values(s.players).find((x) => x.status === 'active' && x.origin.kind !== 'foreign' && !isPitcher(x))!);
+    p.hidden.traits = { ...p.hidden.traits!, growth: 'normal' };
+    return p;
+  };
 
   it('a star in his mid-thirties keeps playing; a fading veteran goes', () => {
     const p = someone();

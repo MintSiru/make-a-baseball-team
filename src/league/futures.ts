@@ -4,6 +4,7 @@
    The simulated history before 2026 has no futures games (it only builds the league), so growth then
    does not depend on playing time. Players who are neither on the first team nor in the futures squad
    are in the third squad (잔류군): injured players rehab there and the rest train (RULES.md §6). */
+import { ruleYear } from './era';
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { futuresGamesFor } from '../rules/kbo2026';
@@ -17,7 +18,7 @@ export const FUTURES_FROM = 2026;
 
 /** A season's futures league: every club plus 상무, three-game series on the first team's game days. */
 export function makeFuturesLeague(s: LeagueState): FuturesSeason | null {
-  if (s.year < FUTURES_FROM) return null;
+  if (ruleYear(s.year) < FUTURES_FROM) return null;
   const teams = [...s.teams.map((t) => t.id).filter((id) => s.rosters[id]), SANGMU];
   const r = rng(`${s.seed}|futures-schedule|${s.year}`);
   for (let i = teams.length - 1; i > 0; i--) {

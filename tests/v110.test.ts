@@ -3,7 +3,6 @@
 import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import DraftSeason from '../src/draftroom/season.js';
 import { PERSONALITIES, rng, type Tools } from '../src/draftroom';
 import type { GrowthType, Player } from '../src/model/types';
 import { draftClass, FOREIGN_TYPES, foreignTypeOf, makeForeign } from '../src/league/players';
@@ -12,6 +11,7 @@ import { traitReport } from '../src/league/reports';
 import type { LeagueState } from '../src/league/state';
 import { declineOf, growTools, GROWTH_ORDER, rollTraits, traitsOf, troubleFactor } from '../src/league/traits';
 import { OFFSEASON } from '../src/league/tuning';
+import { retirementChance } from '../src/league/offseason';
 import { parseSave } from '../src/save/format';
 
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
@@ -81,25 +81,52 @@ const peakAge = (c: Map<number, number>) => [...c].sort((a, b) => b[1] - a[1] ||
 describe('growth types', () => {
   const runs = Object.fromEntries(GROWTH_ORDER.map((g) => [g, career(prospect(g))])) as Record<GrowthType, Map<number, number>>;
 
-  it('peak in order, from 초조숙 to 초만성', () => {
-    const peaks = GROWTH_ORDER.map((g) => peakAge(runs[g]));
-    for (let i = 1; i < peaks.length; i++) expect(peaks[i]!).toBeGreaterThanOrEqual(peaks[i - 1]!);
-    expect(peaks[4]! - peaks[0]!).toBeGreaterThanOrEqual(4);
+  // 1.6.0: every type has its prime at 27–32; the types differ in when they get there and when they fall.
+  const arrives = (c: Map<number, number>) => {
+    const top = Math.max(...c.values());
+    return [...c].find(([, v]) => v >= top * 0.97)![0];
+  };
+
+  it('arrive in order, from 초조숙 to 초만성; 보통 peaks in the 27–32 prime, the others a little either side', () => {
+    const at = GROWTH_ORDER.map((g) => arrives(runs[g]));
+    for (let i = 1; i < at.length; i++) expect(at[i]!).toBeGreaterThanOrEqual(at[i - 1]!);
+    expect(at[4]! - at[0]!).toBeGreaterThanOrEqual(4);
+    expect(peakAge(runs.normal)).toBeGreaterThanOrEqual(27);
+    expect(peakAge(runs.normal)).toBeLessThanOrEqual(32);
+    for (const g of GROWTH_ORDER) {
+      expect(peakAge(runs[g])).toBeGreaterThanOrEqual(25);
+      expect(peakAge(runs[g])).toBeLessThanOrEqual(31);
+    }
   });
 
-  it('an early developer is ahead at 21 and behind at 33; a late one the other way round', () => {
+  it('a 초조숙 career is short, a 초만성 one long: the fall and the retirement come years apart', () => {
+    expect(runs.veryEarly.get(34)!).toBeLessThan(runs.normal.get(34)! - 5);
+    expect(runs.veryLate.get(36)!).toBeGreaterThan(runs.normal.get(36)! + 3);
+    const at = (growth: GrowthType, age: number) => {
+      const p = prospect(growth);
+      p.scouting = { current: 55 } as Player['scouting'];
+      p.birthday = `${2030 - age}-04-01`;
+      p.career = [];
+      p.origin = { kind: 'draftClass' } as Player['origin'];
+      return retirementChance(p, 2030, false);
+    };
+    expect(at('veryEarly', 33)).toBeGreaterThan(at('normal', 33) * 2);
+    expect(at('veryLate', 35)).toBeLessThan(at('normal', 35) / 2);
+  });
+
+  it('an early developer is ahead at 21 and behind at 35; a late one the other way round', () => {
     expect(runs.veryEarly.get(21)!).toBeGreaterThan(runs.veryLate.get(21)! + 5);
-    expect(runs.veryLate.get(33)!).toBeGreaterThan(runs.veryEarly.get(33)! + 3);
+    expect(runs.veryLate.get(35)!).toBeGreaterThan(runs.veryEarly.get(35)! + 3);
     expect(runs.late.get(22)!).toBeLessThan(runs.normal.get(22)!);
   });
 
-  it('보통 grows exactly as every player did before 1.1.0', () => {
-    const develop = (DraftSeason as unknown as { developTools: (p: object, t: Tools, y: number, age: number, d: number, r: () => number, b?: number, f?: string, s?: number) => Tools }).developTools;
-    for (const age of [19, 23, 27, 31]) {
-      const p = prospect('normal');
-      const before = develop({ potentialTools: p.hidden.potential, growthCurve: 'normal', developmentRate: 1 }, p.hidden.current, 2, age, 20, rng('same'), 0, 'power', 0.9);
-      expect(growTools(p, age, 20, rng('same'), 'power', 0.9)).toEqual(before);
-    }
+  it('보통 reaches its prime by 27, holds it to 32 and falls from 33', () => {
+    const c = runs.normal;
+    const top = Math.max(...c.values());
+    expect(c.get(27)!).toBeGreaterThan(top - 0.5);
+    expect(c.get(32)!).toBeGreaterThan(top - 1);
+    expect(c.get(24)!).toBeLessThan(top - 1.5);
+    expect(c.get(34)!).toBeLessThan(top - 2);
   });
 
   it('genius and work ethic speed growth; work ethic holds off the decline', () => {

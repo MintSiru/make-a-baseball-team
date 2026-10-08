@@ -29,4 +29,10 @@ export const CITIES: City[] = [
   { id: 'chuncheon', name: '춘천', province: '강원특별자치도', population: 284_645, stadium: { name: '의암야구장', seats: 8_160, real: true }, market: 32, competition: '강원에 연고 구단 없음', note: '' },
 ];
 
-export const cityById = (id: string) => CITIES.find((c) => c.id === id);
+/** 1.6.0: homes only a scenario starts in (scenarios.ts). */
+export const SCENARIO_CITIES: City[] = [
+  { id: 'seoul', name: '서울', province: '서울특별시', population: 9_386_034, stadium: { name: '목동야구장', seats: 10_500, real: false }, market: 78, competition: 'LG·두산(잠실)과 키움(고척)까지 세 구단이 이미 나눠 가진 최대 시장', note: '목동야구장은 2008~2015년 히어로즈의 홈. 좌석 수는 게임 가정' },
+  { id: 'ulleung', name: '울릉', province: '경상북도 울릉군', population: 9_000, stadium: { name: '울릉 임시 야구장', seats: 3_000, real: false }, market: 4, competition: '섬. 원정마다 배와 비행기를 타야 하고, 육지 팬이 홈 경기에 오기도 어렵다', note: '야구장이 없어 임시 구장(게임 가정)' },
+];
+
+export const cityById = (id: string) => CITIES.find((c) => c.id === id) ?? SCENARIO_CITIES.find((c) => c.id === id);

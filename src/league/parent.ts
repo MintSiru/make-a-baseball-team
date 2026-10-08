@@ -15,6 +15,7 @@
    Every season the owner sets goals (a finish, a crowd, a deficit it accepts) and judges them in the
    winter: next year's support and payroll budget move with the score, and so does its trust in the
    general manager. Firing is a setting and off in the sandbox. */
+import { startYear } from './era';
 import { rng } from '../draftroom';
 import type { ParentCompanyType } from '../club/types';
 import { clubState } from './fans';
@@ -22,6 +23,7 @@ import { addAlert } from './alerts';
 import { eunneun, ro, wagwa } from './josa';
 import { firstTeamIds, type Evaluation, type LeagueState, type Mayor, type SeasonGoals, type SponsorGoal, type SponsorOffer } from './state';
 import { PARENT, DIFFICULTY } from './tuning';
+import { scenarioOf } from './scenarios';
 
 const money = (n: number) => `${Math.round(n / 10000)}억`;
 
@@ -35,7 +37,8 @@ export function setGoals(s: LeagueState, year: number): SeasonGoals | null {
   const type = u.settings.parentType;
   const seasonsIn = year - u.firstTeamYear;
   const clubs = firstTeamIds(s, year).length;
-  const rank = seasonsIn < 2 ? clubs : Math.min(clubs, PARENT.rankGoal[type] + (seasonsIn < 4 ? 2 : 0));
+  const owner = scenarioOf(s)?.owner;
+  const rank = owner ? Math.min(clubs, owner.rankGoal(seasonsIn)) : seasonsIn < 2 ? clubs : Math.min(clubs, PARENT.rankGoal[type] + (seasonsIn < 4 ? 2 : 0));
   const c = clubState(s, u.teamId);
   const last = c.reports.at(-1);
   const team = s.teams.find((t) => t.id === u.teamId)!;
@@ -70,12 +73,14 @@ export function evaluate(s: LeagueState, year: number): Evaluation | null {
   const champion = s.history.find((h) => h.year === year)?.champion === u.teamId;
   const change = Math.max(-PARENT.maxChange, Math.min(PARENT.maxChange, score * PARENT.maxChange + (champion ? 0.05 : 0)));
   const step = score * PARENT.trustStep[type];
-  const trust = Math.max(0, Math.min(100, (u.trust ?? PARENT.startTrust) + (step < 0 ? step * DIFFICULTY.trustLoss[u.settings.difficulty] : step) + (champion ? 15 : 0)));
+  // A scenario's owner may be less patient (1.6.0: 재기 loses trust faster and may fire from the first season).
+  const owner = scenarioOf(s)?.owner;
+  const trust = Math.max(0, Math.min(100, (u.trust ?? PARENT.startTrust) + (step < 0 ? step * DIFFICULTY.trustLoss[u.settings.difficulty] * (owner?.trustLoss ?? 1) : step) + (champion ? 15 : 0)));
   u.trust = trust;
   const ev: Evaluation = { year, score, lines: lines.map(({ w: _w, ...l }) => l), change, trust };
   (u.evaluations ??= []).push(ev);
   applyBudgetChange(s, change);
-  if (u.settings.firing && trust < PARENT.fireBelow && year - u.firstTeamYear >= 2) u.fired = year;
+  if (u.settings.firing && trust < PARENT.fireBelow && year - u.firstTeamYear >= (owner?.fireFrom ?? 2)) u.fired = year;
   return ev;
 }
 
@@ -111,7 +116,7 @@ export function ownerEvents(s: LeagueState, year: number): number {
   if (type === 'citizen') {
     let factor = 1;
     // Local elections every four years (June 2030, 2034, …): the new mayor's stance moves the city's money.
-    u.mayor ??= electMayor(s, 2026);
+    u.mayor ??= electMayor(s, startYear());
     if (year >= u.mayor.until) {
       const before = u.mayor;
       u.mayor = electMayor(s, u.mayor.until, before);

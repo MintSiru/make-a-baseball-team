@@ -288,6 +288,10 @@ export interface PlayerLife {
       ability it lends while it lasts) and the season the club last tested him. */
   offenses?: Partial<Record<'dui' | 'doping' | 'assault' | 'fixing', number>>;
   hiding?: { date: string; found: string };
+  /** 1.6.0: a free agent nobody signed that winter (FA 미아), waiting in the unattached pool. */
+  unsigned?: number;
+  /** 1.6.0: an injury that ended his career (the date): he retires after the season, however he is asked. */
+  careerOver?: string;
   suspicion?: { since: string; signs: number; real: boolean; next: string; boost?: { tool: 'stuff' | 'power'; delta: number } };
   inspected?: number;
 }

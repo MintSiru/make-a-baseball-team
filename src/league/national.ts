@@ -8,6 +8,7 @@
    refuse a call-up, but a request citing an injury or his condition is common). An injured player is excused; a
    healthy one only sometimes, and the fans and the player himself remember it, the more so when the event could
    have spared him military service. */
+import { startYear } from './era';
 import { rng } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
 import { addAlert } from './alerts';
@@ -80,7 +81,8 @@ export function finishEvent(s: LeagueState, e: InternationalEvent) {
   if (entry.finish) return entry;
   const r = rng(`${s.seed}|international|${e.id}`);
   let x = r();
-  const finish: Finish = e.finish ?? ODDS[e.kind].find(([, w]) => (x -= w) < 0)?.[0] ?? ODDS[e.kind].at(-1)![0];
+  // The real result only for events before the game starts (1.6.0: a game from 2016 plays the 2017 WBC itself).
+  const finish: Finish = (e.year < startYear() ? e.finish : null) ?? ODDS[e.kind].find(([, w]) => (x -= w) < 0)?.[0] ?? ODDS[e.kind].at(-1)![0];
   entry.finish = finish;
   entry.medal = exempts(e, finish);
   const players = entry.squad.map((id) => s.players[id]).filter((p): p is Player => !!p);

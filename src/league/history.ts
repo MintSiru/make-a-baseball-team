@@ -2,6 +2,7 @@
    starts there: a quick 20-year bootstrap (development and turnover only, no games) builds the 2015
    rosters, then 2015–2025 are played in full. Records therefore start in 2015; earlier careers exist
    only as ability, service time and salary. Club results before 2026 are fictional. */
+import { era, setEra, startYear } from './era';
 import { rng } from '../draftroom';
 import { SIM_VERSION } from '../core/version';
 import type { Player } from '../model/types';
@@ -16,16 +17,21 @@ import { driftPotential } from './scouting';
 import { playRegularSeason, startSeason } from './season';
 import { emptyRoster, orgPlayers, type LeagueState } from './state';
 
+/** The usual calendar; a game started earlier (era.ts) moves both by its shift. */
 export const HISTORY_START = 2015;
 export const GAME_START = 2026;
 const BOOTSTRAP_YEARS = 20;
+const historyStart = () => HISTORY_START + era();
 
 function emptyState(seed: string): LeagueState {
-  const teams = existingTeams();
+  // A game started earlier (era.ts) still has the ten clubs of today from its history's first season: the clubs
+  // that joined later in reality (키움, NC, KT) are there from the start of the fictional history.
+  const teams = existingTeams().map((t) => (t.firstTeamFrom != null && t.firstTeamFrom > historyStart() ? { ...t, firstTeamFrom: historyStart(), founded: Math.min(t.founded, historyStart() - 2) } : t));
   return {
     sim: SIM_VERSION,
     seed,
-    year: HISTORY_START - BOOTSTRAP_YEARS,
+    ...(era() ? { era: era() } : {}),
+    year: historyStart() - BOOTSTRAP_YEARS,
     phase: 'offseason',
     teams,
     players: {},
@@ -119,8 +125,8 @@ function bootstrapContracts(s: LeagueState) {
 
 export function bootstrap(seed: string): LeagueState {
   const s = emptyState(seed);
-  while (s.year < HISTORY_START) {
-    if (s.year > HISTORY_START - BOOTSTRAP_YEARS) virtualSeason(s);
+  while (s.year < historyStart()) {
+    if (s.year > historyStart() - BOOTSTRAP_YEARS) virtualSeason(s);
     fastOffseason(s);
   }
   bootstrapContracts(s);
@@ -138,10 +144,11 @@ export function playFullSeason(s: LeagueState) {
   startSeason(s);
 }
 
-/** A new league, played through 2025, waiting at 2026 opening day. */
-export function createLeague(seed: string, onYear?: (year: number) => void): LeagueState {
+/** A new league, played through 2025, waiting at 2026 opening day (`shift` years earlier for 「백 투 더 패스트」). */
+export function createLeague(seed: string, onYear?: (year: number) => void, shift = 0): LeagueState {
+  setEra(shift);
   const s = bootstrap(seed);
-  while (s.year < GAME_START) {
+  while (s.year < startYear()) {
     onYear?.(s.year);
     playFullSeason(s);
   }

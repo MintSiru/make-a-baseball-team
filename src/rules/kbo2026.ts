@@ -2,6 +2,7 @@
    Every value comes from docs/RULES.md; the section number is noted beside each group. Values marked
    `assumed` are the game's own choices where real KBO has no precedent (RULES.md §9). Money is in
    만 원 (10,000 KRW) unless the name says USD. */
+import { ruleYear } from '../league/era';
 
 export interface SalaryCapYear {
   year: number;
@@ -167,7 +168,9 @@ export const ELEVEN_CLUB_SCHEDULE = { gamesPerClub: 144, heavyOpponents: 4, heav
    against two of the other league and 12 against the other four. */
 export const TWELVE_CLUB_SCHEDULE = { gamesPerClub: 144, single: { rival: 14, other: 13 }, two: { same: 14, near: 13, far: 12, nearOpponents: 2 } } as const;
 
-export function salaryCapFor(year: number): number {
+export function salaryCapFor(calendarYear: number): number {
+  // 1.6.0: a game started earlier reads the cap as of the usual calendar (era.ts).
+  const year = ruleYear(calendarYear);
   const years = KBO_2026.salaryCap.years;
   const known = years.find((y) => y.year === year);
   if (known) return known.cap;
@@ -177,13 +180,15 @@ export function salaryCapFor(year: number): number {
   return Math.round(last.cap * (1 + KBO_2026.salaryCap.growthAfter2028) ** (year - last.year));
 }
 
-export function minimumSalaryFor(year: number): number {
+export function minimumSalaryFor(calendarYear: number): number {
+  const year = ruleYear(calendarYear);
   let amount: number = KBO_2026.minimumSalary[0].amount;
   for (const step of KBO_2026.minimumSalary) if (year >= step.from) amount = step.amount;
   return amount;
 }
 
-export function futuresGamesFor(year: number): number {
+export function futuresGamesFor(calendarYear: number): number {
+  const year = ruleYear(calendarYear);
   let games: number = KBO_2026.futuresGames[0].games;
   for (const step of KBO_2026.futuresGames) if (year >= step.from) games = step.games;
   return games;

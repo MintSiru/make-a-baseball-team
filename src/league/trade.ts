@@ -20,6 +20,7 @@ import { crossing } from './rivalry';
 import { farewell } from './life';
 import { TRADES, DIFFICULTY } from './tuning';
 import { moveNews } from './movenews';
+import { cashFactor, clubStrategy, pickFactor, planFactor, planGuard, planReasons, spotOf } from './strategy';
 import { capRoom, chargeForeign } from './foreigncap';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry, toForeignPool } from './foreignpool';
 
@@ -67,6 +68,8 @@ export interface TradeCheck {
   /** Value the other club gets minus what it gives up (its view). */
   margin: number;
   accepted: boolean;
+  /** 1.6.0: what the other club says (its plan, the players it likes or not, why it refuses). */
+  reasons?: string[];
 }
 
 // ── Draft picks and cash (V0.7.8) ─────────────────────────────────────────────────────────────────
@@ -145,10 +148,15 @@ export function checkTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get
   const theirs = registeredIds(s, teamId).length - (get.length - devCount(gets)) + (give.length - devCount(gives));
   if (mine > limit) return no(`받으면 우리 소속선수가 ${limit}명을 넘습니다.`);
   if (theirs > limit) return no(`상대 구단 소속선수가 ${limit}명을 넘게 됩니다.`);
-  const inValue = gives.reduce((a, p) => a + tradeValue(s, p!), 0) + cashValue(cashOut) + picksOut.reduce((a, r) => a + pickValue(s, u.teamId, r), 0);
-  const outValue = gets.reduce((a, p) => a + tradeValue(s, p!), 0) + cashValue(cashIn) + picksIn.reduce((a, r) => a + pickValue(s, teamId, r), 0);
+  // 1.6.0: the other club weighs what it gets by its plan (strategy.ts), and keeps its guards.
+  const plan = clubStrategy(s, teamId);
+  const reasons = planReasons(s, teamId, plan, gives as Player[], picksOut.length, cashOut);
+  const guard = planGuard(s, teamId, plan, gets as Player[], gives as Player[]);
+  if (guard) return { problem: null, margin: 0, accepted: false, reasons: [guard, ...reasons] };
+  const inValue = gives.reduce((a, p) => a + tradeValue(s, p!) * planFactor(s, plan, p!), 0) + cashValue(cashOut) * cashFactor(plan) + picksOut.reduce((a, r) => a + pickValue(s, u.teamId, r) * pickFactor(plan), 0);
+  const outValue = gets.reduce((a, p) => a + tradeValue(s, p!), 0) + cashValue(cashIn) + picksIn.reduce((a, r) => a + pickValue(s, teamId, r) * pickFactor(plan), 0);
   const margin = Math.round((inValue - outValue * TRADES.accept.premium * DIFFICULTY.tradePremium[u.settings.difficulty] - TRADES.accept.fixed) * 10) / 10;
-  return { problem: null, margin, accepted: margin >= 0 };
+  return { problem: null, margin, accepted: margin >= 0, reasons };
 }
 
 /** Moves the cash and the picks of a trade (`a` gives `picksA` and pays `cash`; negative cash: `b` pays). */
@@ -203,6 +211,47 @@ export function applyPickTrades(s: LeagueState, year: number, slots: DraftSlot[]
     if (slot) Object.assign(slot, { teamId: t.to, via: t.from, label: `${t.round}R (${shortOf(s, t.from)} 지명권)` });
   }
   return out;
+}
+
+/** Players a club can trade: registered, domestic, past their first season, not a pick bought this year. */
+const tradableOf = (s: LeagueState, teamId: TeamId) =>
+  registeredIds(s, teamId)
+    .map((id) => s.players[id]!)
+    .filter((p) => !isForeign(p) && p.proSince <= s.year && p.contract?.kind !== 'development' && !(p.origin.pickVia && p.proSince >= s.year));
+
+/**
+ * Deadline deals (1.6.0): late in July a club going for the title buys a ready player at the spot it lacks most from
+ * a rebuilding club, for a young player the rebuilding club values at least as much (each by its own plan).
+ */
+export function aiDeadlineDeals(s: LeagueState, r: () => number) {
+  const clubs = firstTeamIds(s).filter((id) => id !== s.user?.teamId && s.rosters[id]);
+  const plans = new Map(clubs.map((id) => [id, clubStrategy(s, id)]));
+  const sellers = clubs.filter((id) => plans.get(id)!.mode === 'rebuild');
+  let made = 0;
+  for (const a of clubs.filter((id) => plans.get(id)!.mode === 'contend')) {
+    if (made >= TRADES.ai.deadline || !sellers.length || r() > TRADES.ai.chance) continue;
+    const plan = plans.get(a)!;
+    const want = plan.needs[0];
+    if (!want) continue;
+    const target = sellers
+      .flatMap((b) => tradableOf(s, b).map((p) => ({ b, p })))
+      .filter(({ p }) => spotOf(p) === want && ageIn(p, s.year) >= 26 && currentValue(p) >= 50)
+      .sort((x, y) => currentValue(y.p) - currentValue(x.p))[0];
+    if (!target) continue;
+    const seller = plans.get(target.b)!;
+    const price = tradeValue(s, target.p) * TRADES.accept.premium;
+    const young = tradableOf(s, a)
+      .filter((p) => ageIn(p, s.year) <= 24 && spotOf(p) !== want)
+      .map((p) => ({ p, v: tradeValue(s, p) * planFactor(s, seller, p) }))
+      .filter((x) => x.v >= price && tradeValue(s, target.p) * planFactor(s, plan, target.p) >= tradeValue(s, x.p) * 0.9)
+      .sort((x, y) => x.v - y.v)[0];
+    if (!young || planGuard(s, target.b, seller, [target.p], [young.p]) || planGuard(s, a, plan, [young.p], [target.p])) continue;
+    movePlayer(s, young.p, target.b);
+    movePlayer(s, target.p, a);
+    logTransaction(s, `트레이드: ${shortOf(s, a)} ${young.p.name} ↔ ${shortOf(s, target.b)} ${target.p.name} (마감 직전)`);
+    moveNews(s, { type: 'trade', a, b: target.b, fromA: [young.p.id], fromB: [target.p.id], cash: 0, picksA: [], picksB: [] });
+    made++;
+  }
 }
 
 /** A few trades between AI clubs each season: depth at one spot for need at another, at even value. */
@@ -356,7 +405,10 @@ export function canSignFromPool(s: LeagueState, id: PlayerId): string | null {
   const u = s.user;
   const p = s.players[id];
   if (!u || !p || !(s.pool ?? []).includes(id)) return '자유계약선수 명단에 없습니다.';
-  if (s.pending || s.phase === 'offseason') return '지금은 계약할 수 없습니다.';
+  // 1.6.0: the free agents nobody signed (FA 미아) can be signed in the winter too, once the market is over.
+  const winter = s.phase === 'offseason';
+  if (winter && !s.offseason?.faDone) return 'FA 시장이 끝난 뒤 계약할 수 있습니다.';
+  if ((s.pending && !winter) || s.pending?.kind === 'roster' || s.phase === 'postseason') return '지금은 계약할 수 없습니다.';
   if (registeredIds(s, u.teamId).length >= rosterLimit(s.phase === 'regular' ? s.year : s.year + 1)) return '소속선수 한도가 찼습니다.';
   return null;
 }

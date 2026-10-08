@@ -18,6 +18,8 @@ import { injuryNote, rates, shortName, standingsView } from '../league/views';
 import { money } from './format';
 import { Squad, type Row, type SquadKey } from './Squad';
 import { Office } from './Office';
+import { scenarioProgress } from '../league/scenarios';
+import { startYear } from '../league/era';
 import { Lineup } from './Lineup';
 import { Story } from './Story';
 import { Training } from './Training';
@@ -88,6 +90,7 @@ export function MyClub({
       {u.fired && <p class="notice warn">{u.fired}년 겨울, 모기업이 단장을 해임했습니다. 새 게임을 시작하거나 이 구단을 계속 지켜볼 수 있습니다.</p>}
       {view === 'overview' && (
         <>
+          <ScenarioCard league={league} />
           <Briefing
             league={league}
             onGo={(g) => {
@@ -137,9 +140,9 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
   const share = Math.min(1, payroll / Math.max(1, u.payrollBudget));
   const upcoming = league.phase === 'regular' ? league.schedule.slice(league.next).filter((g) => g.home === me || g.away === me).slice(0, 6) : [];
   const steps = [
-    { year: 2026, label: '창단 승인 · 트라이아웃' },
-    { year: 2026, label: '첫 신인 드래프트' },
-    ...(u.firstTeamYear === 2028 ? [{ year: 2027, label: '퓨처스리그' }] : []),
+    { year: startYear(), label: '창단 승인 · 트라이아웃' },
+    { year: startYear(), label: '첫 신인 드래프트' },
+    ...(u.firstTeamYear === startYear() + 2 ? [{ year: startYear() + 1, label: '퓨처스리그' }] : []),
     { year: u.firstTeamYear - 1, label: '특별지명 · FA · 외국인' },
     { year: u.firstTeamYear, label: '1군 진입' },
   ];
@@ -453,3 +456,25 @@ function Management({ league, onPlayer, onAct, setMsg }: { league: LeagueState; 
 
 // ── Front office ─────────────────────────────────────────────────────────────────────────────────
 
+
+/** A scenario's goal and how it stands (1.6.0). */
+function ScenarioCard({ league }: { league: LeagueState }) {
+  const x = scenarioProgress(league);
+  if (!x) return null;
+  const tone = x.status === 'won' ? 'good' : x.status === 'lost' ? 'bad' : '';
+  return (
+    <section class={`scenario-card ${tone}`} aria-labelledby="scenario-title">
+      <h3 id="scenario-title">
+        시나리오 「{x.title}」 {x.status === 'won' ? '· 달성' : x.status === 'lost' ? '· 실패' : ''}
+      </h3>
+      <p>
+        <strong>목표</strong> {x.goal}
+      </p>
+      <ul>
+        {x.lines.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}

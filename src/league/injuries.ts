@@ -215,10 +215,39 @@ export function rollInjuries(s: LeagueState, box: TeamBox, date: string, r: () =
     s.injuries[id] = { until: addDays(date, days), days, onList: level === 'first', part: t.part, ...(t.surgery ? { surgery: t.surgery } : {}) };
     const rec: InjuryRecord = { date, days, part: t.part, ...(level === 'futures' ? { futures: true } : {}), ...(t.surgery ? { surgery: t.surgery } : {}) };
     (p.injuries ??= []).push(rec);
-    if (t.surgery === 'major') aftermath(p, t, r2);
+    if (t.surgery === 'major') {
+      aftermath(p, t, r2);
+      careerThreat(s, p, t, date, r2);
+    }
     line(id, p.teamId).lost += days;
     if (p.teamId === s.user?.teamId && days >= INJURY.newsFrom) injuryNews(s, p, t, days, date, level);
   }
+}
+
+/**
+ * 1.6.0: a major operation can end a career — likelier the older he is and after an earlier one. He finishes the
+ * season on the list and retires in the winter (the club cannot talk him round).
+ */
+function careerThreat(s: LeagueState, p: Player, t: InjuryType, date: string, r: () => number) {
+  const C = INJURY.careerEnding;
+  const age = ageIn(p, s.year);
+  const chance = Math.min(C.max, C.base + Math.max(0, age - C.from) * C.perYear + (majorSurgeries(p).length >= 2 ? C.repeat : 0));
+  if (r() >= chance) return;
+  (p.life ??= {}).careerOver = date;
+  const team = s.teams.find((x) => x.id === p.teamId);
+  const ours = p.teamId === s.user?.teamId;
+  addNews(s, {
+    id: `career-over-${p.id}-${date}`,
+    date,
+    kind: 'injury',
+    title: `${team?.short ?? ''} ${p.name}, ${ro(t.part)} 선수 생명 위기… 시즌 뒤 은퇴`,
+    body: `${age}세의 ${iga(p.name)} ${t.part} 진단을 받았다. 의료진은 다시 예전 기량을 되찾기 어렵다고 봤고, 선수 본인도 시즌이 끝나면 유니폼을 벗겠다는 뜻을 밝혔다.`,
+    quotes: [],
+    facts: { 선수: p.name, 부상: t.part, 나이: age },
+    players: [p.id],
+    mine: ours,
+  });
+  if (ours) addAlert(s, { id: `career-over-${p.id}-${date}`, date, kind: 'retire', title: `${p.name} 은퇴 예정 (${t.part})`, lines: ['선수 생활을 이어 가기 어려운 부상입니다. 이번 시즌이 끝나면 은퇴합니다(설득할 수 없음).'], tone: 'bad', players: [p.id] });
 }
 
 const ROLE: Record<string, string> = { SP: '선발투수', RP: '불펜투수', C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' };
