@@ -405,7 +405,10 @@ export function canSignFromPool(s: LeagueState, id: PlayerId): string | null {
   const u = s.user;
   const p = s.players[id];
   if (!u || !p || !(s.pool ?? []).includes(id)) return '자유계약선수 명단에 없습니다.';
-  if (s.pending || s.phase === 'offseason') return '지금은 계약할 수 없습니다.';
+  // 1.6.0: the free agents nobody signed (FA 미아) can be signed in the winter too, once the market is over.
+  const winter = s.phase === 'offseason';
+  if (winter && !s.offseason?.faDone) return 'FA 시장이 끝난 뒤 계약할 수 있습니다.';
+  if ((s.pending && !winter) || s.pending?.kind === 'roster' || s.phase === 'postseason') return '지금은 계약할 수 없습니다.';
   if (registeredIds(s, u.teamId).length >= rosterLimit(s.phase === 'regular' ? s.year : s.year + 1)) return '소속선수 한도가 찼습니다.';
   return null;
 }

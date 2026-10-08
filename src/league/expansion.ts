@@ -3,6 +3,8 @@
 
    Rules follow the NC (2011–13) and KT (2013–15) precedents where known (docs/RULES.md §8) and the
    game assumptions in RULES.md §9. Money is in 만 원 (10,000 = 1억). */
+import { employedAlumni, fameOf } from './alumni';
+import { startYear } from './era';
 import { generateDraftPool, rng } from '../draftroom';
 import { cityById } from '../club/cities';
 import { scenarioDef, supportFactor } from './scenarios';
@@ -37,7 +39,7 @@ import {
   standardSlots,
   type OffseasonStep,
 } from './offseason';
-import { ageIn, isForeign, isPitcher, keepValue, makeForeign } from './players';
+import { ageIn, currentValue, isForeign, isPitcher, keepValue, makeForeign } from './players';
 import { DIFFICULTY, FOREIGN_TALKS, OFFSEASON, PARENT } from './tuning';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './foreignpool';
 import { marchEvents, nextNationalDecision, novemberEvents } from './national';
@@ -65,6 +67,8 @@ import { developmentIds, emptyRoster, firstTeamIds, orgIds, registeredIds, type 
 
 export const EXPANSION_ID = 'new';
 export const FOUNDING_DATE = '2026-07-01';
+/** July 1 of the starting year (2026, or earlier for 「백 투 더 패스트」). */
+export const foundingDate = () => `${startYear()}-07-01`;
 
 // ── Money and difficulty ─────────────────────────────────────────────────────────────────────────
 
@@ -79,9 +83,10 @@ const DIFFICULTY_MONEY = DIFFICULTY.money;
 
 export const STADIUM_PLANS = {
   existing: { label: '연고지 구장 그대로 사용', seats: null as number | null, opens: null as number | null },
-  newMedium: { label: '중형 신축 (1만 5천 석)', seats: 15_000, opens: 2029 },
-  newLarge: { label: '대형 신축 (2만 2천 석)', seats: 22_000, opens: 2030 },
-  dome: { label: '돔구장 신축 (2만 석)', seats: 20_000, opens: 2031 },
+  // Opening three to five seasons after the founding (2029–2031 in the usual calendar).
+  newMedium: { label: '중형 신축 (1만 5천 석)', seats: 15_000, get opens() { return startYear() + 3; } },
+  newLarge: { label: '대형 신축 (2만 2천 석)', seats: 22_000, get opens() { return startYear() + 4; } },
+  dome: { label: '돔구장 신축 (2만 석)', seats: 20_000, get opens() { return startYear() + 5; } },
 } as const;
 
 export function budgetFor(settings: ExpansionSettings) {
@@ -159,7 +164,8 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
   if (s.user) throw new Error('a club is already founded');
   const city = cityById(settings.cityId);
   if (!city) throw new Error(`unknown city ${settings.cityId}`);
-  const firstTeamYear = settings.promotion === 'immediate' ? 2027 : 2028;
+  const y0 = startYear();
+  const firstTeamYear = settings.promotion === 'immediate' ? y0 + 1 : y0 + 2;
   const plan = STADIUM_PLANS[settings.stadium];
   const team: Team = {
     id: EXPANSION_ID,
@@ -168,7 +174,7 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
     color: settings.color,
     region: city.name,
     kind: 'expansion',
-    founded: 2026,
+    founded: y0,
     firstTeamFrom: firstTeamYear,
     benefitsUntil: firstTeamYear + EXPANSION_DEFAULTS.benefitSeasons - 1,
     parent: { type: settings.parentType, name: settings.parentName.trim() },
@@ -180,32 +186,48 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
   s.user = { teamId: EXPANSION_ID, settings, fund: b.fund, payrollBudget: b.payrollBudget, firstTeamYear, ledger: [], support: Math.round(baseSupport(settings.parentType) * DIFFICULTY_MONEY[settings.difficulty] * supportFactor(settings)), trust: scenarioDef(settings.scenario)?.owner?.startTrust ?? PARENT.startTrust, budgetScale: 1 };
   if (settings.scenario) s.user.scenario = { status: 'active' };
   // A citizen club is founded by the mayor elected in June 2026 (parent.ts).
-  if (settings.parentType === 'citizen') s.user.mayor = electMayor(s, 2026);
+  if (settings.parentType === 'citizen') s.user.mayor = electMayor(s, y0);
   spend(s, 'KBO 가입금', b.entryFee, true);
   spend(s, '야구발전기금', b.developmentFund, true);
   s.user.ledger.push({ year: s.year, label: `가입 예치금 ${b.deposit / 10000}억 (KBO 보관, 지출 아님)`, amount: 0 });
   if (plan.opens) s.user.ledger.push({ year: s.year, label: `${plan.label} ${plan.opens}년 개장 예정 (지자체 건설)`, amount: 0 });
-  s.pending = { kind: 'tryout', candidates: tryoutPool(s).map((p) => p.id), max: 20 };
-  milestone(s, 2026, `${FOUNDING_DATE} ${team.name} 창단 승인 (${city.name})`, 'founded');
-  unlock(s, 'founded', 2026);
+  // 1.6.0, scenario 강철야구: the first squad is retired players and players nobody drafted, and a bigger tryout.
+  s.pending = settings.scenario === 'steel' ? { kind: 'tryout', candidates: [...comebackPool(s), ...tryoutPool(s).filter((p) => p.status === 'amateur')].map((p) => p.id), max: STEEL.tryout } : { kind: 'tryout', candidates: tryoutPool(s).map((p) => p.id), max: 20 };
+  milestone(s, y0, `${foundingDate()} ${team.name} 창단 승인 (${city.name})`, 'founded');
+  unlock(s, 'founded', y0);
+}
+
+/** 강철야구: how many it signs at the tryout, and the retired players it looks at (the best now, the famous first on a tie). */
+const STEEL = { tryout: 36, retired: 30, maxAge: 41, retiredSince: 8 } as const;
+
+/** Retired players who could come back: a first-team career, retired lately, not on any club's staff. */
+function comebackPool(s: LeagueState): Player[] {
+  const y0 = startYear();
+  const staff = employedAlumni(s);
+  return Object.values(s.players)
+    .filter((p) => p.status === 'retired' && !isForeign(p) && p.career.some((c) => !c.level) && (p.career.at(-1)?.year ?? 0) >= y0 - STEEL.retiredSince && ageIn(p, y0 + 1) <= STEEL.maxAge && !staff.has(p.id))
+    .sort((a, b) => currentValue(b) + fameOf(s, b) * 0.1 - (currentValue(a) + fameOf(s, a) * 0.1))
+    .slice(0, STEEL.retired);
 }
 
 /** Independent-league players, overseas returnees and recently released pros for the founding tryout. */
 function tryoutPool(s: LeagueState): Player[] {
-  const seed = `${s.seed}|tryout|2026`;
+  const y0 = startYear();
+  // The usual calendar keeps its seed (the same tryout as before 1.6.0).
+  const seed = `${s.seed}|tryout|${y0}`;
   const pool = placeClass(
     generateDraftPool(seed)
       .players.filter((p) => ['독립구단', '해외독립 복귀', '마이너 복귀', '대졸'].includes(p.pathway) && p.age >= 21)
-      .map((p) => fromDraftProspect(p, 2026, seed))
-      .map((p) => ({ ...p, id: `t2026-${p.origin.sourceId}` })),
+      .map((p) => fromDraftProspect(p, y0, seed))
+      .map((p) => ({ ...p, id: `t${y0}-${p.origin.sourceId}` })),
     seed,
   )
-    .sort((a, b) => keepValue(b, 2027) - keepValue(a, 2027))
+    .sort((a, b) => keepValue(b, y0 + 1) - keepValue(a, y0 + 1))
     .slice(0, 25);
   for (const p of pool) s.players[p.id] = p;
   const released = Object.values(s.players)
-    .filter((p) => p.status === 'retired' && p.career.length && (p.career.at(-1)?.year ?? 0) >= 2025 && ageIn(p, 2027) <= 33)
-    .sort((a, b) => keepValue(b, 2027) - keepValue(a, 2027))
+    .filter((p) => p.status === 'retired' && p.career.length && (p.career.at(-1)?.year ?? 0) >= y0 - 1 && ageIn(p, y0 + 1) <= 33)
+    .sort((a, b) => keepValue(b, y0 + 1) - keepValue(a, y0 + 1))
     .slice(0, 15);
   return [...released, ...pool];
 }
@@ -219,7 +241,7 @@ const inFoundingPeriod = (s: LeagueState, next: number) => !!s.user && next <= s
 function draftSlots(s: LeagueState, draftYear: number, order: TeamId[]): DraftSlot[] {
   const founding: { teamId: TeamId; first: boolean }[] = [];
   const u = s.user;
-  if (u && !order.includes(u.teamId) && draftYear + 1 <= u.firstTeamYear) founding.push({ teamId: u.teamId, first: draftYear === 2026 });
+  if (u && !order.includes(u.teamId) && draftYear + 1 <= u.firstTeamYear) founding.push({ teamId: u.teamId, first: draftYear === startYear() });
   const tw = s.twelve;
   if (tw && !order.includes(tw.teamId) && draftYear + 1 <= tw.firstTeam) founding.push({ teamId: tw.teamId, first: draftYear === tw.founded });
   if (!founding.length) return standardSlots(order);
@@ -312,8 +334,9 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       return due.length ? { kind: 'faOptions', rows: due.map((p) => ({ id: p.id, years: p.contract!.fa!.extra!.years, annual: p.contract!.fa!.extra!.annual })) } : null;
     }
     case 'special':
-      // None in the fantasy draft's winter (1.6.0): the clubs have just drafted the whole league.
-      if (isFantasyWinter(s, o.year)) return null;
+      // None in the fantasy draft's winter (1.6.0): the clubs have just drafted the whole league; and 강철야구 builds
+      // its first team without the other clubs' players.
+      if (isFantasyWinter(s, o.year) || (entering && u.settings.scenario === 'steel')) return null;
       // Our own special draft in our founding winter; later, the twelfth club's, where we protect our 20.
       if (!entering) return rivalProtectDecision(s, next);
       return { kind: 'specialDraft', lists: protectedLists(s, next), protectedCount: EXPANSION_DEFAULTS.specialDraft.protected, fee: EXPANSION_DEFAULTS.specialDraft.feePerPlayer };
@@ -504,8 +527,9 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
     case 'tryout': {
       for (const id of input.ids) {
         const p = s.players[id]!;
-        p.proSince = Math.max(p.proSince, 2027);
-        sign(s, p, u.teamId, { teamId: u.teamId, kind: 'standard', signedIn: 2026, signingBonus: 0, salaries: [{ season: 2027, amount: p.career.length ? renewSalary(p, 2027) : minimumSalaryFor(2027) }] });
+        const first = startYear() + 1;
+        p.proSince = Math.max(p.proSince, first);
+        sign(s, p, u.teamId, { teamId: u.teamId, kind: 'standard', signedIn: first - 1, signingBonus: 0, salaries: [{ season: first, amount: p.career.length ? renewSalary(p, first) : minimumSalaryFor(first) }] });
       }
       // Unchosen amateurs leave; unchosen released pros stay retired.
       for (const id of (d as Extract<Decision, { kind: 'tryout' }>).candidates) if (!input.ids.includes(id) && s.players[id]?.status === 'amateur') delete s.players[id];

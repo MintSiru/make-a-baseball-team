@@ -4,6 +4,8 @@
    A home game draws popularity × the league's boom for that year × mood × day × month × opponent ×
    price, capped by the seats. Calibrated to 2025: 17,103 a game, Samsung 23,101 (96% full) down to
    the smaller markets around 11,000. */
+import { scenarioOf } from './scenarios';
+import { ruleYear, startYear } from './era';
 import { rng } from '../draftroom';
 import type { Player, TeamId } from '../model/types';
 import { cityById } from '../club/cities';
@@ -32,12 +34,12 @@ const POPULARITY: Record<TeamId, number> = {
 const BOOM: Record<number, number> = {
   2015: 0.6, 2016: 0.68, 2017: 0.68, 2018: 0.66, 2019: 0.6, 2020: 0.6, 2021: 0.6, 2022: 0.55, 2023: 0.66, 2024: 0.87, 2025: 1,
 };
-export const boom = (year: number) => BOOM[year] ?? 1;
+export const boom = (year: number) => BOOM[ruleYear(year)] ?? 1;
 
 /** Average ticket price (만 원) for the league in `year`: 16,600원 in 2025 (2,046억 / 1,231만), +3% a year up to
     2026. After that the game keeps money in today's terms (V0.16): salaries never inflated, so rising prices
     alone made every club richer each year (docs/BALANCE.md). */
-export const leaguePrice = (year: number) => FANS.price2025 * (1 + FANS.priceGrowth) ** (Math.min(year, FANS.priceUntil) - 2025);
+export const leaguePrice = (year: number) => FANS.price2025 * (1 + FANS.priceGrowth) ** (Math.min(ruleYear(year), FANS.priceUntil) - 2025);
 
 export function initialClubState(s: LeagueState, teamId: TeamId): ClubState {
   const team = s.teams.find((t) => t.id === teamId)!;
@@ -51,7 +53,7 @@ export function initialClubState(s: LeagueState, teamId: TeamId): ClubState {
   const u = s.user?.teamId === teamId ? s.user : null;
   const sponsor =
     teamId === 'kiwoom'
-      ? { name: '키움증권', annual: 1_100_000, until: 2028 }
+      ? { name: '키움증권', annual: 1_100_000, until: startYear() + 2 }
       : u && team.parent.type === 'namingRights'
         ? { name: u.settings.parentName, annual: Math.round((PARENT.naming.base * (0.8 + (cityById(u.settings.cityId)?.market ?? 50) / 250)) / 1000) * 1000, until: u.firstTeamYear + 4 }
         : undefined;
@@ -103,7 +105,8 @@ export function attendance(s: LeagueState, g: Pick<GameScore, 'id' | 'date' | 'h
   const rivalry = isRivalry(s, g.home, g.away) ? RIVAL.rivalry.gate : 1;
   // The user's new scoreboard (V0.10).
   const venue = 1 + scoreboardDemand(s, g.home);
-  const demand = home.popularity * boom(s.year) * Math.max(0.45, 1 + FANS.moodWeight * mood) * day * month * visitors * rivalry * venue * home.price ** -FANS.elasticity * (0.92 + r() * 0.16);
+  // 1.6.0, scenario 불인기 종목: the whole league's crowds are down.
+  const demand = home.popularity * boom(s.year) * (scenarioOf(s)?.crowd ?? 1) * Math.max(0.45, 1 + FANS.moodWeight * mood) * day * month * visitors * rivalry * venue * home.price ** -FANS.elasticity * (0.92 + r() * 0.16);
   // Season-ticket holders come whatever the record (V0.12, the user's club).
   const holders = g.home === s.user?.teamId && home.seasonTickets?.year === s.year ? home.seasonTickets.sold * FINANCE.seasonTickets.show : 0;
   return Math.round(Math.min(team.stadium.capacity, Math.max(demand, holders)));

@@ -537,6 +537,8 @@ export interface FuturesSeason {
 export interface LeagueState {
   sim: string;
   seed: string;
+  /** 1.6.0 (era.ts): years before the usual 2026 start (−10: 「백 투 더 패스트」, from 2016); missing for 0. */
+  era?: number;
   year: number;
   phase: LeaguePhase;
   teams: Team[];

@@ -11,6 +11,7 @@ import { traitReport } from '../src/league/reports';
 import type { LeagueState } from '../src/league/state';
 import { declineOf, growTools, GROWTH_ORDER, rollTraits, traitsOf, troubleFactor } from '../src/league/traits';
 import { OFFSEASON } from '../src/league/tuning';
+import { retirementChance } from '../src/league/offseason';
 import { parseSave } from '../src/save/format';
 
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
@@ -86,14 +87,31 @@ describe('growth types', () => {
     return [...c].find(([, v]) => v >= top * 0.97)![0];
   };
 
-  it('arrive in order, from 초조숙 to 초만성, and all peak in the 27–32 prime', () => {
+  it('arrive in order, from 초조숙 to 초만성; 보통 peaks in the 27–32 prime, the others a little either side', () => {
     const at = GROWTH_ORDER.map((g) => arrives(runs[g]));
     for (let i = 1; i < at.length; i++) expect(at[i]!).toBeGreaterThanOrEqual(at[i - 1]!);
     expect(at[4]! - at[0]!).toBeGreaterThanOrEqual(4);
+    expect(peakAge(runs.normal)).toBeGreaterThanOrEqual(27);
+    expect(peakAge(runs.normal)).toBeLessThanOrEqual(32);
     for (const g of GROWTH_ORDER) {
-      expect(peakAge(runs[g])).toBeGreaterThanOrEqual(27);
-      expect(peakAge(runs[g])).toBeLessThanOrEqual(32);
+      expect(peakAge(runs[g])).toBeGreaterThanOrEqual(25);
+      expect(peakAge(runs[g])).toBeLessThanOrEqual(31);
     }
+  });
+
+  it('a 초조숙 career is short, a 초만성 one long: the fall and the retirement come years apart', () => {
+    expect(runs.veryEarly.get(34)!).toBeLessThan(runs.normal.get(34)! - 5);
+    expect(runs.veryLate.get(36)!).toBeGreaterThan(runs.normal.get(36)! + 3);
+    const at = (growth: GrowthType, age: number) => {
+      const p = prospect(growth);
+      p.scouting = { current: 55 } as Player['scouting'];
+      p.birthday = `${2030 - age}-04-01`;
+      p.career = [];
+      p.origin = { kind: 'draftClass' } as Player['origin'];
+      return retirementChance(p, 2030, false);
+    };
+    expect(at('veryEarly', 33)).toBeGreaterThan(at('normal', 33) * 2);
+    expect(at('veryLate', 35)).toBeLessThan(at('normal', 35) / 2);
   });
 
   it('an early developer is ahead at 21 and behind at 35; a late one the other way round', () => {

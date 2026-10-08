@@ -2,6 +2,7 @@
    (July 2026) through the futures year (2027) to the first-team debut. Each lesson shows once, when its
    moment comes (a decision, the season's stage, a screen opened for the first time); the player reads
    it and moves on, or turns the guide off. Progress is saved with the club. */
+import { shiftYears } from '../league/era';
 import { regularOver } from '../league/actions';
 import type { Decision, LeagueState } from '../league/state';
 
@@ -177,7 +178,10 @@ const DECISION_TIPS: Partial<Record<Decision['kind'], { title: string; body: str
 };
 
 /** The short explanation of a decision (V0.15): the tutorial's tip, also folded into every decision screen. */
-export const decisionTip = (kind: Decision['kind']) => DECISION_TIPS[kind] ?? null;
+export const decisionTip = (kind: Decision['kind']) => {
+  const t = DECISION_TIPS[kind];
+  return t ? { title: t.title, body: t.body.map(shiftYears) } : null;
+};
 
 /** Every decision's tip, for the help page. */
 export const decisionTips = () => Object.entries(DECISION_TIPS) as [Decision['kind'], { title: string; body: string[] }][];
@@ -380,7 +384,8 @@ export function nextLesson(s: LeagueState, ctx: Ctx): (Lesson & { index: number 
   const seen = s.user!.tutorialSeen ?? [];
   if (seen.includes('graduate')) return null;
   const rule = RULES.find((r) => !seen.includes(r.id) && r.when(s, ctx));
-  return rule ? { id: rule.id, title: rule.title, body: typeof rule.body === 'function' ? rule.body(s) : rule.body, index: seen.length + 1 } : null;
+  // 1.6.0: written for 2026; a game started earlier reads its own years.
+  return rule ? { id: rule.id, title: shiftYears(rule.title), body: (typeof rule.body === 'function' ? rule.body(s) : rule.body).map(shiftYears), index: seen.length + 1 } : null;
 }
 
 /** Whether the guide can be turned back on: tutorial mode, turned off, and the first-team debut still ahead. */

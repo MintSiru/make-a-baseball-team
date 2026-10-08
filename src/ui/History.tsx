@@ -1,3 +1,4 @@
+import { startYear } from '../league/era';
 import { useState } from 'preact/hooks';
 import { nationalView, retiredNumbersView } from '../league/legacy';
 import type { LeagueState } from '../league/state';
@@ -168,7 +169,7 @@ function Seasons({ league }: { league: LeagueState }) {
   const seasons = [...league.history].reverse();
   return (
     <>
-      <p class="muted">2025년까지의 기록은 게임이 만든 가상 역사입니다.</p>
+      <p class="muted">{startYear() - 1}년까지의 기록은 게임이 만든 가상 역사입니다.</p>
       <div class="table-wrap" tabIndex={0}>
         <table class="record-table">
           <thead>

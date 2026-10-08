@@ -4,6 +4,7 @@
    national-team exemptions → development → retirement → military service → posting → free agency → salaries →
    rookie draft → (expansion special draft) → roster limits → released players → foreign players.
    The user's club can make the game wait at a step for a decision (see OffseasonHooks). */
+import { ruleYear } from './era';
 import { observe, overall, rng, toGrade, type Tools } from '../draftroom';
 import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
@@ -33,7 +34,7 @@ import { addNews, seasonNews } from './news';
 import { seasonFans } from './fans';
 import { aiStaffWinter } from './staff';
 import { runAiPosting } from './posting';
-import { FUTURES, OFFSEASON as O, STAFF } from './tuning';
+import { FUTURES, GROWTH, OFFSEASON as O, STAFF } from './tuning';
 import { aiTakesKnown, expireForeignPool, foreignPoolAsk, leavePool, poolChoice, toForeignPool } from './foreignpool';
 import { draftReturnees } from './returnees';
 import { awardAlert, retirementAlert, seasonAlert } from './alerts';
@@ -42,7 +43,7 @@ import { staffEdge, staffRating } from './staff';
 import { gmDraftWeights, gmOf, twoLeagues } from './twelve';
 import { closeRivalry } from './rivalry';
 import { facilityAging, facilityGrowth } from './facilities';
-import { declineOf, growTools, matureAge } from './traits';
+import { declineOf, growTools, matureAge, traitsOf } from './traits';
 import { heroInterview } from './interviews';
 import { applyCombine } from './combine';
 import { isFantasyWinter, openFantasy, runFantasy } from './fantasy';
@@ -51,7 +52,7 @@ import type { SeasonAwards } from './awards';
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
 
-export const rosterLimit = (season: number) => (season >= 2026 ? KBO_2026.league.rosterLimit : 65);
+export const rosterLimit = (season: number) => (ruleYear(season) >= 2026 ? KBO_2026.league.rosterLimit : 65);
 
 /** Moves finished-season lines into careers, credits service days and stores the season summary. */
 export function closeSeason(s: LeagueState) {
@@ -297,7 +298,8 @@ export function leaveLeague(s: LeagueState, p: Player, status: 'retired' | 'over
  * sooner still after a season without a first-team day; a good last season keeps him another year.
  */
 export function retirementChance(p: Player, season: number, knownRecords = true): number {
-  const age = ageIn(p, season);
+  // 1.6.0: a career's length follows the growth type (초조숙 shorter, 초만성 longer).
+  const age = ageIn(p, season) - (isForeign(p) ? 0 : GROWTH.types[traitsOf(p).growth].career);
   const R = O.retirement;
   if (age < R.from) return 0;
   const cur = p.scouting.current;
@@ -317,7 +319,8 @@ export function retiring(s: LeagueState, year: number): PlayerId[] {
   const out: PlayerId[] = [];
   for (const p of Object.values(s.players)) {
     if (p.status !== 'active' || isForeign(p)) continue;
-    if (r() < retirementChance(p, year + 1)) out.push(p.id);
+    // The same draw for everyone, then a career ended by an injury (1.6.0) goes whatever it says.
+    if (r() < retirementChance(p, year + 1) || p.life?.careerOver) out.push(p.id);
   }
   return out;
 }
@@ -792,7 +795,7 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         // Players the user's club talked round stay (V0.11); our retirements make a pop-up.
         const stay = new Set(o.stay ?? []);
         const gone = retiring(s, year)
-          .filter((id) => !stay.has(id))
+          .filter((id) => !stay.has(id) || s.players[id]!.life?.careerOver)
           .map((id) => s.players[id]!);
         retirementAlert(s, gone, o.stay ?? [], year);
         for (const p of gone) leaveLeague(s, p, 'retired');

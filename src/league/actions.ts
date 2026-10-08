@@ -1,4 +1,6 @@
 /* What the player can do, as state transitions. The UI and the worker both call these. */
+import { runRogue } from './rogue';
+import { setEra, startYear } from './era';
 import { STOP_KINDS, watchStops, type StopKind } from './stops';
 import { closeSeason, advanceOffseason, beginOffseason } from './offseason';
 import { playPostseason, postseasonDay, postseasonRound, startPostseason } from './postseason';
@@ -20,7 +22,7 @@ import { milestone } from './milestones';
 
 /** A new scoreboard's lift to the fans' mood in its first season (V0.10, facilities.ts). */
 const SCOREBOARD_BUZZ = 0.03;
-import { foundClub, FOUNDING_DATE, resolveDecision, type DecisionInput } from './expansion';
+import { foundClub, foundingDate, resolveDecision, type DecisionInput } from './expansion';
 import { finishTrips, sendTrip } from './training';
 import { inspect } from './scandals';
 import { runCampaign } from './allstar';
@@ -71,6 +73,8 @@ export type Action =
   /** 1.5.0: hand the decisions before the first-team debut to the scouts, or take them back. */
   | { kind: 'autoPrep'; on: boolean }
   | { kind: 'stops'; kinds: StopKind[] }
+  /** 살려야 한다 (1.6.0): the runaway AI's five years, right after the founding. */
+  | { kind: 'rogue' }
   /** When a twelfth club comes (V0.9), until it is founded. */
   | { kind: 'twelveSetting'; setting: TwelveSetting }
   // The market (V0.5)
@@ -107,10 +111,12 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
+  // The league's own calendar (1.6.0: a game may start before 2026).
+  setEra(s);
   if (s.pending && !allowedWhileWaiting(action)) return s; // the game waits for a decision
   switch (action.kind) {
     case 'days': {
@@ -124,7 +130,7 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     }
     case 'toFounding':
-      while (s.year === 2026 && (nextDate(s) ?? '9999') < FOUNDING_DATE && playDay(s));
+      while (s.year === startYear() && (nextDate(s) ?? '9999') < foundingDate() && playDay(s));
       break;
     case 'found':
       foundClub(s, action.settings);
@@ -237,6 +243,8 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       if (action.on) delete u.tutorialOff;
       break;
     }
+    case 'rogue':
+      return runRogue(s);
     case 'stops': {
       const u = s.user;
       if (!u) break;

@@ -1,5 +1,6 @@
 /* The AI manager of every club. Decisions use public scouting grades and this season's results only;
    the engine input it builds carries true ability, because the engine plays the actual players. */
+import { ruleYear } from './era';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import type { Position } from '../model/position';
 import { fitPenalty, positionGames } from './positions';
@@ -17,13 +18,13 @@ import { bigGameEdge } from './traits';
 
 const STARTER_LIMIT = ENGINE.starterLimit;
 
-const baseFirstTeam = (year: number) => (year >= 2026 ? KBO_2026.league.firstTeam.registered : 28);
+const baseFirstTeam = (year: number) => (ruleYear(year) >= 2026 ? KBO_2026.league.firstTeam.registered : 28);
 /** First-team registration size; an expansion club gets one more spot during its benefit seasons. */
 export const firstTeamSize = (s: LeagueState, teamId: TeamId, year = s.year) => baseFirstTeam(year) + (hasBenefits(s, teamId, year) ? EXPANSION_DEFAULTS.extraFirstTeamSpots : 0);
 /** Foreign slots: three plus the Asia quota from 2026, and one more for an expansion club during its benefit seasons. */
 export const foreignSlots = (s: LeagueState, teamId: TeamId, year = s.year) => ({
   regular: KBO_2026.foreign.regular + (hasBenefits(s, teamId, year) ? EXPANSION_DEFAULTS.extraForeignPlayers : 0),
-  asia: year >= 2026 ? KBO_2026.foreign.asiaQuota : 0,
+  asia: ruleYear(year) >= 2026 ? KBO_2026.foreign.asiaQuota : 0,
 });
 
 const handOf = (h: string): Hand => (h === '좌' ? 'L' : h === '양' ? 'S' : 'R');

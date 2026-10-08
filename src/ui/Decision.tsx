@@ -500,7 +500,9 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       body = (
         <>
           <p>
-            {d.kind === 'tryout'
+            {d.kind === 'tryout' && u.settings.scenario === 'steel'
+              ? '은퇴한 선수들과 드래프트에서 지명받지 못한 선수들이 강철 파이터즈의 트라이아웃에 왔습니다. 첫 선수단은 이들로만 꾸립니다(특별지명 없음). 노장은 오래 버티지 못하니 젊은 선수도 함께 고르세요.'
+              : d.kind === 'tryout'
               ? '독립리그·해외 복귀 선수와 최근 방출된 프로 선수들이 트라이아웃에 왔습니다. 계약할 선수를 고르세요.'
               : '다른 구단이 방출한 선수들입니다. 신생구단은 다른 구단보다 먼저 계약할 수 있습니다.'}{' '}
             최대 {d.max}명 · 선택 {selected.size}명

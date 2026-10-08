@@ -3,6 +3,7 @@
 
    Founding-only decisions live in expansion.ts, which also routes every decision through
    checkDecision / resolveDecision / autoDecision. Money in 만 원. */
+import { startYear } from './era';
 import { medicalReview, socialOnly } from './military';
 import { asiaCapFor, foreignCap, slotExempt } from './foreigncap';
 import { renewAccepts } from './foreigntalks';
@@ -188,11 +189,11 @@ export function yearlyGrant(s: LeagueState) {
   }
   // A scenario's goal is judged after the owner's verdict (1.6.0).
   scenarioWinter(s, year);
-  if (year < 2027) return; // the founding fund covers the first winter
+  if (year < startYear() + 1) return; // the founding fund covers the first winter
   const event = ownerEvents(s, year);
   const k = DIFFICULTY_MONEY[u.settings.difficulty];
   const b = nextBudget(
-    { support: baseSupport(u.settings.parentType) * k * supportFactor(u.settings), payroll: (budgetFor(u.settings).payrollBudget * salaryCapFor(next)) / salaryCapFor(2027) },
+    { support: baseSupport(u.settings.parentType) * k * supportFactor(u.settings), payroll: (budgetFor(u.settings).payrollBudget * salaryCapFor(next)) / salaryCapFor(startYear() + 1) },
     u.budgetScale ?? 1,
     event,
   );
@@ -293,7 +294,7 @@ export function retireDecision(s: LeagueState): Decision | null {
   const next = o.year + 1;
   const ours = retiring(s, o.year)
     .map((id) => s.players[id]!)
-    .filter((p) => p.teamId === u.teamId)
+    .filter((p) => p.teamId === u.teamId && !p.life?.careerOver)
     .sort((a, b) => b.scouting.current - a.scouting.current);
   return ours.length ? { kind: 'retire', rows: ours.map((p) => ({ id: p.id, chance: persuadeChance(p, next) })) } : null;
 }

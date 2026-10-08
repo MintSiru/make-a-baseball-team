@@ -13,7 +13,10 @@ import { staffOf } from '../src/league/staff';
 import { orgIds, orgPlayers, type Decision, type ExpansionSettings, type LeagueState } from '../src/league/state';
 import { raceState, watchStops } from '../src/league/stops';
 import { clubStrategy, planFactor, planGuard, spotOf } from '../src/league/strategy';
-import { checkTrade } from '../src/league/trade';
+import { canSignFromPool, checkTrade } from '../src/league/trade';
+import { attendance } from '../src/league/fans';
+import { retiring } from '../src/league/offseason';
+import { retireDecision } from '../src/league/userclub';
 import { parseSave } from '../src/save/format';
 
 const clone = (s: LeagueState) => JSON.parse(JSON.stringify(s)) as LeagueState;
@@ -303,4 +306,58 @@ describe('from the founding, the scouts deciding', () => {
     expect(s.user!.scenario!.orders!.length).toBeGreaterThan(0);
     expect(s.user!.trust).toBeGreaterThan(0);
   }, 300_000);
+});
+
+describe('scenarios 8–10 and the 1.6.0 feedback', () => {
+  it('불경기 cuts only our money; 불인기 종목 empties every ballpark', () => {
+    expect(budgetFor(withScenario(free, 'recession')).payrollBudget).toBeLessThan(budgetFor(free).payrollBudget * 0.8);
+    const s = clone(base);
+    const g = s.schedule.slice(s.next).find((x) => x.home !== s.user!.teamId)!;
+    const usual = attendance(s, g);
+    s.user!.settings.scenario = 'unpopular';
+    expect(attendance(s, g)).toBeLessThan(usual * 0.9);
+  });
+
+  it('강철야구 holds its tryout for retired players and players nobody drafted', () => {
+    const s = apply(apply(createLeague('v160-steel'), { kind: 'toFounding' }), { kind: 'found', settings: withScenario(free, 'steel') });
+    const d = s.pending as Extract<Decision, { kind: 'tryout' }>;
+    expect(d.max).toBeGreaterThan(20);
+    const kinds = d.candidates.map((id) => s.players[id]!.status);
+    expect(kinds.filter((k) => k === 'retired').length).toBeGreaterThan(10);
+    expect(kinds.every((k) => k === 'retired' || k === 'amateur')).toBe(true);
+    expect(s.teams.find((t) => t.id === s.user!.teamId)!.name).toBe('강철 파이터즈');
+    // Signed, a retired player is back in uniform.
+    const back = d.candidates.find((id) => s.players[id]!.status === 'retired')!;
+    apply(s, { kind: 'decide', input: { kind: 'tryout', ids: [back] } });
+    expect(s.players[back]!.status).toBe('active');
+    expect(s.players[back]!.teamId).toBe(s.user!.teamId);
+  }, 120_000);
+
+  it('a career-ending injury retires him after the season, whatever the club says', () => {
+    const s = clone(base);
+    const p = orgPlayers(s, s.user!.teamId).find((x) => !isForeign(x) && ageIn(x, s.year) < 28)!;
+    (p.life ??= {}).careerOver = `${s.year}-06-01`;
+    expect(retiring(s, s.year)).toContain(p.id);
+    s.offseason = { year: s.year, step: 0, draft: null, released: [], done: [] } as LeagueState['offseason'];
+    const d = retireDecision(s);
+    expect(d?.kind !== 'retire' || !d.rows.some((r) => r.id === p.id)).toBe(true);
+  });
+
+  it('a free agent nobody signed can be signed in the winter once the market is over, without talks', () => {
+    const s = clone(base);
+    const p = Object.values(s.players).find((x) => x.teamId && x.teamId !== s.user!.teamId && !isForeign(x) && x.status === 'active')!;
+    s.rosters[p.teamId!]!.futures = s.rosters[p.teamId!]!.futures.filter((id) => id !== p.id);
+    s.rosters[p.teamId!]!.active = s.rosters[p.teamId!]!.active.filter((id) => id !== p.id);
+    p.teamId = null;
+    p.contract = null;
+    s.pool = [p.id];
+    s.phase = 'offseason';
+    s.offseason = { year: s.year, step: 6, draft: null, released: [], done: [] } as LeagueState['offseason'];
+    expect(canSignFromPool(s, p.id)).toMatch(/FA 시장/);
+    s.offseason!.faDone = true;
+    s.pending = { kind: 'salaries', rows: [] };
+    expect(canSignFromPool(s, p.id)).toBeNull();
+    apply(s, { kind: 'signPool', id: p.id });
+    expect(p.teamId).toBe(s.user!.teamId);
+  });
 });

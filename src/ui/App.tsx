@@ -1,3 +1,5 @@
+import { scenarioDef } from '../league/scenarios';
+import { setEra, startYear } from '../league/era';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { RELEASE } from '../core/version';
 import { DRAFT_ROOM_DRAFT_DATE } from '../draftroom';
@@ -96,6 +98,8 @@ function statusLine(s: LeagueState) {
 export function App() {
   const [store, setStore] = useState<SaveStore | null>(null);
   const [league, setLeague] = useState<LeagueState | null>(null);
+  // The calendar of the league on the page (1.6.0: a game may start before 2026).
+  setEra(league);
   const [version, setVersion] = useState(0);
   const [loading, setLoading] = useState(true);
   /** The founding screen shows the recovery choices (an autosave that would not open, or asked for). */
@@ -175,8 +179,10 @@ export function App() {
     };
   }, []);
 
-  const build = (s: string) => {
-    if (building.current?.seed !== s) building.current = { seed: s, promise: createInWorker(s, (year) => setProgress(`${year} 시즌`)) };
+  // 1.6.0: a league for 「백 투 더 패스트」 starts its history ten years earlier (a different build, kept apart).
+  const build = (s: string, era = 0) => {
+    const key = era ? `${s}|era${era}` : s;
+    if (building.current?.seed !== key) building.current = { seed: key, promise: createInWorker(s, (year) => setProgress(`${year} 시즌`), era) };
     return building.current.promise;
   };
 
@@ -219,7 +225,7 @@ export function App() {
   // gets a nudge, once a session, to keep a file of its own.
   const reminded = useRef(false);
   useEffect(() => {
-    if (!league?.user || reminded.current || store?.kind !== 'indexedDB' || league.year - 2026 < 2) return;
+    if (!league?.user || reminded.current || store?.kind !== 'indexedDB' || league.year - startYear() < 2) return;
     const at = lastExport(league.seed);
     const days = at ? Math.floor((Date.now() - Date.parse(at)) / 86_400_000) : null;
     if (days !== null && days < 14) return;
@@ -235,7 +241,7 @@ export function App() {
   }, [loading, league]);
 
   // The draft class of this September (it fills next season's rosters): the 2027 draft is Draft Room's own pool.
-  const draftYear = league ? (league.phase === 'offseason' && league.offseason ? league.offseason.year : league.year) : 2026;
+  const draftYear = league ? (league.phase === 'offseason' && league.offseason ? league.offseason.year : league.year) : startYear();
   // The class, plus draftees who went abroad and come back through this draft (V0.7.3).
   const draftPool = useMemo(
     () =>
@@ -350,9 +356,15 @@ export function App() {
 
   const found = async (settings: ExpansionSettings, s: string) => {
     setBusy('리그의 과거를 만드는 중');
-    let base = await build(s);
+    const era = scenarioDef(settings.scenario)?.era ?? 0;
+    let base = await build(s, era);
     base = await applyInWorker(base, { kind: 'toFounding' });
-    const next = applyHere(base, { kind: 'found', settings });
+    let next = applyHere(base, { kind: 'found', settings });
+    // 살려야 한다: the runaway AI's five years, off the page.
+    if (settings.scenario === 'rescue') {
+      setBusy('AI가 구단을 운영하는 중 (5년)');
+      next = await applyInWorker(next, { kind: 'rogue' });
+    }
     building.current = null;
     show(next);
     setTab('club');

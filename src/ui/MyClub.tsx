@@ -19,6 +19,7 @@ import { money } from './format';
 import { Squad, type Row, type SquadKey } from './Squad';
 import { Office } from './Office';
 import { scenarioProgress } from '../league/scenarios';
+import { startYear } from '../league/era';
 import { Lineup } from './Lineup';
 import { Story } from './Story';
 import { Training } from './Training';
@@ -139,9 +140,9 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
   const share = Math.min(1, payroll / Math.max(1, u.payrollBudget));
   const upcoming = league.phase === 'regular' ? league.schedule.slice(league.next).filter((g) => g.home === me || g.away === me).slice(0, 6) : [];
   const steps = [
-    { year: 2026, label: '창단 승인 · 트라이아웃' },
-    { year: 2026, label: '첫 신인 드래프트' },
-    ...(u.firstTeamYear === 2028 ? [{ year: 2027, label: '퓨처스리그' }] : []),
+    { year: startYear(), label: '창단 승인 · 트라이아웃' },
+    { year: startYear(), label: '첫 신인 드래프트' },
+    ...(u.firstTeamYear === startYear() + 2 ? [{ year: startYear() + 1, label: '퓨처스리그' }] : []),
     { year: u.firstTeamYear - 1, label: '특별지명 · FA · 외국인' },
     { year: u.firstTeamYear, label: '1군 진입' },
   ];

@@ -15,6 +15,7 @@
    Every season the owner sets goals (a finish, a crowd, a deficit it accepts) and judges them in the
    winter: next year's support and payroll budget move with the score, and so does its trust in the
    general manager. Firing is a setting and off in the sandbox. */
+import { startYear } from './era';
 import { rng } from '../draftroom';
 import type { ParentCompanyType } from '../club/types';
 import { clubState } from './fans';
@@ -115,7 +116,7 @@ export function ownerEvents(s: LeagueState, year: number): number {
   if (type === 'citizen') {
     let factor = 1;
     // Local elections every four years (June 2030, 2034, …): the new mayor's stance moves the city's money.
-    u.mayor ??= electMayor(s, 2026);
+    u.mayor ??= electMayor(s, startYear());
     if (year >= u.mayor.until) {
       const before = u.mayor;
       u.mayor = electMayor(s, u.mayor.until, before);

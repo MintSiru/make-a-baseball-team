@@ -4,13 +4,18 @@
 
    1. 서울의 왕 — a fourth Seoul club against LG, 두산 and 키움: a better first-team record than all three by 2035.
    2. 재기 — a faded general manager and 한빛그룹's third-generation heir: lavish money, no patience (goals higher,
-      trust lost twice as fast, firing from the first first-team season) and orders in the season; a Korean Series
-      title within five first-team seasons.
+      trust lost half again as fast, firing from the second first-team season) and orders in the season; a Korean
+      Series title within five first-team seasons.
    3. 섬그늘에 야구하러 가면 — 울릉군's citizen club: a tiny island market, a 3,000-seat ground, hard difficulty and
       the sack possible; still in the job after the 2035 season.
    4. 돌격대의 귀환 — 쌍방울 레이더스 back in 전주: three Korean Series titles by 2035.
    5. 판타지 드래프트 — every player in the league let go in the winter of 2027 and drafted again with that year's
       class (fantasy.ts); the three seasons after are scored.
+   6. 백 투 더 패스트 — the same free founding ten years earlier, in 2016 (era.ts).
+   7. 살려야 한다 — a runaway AI runs the club for its first five years (rogue.ts); then three seasons to win it all.
+   8. 불경기 — our money cut by a recession the other clubs somehow escape; a title within five first-team seasons.
+   9. 불인기 종목 — the country falls for another sport: every club's crowds and our support shrink; the same goal.
+   10. 강철야구 — a TV show's club in 목동, its first squad retired players and players nobody drafted; the same goal.
 
    The clubs, the cities beyond the real candidates and the stories are game fiction. */
 import { rng } from '../draftroom';
@@ -25,7 +30,7 @@ import { FANS, PARENT } from './tuning';
 
 const FANS_MIN = FANS.priceMin;
 
-export type ScenarioId = 'seoul' | 'comeback' | 'ulleung' | 'raiders' | 'fantasy';
+export type ScenarioId = 'seoul' | 'comeback' | 'ulleung' | 'raiders' | 'fantasy' | 'past' | 'rescue' | 'recession' | 'unpopular' | 'steel';
 
 export interface ScenarioState {
   status: 'active' | 'won' | 'lost';
@@ -37,6 +42,9 @@ export interface ScenarioState {
   /** 재기: the owner's orders this season (one of each kind a season) and the star order being watched. */
   orders?: string[];
   star?: { since: string; ids: string[]; grant: number };
+  /** 살려야 한다: the winter the general manager took over, and what the AI left behind. */
+  takeover?: number;
+  damage?: string[];
 }
 
 export interface ScenarioDef {
@@ -55,6 +63,14 @@ export interface ScenarioDef {
   money?: { fund?: number; payroll?: number; support?: number };
   /** 재기: the owner's temper. */
   owner?: { startTrust: number; trustLoss: number; fireFrom: number; rankGoal: (seasonsIn: number) => number };
+  /** 백 투 더 패스트: years before the usual 2026 start. */
+  era?: number;
+  /** A Korean Series title within this many first-team seasons (from the debut, or from the takeover). */
+  titleWithin?: number;
+  /** 불인기 종목: every club's crowds × this. */
+  crowd?: number;
+  /** No goal: a free game under the scenario's conditions. */
+  free?: boolean;
 }
 
 export const SCENARIOS: ScenarioDef[] = [
@@ -80,6 +96,7 @@ export const SCENARIOS: ScenarioDef[] = [
       '지원은 어느 구단보다 넉넉합니다. 하지만 조심하세요. 구단주는 인내심이 없고, 시즌 중에도 수시로 전화를 걸어 감독 교체와 거물 영입을 지시합니다. 따를지 말지는 단장의 몫이지만, 거스를 때마다 신뢰가 깎입니다.',
     ],
     goal: '1군 데뷔 뒤 5시즌 안에 한국시리즈 우승',
+    titleWithin: 5,
     stars: 3,
     fixed: { parentType: 'conglomerate', parentName: '한빛그룹', firing: true },
     locked: ['parentType', 'parentName', 'firing'],
@@ -94,7 +111,7 @@ export const SCENARIOS: ScenarioDef[] = [
       '울릉군은 갈수록 나빠지는 지역 이미지를 프로스포츠 구단으로 바꿔 보려 합니다. 군민 9천 명, 야구장도 없는 섬에 시민구단이 생겼습니다.',
       '원정마다 배와 비행기를 타야 하고, 3천 석짜리 임시 구장도 육지 팬에게는 멀기만 합니다. 척박하고 조용한 섬을 야구 열기로 뒤덮으세요. 숙련된 단장에게 권하는 시나리오입니다.',
     ],
-    goal: '2035 시즌이 끝날 때까지 해임되지 않고 살아남기',
+    goal: '2035 시즌 뒤 평가까지 해임되지 않고 살아남기',
     stars: 5,
     fixed: { cityId: 'ulleung', parentType: 'citizen', difficulty: 'hard', firing: true, stadium: 'existing' },
     locked: ['cityId', 'parentType', 'difficulty', 'firing'],
@@ -125,6 +142,80 @@ export const SCENARIOS: ScenarioDef[] = [
     stars: 2,
     fixed: { promotion: 'afterFutures' },
     locked: ['promotion'],
+  },
+  {
+    id: 'past',
+    title: '백 투 더 패스트',
+    tagline: '십 년 일찍, 2016년에 창단',
+    story: [
+      '시계를 십 년 돌려 2016년 여름에 창단합니다. 리그의 과거는 그만큼 일찍 만들어지고, 국제대회도 2017년 WBC부터 직접 치릅니다.',
+      '규정·연봉·돈의 크기는 2026년 게임과 같습니다. 더 일찍, 더 오래 구단을 키우고 싶은 단장을 위한 선택입니다.',
+    ],
+    goal: '정해진 목표 없음 — 2016년부터 자유롭게',
+    stars: 2,
+    fixed: {},
+    locked: [],
+    era: -10,
+    free: true,
+  },
+  {
+    id: 'rescue',
+    title: '살려야 한다',
+    tagline: '폭주한 AI가 5년 동안 망쳐 놓은 구단을 3년 안에',
+    story: [
+      '이런! 데이터센터를 탈출한 자칭 "천재 단장" AI가 창단부터 5년 동안 구단을 제멋대로 운영했습니다. 유망주는 노장과 바꾸고, 노장에게는 큰 다년계약을 안기고, 표값은 하늘 끝까지 올렸습니다.',
+      '2030년 겨울, 마침내 AI의 전원을 내리고 당신이 단장 자리에 앉았습니다. 그동안은 지켜보는 것밖에 할 수 없습니다. 남은 시간은 세 시즌. 더럽혀진 구단을 되살려 한국시리즈를 우승하세요.',
+    ],
+    goal: '단장 취임 뒤 3시즌(2031~2033) 안에 한국시리즈 우승',
+    stars: 5,
+    fixed: { promotion: 'immediate', tutorial: false, autoPrep: false, firing: false },
+    locked: ['promotion', 'tutorial', 'autoPrep'],
+    titleWithin: 3,
+  },
+  {
+    id: 'recession',
+    title: '불경기',
+    tagline: '경제가 무너졌다. 그런데 왜 우리만?',
+    story: [
+      '이런! 경제가 박살났습니다. 모기업도 시청도 허리띠를 졸라매고, 구단 예산은 크게 줄었습니다.',
+      '그런데 어째서인지 다른 구단들은 멀쩡해 보입니다... 적은 돈으로 우승할 방법을 찾으세요.',
+    ],
+    goal: '1군 데뷔 뒤 5시즌 안에 한국시리즈 우승',
+    stars: 4,
+    fixed: {},
+    locked: [],
+    money: { fund: 0.7, payroll: 0.75, support: 0.75 },
+    titleWithin: 5,
+  },
+  {
+    id: 'unpopular',
+    title: '불인기 종목',
+    tagline: '월드컵 우승의 그늘, 다시 찾아온 야구 불황',
+    story: [
+      '2026 월드컵에서 축구 국가대표팀이 믿기 힘든 우승을 차지했습니다. 온 나라의 관심과 후원이 다른 종목으로 쏠립니다.',
+      '야구장은 다시 한산해졌고 모기업의 지원도 줄었습니다. 리그 전체가 맞은 불황기에 우승으로 팬들을 다시 불러 모으세요.',
+    ],
+    goal: '1군 데뷔 뒤 5시즌 안에 한국시리즈 우승',
+    stars: 4,
+    fixed: {},
+    locked: [],
+    money: { support: 0.85 },
+    crowd: 0.72,
+    titleWithin: 5,
+  },
+  {
+    id: 'steel',
+    title: '강철야구',
+    tagline: '은퇴한 레전드와 언드래프티, 예능팀의 1군 도전',
+    story: [
+      '은퇴한 레전드와 드래프트에서 지명받지 못한 선수들로 이변을 만들어 온 야구 예능팀이 진짜 프로 구단이 되었습니다. 목동에 자리 잡은 강철 파이터즈입니다.',
+      '첫 선수단은 은퇴 선수와 언드래프티로만 꾸립니다(특별지명 없음). 노장은 오래 버티지 못하니, 그 사이 신인과 무명 선수를 키워야 합니다. 5년 안에 우승으로 이변을 완성하세요.',
+    ],
+    goal: '1군 데뷔 뒤 5시즌 안에 한국시리즈 우승',
+    stars: 4,
+    fixed: { cityId: 'seoul', parentType: 'midsize', name: '강철 파이터즈', short: '강철', parentName: '강철엔터테인먼트', stadium: 'existing' },
+    locked: ['cityId', 'parentType', 'name', 'short'],
+    titleWithin: 5,
   },
 ];
 
@@ -216,6 +307,21 @@ export function scenarioProgress(s: LeagueState): { title: string; goal: string;
     case 'raiders':
       lines.push(`한국시리즈 우승 ${titles(s, me, last)} / 3회 (2035년까지)`);
       break;
+    case 'rescue':
+      if (!st.takeover) lines.push('AI가 운영 중입니다.');
+      else {
+        lines.push(`우승 기한: ${st.takeover + 3} 시즌 (${st.takeover + 1}~${st.takeover + 3})`);
+        if (st.damage?.length) lines.push(`AI가 남긴 것: ${st.damage.slice(0, 4).join(' · ')}`);
+      }
+      break;
+    case 'recession':
+    case 'unpopular':
+    case 'steel': {
+      const until = u.firstTeamYear + def.titleWithin! - 1;
+      lines.push(`우승 기한: ${until} 시즌 (1군 ${u.firstTeamYear}~${until})`);
+      if (def.crowd) lines.push(`리그 관중 평소의 ${Math.round(def.crowd * 100)}%`);
+      break;
+    }
     case 'fantasy': {
       const pts = FANTASY.seasons.map((y) => st.points?.[y]);
       const sum = pts.reduce<number>((a, b) => a + (b ?? 0), 0);
@@ -233,6 +339,7 @@ export function scenarioWinter(s: LeagueState, year: number) {
   const u = s.user;
   if (!def || !u) return;
   const st = (u.scenario ??= { status: 'active' });
+  if (def.free) return;
   if (def.id === 'fantasy' && FANTASY.seasons.includes(year) && firstTeamIds(s, year).includes(u.teamId)) (st.points ??= {})[year] = fantasyPoints(s, year, u.teamId);
   if (st.status !== 'active') return;
   const me = u.teamId;
@@ -252,6 +359,20 @@ export function scenarioWinter(s: LeagueState, year: number) {
         if (won(s, me, year)) verdict = { status: 'won', text: `${year}년 한국시리즈 우승! 한물갔다던 단장이 보란 듯이 돌아왔습니다.` };
         else if (year >= u.firstTeamYear + 4) verdict = { status: 'lost', text: `${u.firstTeamYear + 4}년까지 우승하지 못했습니다. 구단주는 다른 단장을 찾기 시작했습니다.` };
         break;
+      case 'rescue':
+        if (!st.takeover || year <= st.takeover) break;
+        if (won(s, me, year)) verdict = { status: 'won', text: `${year}년 한국시리즈 우승! AI가 망쳐 놓은 구단을 ${year - st.takeover}시즌 만에 되살렸습니다.` };
+        else if (year >= st.takeover + 3) verdict = { status: 'lost', text: `${st.takeover + 3}년까지 우승하지 못했습니다. 구단은 AI의 그림자에서 벗어나지 못했습니다.` };
+        break;
+      case 'recession':
+      case 'unpopular':
+      case 'steel': {
+        const until = u.firstTeamYear + def.titleWithin! - 1;
+        const cheer = { recession: '불경기 속에서 이룬 우승입니다.', unpopular: '야구장에 다시 사람이 몰려듭니다.', steel: '은퇴 선수와 언드래프티가 이변을 완성했습니다.' }[def.id];
+        if (won(s, me, year)) verdict = { status: 'won', text: `${year}년 한국시리즈 우승! ${cheer}` };
+        else if (year >= until) verdict = { status: 'lost', text: `${until}년까지 우승하지 못했습니다.` };
+        break;
+      }
       case 'ulleung':
         if (year >= DEADLINE) verdict = { status: 'won', text: `${DEADLINE - 2026}년을 버텼습니다. 울릉에도 야구가 뿌리내렸습니다.` };
         break;
