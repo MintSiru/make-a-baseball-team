@@ -4334,7 +4334,7 @@
   "league.views.statLine.pen.d10097ff": " · {sv} SV, {hld} HLD",
   "league.views.statLine.pen.4d31cd6a": " · {w}-{l}",
   "league.views.statLine.text.d666ca12": "ERA {value} · {ip} IP{pen}",
-  "league.views.statLine.text.ff11568e": ".AVG {fmt3} · {hr} HR · OPS {fmt32}",
+  "league.views.statLine.text.ff11568e": "{fmt3} AVG · {hr} HR · {fmt32} OPS",
   "model.player.batsFor.65c5e8e2": "L",
   "model.player.batsFor.4118d67c": "R",
   "model.player.batsFor.3c982b52": "S",

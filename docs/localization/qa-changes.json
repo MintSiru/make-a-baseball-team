@@ -1420,5 +1420,14 @@
   "reason": "Pitcher split header: 상대 타석 is batters faced (MLB abbreviation BF); the column next to it uses abbreviations and the batter version is PA",
   "severity": "minor",
   "category": "baseball-term"
+ },
+ {
+  "key": "league.views.statLine.text.ff11568e",
+  "locale": "en",
+  "before": ".AVG {fmt3} · {hr} HR · OPS {fmt32}",
+  "after": "{fmt3} AVG · {hr} HR · {fmt32} OPS",
+  "reason": "Mistranslation: stray \".AVG\" before the average (the value already starts with a dot: \".AVG .362\"); stat after its value like the ERA line",
+  "severity": "major",
+  "category": "mistranslation"
  }
 ]

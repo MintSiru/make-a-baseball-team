@@ -76,7 +76,7 @@ const UNIT_SCALE: Record<Unit, number> = { eok: 1e8, man: 1e4, won: 1, usdMan: 1
 const UNIT_SYMBOL: Record<Unit, string> = { eok: '₩', man: '₩', won: '₩', usdMan: '$', usd: '$', manCount: '' };
 
 /** "1억 7,500만 원", "64.6억", "3,000만", "16,600원", "40만 달러" → the locale's amount, or null. */
-const MONEY_RE = /^([-−])?\s*(?:([\d,]+(?:\.\d+)?)억)?\s*(?:([\d,]+(?:\.\d+)?)만)?\s*(원|달러)?$/;
+const MONEY_RE = /^([-−+])?\s*(?:([\d,]+(?:\.\d+)?)억)?\s*(?:([\d,]+(?:\.\d+)?)만)?\s*(원|달러)?$/;
 function moneyText(s: string, lc: Target): string | null {
   const m = MONEY_RE.exec(s);
   if (!m || (!m[2] && !m[3] && !(m[4] && /\d/.test(s)))) return null;
@@ -87,9 +87,9 @@ function moneyText(s: string, lc: Target): string | null {
     return lc === 'en' ? compactAmount(n, plain[3] === '달러' ? '$' : '₩') : `${plain[1] ? '-' : ''}${plain[2]}${plain[3] === '달러' ? 'ドル' : 'ウォン'}`;
   }
   const usd = m[4] === '달러';
-  if (lc === 'ja') return `${m[1] ? '-' : ''}${m[2] ? `${m[2]}億` : ''}${m[3] ? `${m[3]}万` : ''}${m[4] ? (usd ? 'ドル' : 'ウォン') : ''}`;
-  const n = ((numberOf(m[2]) ?? 0) * 1e8 + (numberOf(m[3]) ?? 0) * 1e4) * (m[1] ? -1 : 1);
-  return compactAmount(n, usd ? '$' : '₩');
+  if (lc === 'ja') return `${m[1] === '+' ? '+' : m[1] ? '-' : ''}${m[2] ? `${m[2]}億` : ''}${m[3] ? `${m[3]}万` : ''}${m[4] ? (usd ? 'ドル' : 'ウォン') : ''}`;
+  const n = ((numberOf(m[2]) ?? 0) * 1e8 + (numberOf(m[3]) ?? 0) * 1e4) * (m[1] && m[1] !== '+' ? -1 : 1);
+  return (m[1] === '+' ? '+' : '') + compactAmount(n, usd ? '$' : '₩');
 }
 
 // ── Names ───────────────────────────────────────────────────────────────────────────────────────────
@@ -101,6 +101,7 @@ const foreignPools = Object.values(foreignNames as unknown as Record<string, { g
   given: new Map(p.given.map((r) => [r[0], r])),
   family: new Map(p.family.map((r) => [r[0], r])),
 }));
+const taiwan = foreignPools[Object.keys(foreignNames).indexOf('taiwan')]!;
 const SUFFIX: Record<string, Row> = { 주니어: ['주니어', 'Jr.', 'ジュニア'] };
 const col = (lc: Target) => (lc === 'en' ? 1 : 2);
 
@@ -144,6 +145,8 @@ const known = new Set<string>();
 const kept = new Set<string>();
 /** Words of the game's own names that the tables cannot render (a foreign part missing): shown as they are. */
 const opaque = new Set<string>();
+/** Family names of the game's foreign players, which the page also shows alone. */
+const knownFamily = new Set<string>();
 
 const korean = (sur: Row, given: string, g: Row | undefined, lc: Target) => {
   const c = col(lc);
@@ -165,15 +168,22 @@ function personName(s: string, lc: Target): string | null {
       if (g && (given.length >= 2 || isKnown)) return korean(sur, given, g, lc);
       if (!g && isKnown && given.length <= 2) return korean(sur, given, undefined, lc);
     }
-    // Taiwanese names run together ("린자웨이"): family name, then the given name.
+    // Taiwanese names run together ("린자웨이"): family name, then the given name (romanized when not listed).
     if (isKnown)
-      for (const pool of foreignPools)
-        for (const len of [1, 2]) {
-          const f = pool.family.get(s.slice(0, len)),
-            g = pool.given.get(s.slice(len));
-          if (f && g) return lc === 'en' ? `${f[c]} ${g[c]}` : `${f[c]}・${g[c]}`;
-        }
+      for (const len of [1, 2]) {
+        const f = taiwan.family.get(s.slice(0, len));
+        if (!f || s.length === len) continue;
+        const g = taiwan.given.get(s.slice(len));
+        const given = g ? g[c] : romanize(s.slice(len), lc);
+        return lc === 'en' ? `${f[c]} ${given}` : `${f[c]}・${given}`;
+      }
   }
+  // A foreign player's family name alone (the lineup card), when the game has such a player.
+  if (knownFamily.has(s))
+    for (const pool of foreignPools) {
+      const f = pool.family.get(s);
+      if (f) return f[c];
+    }
   const words = s.split(' ');
   if (words.length >= 2 && words.length <= 4 && words.every((w) => /^[가-힣]+$/.test(w))) {
     const tail = SUFFIX[words.at(-1)!];
@@ -195,6 +205,10 @@ function personName(s: string, lc: Target): string | null {
 export function registerNames(names: Iterable<string>) {
   const fresh: string[] = [];
   for (const n of names) if (n && !known.has(n)) known.add(n), fresh.push(n);
+  for (const n of fresh) {
+    const w = n.split(' ').filter((x) => x !== '주니어');
+    if (w.length >= 2) knownFamily.add(w.at(-1)!);
+  }
   for (const n of fresh) if (personName(n, 'en') == null) for (const w of n.split(/[^가-힣]+/)) if (w) opaque.add(w);
   if (fresh.length) clearCaches();
 }
@@ -223,7 +237,8 @@ interface Pattern {
   /** The key (with "#line" for one line of a key with several). */
   id: string;
   key: string;
-  /** The text in the locale for it. */
+  /** The Korean it reads (the key's text, or one line or sentence of it) and the text in the locale for it. */
+  source: string;
   target: string;
   hints?: Record<string, { ends?: string[]; one?: string[] }>;
   /** Quick test: can the text match at all (lazy captures)? */
@@ -231,6 +246,8 @@ interface Pattern {
   tokens: Token[];
   params: string[];
   weight: number;
+  /** Literal characters of its own, Hangul or not (spaces aside). */
+  anchored: number;
 }
 const PARTICLES = ['으로', '에서', '에게', '까지', '부터', '이다', '로', '이', '가', '을', '를', '은', '는', '과', '와', '의', '도', '에', '만', '다'];
 /** Keys whose Korean is a grammar fragment (josa tables): never an exact translation of a word on its own. */
@@ -295,12 +312,38 @@ function buildIndex(lc: Target): Index {
     }
     if (!literals.length) continue;
     const anchor = literals.reduce((a, b) => (b.length > a.length ? b : a));
-    const p: Pattern = { id, key, target: tr, hints: HINTS[key], re: new RegExp(re + '$'), tokens, params, weight: literals.join('').length };
+    const p: Pattern = { id, key, source: ko, target: tr, hints: HINTS[key], re: new RegExp(re + '$'), tokens, params, weight: literals.join('').length, anchored: parts.filter((x) => !/^\{/.test(x)).join('').replace(/\s/g, '').length };
     patterns.push(p);
     const bucket = anchor.slice(0, 2);
     if (!buckets.has(bucket)) buckets.set(bucket, []);
     buckets.get(bucket)!.push(p);
   }
+  // A shape several keys share with different translations ("{n}개": HR, H, SB…) cannot be read back unless one
+  // translation clearly leads; short appended pieces (" {sv}세") only make sense inside their own text.
+  // Every top-level {…} (nested plural forms included) as {}.
+  const shape = (x: string) => {
+    let out = '',
+      depth = 0;
+    for (const ch of x.trim()) {
+      if (ch === '{') {
+        if (depth++ === 0) out += '{}';
+      } else if (ch === '}') depth = Math.max(0, depth - 1);
+      else if (depth === 0) out += ch;
+    }
+    return out.replace(/\s+/g, ' ');
+  };
+  const variants = new Map<string, Map<string, number>>();
+  for (const p of patterns) {
+    const v = variants.get(shape(p.source)) ?? new Map<string, number>();
+    const t = shape(p.target);
+    v.set(t, (v.get(t) ?? 0) + 1);
+    variants.set(shape(p.source), v);
+  }
+  // One reading per shape: the translation most keys give it (the first on a tie).
+  const chosen = new Map<string, string>();
+  for (const [src, v] of variants) chosen.set(src, [...v].sort((a, b) => b[1] - a[1])[0]![0]);
+  const usable = (p: Pattern) => !(/^\s/.test(p.source) && p.anchored <= 2) && chosen.get(shape(p.source)) === shape(p.target);
+  for (const [b, list] of buckets) buckets.set(b, list.filter(usable));
   for (const list of buckets.values()) list.sort((a, b) => b.weight - a.weight);
   const exact = new Map<string, string>();
   for (const [ko, v] of votes) exact.set(ko, [...v].sort((a, b) => b[1] - a[1])[0]![0]);
@@ -422,7 +465,8 @@ function translateText(s: string, lc: Target, depth = 0, hint = ''): string {
   const memo = cache[lc];
   const hit = memo.get(s);
   if (hit !== undefined) return hit;
-  const [, lead, core, trail] = /^(\s*)([\s\S]*?)(\s*)$/.exec(s)!;
+  // Leading joiners (" · 1승 1패", ", 관중 …", "— 질문") stay as they are, like spaces.
+  const [, lead, core, trail] = /^(\s*(?:[,·:;—–]\s*)?)([\s\S]*?)(\s*)$/.exec(s)!;
   // Every step works on a strictly shorter piece of the text (a param, a piece between separators, one side of a
   // split), so the recursion ends; results, failures included, are cached.
   const tr = translateCore(core!, lc, depth);
@@ -439,8 +483,16 @@ let lastQuality = 0;
 const qualityOf = (s: string, lc: Target) => (HANGUL.test(s) && !kept.has(s) ? (qualities[lc].get(s) ?? 0) : 0);
 const full = (x: string | null) => (x != null && !untranslated(x) ? x : null);
 
+/** A bare count with a Korean counter ("198개", "12,059명"): the counter depends on what is counted, which the text
+    no longer says, so only the number is shown (Japanese keeps 人 for people). */
+function countText(s: string, lc: Target): string | null {
+  const m = /^([\d,]+(?:\.\d+)?)\s?(개|명)$/.exec(s);
+  if (!m) return null;
+  return lc === 'ja' && m[2] === '명' ? `${m[1]}人` : m[1]!;
+}
+
 function exactOrName(s: string, lc: Target): string | null {
-  return indexOf(lc).exact.get(norm(s)) ?? moneyText(s, lc) ?? personName(s, lc);
+  return indexOf(lc).exact.get(norm(s)) ?? moneyText(s, lc) ?? countText(s, lc) ?? personName(s, lc);
 }
 
 function translateCore(s: string, lc: Target, depth: number): string | null {
@@ -524,7 +576,7 @@ function assign(p: Pattern, s: string, lc: Target, depth: number): Values | null
   const values: Values = {};
   let budget = 400;
   let best: { cost: number; values: Values } | null = null;
-  const small = p.weight <= 2;
+  const small = p.anchored <= 2;
   const rec = (ti: number, pos: number, cost: number): void => {
     if (--budget < 0 || (best && cost >= best.cost)) return;
     if (ti === toks.length) {
@@ -556,7 +608,7 @@ function assign(p: Pattern, s: string, lc: Target, depth: number): Values | null
       if (hint?.ends && cap && !hint.ends.some((x) => cap.endsWith(x))) continue;
       // A pattern with only a letter or two of its own ("{i}회{value}", "{value}위") is for short tokens: it may
       // not swallow words of a longer text.
-      if (small && (/[:,.→]/.test(cap) || (/[가-힣]\s|\s[가-힣]/.test(cap) && !phrase(cap, lc)))) continue;
+      if (small && (/[:→]|[,.](?!\d)/.test(cap) || (/[가-힣]\s|\s[가-힣]/.test(cap) && !phrase(cap, lc)))) continue;
       // Only the generic optional pieces ({value}, {value2}…) may be empty; a name or a part never is.
       if (!cap.trim() && !/^value\d*$/.test(t.param)) continue;
       const v = translateText(cap, lc, depth + 1, t.param);

@@ -19,6 +19,7 @@ mkdirSync(shots, { recursive: true });
 const fixtures = join(root, 'tests', 'fixtures');
 const save = process.argv[2] ?? join(fixtures, readdirSync(fixtures).filter((f) => f.startsWith('save-')).sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).at(-1));
 const LOCALES = (process.env.LOCALES ?? 'en,ja').split(',');
+const PREFIX = process.env.SHOT_PREFIX ?? 'locale';
 /** What the player typed when founding the club in the fixture saves (shown as typed in every language). */
 const TYPED = (process.env.TYPED ?? '울산 고래단,고래증권,고래').split(',');
 
@@ -92,14 +93,14 @@ for (const lc of LOCALES) {
       if (side > 0) sideways.push(`${tag}:${label} +${side}px`);
     };
     await record('start');
-    await page.screenshot({ path: join(shots, `locale-${lc}-${tag}-00-start.png`), fullPage: false });
+    await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-00-start.png`), fullPage: false });
     await page.locator('input[type=file]').first().setInputFiles(save);
     await page.locator('nav.tabs').waitFor({ timeout: 120_000 });
     await page.waitForTimeout(800);
     // Event pop-ups waiting after the load: read and closed.
     for (let i = 0; i < 20 && (await page.locator('.alert-overlay').count()); i++) {
       await record('popup');
-      if (i === 0) await page.screenshot({ path: join(shots, `locale-${lc}-${tag}-popup.png`) });
+      if (i === 0) await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-popup.png`) });
       await page.keyboard.press('Escape');
       await page.waitForTimeout(200);
     }
@@ -110,15 +111,47 @@ for (const lc of LOCALES) {
       await page.waitForTimeout(500);
       const label = `${String(i + 1).padStart(2, '0')}-${((await tabs.nth(i).textContent()) ?? '').trim().replace(/[^\p{L}\p{N}]+/gu, '_').slice(0, 20)}`;
       await record(label);
-      await page.screenshot({ path: join(shots, `locale-${lc}-${tag}-${label}.png`), fullPage: tag === 'desktop' });
+      await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-${label}.png`), fullPage: tag === 'desktop' });
       // Inside a tab: the segmented sub-views (records, market, history...) one by one.
       const subs = page.locator('main .segmented').first().locator('button');
       const m = Math.min(await subs.count(), 8);
       for (let j = 1; j < m; j++) {
         await subs.nth(j).click().catch(() => {});
         await record(`${label}/${j}`);
-        if (tag === 'desktop') await page.screenshot({ path: join(shots, `locale-${lc}-${tag}-${label}-${j}.png`), fullPage: true });
+        if (tag === 'desktop') await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-${label}-${j}.png`), fullPage: true });
       }
+    }
+    // A game: the box score, then the play-by-play and the story.
+    for (let i = 0; i < n; i++) {
+      await tabs.nth(i).click();
+      const game = page.locator('main table tr:not(.player-row) button.link').first();
+      if (!(await game.count())) continue;
+      await game.click().catch(() => {});
+      await page.waitForTimeout(300);
+      if (!(await page.locator('.box-dialog').count())) {
+        await page.keyboard.press('Escape');
+        continue;
+      }
+      {
+        await record('boxscore');
+        await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-boxscore.png`) });
+        const btabs = page.locator('.box-dialog [role=tab]');
+        for (let j = 1; j < (await btabs.count()); j++) {
+          if (await btabs.nth(j).isDisabled()) continue;
+          await btabs.nth(j).click();
+          await record(`boxscore/${j}`);
+          await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-boxscore-${j}.png`) });
+        }
+        await page.keyboard.press('Escape');
+        break;
+      }
+    }
+    // A free-agent talk, when the save is at the market.
+    const talk = page.locator('.fa-table tbody .talk-button').first();
+    if (await talk.count()) {
+      await talk.click();
+      await record('fa-talk');
+      await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-fa-talk.png`), fullPage: tag === 'desktop' });
     }
     // A player's profile, from the first tab that lists players.
     for (let i = 0; i < n; i++) {
@@ -128,12 +161,12 @@ for (const lc of LOCALES) {
         await link.click();
         await page.locator('.dialog.profile').waitFor({ timeout: 5000 }).catch(() => {});
         await record('player');
-        await page.screenshot({ path: join(shots, `locale-${lc}-${tag}-player.png`) });
+        await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-player.png`) });
         const ptabs = page.locator('.dialog.profile [role=tab], .dialog.profile .segmented button');
         for (let j = 1; j < Math.min(await ptabs.count(), 4); j++) {
           await ptabs.nth(j).click().catch(() => {});
           await record(`player/${j}`);
-          await page.screenshot({ path: join(shots, `locale-${lc}-${tag}-player-${j}.png`) });
+          await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-player-${j}.png`) });
         }
         await page.keyboard.press('Escape');
         break;
@@ -147,5 +180,5 @@ for (const lc of LOCALES) {
   console.log(`${lc}: ${leftovers.length} Korean strings left, ${clipped.size} clipped labels, ${sideways.length} sideways pages`);
 }
 await browser.close();
-writeFileSync(join(shots, 'locales.json'), JSON.stringify(report, null, 1));
+writeFileSync(join(shots, `${PREFIX}s.json`), JSON.stringify(report, null, 1));
 process.exit(failed ? 1 : 0);

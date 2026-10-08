@@ -265,6 +265,7 @@ export function App() {
         : [],
     [league?.seed, draftYear, version],
   );
+  useEffect(() => registerNames(draftPool.map((p) => p.name)), [draftPool]);
   const prospect = useMemo(() => draftPool.find((p) => p.id === prospectId) ?? draftPool[0] ?? null, [draftPool, prospectId]);
   const prospectAge = (p: Player) => ageOn(p.birthday, `${draftYear}${DRAFT_ROOM_DRAFT_DATE.slice(4)}`);
 
