@@ -121,37 +121,37 @@ for (const lc of LOCALES) {
         if (tag === 'desktop') await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-${label}-${j}.png`), fullPage: true });
       }
     }
-    // A game: the box score, then the play-by-play and the story.
+    // A game (Games tab): the box score, then the play-by-play and the story.
     for (let i = 0; i < n; i++) {
       await tabs.nth(i).click();
-      const game = page.locator('main table tr:not(.player-row) button.link').first();
+      const game = page.locator('main .games-table button.link').first();
       if (!(await game.count())) continue;
-      await game.click().catch(() => {});
-      await page.waitForTimeout(300);
-      if (!(await page.locator('.box-dialog').count())) {
-        await page.keyboard.press('Escape');
-        continue;
+      await game.click();
+      await page.locator('.box-dialog').waitFor({ timeout: 5000 }).catch(() => {});
+      if (!(await page.locator('.box-dialog').count())) continue;
+      await record('boxscore');
+      await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-boxscore.png`) });
+      const btabs = page.locator('.box-dialog [role=tab]');
+      for (let j = 1; j < (await btabs.count()); j++) {
+        if (await btabs.nth(j).isDisabled()) continue;
+        await btabs.nth(j).click();
+        await record(`boxscore/${j}`);
+        await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-boxscore-${j}.png`) });
       }
-      {
-        await record('boxscore');
-        await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-boxscore.png`) });
-        const btabs = page.locator('.box-dialog [role=tab]');
-        for (let j = 1; j < (await btabs.count()); j++) {
-          if (await btabs.nth(j).isDisabled()) continue;
-          await btabs.nth(j).click();
-          await record(`boxscore/${j}`);
-          await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-boxscore-${j}.png`) });
-        }
-        await page.keyboard.press('Escape');
-        break;
-      }
+      await page.keyboard.press('Escape');
+      break;
     }
-    // A free-agent talk, when the save is at the market.
-    const talk = page.locator('.fa-table tbody .talk-button').first();
-    if (await talk.count()) {
-      await talk.click();
-      await record('fa-talk');
-      await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-fa-talk.png`), fullPage: tag === 'desktop' });
+    // A free-agent talk (salary negotiation), when the save is at the market: the decision tab first.
+    const waiting = page.locator('nav.tabs button.tab-waiting');
+    if (await waiting.count()) {
+      await waiting.first().click();
+      const talk = page.locator('.fa-table tbody .talk-button').first();
+      if (await talk.count()) {
+        await talk.click();
+        await page.waitForTimeout(300);
+        await record('fa-talk');
+        await page.screenshot({ path: join(shots, `${PREFIX}-${lc}-${tag}-fa-talk.png`), fullPage: tag === 'desktop' });
+      }
     }
     // A player's profile, from the first tab that lists players.
     for (let i = 0; i < n; i++) {
