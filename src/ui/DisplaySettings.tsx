@@ -6,6 +6,8 @@ import { useFocusTrap } from './modal';
 import { PopupSettings } from './Alerts';
 import { DEFAULT_PREFS, gradeTier, loadDisplay, PRESETS, saveDisplay, SCALE_LABELS, THEME_LABELS, TIER_LABELS, type BarPreset, type DisplayPrefs, type Scale, type Theme } from './display';
 import { GradeBar } from './grades';
+import { LanguagePicker } from './LanguagePicker';
+import { LANGUAGE_LABEL } from '../i18n/runtime';
 
 const SAMPLE = [35, 45, 55, 65, 75];
 const ORDER: BarPreset[] = ['club', 'scale', 'safe', 'mono', 'custom'];
@@ -43,6 +45,9 @@ export function DisplayOptions() {
   return (
     <>
       <p class="muted">{__i18n_t("ui.displaySettings.displayOptions.ea265ed0")}</p>
+
+      <h3>{LANGUAGE_LABEL}</h3>
+      <LanguagePicker />
 
       <h3>{__i18n_t("ui.displaySettings.displayOptions.1a13e026")}</h3>
       <div class="segmented" role="group" aria-label={__i18n_t("ui.displaySettings.displayOptions.1a13e026")}>

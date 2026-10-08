@@ -18,6 +18,8 @@ import { readSaveFile } from '../save/compress';
 import { BoxScore } from './BoxScore';
 import { StorySettings } from './StorySettings';
 import { DisplaySettings } from './DisplaySettings';
+import { LanguagePicker } from './LanguagePicker';
+import { registerKept, registerNames } from '../i18n/runtime';
 import { readableAccent } from './display';
 import { useDark } from './useDisplay';
 import { lastExport, noteExport, Settings } from './Settings';
@@ -99,6 +101,14 @@ function statusLine(s: LeagueState) {
 export function App() {
   const [store, setStore] = useState<SaveStore | null>(null);
   const [league, setLeague] = useState<LeagueState | null>(null);
+  // en/ja: who the people in this game are (names read from the tables or romanized), and our club's typed names.
+  useEffect(() => {
+    if (!league) return;
+    registerNames(Object.values(league.players).map((p) => p.name));
+    for (const c of Object.values(league.clubs ?? {})) registerNames(Object.values(c.staff ?? {}).map((m) => m?.name ?? ''));
+    const me = league.user && league.teams.find((t) => t.id === league.user!.teamId);
+    if (me) registerKept([me.name, me.short, me.parent?.name ?? ""]);
+  }, [league]);
   // The calendar of the league on the page (1.6.0: a game may start before 2026).
   setEra(league);
   const [version, setVersion] = useState(0);
@@ -416,6 +426,7 @@ export function App() {
             </label>
             <button type="button" aria-pressed={recovering} onClick={() => setRecovering((x) => !x)}>{__i18n_t("ui.app.app.53ba8c13")}</button>
             <button type="button" onClick={() => setDisplayOpen(true)}>{__i18n_t("ui.app.app.b1c35543")}</button>
+            <LanguagePicker />
           </div>
         </header>
         {__i18n_display(displayOpen && <DisplaySettings onClose={() => setDisplayOpen(false)} />)}

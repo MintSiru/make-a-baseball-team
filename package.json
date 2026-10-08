@@ -19,8 +19,9 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
-    "preact": "^10.29.8",
-    "intl-messageformat": "^10.7.18"
+    "@formatjs/icu-messageformat-parser": "^2.11.4",
+    "intl-messageformat": "^10.7.18",
+    "preact": "^10.29.8"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
