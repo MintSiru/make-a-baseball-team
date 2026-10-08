@@ -7,6 +7,7 @@ import { boxView } from '../league/views';
 import type { Action } from '../league/actions';
 import { NewsCard } from './Story';
 import type { StoryHooks } from './MyClub';
+import { markWatched, spoilerHidden } from './display';
 
 type Tab = 'box' | 'pbp' | 'story';
 const SPEEDS: [string, number][] = [
@@ -31,8 +32,11 @@ export function BoxScore({
   story?: StoryHooks;
 }) {
   const v = useMemo(() => boxView(league, id), [league, id]);
-  const [tab, setTab] = useState<Tab>('box');
-  const [shown, setShown] = useState<number | null>(null);
+  const ours = !!league.user && !!v && (v.home.teamId === league.user.teamId || v.away.teamId === league.user.teamId);
+  // 1.6.0: with the score hidden, our unseen game opens as a relay from the first pitch.
+  const [hidden] = useState(() => spoilerHidden(id, ours, !!v?.plays));
+  const [tab, setTab] = useState<Tab>(hidden ? 'pbp' : 'box');
+  const [shown, setShown] = useState<number | null>(hidden ? 0 : null);
   const [speed, setSpeed] = useState(1100);
   const heading = useRef<HTMLHeadingElement>(null);
   const box = useRef<HTMLDivElement>(null);
@@ -40,8 +44,9 @@ export function BoxScore({
   useEffect(() => {
     heading.current?.focus();
   }, [id]);
-  // Replay: one more play every tick until the end.
+  // Replay: one more play every tick until the end (then the game counts as seen).
   useEffect(() => {
+    if (v?.plays && (shown === null || shown >= v.plays.length) && ours) markWatched(id);
     if (shown === null || !v?.plays || shown >= v.plays.length) return;
     const t = setTimeout(() => setShown(shown + 1), speed);
     return () => clearTimeout(t);
@@ -115,14 +120,14 @@ export function BoxScore({
         </div>
 
         <div class="segmented profile-tabs" role="tablist" aria-label="경기">
-          <button type="button" role="tab" aria-selected={tab === 'box'} aria-pressed={tab === 'box'} onClick={() => setTab('box')}>
+          <button type="button" role="tab" aria-selected={tab === 'box'} aria-pressed={tab === 'box'} disabled={!!live && hidden} onClick={() => setTab('box')}>
             기록지
           </button>
           <button type="button" role="tab" aria-selected={tab === 'pbp'} aria-pressed={tab === 'pbp'} disabled={!v.plays} onClick={() => setTab('pbp')}>
             문자중계
           </button>
           {mine && (
-            <button type="button" role="tab" aria-selected={tab === 'story'} aria-pressed={tab === 'story'} onClick={() => setTab('story')}>
+            <button type="button" role="tab" aria-selected={tab === 'story'} aria-pressed={tab === 'story'} disabled={!!live && hidden} onClick={() => setTab('story')}>
               기사
             </button>
           )}
@@ -231,7 +236,7 @@ export function BoxScore({
                 </button>
               ) : (
                 <button type="button" onClick={() => setShown(null)}>
-                  끝까지 보기
+                  {hidden ? '결과 바로 보기' : '끝까지 보기'}
                 </button>
               )}
               <label>

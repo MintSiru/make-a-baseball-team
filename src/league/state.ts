@@ -230,7 +230,11 @@ export type Decision =
   /** One of our players was disciplined by the KBO (V0.12): the club's answer. */
   | { kind: 'scandal'; id: PlayerId; offense: string; penalty: string }
   /** An investor from the founding days claims part of the club (V0.12, dispute.ts). */
-  | { kind: 'dispute'; investor: string; firm: string; settle: number; legal: number; loss: number };
+  | { kind: 'dispute'; investor: string; firm: string; settle: number; legal: number; loss: number }
+  /** The owner's order in the season (1.6.0, scenario 재기): what he said, the trust a refusal costs, his manager. */
+  | { kind: 'meddle'; order: import('./scenarios').MeddleOrder; date: string; lines: string[]; refuse: number; manager?: StaffMember }
+  /** 판타지 드래프트 (1.6.0, fantasy.ts): our turn. */
+  | { kind: 'fantasyPick'; overall: number; round: number; rounds: number };
 
 // ── The twelfth club (V0.9) ───────────────────────────────────────────────────────────────────────
 
@@ -340,6 +344,8 @@ export interface OffseasonState {
   year: number;
   step: number;
   draft: DraftState | null;
+  /** 판타지 드래프트 (1.6.0, fantasy.ts): in its winter, in place of the rookie draft. */
+  fantasy?: import('./fantasy').FantasyDraft;
   /** Players cut to meet roster limits, waiting to be re-signed or retire. */
   released: PlayerId[];
   /** Sub-steps already settled by the user this offseason. */
@@ -431,6 +437,8 @@ export interface UserClub {
   projects?: StadiumProject[];
   /** Relieved of duty (only when firing is on). */
   fired?: number;
+  /** 1.6.0 (scenarios.ts): how the scenario stands, and its owner's orders (재기). */
+  scenario?: import('./scenarios').ScenarioState;
   /** The owner's running multiplier on support and payroll budget (evaluations, events). */
   budgetScale?: number;
   /** The naming deal ended: a sponsor decision comes this winter. */
@@ -501,8 +509,10 @@ export interface ExpansionSettings {
   stadium: 'existing' | 'newMedium' | 'newLarge' | 'dome';
   promotion: Promotion;
   difficulty: Difficulty;
-  /** Scenario hook for later versions (V0.3 always null: sandbox). */
-  scenario: string | null;
+  /** A scenario (1.6.0, scenarios.ts), or null for a free founding. */
+  scenario: import('./scenarios').ScenarioId | null;
+  /** The moments a run of days stops for (1.6.0, stops.ts); all of them when missing. */
+  stops?: import('./stops').StopKind[];
   /** The owner may fire the general manager after bad evaluations (V0.6; off in the sandbox). */
   firing?: boolean;
   /** Tutorial mode (V0.7.5): a guide from the founding through the futures year (promotion after futures). */

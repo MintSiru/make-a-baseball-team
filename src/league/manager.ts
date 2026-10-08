@@ -260,18 +260,25 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
     from.splice(from.indexOf(best), 1);
     return best;
   };
+  // 1.6.0: a catcher leads off only when there is nobody else to (before, a strong catcher sometimes did).
+  const takeLead = (from: typeof ranked) => {
+    const others = from.filter((x) => x.p.position !== 'C');
+    const best = [...(others.length ? others : from)].sort((a, b) => speedy(b.p) - speedy(a.p))[0]!;
+    from.splice(from.indexOf(best), 1);
+    return best;
+  };
   let order: typeof ranked;
   // Short-handed (a futures squad hit by injuries): best first; the game needs nine and will not start.
   if (ranked.length < 9) order = ranked;
   else if (opts.style === 'smallBall') {
     const rest = [...ranked];
-    const first = [takeBest(rest, speedy), takeBest(rest, onBase), takeBest(rest, (p) => power(p) + onBase(p) * 0.5), takeBest(rest, power), takeBest(rest, power)];
+    const first = [takeLead(rest), takeBest(rest, onBase), takeBest(rest, (p) => power(p) + onBase(p) * 0.5), takeBest(rest, power), takeBest(rest, power)];
     order = [...first, ...rest];
   } else {
     const top = ranked.slice(0, 3),
       next = ranked.slice(3, 5),
       rest = ranked.slice(5);
-    const lead = takeBest(top, speedy);
+    const lead = takeLead(top);
     const cleanup = takeBest(top, power);
     const fifth = takeBest(next, power);
     order = [lead, top[0]!, next[0]!, cleanup, fifth, ...rest];

@@ -29,6 +29,7 @@ import {
 import { positionLabel, shortName } from '../league/views';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { money } from './format';
+import { clubStrategy, MODE_LABEL, SPOT_LABEL } from '../league/strategy';
 import { gradeClass } from './grades';
 import { positionKey, useSort } from './sort';
 import { Help } from './Help';
@@ -225,7 +226,9 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
       <Help title="트레이드 규칙">
         정규시즌 중에는 7월 31일까지, 그 뒤로는 한국시리즈가 끝난 다음부터 트레이드할 수 있습니다. 상대 구단은 공개 평가(현재·미래 가치, 나이, 계약 기간, 연봉)로 판단하고, 받는 가치가 주는 가치보다
         조금 더 커야 받아들입니다. 외국인과 올해 뽑은 신인은 트레이드할 수 없습니다. 현금(한쪽만, {money(TRADES.cash.max)}까지, 1억 = 가치 약 1)과 다가오는 드래프트의 신인 지명권(선수와 함께만, 구단당 한 해 2장까지 —
-        KBO 규정)을 붙일 수 있습니다. 지명권 가치는 라운드와 예상 지명 순서(성적이 나쁜 구단일수록 앞)로 매기고, 넘겨받은 지명권으로 뽑은 선수는 입단 첫해에 트레이드할 수 없습니다.
+        KBO 규정)을 붙일 수 있습니다. 지명권 가치는 라운드와 예상 지명 순서(성적이 나쁜 구단일수록 앞)로 매기고, 넘겨받은 지명권으로 뽑은 선수는 입단 첫해에 트레이드할 수 없습니다. 구단마다 계획이
+        있습니다: 상위권은 우승 도전(당장 쓸 선수를 높이, 지명권을 낮게), 하위권에 주축이 늙었거나 가을야구에서 멀어진 구단은 리빌딩(젊은 선수·지명권·현금을 높이, 30세 이상을 낮게), 나머지는 균형.
+        부족한 자리를 채워 주는 선수는 더 높이 보고, 마지막 포수·선발투수를 내주거나 샐러리캡을 넘기는 제안은 거절합니다.
       </Help>
       {closed && <p class="notice">{closed}</p>}
       <div class="team-chips" role="group" aria-label="상대 구단">
@@ -316,6 +319,14 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
           트레이드 제안
         </button>
       </div>
+      {check?.reasons && check.reasons.length > 0 && (
+        <ul class="trade-reasons muted small" aria-label="상대 구단의 판단">
+          {check.reasons.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      )}
+      {!check && <TradePlan league={league} teamId={teamId} />}
       {lastLog.length > 0 && <p class="notice">{lastLog.map((l) => l.text).join(' · ')}</p>}
       <div class="two-col">
         <div>
@@ -469,5 +480,16 @@ function News({ league }: { league: LeagueState }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+/** The other club's plan before anything is on the table (1.6.0). */
+function TradePlan({ league, teamId }: { league: LeagueState; teamId: TeamId }) {
+  const plan = clubStrategy(league, teamId);
+  return (
+    <p class="muted small">
+      {shortName(league, teamId)} · {MODE_LABEL[plan.mode]}: {plan.why}
+      {plan.needs.length ? ` 부족한 자리: ${plan.needs.map((k) => SPOT_LABEL[k]).join(', ')}.` : ''} 주축 평균 {plan.age.toFixed(1)}세 · 샐러리캡 여유 {plan.room > 0 ? money(plan.room) : '없음'}
+    </p>
   );
 }

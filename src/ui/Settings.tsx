@@ -1,6 +1,7 @@
 /* The settings tab (V0.13): everything the player sets in one place — display, the game, the clubs' names,
    saves, AI articles and what the game is. Display and AI settings stay in this browser; the game and the
    clubs' names travel with the save. */
+import { STOP_KINDS, STOP_LABEL, stopsOf } from '../league/stops';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { DISCLAIMER, ISSUES_URL, OPEN_SOURCE, RULES_URL } from '../core/about';
 import { RELEASE, SIM_VERSION } from '../core/version';
@@ -217,6 +218,20 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
           <input type="checkbox" checked={!u.tutorialOff} disabled={busy} onChange={(e) => onAct((e.currentTarget as HTMLInputElement).checked ? { kind: 'tutorial', on: true } : { kind: 'tutorial', off: true })} /> 튜토리얼 안내
           보기
         </label>
+      )}
+      {u && (
+        <fieldset class="stops">
+          <legend>진행 중 멈출 순간</legend>
+          <p class="muted small">"1주"·"한 달"·"정규시즌 끝까지"로 진행할 때 아래 순간이 오면 그 자리에서 멈추고 알림을 띄웁니다. 경기 결과는 멈추든 아니든 같습니다.</p>
+          {STOP_KINDS.map((k) => {
+            const on = stopsOf(league).includes(k);
+            return (
+              <label key={k} class="check">
+                <input type="checkbox" checked={on} disabled={busy} onChange={() => onAct({ kind: 'stops', kinds: on ? stopsOf(league).filter((x) => x !== k) : [...stopsOf(league), k] })} /> {STOP_LABEL[k]}
+              </label>
+            );
+          })}
+        </fieldset>
       )}
       {u && (league.offseason?.year ?? league.year) < u.firstTeamYear && (
         <label class="check">

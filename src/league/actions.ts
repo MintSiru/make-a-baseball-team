@@ -1,4 +1,5 @@
 /* What the player can do, as state transitions. The UI and the worker both call these. */
+import { STOP_KINDS, watchStops, type StopKind } from './stops';
 import { closeSeason, advanceOffseason, beginOffseason } from './offseason';
 import { playPostseason, postseasonDay, postseasonRound, startPostseason } from './postseason';
 import { playDay, startSeason } from './season';
@@ -27,8 +28,9 @@ import { workout } from './combine';
 import { openFacilities, startFacility } from './facilities';
 
 export type Action =
-  | { kind: 'days'; days: number }
-  | { kind: 'regularEnd' }
+  /** `stops` (1.6.0): end the run early at the moments the user asked to stop for (stops.ts). */
+  | { kind: 'days'; days: number; stops?: boolean }
+  | { kind: 'regularEnd'; stops?: boolean }
   | { kind: 'postseason' }
   /** 1.3.0: the postseason step by step — draw the bracket, the next game day, the rest of the round. */
   | { kind: 'postseasonStart' }
@@ -68,6 +70,7 @@ export type Action =
   | { kind: 'tutorial'; seen?: string; off?: boolean; on?: boolean }
   /** 1.5.0: hand the decisions before the first-team debut to the scouts, or take them back. */
   | { kind: 'autoPrep'; on: boolean }
+  | { kind: 'stops'; kinds: StopKind[] }
   /** When a twelfth club comes (V0.9), until it is founded. */
   | { kind: 'twelveSetting'; setting: TwelveSetting }
   // The market (V0.5)
@@ -104,18 +107,22 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
   if (s.pending && !allowedWhileWaiting(action)) return s; // the game waits for a decision
   switch (action.kind) {
-    case 'days':
-      for (let i = 0; i < action.days && playDay(s); i++);
+    case 'days': {
+      const stop = action.stops ? watchStops(s) : null;
+      for (let i = 0; i < action.days && playDay(s); i++) if (stop?.()) break;
       break;
-    case 'regularEnd':
-      while (playDay(s));
+    }
+    case 'regularEnd': {
+      const stop = action.stops ? watchStops(s) : null;
+      while (playDay(s)) if (stop?.()) break;
       break;
+    }
     case 'toFounding':
       while (s.year === 2026 && (nextDate(s) ?? '9999') < FOUNDING_DATE && playDay(s));
       break;
@@ -228,6 +235,12 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       if (action.seen && !(u.tutorialSeen ??= []).includes(action.seen)) u.tutorialSeen.push(action.seen);
       if (action.off) u.tutorialOff = true;
       if (action.on) delete u.tutorialOff;
+      break;
+    }
+    case 'stops': {
+      const u = s.user;
+      if (!u) break;
+      u.settings.stops = STOP_KINDS.filter((k) => action.kinds.includes(k));
       break;
     }
     case 'autoPrep': {

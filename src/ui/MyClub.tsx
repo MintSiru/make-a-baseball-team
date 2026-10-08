@@ -18,6 +18,7 @@ import { injuryNote, rates, shortName, standingsView } from '../league/views';
 import { money } from './format';
 import { Squad, type Row, type SquadKey } from './Squad';
 import { Office } from './Office';
+import { scenarioProgress } from '../league/scenarios';
 import { Lineup } from './Lineup';
 import { Story } from './Story';
 import { Training } from './Training';
@@ -88,6 +89,7 @@ export function MyClub({
       {u.fired && <p class="notice warn">{u.fired}년 겨울, 모기업이 단장을 해임했습니다. 새 게임을 시작하거나 이 구단을 계속 지켜볼 수 있습니다.</p>}
       {view === 'overview' && (
         <>
+          <ScenarioCard league={league} />
           <Briefing
             league={league}
             onGo={(g) => {
@@ -453,3 +455,25 @@ function Management({ league, onPlayer, onAct, setMsg }: { league: LeagueState; 
 
 // ── Front office ─────────────────────────────────────────────────────────────────────────────────
 
+
+/** A scenario's goal and how it stands (1.6.0). */
+function ScenarioCard({ league }: { league: LeagueState }) {
+  const x = scenarioProgress(league);
+  if (!x) return null;
+  const tone = x.status === 'won' ? 'good' : x.status === 'lost' ? 'bad' : '';
+  return (
+    <section class={`scenario-card ${tone}`} aria-labelledby="scenario-title">
+      <h3 id="scenario-title">
+        시나리오 「{x.title}」 {x.status === 'won' ? '· 달성' : x.status === 'lost' ? '· 실패' : ''}
+      </h3>
+      <p>
+        <strong>목표</strong> {x.goal}
+      </p>
+      <ul>
+        {x.lines.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}

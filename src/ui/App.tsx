@@ -511,13 +511,13 @@ export function App() {
       <button type="button" onClick={() => act({ kind: 'days', days: 1 }, '경기 중', false)}>
         하루
       </button>
-      <button type="button" onClick={() => act({ kind: 'days', days: 6 }, '경기 중', false)}>
+      <button type="button" onClick={() => act({ kind: 'days', days: 6, stops: true }, '경기 중', false)}>
         1주
       </button>
-      <button type="button" onClick={() => act({ kind: 'days', days: 26 }, '한 달 진행 중', true)}>
+      <button type="button" onClick={() => act({ kind: 'days', days: 26, stops: true }, '한 달 진행 중', true)}>
         한 달
       </button>
-      <button type="button" onClick={() => act({ kind: 'regularEnd' }, '정규시즌 진행 중', true)}>
+      <button type="button" onClick={() => act({ kind: 'regularEnd', stops: true }, '정규시즌 진행 중', true)}>
         정규시즌 끝까지
       </button>
     </>

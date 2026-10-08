@@ -22,6 +22,7 @@ import { addAlert } from './alerts';
 import { eunneun, ro, wagwa } from './josa';
 import { firstTeamIds, type Evaluation, type LeagueState, type Mayor, type SeasonGoals, type SponsorGoal, type SponsorOffer } from './state';
 import { PARENT, DIFFICULTY } from './tuning';
+import { scenarioOf } from './scenarios';
 
 const money = (n: number) => `${Math.round(n / 10000)}억`;
 
@@ -35,7 +36,8 @@ export function setGoals(s: LeagueState, year: number): SeasonGoals | null {
   const type = u.settings.parentType;
   const seasonsIn = year - u.firstTeamYear;
   const clubs = firstTeamIds(s, year).length;
-  const rank = seasonsIn < 2 ? clubs : Math.min(clubs, PARENT.rankGoal[type] + (seasonsIn < 4 ? 2 : 0));
+  const owner = scenarioOf(s)?.owner;
+  const rank = owner ? Math.min(clubs, owner.rankGoal(seasonsIn)) : seasonsIn < 2 ? clubs : Math.min(clubs, PARENT.rankGoal[type] + (seasonsIn < 4 ? 2 : 0));
   const c = clubState(s, u.teamId);
   const last = c.reports.at(-1);
   const team = s.teams.find((t) => t.id === u.teamId)!;
@@ -70,12 +72,14 @@ export function evaluate(s: LeagueState, year: number): Evaluation | null {
   const champion = s.history.find((h) => h.year === year)?.champion === u.teamId;
   const change = Math.max(-PARENT.maxChange, Math.min(PARENT.maxChange, score * PARENT.maxChange + (champion ? 0.05 : 0)));
   const step = score * PARENT.trustStep[type];
-  const trust = Math.max(0, Math.min(100, (u.trust ?? PARENT.startTrust) + (step < 0 ? step * DIFFICULTY.trustLoss[u.settings.difficulty] : step) + (champion ? 15 : 0)));
+  // A scenario's owner may be less patient (1.6.0: 재기 loses trust faster and may fire from the first season).
+  const owner = scenarioOf(s)?.owner;
+  const trust = Math.max(0, Math.min(100, (u.trust ?? PARENT.startTrust) + (step < 0 ? step * DIFFICULTY.trustLoss[u.settings.difficulty] * (owner?.trustLoss ?? 1) : step) + (champion ? 15 : 0)));
   u.trust = trust;
   const ev: Evaluation = { year, score, lines: lines.map(({ w: _w, ...l }) => l), change, trust };
   (u.evaluations ??= []).push(ev);
   applyBudgetChange(s, change);
-  if (u.settings.firing && trust < PARENT.fireBelow && year - u.firstTeamYear >= 2) u.fired = year;
+  if (u.settings.firing && trust < PARENT.fireBelow && year - u.firstTeamYear >= (owner?.fireFrom ?? 2)) u.fired = year;
   return ev;
 }
 

@@ -14,12 +14,13 @@ import { ensureNumbers } from './numbers';
 import { attendance, clubState, recordGate } from './fans';
 import { staffOf } from './staff';
 import { setGoals } from './parent';
-import { aiForeignChanges, aiTrades, processWaivers } from './trade';
+import { aiDeadlineDeals, aiForeignChanges, aiTrades, processWaivers } from './trade';
 import { scoutMonth } from './scouting';
 import { allStarDay } from './allstar';
 import { draftClass } from './players';
 import { applyCombine, combineDay } from './combine';
 import { scandalDay, serveSuspensions } from './scandals';
+import { meddleDay } from './scenarios';
 import { openBooks } from './finance';
 import { rosterLimit } from './offseason';
 import { finishEvent, marchEvents, nationalTeamBack, nationalTeamCalls, nationalTeamLeaves } from './national';
@@ -257,6 +258,8 @@ export function playDay(s: LeagueState): boolean {
   alumniDay(s, date);
   // Now and then something worse (V0.12): the club answers before the next day.
   scandalDay(s, date);
+  // Scenario 재기 (1.6.0): the owner calls.
+  meddleDay(s, date);
   returnFromService(s, date);
   nationalTeamAway(s, date);
   nationalTeamBack(s, date);
@@ -311,6 +314,8 @@ function marketEvents(s: LeagueState, date: string) {
     run();
   };
   once('trades', '06-15', () => aiTrades(s, rng(`${s.seed}|ai-trades|${s.year}`)));
+  // 1.6.0: contenders buy from rebuilding clubs before the deadline (strategy.ts).
+  once('deadline', '07-22', () => aiDeadlineDeals(s, rng(`${s.seed}|ai-deadline|${s.year}`)));
   once('foreign', '07-01', () => aiForeignChanges(s, date, rng(`${s.seed}|ai-foreign|${s.year}`)));
 }
 

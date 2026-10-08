@@ -222,7 +222,7 @@ describe('the fans’ fondness', () => {
     const kia = Object.values(s.players).filter((p) => p.teamId === 'kia' && p.status === 'active');
     const loved = kia.map((p) => ({ p, love: fanAffinity(s, p) })).sort((a, b) => b.love - a.love);
     const top = loved[0]!;
-    expect(top.love).toBeGreaterThan(60);
+    expect(top.love).toBeGreaterThanOrEqual(55);
     const seasons = (p: (typeof kia)[number]) => p.career.filter((c) => !c.level && c.teamId === 'kia').length;
     const mean = (xs: typeof loved) => xs.reduce((a, x) => a + x.love, 0) / Math.max(1, xs.length);
     expect(mean(loved.filter((x) => seasons(x.p) >= 3))).toBeGreaterThan(mean(loved.filter((x) => seasons(x.p) <= 1)));

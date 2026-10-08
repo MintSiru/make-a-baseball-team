@@ -45,6 +45,7 @@ import { facilityAging, facilityGrowth } from './facilities';
 import { declineOf, growTools, matureAge } from './traits';
 import { heroInterview } from './interviews';
 import { applyCombine } from './combine';
+import { isFantasyWinter, openFantasy, runFantasy } from './fantasy';
 import type { SeasonAwards } from './awards';
 
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
@@ -212,7 +213,7 @@ export function developPlayer(p: Player, year: number, lostDays: number, r: () =
     if (gain > 0 && coaching[k]) next[k] = clamp(before + gain * (1 + coaching[k]!), 20, 80);
   }
   // Late-career decline on top of Draft Room's aging (which was tuned for players under 33), from an age that
-  // goes with his growth type (31 for 보통), eased by work ethic (1.1.0).
+  // goes with his growth type (33 for 보통 since 1.6.0), eased by work ethic (1.1.0).
   const V = O.veteranDecline;
   const extra = declineOf(p, age, V.perYear, V.steepPerYear) * (1 - slower);
   if (extra > 0)
@@ -815,6 +816,11 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         runAiPosting(s, next);
         break;
       case 'freeAgency': {
+        // No market in the fantasy draft's winter (1.6.0): every player is on the board anyway.
+        if (isFantasyWinter(s, year)) {
+          o.faDone = true;
+          break;
+        }
         // The negotiation in rounds (V0.8): period options first, then the market opens.
         if (!o.faDone && !o.fa) {
           settlePeriodOptions(s, next);
@@ -851,6 +857,12 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         renewContracts(s, next);
         break;
       case 'draft': {
+        // 판타지 드래프트 (1.6.0): the whole league and this year's class, in place of the rookie draft.
+        if (isFantasyWinter(s, year)) {
+          o.fantasy ??= openFantasy(s, year);
+          if (runFantasy(s, o.fantasy) === 'wait') return 'waiting';
+          break;
+        }
         if (!o.draft) {
           const table = s.history[s.history.length - 1]?.table ?? [];
           const order = table.length ? [...table].reverse().map((row) => row.teamId) : firstTeamIds(s, year);
@@ -864,7 +876,7 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
       case 'special':
         break; // expansion special draft: entirely a user decision (see expansion.ts)
       case 'secondDraft': {
-        if (!isSecondDraftYear(year)) break;
+        if (!isSecondDraftYear(year) || isFantasyWinter(s, year)) break;
         if (!o.second) o.second = openSecondDraft(s, year);
         const u = s.user;
         // The user's club protects its 35 before anyone picks (not in the winter it joins the first team).

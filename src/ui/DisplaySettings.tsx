@@ -143,6 +143,12 @@ export function DisplayOptions() {
         </button>
       </div>
 
+      <h3>경기</h3>
+      <label class="check">
+        <input type="checkbox" checked={p.hideScores} onChange={(e) => set({ ...p, hideScores: (e.currentTarget as HTMLInputElement).checked })} /> 우리 경기 결과 가리기 — 경기 탭에서 점수를 숨기고, 열면 문자중계가 1회부터 흘러갑니다
+      </label>
+      <p class="muted small">순위표와 뉴스에는 결과가 그대로 나옵니다. 중계를 끝까지 보거나 "결과 바로 보기"를 누르면 그 경기는 다시 보입니다.</p>
+
       <h3>알림</h3>
       <PopupSettings />
 

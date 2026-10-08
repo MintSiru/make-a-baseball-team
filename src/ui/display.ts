@@ -22,6 +22,8 @@ export interface DisplayPrefs {
   theme: Theme;
   /** Text size (V0.15). */
   scale: Scale;
+  /** 1.6.0: our games open as a relay from the first pitch, the score hidden until the end (or until asked). */
+  hideScores: boolean;
 }
 
 export type Theme = 'system' | 'light' | 'dark';
@@ -39,7 +41,7 @@ export const PRESETS: Record<Exclude<BarPreset, 'custom'>, { label: string; note
   mono: { label: '흑백', note: '진할수록 높음', colors: ['var(--rule)', 'var(--ink-2)', 'var(--ink-2)', 'var(--ink)', 'var(--ink)'] },
 };
 
-export const DEFAULT_PREFS: DisplayPrefs = { bars: 'club', custom: [...PRESETS.scale.colors!] as Colors, tables: false, density: 'compact', theme: 'system', scale: 'normal' };
+export const DEFAULT_PREFS: DisplayPrefs = { bars: 'club', custom: [...PRESETS.scale.colors!] as Colors, tables: false, density: 'compact', theme: 'system', scale: 'normal', hideScores: false };
 
 const HEX = /^#[0-9a-f]{6}$/i;
 
@@ -55,7 +57,7 @@ export function parseDisplay(raw: string | null): DisplayPrefs {
   const custom = DEFAULT_PREFS.custom.map((d, i) => (Array.isArray(v.custom) && typeof v.custom[i] === 'string' && HEX.test(v.custom[i]) ? v.custom[i] : d)) as Colors;
   const theme: Theme = v.theme === 'light' || v.theme === 'dark' ? v.theme : 'system';
   const scale: Scale = v.scale === 'small' || v.scale === 'large' ? v.scale : 'normal';
-  return { bars, custom, tables: v.tables === true, density: v.density === 'comfortable' ? 'comfortable' : 'compact', theme, scale };
+  return { bars, custom, tables: v.tables === true, density: v.density === 'comfortable' ? 'comfortable' : 'compact', theme, scale, hideScores: v.hideScores === true };
 }
 
 /** The five tier colours to set, or null for the stylesheet's own. */
@@ -153,3 +155,33 @@ export function saveDisplay(p: DisplayPrefs) {
   applyDisplay(p);
   window.dispatchEvent(new Event(DISPLAY_EVENT));
 }
+
+// ── Games watched (1.6.0) ────────────────────────────────────────────────────────────────────────
+
+const WATCHED = 'kbo-expansion-watched';
+let watchedMemory: string[] | null = null;
+
+/** Our games whose relay the player has seen to the end (or opened with the score), newest last. */
+export function watchedGames(): Set<string> {
+  if (watchedMemory) return new Set(watchedMemory);
+  try {
+    const v = JSON.parse(localStorage.getItem(WATCHED) ?? '[]') as unknown;
+    return new Set(Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
+  } catch {
+    return new Set();
+  }
+}
+
+export function markWatched(id: string) {
+  const list = [...watchedGames()].filter((x) => x !== id);
+  list.push(id);
+  watchedMemory = list.slice(-80);
+  try {
+    localStorage.setItem(WATCHED, JSON.stringify(watchedMemory));
+  } catch {
+    // Storage blocked: remembered for this tab.
+  }
+}
+
+/** Whether to keep this game's score out of sight: the setting is on, it is our game with a relay, not yet seen. */
+export const spoilerHidden = (id: string, ours: boolean, relay: boolean) => ours && relay && loadDisplay().hideScores && !watchedGames().has(id);

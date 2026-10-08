@@ -31,6 +31,8 @@ import { capPlayers, foreignCap, foreignCost } from '../league/foreigncap';
 import { gradeClass } from './grades';
 import { positionKey, useSort, type SortColumn } from './sort';
 import { RivalForm } from './Twelve';
+import { FantasyBoard } from './FantasyDraft';
+import { MEDDLE } from '../league/scenarios';
 
 interface Props {
   league: LeagueState;
@@ -67,6 +69,8 @@ const TITLES: Record<DecisionT['kind'], string> = {
   national: '국가대표 차출',
   scandal: '징계 · 구단 대응',
   dispute: '지분 분쟁',
+  meddle: '구단주의 지시',
+  fantasyPick: '판타지 드래프트',
 };
 
 /** What the scouts hear about major league interest, from the public grade. */
@@ -330,7 +334,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
   const [advice, setAdvice] = useState<Advice | null>(null);
   // Consecutive decisions of one kind (draft picks, compensation per free agent) start from a clean slate.
   const stage =
-    d.kind === 'draftPick'
+    d.kind === 'draftPick' || d.kind === 'fantasyPick'
       ? String(d.overall)
       : d.kind === 'rookieBonus'
         ? String(d.final)
@@ -342,7 +346,9 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
               ? String(d.year)
               : d.kind === 'foreign'
                 ? String(d.round ?? 1)
-                : '';
+                : d.kind === 'meddle'
+                  ? `${d.date}-${d.order}`
+                  : '';
   useEffect(() => {
     setSelected(new Set());
     setSpecial({});
@@ -371,7 +377,10 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
   const input: DecisionInput | null = useMemo(() => {
     switch (d.kind) {
       case 'draftPick':
+      case 'fantasyPick':
         return null;
+      case 'meddle':
+        return { kind: 'meddle', answer: (choices.pick ?? 'obey') as 'obey' | 'refuse' };
       case 'specialDraft':
         return { kind: 'specialDraft', picks: special };
       case 'military':
@@ -466,6 +475,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         break;
       case 'scandal':
       case 'dispute':
+      case 'meddle':
         setChoices({ pick: a.answer });
         break;
       default:
@@ -1058,6 +1068,39 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       );
       break;
     }
+    case 'fantasyPick':
+      body = <FantasyBoard league={league} onPlayer={onPlayer} onPick={(id) => onSubmit({ kind: 'fantasyPick', id })} />;
+      break;
+    case 'meddle': {
+      const pick = choices.pick ?? 'obey';
+      const options: [string, string, string][] = [
+        ['obey', '따른다', `구단주가 흡족해합니다 (신뢰도 +${MEDDLE.obey}).${d.order === 'star' ? ' 마감까지 거물을 데려오지 못하면 크게 실망합니다.' : ''}`],
+        ['refuse', '거절한다', `단장의 판단을 지키지만 신뢰도가 ${d.refuse} 떨어집니다. 신뢰도는 겨울 평가의 출발점이고, 15 아래로 떨어지면 해임됩니다.`],
+      ];
+      const current = d.order === 'manager' ? league.clubs?.[u.teamId]?.staff?.manager : null;
+      body = (
+        <>
+          {d.lines.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+          {current && d.manager && (
+            <p class="muted small">
+              지금 감독 {current.name} (등급 {current.rating}, {MANAGER_STYLES[current.style ?? 'balanced']?.label ?? ''}) → 구단주 추천 {d.manager.name} (등급 {d.manager.rating}, {MANAGER_STYLES[d.manager.style ?? 'balanced']?.label ?? ''})
+            </p>
+          )}
+          <p class="muted small">구단주 신뢰도 {Math.round(u.trust ?? 60)} / 100</p>
+          <div class="choice-grid" role="radiogroup" aria-label="구단주 지시에 대한 대응">
+            {options.map(([k, label, note]) => (
+              <button key={k} type="button" class="choice" role="radio" aria-checked={pick === k} aria-pressed={pick === k} onClick={() => choose('pick', k)}>
+                <strong>{label}</strong>
+                <span class="muted small">{note}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      );
+      break;
+    }
     case 'dispute': {
       const pick = choices.pick ?? 'settle';
       const options: [string, string, string][] = [
@@ -1310,6 +1353,20 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
           <button type="button" onClick={() => onSubmit({ kind: 'draftPick', id: null })}>
             스카우트에게 맡기기
           </button>
+        ) : d.kind === 'fantasyPick' ? (
+          <>
+            <button type="button" onClick={() => onSubmit({ kind: 'fantasyPick', id: null })}>
+              이번 지명만 스카우트에게
+            </button>
+            {d.round < 10 && (
+              <button type="button" onClick={() => onSubmit({ kind: 'fantasyPick', id: null, autoUntil: 10 })}>
+                10라운드까지 맡기기
+              </button>
+            )}
+            <button type="button" onClick={() => onSubmit({ kind: 'fantasyPick', id: null, autoUntil: d.rounds })}>
+              남은 지명 모두 맡기기
+            </button>
+          </>
         ) : d.kind === 'secondPick' ? (
           <>
             <button type="button" onClick={() => onSubmit({ kind: 'secondPick', id: null })}>

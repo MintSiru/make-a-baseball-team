@@ -2,9 +2,10 @@ import { useState } from 'preact/hooks';
 import { accentStyle } from './display';
 import { useDark } from './useDisplay';
 import { CITIES, cityById } from '../club/cities';
+import { SCENARIOS, scenarioDef, withScenario, type ScenarioId } from '../league/scenarios';
 import { PARENT_COMPANY_TYPES, type ParentCompanyType } from '../club/types';
 import { existingTeams } from '../league/clubs';
-import { budgetFor, difficultyStars, STADIUM_PLANS } from '../league/expansion';
+import { budgetFor, difficultyStars, foundingRisks, STADIUM_PLANS } from '../league/expansion';
 import type { Difficulty, ExpansionSettings, Promotion, TwelveSetting } from '../league/state';
 import { money } from './format';
 import { TwelveSettingField } from './Twelve';
@@ -22,6 +23,8 @@ interface Props {
   onFound: (settings: ExpansionSettings, seed: string) => void;
   onSpectate: (seed: string) => void;
 }
+
+const LOCK_LABEL: Record<string, string> = { cityId: '연고지', parentType: '모기업 형태', parentName: '모기업 이름', name: '구단명', short: '약칭', difficulty: '난이도', firing: '해임 있음', promotion: '1군 진입 시기', stadium: '홈구장' };
 
 /** The recommended first game (1.5.0): a big parent, the existing ballpark, a futures year with the guide. */
 const NICKNAMES = ['웨일스', '블루스', '썬더스', '파이어스'];
@@ -60,12 +63,37 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
   const [firing, setFiring] = useState(false);
   const [seed, setSeed] = useState(initialSeed);
   const [twelve, setTwelve] = useState<TwelveSetting>({ mode: 'off' });
+  // 1.6.0: a scenario sets some of the conditions (and locks some of them).
+  const [scenario, setScenario] = useState<ScenarioId | null>(null);
+  const def = scenarioDef(scenario);
+  const locked = new Set<string>(def?.locked ?? []);
+  const pickScenario = (id: ScenarioId | null) => {
+    const before = def?.fixed;
+    // What the last scenario named goes with it.
+    if (before?.name) setName('');
+    if (before?.short) setShort('');
+    if (before?.parentName) setParentName('');
+    if (before?.cityId && !CITIES.some((c) => c.id === before.cityId)) setCityId('ulsan');
+    setScenario(id);
+    const f = scenarioDef(id)?.fixed;
+    if (!f) return;
+    if (f.cityId) setCityId(f.cityId);
+    if (f.parentType) setParentType(f.parentType);
+    if (f.parentName) setParentName(f.parentName);
+    if (f.name) setName(f.name);
+    if (f.short) setShort(f.short);
+    if (f.stadium) setStadium(f.stadium);
+    if (f.promotion) setPromotion(f.promotion);
+    if (f.difficulty) setDifficulty(f.difficulty);
+    if (f.firing != null) setFiring(f.firing);
+  };
   const city = cityById(cityId)!;
+  const cities = locked.has('cityId') ? [city] : CITIES;
   // The twelfth club comes once ours is in the first team.
   const twelveFrom = promotion === 'immediate' ? 2027 : 2028;
   const twelveSetting: TwelveSetting = twelve.mode === 'year' ? { mode: 'year', year: Math.max(twelveFrom, twelve.year ?? twelveFrom + 2) } : twelve;
 
-  const settings: ExpansionSettings = {
+  const settings: ExpansionSettings = withScenario({
     name,
     short,
     color,
@@ -80,7 +108,7 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
     ...(guide ? { tutorial: true } : {}),
     ...(autoPrep ? { autoPrep: true } : {}),
     ...(twelveSetting.mode !== 'off' ? { twelve: twelveSetting } : {}),
-  };
+  }, scenario);
   const b = budgetFor(settings);
   const stars = difficultyStars(settings);
   const problems = [
@@ -101,6 +129,40 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
         {guide ? ' 1군 데뷔까지 튜토리얼이 할 일을 안내합니다.' : ''}
       </p>
 
+      <section class="form-block" aria-labelledby="ng-scenario">
+        <h3 id="ng-scenario">시나리오</h3>
+        <div class="choice-grid scenario-grid" role="radiogroup" aria-label="시나리오">
+          <button type="button" class="choice" role="radio" aria-checked={!scenario} aria-pressed={!scenario} onClick={() => pickScenario(null)}>
+            <strong>자유 창단</strong>
+            <span class="muted">조건을 모두 직접 정하고, 정해진 목표 없이 구단을 키웁니다.</span>
+          </button>
+          {SCENARIOS.map((x) => (
+            <button key={x.id} type="button" class="choice" role="radio" aria-checked={scenario === x.id} aria-pressed={scenario === x.id} onClick={() => pickScenario(x.id)}>
+              <strong>{x.title}</strong>
+              <span class="muted">{x.tagline}</span>
+              <span class="stars" aria-label={`난이도 5점 중 ${x.stars}점`}>
+                {'★'.repeat(x.stars)}
+                {'☆'.repeat(5 - x.stars)}
+              </span>
+            </button>
+          ))}
+        </div>
+        {def && (
+          <div class="scenario-brief">
+            {def.story.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+            <p>
+              <strong>목표</strong> {def.goal}
+            </p>
+            <p class="muted small">
+              고정 조건: {def.locked.map((k) => LOCK_LABEL[k] ?? k).join(' · ')}. 목표를 이루거나 놓치면 알림으로 알려 주고, 그 뒤로도 구단을 계속 운영할 수 있습니다.
+            </p>
+          </div>
+        )}
+      </section>
+
+      {!def && (
       <section class="quick-start" aria-labelledby="ng-quick">
         <h3 id="ng-quick">빠른 시작</h3>
         <p class="muted small">
@@ -111,17 +173,18 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
           추천 조건으로 바로 시작
         </button>
       </section>
+      )}
 
       <section class="form-block" aria-labelledby="ng-identity">
         <h3 id="ng-identity">구단</h3>
         <div class="fields">
           <label>
             구단명
-            <input value={name} maxLength={12} placeholder={`예: ${city.name} 웨일스`} onInput={(e) => setName((e.currentTarget as HTMLInputElement).value)} />
+            <input value={name} maxLength={12} disabled={locked.has('name')} placeholder={`예: ${city.name} 웨일스`} onInput={(e) => setName((e.currentTarget as HTMLInputElement).value)} />
           </label>
           <label>
             약칭
-            <input value={short} maxLength={4} placeholder={city.name} onInput={(e) => setShort((e.currentTarget as HTMLInputElement).value)} />
+            <input value={short} maxLength={4} disabled={locked.has('short')} placeholder={city.name} onInput={(e) => setShort((e.currentTarget as HTMLInputElement).value)} />
           </label>
         </div>
         <div class="swatches" role="radiogroup" aria-label="구단 색">
@@ -137,8 +200,8 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
       <section class="form-block" aria-labelledby="ng-city">
         <h3 id="ng-city">연고지</h3>
         <div class="choice-grid">
-          {CITIES.map((c) => (
-            <button key={c.id} type="button" class="choice" aria-pressed={c.id === cityId} onClick={() => setCityId(c.id)}>
+          {cities.map((c) => (
+            <button key={c.id} type="button" class="choice" aria-pressed={c.id === cityId} disabled={locked.has('cityId')} onClick={() => setCityId(c.id)}>
               <strong>{c.name}</strong>
               <span class="muted">
                 인구 {Math.round(c.population / 10000)}만 · 시장 {c.market}
@@ -158,7 +221,7 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
         <h3 id="ng-parent">모기업</h3>
         <div class="choice-grid">
           {(Object.keys(PARENT_COMPANY_TYPES) as ParentCompanyType[]).map((t) => (
-            <button key={t} type="button" class="choice" aria-pressed={t === parentType} onClick={() => setParentType(t)}>
+            <button key={t} type="button" class="choice" aria-pressed={t === parentType} disabled={locked.has('parentType') && t !== parentType} onClick={() => setParentType(t)}>
               <strong>{PARENT_COMPANY_TYPES[t].label}</strong>
               <span class="muted">{PARENT_COMPANY_TYPES[t].summary}</span>
             </button>
@@ -166,18 +229,18 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
         </div>
         <label class="wide">
           {parentType === 'citizen' ? '운영 주체' : parentType === 'namingRights' ? '메인 스폰서' : '모기업'} 이름
-          <input value={parentName} maxLength={20} placeholder={parentType === 'citizen' ? `${city.name}시` : '가상의 회사명'} onInput={(e) => setParentName((e.currentTarget as HTMLInputElement).value)} />
+          <input value={parentName} maxLength={20} disabled={locked.has('parentName')} placeholder={parentType === 'citizen' ? `${city.name}시` : '가상의 회사명'} onInput={(e) => setParentName((e.currentTarget as HTMLInputElement).value)} />
         </label>
       </section>
 
       <section class="form-block" aria-labelledby="ng-mode">
         <h3 id="ng-mode">시작 방식</h3>
         <div class="choice-grid mode-grid" role="group" aria-label="1군 진입">
-          <button type="button" class="choice" aria-pressed={promotion === 'afterFutures'} onClick={() => setPromotion('afterFutures')}>
+          <button type="button" class="choice" aria-pressed={promotion === 'afterFutures'} disabled={locked.has('promotion')} onClick={() => setPromotion('afterFutures')}>
             <strong>퓨처스 1년 뒤 · 2028년 1군</strong>
             <span class="muted">2027년 퓨처스리그에서 선수단을 키운 뒤 1군에 들어갑니다 (NC·KT 선례). 준비할 시간이 넉넉합니다.</span>
           </button>
-          <button type="button" class="choice" aria-pressed={promotion === 'immediate'} onClick={() => setPromotion('immediate')}>
+          <button type="button" class="choice" aria-pressed={promotion === 'immediate'} disabled={locked.has('promotion')} onClick={() => setPromotion('immediate')}>
             <strong>바로 1군 · 2027년</strong>
             <span class="muted">첫 겨울에 1군 전력을 한꺼번에 만들고 곧바로 1군에 들어갑니다. 빨리 1군 경기를 보고 싶다면.</span>
           </button>
@@ -221,14 +284,14 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
         <h3 id="ng-rules">진행</h3>
         <div class="segmented" role="group" aria-label="기본 난이도">
           {(['easy', 'normal', 'hard'] as Difficulty[]).map((d) => (
-            <button key={d} type="button" aria-pressed={difficulty === d} onClick={() => setDifficulty(d)}>
+            <button key={d} type="button" aria-pressed={difficulty === d} disabled={locked.has('difficulty')} onClick={() => setDifficulty(d)}>
               {DIFFICULTY_LABEL[d]}
             </button>
           ))}
         </div>
         <p class="muted small">{DIFFICULTY_NOTE[difficulty]} 게임 중에도 설정 탭에서 바꿀 수 있습니다.</p>
         <label class="check">
-          <input type="checkbox" checked={firing} onChange={(e) => setFiring((e.currentTarget as HTMLInputElement).checked)} /> 성적이 나쁘면 모기업이 단장을 해임할 수 있음 (끄면 샌드박스)
+          <input type="checkbox" checked={firing} disabled={locked.has('firing')} onChange={(e) => setFiring((e.currentTarget as HTMLInputElement).checked)} /> 성적이 나쁘면 모기업이 단장을 해임할 수 있음 (끄면 샌드박스)
         </label>
         <label class="seed-field">
           시드
@@ -263,6 +326,14 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
             </dd>
           </div>
         </dl>
+        <details class="risks" open>
+          <summary>이 조합에서 조심할 점</summary>
+          <ul>
+            {foundingRisks(settings).map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </details>
         <p class="muted">창단 자금에서 가입금·발전기금·신인 계약금·특별지명 보상금(1명 10억)을 냅니다. 예치금 100억은 KBO가 보관합니다. 금액은 게임용 가정입니다.</p>
         {problems.length > 0 && <p class="notice">{problems[0]}</p>}
         <div class="actions">

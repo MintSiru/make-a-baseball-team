@@ -5,6 +5,8 @@
    game assumptions in RULES.md §9. Money is in 만 원 (10,000 = 1억). */
 import { generateDraftPool, rng } from '../draftroom';
 import { cityById } from '../club/cities';
+import { scenarioDef, supportFactor } from './scenarios';
+import { aiFantasyChoice, isFantasyWinter, makeFantasyPick } from './fantasy';
 import { baseSupport, electMayor } from './parent';
 import { capPlayers, foreignCap, foreignCost, slotForeigners } from './foreigncap';
 import { milestone, unlock } from './milestones';
@@ -88,9 +90,11 @@ export function budgetFor(settings: ExpansionSettings) {
   const k = DIFFICULTY_MONEY[settings.difficulty];
   const marketAdj = (city.market - 60) * 400; // ±0.4억 per market point
   const stadiumAdj = settings.stadium === 'existing' ? 0 : 50_000;
+  // A scenario's owner may be richer or poorer than the usual (1.6.0).
+  const sc = scenarioDef(settings.scenario)?.money;
   return {
-    fund: Math.round(m.fund * k),
-    payrollBudget: Math.round((m.payroll + marketAdj + stadiumAdj) * k),
+    fund: Math.round(m.fund * k * (sc?.fund ?? 1)),
+    payrollBudget: Math.round((m.payroll + marketAdj + stadiumAdj) * k * (sc?.payroll ?? 1)),
     entryFee: EXPANSION_DEFAULTS.entryFee,
     developmentFund: m.developmentFund,
     deposit: EXPANSION_DEFAULTS.deposit,
@@ -110,6 +114,32 @@ export function difficultyStars(settings: ExpansionSettings): number {
   // budget alone shows (docs/BALANCE.md).
   const owner = { conglomerate: 0, midsize: 0.03, namingRights: 0.03, citizen: 0.12 }[settings.parentType];
   return Math.max(1, Math.min(5, Math.round(1 + (money * 0.5 + market * 0.3 + park * 0.2 + base + owner) * 5)));
+}
+
+/**
+ * What this combination will be hard about (1.6.0, from the 1.4 review): concrete risks beyond the stars, from the
+ * market, the ballpark, the owner, the start and the rules chosen.
+ */
+export function foundingRisks(settings: ExpansionSettings): string[] {
+  const b = budgetFor(settings);
+  const city = cityById(settings.cityId)!;
+  const out: string[] = [];
+  const eok = (n: number) => `${Math.round(n / 10000)}억`;
+  const foreign = Math.round((OFFSEASON.foreign.newReserveUSD * 3 + KBO_2026.foreign.asiaQuotaCapUSD) * MANWON_PER_USD);
+  out.push(`외국인 3명과 아시아쿼터 1명 몫으로 연봉 예산에서 약 ${eok(foreign)}을 남겨 두어야 합니다 (예산 ${eok(b.payrollBudget)} 중 ${Math.round((foreign / b.payrollBudget) * 100)}%). FA에 다 쓰면 외국인을 못 채웁니다.`);
+  if (city.market < 50) out.push(`시장 규모 ${city.market}: 관중·굿즈·광고 수입이 리그 하위권이라 해마다 운영 적자가 큽니다. 모기업의 재정 목표를 맞추기 어렵습니다.`);
+  else if (city.market >= 75) out.push(`시장 규모 ${city.market}: 수입은 넉넉하지만 ${city.competition}.`);
+  const seats = settings.stadium === 'existing' ? city.stadium.seats : null;
+  if (seats != null && seats < 10_000) out.push(`${city.stadium.name} ${seats.toLocaleString('ko-KR')}석: 매진돼도 입장 수입 상한이 낮습니다. 증축이나 신축 전까지 관중 목표가 수입을 막습니다.`);
+  if (settings.stadium !== 'existing') out.push(`신축 구장은 ${STADIUM_PLANS[settings.stadium].opens}년에 열립니다. 그때까지 ${city.stadium.name}을 쓰고, 신축 몫으로 연봉 예산이 5억 늘어납니다.`);
+  if (settings.parentType === 'conglomerate') out.push('대기업 모기업: 1군 3년째부터 7위, 5년째부터 5위 안을 바랍니다. 성적 비중이 커서 하위권이 이어지면 신뢰도가 빠르게 떨어집니다.');
+  if (settings.parentType === 'midsize') out.push('강소·중견기업: 재정 목표의 비중이 가장 큽니다. 적자를 줄이면 지원이 늘지만 큰 FA 계약은 부담입니다.');
+  if (settings.parentType === 'namingRights') out.push('명명권 스폰서: 지원금이 가장 적고, 계약이 끝날 때마다 스폰서(와 구단명)가 바뀔 수 있습니다. 드물게 창단 투자자와 지분 분쟁이 생깁니다.');
+  if (settings.parentType === 'citizen') out.push('시민구단: 시의회가 해마다 예산을 심사하고, 4년마다 시장 선거로 지원이 흔들립니다. 적자가 크면 감사와 예산 삭감이 옵니다. 대신 팬 충성도가 높습니다.');
+  out.push(settings.promotion === 'immediate' ? '바로 1군: 첫 겨울에 특별지명·FA·외국인으로 한꺼번에 전력을 만들어야 합니다. 첫 시즌은 하위권이 보통입니다.' : '퓨처스 1년: 2027년에 신인을 키울 시간이 있지만 1군 데뷔가 한 해 늦습니다.');
+  if (settings.firing) out.push(`해임 있음: 신뢰도가 ${PARENT.fireBelow} 아래로 떨어진 겨울에 해임됩니다 (1군 3년째부터${settings.scenario === 'comeback' ? ', 재기 시나리오는 2년째부터' : ''}).`);
+  if (settings.difficulty === 'hard') out.push('어려움: 예산이 15% 적고, 트레이드 상대가 더 많이 요구하며, 신뢰도가 더 빨리 떨어집니다.');
+  return out;
 }
 
 const user = (s: LeagueState): UserClub => {
@@ -147,7 +177,8 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
   s.teams.push(team);
   s.rosters[EXPANSION_ID] = emptyRoster();
   const b = budgetFor(settings);
-  s.user = { teamId: EXPANSION_ID, settings, fund: b.fund, payrollBudget: b.payrollBudget, firstTeamYear, ledger: [], support: Math.round(baseSupport(settings.parentType) * DIFFICULTY_MONEY[settings.difficulty]), trust: PARENT.startTrust, budgetScale: 1 };
+  s.user = { teamId: EXPANSION_ID, settings, fund: b.fund, payrollBudget: b.payrollBudget, firstTeamYear, ledger: [], support: Math.round(baseSupport(settings.parentType) * DIFFICULTY_MONEY[settings.difficulty] * supportFactor(settings)), trust: scenarioDef(settings.scenario)?.owner?.startTrust ?? PARENT.startTrust, budgetScale: 1 };
+  if (settings.scenario) s.user.scenario = { status: 'active' };
   // A citizen club is founded by the mayor elected in June 2026 (parent.ts).
   if (settings.parentType === 'citizen') s.user.mayor = electMayor(s, 2026);
   spend(s, 'KBO 가입금', b.entryFee, true);
@@ -275,11 +306,14 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       // The March tournament's squad (V0.12), then the camp plans.
       return nextNationalDecision(s, marchEvents(next)) ?? campDecision(s);
     case 'freeAgency': {
+      if (isFantasyWinter(s, o.year)) return null;
       // Club options on free-agent deals that end now, before the market opens (the market itself runs in the step).
       const due = clubOptionsDue(s, u.teamId, next);
       return due.length ? { kind: 'faOptions', rows: due.map((p) => ({ id: p.id, years: p.contract!.fa!.extra!.years, annual: p.contract!.fa!.extra!.annual })) } : null;
     }
     case 'special':
+      // None in the fantasy draft's winter (1.6.0): the clubs have just drafted the whole league.
+      if (isFantasyWinter(s, o.year)) return null;
       // Our own special draft in our founding winter; later, the twelfth club's, where we protect our 20.
       if (!entering) return rivalProtectDecision(s, next);
       return { kind: 'specialDraft', lists: protectedLists(s, next), protectedCount: EXPANSION_DEFAULTS.specialDraft.protected, fee: EXPANSION_DEFAULTS.specialDraft.feePerPlayer };
@@ -358,6 +392,8 @@ setOffseasonHooks({ begin: yearlyGrant, draftSlots, decide, rookies: rookieBonus
 export type DecisionInput =
   | { kind: 'tryout'; ids: PlayerId[] }
   | { kind: 'draftPick'; id: PlayerId | null } // null: let the scouts pick
+  /** 판타지 드래프트 (1.6.0): a player, or null for the scouts' pick; `autoUntil` hands our picks to the scouts through that round. */
+  | { kind: 'fantasyPick'; id: PlayerId | null; autoUntil?: number }
   | { kind: 'specialDraft'; picks: Record<TeamId, PlayerId> }
   | { kind: 'released'; ids: PlayerId[] }
   /** `offers`: what we offer each (1.3.0; his ask within the cap when missing). */
@@ -388,6 +424,13 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       const dd = d as Extract<Decision, { kind: 'tryout' | 'released' }>;
       if (input.ids.some((id) => !dd.candidates.includes(id))) return '명단에 없는 선수입니다.';
       if (input.ids.length > dd.max) return `최대 ${dd.max}명까지 계약할 수 있습니다.`;
+      return null;
+    }
+    case 'fantasyPick': {
+      const f = s.offseason?.fantasy;
+      if (!f) return '판타지 드래프트 중이 아닙니다.';
+      if (input.id && !f.pool.includes(input.id)) return '이미 지명됐거나 명단에 없는 선수입니다.';
+      if (input.autoUntil != null && (!Number.isInteger(input.autoUntil) || input.autoUntil < 1)) return '맡길 라운드를 고르세요.';
       return null;
     }
     case 'draftPick': {
@@ -439,7 +482,7 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
         fees += Math.round(t.fee * MANWON_PER_USD);
       }
       if (input.ids.length && payroll > u.payrollBudget) return '연봉 예산을 넘습니다.';
-      if (fees > u.fund) return '이적료를 낼 구단 자금이 부족합니다.';
+      if (fees > 0 && fees > u.fund) return '이적료를 낼 구단 자금이 부족합니다.';
       return null;
     }
   }
@@ -472,6 +515,13 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
       const draft = s.offseason!.draft!;
       const p = input.id ? s.players[input.id]! : aiDraftChoice(s, draft, u.teamId, draft.next + 1)!;
       makePick(s, draft, p);
+      break;
+    }
+    case 'fantasyPick': {
+      const f = s.offseason!.fantasy!;
+      if (input.autoUntil) f.autoUntil = input.autoUntil;
+      const p = input.id ? s.players[input.id]! : aiFantasyChoice(s, f, u.teamId);
+      if (p) makeFantasyPick(s, f, p);
       break;
     }
     case 'specialDraft': {
@@ -611,6 +661,8 @@ export function autoDecision(s: LeagueState): DecisionInput | null {
       return { kind: 'tryout', ids: best(d.candidates, 12) };
     case 'draftPick':
       return { kind: 'draftPick', id: null };
+    case 'fantasyPick':
+      return { kind: 'fantasyPick', id: null };
     case 'released':
       return { kind: 'released', ids: best(d.candidates, Math.min(d.max, 5)) };
     case 'specialDraft': {

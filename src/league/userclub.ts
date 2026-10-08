@@ -49,6 +49,7 @@ import { lifeWinter } from './life';
 import { autoNational, marchEvents, nextNationalDecision, novemberEvents, resolveNational } from './national';
 import { autoScandal, resolveScandal } from './scandals';
 import { autoDispute, resolveDispute } from './dispute';
+import { autoMeddle, resolveMeddle, scenarioWinter, supportFactor } from './scenarios';
 import { canRelease, releasePlayer } from './trade';
 
 /** Difficulty scales the owner's money. */
@@ -92,7 +93,9 @@ export type AnnualInput =
   /** The club's answer to a disciplined player (V0.12). */
   | { kind: 'scandal'; answer: 'release' | 'extra' | 'none' }
   /** Settle with the investor or fight (V0.12). */
-  | { kind: 'dispute'; answer: 'settle' | 'fight' };
+  | { kind: 'dispute'; answer: 'settle' | 'fight' }
+  /** Obey the owner or not (1.6.0). */
+  | { kind: 'meddle'; answer: 'obey' | 'refuse' };
 
 /** The club's answer to each player: his ask, the club's merit figure, last year's pay, or a multi-year deal. */
 export type SalaryChoice = 'ask' | 'merit' | 'freeze' | 'extension';
@@ -183,11 +186,13 @@ export function yearlyGrant(s: LeagueState) {
     note(u, year, `모기업 평가: ${ev.lines.map((l) => `${l.label} ${l.ok ? '달성' : '미달'}`).join(' · ')} → 내년 예산 ${ev.change >= 0 ? '+' : ''}${Math.round(ev.change * 100)}%, 신뢰도 ${Math.round(ev.trust)}`);
     ownerAlert(s, year, ev);
   }
+  // A scenario's goal is judged after the owner's verdict (1.6.0).
+  scenarioWinter(s, year);
   if (year < 2027) return; // the founding fund covers the first winter
   const event = ownerEvents(s, year);
   const k = DIFFICULTY_MONEY[u.settings.difficulty];
   const b = nextBudget(
-    { support: baseSupport(u.settings.parentType) * k, payroll: (budgetFor(u.settings).payrollBudget * salaryCapFor(next)) / salaryCapFor(2027) },
+    { support: baseSupport(u.settings.parentType) * k * supportFactor(u.settings), payroll: (budgetFor(u.settings).payrollBudget * salaryCapFor(next)) / salaryCapFor(2027) },
     u.budgetScale ?? 1,
     event,
   );
@@ -354,6 +359,8 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
       return ['release', 'extra', 'none'].includes(input.answer) ? null : '대응을 고르세요.';
     case 'dispute':
       return ['settle', 'fight'].includes(input.answer) ? null : '대응을 고르세요.';
+    case 'meddle':
+      return ['obey', 'refuse'].includes(input.answer) ? null : '대응을 고르세요.';
     case 'returnee': {
       const dd = d as Extract<Decision, { kind: 'returnee' }>;
       if (input.ids.some((id) => !dd.rows.some((r) => r.id === id))) return '명단에 없는 선수입니다.';
@@ -557,6 +564,9 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
     case 'dispute':
       resolveDispute(s, d as Extract<Decision, { kind: 'dispute' }>, input.answer, year);
       return null;
+    case 'meddle':
+      resolveMeddle(s, d as Extract<Decision, { kind: 'meddle' }>, input.answer);
+      return null;
     case 'scandal': {
       // The release needs the game not to be waiting on this decision any more.
       s.pending = null;
@@ -737,6 +747,8 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
       return { kind: 'scandal', answer: autoScandal(d) };
     case 'dispute':
       return { kind: 'dispute', answer: autoDispute() };
+    case 'meddle':
+      return { kind: 'meddle', answer: autoMeddle(s, d) };
     case 'retire':
       // Ask the ones who can still help: a regular's grade, a fair chance to say yes.
       return { kind: 'retire', ids: d.rows.filter((r) => s.players[r.id]!.scouting.current >= 50 && r.chance >= 0.3).map((r) => r.id) };
@@ -812,7 +824,7 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
 }
 
 export const isAnnual = (kind: Decision['kind']) =>
-  ['military', 'rookieBonus', 'development', 'camp', 'faRound', 'faOptions', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting', 'returnee', 'sponsor', 'staff', 'retire', 'national', 'scandal', 'dispute'].includes(kind);
+  ['military', 'rookieBonus', 'development', 'camp', 'faRound', 'faOptions', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting', 'returnee', 'sponsor', 'staff', 'retire', 'national', 'scandal', 'dispute', 'meddle'].includes(kind);
 
 // ── Salary talks ─────────────────────────────────────────────────────────────────────────────────
 
