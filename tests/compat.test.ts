@@ -13,7 +13,7 @@ import { parseSave } from '../src/save/format';
 
 const load = (version: string) => parseSave(gunzipSync(readFileSync(new URL(`./fixtures/save-${version}.json.gz`, import.meta.url))).toString('utf8'));
 
-describe.each(['0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0', '1.2.0', '1.3.0'])('a %s save', (version) => {
+describe.each(['0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0', '1.2.0', '1.3.0', '1.4.0'])('a %s save', (version) => {
   it('loads, carried forward to the current rules when they changed', () => {
     const save = load(version);
     if (version === SIM_VERSION) expect(save.migratedFrom).toBeUndefined();

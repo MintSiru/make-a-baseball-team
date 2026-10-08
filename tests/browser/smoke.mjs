@@ -226,7 +226,7 @@ try {
   await page.getByRole('heading', { name: '2026년, KBO 11번째 구단 창단' }).waitFor();
   check((await page.locator('section[aria-labelledby="ng-city"] .choice').count()) >= 10, 'candidate cities listed');
   // 1.6.0: scenarios fix some conditions and lock them; going back to a free founding frees them again.
-  check((await page.getByRole('radiogroup', { name: '시나리오' }).getByRole('radio').count()) === 6, 'five scenarios beside the free founding');
+  check((await page.getByRole('radiogroup', { name: '시나리오' }).getByRole('radio').count()) === 11, 'ten scenarios beside the free founding');
   await page.getByRole('radio', { name: /돌격대의 귀환/ }).click();
   check((await page.getByLabel('구단명').inputValue()) === '쌍방울 레이더스' && (await page.getByLabel('구단명').isDisabled()), 'a scenario fixes and locks the club name');
   check(((await page.locator('.scenario-brief').textContent()) ?? '').includes('목표'), 'the scenario tells its story and goal');

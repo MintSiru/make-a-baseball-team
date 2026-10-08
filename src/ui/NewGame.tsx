@@ -75,6 +75,13 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
     if (before?.short) setShort('');
     if (before?.parentName) setParentName('');
     if (before?.cityId && !CITIES.some((c) => c.id === before.cityId)) setCityId('ulsan');
+    // Its other conditions go back to where a new form starts.
+    if (before?.parentType) setParentType('conglomerate');
+    if (before?.difficulty) setDifficulty('normal');
+    if (before?.firing != null) setFiring(false);
+    if (before?.promotion) setPromotion('afterFutures');
+    if (before?.tutorial != null) setGuide(true);
+    if (before?.autoPrep != null) setAutoPrep(false);
     setScenario(id);
     const f = scenarioDef(id)?.fixed;
     if (!f) return;
