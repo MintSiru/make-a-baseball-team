@@ -408,7 +408,10 @@ function formatKey(lc: Target, key: string, values: Values | undefined, translat
   const vs: Record<string, unknown> = {};
   for (const [name, v] of Object.entries(values ?? {})) vs[name] = !translated && typeof v === 'string' ? translateText(v, lc, 1, name) : v;
   // Read back from stored text, an amount param holds a number; anything else means the wrong pattern.
-  if (translated) for (const name of Object.keys(unitsOf(key).units)) if (vs[name] != null && vs[name] !== '' && numberOf(vs[name]) == null) return null;
+  // (만 alone may be the particle "only", so only the unmistakable units count.)
+  if (translated)
+    for (const [name, unit] of Object.entries(unitsOf(key).units))
+      if (unit !== 'man' && unit !== 'manCount' && vs[name] != null && vs[name] !== '' && numberOf(vs[name]) == null) return null;
   if (lc === 'en') {
     const { units, combos } = unitsOf(key);
     for (const [a, b] of combos) {
@@ -496,8 +499,21 @@ function countText(s: string, lc: Target): string | null {
   return lc === 'ja' && m[2] === '명' ? `${m[1]}人` : m[1]!;
 }
 
+/** Exact resource text; a quoted sentence often drops its final period ("할 말은 별로 없습니다"). */
+function exact(s: string, lc: Target): string | null {
+  const ix = indexOf(lc).exact;
+  const n = norm(s);
+  const hit = ix.get(n);
+  if (hit != null) return hit;
+  if (/[가-힣]$/.test(n)) {
+    const withStop = ix.get(n + '.');
+    if (withStop != null) return withStop.replace(/[.。]$/, '');
+  }
+  return null;
+}
+
 function exactOrName(s: string, lc: Target): string | null {
-  return indexOf(lc).exact.get(norm(s)) ?? moneyText(s, lc) ?? countText(s, lc) ?? personName(s, lc);
+  return exact(s, lc) ?? moneyText(s, lc) ?? countText(s, lc) ?? personName(s, lc);
 }
 
 function translateCore(s: string, lc: Target, depth: number): string | null {
