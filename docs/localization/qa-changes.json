@@ -1168,5 +1168,257 @@
   "reason": "Katakana consistency: プロバイダー (long vowel, as in the settings label)",
   "severity": "minor",
   "category": "consistency"
+ },
+ {
+  "key": "league.views.recordRoom.season.9162d3a3",
+  "locale": "en",
+  "before": "home runs",
+  "after": "Home Runs",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.views.recordRoom.season.1822db88",
+  "locale": "en",
+  "before": "hits",
+  "after": "Hits",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.views.recordRoom.season.3b1908b7",
+  "locale": "en",
+  "before": "wins",
+  "after": "Wins",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.views.recordRoom.season.a3fa83d2",
+  "locale": "en",
+  "before": "saves",
+  "after": "Saves",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.views.recordRoom.career.9162d3a3",
+  "locale": "en",
+  "before": "home runs",
+  "after": "Home Runs",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.views.recordRoom.career.1822db88",
+  "locale": "en",
+  "before": "hits",
+  "after": "Hits",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.views.recordRoom.career.3b1908b7",
+  "locale": "en",
+  "before": "wins",
+  "after": "Wins",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.views.recordRoom.career.a3fa83d2",
+  "locale": "en",
+  "before": "saves",
+  "after": "Saves",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.views.pitching.title.90e5e4d2",
+  "locale": "en",
+  "before": "Victory",
+  "after": "Wins",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases); 승리 here is the wins leaderboard, not \"Victory\"",
+  "severity": "major",
+  "category": "style"
+ },
+ {
+  "key": "league.views.pitching.title.a3fa83d2",
+  "locale": "en",
+  "before": "saves",
+  "after": "Saves",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.poststats.boards.1822db88",
+  "locale": "en",
+  "before": "hits",
+  "after": "Hits",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.poststats.boards.9162d3a3",
+  "locale": "en",
+  "before": "home runs",
+  "after": "Home Runs",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.poststats.boards.3b1908b7",
+  "locale": "en",
+  "before": "wins",
+  "after": "Wins",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.poststats.boards.a3fa83d2",
+  "locale": "en",
+  "before": "saves",
+  "after": "Saves",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.views.careerHighs.out.3b1908b7",
+  "locale": "en",
+  "before": "wins",
+  "after": "Wins",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.views.careerHighs.out.a3fa83d2",
+  "locale": "en",
+  "before": "saves",
+  "after": "Saves",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.views.careerHighs.out.1822db88",
+  "locale": "en",
+  "before": "hits",
+  "after": "Hits",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.views.careerHighs.out.9162d3a3",
+  "locale": "en",
+  "before": "home runs",
+  "after": "Home Runs",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.awards.computeAwards.9162d3a3",
+  "locale": "en",
+  "before": "home runs",
+  "after": "Home Runs",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.awards.computeAwards.1822db88",
+  "locale": "en",
+  "before": "hits",
+  "after": "Hits",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.awards.computeAwards.a3fa83d2",
+  "locale": "en",
+  "before": "saves",
+  "after": "Saves",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.views.batting.title.9162d3a3",
+  "locale": "en",
+  "before": "home runs",
+  "after": "Home Runs",
+  "reason": "Leaderboard/record label: Title Case like the other labels in the same list (Holds, Strikeouts, Stolen Bases)",
+  "severity": "minor",
+  "category": "style"
+ },
+ {
+  "key": "league.gamedetail.dEC.s.a3fa83d2",
+  "locale": "en",
+  "before": "saves",
+  "after": "Save",
+  "reason": "Pitcher decision next to Win/Loss: singular Save/Hold",
+  "severity": "minor",
+  "category": "baseball-term"
+ },
+ {
+  "key": "league.gamedetail.dEC.h.9329045a",
+  "locale": "en",
+  "before": "Holds",
+  "after": "Hold",
+  "reason": "Pitcher decision next to Win/Loss: singular Save/Hold",
+  "severity": "minor",
+  "category": "baseball-term"
+ },
+ {
+  "key": "ui.manual.sCREENS.fcf2f2ae",
+  "locale": "ja",
+  "before": "試合結果、スコアテーブル、一球速報テキスト（最初から再生）。",
+  "after": "試合結果、スコアテーブル、一球速報（最初から再生）。",
+  "reason": "Term consistency: 一球速報 alone, as in the tab label",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "ui.manual.gLOSSARY.ac98c0d6",
+  "locale": "ja",
+  "before": "設定→画面→試合で有効にすると、試合タブで未観戦の自軍のスコアが伏せられ、試合を開くと1回から一球速報テキストが再生されます（その間はスコアテーブルや記事がロックされます）。最後まで再生するか「結果を今すぐ見る」を押すと全開示されます。順位表やニュースには通常通り結果が反映されます。",
+  "after": "設定→画面→試合で有効にすると、試合タブで未観戦の自軍のスコアが伏せられ、試合を開くと1回から一球速報が再生されます（その間はスコアテーブルや記事がロックされます）。最後まで再生するか「結果を今すぐ見る」を押すと全開示されます。順位表やニュースには通常通り結果が反映されます。",
+  "reason": "Term consistency: 一球速報 alone, as in the tab label",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "ui.displaySettings.displayOptions.b16957fc",
+  "locale": "ja",
+  "before": "自球団の試合結果を隠す — 試合タブでスコアを隠し、開くと1回から文字中継が流れます",
+  "after": "自球団の試合結果を隠す — 試合タブでスコアを隠し、開くと1回から一球速報が流れます",
+  "reason": "Term consistency: 문자중계 is 一球速報 in the other 5 strings (the box score tab included)",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "ui.playerPanel.splitTable.19d72883",
+  "locale": "en",
+  "before": "Plate Appearances",
+  "after": "BF",
+  "reason": "Pitcher split header: 상대 타석 is batters faced (MLB abbreviation BF); the column next to it uses abbreviations and the batter version is PA",
+  "severity": "minor",
+  "category": "baseball-term"
  }
 ]
