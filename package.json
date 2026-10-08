@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:browser": "node tests/browser/smoke.mjs",
+    "i18n:check": "node scripts/i18n-check.mjs",
     "port:draftroom": "python3 scripts/port-draftroom.py",
     "golden:write": "tsx scripts/write-league-golden.ts",
     "calibrate": "tsx scripts/calibrate.ts",

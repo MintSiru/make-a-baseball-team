@@ -1,0 +1,410 @@
+{
+  "_note": "Terms checked by scripts/i18n-check.mjs: when the Korean source contains `ko` (or matches `koRe`), the translation should contain one of `en` / `ja` (English: case-insensitive, from a word start). `skipIf` lists Korean contexts where the term means something else. Keep entries unambiguous.",
+  "terms": [
+    {
+      "ko": "단장",
+      "en": [
+        "GM",
+        "general manager",
+        "you",
+        "your"
+      ],
+      "ja": [
+        "GM"
+      ],
+      "skipIf": [
+        "응원단장",
+        "단장님 말씀"
+      ]
+    },
+    {
+      "ko": "감독",
+      "en": [
+        "manager",
+        "managers",
+        "skipper"
+      ],
+      "ja": [
+        "監督"
+      ]
+    },
+    {
+      "ko": "퓨처스리그",
+      "en": [
+        "Futures League",
+        "Futures"
+      ],
+      "ja": [
+        "二軍",
+        "フューチャーズ"
+      ]
+    },
+    {
+      "ko": "육성선수",
+      "en": [
+        "development player",
+        "development players",
+        "development"
+      ],
+      "ja": [
+        "育成選手",
+        "育成"
+      ]
+    },
+    {
+      "ko": "외국인 선수",
+      "en": [
+        "foreign player",
+        "foreign players",
+        "foreign"
+      ],
+      "ja": [
+        "外国人選手",
+        "外国人"
+      ]
+    },
+    {
+      "ko": "평균자책점",
+      "en": [
+        "ERA"
+      ],
+      "ja": [
+        "防御率"
+      ]
+    },
+    {
+      "ko": "타율",
+      "en": [
+        "AVG",
+        "batting average",
+        "average",
+        "hit ",
+        "hitting"
+      ],
+      "ja": [
+        "打率"
+      ],
+      "koRe": "(?<![장출])타율"
+    },
+    {
+      "ko": "출루율",
+      "en": [
+        "OBP",
+        "on-base"
+      ],
+      "ja": [
+        "出塁率"
+      ]
+    },
+    {
+      "ko": "장타율",
+      "en": [
+        "SLG",
+        "slugging"
+      ],
+      "ja": [
+        "長打率"
+      ]
+    },
+    {
+      "ko": "볼넷",
+      "en": [
+        "walk",
+        "walks",
+        "BB",
+        "base on balls"
+      ],
+      "ja": [
+        "四球",
+        "四死球"
+      ]
+    },
+    {
+      "ko": "삼진",
+      "en": [
+        "strikeout",
+        "strikeouts",
+        "struck out",
+        "strike out",
+        "strikes out",
+        "K",
+        "Ks",
+        "fans",
+        "SO",
+        "striking out"
+      ],
+      "ja": [
+        "三振",
+        "奪三振"
+      ]
+    },
+    {
+      "ko": "홀드",
+      "en": [
+        "hold",
+        "holds",
+        "HLD"
+      ],
+      "ja": [
+        "ホールド"
+      ]
+    },
+    {
+      "ko": "세이브",
+      "en": [
+        "save",
+        "saves",
+        "SV"
+      ],
+      "ja": [
+        "セーブ"
+      ],
+      "skipIf": [
+        "블론세이브"
+      ]
+    },
+    {
+      "ko": "블론세이브",
+      "en": [
+        "blown save",
+        "blown saves",
+        "BS"
+      ],
+      "ja": [
+        "セーブ失敗",
+        "ブローンセーブ"
+      ]
+    },
+    {
+      "ko": "끝내기",
+      "en": [
+        "walk-off",
+        "walkoff",
+        "walk off"
+      ],
+      "ja": [
+        "サヨナラ"
+      ]
+    },
+    {
+      "ko": "한국시리즈",
+      "en": [
+        "Korean Series"
+      ],
+      "ja": [
+        "韓国シリーズ"
+      ]
+    },
+    {
+      "ko": "경쟁균형세",
+      "en": [
+        "Competitive Balance Tax",
+        "competitive balance tax",
+        "luxury tax"
+      ],
+      "ja": [
+        "戦力均衡税"
+      ]
+    },
+    {
+      "ko": "샐러리캡",
+      "en": [
+        "salary cap",
+        "cap"
+      ],
+      "ja": [
+        "サラリーキャップ",
+        "上限",
+        "キャップ"
+      ]
+    },
+    {
+      "ko": "포스팅",
+      "en": [
+        "posting",
+        "posted",
+        "post"
+      ],
+      "ja": [
+        "ポスティング"
+      ]
+    },
+    {
+      "ko": "아시아쿼터",
+      "en": [
+        "Asian Player Quota",
+        "Asia quota",
+        "Asian quota",
+        "Asian Quota"
+      ],
+      "ja": [
+        "アジア枠"
+      ]
+    },
+    {
+      "ko": "상무",
+      "en": [
+        "Sangmu"
+      ],
+      "ja": [
+        "尚武"
+      ],
+      "skipIf": [
+        "상무이사"
+      ]
+    },
+    {
+      "ko": "지명타자",
+      "en": [
+        "DH",
+        "designated hitter"
+      ],
+      "ja": [
+        "指名打者",
+        "DH"
+      ]
+    },
+    {
+      "ko": "대타",
+      "en": [
+        "pinch hitter",
+        "pinch-hit",
+        "pinch hit",
+        "pinch-hitter",
+        "PH"
+      ],
+      "ja": [
+        "代打"
+      ],
+      "skipIf": [
+        "대타자"
+      ]
+    },
+    {
+      "ko": "대주자",
+      "en": [
+        "pinch runner",
+        "pinch-runner",
+        "pinch-run",
+        "PR"
+      ],
+      "ja": [
+        "代走"
+      ]
+    },
+    {
+      "ko": "불펜",
+      "en": [
+        "bullpen",
+        "relief",
+        "reliever",
+        "relievers",
+        "pen"
+      ],
+      "ja": [
+        "ブルペン",
+        "救援",
+        "リリーフ",
+        "中継ぎ",
+        "継投"
+      ]
+    },
+    {
+      "ko": "강판",
+      "en": [
+        "pulled",
+        "chased",
+        "knocked out",
+        "lifted",
+        "removed",
+        "exit"
+      ],
+      "ja": [
+        "降板",
+        "KO"
+      ]
+    },
+    {
+      "ko": "계약금",
+      "en": [
+        "signing bonus",
+        "bonus",
+        "bonuses"
+      ],
+      "ja": [
+        "契約金"
+      ]
+    },
+    {
+      "ko": "연봉 조정",
+      "en": [
+        "arbitration"
+      ],
+      "ja": [
+        "調停"
+      ]
+    },
+    {
+      "ko": "보상선수",
+      "en": [
+        "compensation player",
+        "compensation"
+      ],
+      "ja": [
+        "人的補償",
+        "補償選手"
+      ]
+    },
+    {
+      "ko": "2차 드래프트",
+      "en": [
+        "Second Draft"
+      ],
+      "ja": [
+        "2次ドラフト"
+      ]
+    },
+    {
+      "ko": "명예의 전당",
+      "en": [
+        "Hall of Fame"
+      ],
+      "ja": [
+        "殿堂"
+      ]
+    },
+    {
+      "ko": "영구결번",
+      "en": [
+        "retired number",
+        "retired numbers",
+        "retire his number",
+        "retired his number",
+        "number retired",
+        "retirement of",
+        "retired"
+      ],
+      "ja": [
+        "永久欠番"
+      ]
+    },
+    {
+      "ko": "골든글러브",
+      "en": [
+        "Golden Glove"
+      ],
+      "ja": [
+        "ゴールデングラブ"
+      ]
+    },
+    {
+      "ko": "토미존",
+      "en": [
+        "Tommy John"
+      ],
+      "ja": [
+        "トミー・ジョン"
+      ]
+    }
+  ]
+}
