@@ -283,10 +283,13 @@ function buildIndex(lc: Target): Index {
   for (const [id, key, ko, tr] of units) {
     if (!/\{[A-Za-z_]/.test(ko)) {
       if (!tr || !HANGUL.test(ko)) continue;
-      const n = norm(ko);
-      const v = votes.get(n) ?? new Map<string, number>();
-      v.set(tr, (v.get(tr) ?? 0) + 1);
-      votes.set(n, v);
+      // Appended pieces (" · 우리 평가는 …") also as the text after the joiner, which is how they reach the page.
+      for (const [a, b] of [[ko, tr], [ko.replace(/^\s*[,·:;]\s*/, ''), tr.replace(/^\s*[,、·:;：]\s*/, '')]]) {
+        const n = norm(a!);
+        const v = votes.get(n) ?? new Map<string, number>();
+        v.set(b!.trim(), (v.get(b!.trim()) ?? 0) + 1);
+        votes.set(n, v);
+      }
       continue;
     }
     // Pieces meant to be appended (", 관중 {value}명", " · {hld}홀드") also match on their own: the joining
@@ -342,7 +345,7 @@ function buildIndex(lc: Target): Index {
   // One reading per shape: the translation most keys give it (the first on a tie).
   const chosen = new Map<string, string>();
   for (const [src, v] of variants) chosen.set(src, [...v].sort((a, b) => b[1] - a[1])[0]![0]);
-  const usable = (p: Pattern) => !(/^\s/.test(p.source) && p.anchored <= 2) && chosen.get(shape(p.source)) === shape(p.target);
+  const usable = (p: Pattern) => !(/^\s/.test(p.source) && p.anchored <= 1) && chosen.get(shape(p.source)) === shape(p.target);
   for (const [b, list] of buckets) buckets.set(b, list.filter(usable));
   for (const list of buckets.values()) list.sort((a, b) => b.weight - a.weight);
   const exact = new Map<string, string>();
@@ -404,6 +407,8 @@ function formatKey(lc: Target, key: string, values: Values | undefined, translat
   if (!pattern.includes('{')) return pattern;
   const vs: Record<string, unknown> = {};
   for (const [name, v] of Object.entries(values ?? {})) vs[name] = !translated && typeof v === 'string' ? translateText(v, lc, 1, name) : v;
+  // Read back from stored text, an amount param holds a number; anything else means the wrong pattern.
+  if (translated) for (const name of Object.keys(unitsOf(key).units)) if (vs[name] != null && vs[name] !== '' && numberOf(vs[name]) == null) return null;
   if (lc === 'en') {
     const { units, combos } = unitsOf(key);
     for (const [a, b] of combos) {
@@ -501,9 +506,9 @@ function translateCore(s: string, lc: Target, depth: number): string | null {
   if (direct != null) return direct;
   if (PARTICLES.includes(s)) return '';
   // A word or phrase with a particle stuck to it ("김민준은", "두산이", "어깨 관절와순 수술로"): the particle has no
-  // counterpart.
+  // counterpart. 만 after a number is the amount (3,000만), not the particle.
   for (const p of PARTICLES)
-    if (s.length > p.length && s.endsWith(p)) {
+    if (s.length > p.length && s.endsWith(p) && !(p === '만' && /\d$/.test(s.slice(0, -p.length)))) {
       const rest = s.slice(0, -p.length);
       if (kept.has(rest) || !HANGUL.test(rest)) return (lastQuality = 0), rest;
       const tr = rest.includes(' ') ? full(translateText(rest, lc, depth + 1)) : exactOrName(rest, lc);

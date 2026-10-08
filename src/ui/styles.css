@@ -2857,6 +2857,11 @@ button.game-chip {
     min-width: 0;
     flex: 1 1 4.5em;
   }
+  /* English stage names are longer words ("Champion", "Semi-Playoff"): wider boxes, which wrap to a second row
+     instead of pushing the page sideways. */
+  html:lang(en) .bracket-steps li {
+    flex-basis: 6.5em;
+  }
 }
 
 /* 1.4.0: the player page one part at a time */

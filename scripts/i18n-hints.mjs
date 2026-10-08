@@ -16,8 +16,10 @@ export function buildHints(metadata) {
       const h = {};
       if (p.particle) h.ends = p.particle.split('/');
       const e = (p.expression ?? '').trim();
-      const choice = /\?\s*(['"])((?:(?!\1).)*)\1\s*:\s*(['"])((?:(?!\3).)*)\3\s*\)?$/.exec(e);
-      if (choice && !/[`$]/.test(choice[2] + choice[4])) h.one = [choice[2], choice[4]];
+      // A chain of conditions whose every result is a literal: `a ? '이겼다' : b ? '졌다' : '비겼다'`.
+      const results = [...e.matchAll(/[?:]\s*\(?\s*(['"])((?:(?!\1).)*)\1/g)].map((m) => m[2]);
+      const questions = (e.replace(/(['"`])(?:(?!\1).)*\1/g, '').match(/\?(?![.?])/g) ?? []).length;
+      if (questions && results.length === questions + 1 && !/`/.test(e)) h.one = results;
       if (Object.keys(h).length) (hints[key] ??= {})[name] = h;
     }
   }
