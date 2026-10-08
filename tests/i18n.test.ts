@@ -48,6 +48,7 @@ describe('display locale', () => {
     expect(translateFor('ja', '제이크 밀러')).toBe('ジェイク・ミラー');
     // Words that look like names are not names.
     expect(translateFor('en', '정원')).toBe('정원');
+    expect(translateFor('en', '우성허')).toBe('Wu Sheng-Ho');
     registerNames(['이훈']);
     expect(translateFor('en', '이훈')).toMatch(/^Lee /);
   });
@@ -60,6 +61,13 @@ describe('display locale', () => {
     expect(injury).toContain('Kim Tae-min');
     expect(injury).toContain('울산 고래단');
     expect(injury).not.toMatch(/햄스트링|진단/);
+  });
+
+  it('reads play-by-play lines as whole plays, not word by word', () => {
+    registerNames(['최지민', '신경수']);
+    expect(translateFor('en', '최지민: 2루수 땅볼')).toBe('Choi Ji-min: Ground out to second');
+    expect(translateFor('en', '신경수: 내야 안타 · 1점')).toBe('Shin Kyung-soo: Infield single · 1 run');
+    expect(translateFor('ja', '7회초 신경수: 3루수 땅볼')).toBe('7回表 シン・キョンス: 三ゴロ');
   });
 
   it('never shows a half-translated text', () => {

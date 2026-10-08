@@ -46,8 +46,7 @@ export function playText(ev: PlayEvent, key: string, name: (id: string) => strin
         return pick(ev.runs > 0 ? OUTS.filter((x) => x.endsWith('땅볼')) : OUTS, key);
     }
   })();
-  const runs = ev.res !== 'HR' && ev.runs > 0 ? __i18n_k("league.playtext.playText.runs.a221e66d", { runs: ev.runs }) : '';
-  return `${who}: ${what}${runs}`;
+  return ev.res !== 'HR' && ev.runs > 0 ? __i18n_k("league.playtext.playText.7b8ebb4c", { who: who, what: what, runs: ev.runs }) : __i18n_k("league.playtext.playText.ebc0b8c7", { who: who, what: what });
 }
 
 export const halfLabel = (i: number, top: boolean) => __i18n_k("league.playtext.halfLabel.70a465d4", { i: i, value: top ? __i18n_k("league.playtext.halfLabel.3845248e") : __i18n_k("league.playtext.halfLabel.4d65d9d9") });

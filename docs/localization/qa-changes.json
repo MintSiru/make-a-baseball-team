@@ -1429,5 +1429,68 @@
   "reason": "Mistranslation: stray \".AVG\" before the average (the value already starts with a dot: \".AVG .362\"); stat after its value like the ERA line",
   "severity": "major",
   "category": "mistranslation"
+ },
+ {
+  "key": "ui.myClub.myClub.5b9daec2",
+  "locale": "ja",
+  "before": "選手間",
+  "after": "選手一覧",
+  "reason": "Mistranslation: '선수단' as the roster tab is the squad, not 選手間 (that reading is only for 선수단 투표 = 選手間投票 in the All-Star keys, which stay)",
+  "severity": "major",
+  "category": "mistranslation"
+ },
+ {
+  "key": "ui.squad.squad.5b9daec2",
+  "locale": "ja",
+  "before": "選手間",
+  "after": "選手一覧",
+  "reason": "Same as ui.myClub.myClub.5b9daec2 (roster heading)",
+  "severity": "major",
+  "category": "mistranslation"
+ },
+ {
+  "key": "ui.teamRoster.teamRoster.5b9daec2",
+  "locale": "ja",
+  "before": "選手間",
+  "after": "選手一覧",
+  "reason": "Same as ui.myClub.myClub.5b9daec2 (another club's roster)",
+  "severity": "major",
+  "category": "mistranslation"
+ },
+ {
+  "key": "ui.tutorial.rULES.title.5b9daec2",
+  "locale": "ja",
+  "before": "選手間",
+  "after": "選手一覧",
+  "reason": "Same as ui.myClub.myClub.5b9daec2 (help section on the roster)",
+  "severity": "major",
+  "category": "mistranslation"
+ },
+ {
+  "key": "league.playtext.dOUBLES.445b7482",
+  "locale": "en",
+  "before": "Double down left field line",
+  "after": "Double down the left-field line",
+  "reason": "Play-by-play wording (MLB Gameday: 'doubles down the left-field line')",
+  "severity": "minor",
+  "category": "baseball-term"
+ },
+ {
+  "key": "league.playtext.dOUBLES.18052849",
+  "locale": "en",
+  "before": "Double down right field line",
+  "after": "Double down the right-field line",
+  "reason": "Same as league.playtext.dOUBLES.445b7482",
+  "severity": "minor",
+  "category": "baseball-term"
+ },
+ {
+  "key": "league.playtext.tRIPLES.d6447363",
+  "locale": "en",
+  "before": "Triple down right field line",
+  "after": "Triple down the right-field line",
+  "reason": "Same as league.playtext.dOUBLES.445b7482",
+  "severity": "minor",
+  "category": "baseball-term"
  }
 ]

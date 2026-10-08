@@ -3465,12 +3465,12 @@
   "league.playtext.sINGLES.148128da": "Infield single off pitcher",
   "league.playtext.dOUBLES.eec1ec97": "Double to left-center",
   "league.playtext.dOUBLES.1f8e8259": "Double to right-center",
-  "league.playtext.dOUBLES.445b7482": "Double down left field line",
-  "league.playtext.dOUBLES.18052849": "Double down right field line",
+  "league.playtext.dOUBLES.445b7482": "Double down the left-field line",
+  "league.playtext.dOUBLES.18052849": "Double down the right-field line",
   "league.playtext.dOUBLES.4d2e26f9": "Double off the wall",
   "league.playtext.tRIPLES.75bb93d4": "Triple to right-center",
   "league.playtext.tRIPLES.f19577fd": "Triple to left-center",
-  "league.playtext.tRIPLES.d6447363": "Triple down right field line",
+  "league.playtext.tRIPLES.d6447363": "Triple down the right-field line",
   "league.playtext.hOMERS.5498be10": "Home run to left",
   "league.playtext.hOMERS.ba2289a6": "Home run to center",
   "league.playtext.hOMERS.6dfe4c13": "Home run to right",
@@ -3500,7 +3500,6 @@
   "league.playtext.playText.what.54791ecb": "Sacrifice fly to right",
   "league.playtext.playText.what.eb193123": "Sacrifice bunt",
   "league.playtext.playText.what.2716bc95": "Ground ball",
-  "league.playtext.playText.runs.a221e66d": " · {runs, plural, one{# run} other{# runs}}",
   "league.playtext.halfLabel.3845248e": "Top",
   "league.playtext.halfLabel.4d65d9d9": "Bottom",
   "league.playtext.halfLabel.70a465d4": "{value} of the {i, selectordinal, one{#st} two{#nd} few{#rd} other{#th}}",
@@ -6546,5 +6545,7 @@
   "league.ballpark.text.d677ad44": "Unknown construction project.",
   "league.facilities.text.6e081608": "This facility can't be built any further.",
   "save.compress.text.4575e4a3": "This browser can't open compressed save files.",
-  "ui.recovery.text.5e9f6b80": "Unknown error"
+  "ui.recovery.text.5e9f6b80": "Unknown error",
+  "league.playtext.playText.ebc0b8c7": "{who}: {what}",
+  "league.playtext.playText.7b8ebb4c": "{who}: {what} · {runs, plural, one {# run} other {# runs}}"
 }

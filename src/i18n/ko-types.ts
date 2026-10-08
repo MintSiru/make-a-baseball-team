@@ -3501,7 +3501,6 @@ export const koSource = {
   "league.playtext.playText.what.54791ecb": "우익수 희생플라이",
   "league.playtext.playText.what.eb193123": "희생번트",
   "league.playtext.playText.what.2716bc95": "땅볼",
-  "league.playtext.playText.runs.a221e66d": " · {runs}점",
   "league.playtext.halfLabel.3845248e": "초",
   "league.playtext.halfLabel.4d65d9d9": "말",
   "league.playtext.halfLabel.70a465d4": "{i}회{value}",
@@ -6547,5 +6546,7 @@ export const koSource = {
   "league.ballpark.text.d677ad44": "알 수 없는 공사입니다.",
   "league.facilities.text.6e081608": "더 지을 수 없는 시설입니다.",
   "save.compress.text.4575e4a3": "이 브라우저는 압축된 진행 파일을 열 수 없습니다.",
-  "ui.recovery.text.5e9f6b80": "알 수 없는 오류"
+  "ui.recovery.text.5e9f6b80": "알 수 없는 오류",
+  "league.playtext.playText.ebc0b8c7": "{who}: {what}",
+  "league.playtext.playText.7b8ebb4c": "{who}: {what} · {runs}점"
 } as const;

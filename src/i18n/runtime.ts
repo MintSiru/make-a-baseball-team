@@ -168,15 +168,16 @@ function personName(s: string, lc: Target): string | null {
       if (g && (given.length >= 2 || isKnown)) return korean(sur, given, g, lc);
       if (!g && isKnown && given.length <= 2) return korean(sur, given, undefined, lc);
     }
-    // Taiwanese names run together ("린자웨이"): family name, then the given name (romanized when not listed).
-    if (isKnown)
-      for (const len of [1, 2]) {
-        const f = taiwan.family.get(s.slice(0, len));
-        if (!f || s.length === len) continue;
-        const g = taiwan.given.get(s.slice(len));
-        const given = g ? g[c] : romanize(s.slice(len), lc);
-        return lc === 'en' ? `${f[c]} ${given}` : `${f[c]}・${given}`;
-      }
+    // Taiwanese names run together ("린자웨이"): family name, then the given name (romanized when not listed, for
+    // the game's own people only; both parts listed is a name wherever it shows, as on the foreign market).
+    for (const len of [1, 2]) {
+      const f = taiwan.family.get(s.slice(0, len));
+      if (!f || s.length === len) continue;
+      const g = taiwan.given.get(s.slice(len));
+      if (!g && !isKnown) continue;
+      const given = g ? g[c] : romanize(s.slice(len), lc);
+      return lc === 'en' ? `${f[c]} ${given}` : `${f[c]}・${given}`;
+    }
   }
   // A foreign player's family name alone (the lineup card), when the game has such a player.
   if (knownFamily.has(s))
@@ -530,6 +531,12 @@ function translateCore(s: string, lc: Target, depth: number): string | null {
       const tr = rest.includes(' ') ? full(translateText(rest, lc, depth + 1)) : exactOrName(rest, lc);
       if (tr != null) return (lastQuality = rest.includes(' ') ? qualityOf(rest, lc) : 0), tr;
     }
+  // A label before a colon ("김민준: 좌전 안타" split at its space): the label, then the colon.
+  const colon = /^(.+?)\s?([:：])$/.exec(s);
+  if (colon && HANGUL.test(colon[1]!)) {
+    const tr = full(translateText(colon[1]!, lc, depth + 1));
+    if (tr != null) return (lastQuality = qualityOf(colon[1]!, lc)), tr + colon[2];
+  }
   if (depth > 40) return null;
   const viaPattern = matchPattern(s, lc, depth);
   if (viaPattern != null) return (lastQuality = 1), viaPattern;
