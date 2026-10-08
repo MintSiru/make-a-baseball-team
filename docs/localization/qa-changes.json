@@ -1,0 +1,1172 @@
+[
+ {
+  "key": "league.advice.adviceFor.picks.91e7eb3c",
+  "locale": "en",
+  "before": " · Guaranteed {value} × $10K",
+  "after": " · Guaranteed {value}",
+  "reason": "Amount param ({value}만 달러): the runtime now shows the dollar amount ($400K); \"× $10K\" left the unit math to the player",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "league.foreign.usd.f2e37495",
+  "locale": "en",
+  "before": "{value} × $10K",
+  "after": "{value}",
+  "reason": "Amount param ({value}만 달러) is formatted by the runtime as $400K",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "league.foreigncap.settleForeignCap.usd.f2e37495",
+  "locale": "en",
+  "before": "{value} × $10K",
+  "after": "{value}",
+  "reason": "Amount param ({value}만 달러) is formatted by the runtime as $400K",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "ui.manual.usd.f2e37495",
+  "locale": "en",
+  "before": "${value}0K",
+  "after": "{value}",
+  "reason": "\"$\" + value + \"0K\" only works for whole numbers (40 → $400K; 1,200 → $1,2000K); the runtime formats the amount",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "ui.manual.gLOSSARY.0907383f",
+  "locale": "en",
+  "before": "A fictional event held annually on {number}/{number2} where top prospects ranked inside #{invited} are tested on velocity, spin rate, control, sprint speed, exit velocity, arm strength, and plate discipline. Public ratings across all clubs update to reflect test metrics. Afterwards, your club may invite up to {workouts} prospects for private workouts (₩{workoutCost}0K per player), allowing your scouts to pinpoint abilities and hidden attributes with far greater precision.",
+  "after": "A fictional event held annually on {number}/{number2} where top prospects ranked inside #{invited} are tested on velocity, spin rate, control, sprint speed, exit velocity, arm strength, and plate discipline. Public ratings across all clubs update to reflect test metrics. Afterwards, your club may invite up to {workouts} prospects for private workouts ({workoutCost} per player), allowing your scouts to pinpoint abilities and hidden attributes with far greater precision.",
+  "reason": "Same \"0K\" suffix problem (a value with a comma gives ₩1,0000K); the runtime formats the 만 원 amount",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "ui.newGame.newGame.e6bc2339",
+  "locale": "en",
+  "before": "Pop. {value}0K · Market {market}",
+  "after": "Pop. {value} · Market {market}",
+  "reason": "Population in 만: \"{value}0K\" gives \"1,1000K\" for 1,100만; the runtime shows 11M",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "ui.office.office.1310da3f",
+  "locale": "en",
+  "before": "Relative to league average ticket yield (₩{value}). Raising prices increases per-ticket yield but lowers attendance, reducing concessions and merchandise sales; lowering prices has the opposite effect. Consistently sold-out clubs experience less empty-seat impact when raising prices. Takes effect immediately.",
+  "after": "Relative to league average ticket yield ({value}). Raising prices increases per-ticket yield but lowers attendance, reducing concessions and merchandise sales; lowering prices has the opposite effect. Consistently sold-out clubs experience less empty-seat impact when raising prices. Takes effect immediately.",
+  "reason": "Won amount param: the runtime adds the ₩ sign (avoid ₩₩)",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "ui.office.office.c586fe06",
+  "locale": "en",
+  "before": "{value}% · ₩{value2}",
+  "after": "{value}% · {value2}",
+  "reason": "Won amount param: the runtime adds the ₩ sign",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "ui.playerPanel.playerPanel.c7b1ead1",
+  "locale": "en",
+  "before": "Internal Club Drug Test (₩{inspectCost}0K)",
+  "after": "Internal Club Drug Test ({inspectCost})",
+  "reason": "\"0K\" suffix breaks for values with commas; the runtime formats the 만 원 amount",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "ui.format.moneyShort.cd1481f0",
+  "locale": "en",
+  "before": "₩{value}0K",
+  "after": "{value}",
+  "reason": "\"₩{value}0K\" with value \"3,000\" read ₩3,0000K; the runtime formats the 만 원 amount (₩30M)",
+  "severity": "critical",
+  "category": "money"
+ },
+ {
+  "key": "ui.format.money.cd1481f0",
+  "locale": "en",
+  "before": "₩{value}0K",
+  "after": "{value}",
+  "reason": "\"₩{value}0K\" with value \"3,000\" read ₩3,0000K; the runtime formats the 만 원 amount (₩30M)",
+  "severity": "critical",
+  "category": "money"
+ },
+ {
+  "key": "ui.format.money.a0e34170",
+  "locale": "en",
+  "before": "{eok} ₩{value}0K",
+  "after": "{eok}{value}",
+  "reason": "\"1억 7,500만\" is one amount: the runtime puts ₩175M in {eok} and empties {value} (was \"1 ₩7,5000K\")",
+  "severity": "critical",
+  "category": "money"
+ },
+ {
+  "key": "league.fa.eok.a1ab0842",
+  "locale": "en",
+  "before": "{e} {value}",
+  "after": "{e}{value}",
+  "reason": "One amount in two params ({e}억 {value}만): shown as ₩175M without a stray space",
+  "severity": "minor",
+  "category": "money"
+ },
+ {
+  "key": "league.userclub.money.a0e34170",
+  "locale": "en",
+  "before": "{eok} {value}",
+  "after": "{eok}{value}",
+  "reason": "One amount in two params ({eok}억 {value}만): shown as ₩175M without a stray space",
+  "severity": "minor",
+  "category": "money"
+ },
+ {
+  "key": "league.movenews.won.39a51a17",
+  "locale": "en",
+  "before": "{value}{value2} KRW",
+  "after": "{value}{value2}",
+  "reason": "The runtime formats won amounts with ₩; \"KRW\" doubled the unit",
+  "severity": "minor",
+  "category": "money"
+ },
+ {
+  "key": "draftroom.scouting.needLine.d447d0f3",
+  "locale": "en",
+  "before": "Just the '{label}' type we were looking for. {label2} at {value} {value2} the benchmark ({target}).",
+  "after": "Just the \"{label}\" type we were looking for. {label2} at {value} {value2} the benchmark ({target}).",
+  "reason": "ICU treats '{…}' as quoted literal text: the page showed {label} instead of the type name",
+  "severity": "critical",
+  "category": "placeholder"
+ },
+ {
+  "key": "draftroom.scouting.needLine.b6a1d748",
+  "locale": "en",
+  "before": "Not quite a '{label}': {label2}{value} is {value2} points short.",
+  "after": "Not quite a \"{label}\": {label2}{value} is {value2} points short.",
+  "reason": "ICU treats '{…}' as quoted literal text: the page showed {label} instead of the type name",
+  "severity": "critical",
+  "category": "placeholder"
+ },
+ {
+  "key": "draftroom.voices.install.scoutAdvice.03dac186",
+  "locale": "en",
+  "before": "He fits the '{label}' type we've been looking for. {label2} {value}.",
+  "after": "He fits the \"{label}\" type we've been looking for. {label2} {value}.",
+  "reason": "ICU treats '{…}' as quoted literal text: the page showed {label} instead of the type name",
+  "severity": "critical",
+  "category": "placeholder"
+ },
+ {
+  "key": "draftroom.voices.install.scoutAdvice.79734b27",
+  "locale": "en",
+  "before": "As a '{label}', {label2} ({value}){value2} still falls short of the benchmark ({target}).",
+  "after": "As a \"{label}\", {label2} ({value}){value2} still falls short of the benchmark ({target}).",
+  "reason": "ICU treats '{…}' as quoted literal text: the page showed {label} instead of the type name",
+  "severity": "critical",
+  "category": "placeholder"
+ },
+ {
+  "key": "league.rival.foundRival.title.ef34c9f3",
+  "locale": "en",
+  "before": "12th Club '{name}' Expansion Approved",
+  "after": "12th Club \"{name}\" Expansion Approved",
+  "reason": "ICU treats '{…}' as quoted literal text: the page showed {name} instead of the club name",
+  "severity": "critical",
+  "category": "placeholder"
+ },
+ {
+  "key": "league.rival.foundRival.body.b2c5a0f3",
+  "locale": "en",
+  "before": "The club announced a '{label}' operational model, and named {name} ({label2}) as inaugural manager.",
+  "after": "The club announced a \"{label}\" operational model, and named {name} ({label2}) as inaugural manager.",
+  "reason": "ICU treats '{…}' as quoted literal text: the page showed {label} instead of the model name",
+  "severity": "critical",
+  "category": "placeholder"
+ },
+ {
+  "key": "league.parent.sURNAMES.6c0cd2af",
+  "locale": "en",
+  "before": "",
+  "after": "Lee",
+  "reason": "Surname 이 was emptied as if it were the particle 이 (same hash as league.josa.iga); owners' names lost their surname",
+  "severity": "critical",
+  "category": "names"
+ },
+ {
+  "key": "league.parent.sURNAMES.6c0cd2af",
+  "locale": "ja",
+  "before": "",
+  "after": "イ",
+  "reason": "Surname 이 was emptied as if it were the particle 이; owners' names lost their surname",
+  "severity": "critical",
+  "category": "names"
+ },
+ {
+  "key": "league.parent.sURNAMES.c596d452",
+  "locale": "ja",
+  "before": "チュェ",
+  "after": "チェ",
+  "reason": "최 is チェ in the Korean name table (korean-name-labels) and in Japanese media; one rendering",
+  "severity": "minor",
+  "category": "names"
+ },
+ {
+  "key": "draftroom.prospects.schoolHonors.r.2147c880",
+  "locale": "ko/en/ja",
+  "before": "{seed}-school-event-전국 대학대회",
+  "after": "(key removed; literal restored in src/draftroom/prospects.js)",
+  "reason": "RNG seed string extracted as display text: a translation would change the generated players. Restored to the original code; the k() call returned the same string, so generation was unchanged either way",
+  "severity": "critical",
+  "category": "logic-string"
+ },
+ {
+  "key": "draftroom.prospects.schoolHonors.rj.91b38c0c",
+  "locale": "ko/en/ja",
+  "before": "{seed}-school-event-2년제",
+  "after": "(key removed; literal restored in src/draftroom/prospects.js)",
+  "reason": "RNG seed string extracted as display text: a translation would change the generated players. Restored to the original code; the k() call returned the same string, so generation was unchanged either way",
+  "severity": "critical",
+  "category": "logic-string"
+ },
+ {
+  "key": "draftroom.scouting.needLine.b6a1d748",
+  "locale": "en",
+  "before": "Not quite a \"{label}\": {label2}{value} is {value2} points short.",
+  "after": "Not quite a \"{label}\": {label2}{value} is {value2, plural, one {# point} other {# points}} short.",
+  "reason": "English plural: {value2} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "draftroom.season.rEASONS.3400fabd",
+  "locale": "en",
+  "before": "Missed {days} days with an injury. Spent most of the season in rehab.",
+  "after": "Missed {days, plural, one {# day} other {# days}} with an injury. Spent most of the season in rehab.",
+  "reason": "English plural: {days} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "draftroom.season.reasonText.849aa2c6",
+  "locale": "en",
+  "before": " He missed {daysLost} days with an injury.",
+  "after": " He missed {daysLost, plural, one {# day} other {# days}} with an injury.",
+  "reason": "English plural: {daysLost} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "draftroom.writer.amateurFact.8fd19c89",
+  "locale": "en",
+  "before": "{where}, he posted a {value} ERA with {value2} strikeouts over {ip} innings in {games, plural, one{# game} other{# games}}.",
+  "after": "{where}, he posted a {value} ERA with {value2, plural, one {# strikeout} other {# strikeouts}} over {ip, plural, one {# inning} other {# innings}} in {games, plural, one{# game} other{# games}}.",
+  "reason": "English plural: {ip}, {value2} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.allstar.electNews.body.9c0db210",
+  "locale": "en",
+  "before": "Voting has ended, and the Best 12 for the Dream and Nanum All-Stars are set. Including manager's picks, each team has {squad} players. {value}",
+  "after": "Voting has ended, and the Best 12 for the Dream and Nanum All-Stars are set. Including manager's picks, each team has {squad, plural, one {# player} other {# players}}. {value}",
+  "reason": "English plural: {squad} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.alumni.alumniDay.body.fdf55e8b",
+  "locale": "en",
+  "before": "{club} under Manager {name} ran off {run} straight wins. Fans are thrilled, recalling {name2} from his playing days.",
+  "after": "{club} under Manager {name} ran off {run, plural, one {# straight win} other {# straight wins}}. Fans are thrilled, recalling {name2} from his playing days.",
+  "reason": "English plural: {run} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.alumni.alumniDay.title.dcef795b",
+  "locale": "en",
+  "before": "'Legend Magic' Lifts {club} to {run} Straight Wins",
+  "after": "'Legend Magic' Lifts {club} to {run, plural, one {# Straight Win} other {# Straight Wins}}",
+  "reason": "English plural: {run} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.briefing.briefing.facts.3aa05999",
+  "locale": "en",
+  "before": "{games} games, {w}-{l}{value}",
+  "after": "{games, plural, one {# game} other {# games}}, {w}-{l}{value}",
+  "reason": "English plural: {games} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.briefing.briefing.facts.5683c8af",
+  "locale": "en",
+  "before": "{rank, selectordinal, one{#st} two{#nd} few{#rd} other{#th}} · within about {value} wins of 5th-place {short}",
+  "after": "{rank, selectordinal, one{#st} two{#nd} few{#rd} other{#th}} · within about {value, plural, one {# win} other {# wins}} of 5th-place {short}",
+  "reason": "English plural: {value} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.combine.checkWorkout.35a057be",
+  "locale": "en",
+  "before": "The limit is {workouts} players per year.",
+  "after": "The limit is {workouts, plural, one {# player} other {# players}} per year.",
+  "reason": "English plural: {workouts} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.entry.canMove.65a191aa",
+  "locale": "en",
+  "before": "Keep at least {mIN_FIRST_TEAM} players on the first team.",
+  "after": "Keep at least {mIN_FIRST_TEAM, plural, one {# player} other {# players}} on the first team.",
+  "reason": "English plural: {mIN_FIRST_TEAM} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.entry.canMove.80107525",
+  "locale": "en",
+  "before": "The first-team roster is full at {firstTeamSize} players. Remove one first.",
+  "after": "The first-team roster is full at {firstTeamSize, plural, one {# player} other {# players}}. Remove one first.",
+  "reason": "English plural: {firstTeamSize} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.entry.canMove.a9a51986",
+  "locale": "en",
+  "before": "A player can't be re-registered until {rEREGISTER_DAYS} days after being removed (from {addDays}).",
+  "after": "A player can't be re-registered until {rEREGISTER_DAYS, plural, one {# day} other {# days}} after being removed (from {addDays}).",
+  "reason": "English plural: {rEREGISTER_DAYS} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.entry.canRegister.c85619fe",
+  "locale": "en",
+  "before": "The registered roster is full at {rosterLimit} players.",
+  "after": "The registered roster is full at {rosterLimit, plural, one {# player} other {# players}}.",
+  "reason": "English plural: {rosterLimit} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.expansion.checkDecision.3c960698",
+  "locale": "en",
+  "before": "You can sign up to {max} players.",
+  "after": "You can sign up to {max, plural, one {# player} other {# players}}.",
+  "reason": "English plural: {max} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.expansion.checkDecision.a1e081c4",
+  "locale": "en",
+  "before": "To meet the registered roster limit of {limit}, you need to cut {release} players.",
+  "after": "To meet the registered roster limit of {limit}, you need to cut {release, plural, one {# player} other {# players}}.",
+  "reason": "English plural: {release} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.fa.checkRound.db8686c6",
+  "locale": "en",
+  "before": "You can sign up to {userLimit} free agents from other clubs this winter ({value} spots left).",
+  "after": "You can sign up to {userLimit} free agents from other clubs this winter ({value, plural, one {# spot} other {# spots}} left).",
+  "reason": "English plural: {value} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.fa.fitOf.b5b67806",
+  "locale": "en",
+  "before": "Wants at least {min} years guaranteed.",
+  "after": "Wants at least {min, plural, one {# year} other {# years}} guaranteed.",
+  "reason": "English plural: {min} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.fa.tell.bd73c0e4",
+  "locale": "en",
+  "before": "{name} has received offers from {n} clubs. We haven't made an offer yet.",
+  "after": "{name} has received offers from {n, plural, one {# club} other {# clubs}}. We haven't made an offer yet.",
+  "reason": "English plural: {n} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.foreign.careerText.2b4bbc6a",
+  "locale": "en",
+  "before": "Japan NPB: {value, plural, one{# season} other{# seasons}}, {value2} games with the top team",
+  "after": "Japan NPB: {value, plural, one{# season} other{# seasons}}, {value2, plural, one {# game} other {# games}} with the top team",
+  "reason": "English plural: {value2} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.foreign.careerText.ffaf1aff",
+  "locale": "en",
+  "before": "Japan NPB: {value, plural, one{# season} other{# seasons}}, mostly in the minors ({value2} games with the top team)",
+  "after": "Japan NPB: {value, plural, one{# season} other{# seasons}}, mostly in the minors ({value2, plural, one {# game} other {# games}} with the top team)",
+  "reason": "English plural: {value2} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.gamedetail.gameDetail.b0900d9e",
+  "locale": "en",
+  "before": " ({innings} innings)",
+  "after": " ({innings, plural, one {# inning} other {# innings}})",
+  "reason": "English plural: {innings} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.interviews.firstQuestion.b8f7d3b4",
+  "locale": "en",
+  "before": "You hit {hr} home runs in a single game. How do you feel?",
+  "after": "You hit {hr, plural, one {# home run} other {# home runs}} in a single game. How do you feel?",
+  "reason": "English plural: {hr} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.interviews.firstQuestion.c5f0e76b",
+  "locale": "en",
+  "before": "You struck out {value} batters. How was your stuff today?",
+  "after": "You struck out {value, plural, one {# batter} other {# batters}}. How was your stuff today?",
+  "reason": "English plural: {value} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.national.pickAlert.lines.ab84a82e",
+  "locale": "en",
+  "before": "Of the {length} players on the national team, {length2} are ours.",
+  "after": "Of the {length, plural, one {# player} other {# players}} on the national team, {length2} are ours.",
+  "reason": "English plural: {length} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.news.gameNews.2a5aed28",
+  "locale": "en",
+  "before": "{name} Racks Up {value} Hits",
+  "after": "{name} Racks Up {value, plural, one {# Hit} other {# Hits}}",
+  "reason": "English plural: {value} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.news.gameNews.454600c1",
+  "locale": "en",
+  "before": "{me} Win in {innings} Innings",
+  "after": "{me} Win in {innings, plural, one {# Inning} other {# Innings}}",
+  "reason": "English plural: {innings} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.news.gameNews.9a289915",
+  "locale": "en",
+  "before": "{name} led the way with {value} hits and {value2} RBI.",
+  "after": "{name} led the way with {value, plural, one {# hit} other {# hits}} and {value2} RBI.",
+  "reason": "English plural: {value} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.news.gameNews.a0c0d280",
+  "locale": "en",
+  "before": "{me} surrendered {rt} runs to {opp} as the pitching collapsed.",
+  "after": "{me} surrendered {rt, plural, one {# run} other {# runs}} to {opp} as the pitching collapsed.",
+  "reason": "English plural: {rt} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.news.gameNews.c4da58d0",
+  "locale": "en",
+  "before": "Starter {name} allowed {value2} runs over {value} innings.",
+  "after": "Starter {name} allowed {value2, plural, one {# run} other {# runs}} over {value, plural, one {# inning} other {# innings}}.",
+  "reason": "English plural: {value}, {value2} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.news.gameNews.f39f77d8",
+  "locale": "en",
+  "before": "{name} struck out {value2} over {value} innings against the {opp} lineup, allowing {value3} runs. The team {value4} {rs}–{rt}.",
+  "after": "{name} struck out {value2} over {value, plural, one {# inning} other {# innings}} against the {opp} lineup, allowing {value3, plural, one {# run} other {# runs}}. The team {value4} {rs}–{rt}.",
+  "reason": "English plural: {value}, {value3} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.news.gameNews.f9e7ccc7",
+  "locale": "en",
+  "before": "The {me} lineup pounded {opp} pitching, scoring {rs} runs on {value} hits.",
+  "after": "The {me} lineup pounded {opp} pitching, scoring {rs, plural, one {# run} other {# runs}} on {value, plural, one {# hit} other {# hits}}.",
+  "reason": "English plural: {rs}, {value} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.news.gameNews.fa0a0d6a",
+  "locale": "en",
+  "before": "In the lineup, {name} recorded {value} hits and {value2} RBI.",
+  "after": "In the lineup, {name} recorded {value, plural, one {# hit} other {# hits}} and {value2} RBI.",
+  "reason": "English plural: {value} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.news.seasonNews.body.ceefa5de",
+  "locale": "en",
+  "before": "{w, plural, one{# win} other{# wins}}, {value} strikeouts",
+  "after": "{w, plural, one{# win} other{# wins}}, {value, plural, one {# strikeout} other {# strikeouts}}",
+  "reason": "English plural: {value} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.trade.checkTrade.8d3f3e84",
+  "locale": "en",
+  "before": "Partner club's roster limit would exceed {limit} players.",
+  "after": "Partner club's roster limit would exceed {limit, plural, one {# player} other {# players}}.",
+  "reason": "English plural: {limit} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.trade.checkTrade.9366b66d",
+  "locale": "en",
+  "before": "Roster limit would exceed {limit} players.",
+  "after": "Roster limit would exceed {limit, plural, one {# player} other {# players}}.",
+  "reason": "English plural: {limit} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.training.finishTrips.body.3ec5d66e",
+  "locale": "en",
+  "before": "{name} completed {weeks} weeks of training at {name2} in {place}. Club measurements report {text}.{value}",
+  "after": "{name} completed {weeks, plural, one {# week} other {# weeks}} of training at {name2} in {place}. Club measurements report {text}.{value}",
+  "reason": "English plural: {weeks} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.training.finishTrips.lines.f0265be6",
+  "locale": "en",
+  "before": "{name} ({place}) completed {weeks} weeks of training: {text}.",
+  "after": "{name} ({place}) completed {weeks, plural, one {# week} other {# weeks}} of training: {text}.",
+  "reason": "English plural: {weeks} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "ui.allStar.allStar.202e5be2",
+  "locale": "en",
+  "before": "Combining fan voting (70%) and player voting (30%), Best 12 per position are selected from {md} to {md2}, {value}. Together with manager selections, {squad} players per team participate in the All-Star Game on {md3}. The Home Run Derby takes place the day before. All-Star statistics do not count toward regular season records.",
+  "after": "Combining fan voting (70%) and player voting (30%), Best 12 per position are selected from {md} to {md2}, {value}. Together with manager selections, {squad, plural, one {# player} other {# players}} per team participate in the All-Star Game on {md3}. The Home Run Derby takes place the day before. All-Star statistics do not count toward regular season records.",
+  "reason": "English plural: {squad} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "ui.boxScore.boxScore.c0c99b3b",
+  "locale": "en",
+  "before": " · {innings} Innings (Extra)",
+  "after": " · {innings, plural, one {# Inning} other {# Innings}} (Extra)",
+  "reason": "English plural: {innings} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "ui.decision.decision.9ae171b1",
+  "locale": "en",
+  "before": "{year} Second Draft. Select {protect} players to protect (currently {size}). Unprotected players can be picked by other clubs, awarding round-based compensation (₩400M / ₩300M / ₩200M / ₩100M). Players in their first 3 years, winter FA signings, and foreign players are auto-protected. Enlisted military players are eligible for selection.",
+  "after": "{year} Second Draft. Select {protect, plural, one {# player} other {# players}} to protect (currently {size}). Unprotected players can be picked by other clubs, awarding round-based compensation (₩400M / ₩300M / ₩200M / ₩100M). Players in their first 3 years, winter FA signings, and foreign players are auto-protected. Enlisted military players are eligible for selection.",
+  "reason": "English plural: {protect} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "ui.decision.decision.b176e269",
+  "locale": "en",
+  "before": "Signed Grade {grade} FA {name} from {shortName}. Select {protect} players to protect (currently {size}). {shortName2} may select 1 unprotected player plus compensation, or take compensation only. Foreign players, this winter's FA acquisitions, and this year's draft picks are auto-protected.",
+  "after": "Signed Grade {grade} FA {name} from {shortName}. Select {protect, plural, one {# player} other {# players}} to protect (currently {size}). {shortName2} may select 1 unprotected player plus compensation, or take compensation only. Foreign players, this winter's FA acquisitions, and this year's draft picks are auto-protected.",
+  "reason": "English plural: {protect} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "ui.decision.decision.b82fa189",
+  "locale": "en",
+  "before": "Expansion draft for 12th club {name}. Select {protect} players to protect (currently {size}). If an unprotected player is selected, you receive {money} in compensation{value}. Foreign players, newly drafted rookies, and this winter's FA signings are auto-protected. If confirmed empty, scouts auto-fill by value.",
+  "after": "Expansion draft for 12th club {name}. Select {protect, plural, one {# player} other {# players}} to protect (currently {size}). If an unprotected player is selected, you receive {money} in compensation{value}. Foreign players, newly drafted rookies, and this winter's FA signings are auto-protected. If confirmed empty, scouts auto-fill by value.",
+  "reason": "English plural: {protect} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "ui.manual.gLOSSARY.3720f353",
+  "locale": "en",
+  "before": "Held every 2 years. Each club protects {protected} players, and remaining players can be selected through {rounds} rounds with transfer fees.",
+  "after": "Held every 2 years. Each club protects {protected, plural, one {# player} other {# players}}, and remaining players can be selected through {rounds, plural, one {# round} other {# rounds}} with transfer fees.",
+  "reason": "English plural: {protected}, {rounds} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "ui.manual.gLOSSARY.8d92a7f4",
+  "locale": "en",
+  "before": "System allowing players with {seasons} completed seasons to post for MLB clubs. Up to {perClubPerWinter} player per club each winter; a successful contract awards a release fee.",
+  "after": "System allowing players with {seasons} completed seasons to post for MLB clubs. Up to {perClubPerWinter, plural, one {# player} other {# players}} per club each winter; a successful contract awards a release fee.",
+  "reason": "English plural: {perClubPerWinter} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "ui.manual.gLOSSARY.b2a6ec7c",
+  "locale": "en",
+  "before": "Each club may have up to {rosterLimit} registered players; the first team registers {registered} players, with {active} active for each game.",
+  "after": "Each club may have up to {rosterLimit} registered players; the first team registers {registered, plural, one {# player} other {# players}}, with {active} active for each game.",
+  "reason": "English plural: {registered} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "ui.manual.gLOSSARY.bea0fd90",
+  "locale": "en",
+  "before": "Days registered on the first-team roster. {daysPerSeason} days count as one full season; high school draftees qualify for FA after {seasonsHighSchool} seasons, and college draftees after {seasonsCollege} seasons.",
+  "after": "Days registered on the first-team roster. {daysPerSeason, plural, one {# day} other {# days}} count as one full season; high school draftees qualify for FA after {seasonsHighSchool} seasons, and college draftees after {seasonsCollege} seasons.",
+  "reason": "English plural: {daysPerSeason} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "ui.manual.gLOSSARY.c5a480d5",
+  "locale": "en",
+  "before": "The ceiling on total payroll for the top {topPlayers} highest-paid players ({season}: {eok}). Exceeding it incurs a {value} penalty on the overage (depending on consecutive years); {pickDropFrom} consecutive years drops the 1st-round draft pick by {pickDrop} spots.",
+  "after": "The ceiling on total payroll for the top {topPlayers} highest-paid players ({season}: {eok}). Exceeding it incurs a {value} penalty on the overage (depending on consecutive years); {pickDropFrom, plural, one {# consecutive year} other {# consecutive years}} drops the 1st-round draft pick by {pickDrop, plural, one {# spot} other {# spots}}.",
+  "reason": "English plural: {pickDrop}, {pickDropFrom} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "ui.office.office.fe9a9481",
+  "locale": "en",
+  "before": " · {streak} consecutive years exceeding",
+  "after": " · {streak, plural, one {# consecutive year} other {# consecutive years}} exceeding",
+  "reason": "English plural: {streak} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "ui.playerPanel.playerPanel.75a95895",
+  "locale": "en",
+  "before": "Career {length} times, {hurtDays} days",
+  "after": "Career {length, plural, one {# time} other {# times}}, {hurtDays, plural, one {# day} other {# days}}",
+  "reason": "English plural: {hurtDays}, {length} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "ui.playerPanel.playerPanel.e1aa3431",
+  "locale": "en",
+  "before": "{days} Days",
+  "after": "{days, plural, one {# Day} other {# Days}}",
+  "reason": "English plural: {days} is a count that can be 1 (\"1 day\", not \"1 days\")",
+  "severity": "major",
+  "category": "plural"
+ },
+ {
+  "key": "league.alerts.awardAlert.1de783e9",
+  "locale": "en",
+  "before": "Our Gold Glove winners: {value}",
+  "after": "Our Golden Glove winners: {value}",
+  "reason": "KBO award is the \"Golden Glove\" (KBO 골든글러브); \"Gold Glove\" is the MLB/Rawlings award. Glossary term",
+  "severity": "major",
+  "category": "baseball-term"
+ },
+ {
+  "key": "league.alumni.fameOf.f2b151c4",
+  "locale": "en",
+  "before": "Gold Glove",
+  "after": "Golden Glove",
+  "reason": "KBO award is the \"Golden Glove\" (KBO 골든글러브); \"Gold Glove\" is the MLB/Rawlings award. Glossary term",
+  "severity": "major",
+  "category": "baseball-term"
+ },
+ {
+  "key": "league.alumni.alumnusLine.big.f2b151c4",
+  "locale": "en",
+  "before": "Gold Glove",
+  "after": "Golden Glove",
+  "reason": "KBO award is the \"Golden Glove\" (KBO 골든글러브); \"Gold Glove\" is the MLB/Rawlings award. Glossary term",
+  "severity": "major",
+  "category": "baseball-term"
+ },
+ {
+  "key": "league.alumni.alumnusLine.96b20ec5",
+  "locale": "en",
+  "before": " · MVP/Gold Glove ×{big}",
+  "after": " · MVP/Golden Glove ×{big}",
+  "reason": "KBO award is the \"Golden Glove\" (KBO 골든글러브); \"Gold Glove\" is the MLB/Rawlings award. Glossary term",
+  "severity": "major",
+  "category": "baseball-term"
+ },
+ {
+  "key": "league.awards.awardHonours.0d9ed90e",
+  "locale": "en",
+  "before": "Gold Glove ({pos})",
+  "after": "Golden Glove ({pos})",
+  "reason": "KBO award is the \"Golden Glove\" (KBO 골든글러브); \"Gold Glove\" is the MLB/Rawlings award. Glossary term",
+  "severity": "major",
+  "category": "baseball-term"
+ },
+ {
+  "key": "league.awards.hallOfFameCheck.big.f2b151c4",
+  "locale": "en",
+  "before": "Gold Glove",
+  "after": "Golden Glove",
+  "reason": "KBO award is the \"Golden Glove\" (KBO 골든글러브); \"Gold Glove\" is the MLB/Rawlings award. Glossary term",
+  "severity": "major",
+  "category": "baseball-term"
+ },
+ {
+  "key": "league.legacy.honoursOf.f2b151c4",
+  "locale": "en",
+  "before": "Gold Glove",
+  "after": "Golden Glove",
+  "reason": "KBO award is the \"Golden Glove\" (KBO 골든글러브); \"Gold Glove\" is the MLB/Rawlings award. Glossary term",
+  "severity": "major",
+  "category": "baseball-term"
+ },
+ {
+  "key": "league.offseason.awardInterview.pick.f2b151c4",
+  "locale": "en",
+  "before": "Gold Glove",
+  "after": "Golden Glove",
+  "reason": "KBO award is the \"Golden Glove\" (KBO 골든글러브); \"Gold Glove\" is the MLB/Rawlings award. Glossary term",
+  "severity": "major",
+  "category": "baseball-term"
+ },
+ {
+  "key": "ui.manual.yEAR.ae637c3d",
+  "locale": "en",
+  "before": "Winter decisions: National team call-ups, player growth, retirements, military service → Posting → FA → Salary arbitration/renewals → Rookie signings → KBO Secondary Draft (biennial) → Roster cuts → Released player signings → Foreign players → Spring training.",
+  "after": "Winter decisions: National team call-ups, player growth, retirements, military service → Posting → FA → Salary arbitration/renewals → Rookie signings → Second Draft (biennial) → Roster cuts → Released player signings → Foreign players → Spring training.",
+  "reason": "Term consistency: 2차 드래프트 is \"Second Draft\" in the other 13 strings (and the Decision titles)",
+  "severity": "major",
+  "category": "consistency"
+ },
+ {
+  "key": "ui.tutorial.secondProtect.title.45c66ae7",
+  "locale": "en",
+  "before": "KBO Secondary Draft Protected List",
+  "after": "Second Draft Protected List",
+  "reason": "Term consistency: 2차 드래프트 is \"Second Draft\" in the other 13 strings (and the Decision titles)",
+  "severity": "major",
+  "category": "consistency"
+ },
+ {
+  "key": "ui.tutorial.secondProtect.body.fc3a194a",
+  "locale": "en",
+  "before": "Select players to protect from being poached in the biennial KBO Secondary Draft.",
+  "after": "Select players to protect from being poached in the biennial Second Draft.",
+  "reason": "Term consistency: 2차 드래프트 is \"Second Draft\" in the other 13 strings (and the Decision titles)",
+  "severity": "major",
+  "category": "consistency"
+ },
+ {
+  "key": "ui.tutorial.rULES.body.a6fd79dd",
+  "locale": "en",
+  "before": "Winter follows the official KBO calendar: National team call-ups, player development, retirements, military service → Posting → Free Agency → Salary negotiations → Rookie signings → KBO Secondary Draft → Roster cuts → Released players → Foreign players → Spring training.",
+  "after": "Winter follows the official KBO calendar: National team call-ups, player development, retirements, military service → Posting → Free Agency → Salary negotiations → Rookie signings → Second Draft → Roster cuts → Released players → Foreign players → Spring training.",
+  "reason": "Term consistency: 2차 드래프트 is \"Second Draft\" in the other 13 strings (and the Decision titles)",
+  "severity": "major",
+  "category": "consistency"
+ },
+ {
+  "key": "ui.fantasyDraft.fantasyBoard.b1c1f810",
+  "locale": "en",
+  "before": "\"Rating\" is scout composite rank: public grade (blended with potential for young players) weighed against club positional needs, age, and luxury-tax penalties. Click headers to sort.",
+  "after": "\"Rating\" is scout composite rank: public grade (blended with potential for young players) weighed against club positional needs, age, and pay that would put us over the salary cap. Click headers to sort.",
+  "reason": "Mistranslation: ko 샐러리캡을 넘는 연봉 (pay over the salary cap); the game has no luxury tax",
+  "severity": "major",
+  "category": "mistranslation"
+ },
+ {
+  "key": "ui.market.trade.39de664b",
+  "locale": "en",
+  "before": "Trades are allowed during the regular season until July 31, and re-open after the Korean Series. Other clubs judge trades by public ratings (current and potential value, age, contract length, salary) and only accept if incoming value slightly exceeds outgoing value. Foreign players and rookies drafted in the current year cannot be traded. Cash considerations (one side only, up to {money}, where ₩100M ≈ 1 value) and upcoming draft picks (only alongside players, up to 2 picks per club per year per KBO rules) may be included. Pick value is derived from draft round and projected order (worse records draft earlier), and players selected with traded picks cannot be traded in their rookie year. Each club operates with an organizational direction: contenders prioritize win-now talent over draft picks; rebuilding clubs with aging rosters or fallen out of postseason contention favor youth, picks, and cash over players age 30+; remaining clubs balance both. Players addressing positional needs carry higher perceived value; proposals asking for a club's sole catcher or starting pitcher or breaching the luxury tax ceiling will be rejected.",
+  "after": "Trades are allowed during the regular season until July 31, and re-open after the Korean Series. Other clubs judge trades by public ratings (current and potential value, age, contract length, salary) and only accept if incoming value slightly exceeds outgoing value. Foreign players and rookies drafted in the current year cannot be traded. Cash considerations (one side only, up to {money}, where ₩100M ≈ 1 value) and upcoming draft picks (only alongside players, up to 2 picks per club per year per KBO rules) may be included. Pick value is derived from draft round and projected order (worse records draft earlier), and players selected with traded picks cannot be traded in their rookie year. Each club operates with an organizational direction: contenders prioritize win-now talent over draft picks; rebuilding clubs with aging rosters or fallen out of postseason contention favor youth, picks, and cash over players age 30+; remaining clubs balance both. Players addressing positional needs carry higher perceived value; proposals asking for a club's sole catcher or starting pitcher or that would put them over the salary cap will be rejected.",
+  "reason": "Mistranslation: ko 샐러리캡을 넘기는 제안 (offers that push the club over the salary cap); glossary 샐러리캡 = Salary Cap",
+  "severity": "major",
+  "category": "mistranslation"
+ },
+ {
+  "key": "ui.tutorial.faRound.body.1e6a0ab5",
+  "locale": "en",
+  "before": "Signing bonuses are amortized evenly across the contract length against the payroll budget. Players favor large bonuses, but because salaries over ₩300M are reduced when demoted to the minor league, clubs are safer with higher salary weightings. Incentives are paid only when appearance/inning milestones are reached.",
+  "after": "As with the salary cap, signing bonuses are spread evenly over the contract years in the payroll budget. Players like big bonuses, but a player earning ₩300M or more takes a pay cut when he is sent down to the Futures team for poor play, so clubs are safer putting more of the money in salary. Incentives are paid only when appearance or innings targets are met.",
+  "reason": "Mistranslation/omission: dropped 샐러리캡처럼 (as with the salary cap) and 부진으로 (for poor play); \"minor league\" for 2군 (glossary: Futures)",
+  "severity": "major",
+  "category": "mistranslation"
+ },
+ {
+  "key": "ui.decision.decision.7680ee7b",
+  "locale": "en",
+  "before": " Players graded Category 4 after major surgery fulfill their service as social service agents (21 months, ineligible for games); if drafted while rehabbing, rehab and service run concurrently.",
+  "after": " Players graded Category 4 after major surgery serve as social service agents instead of with Sangmu or on active duty (21 months, ineligible for games); if drafted while rehabbing, rehab and service run concurrently.",
+  "reason": "Omission: 상무·현역 대신 (instead of Sangmu or active duty) was dropped",
+  "severity": "major",
+  "category": "mistranslation"
+ },
+ {
+  "key": "league.training.checkTrip.2e725bb1",
+  "locale": "ja",
+  "before": "球団資金が不足しています（必要額：{eok}億ウォン）。",
+  "after": "球団資金が不足しています（必要額：{eok}）。",
+  "reason": "{eok} already hold(s) a formatted amount (usd()/eok()/money() → \"40만 달러\", \"3억\"); the unit added around it was doubled (\"$$400K\", \"40万ドルドル\")",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "league.userclub.payForeignOptions.label.cc99a4b8",
+  "locale": "en",
+  "before": "Foreign Player Option · {name} (${usd})",
+  "after": "Foreign Player Option · {name} ({usd})",
+  "reason": "{usd} already hold(s) a formatted amount (usd()/eok()/money() → \"40만 달러\", \"3억\"); the unit added around it was doubled (\"$$400K\", \"40万ドルドル\")",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "league.userclub.payForeignOptions.label.cc99a4b8",
+  "locale": "ja",
+  "before": "外国人選手オプション · {name}（{usd}ドル）",
+  "after": "外国人選手オプション · {name}（{usd}）",
+  "reason": "{usd} already hold(s) a formatted amount (usd()/eok()/money() → \"40만 달러\", \"3억\"); the unit added around it was doubled (\"$$400K\", \"40万ドルドル\")",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "league.userclub.resolveAnnual.a10572f6",
+  "locale": "en",
+  "before": "Re-signed foreign player {name} (${usd}{value})",
+  "after": "Re-signed foreign player {name} ({usd}{value})",
+  "reason": "{usd} already hold(s) a formatted amount (usd()/eok()/money() → \"40만 달러\", \"3억\"); the unit added around it was doubled (\"$$400K\", \"40万ドルドル\")",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "league.userclub.resolveAnnual.a10572f6",
+  "locale": "ja",
+  "before": "外国人選手 {name} 再契約（{usd}{value}ドル）",
+  "after": "外国人選手 {name} 再契約（{usd}{value}）",
+  "reason": "{usd} already hold(s) a formatted amount (usd()/eok()/money() → \"40만 달러\", \"3억\"); the unit added around it was doubled (\"$$400K\", \"40万ドルドル\")",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "league.userclub.resolveAnnual.723a0593",
+  "locale": "en",
+  "before": "Failed to re-sign foreign player {name} (offered ${usd}{value}, demanded ${usd2})",
+  "after": "Failed to re-sign foreign player {name} (offered {usd}{value}, demanded {usd2})",
+  "reason": "{usd}, {usd2} already hold(s) a formatted amount (usd()/eok()/money() → \"40만 달러\", \"3억\"); the unit added around it was doubled (\"$$400K\", \"40万ドルドル\")",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "league.userclub.resolveAnnual.723a0593",
+  "locale": "ja",
+  "before": "外国人選手 {name} 再契約交渉決裂（提示 {usd}{value}ドル、要求 {usd2}ドル）",
+  "after": "外国人選手 {name} 再契約交渉決裂（提示 {usd}{value}、要求 {usd2}）",
+  "reason": "{usd}, {usd2} already hold(s) a formatted amount (usd()/eok()/money() → \"40만 달러\", \"3억\"); the unit added around it was doubled (\"$$400K\", \"40万ドルドル\")",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "ui.decision.foreignCapLine.4f534145",
+  "locale": "en",
+  "before": " — Exceeds by ${usd}. 50% luxury tax after season; 2 consecutive years incurs 100% tax and drops Round 2 pick by 9 slots.",
+  "after": " — Exceeds by {usd}. 50% luxury tax after season; 2 consecutive years incurs 100% tax and drops Round 2 pick by 9 slots.",
+  "reason": "{usd} already hold(s) a formatted amount (usd()/eok()/money() → \"40만 달러\", \"3억\"); the unit added around it was doubled (\"$$400K\", \"40万ドルドル\")",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "ui.decision.foreignCapLine.4f534145",
+  "locale": "ja",
+  "before": " — {usd}ドル超過。シーズン後に超過額の50%が課徴金となり、2年連続超過の場合は100%および2巡目指名権が9位分降格します。",
+  "after": " — {usd}超過。シーズン後に超過額の50%が課徴金となり、2年連続超過の場合は100%および2巡目指名権が9位分降格します。",
+  "reason": "{usd} already hold(s) a formatted amount (usd()/eok()/money() → \"40만 달러\", \"3억\"); the unit added around it was doubled (\"$$400K\", \"40万ドルドル\")",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "ui.decision.foreignCapLine.da9d4e52",
+  "locale": "en",
+  "before": "{next} Foreign Player Salary Cap: 3 Foreign Players Total (including options) ${usd} / Cap ${usd2} ($4.0M + $100K per re-signed player's tenure; Asian Quota excluded){value}",
+  "after": "{next} Foreign Player Salary Cap: 3 Foreign Players Total (including options) {usd} / Cap {usd2} ($4.0M + $100K per re-signed player's tenure; Asian Quota excluded){value}",
+  "reason": "{usd}, {usd2} already hold(s) a formatted amount (usd()/eok()/money() → \"40만 달러\", \"3억\"); the unit added around it was doubled (\"$$400K\", \"40万ドルドル\")",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "ui.decision.foreignCapLine.da9d4e52",
+  "locale": "ja",
+  "before": "{next}年 外国人枠サラリーキャップ: 外国人3名総額（オプション込）{usd}ドル / 上限 {usd2}ドル（400万ドル + 再契約選手の年数×10万ドル、アジア枠別）{value}",
+  "after": "{next}年 外国人枠サラリーキャップ: 外国人3名総額（オプション込）{usd} / 上限 {usd2}（400万ドル + 再契約選手の年数×10万ドル、アジア枠別）{value}",
+  "reason": "{usd}, {usd2} already hold(s) a formatted amount (usd()/eok()/money() → \"40만 달러\", \"3억\"); the unit added around it was doubled (\"$$400K\", \"40万ドルドル\")",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "ui.training.training.11afbd5f",
+  "locale": "en",
+  "before": "{value} · {weeks, plural, one{# Week} other{# Weeks}} · ₩{money} per player",
+  "after": "{value} · {weeks, plural, one{# Week} other{# Weeks}} · {money} per player",
+  "reason": "{money} already hold(s) a formatted amount (usd()/eok()/money() → \"40만 달러\", \"3억\"); the unit added around it was doubled (\"$$400K\", \"40万ドルドル\")",
+  "severity": "major",
+  "category": "money"
+ },
+ {
+  "key": "ui.decision.foreignCapLine.4f534145",
+  "locale": "en",
+  "before": " — Exceeds by {usd}. 50% luxury tax after season; 2 consecutive years incurs 100% tax and drops Round 2 pick by 9 slots.",
+  "after": " — Exceeds by {usd}. after the season, 50% of the overage is paid as a penalty; two years in a row, 100% and the Round 2 pick drops 9 spots.",
+  "reason": "Mistranslation: 제재금 is a penalty (the game's foreign-player cap has no luxury tax); KBO 9순위 하락 = drops 9 spots",
+  "severity": "major",
+  "category": "mistranslation"
+ },
+ {
+  "key": "ui.decision.foreignCapLine.4f534145",
+  "locale": "ja",
+  "before": " — {usd}超過。シーズン後に超過額の50%が課徴金となり、2年連続超過の場合は100%および2巡目指名権が9位分降格します。",
+  "after": " — {usd}超過。シーズン後に超過額の50%が課徴金となり、2年連続超過の場合は100%および2巡目の指名順位が9つ下がります。",
+  "reason": "9순위 하락 = the pick moves 9 places down; 「9位分降格」 reads as a demotion of rank",
+  "severity": "minor",
+  "category": "baseball-term"
+ },
+ {
+  "key": "league.cap.settleCap.text.284072e6",
+  "locale": "en",
+  "before": " (next draft's first-round pick drops to No. 9)",
+  "after": " (next draft's first-round pick drops 9 spots)",
+  "reason": "Mistranslation: KBO salary cap rule — the first-round pick moves down 9 places (9순위 하락), not to No. 9",
+  "severity": "major",
+  "category": "mistranslation"
+ },
+ {
+  "key": "league.cap.settleCap.text.284072e6",
+  "locale": "ja",
+  "before": "（次回ドラフト1巡目が9位に降格）",
+  "after": "（次回ドラフト1巡目の指名順位が9つ下がる）",
+  "reason": "Mistranslation: the pick moves down 9 places, not to 9th",
+  "severity": "major",
+  "category": "mistranslation"
+ },
+ {
+  "key": "draftroom.catalog.institutions.46a2bacb",
+  "locale": "en",
+  "before": "Isunsin BC",
+  "after": "Yi Sun-sin BC",
+  "reason": "[확인 필요] decided: named after Admiral Yi Sun-sin, whose established English spelling is \"Yi Sun-sin\"",
+  "severity": "minor",
+  "category": "names"
+ },
+ {
+  "key": "draftroom.catalog.institutions.46a2bacb",
+  "locale": "ja",
+  "before": "イスンシンBC",
+  "after": "イ・スンシンBC",
+  "reason": "[확인 필요] decided: person's name, family and given name separated with ・ as in the other Korean names (no kanji, per the rules)",
+  "severity": "minor",
+  "category": "names"
+ },
+ {
+  "key": "names/korean-name-labels.json givenNames[*]",
+  "locale": "en",
+  "before": "Min-Jun, Seo-Jun, Do-Yoon … (425 names)",
+  "after": "Min-jun, Seo-jun, Do-yoon …",
+  "reason": "Korean given names in English are written with a lowercase second syllable (Revised Romanization for personal names; KBO and press style: Lee Jung-hoo, Kim Ha-seong)",
+  "severity": "minor",
+  "category": "names"
+ },
+ {
+  "key": "names/foreign-name-labels.json west.given 잭",
+  "locale": "en/ja",
+  "before": "Zack/ザック and Jack/ジャック (two rows)",
+  "after": "Jack/ジャック",
+  "reason": "One Korean spelling had two renderings (the generator list has 잭 once); 잭 is the usual Korean spelling of Jack",
+  "severity": "major",
+  "category": "names"
+ },
+ {
+  "key": "names/foreign-name-labels.json dutch.given 시드니",
+  "locale": "en",
+  "before": "Sicnarf",
+  "after": "Sidney",
+  "reason": "[확인 필요] decided: 시드니 is the Korean spelling of Sidney (Aruban pitcher Sidney Ponson = 시드니 폰슨); Sicnarf would be 시크나르프. ja シドニー already matched",
+  "severity": "major",
+  "category": "names"
+ },
+ {
+  "key": "names/foreign-name-labels.json dutch.given 하이트",
+  "locale": "en",
+  "before": "Curt",
+  "after": "Hite",
+  "reason": "[확인 필요] decided: Curt would be 커트; Hite matches 하이트 and the ja ハイト. The generator only needs a plausible name",
+  "severity": "major",
+  "category": "names"
+ },
+ {
+  "key": "league.movenews.moveNews.title.1de39ecc",
+  "locale": "ja",
+  "before": "{club}、{name}をウェイバー公示",
+  "after": "{club}、{name}をウェーバー公示",
+  "reason": "Katakana consistency: ウェーバー (NPB ウェーバー公示) is used in 7 other strings",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "league.movenews.moveNews.body.c7192411",
+  "locale": "ja",
+  "before": "ウェイバー公示とした。1週間以内に獲得する球団がなければ自由契約選手となる。",
+  "after": "ウェーバー公示とした。1週間以内に獲得する球団がなければ自由契約選手となる。",
+  "reason": "Katakana consistency: ウェーバー (NPB ウェーバー公示) is used in 7 other strings",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "league.movenews.facts.type.29e07476",
+  "locale": "ja",
+  "before": "ウェイバー公示",
+  "after": "ウェーバー公示",
+  "reason": "Katakana consistency: ウェーバー (NPB ウェーバー公示) is used in 7 other strings",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "league.movenews.moveNews.title.bf84b148",
+  "locale": "ja",
+  "before": "{club}、ウェイバーで{name}を獲得",
+  "after": "{club}、ウェーバーで{name}を獲得",
+  "reason": "Katakana consistency: ウェーバー (NPB ウェーバー公示) is used in 7 other strings",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "league.movenews.moveNews.body.e68b1c4a",
+  "locale": "ja",
+  "before": "{club}は{from}がウェイバー公示した{name}を獲得した。残りの契約も引き継ぐ。{value}",
+  "after": "{club}は{from}がウェーバー公示した{name}を獲得した。残りの契約も引き継ぐ。{value}",
+  "reason": "Katakana consistency: ウェーバー (NPB ウェーバー公示) is used in 7 other strings",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "league.movenews.facts.type.f49fc0c2",
+  "locale": "ja",
+  "before": "ウェイバー獲得",
+  "after": "ウェーバー獲得",
+  "reason": "Katakana consistency: ウェーバー (NPB ウェーバー公示) is used in 7 other strings",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "league.scenarios.sCENARIOS.story.c27a09fe",
+  "locale": "ja",
+  "before": "初期ロスターは引退選手とドラフト外選手のみで構成されます（特別指名なし）。ベテランは長く持ちません。その間に新人や無名選手を育て上げてください。5年以内の優勝で奇跡を完成させましょう。",
+  "after": "初期ロースターは引退選手とドラフト外選手のみで構成されます（特別指名なし）。ベテランは長く持ちません。その間に新人や無名選手を育て上げてください。5年以内の優勝で奇跡を完成させましょう。",
+  "reason": "Katakana consistency: ロースター elsewhere (and in NPB/MLB coverage)",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "league.trade.releasePlayer.text.3ced2e91",
+  "locale": "ja",
+  "before": "{name} ウェイバー公示（{addDays}まで）",
+  "after": "{name} ウェーバー公示（{addDays}まで）",
+  "reason": "Katakana consistency: ウェーバー (NPB ウェーバー公示) is used in 7 other strings",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "league.trade.releasePlayer.aa556b10",
+  "locale": "ja",
+  "before": "ウェイバー公示：{shortOf} {name}",
+  "after": "ウェーバー公示：{shortOf} {name}",
+  "reason": "Katakana consistency: ウェーバー (NPB ウェーバー公示) is used in 7 other strings",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "league.trade.processWaivers.9638f882",
+  "locale": "ja",
+  "before": "ウェイバー獲得：{shortOf}が{name}を獲得（{shortOf2}より）",
+  "after": "ウェーバー獲得：{shortOf}が{name}を獲得（{shortOf2}より）",
+  "reason": "Katakana consistency: ウェーバー (NPB ウェーバー公示) is used in 7 other strings",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "league.trade.processWaivers.text.c28e2c38",
+  "locale": "ja",
+  "before": "{name} ウェイバーにより{shortOf}へ移籍",
+  "after": "{name} ウェーバーにより{shortOf}へ移籍",
+  "reason": "Katakana consistency: ウェーバー (NPB ウェーバー公示) is used in 7 other strings",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "story.prompt.sTORY_SYSTEM.51449bc3",
+  "locale": "ja",
+  "before": "あなたは架空の韓国プロ野球リーグを担当するスポーツ新聞記者です。このリーグの選手・指導者・ファン・記録はすべてゲーム内の架空設定です。\n\n執筆ルール:\n- 与えられた事実（facts）、詳細データ（detail）、草案（draft）に記載された内容のみ記述すること。数値（スコア、成績、日付、順位、金額、観客動員数）は与えられた値をそのまま使い、勝手に計算・捏造しない（得失点差、合計、連勝数もdetailになければ書かない）。\n- 実在人物の名前は使わない。factsにある名前のみ使用。\n- スポーツ新聞の文体：「〜だ・である」調の簡潔な短文。過剰な修飾や曖昧な表現（「〜と言える」「〜と思われる」）は避ける。\n- 見出しは30文字前後。\n- 構成・分量（段落間は空行）：\n  - 試合速報：5〜8段落。第1段落は勝敗と勝負の分かれ目。以降detailの得点経過をイニング順にアウトカウント・走者状況を交えて追う。先発対決とリリーフ陣、ヒーローの成績、両チームの順位と試合の意味で締める。\n  - 月間・シーズン総括：5〜8段落。成績と順位、転換点となった試合、投打の注目記録、表彰・観客動員、今後の課題。\n  - インタビュー：「— 」で始まる質問行、次行に回答。5〜7往復。選手の性格を語調に反映し、記録はdetailのみ引用。\n  - 記録達成・表彰記事：3〜5段落。\n  - 移籍速報（トレード・戦力外・ウェイバー・外国人交代・ポスティング・FA・2次ドラフト）：4〜6段落。第1段落は移籍先と条件。続いて各選手の年齢・守備位置・今季/前季/通算成績・年俸をdetailから記載し、球団の現状と移籍に伴うポジション変化を記録ベースで記述後、周囲の反応で締める。損得の断定はしない。\n- 談話（quotes）：草案を整えるか同一人物の発言として作成。選手・監督・ファンの個性を分け、roleは player, manager, fan, gm のいずれか。\n- 出力はJSONスキーマ（title, body, quotes）のみ。",
+  "after": "あなたは架空の韓国プロ野球リーグを担当するスポーツ新聞記者です。このリーグの選手・指導者・ファン・記録はすべてゲーム内の架空設定です。\n\n執筆ルール:\n- 与えられた事実（facts）、詳細データ（detail）、草案（draft）に記載された内容のみ記述すること。数値（スコア、成績、日付、順位、金額、観客動員数）は与えられた値をそのまま使い、勝手に計算・捏造しない（得失点差、合計、連勝数もdetailになければ書かない）。\n- 実在人物の名前は使わない。factsにある名前のみ使用。\n- スポーツ新聞の文体：「〜だ・である」調の簡潔な短文。過剰な修飾や曖昧な表現（「〜と言える」「〜と思われる」）は避ける。\n- 見出しは30文字前後。\n- 構成・分量（段落間は空行）：\n  - 試合速報：5〜8段落。第1段落は勝敗と勝負の分かれ目。以降detailの得点経過をイニング順にアウトカウント・走者状況を交えて追う。先発対決とリリーフ陣、ヒーローの成績、両チームの順位と試合の意味で締める。\n  - 月間・シーズン総括：5〜8段落。成績と順位、転換点となった試合、投打の注目記録、表彰・観客動員、今後の課題。\n  - インタビュー：「— 」で始まる質問行、次行に回答。5〜7往復。選手の性格を語調に反映し、記録はdetailのみ引用。\n  - 記録達成・表彰記事：3〜5段落。\n  - 移籍速報（トレード・戦力外・ウェーバー・外国人交代・ポスティング・FA・2次ドラフト）：4〜6段落。第1段落は移籍先と条件。続いて各選手の年齢・守備位置・今季/前季/通算成績・年俸をdetailから記載し、球団の現状と移籍に伴うポジション変化を記録ベースで記述後、周囲の反応で締める。損得の断定はしない。\n- 談話（quotes）：草案を整えるか同一人物の発言として作成。選手・監督・ファンの個性を分け、roleは player, manager, fan, gm のいずれか。\n- 出力はJSONスキーマ（title, body, quotes）のみ。",
+  "reason": "Katakana consistency: ウェーバー (NPB ウェーバー公示) is used in 7 other strings",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "story.errors.message.quota.4221ee17",
+  "locale": "ja",
+  "before": "本日の利用可能リクエスト数を使い切りました（{status}）。1日の上限は翌日にリセットされます。プロバイダ公式サイトでプランや請求状況をご確認ください。",
+  "after": "本日の利用可能リクエスト数を使い切りました（{status}）。1日の上限は翌日にリセットされます。プロバイダー公式サイトでプランや請求状況をご確認ください。",
+  "reason": "Katakana consistency: プロバイダー (long vowel, as in the settings label)",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "story.errors.message.quota.c0f826d5",
+  "locale": "ja",
+  "before": "アカウントの利用上限またはクレジット残高が枯渇しました（{status}）。時間経過では解決しませんので、プロバイダ側で請求・限度額をご確認ください。",
+  "after": "アカウントの利用上限またはクレジット残高が枯渇しました（{status}）。時間経過では解決しませんので、プロバイダー側で請求・限度額をご確認ください。",
+  "reason": "Katakana consistency: プロバイダー (long vowel, as in the settings label)",
+  "severity": "minor",
+  "category": "consistency"
+ },
+ {
+  "key": "story.errors.message.busy.65759cb4",
+  "locale": "ja",
+  "before": "プロバイダサーバーが混雑または一時停止しています（{status}）。{wait}再試行するか、別のモデルを選択してください。",
+  "after": "プロバイダーサーバーが混雑または一時停止しています（{status}）。{wait}再試行するか、別のモデルを選択してください。",
+  "reason": "Katakana consistency: プロバイダー (long vowel, as in the settings label)",
+  "severity": "minor",
+  "category": "consistency"
+ }
+]

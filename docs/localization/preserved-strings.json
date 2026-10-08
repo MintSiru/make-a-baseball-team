@@ -4924,5 +4924,17 @@
     "line": 16,
     "text": "원 포인트",
     "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 161,
+    "text": "-school-event-전국 대학대회",
+    "reason": "RNG seed (restored in QA): changing it changes the generated prospects"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 173,
+    "text": "-school-event-2년제",
+    "reason": "RNG seed (restored in QA): changing it changes the generated prospects"
   }
 ]

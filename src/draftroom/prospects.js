@@ -158,7 +158,7 @@ function schoolHonors(seed) {
   }
   // College league: one ranking over all colleges (original stream), read per conference.
   const colleges = Cat.institutions.filter((x) => x.kind === 'college');
-  const r = rng(__i18n_k("draftroom.prospects.schoolHonors.r.2147c880", { seed: seed }));
+  const r = rng(seed + '-school-event-전국 대학대회');
   const collegeRank = colleges.map((s) => ({ s, score: Bio.TIERS[s.tier].team * 60 + r() * 55 })).sort((a, b) => b.score - a.score).map((x) => x.s);
   const collegeQualifiers = [];
   for (const [name, regions] of COLLEGE_CONFERENCES) {
@@ -170,7 +170,7 @@ function schoolHonors(seed) {
   }
   // Two-year colleges: one league, then the top four meet in their own tournament.
   const juniors = Cat.institutions.filter((x) => x.kind === 'college2');
-  const rj = rng(__i18n_k("draftroom.prospects.schoolHonors.rj.91b38c0c", { seed: seed }));
+  const rj = rng(seed + '-school-event-2년제');
   const juniorQualifiers = [];
   juniors
     .map((s) => ({ s, score: Bio.TIERS[s.tier].team * 60 + rj() * 55 }))

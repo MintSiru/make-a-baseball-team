@@ -131,7 +131,10 @@ function syllables(s: string) {
 }
 function romanize(s: string, lc: Target): string {
   const parts = syllables(s);
-  if (lc === 'en') return parts.map((p) => { const w = p.i + p.m + p.f; return w[0]!.toUpperCase() + w.slice(1); }).join('-');
+  if (lc === 'en') {
+    const w = parts.map((p) => p.i + p.m + p.f).join('-');
+    return w[0]!.toUpperCase() + w.slice(1);
+  }
   return parts.map((p) => (KANA[(KANA_ROW[p.i] ?? '') + (VOWEL_KANA[p.m] ?? '')] ?? '') + FINAL_KANA[p.f]).join('');
 }
 

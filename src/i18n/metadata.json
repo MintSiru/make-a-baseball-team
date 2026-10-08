@@ -9812,18 +9812,6 @@
       6047
     ]
   },
-  "draftroom.prospects.schoolHonors.r.2147c880": {
-    "source": "src/draftroom/prospects.js",
-    "line": 160,
-    "params": {
-      "seed": {
-        "expression": "seed"
-      }
-    },
-    "locations": [
-      6854
-    ]
-  },
   "draftroom.prospects.schoolHonors.label.65d1967c": {
     "source": "src/draftroom/prospects.js",
     "line": 164,
@@ -9834,18 +9822,6 @@
     },
     "locations": [
       7141
-    ]
-  },
-  "draftroom.prospects.schoolHonors.rj.91b38c0c": {
-    "source": "src/draftroom/prospects.js",
-    "line": 172,
-    "params": {
-      "seed": {
-        "expression": "seed"
-      }
-    },
-    "locations": [
-      7609
     ]
   },
   "draftroom.prospects.schoolHonors.event.bd2e96fc": {
