@@ -941,7 +941,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
                     .filter((c) => c.playerId)
                     .map((c) => (
                       <li key={c.id}>
-                        <strong>{__i18n_display(STAFF_LABELS[r.role])}</strong> {__i18n_display(c.name)} (등급 {__i18n_display(c.rating)})
+                        <strong>{__i18n_display(STAFF_LABELS[r.role])}</strong> {__i18n_display(c.name)} {__i18n_t("ui.decision.decision.286dd552", { rating: c.rating })}
                         <AlumnusTag league={league} m={c} onPlayer={onPlayer} />
                       </li>
                     )),

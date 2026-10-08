@@ -144,7 +144,7 @@ export function Lineup({ league, teamId, onPlayer, onAct }: { league: LeagueStat
                   {__i18n_display(p.name)}
                 </button>{__i18n_display(' ')}
                 <span class="muted small">
-                  {__i18n_display(p.throws)}투 · <ArmLine p={p} /> · {__i18n_display(p.w)}승 {__i18n_display(p.l)}패 · ERA {__i18n_display(p.era == null ? '-' : p.era.toFixed(2))}
+                  {__i18n_rich("ui.lineup.lineup.04abb99c", { throws: p.throws, arm: <ArmLine p={p} />, w: String(p.w), l: String(p.l), era: p.era == null ? '-' : p.era.toFixed(2) })}
                 </span>
                 {__i18n_display(p.next && <span class="tag">{__i18n_t("ui.lineup.lineup.ae82f6eb")}</span>)}
                 {__i18n_display(p.mine && <span class="tag" title={__i18n_t("ui.lineup.lineup.195089c9")}>{__i18n_t("ui.lineup.lineup.678af713")}</span>)}
@@ -162,7 +162,7 @@ export function Lineup({ league, teamId, onPlayer, onAct }: { league: LeagueStat
                   {__i18n_display(p.name)}
                 </button>{__i18n_display(' ')}
                 <span class="muted small">
-                  {__i18n_display(p.throws)}투 · <ArmLine p={p} /> · {__i18n_display(p.sv)}세 {__i18n_display(p.hld)}홀 · ERA {__i18n_display(p.era == null ? '-' : p.era.toFixed(2))}
+                  {__i18n_rich("ui.lineup.lineup.087033b5", { throws: p.throws, arm: <ArmLine p={p} />, sv: String(p.sv), hld: String(p.hld), era: p.era == null ? '-' : p.era.toFixed(2) })}
                 </span>
               </li>
             )))}

@@ -66,7 +66,7 @@ export function Leaders({ league, onPlayer, onBox, onAct }: { league: LeagueStat
       ))}
       {__i18n_display((view === 'batters' || view === 'pitchers') && (
         <label class="check">
-          <input type="checkbox" checked={qualifiedOnly} onChange={() => setQualifiedOnly(!qualifiedOnly)} /> 규정 {__i18n_display(view === 'batters' ? __i18n_k("ui.leaders.leaders.0a3d002c") : __i18n_k("ui.leaders.leaders.639a1f2f"))} 채운 선수만
+          <input type="checkbox" checked={qualifiedOnly} onChange={() => setQualifiedOnly(!qualifiedOnly)} /> {__i18n_t("ui.leaders.leaders.741289ec", { value: view === 'batters' ? __i18n_k("ui.leaders.leaders.0a3d002c") : __i18n_k("ui.leaders.leaders.639a1f2f") })}
         </label>
       ))}
       {__i18n_display(view === 'batters' && <BatterTable league={league} onPlayer={onPlayer} qualifiedOnly={qualifiedOnly} />)}

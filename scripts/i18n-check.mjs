@@ -344,12 +344,16 @@ const allCode = files.filter((f) => !isI18n(f)).map((f) => readFileSync(f, 'utf8
 // generator lists are covered by the name tables (checked below). Anything else is text the extraction missed.
 const preserved = new Set((loadJson(join(ROOT, 'docs/localization/preserved-strings.json'), 'json') ?? []).map((p) => `${p.source}\u0000${p.text}`));
 const koValues = new Set(Object.values(ko));
+// Patterns ("API 오류 {value}") cover literals that start like them (`API 오류 ${status}`).
+const koPatterns = Object.values(ko).filter((v) => /\{\w+\}$/.test(v)).map((v) => v.replace(/\{\w+\}$/, ''));
 const NAME_LISTS = /src\/(draftroom\/names\.js|league\/foreign\.ts)$/;
 for (const site of [...hangulSites, ...logicSites]) {
   const kept = preserved.has(`${site.file}\u0000${site.text}`) || preserved.has(`${site.file}\u0000${site.full}`);
-  const covered = koValues.has(site.full) || koValues.has(site.full.trim());
+  // JSX text renders with its line breaks and indentation collapsed to one space.
+  const covered = koValues.has(site.full) || koValues.has(site.full.trim()) || koValues.has(site.full.replace(/\s+/g, ' ').trim());
   if (NAME_LISTS.test(site.file) && site.full.length > 20) continue;
-  if (!kept && !covered) report('missedText', '', site.kind === 'text' ? 'major' : 'minor', { file: site.file, line: site.line, kind: site.kind, text: site.text });
+  const prefixed = site.kind === 'text' && /\s$/.test(site.full) && koPatterns.includes(site.full);
+  if (!kept && !covered && !prefixed) report('missedText', '', site.kind === 'text' ? 'major' : 'minor', { file: site.file, line: site.line, kind: site.kind, text: site.text });
   else if (!covered && site.kind === 'text') report('keptUncovered', '', 'minor', { file: site.file, line: site.line, text: site.text });
 }
 for (const s of hangulSites) report('hangulCode', '', 'info', s);

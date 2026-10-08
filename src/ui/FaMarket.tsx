@@ -464,7 +464,7 @@ function TalkPanel({
               </label>
             )))}
             <label class="check">
-              <input type="checkbox" checked={!!form.prepaid} onChange={(e) => set({ prepaid: (e.currentTarget as HTMLInputElement).checked || undefined })} /> 계약금을 구단 자금에서 일시불로 (연봉 예산에서 빠짐 · 쓸 수 있는 자금 {__i18n_display(moneyShort(Math.max(0, fundLeft)))})
+              <input type="checkbox" checked={!!form.prepaid} onChange={(e) => set({ prepaid: (e.currentTarget as HTMLInputElement).checked || undefined })} /> {__i18n_t("ui.faMarket.offerForm.fbaebdd5", { money: moneyShort(Math.max(0, fundLeft)) })}
             </label>
             <label class="check">
               <input
