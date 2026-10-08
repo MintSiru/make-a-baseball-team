@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../../i18n/index';
 /* Claude through the official Anthropic TypeScript SDK, called from the browser with the player's own
    key (dangerouslyAllowBrowser: the key stays in this tab). Structured output via output_config.format,
    the fixed system prompt cached. The SDK does not retry here: the story writer retries every provider
@@ -21,13 +22,13 @@ export const anthropicModel: StoryModel = {
         messages: [{ role: 'user', content: req.user }],
         output_config: { effort: 'low', format: { type: 'json_schema', schema: req.schema } },
       });
-      if (response.stop_reason === 'refusal') return { ok: false, error: 'refusal', message: '모델이 이 기사를 쓰지 않기로 했습니다.' };
+      if (response.stop_reason === 'refusal') return { ok: false, error: 'refusal', message: __i18n_k("story.providers.anthropic.generate.message.02cad08b") };
       const text = response.content.map((b) => (b.type === 'text' ? b.text : '')).join('');
       const story = parseStory(text);
-      if (!story) return { ok: false, error: 'invalid', message: '모델 응답을 읽지 못했습니다.' };
+      if (!story) return { ok: false, error: 'invalid', message: __i18n_k("story.providers.anthropic.generate.message.650c067c") };
       return { ok: true, text: story, usage: { input: response.usage.input_tokens, output: response.usage.output_tokens } };
     } catch (e) {
-      if (e instanceof Anthropic.APIConnectionError) return { ok: false, error: 'network', message: '연결하지 못했습니다.' };
+      if (e instanceof Anthropic.APIConnectionError) return { ok: false, error: 'network', message: __i18n_k("story.providers.anthropic.generate.message.8128cbeb") };
       if (e instanceof Anthropic.APIError && e.status) {
         // 529 overloaded_error is a busy server; a billing error or a spent credit balance will not pass by waiting.
         const spent = e.type === 'billing_error' || e.status === 402 || /credit balance/i.test(e.message);

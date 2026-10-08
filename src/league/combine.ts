@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The draft combine (1.3.0, from the 1.1 feedback; a game assumption — the KBO holds no combine, only a tryout for
    players outside the school system). On August 25 of the draft year the best of the class — about sixty by the
    public ranking, less the few who stay away — are measured in front of every club: a pitcher's velocity, spin and
@@ -54,9 +55,9 @@ export function combineLines(seed: string, draftYear: number, p: Player): Combin
     const spin = Math.round((2250 + (g('stuff') - 50) * 12 + (g('breaking') - 50) * 10) / 10) * 10;
     const strikes = clamp(62 + (g('command') - 50) * 0.45, 45, 78);
     return [
-      { label: '최고 구속', value: `${Math.round(velo)}km/h`, score: velo },
-      { label: '직구 회전수', value: `${spin}rpm`, score: spin },
-      { label: '스트라이크 비율', value: `${strikes.toFixed(0)}%`, score: strikes },
+      { label: __i18n_k("league.combine.combineLines.label.b2ea2c6b"), value: `${Math.round(velo)}km/h`, score: velo },
+      { label: __i18n_k("league.combine.combineLines.label.b3b8ad31"), value: `${spin}rpm`, score: spin },
+      { label: __i18n_k("league.combine.combineLines.label.7641ca40"), value: `${strikes.toFixed(0)}%`, score: strikes },
     ];
   }
   const sprint = clamp(4.35 - (g('speed') - 50) * 0.012, 3.85, 4.9);
@@ -64,10 +65,10 @@ export function combineLines(seed: string, draftYear: number, p: Player): Combin
   const arm = clamp(122 + (g('defense') - 50) * 0.5, 100, 145);
   const zone = clamp(70 + (g('eye') - 50) * 0.5, 50, 90);
   return [
-    { label: '30m 달리기', value: `${sprint.toFixed(2)}초`, score: -sprint },
-    { label: '타구 속도', value: `${Math.round(exit)}km/h`, score: exit },
-    { label: '송구 속도', value: `${Math.round(arm)}km/h`, score: arm },
-    { label: '선구 테스트', value: `${Math.round(zone)}점`, score: zone },
+    { label: __i18n_k("league.combine.combineLines.label.ef680577"), value: __i18n_k("league.combine.combineLines.value.a0874363", { value: sprint.toFixed(2) }), score: -sprint },
+    { label: __i18n_k("league.combine.combineLines.label.fa6a7e4e"), value: `${Math.round(exit)}km/h`, score: exit },
+    { label: __i18n_k("league.combine.combineLines.label.30cfe100"), value: `${Math.round(arm)}km/h`, score: arm },
+    { label: __i18n_k("league.combine.combineLines.label.4de222ef"), value: __i18n_k("league.combine.combineLines.value.c1b224c3", { value: Math.round(zone) }), score: zone },
   ];
 }
 
@@ -106,15 +107,15 @@ export function combineDay(s: LeagueState, date: string, players: () => Player[]
       .map((p) => ({ p, line: combineLines(s.seed, s.year, p).find((l) => l.label === label) }))
       .filter((x): x is { p: Player; line: CombineLine } => !!x.line)
       .sort((a, b) => b.line.score - a.line.score)[0];
-  const velo = best('최고 구속'),
-    sprint = best('30m 달리기'),
-    exit = best('타구 속도');
+  const velo = best(__i18n_k("league.combine.combineDay.velo.b2ea2c6b")),
+    sprint = best(__i18n_k("league.combine.combineDay.sprint.ef680577")),
+    exit = best(__i18n_k("league.combine.combineDay.exit.fa6a7e4e"));
   addNews(s, {
     id: `combine-${s.year}`,
     date,
     kind: 'month',
-    title: `${s.year} 드래프트 컴바인: ${came.length}명 참가`,
-    body: `신인 드래프트를 앞두고 상위 후보 ${came.length}명이 컴바인에 나섰다.${velo ? ` ${velo.p.name}의 공이 ${velo.line.value}로 가장 빨랐고,` : ''}${sprint ? ` 30m 달리기는 ${sprint.p.name}(${sprint.line.value}),` : ''}${exit ? ` 타구 속도는 ${iga(`${exit.p.name}(${exit.line.value})`)} 1위였다.` : ''} 각 구단 스카우트의 평가가 측정 결과를 따라 다시 매겨졌다. 드래프트 후보 탭에서 결과를 볼 수 있다.`,
+    title: __i18n_k("league.combine.combineDay.title.51429558", { year: s.year, length: came.length }),
+    body: __i18n_k("league.combine.combineDay.body.5733fa39", { length: came.length, value: velo ? __i18n_k("league.combine.combineDay.body.a10da8d9", { name: velo.p.name, value: velo.line.value }) : '', value2: sprint ? __i18n_k("league.combine.combineDay.body.f86b4c4f", { name: sprint.p.name, value: sprint.line.value }) : '', value3: exit ? __i18n_k("league.combine.combineDay.body.e4449607", { value: iga(`${exit.p.name}(${exit.line.value})`) }) : '' }),
     quotes: [],
     facts: { year: s.year, attended: came.length },
     players: [],
@@ -129,14 +130,14 @@ export const workoutsOf = (s: LeagueState, draftYear: number): PlayerId[] => s.u
 /** Why we cannot bring him in now, or null. */
 export function checkWorkout(s: LeagueState, draftYear: number, id: PlayerId): string | null {
   const u = s.user;
-  if (!u) return '구단이 없습니다.';
-  if (!id.startsWith(`d${draftYear}-`)) return '올해 드래프트 후보가 아닙니다.';
-  if (s.offseason?.draft && s.offseason.year === draftYear) return '드래프트가 이미 시작됐습니다.';
-  if (!combineHeld(s, draftYear)) return `워크아웃은 컴바인(${Number(C.date.slice(0, 2))}월 ${Number(C.date.slice(3))}일) 뒤에 할 수 있습니다.`;
+  if (!u) return __i18n_k("league.combine.checkWorkout.272add95");
+  if (!id.startsWith(`d${draftYear}-`)) return __i18n_k("league.combine.checkWorkout.a21e72ad");
+  if (s.offseason?.draft && s.offseason.year === draftYear) return __i18n_k("league.combine.checkWorkout.4e66852b");
+  if (!combineHeld(s, draftYear)) return __i18n_k("league.combine.checkWorkout.2d5c711e", { number: Number(C.date.slice(0, 2)), number2: Number(C.date.slice(3)) });
   const done = workoutsOf(s, draftYear);
-  if (done.includes(id)) return '이미 워크아웃을 했습니다.';
-  if (done.length >= C.workouts) return `한 해 ${C.workouts}명까지입니다.`;
-  if (u.fund < C.workoutCost) return '구단 자금이 부족합니다.';
+  if (done.includes(id)) return __i18n_k("league.combine.checkWorkout.e11fce5e");
+  if (done.length >= C.workouts) return __i18n_k("league.combine.checkWorkout.35a057be", { workouts: C.workouts });
+  if (u.fund < C.workoutCost) return __i18n_k("league.combine.checkWorkout.2ffbf119");
   return null;
 }
 
@@ -146,5 +147,5 @@ export function workout(s: LeagueState, draftYear: number, id: PlayerId, name: s
   const u = s.user!;
   ((u.workouts ??= {})[draftYear] ??= []).push(id);
   u.fund -= C.workoutCost;
-  u.ledger.push({ year: s.year, label: `${name} 개인 워크아웃`, amount: -C.workoutCost });
+  u.ledger.push({ year: s.year, label: __i18n_k("league.combine.workout.label.79216ba4", { name: name }), amount: -C.workoutCost });
 }

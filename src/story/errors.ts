@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* What a failed API call means for the player, the same way for every provider: the error kind, a short
    Korean explanation with the status code, and how long the server asked us to wait. */
 import type { StoryError, StoryFailure } from './types';
@@ -37,19 +38,19 @@ export function errorOf(status: number): StoryError {
     own short message, shown for requests it refused. */
 export function failure(status: number, opts: { kind?: StoryError; daily?: boolean; retryAfter?: number; detail?: string } = {}): StoryFailure {
   const error = opts.kind ?? errorOf(status);
-  const wait = opts.retryAfter ? `약 ${opts.retryAfter}초 뒤에` : '잠시 뒤에';
+  const wait = opts.retryAfter ? __i18n_k("story.errors.failure.wait.b90e0983", { retryAfter: opts.retryAfter }) : __i18n_k("story.errors.failure.wait.c4529ba3");
   const detail = opts.detail ? ` (${opts.detail.slice(0, 120)})` : '';
   const message: Record<StoryError, string> = {
-    auth: `API 키를 확인하세요 (${status}).`,
-    rate: `요청이 몰려 사용 한도(분당 요청·토큰)에 걸렸습니다 (${status}). ${wait} 다시 시도하세요.`,
+    auth: __i18n_k("story.errors.message.auth.2342147c", { status: status }),
+    rate: __i18n_k("story.errors.message.rate.aeb92071", { status: status, wait: wait }),
     quota: opts.daily
-      ? `오늘 쓸 수 있는 요청을 다 썼습니다 (${status}). 하루 한도는 다음 날 다시 채워지니 그때 쓰거나 제공자 사이트에서 등급·결제를 확인하세요.`
-      : `계정의 사용 한도나 크레딧이 바닥났습니다 (${status}). 기다려도 풀리지 않으니 제공자 사이트에서 결제·한도를 확인하세요.`,
-    busy: `제공자 서버가 혼잡하거나 잠시 멈췄습니다 (${status}). ${wait} 다시 시도하거나 다른 모델을 고르세요.`,
-    invalid: `요청이 거절됐습니다 (${status}). 모델 이름을 확인하세요.${detail}`,
-    refusal: '모델이 이 기사를 쓰지 않기로 했습니다.',
-    network: '연결하지 못했습니다.',
-    unknown: `API 오류 ${status}.${detail}`,
+      ? __i18n_k("story.errors.message.quota.4221ee17", { status: status })
+      : __i18n_k("story.errors.message.quota.c0f826d5", { status: status }),
+    busy: __i18n_k("story.errors.message.busy.65759cb4", { status: status, wait: wait }),
+    invalid: __i18n_k("story.errors.message.invalid.7d1ab974", { status: status, detail: detail }),
+    refusal: __i18n_k("story.errors.message.refusal.02cad08b"),
+    network: __i18n_k("story.errors.message.network.8128cbeb"),
+    unknown: __i18n_k("story.errors.message.unknown.6ccc4152", { status: status, detail: detail }),
   };
   return { ok: false, error, message: message[error], ...(opts.retryAfter ? { retryAfter: opts.retryAfter } : {}) };
 }

@@ -1,3 +1,4 @@
+import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* 판타지 드래프트의 지명판 (1.6.0): the whole league on the board, our scouts' order first, with where each played,
    his pay next season and how many years he is signed for. */
 import { useMemo, useState } from 'preact/hooks';
@@ -12,13 +13,13 @@ import { gradeClass } from './grades';
 import { positionKey, useSort } from './sort';
 
 const KINDS: [string, string][] = [
-  ['all', '전체'],
-  ['SP', '선발'],
-  ['RP', '불펜'],
-  ['C', '포수'],
-  ['IF', '내야'],
-  ['OF', '외야'],
-  ['rookie', '신인'],
+  ['all', __i18n_k("ui.fantasyDraft.kINDS.934dd25e")],
+  ['SP', __i18n_k("ui.fantasyDraft.kINDS.a88271df")],
+  ['RP', __i18n_k("ui.fantasyDraft.kINDS.5b8607a3")],
+  ['C', __i18n_k("ui.fantasyDraft.kINDS.5f31470d")],
+  ['IF', __i18n_k("ui.fantasyDraft.kINDS.0c733fda")],
+  ['OF', __i18n_k("ui.fantasyDraft.kINDS.aa487065")],
+  ['rookie', __i18n_k("ui.fantasyDraft.kINDS.95c461d4")],
 ];
 const KIND_TARGET: Record<string, number> = { SP: 13, RP: 15, C: 5, IF: 12, OF: 10 };
 
@@ -48,82 +49,71 @@ export function FantasyBoard({ league, onPlayer, onPick }: { league: LeagueState
   for (let i = f.next + 1; i < f.order.length * f.rounds && fantasyTeamAt(f, i) !== u.teamId; i++) until++;
   return (
     <>
-      <p>
-        {fantasyRound(f)}라운드 / {f.rounds}라운드 · 전체 {f.next + 1}번째 지명. 남은 선수 {f.pool.length}명. 이번 지명 뒤 다른 구단이 {until}명을 먼저 뽑습니다.
-      </p>
-      <p class="muted small">
-        지명 순서(추첨, 짝수 라운드는 거꾸로): {f.order.map((id) => shortName(league, id)).join(' → ')}
-      </p>
+      <p>{__i18n_t("ui.fantasyDraft.fantasyBoard.0cdc8de0", { fantasyRound: fantasyRound(f), rounds: f.rounds, value: f.next + 1, length: f.pool.length, until: until })}</p>
+      <p class="muted small">{__i18n_t("ui.fantasyDraft.fantasyBoard.9044acc9", { value: f.order.map((id) => shortName(league, id)).join(' → ') })}</p>
       <dl class="facts compact">
-        {(['SP', 'RP', 'C', 'IF', 'OF'] as const).map((k) => (
+        {__i18n_display((['SP', 'RP', 'C', 'IF', 'OF'] as const).map((k) => (
           <div key={k}>
-            <dt>{KINDS.find((x) => x[0] === k)![1]}</dt>
+            <dt>{__i18n_display(KINDS.find((x) => x[0] === k)![1])}</dt>
             <dd class={(counts[k] ?? 0) < KIND_TARGET[k]! / 2 ? 'warn' : undefined}>
-              {counts[k] ?? 0} / {KIND_TARGET[k]}
+              {__i18n_display(counts[k] ?? 0)} / {__i18n_display(KIND_TARGET[k])}
             </dd>
           </div>
-        ))}
+        )))}
         <div>
-          <dt>{next} 연봉 합계</dt>
-          <dd>
-            {money(fantasyPay(league, f))} / 예산 {money(u.payrollBudget)}
-          </dd>
+          <dt>{__i18n_t("ui.fantasyDraft.fantasyBoard.601988eb", { next: next })}</dt>
+          <dd>{__i18n_t("ui.fantasyDraft.fantasyBoard.8971b2ac", { money: money(fantasyPay(league, f)), money2: money(u.payrollBudget) })}</dd>
         </div>
       </dl>
-      {ours.length > 0 && (
-        <p class="muted small">
-          지명한 선수 {ours.length}명: {ours.slice(-8).map((x) => league.players[x.id]?.name ?? '').join(', ')}
-          {ours.length > 8 ? ' …' : ''}
-        </p>
-      )}
-      <div class="segmented" role="group" aria-label="포지션">
-        {KINDS.map(([k, label]) => (
+      {__i18n_display(ours.length > 0 && (
+        <p class="muted small">{__i18n_t("ui.fantasyDraft.fantasyBoard.bd1a75b2", { length: ours.length, value: ours.slice(-8).map((x) => league.players[x.id]?.name ?? '').join(', '), value2: ours.length > 8 ? ' …' : '' })}</p>
+      ))}
+      <div class="segmented" role="group" aria-label={__i18n_t("ui.fantasyDraft.fantasyBoard.81922a91")}>
+        {__i18n_display(KINDS.map(([k, label]) => (
           <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)}>
-            {label}
+            {__i18n_display(label)}
           </button>
-        ))}
+        )))}
       </div>
-      <p class="muted small">"평가"는 스카우트의 순위 기준: 공개 등급(젊은 선수는 미래 등급을 섞음)에 우리 구단에 모자란 포지션, 나이, 샐러리캡을 넘는 연봉을 따집니다. 제목을 누르면 정렬됩니다.</p>
+      <p class="muted small">{__i18n_t("ui.fantasyDraft.fantasyBoard.b1c1f810")}</p>
       <div class="table-wrap" tabIndex={0}>
         <table class="record-table pick-table">
           <thead>
             <tr>
-              {th('score', '평가', true)}
-              {th('name', '이름')}
-              {th('pos', '포지션')}
-              {th('age', '나이', true)}
-              {th('from', '전 소속')}
-              {th('current', '현재', true)}
-              {th('future', '미래', true)}
-              {th('pay', `${next} 연봉`, true)}
-              {th('years', '계약', true)}
-              <th aria-label="지명" />
+              {__i18n_display(th('score', __i18n_k("ui.fantasyDraft.fantasyBoard.0ca35448"), true))}
+              {__i18n_display(th('name', __i18n_k("ui.fantasyDraft.fantasyBoard.9aa18e50")))}
+              {__i18n_display(th('pos', __i18n_k("ui.fantasyDraft.fantasyBoard.81922a91")))}
+              {__i18n_display(th('age', __i18n_k("ui.fantasyDraft.fantasyBoard.6c620e5c"), true))}
+              {__i18n_display(th('from', __i18n_k("ui.fantasyDraft.fantasyBoard.508ec37e")))}
+              {__i18n_display(th('current', __i18n_k("ui.fantasyDraft.fantasyBoard.001e4be2"), true))}
+              {__i18n_display(th('future', __i18n_k("ui.fantasyDraft.fantasyBoard.6e0caec5"), true))}
+              {__i18n_display(th('pay', __i18n_k("ui.fantasyDraft.fantasyBoard.982c159c", { next: next }), true))}
+              {__i18n_display(th('years', __i18n_k("ui.fantasyDraft.fantasyBoard.b4116369"), true))}
+              <th aria-label={__i18n_t("ui.fantasyDraft.fantasyBoard.68a26d9d")} />
             </tr>
           </thead>
           <tbody>
-            {sorted.map((x) => (
+            {__i18n_display(sorted.map((x) => (
               <tr key={x.p.id} class="player-row">
-                <td class="num">{Math.round(x.score)}</td>
+                <td class="num">{__i18n_display(Math.round(x.score))}</td>
                 <td>
                   <button type="button" class="link" onClick={() => onPlayer(x.p.id)}>
-                    {x.p.name}
+                    {__i18n_display(x.p.name)}
                   </button>
-                  {!x.from && <span class="tag">신인</span>}
+                  {__i18n_display(!x.from && <span class="tag">{__i18n_t("ui.fantasyDraft.fantasyBoard.95c461d4")}</span>)}
                 </td>
-                <td>{positionLabel(x.p)}</td>
-                <td class="num">{ageIn(x.p, next)}</td>
-                <td class="muted">{x.from ? shortName(league, x.from) : x.p.origin.pathway}</td>
-                <td class={`num ${gradeClass(x.p.scouting.current)}`}>{x.p.scouting.current}</td>
-                <td class={`num strong ${gradeClass(x.p.scouting.futureValue)}`}>{x.p.scouting.futureValue}</td>
-                <td class="num">{x.from ? money(salaryIn(x.p, next)) : '신인 계약'}</td>
-                <td class="num">{x.from ? `${years(x.p.id)}년` : '-'}</td>
+                <td>{__i18n_display(positionLabel(x.p))}</td>
+                <td class="num">{__i18n_display(ageIn(x.p, next))}</td>
+                <td class="muted">{__i18n_display(x.from ? shortName(league, x.from) : x.p.origin.pathway)}</td>
+                <td class={`num ${gradeClass(x.p.scouting.current)}`}>{__i18n_display(x.p.scouting.current)}</td>
+                <td class={`num strong ${gradeClass(x.p.scouting.futureValue)}`}>{__i18n_display(x.p.scouting.futureValue)}</td>
+                <td class="num">{__i18n_display(x.from ? money(salaryIn(x.p, next)) : __i18n_k("ui.fantasyDraft.fantasyBoard.e100568e"))}</td>
+                <td class="num">{__i18n_display(x.from ? __i18n_k("ui.fantasyDraft.fantasyBoard.044a2535", { years: years(x.p.id) }) : '-')}</td>
                 <td>
-                  <button type="button" class="pick" onClick={() => onPick(x.p.id)}>
-                    지명
-                  </button>
+                  <button type="button" class="pick" onClick={() => onPick(x.p.id)}>{__i18n_t("ui.fantasyDraft.fantasyBoard.68a26d9d")}</button>
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>

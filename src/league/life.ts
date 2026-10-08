@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Life off the field (V0.10): what happens to the user's players away from the game, and what fans think of every
    player.
 
@@ -96,9 +97,9 @@ export function farewell(s: LeagueState, p: Player, from: TeamId, how: string, d
   addNews(s, {
     date,
     kind: 'move',
-    title: `팬들이 사랑한 ${p.name}, ${how}로 떠나`,
-    body: `${short(s, from)} 팬들이 아끼던 ${iga(p.name)} ${how}로 팀을 떠난다(팬 호감도 ${love}). 구단 게시판과 SNS에는 아쉬움을 담은 글이 이어졌다.`,
-    quotes: [{ who: '팬', role: 'fan', text: love >= 80 ? '이건 정말 받아들이기 힘들다' : '고마웠다, 어디서든 응원할게' }],
+    title: __i18n_k("league.life.farewell.title.14eb1471", { name: p.name, how: how }),
+    body: __i18n_k("league.life.farewell.body.43ee73a8", { short: short(s, from), name: iga(p.name), how: how, love: love }),
+    quotes: [{ who: __i18n_k("league.life.quotes.who.724cc77d"), role: 'fan', text: love >= 80 ? __i18n_k("league.life.quotes.text.3074c2b9") : __i18n_k("league.life.quotes.text.289efa77") }],
     facts: { player: p.name, fondness: love, how },
     players: [p.id],
     mine: true,
@@ -137,18 +138,18 @@ type Kind = 'birth' | 'loss' | 'hot' | 'cold' | 'fanService' | 'charity' | 'row'
 type Extra = 'extraWork' | 'mentor' | 'commercial' | 'variety' | 'hometownCheer' | 'feud' | 'grumble';
 const WEIGHTS = Object.entries(L.weights) as [Kind, number][];
 
-const FAN_SERVICE = ['경기 뒤 1시간 넘게 사인을 해 줘', '병원에 있는 어린이 팬을 찾아가', '홈런 공을 주운 어린이 팬에게 배트를 선물해', '비 오는 날 우비를 입고 끝까지 팬 사인회를 지켜'];
-const CHARITY = ['모교에 야구용품을', '지역 아동센터에 성금을', '소아암 환우를 위해 기부금을', '홈런 하나당 적립한 돈을 유소년 야구에'];
-const ROWS = ['SNS 발언이 논란이 돼', '팬과의 말다툼 영상이 퍼져', '경기 중 행동이 비매너 논란을 불러'];
-const ACCIDENTS = ['집에서 손가락을 베여', '가벼운 교통사고로 목 근육을 다쳐', '훈련 중 발목을 접질려'];
-const FAMILY = ['부친상', '모친상', '조부상', '조모상'];
+const FAN_SERVICE = [__i18n_k("league.life.fAN_SERVICE.2189f36c"), __i18n_k("league.life.fAN_SERVICE.fbacc347"), __i18n_k("league.life.fAN_SERVICE.6bb2138f"), __i18n_k("league.life.fAN_SERVICE.3526e66a")];
+const CHARITY = [__i18n_k("league.life.cHARITY.339563a8"), __i18n_k("league.life.cHARITY.a8979bab"), __i18n_k("league.life.cHARITY.d7254dd1"), __i18n_k("league.life.cHARITY.0405454b")];
+const ROWS = [__i18n_k("league.life.rOWS.282a1c5b"), __i18n_k("league.life.rOWS.238a3286"), __i18n_k("league.life.rOWS.cec3be51")];
+const ACCIDENTS = [__i18n_k("league.life.aCCIDENTS.fac9342b"), __i18n_k("league.life.aCCIDENTS.6469c74b"), __i18n_k("league.life.aCCIDENTS.5cfe12c8")];
+const FAMILY = [__i18n_k("league.life.fAMILY.9bdf45f2"), __i18n_k("league.life.fAMILY.0ff67ad2"), __i18n_k("league.life.fAMILY.fb14d857"), __i18n_k("league.life.fAMILY.d2e54d40")];
 const EXTRA_WORK: Record<'pitcher' | 'hitter', string[]> = {
-  pitcher: ['경기 뒤 불펜에서 공 50개를 더 던지며', '새벽 6시에 구장에 나와 투구 영상을 돌려 보며', '휴식일에도 나와 하체 훈련을 하며'],
-  hitter: ['경기 뒤 특타를 자청해 배트를 300번 넘게 휘두르며', '새벽 6시에 구장에 나와 티 배팅을 하며', '휴식일에도 실내 연습장에서 스윙을 다듬으며'],
+  pitcher: [__i18n_k("league.life.eXTRA_WORK.pitcher.6f117e8d"), __i18n_k("league.life.eXTRA_WORK.pitcher.74fdac48"), __i18n_k("league.life.eXTRA_WORK.pitcher.4d33656e")],
+  hitter: [__i18n_k("league.life.eXTRA_WORK.hitter.4074dbdf"), __i18n_k("league.life.eXTRA_WORK.hitter.8c36028d"), __i18n_k("league.life.eXTRA_WORK.hitter.a74ec075")],
 };
-const COMMERCIALS = ['스포츠음료', '치킨 프랜차이즈', '지역 은행', '야구 게임', '아웃도어 브랜드'];
-const SHOWS = ['예능 프로그램', '유튜브 야구 채널', '라디오 프로그램', '먹방 콘텐츠'];
-const FEUDS = ['더그아웃에서 언성을 높이며', '수비 실책을 두고 말다툼을 벌이며', '훈련 방식을 두고 부딪히며'];
+const COMMERCIALS = [__i18n_k("league.life.cOMMERCIALS.58368dbf"), __i18n_k("league.life.cOMMERCIALS.d17b218f"), __i18n_k("league.life.cOMMERCIALS.e586b94e"), __i18n_k("league.life.cOMMERCIALS.d24f78d5"), __i18n_k("league.life.cOMMERCIALS.5d8d1358")];
+const SHOWS = [__i18n_k("league.life.sHOWS.43fe8698"), __i18n_k("league.life.sHOWS.28a196ea"), __i18n_k("league.life.sHOWS.55c51429"), __i18n_k("league.life.sHOWS.ab52a761")];
+const FEUDS = [__i18n_k("league.life.fEUDS.80f13c01"), __i18n_k("league.life.fEUDS.e3ba60d1"), __i18n_k("league.life.fEUDS.a8743417")];
 
 const pickOf = <T,>(xs: readonly T[], r: () => number) => xs[Math.floor(r() * xs.length)]!;
 
@@ -237,7 +238,7 @@ export function lifeDay(s: LeagueState, date: string): PlayerId | null {
   let y = r() * weights.reduce((a, b) => a + b, 0);
   const p = pool[weights.findIndex((w) => (y -= w) < 0)] ?? pool.at(-1)!;
   const onFirst = s.rosters[u.teamId]!.active.includes(p.id);
-  const main = isPitcher(p) ? '구위' : '타격감';
+  const main = isPitcher(p) ? __i18n_k("league.life.lifeDay.main.6ff2c5c1") : __i18n_k("league.life.lifeDay.main.4f218994");
   let title = '',
     body = '',
     tone: 'good' | 'bad' | undefined;
@@ -248,13 +249,13 @@ export function lifeDay(s: LeagueState, date: string): PlayerId | null {
       life.kids = (life.kids ?? 0) + 1;
       life.lastBirth = year;
       const days = L.leave.birth[0] + Math.floor(r() * (L.leave.birth[1] - L.leave.birth[0] + 1));
-      const child = r() < 0.5 ? '득남' : '득녀';
+      const child = r() < 0.5 ? __i18n_k("league.life.lifeDay.child.ba81d8e5") : __i18n_k("league.life.lifeDay.child.56c513e2");
       if (onFirst) s.away[p.id] = addDays(date, days - 1);
       setForm(p, L.form.baby, addDays(date, onFirst ? days : 0), 14, child);
       adjustFans(p, 3);
-      title = `${p.name}, ${child}${life.kids > 1 ? ` (${life.kids}번째)` : ''}`;
-      body = `${iga(p.name)} ${date.slice(5).replace('-', '월 ')}일 ${child}했다.${onFirst ? ` 경조사 휴가로 ${days}일 1군에서 빠지며, 이 기간도 등록일수로 인정된다.` : ''} 아빠가 된 뒤 힘이 난다는 '분유 버프'를 기대하는 팬이 많다.`;
-      quotes.push({ who: p.name, role: 'player', text: '아이 얼굴을 보니 더 책임감이 생깁니다. 돌아가서 더 잘하겠습니다.' });
+      title = __i18n_k("league.life.lifeDay.fa8a46e7", { name: p.name, child: child, value: life.kids > 1 ? __i18n_k("league.life.lifeDay.10136944", { kids: life.kids }) : '' });
+      body = __i18n_k("league.life.lifeDay.b994f585", { name: iga(p.name), value: date.slice(5).replace('-', '월 '), child: child, value2: onFirst ? __i18n_k("league.life.lifeDay.639746a9", { days: days }) : '' });
+      quotes.push({ who: p.name, role: 'player', text: __i18n_k("league.life.lifeDay.text.42b1fecc") });
       tone = 'good';
       break;
     }
@@ -265,101 +266,101 @@ export function lifeDay(s: LeagueState, date: string): PlayerId | null {
       setForm(p, L.form.loss, addDays(date, onFirst ? days : 0), 10, what);
       adjustFans(p, 2);
       title = `${p.name}, ${what}`;
-      body = `${iga(p.name)} ${what}을 당했다.${onFirst ? ` 경조사 휴가로 ${days}일 동안 1군에서 빠진다(등록일수 인정).` : ''} 구단과 동료들이 빈소를 찾았다.`;
-      quotes.push({ who: '팬', role: 'fan', text: '마음 잘 추스르고 돌아오세요' });
+      body = __i18n_k("league.life.lifeDay.1304c609", { name: iga(p.name), what: what, value: onFirst ? __i18n_k("league.life.lifeDay.d5642763", { days: days }) : '' });
+      quotes.push({ who: __i18n_k("league.life.lifeDay.who.724cc77d"), role: 'fan', text: __i18n_k("league.life.lifeDay.text.bc591b6d") });
       break;
     }
     case 'hot': {
       const days = 10 + Math.floor(r() * 6);
-      setForm(p, L.form.hot, date, days, `${main} 절정`);
-      title = `${p.name}, ${main} 절정`;
-      body = `${p.name}의 ${main}이(가) 최고조다. 코칭스태프는 "요즘 컨디션이 가장 좋다"고 했다.`;
+      setForm(p, L.form.hot, date, days, __i18n_k("league.life.lifeDay.531b5109", { main: main }));
+      title = __i18n_k("league.life.lifeDay.94708547", { name: p.name, main: main });
+      body = __i18n_k("league.life.lifeDay.218899e5", { name: p.name, main: main });
       tone = 'good';
       break;
     }
     case 'cold': {
       const days = 12 + Math.floor(r() * 9);
-      setForm(p, L.form.cold, date, days, '슬럼프');
-      title = `${p.name}, 깊은 슬럼프`;
-      body = `${iga(p.name)} 슬럼프에 빠졌다. ${isPitcher(p) ? '공에 힘이 없고 제구가 흔들린다' : '타이밍이 맞지 않아 범타가 이어진다'}. 감독은 "곧 제 모습을 찾을 것"이라고 했다.`;
+      setForm(p, L.form.cold, date, days, __i18n_k("league.life.lifeDay.1fcc8b09"));
+      title = __i18n_k("league.life.lifeDay.8471cc6d", { name: p.name });
+      body = __i18n_k("league.life.lifeDay.848c05f6", { name: iga(p.name), value: isPitcher(p) ? __i18n_k("league.life.lifeDay.149785e2") : __i18n_k("league.life.lifeDay.8edcab3b") });
       tone = 'bad';
       break;
     }
     case 'fanService': {
       adjustFans(p, 4);
-      title = `${p.name}의 팬 서비스 미담`;
-      body = `${iga(p.name)} ${pickOf(FAN_SERVICE, r)} 팬들 사이에 화제가 됐다.`;
-      quotes.push({ who: '팬', role: 'fan', text: '이래서 이 선수를 좋아한다' });
+      title = __i18n_k("league.life.lifeDay.924ce6d9", { name: p.name });
+      body = __i18n_k("league.life.lifeDay.e699b5bb", { name: iga(p.name), pickOf: pickOf(FAN_SERVICE, r) });
+      quotes.push({ who: __i18n_k("league.life.lifeDay.who.724cc77d"), role: 'fan', text: __i18n_k("league.life.lifeDay.text.02756c1f") });
       tone = 'good';
       break;
     }
     case 'charity': {
       adjustFans(p, 5);
-      title = `${p.name}, 기부로 훈훈`;
-      body = `${iga(p.name)} ${pickOf(CHARITY, r)} 기부했다. 알려지지 않게 해 달라고 했지만 받은 곳에서 소식을 전했다.`;
+      title = __i18n_k("league.life.lifeDay.4d10383c", { name: p.name });
+      body = __i18n_k("league.life.lifeDay.3c611e6d", { name: iga(p.name), pickOf: pickOf(CHARITY, r) });
       tone = 'good';
       break;
     }
     case 'row': {
       adjustFans(p, -6);
-      setForm(p, L.form.row, date, 7, '구설');
-      title = `${p.name}, 구설에 사과`;
-      body = `${iga(p.name)} ${pickOf(ROWS, r)} 고개를 숙였다. 구단은 "선수에게 주의를 줬다"고 밝혔다.`;
-      quotes.push({ who: '팬', role: 'fan', text: '실망이다, 행동으로 보여 줘라' });
+      setForm(p, L.form.row, date, 7, __i18n_k("league.life.lifeDay.8ab841fb"));
+      title = __i18n_k("league.life.lifeDay.222219cc", { name: p.name });
+      body = __i18n_k("league.life.lifeDay.f0af0f1d", { name: iga(p.name), pickOf: pickOf(ROWS, r) });
+      quotes.push({ who: __i18n_k("league.life.lifeDay.who.724cc77d"), role: 'fan', text: __i18n_k("league.life.lifeDay.text.bddab9f3") });
       tone = 'bad';
       break;
     }
     case 'accident': {
       const days = 3 + Math.floor(r() * 5);
       const what = pickOf(ACCIDENTS, r);
-      s.injuries[p.id] = { until: addDays(date, days + 1), days, onList: false, dtd: true, part: '일상 중 부상' };
-      title = `${p.name}, ${days}일 안팎 결장`;
-      body = `${iga(p.name)} ${what} ${days}일쯤 쉬어 간다. 큰 부상은 아니다.`;
+      s.injuries[p.id] = { until: addDays(date, days + 1), days, onList: false, dtd: true, part: __i18n_k("league.life.lifeDay.part.fb307b9f") };
+      title = __i18n_k("league.life.lifeDay.a434fede", { name: p.name, days: days });
+      body = __i18n_k("league.life.lifeDay.0f7785fd", { name: iga(p.name), what: what, days: days });
       tone = 'bad';
       break;
     }
     case 'extraWork': {
-      setForm(p, L.form.hot * 0.6, addDays(date, 2), 10, '특훈');
+      setForm(p, L.form.hot * 0.6, addDays(date, 2), 10, __i18n_k("league.life.lifeDay.52ffd42c"));
       adjustFans(p, 2);
-      title = `${p.name}, 특훈 자청`;
-      body = `${iga(p.name)} ${pickOf(EXTRA_WORK[isPitcher(p) ? 'pitcher' : 'hitter'], r)} 땀을 흘리고 있다. 코치진은 "말리지 않으면 쉬지를 않는다"며 웃었다.`;
-      quotes.push({ who: p.name, role: 'player', text: '잘될 때 더 해 둬야 안 될 때 버틸 수 있습니다.' });
+      title = __i18n_k("league.life.lifeDay.42eef062", { name: p.name });
+      body = __i18n_k("league.life.lifeDay.f03cf20d", { name: iga(p.name), pickOf: pickOf(EXTRA_WORK[isPitcher(p) ? 'pitcher' : 'hitter'], r) });
+      quotes.push({ who: p.name, role: 'player', text: __i18n_k("league.life.lifeDay.text.30f7d5a9") });
       tone = 'good';
       break;
     }
     case 'mentor': {
       const vet = mentorFor(s, p, year)!;
-      setForm(p, L.form.hot * 0.8, date, 12, `${vet.name}의 조언`);
+      setForm(p, L.form.hot * 0.8, date, 12, __i18n_k("league.life.lifeDay.defee7c6", { name: vet.name }));
       adjustFans(vet, 2);
-      note(vet, date, `후배 ${p.name}에게 조언`, 'good');
-      title = `${p.name}, 선배 ${vet.name}의 조언에 반등`;
-      body = `${iga(p.name)} ${vet.name}의 조언을 듣고 달라졌다. ${iga(vet.name)} ${isPitcher(p) ? '투구 템포와 마운드 위 마음가짐' : '타석에서의 노림수와 루틴'}을 짚어 줬다고 한다.`;
-      quotes.push({ who: p.name, role: 'player', text: `${vet.name} 선배님이 하신 말씀을 매일 되새기고 있습니다.` });
+      note(vet, date, __i18n_k("league.life.lifeDay.1515cbd5", { name: p.name }), 'good');
+      title = __i18n_k("league.life.lifeDay.0d97a14e", { name: p.name, name2: vet.name });
+      body = __i18n_k("league.life.lifeDay.584cc12f", { name: iga(p.name), name2: vet.name, name3: iga(vet.name), value: isPitcher(p) ? __i18n_k("league.life.lifeDay.91a5042c") : __i18n_k("league.life.lifeDay.04946a96") });
+      quotes.push({ who: p.name, role: 'player', text: __i18n_k("league.life.lifeDay.text.6d775b2f", { name: vet.name }) });
       tone = 'good';
       break;
     }
     case 'commercial': {
       adjustFans(p, 3);
-      title = `${p.name}, 광고 모델 발탁`;
-      body = `${iga(p.name)} ${pickOf(COMMERCIALS, r)} 광고 모델이 됐다. 구단 상품 판매에도 도움이 될 전망이다.`;
-      quotes.push({ who: '팬', role: 'fan', text: '광고 보고 바로 유니폼 샀다' });
+      title = __i18n_k("league.life.lifeDay.93913486", { name: p.name });
+      body = __i18n_k("league.life.lifeDay.ca1adf26", { name: iga(p.name), pickOf: pickOf(COMMERCIALS, r) });
+      quotes.push({ who: __i18n_k("league.life.lifeDay.who.724cc77d"), role: 'fan', text: __i18n_k("league.life.lifeDay.text.1c5bcc7f") });
       tone = 'good';
       break;
     }
     case 'variety': {
       adjustFans(p, 3);
-      title = `${p.name}, ${pickOf(SHOWS, r)} 출연으로 화제`;
-      body = `${iga(p.name)} 쉬는 날 출연한 방송이 화제가 됐다. 야구장 밖 모습에 새 팬이 늘었다는 평이다.`;
-      quotes.push({ who: '팬', role: 'fan', text: '이렇게 웃긴 사람인 줄 몰랐다' });
+      title = __i18n_k("league.life.lifeDay.456d9fd8", { name: p.name, pickOf: pickOf(SHOWS, r) });
+      body = __i18n_k("league.life.lifeDay.1bb4ac47", { name: iga(p.name) });
+      quotes.push({ who: __i18n_k("league.life.lifeDay.who.724cc77d"), role: 'fan', text: __i18n_k("league.life.lifeDay.text.83395b98") });
       tone = 'good';
       break;
     }
     case 'hometownCheer': {
       adjustFans(p, 3);
-      setForm(p, 1, date, 5, '고향 팬 응원');
-      title = `${p.name}의 고향 팬들, 단체 응원`;
-      body = `${p.name}의 고향 사람들이 버스를 빌려 야구장을 찾았다. 응원 현수막이 외야를 채웠다.`;
-      quotes.push({ who: p.name, role: 'player', text: '어릴 때부터 저를 봐 주신 분들이라 더 힘이 났습니다.' });
+      setForm(p, 1, date, 5, __i18n_k("league.life.lifeDay.99423aba"));
+      title = __i18n_k("league.life.lifeDay.f74dddb0", { name: p.name });
+      body = __i18n_k("league.life.lifeDay.e1caed67", { name: p.name });
+      quotes.push({ who: p.name, role: 'player', text: __i18n_k("league.life.lifeDay.text.897f98c6") });
       tone = 'good';
       break;
     }
@@ -370,19 +371,19 @@ export function lifeDay(s: LeagueState, date: string): PlayerId | null {
       );
       const leader = s.rosters[u.teamId]!.active.map((id) => s.players[id]!).find((q) => q !== p && q !== other && ageIn(q, year) >= 28 && traitsOf(q).leadership >= 70);
       const hit = leader ? L.form.row / 2 : L.form.row * 1.5;
-      setForm(p, hit, date, 7, '불화');
-      if (other && !formOf(other, date)) setForm(other, hit, date, 7, '불화');
+      setForm(p, hit, date, 7, __i18n_k("league.life.lifeDay.bee0823a"));
+      if (other && !formOf(other, date)) setForm(other, hit, date, 7, __i18n_k("league.life.lifeDay.bee0823a"));
       adjustFans(p, -2);
-      title = `${p.name}, ${other?.name ?? '동료'}와 신경전`;
-      body = `${iga(p.name)} ${other?.name ?? '동료'}와 ${pickOf(FEUDS, r)} 분위기가 얼어붙었다.${leader ? ` ${iga(leader.name)} 둘을 불러 이야기를 나눴고, 이튿날 둘은 웃으며 훈련했다.` : ' 감독이 직접 면담에 나섰다.'}`;
+      title = __i18n_k("league.life.lifeDay.39bc27c1", { name: p.name, value: other?.name ?? __i18n_k("league.life.lifeDay.affa151c") });
+      body = __i18n_k("league.life.lifeDay.bd46d773", { name: iga(p.name), value: other?.name ?? __i18n_k("league.life.lifeDay.affa151c"), pickOf: pickOf(FEUDS, r), value2: leader ? __i18n_k("league.life.lifeDay.e2ce6ee0", { name: iga(leader.name) }) : __i18n_k("league.life.lifeDay.a57f02c8") });
       tone = 'bad';
       break;
     }
     case 'grumble': {
       adjustFans(p, -1);
-      title = `${p.name}, 출전 기회 아쉬움 토로`;
-      body = `퓨처스에 머무는 ${iga(p.name)} 지인들에게 "1군에서 뛸 수 있는 곳이라면 어디든 가고 싶다"는 속내를 털어놓은 것으로 알려졌다.`;
-      quotes.push({ who: '팬', role: 'fan', text: '기회 한번 줘 보자' });
+      title = __i18n_k("league.life.lifeDay.124eb9b8", { name: p.name });
+      body = __i18n_k("league.life.lifeDay.9fafbe5e", { name: iga(p.name) });
+      quotes.push({ who: __i18n_k("league.life.lifeDay.who.724cc77d"), role: 'fan', text: __i18n_k("league.life.lifeDay.text.02cbfddb") });
       tone = 'bad';
       break;
     }
@@ -399,14 +400,14 @@ export function lifeDay(s: LeagueState, date: string): PlayerId | null {
 
 const WORK: Record<'pitcher' | 'hitter', [import('../draftroom').ToolKey, string][]> = {
   pitcher: [
-    ['stuff', '하체 근력을 키워 구속을 올리려'],
-    ['command', '투구 동작을 다듬어 제구를 잡으려'],
-    ['stamina', '체중을 늘리고 체력을 길러'],
+    ['stuff', __i18n_k("league.life.wORK.pitcher.f699c0f0")],
+    ['command', __i18n_k("league.life.wORK.pitcher.44e8b540")],
+    ['stamina', __i18n_k("league.life.wORK.pitcher.9d61324e")],
   ],
   hitter: [
-    ['power', '벌크업으로 장타를 늘리려'],
-    ['contact', '레그킥을 줄여 정확도를 높이려'],
-    ['speed', '체중을 줄여 몸을 가볍게 하려'],
+    ['power', __i18n_k("league.life.wORK.hitter.08a2dbb7")],
+    ['contact', __i18n_k("league.life.wORK.hitter.f7e5edeb")],
+    ['speed', __i18n_k("league.life.wORK.hitter.faa2dbc4")],
   ],
 };
 
@@ -423,13 +424,13 @@ export function lifeWinter(s: LeagueState, year: number) {
     if (!isMarried(s, p, year) && age >= 26 && age <= 33 && r() < W.marry) {
       (p.life ??= {}).married = year;
       adjustFans(p, 2);
-      note(p, date, '결혼', 'good');
-      addNews(s, { id: `wed-${year}-${p.id}`, date, kind: 'interview', title: `${p.name}, 백년가약`, body: `${iga(p.name)} ${date.slice(5).replace('-', '월 ')}일 결혼식을 올렸다. 동료들이 축가와 사회를 맡았다.`, quotes: [{ who: p.name, role: 'player', text: '가장으로서 더 단단한 시즌을 보내겠습니다.' }], facts: { player: p.name }, players: [p.id], mine: true });
+      note(p, date, __i18n_k("league.life.lifeWinter.088f0833"), 'good');
+      addNews(s, { id: `wed-${year}-${p.id}`, date, kind: 'interview', title: __i18n_k("league.life.lifeWinter.title.9b96e1c4", { name: p.name }), body: __i18n_k("league.life.lifeWinter.body.47b1e4ab", { name: iga(p.name), value: date.slice(5).replace('-', '월 ') }), quotes: [{ who: p.name, role: 'player', text: __i18n_k("league.life.quotes.text.a4b9b47e") }], facts: { player: p.name }, players: [p.id], mine: true });
     }
     if (r() < W.charity) {
       adjustFans(p, 4);
-      note(p, date, '연말 기부', 'good');
-      addNews(s, { id: `gift-${year}-${p.id}`, date, kind: 'interview', title: `${p.name}, 연말 기부`, body: `${iga(p.name)} ${pickOf(CHARITY, r)} 내놨다.`, quotes: [], facts: { player: p.name }, players: [p.id], mine: true });
+      note(p, date, __i18n_k("league.life.lifeWinter.29c86f2c"), 'good');
+      addNews(s, { id: `gift-${year}-${p.id}`, date, kind: 'interview', title: __i18n_k("league.life.lifeWinter.title.5cdf821b", { name: p.name }), body: __i18n_k("league.life.lifeWinter.body.98237176", { name: iga(p.name), pickOf: pickOf(CHARITY, r) }), quotes: [], facts: { player: p.name }, players: [p.id], mine: true });
     }
     if (age <= 30 && r() < W.selfWork) {
       const [tool, how] = pickOf(WORK[isPitcher(p) ? 'pitcher' : 'hitter'], r);
@@ -438,8 +439,8 @@ export function lifeWinter(s: LeagueState, year: number) {
         const g = 1 + Math.round(r() * 10) / 10;
         p.hidden.current[tool] = Math.min(80, cur + g);
         if (p.hidden.current[tool]! > (p.hidden.potential[tool] ?? 0)) p.hidden.potential[tool] = p.hidden.current[tool];
-        note(p, date, '비시즌 개인 훈련', 'good');
-        addNews(s, { id: `work-${year}-${p.id}`, date, kind: 'interview', title: `${p.name}의 겨울`, body: `${iga(p.name)} ${how} 겨우내 개인 훈련에 매달렸다.`, quotes: [], facts: { player: p.name }, players: [p.id], mine: true });
+        note(p, date, __i18n_k("league.life.lifeWinter.b00ffa3e"), 'good');
+        addNews(s, { id: `work-${year}-${p.id}`, date, kind: 'interview', title: __i18n_k("league.life.lifeWinter.title.0d1ee99c", { name: p.name }), body: __i18n_k("league.life.lifeWinter.body.4ba3e937", { name: iga(p.name), how: how }), quotes: [], facts: { player: p.name }, players: [p.id], mine: true });
       }
     }
   }

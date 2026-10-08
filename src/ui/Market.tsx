@@ -1,3 +1,4 @@
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* The market screen: trades, releases and unattached players, foreign replacements, league moves. */
 import { useMemo, useState } from 'preact/hooks';
 import type { Action } from '../league/actions';
@@ -58,30 +59,27 @@ export function Market({
     <section aria-labelledby="market-title">
       <div class="page-head">
         <div>
-          <h2 id="market-title">이적시장</h2>
-          <p class="muted">
-            {league.year}년 연봉 {money(projectedPayroll(league, u.teamId, league.year))} / 예산 {money(u.payrollBudget)} · 방출 선수 잔여 연봉 {money(deadMoney(league, league.year))} · 구단 자금{' '}
-            {money(u.fund)}
-          </p>
+          <h2 id="market-title">{__i18n_t("ui.market.market.e11828a8")}</h2>
+          <p class="muted">{__i18n_t("ui.market.market.b480efe3", { year: league.year, money: money(projectedPayroll(league, u.teamId, league.year)), money2: money(u.payrollBudget), money3: money(deadMoney(league, league.year)), value: ' ', money4: money(u.fund) })}</p>
         </div>
-        <div class="segmented" role="group" aria-label="이적시장 보기">
-          {(
+        <div class="segmented" role="group" aria-label={__i18n_t("ui.market.market.1015a89f")}>
+          {__i18n_display((
             [
-              ['trade', '트레이드'],
-              ['search', '선수 찾기'],
-              ['release', '방출 · 자유계약'],
-              ['foreign', '외국인 교체'],
-              ['news', '이적 소식'],
+              ['trade', __i18n_k("ui.market.market.428749ee")],
+              ['search', __i18n_k("ui.market.market.53215cdb")],
+              ['release', __i18n_k("ui.market.market.44f14052")],
+              ['foreign', __i18n_k("ui.market.market.c49c1d92")],
+              ['news', __i18n_k("ui.market.market.fae81774")],
             ] as [View, string][]
           ).map(([id, label]) => (
             <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>
-              {label}
+              {__i18n_display(label)}
             </button>
-          ))}
+          )))}
         </div>
       </div>
-      {view === 'trade' && <Trade key={target ? `${target.teamId}-${target.id}` : 'trade'} league={league} onPlayer={onPlayer} onAct={onAct} initial={target} />}
-      {view === 'search' && (
+      {__i18n_display(view === 'trade' && <Trade key={target ? `${target.teamId}-${target.id}` : 'trade'} league={league} onPlayer={onPlayer} onAct={onAct} initial={target} />)}
+      {__i18n_display(view === 'search' && (
         <PlayerSearch
           league={league}
           initialPos={intent?.spot as PosFilter | undefined}
@@ -92,10 +90,10 @@ export function Market({
             setView('trade');
           }}
         />
-      )}
-      {view === 'release' && <Release league={league} onPlayer={onPlayer} onAct={onAct} />}
-      {view === 'foreign' && <Foreign league={league} onPlayer={onPlayer} onAct={onAct} />}
-      {view === 'news' && <News league={league} />}
+      ))}
+      {__i18n_display(view === 'release' && <Release league={league} onPlayer={onPlayer} onAct={onAct} />)}
+      {__i18n_display(view === 'foreign' && <Foreign league={league} onPlayer={onPlayer} onAct={onAct} />)}
+      {__i18n_display(view === 'news' && <News league={league} />)}
     </section>
   );
 }
@@ -130,44 +128,44 @@ function PickList({
     },
     extra ? { key: 'extra', dir: -1 } : undefined,
   );
-  if (!players.length) return <p class="empty">선수가 없습니다.</p>;
+  if (!players.length) return <p class="empty">{__i18n_t("ui.market.pickList.8abc45cd")}</p>;
   return (
     <div class="table-wrap" tabIndex={0}>
       <table class="record-table pick-table">
         <thead>
           <tr>
-            {toggle && <th aria-label="선택" />}
-            {th('name', '이름')}
-            {th('pos', '포지션')}
-            {th('age', '나이', true)}
-            {th('current', '현재', true)}
-            {th('future', '미래', true)}
-            {extra && th('extra', extra.title, true)}
-            {action && <th aria-label="관리" />}
+            {__i18n_display(toggle && <th aria-label={__i18n_t("ui.market.pickList.08109e41")} />)}
+            {__i18n_display(th('name', __i18n_k("ui.market.pickList.9aa18e50")))}
+            {__i18n_display(th('pos', __i18n_k("ui.market.pickList.81922a91")))}
+            {__i18n_display(th('age', __i18n_k("ui.market.pickList.6c620e5c"), true))}
+            {__i18n_display(th('current', __i18n_k("ui.market.pickList.001e4be2"), true))}
+            {__i18n_display(th('future', __i18n_k("ui.market.pickList.6e0caec5"), true))}
+            {__i18n_display(extra && th('extra', extra.title, true))}
+            {__i18n_display(action && <th aria-label={__i18n_t("ui.market.pickList.c29fba5a")} />)}
           </tr>
         </thead>
         <tbody>
-          {sorted.map((p) => (
+          {__i18n_display(sorted.map((p) => (
             <tr key={p.id} class="player-row" aria-selected={selected?.has(p.id)}>
-              {toggle && (
+              {__i18n_display(toggle && (
                 <td>
-                  <input type="checkbox" checked={selected?.has(p.id)} onChange={() => toggle(p.id)} aria-label={`${p.name} 선택`} />
+                  <input type="checkbox" checked={selected?.has(p.id)} onChange={() => toggle(p.id)} aria-label={__i18n_displayText(__i18n_k("ui.market.pickList.23814a70", { name: p.name }))} />
                 </td>
-              )}
+              ))}
               <td>
                 <button type="button" class="link" onClick={() => onPlayer(p.id)}>
-                  {p.name}
+                  {__i18n_display(p.name)}
                 </button>
-                {p.contract?.kind === 'development' && <span class="tag">육성</span>}
+                {__i18n_display(p.contract?.kind === 'development' && <span class="tag">{__i18n_t("ui.market.pickList.818f3b79")}</span>)}
               </td>
-              <td>{positionLabel(p)}</td>
-              <td class="num">{ageIn(p, league.year)}</td>
-              <td class={`num ${gradeClass(p.scouting.current)}`}>{p.scouting.current}</td>
-              <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{p.scouting.futureValue}</td>
-              {extra && <td class="num">{extra.value(p)}</td>}
-              {action && <td>{action(p)}</td>}
+              <td>{__i18n_display(positionLabel(p))}</td>
+              <td class="num">{__i18n_display(ageIn(p, league.year))}</td>
+              <td class={`num ${gradeClass(p.scouting.current)}`}>{__i18n_display(p.scouting.current)}</td>
+              <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{__i18n_display(p.scouting.futureValue)}</td>
+              {__i18n_display(extra && <td class="num">{__i18n_display(extra.value(p))}</td>)}
+              {__i18n_display(action && <td>{__i18n_display(action(p))}</td>)}
             </tr>
-          ))}
+          )))}
         </tbody>
       </table>
     </div>
@@ -209,11 +207,11 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
   const extras = { cashOut, cashIn, picksOut: [...picksOut], picksIn: [...picksIn] };
   const anything = give.size || get.size || cashOut || cashIn || picksOut.size || picksIn.size;
   const check = anything ? checkTrade(league, teamId, [...give], [...get], extras) : null;
-  const value = { title: '가치', value: (p: Player) => tradeValue(league, p).toFixed(1), sort: (p: Player) => tradeValue(league, p) };
+  const value = { title: __i18n_k("ui.market.value.title.1970ef0e"), value: (p: Player) => tradeValue(league, p).toFixed(1), sort: (p: Player) => tradeValue(league, p) };
   const sum = (ids: Set<PlayerId>) => [...ids].reduce((a, id) => a + tradeValue(league, league.players[id]!), 0);
   const sideValue = (ids: Set<PlayerId>, cash: number, picks: Set<number>, club: TeamId) => sum(ids) + cashValue(cash) + [...picks].reduce((a, r) => a + pickValue(league, club, r), 0);
   const side = (ids: Set<PlayerId>, cash: number, picks: Set<number>) =>
-    [ids.size ? `선수 ${ids.size}명` : '', cash ? `현금 ${money(cash)}` : '', picks.size ? `지명권 ${[...picks].sort((a, b) => a - b).map((r) => `${r}R`).join('·')}` : ''].filter(Boolean).join(' + ') || '없음';
+    [ids.size ? __i18n_k("ui.market.trade.side.83743982", { size: ids.size }) : '', cash ? __i18n_k("ui.market.trade.side.279a047e", { money: money(cash) }) : '', picks.size ? __i18n_k("ui.market.trade.side.23820fa9", { value: [...picks].sort((a, b) => a - b).map((r) => `${r}R`).join('·') }) : ''].filter(Boolean).join(' + ') || __i18n_k("ui.market.trade.side.d58fa73a");
   const toggleRound = (set: Set<number>, r: number) => {
     const next = new Set(set);
     if (next.has(r)) next.delete(r);
@@ -223,16 +221,10 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
   const lastLog = sent !== null ? (u.log ?? []).slice(sent) : [];
   return (
     <>
-      <Help title="트레이드 규칙">
-        정규시즌 중에는 7월 31일까지, 그 뒤로는 한국시리즈가 끝난 다음부터 트레이드할 수 있습니다. 상대 구단은 공개 평가(현재·미래 가치, 나이, 계약 기간, 연봉)로 판단하고, 받는 가치가 주는 가치보다
-        조금 더 커야 받아들입니다. 외국인과 올해 뽑은 신인은 트레이드할 수 없습니다. 현금(한쪽만, {money(TRADES.cash.max)}까지, 1억 = 가치 약 1)과 다가오는 드래프트의 신인 지명권(선수와 함께만, 구단당 한 해 2장까지 —
-        KBO 규정)을 붙일 수 있습니다. 지명권 가치는 라운드와 예상 지명 순서(성적이 나쁜 구단일수록 앞)로 매기고, 넘겨받은 지명권으로 뽑은 선수는 입단 첫해에 트레이드할 수 없습니다. 구단마다 계획이
-        있습니다: 상위권은 우승 도전(당장 쓸 선수를 높이, 지명권을 낮게), 하위권에 주축이 늙었거나 가을야구에서 멀어진 구단은 리빌딩(젊은 선수·지명권·현금을 높이, 30세 이상을 낮게), 나머지는 균형.
-        부족한 자리를 채워 주는 선수는 더 높이 보고, 마지막 포수·선발투수를 내주거나 샐러리캡을 넘기는 제안은 거절합니다.
-      </Help>
-      {closed && <p class="notice">{closed}</p>}
-      <div class="team-chips" role="group" aria-label="상대 구단">
-        {clubs.map((t) => (
+      <Help title={__i18n_t("ui.market.trade.a8916b94")}>{__i18n_t("ui.market.trade.39de664b", { money: money(TRADES.cash.max) })}</Help>
+      {__i18n_display(closed && <p class="notice">{__i18n_display(closed)}</p>)}
+      <div class="team-chips" role="group" aria-label={__i18n_t("ui.market.trade.d1837717")}>
+        {__i18n_display(clubs.map((t) => (
           <button
             key={t.id}
             type="button"
@@ -243,64 +235,60 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
               setPicksIn(new Set());
             }}
           >
-            {t.short}
+            {__i18n_display(t.short)}
           </button>
-        ))}
+        )))}
       </div>
       <div class="trade-extras">
         <label>
           우리가 줄 현금
           <select value={cashOut} onChange={(e) => setCashOut(Number((e.currentTarget as HTMLSelectElement).value))}>
-            {CASH_STEPS.map((v) => (
+            {__i18n_display(CASH_STEPS.map((v) => (
               <option key={v} value={v}>
-                {v ? money(v) : '없음'}
+                {__i18n_display(v ? money(v) : __i18n_k("ui.market.trade.d58fa73a"))}
               </option>
-            ))}
+            )))}
           </select>
         </label>
         <label>
           받을 현금
           <select value={cashIn} onChange={(e) => setCashIn(Number((e.currentTarget as HTMLSelectElement).value))}>
-            {CASH_STEPS.map((v) => (
+            {__i18n_display(CASH_STEPS.map((v) => (
               <option key={v} value={v}>
-                {v ? money(v) : '없음'}
+                {__i18n_display(v ? money(v) : __i18n_k("ui.market.trade.d58fa73a"))}
               </option>
-            ))}
+            )))}
           </select>
         </label>
-        <div class="pick-chips" role="group" aria-label="우리 지명권">
-          <span class="muted small">우리 {draft} 신인 지명권</span>
-          {ownPicks.length ? (
+        <div class="pick-chips" role="group" aria-label={__i18n_t("ui.market.trade.cd679f4e")}>
+          <span class="muted small">{__i18n_t("ui.market.trade.3de0ba9d", { draft: draft })}</span>
+          {__i18n_display(ownPicks.length ? (
             ownPicks.map((r) => (
-              <button key={r} type="button" aria-pressed={picksOut.has(r)} onClick={() => setPicksOut((x) => toggleRound(x, r))} title={`가치 ${pickValue(league, u.teamId, r).toFixed(1)}`}>
-                {r}R
+              <button key={r} type="button" aria-pressed={picksOut.has(r)} onClick={() => setPicksOut((x) => toggleRound(x, r))} title={__i18n_displayText(__i18n_k("ui.market.trade.1980af2f", { value: pickValue(league, u.teamId, r).toFixed(1) }))}>
+                {__i18n_display(r)}R
               </button>
             ))
           ) : (
-            <span class="muted small">넘길 수 있는 지명권 없음</span>
-          )}
+            <span class="muted small">{__i18n_t("ui.market.trade.0ab408f4")}</span>
+          ))}
         </div>
-        <div class="pick-chips" role="group" aria-label={`${shortName(league, teamId)} 지명권`}>
-          <span class="muted small">
-            {shortName(league, teamId)} {draft} 신인 지명권
-          </span>
-          {theirPicks.length ? (
+        <div class="pick-chips" role="group" aria-label={__i18n_displayText(__i18n_k("ui.market.trade.915671a0", { shortName: shortName(league, teamId) }))}>
+          <span class="muted small">{__i18n_t("ui.market.trade.a1544137", { shortName: shortName(league, teamId), draft: draft })}</span>
+          {__i18n_display(theirPicks.length ? (
             theirPicks.map((r) => (
-              <button key={r} type="button" aria-pressed={picksIn.has(r)} onClick={() => setPicksIn((x) => toggleRound(x, r))} title={`가치 ${pickValue(league, teamId, r).toFixed(1)}`}>
-                {r}R
+              <button key={r} type="button" aria-pressed={picksIn.has(r)} onClick={() => setPicksIn((x) => toggleRound(x, r))} title={__i18n_displayText(__i18n_k("ui.market.trade.1980af2f", { value: pickValue(league, teamId, r).toFixed(1) }))}>
+                {__i18n_display(r)}R
               </button>
             ))
           ) : (
-            <span class="muted small">받을 수 있는 지명권 없음</span>
-          )}
+            <span class="muted small">{__i18n_t("ui.market.trade.a0da8a5a")}</span>
+          ))}
         </div>
       </div>
       <div class="trade-bar">
-        <span>
-          보냄: {side(give, cashOut, picksOut)} (가치 {sideValue(give, cashOut, picksOut, u.teamId).toFixed(1)}) ↔ 받음: {side(get, cashIn, picksIn)} (가치 {sideValue(get, cashIn, picksIn, teamId).toFixed(1)})
-        </span>
-        {check?.problem && <span class="notice inline">{check.problem}</span>}
-        {check && !check.problem && <span class={check.accepted ? 'plus' : 'muted'}>{check.accepted ? '상대 구단이 받아들일 만한 제안입니다' : '상대 구단은 가치가 부족하다고 볼 것 같습니다'}</span>}
+        <span>{__i18n_t("ui.market.trade.e81e10d1", { side: side(give, cashOut, picksOut), value: sideValue(give, cashOut, picksOut, u.teamId).toFixed(1), side2: side(get, cashIn, picksIn), value2: sideValue(get, cashIn, picksIn, teamId).toFixed(1) })}</span>
+        {__i18n_display(check?.problem && <span class="notice inline">{__i18n_display(check.problem)}</span>)}
+        {__i18n_display(check && !check.problem && <span class={check.accepted ? 'plus' : 'muted'}>{__i18n_display(check.accepted ? __i18n_k("ui.market.trade.d3481a56") : __i18n_k("ui.market.trade.c027934b"))}</span>)}
         <button
           type="button"
           class="primary"
@@ -315,26 +303,24 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
             setPicksOut(new Set());
             setPicksIn(new Set());
           }}
-        >
-          트레이드 제안
-        </button>
+        >{__i18n_t("ui.market.trade.9d72a2a9")}</button>
       </div>
-      {check?.reasons && check.reasons.length > 0 && (
-        <ul class="trade-reasons muted small" aria-label="상대 구단의 판단">
-          {check.reasons.map((line) => (
-            <li key={line}>{line}</li>
-          ))}
+      {__i18n_display(check?.reasons && check.reasons.length > 0 && (
+        <ul class="trade-reasons muted small" aria-label={__i18n_t("ui.market.trade.6a1c2d0d")}>
+          {__i18n_display(check.reasons.map((line) => (
+            <li key={line}>{__i18n_display(line)}</li>
+          )))}
         </ul>
-      )}
-      {!check && <TradePlan league={league} teamId={teamId} />}
-      {lastLog.length > 0 && <p class="notice">{lastLog.map((l) => l.text).join(' · ')}</p>}
+      ))}
+      {__i18n_display(!check && <TradePlan league={league} teamId={teamId} />)}
+      {__i18n_display(lastLog.length > 0 && <p class="notice">{__i18n_display(lastLog.map((l) => l.text).join(' · '))}</p>)}
       <div class="two-col">
         <div>
-          <h3>우리 선수 (보낼 선수)</h3>
+          <h3>{__i18n_t("ui.market.trade.9b230d96")}</h3>
           <PickList league={league} players={ours} selected={give} toggle={(id) => setGive((s) => flip(s, id))} onPlayer={onPlayer} extra={value} />
         </div>
         <div>
-          <h3>{shortName(league, teamId)} 선수 (받을 선수)</h3>
+          <h3>{__i18n_t("ui.market.trade.7b33091a", { shortName: shortName(league, teamId) })}</h3>
           <PickList league={league} players={theirs} selected={get} toggle={(id) => setGet((s) => flip(s, id))} onPlayer={onPlayer} extra={value} />
         </div>
       </div>
@@ -351,51 +337,45 @@ function Release({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
   const release = (p: Player) => {
     const cost = releaseCost(league, p);
     const later = cost.later.reduce((a, x) => a + x.amount, 0);
-    const text = `${eulreul(p.name)} 방출할까요? ${league.phase === 'regular' ? '7일 동안 웨이버에 오르고, 데려가는 구단이 없으면 자유계약선수가 됩니다. ' : ''}남은 연봉 ${money(cost.now + later)}은 계속 우리 연봉 예산에 잡힙니다 (다른 구단이 데려가면 없어짐).`;
+    const text = __i18n_k("ui.market.release.text.fb352fa8", { name: eulreul(p.name), value: league.phase === 'regular' ? __i18n_k("ui.market.release.text.33e70ae8") : '', money: money(cost.now + later) });
     if (window.confirm(text)) onAct({ kind: 'release', id: p.id });
   };
   return (
     <>
-      <p class="muted">
-        방출한 선수는 정규시즌 중이면 7일 동안 웨이버에 올라 성적이 낮은 구단부터 데려갈 수 있고, 아무도 데려가지 않으면 자유계약선수가 됩니다. 자유계약선수는 어느 구단이든 계약할 수 있습니다. FA 시장에서 아무와도 계약하지 못한 선수(FA 미아)도 이 명단에 남아, 시장이 끝난 뒤부터 다음 시즌이 끝날 때까지 협상 없이 요구 연봉으로 계약할 수 있습니다.
-      </p>
-      {(league.waivers ?? []).length > 0 && (
+      <p class="muted">{__i18n_t("ui.market.release.7d952a9b")}</p>
+      {__i18n_display((league.waivers ?? []).length > 0 && (
         <>
-          <h3>웨이버 공시 중</h3>
+          <h3>{__i18n_t("ui.market.release.c9d6954d")}</h3>
           <ul class="club-log">
-            {(league.waivers ?? []).map((w) => (
+            {__i18n_display((league.waivers ?? []).map((w) => (
               <li key={w.id}>
-                {league.players[w.id]?.name} <span class="muted">({shortName(league, w.from)}, {w.until}까지)</span>
+                {__i18n_display(league.players[w.id]?.name)} <span class="muted">{__i18n_t("ui.market.release.15dcb4fb", { shortName: shortName(league, w.from), until: w.until })}</span>
               </li>
-            ))}
+            )))}
           </ul>
         </>
-      )}
-      <h3>자유계약선수</h3>
+      ))}
+      <h3>{__i18n_t("ui.market.release.0cd908a5")}</h3>
       <PickList
         league={league}
         players={pool}
         onPlayer={onPlayer}
-        extra={{ title: '요구 연봉', value: (p) => money(poolAsk(league, p)), sort: (p) => poolAsk(league, p) }}
+        extra={{ title: __i18n_k("ui.market.release.title.138d1c03"), value: (p) => money(poolAsk(league, p)), sort: (p) => poolAsk(league, p) }}
         action={(p) => (
-          <button type="button" disabled={!!canSignFromPool(league, p.id)} title={canSignFromPool(league, p.id) ?? ''} onClick={() => onAct({ kind: 'signPool', id: p.id })}>
-            계약
-          </button>
+          <button type="button" disabled={!!canSignFromPool(league, p.id)} title={__i18n_displayText(canSignFromPool(league, p.id) ?? '')} onClick={() => onAct({ kind: 'signPool', id: p.id })}>{__i18n_t("ui.market.release.b4116369")}</button>
         )}
       />
-      <h3>우리 선수 방출</h3>
-      {(u.deadMoney ?? []).length > 0 && (
-        <p class="muted">잔여 연봉: {(u.deadMoney ?? []).map((x) => `${x.season} ${x.label} ${money(x.amount)}`).join(' · ')}</p>
-      )}
+      <h3>{__i18n_t("ui.market.release.5cba39f3")}</h3>
+      {__i18n_display((u.deadMoney ?? []).length > 0 && (
+        <p class="muted">{__i18n_t("ui.market.release.6b11fc45", { value: (u.deadMoney ?? []).map((x) => `${x.season} ${x.label} ${money(x.amount)}`).join(' · ') })}</p>
+      ))}
       <PickList
         league={league}
         players={ours}
         onPlayer={onPlayer}
-        extra={{ title: '연봉', value: (p) => money(p.contract?.salaries.find((x) => x.season === league.year)?.amount ?? 0), sort: (p) => p.contract?.salaries.find((x) => x.season === league.year)?.amount ?? 0 }}
+        extra={{ title: __i18n_k("ui.market.release.title.cbf383ec"), value: (p) => money(p.contract?.salaries.find((x) => x.season === league.year)?.amount ?? 0), sort: (p) => p.contract?.salaries.find((x) => x.season === league.year)?.amount ?? 0 }}
         action={(p) => (
-          <button type="button" disabled={!!canRelease(league, p.id)} title={canRelease(league, p.id) ?? ''} onClick={() => release(p)}>
-            방출
-          </button>
+          <button type="button" disabled={!!canRelease(league, p.id)} title={__i18n_displayText(canRelease(league, p.id) ?? '')} onClick={() => release(p)}>{__i18n_t("ui.market.release.e16b5dd5")}</button>
         )}
       />
     </>
@@ -420,50 +400,39 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
   const adds = incoming && !incoming.origin.asiaQuota ? foreignPriceNow(league, incoming) : 0;
   return (
     <>
-      {books && (
-        <p class={books.spent + adds > books.cap ? 'notice warn' : 'muted'}>
-          {league.year}년 외국인 샐러리캡: 쓴 돈 {usd(books.spent)}
-          {adds ? ` + 이번 영입 ${usd(adds)}` : ''} / 상한 {usd(books.cap)} (옵션은 시즌 뒤 실지급액으로 더함, 아시아쿼터 별도)
-          {books.spent + adds > books.cap ? ' — 넘으면 시즌 뒤 초과분의 50% 제재금 (2년 연속이면 100% + 2라운드 지명권 9순위 하락)' : ''}
-        </p>
-      )}
-      <Help title="외국인 교체 규칙">
-        시즌 중 외국인 선수를 2번까지 바꿀 수 있습니다 (8월 15일까지). 내보낸 선수의 남은 보장액은 계속 나가고, 새 선수는 남은 시즌만큼 줄어든 금액으로 계약합니다. 올해 {used}번 썼습니다. 다른 구단이 방출하거나 재계약하지 않은 KBO 경력 외국인도 명단에
-        있습니다 (방출 뒤 재취업은 신규 계약이라 100만 달러 상한).
-      </Help>
-      {closed && <p class="notice">{closed}</p>}
-      <h3>내보낼 선수</h3>
+      {__i18n_display(books && (
+        <p class={books.spent + adds > books.cap ? 'notice warn' : 'muted'}>{__i18n_t("ui.market.foreign.34be7dc7", { year: league.year, usd: usd(books.spent), value: adds ? __i18n_k("ui.market.foreign.774cb355", { usd: usd(adds) }) : '', usd2: usd(books.cap), value2: books.spent + adds > books.cap ? __i18n_k("ui.market.foreign.72ed3aca") : '' })}</p>
+      ))}
+      <Help title={__i18n_t("ui.market.foreign.2909108b")}>{__i18n_t("ui.market.foreign.6558e0af", { used: used })}</Help>
+      {__i18n_display(closed && <p class="notice">{__i18n_display(closed)}</p>)}
+      <h3>{__i18n_t("ui.market.foreign.58f7280f")}</h3>
       <div class="choice-grid">
-        {mine.map((p) => (
+        {__i18n_display(mine.map((p) => (
           <button key={p.id} type="button" class="choice" aria-pressed={out === p.id} onClick={() => setOut(p.id)}>
-            <strong>{p.name}</strong>
-            <span class="muted">
-              {positionLabel(p)} · {p.origin.asiaQuota ? '아시아쿼터' : '외국인'} · 현재 {p.scouting.current} · {usd(usdTotal(p.contract))}
-            </span>
+            <strong>{__i18n_display(p.name)}</strong>
+            <span class="muted">{__i18n_t("ui.market.foreign.8f41db3b", { positionLabel: positionLabel(p), value: p.origin.asiaQuota ? __i18n_k("ui.market.foreign.c66942ff") : __i18n_k("ui.market.foreign.5bd804b7"), current: p.scouting.current, usd: usd(usdTotal(p.contract)) })}</span>
           </button>
-        ))}
+        )))}
       </div>
-      <h3>데려올 선수</h3>
+      <h3>{__i18n_t("ui.market.foreign.f9839282")}</h3>
       <PickList
         league={league}
         players={market}
         onPlayer={(id) => poolEntry(league, id) && onPlayer(id)}
         extra={{
-          title: '지금 계약 (총액)',
-          value: (p) => `${usd(foreignPriceNow(league, p))} · ${p.origin.asiaQuota ? '아시아 · ' : ''}${p.archetype} · ${poolEntry(league, p.id) ? kboLine(league, p) : (p.origin.background?.text ?? '')}`,
+          title: __i18n_k("ui.market.foreign.title.b4de910d"),
+          value: (p) => __i18n_k("ui.market.foreign.value.48bbb81b", { usd: usd(foreignPriceNow(league, p)), value: p.origin.asiaQuota ? __i18n_k("ui.market.foreign.value.55b0ea0f") : '', archetype: p.archetype, value2: poolEntry(league, p.id) ? kboLine(league, p) : (p.origin.background?.text ?? '') }),
           sort: (p) => foreignPriceNow(league, p),
         }}
         action={(p) => (
           <button type="button" aria-pressed={inId === p.id} onClick={() => setIn(p.id)}>
-            {inId === p.id ? '선택됨' : '선택'}
+            {__i18n_display(inId === p.id ? __i18n_k("ui.market.foreign.c7cad5ad") : __i18n_k("ui.market.foreign.08109e41"))}
           </button>
         )}
       />
       <div class="trade-bar">
-        {problem && <span class="notice inline">{problem}</span>}
-        <button type="button" class="primary" disabled={!out || !inId || !!problem || !!closed} onClick={() => out && inId && onAct({ kind: 'foreignSwap', out, in: inId })}>
-          외국인 교체
-        </button>
+        {__i18n_display(problem && <span class="notice inline">{__i18n_display(problem)}</span>)}
+        <button type="button" class="primary" disabled={!out || !inId || !!problem || !!closed} onClick={() => out && inId && onAct({ kind: 'foreignSwap', out, in: inId })}>{__i18n_t("ui.market.foreign.c49c1d92")}</button>
       </div>
     </>
   );
@@ -471,14 +440,14 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
 
 function News({ league }: { league: LeagueState }) {
   const items = [...(league.transactions ?? [])].reverse().slice(0, 80);
-  if (!items.length) return <p class="empty">아직 이적 소식이 없습니다.</p>;
+  if (!items.length) return <p class="empty">{__i18n_t("ui.market.news.35419fb9")}</p>;
   return (
     <ul class="club-log">
-      {items.map((t, i) => (
+      {__i18n_display(items.map((t, i) => (
         <li key={i}>
-          <span class="num muted">{t.date}</span> {t.text}
+          <span class="num muted">{__i18n_display(t.date)}</span> {__i18n_display(t.text)}
         </li>
-      ))}
+      )))}
     </ul>
   );
 }
@@ -487,9 +456,6 @@ function News({ league }: { league: LeagueState }) {
 function TradePlan({ league, teamId }: { league: LeagueState; teamId: TeamId }) {
   const plan = clubStrategy(league, teamId);
   return (
-    <p class="muted small">
-      {shortName(league, teamId)} · {MODE_LABEL[plan.mode]}: {plan.why}
-      {plan.needs.length ? ` 부족한 자리: ${plan.needs.map((k) => SPOT_LABEL[k]).join(', ')}.` : ''} 주축 평균 {plan.age.toFixed(1)}세 · 샐러리캡 여유 {plan.room > 0 ? money(plan.room) : '없음'}
-    </p>
+    <p class="muted small">{__i18n_t("ui.market.tradePlan.a20e77f2", { shortName: shortName(league, teamId), value: MODE_LABEL[plan.mode], why: plan.why, value2: plan.needs.length ? __i18n_k("ui.market.tradePlan.a75fd3fd", { value: plan.needs.map((k) => SPOT_LABEL[k]).join(', ') }) : '', value3: plan.age.toFixed(1), value4: plan.room > 0 ? money(plan.room) : __i18n_k("ui.market.tradePlan.d58fa73a") })}</p>
   );
 }

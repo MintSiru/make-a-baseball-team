@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index.js';
 /* The ten KBO clubs. Club names are real; every rating and record here is fictional.
    `rank` is the fictional previous-season finish and sets the draft order (worst first).
    `needs` lists the three priority positions, most urgent first. */
@@ -5,25 +6,25 @@
 
 // prettier-ignore
 const TEAMS = [
-  {id: 'kiwoom', name: '키움 히어로즈', short: '키움', color: '#821734', rank: 10, region: '서울', needs: ['SP', 'C', 'OF'],
-    strong: '젊은 야수진 · 빠른 발', weak: '선발 이닝 · 차세대 포수', goal: '미래의 주축이 될 유망주를 확보해야 합니다.', record: '48승 94패 2무'},
-  {id: 'nc', name: 'NC 다이노스', short: 'NC', color: '#255581', rank: 9, region: '경남', needs: ['RP', 'IF', 'SP'],
-    strong: '중심 타선 · 외야 수비', weak: '불펜 뎁스 · 내야 세대교체', goal: '불펜을 두껍게 하고 내야의 미래를 준비해야 합니다.', record: '58승 84패 2무'},
-  {id: 'hanwha', name: '한화 이글스', short: '한화', color: '#d9541f', rank: 8, region: '대전·충청·전북', needs: ['OF', 'C', 'IF'],
-    strong: '강속구 투수진', weak: '외야 공격력 · 포수 뎁스', goal: '투수진을 뒷받침할 야수를 찾아야 합니다.', record: '62승 79패 3무'},
-  {id: 'lotte', name: '롯데 자이언츠', short: '롯데', color: '#bf293d', rank: 7, region: '부산·울산', needs: ['SP', 'RP', 'C'],
-    strong: '콘택트 · 기동력', weak: '선발 안정감 · 불펜 소모', goal: '마운드에 새 힘을 불어넣어야 합니다.', record: '66승 76패 2무'},
-  {id: 'ssg', name: 'SSG 랜더스', short: 'SSG', color: '#b8243a', rank: 6, region: '인천', needs: ['IF', 'SP', 'OF'],
-    strong: '장타력 · 베테랑 경험', weak: '내야 고령화 · 선발 유망주', goal: '다음 세대의 센터라인을 준비해야 합니다.', record: '69승 72패 3무'},
-  {id: 'kt', name: 'KT 위즈', short: 'KT', color: '#343b48', rank: 5, region: '경기·강원', needs: ['C', 'RP', 'OF'],
-    strong: '선발 로테이션 · 경기 운영', weak: '후계 포수 · 좌완 불펜', goal: '바로 기여할 자원과 후계 포수를 확보해야 합니다.', record: '73승 68패 3무'},
-  {id: 'doosan', name: '두산 베어스', short: '두산', color: '#243556', rank: 4, region: '서울', needs: ['SP', 'IF', 'RP'],
-    strong: '내야 수비 · 주루', weak: '차세대 에이스 · 내야 공격력', goal: '수비를 믿고 성장할 투수와 내야수를 찾아야 합니다.', record: '76승 65패 3무'},
-  {id: 'lg', name: 'LG 트윈스', short: 'LG', color: '#a51f4f', rank: 3, region: '서울', needs: ['RP', 'C', 'SP'],
-    strong: '타선의 깊이 · 외야진', weak: '승리조 피로 · 포수 후계자', goal: '우승 경쟁을 이어갈 즉시전력을 확보해야 합니다.', record: '80승 61패 3무'},
-  {id: 'samsung', name: '삼성 라이온즈', short: '삼성', color: '#2865b7', rank: 2, region: '대구·경북', needs: ['RP', 'OF', 'IF'],
-    strong: '거포 유망주 · 선발진', weak: '좌완 불펜 · 외야 수비', goal: '불펜과 수비를 보완해 마지막 한 걸음을 내디뎌야 합니다.', record: '85승 57패 2무'},
-  {id: 'kia', name: 'KIA 타이거즈', short: 'KIA', color: '#b52a3e', rank: 1, region: '광주·전남·제주', needs: ['C', 'SP', 'IF'],
-    strong: '타선의 균형 · 공격적 주루', weak: '포수 세대교체 · 선발 뎁스', goal: '현재의 경쟁력과 다음 세대를 함께 지켜야 합니다.', record: '90승 51패 3무'},
+  {id: 'kiwoom', name: __i18n_k("draftroom.clubs.tEAMS.name.b096e371"), short: __i18n_k("draftroom.clubs.tEAMS.short.def4ac54"), color: '#821734', rank: 10, region: __i18n_k("draftroom.clubs.tEAMS.region.ea9858ee"), needs: ['SP', 'C', 'OF'],
+    strong: __i18n_k("draftroom.clubs.tEAMS.strong.677867b6"), weak: __i18n_k("draftroom.clubs.tEAMS.weak.407416c7"), goal: __i18n_k("draftroom.clubs.tEAMS.goal.4b2c9451"), record: __i18n_k("draftroom.clubs.tEAMS.record.1da8953b")},
+  {id: 'nc', name: __i18n_k("draftroom.clubs.tEAMS.name.6e9552f9"), short: 'NC', color: '#255581', rank: 9, region: __i18n_k("draftroom.clubs.tEAMS.region.7aeadd5c"), needs: ['RP', 'IF', 'SP'],
+    strong: __i18n_k("draftroom.clubs.tEAMS.strong.91a54fae"), weak: __i18n_k("draftroom.clubs.tEAMS.weak.a3d5b2d6"), goal: __i18n_k("draftroom.clubs.tEAMS.goal.113471b3"), record: __i18n_k("draftroom.clubs.tEAMS.record.987aafb6")},
+  {id: 'hanwha', name: __i18n_k("draftroom.clubs.tEAMS.name.68d9f56e"), short: __i18n_k("draftroom.clubs.tEAMS.short.f67e4351"), color: '#d9541f', rank: 8, region: '대전·충청·전북', needs: ['OF', 'C', 'IF'],
+    strong: __i18n_k("draftroom.clubs.tEAMS.strong.e299a152"), weak: __i18n_k("draftroom.clubs.tEAMS.weak.a613eb5d"), goal: __i18n_k("draftroom.clubs.tEAMS.goal.8bfc693d"), record: __i18n_k("draftroom.clubs.tEAMS.record.684e8ccf")},
+  {id: 'lotte', name: __i18n_k("draftroom.clubs.tEAMS.name.6ebc8480"), short: __i18n_k("draftroom.clubs.tEAMS.short.9625876c"), color: '#bf293d', rank: 7, region: '부산·울산', needs: ['SP', 'RP', 'C'],
+    strong: __i18n_k("draftroom.clubs.tEAMS.strong.3daa9047"), weak: __i18n_k("draftroom.clubs.tEAMS.weak.f39fbfea"), goal: __i18n_k("draftroom.clubs.tEAMS.goal.b5c6e0d0"), record: __i18n_k("draftroom.clubs.tEAMS.record.8b65f782")},
+  {id: 'ssg', name: __i18n_k("draftroom.clubs.tEAMS.name.58c49993"), short: 'SSG', color: '#b8243a', rank: 6, region: __i18n_k("draftroom.clubs.tEAMS.region.41402f7e"), needs: ['IF', 'SP', 'OF'],
+    strong: __i18n_k("draftroom.clubs.tEAMS.strong.5bc2058d"), weak: __i18n_k("draftroom.clubs.tEAMS.weak.dd1ceb55"), goal: __i18n_k("draftroom.clubs.tEAMS.goal.9a0079c7"), record: __i18n_k("draftroom.clubs.tEAMS.record.50394a02")},
+  {id: 'kt', name: __i18n_k("draftroom.clubs.tEAMS.name.5ea849ea"), short: 'KT', color: '#343b48', rank: 5, region: '경기·강원', needs: ['C', 'RP', 'OF'],
+    strong: __i18n_k("draftroom.clubs.tEAMS.strong.23d4667f"), weak: __i18n_k("draftroom.clubs.tEAMS.weak.7f9e23a1"), goal: __i18n_k("draftroom.clubs.tEAMS.goal.a8e7866b"), record: __i18n_k("draftroom.clubs.tEAMS.record.9149e207")},
+  {id: 'doosan', name: __i18n_k("draftroom.clubs.tEAMS.name.0b110249"), short: __i18n_k("draftroom.clubs.tEAMS.short.ca26415b"), color: '#243556', rank: 4, region: __i18n_k("draftroom.clubs.tEAMS.region.ea9858ee"), needs: ['SP', 'IF', 'RP'],
+    strong: __i18n_k("draftroom.clubs.tEAMS.strong.b1eccade"), weak: __i18n_k("draftroom.clubs.tEAMS.weak.752c83ab"), goal: __i18n_k("draftroom.clubs.tEAMS.goal.daae66c3"), record: __i18n_k("draftroom.clubs.tEAMS.record.0bfc497c")},
+  {id: 'lg', name: __i18n_k("draftroom.clubs.tEAMS.name.8bfa0c03"), short: 'LG', color: '#a51f4f', rank: 3, region: __i18n_k("draftroom.clubs.tEAMS.region.ea9858ee"), needs: ['RP', 'C', 'SP'],
+    strong: __i18n_k("draftroom.clubs.tEAMS.strong.3a35d491"), weak: __i18n_k("draftroom.clubs.tEAMS.weak.45761954"), goal: __i18n_k("draftroom.clubs.tEAMS.goal.044c7de1"), record: __i18n_k("draftroom.clubs.tEAMS.record.306e81df")},
+  {id: 'samsung', name: __i18n_k("draftroom.clubs.tEAMS.name.ebfb77ab"), short: __i18n_k("draftroom.clubs.tEAMS.short.1d9554f4"), color: '#2865b7', rank: 2, region: '대구·경북', needs: ['RP', 'OF', 'IF'],
+    strong: __i18n_k("draftroom.clubs.tEAMS.strong.e358b279"), weak: __i18n_k("draftroom.clubs.tEAMS.weak.e0c002b1"), goal: __i18n_k("draftroom.clubs.tEAMS.goal.480723fe"), record: __i18n_k("draftroom.clubs.tEAMS.record.126fe6f6")},
+  {id: 'kia', name: __i18n_k("draftroom.clubs.tEAMS.name.b97606a8"), short: 'KIA', color: '#b52a3e', rank: 1, region: '광주·전남·제주', needs: ['C', 'SP', 'IF'],
+    strong: __i18n_k("draftroom.clubs.tEAMS.strong.32c02de0"), weak: __i18n_k("draftroom.clubs.tEAMS.weak.eed2e64e"), goal: __i18n_k("draftroom.clubs.tEAMS.goal.837d8760"), record: __i18n_k("draftroom.clubs.tEAMS.record.79342b48")},
 ];
 export default TEAMS;

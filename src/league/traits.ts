@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Hidden traits (1.1.0, from the 1.0 feedback). Besides his abilities and injury risk, every player has a growth type
    and six traits, all hidden like abilities (the club learns them from its scouts and coaches, reports.ts):
 
@@ -18,19 +19,19 @@ import type { GrowthType, Player, Traits } from '../model/types';
 import { GROWTH } from './tuning';
 
 export const GROWTH_ORDER: GrowthType[] = ['veryEarly', 'early', 'normal', 'late', 'veryLate'];
-export const GROWTH_LABELS: Record<GrowthType, string> = { veryEarly: '초조숙형', early: '조숙형', normal: '보통', late: '만성형', veryLate: '초만성형' };
+export const GROWTH_LABELS: Record<GrowthType, string> = { veryEarly: __i18n_k("league.traits.gROWTH_LABELS.veryEarly.763af209"), early: __i18n_k("league.traits.gROWTH_LABELS.early.2c3cfb4c"), normal: '보통', late: __i18n_k("league.traits.gROWTH_LABELS.late.0b68401c"), veryLate: __i18n_k("league.traits.gROWTH_LABELS.veryLate.3e7da27a") };
 /** What each growth type means, for the profile and the manual. */
 export const GROWTH_NOTES: Record<GrowthType, string> = {
-  veryEarly: '입단하자마자 빠르게 커서 23세 무렵 거의 완성되지만, 29세 무렵부터 꺾이기 시작해 빨리 떨어지고 은퇴도 3년쯤 이릅니다.',
-  early: '어릴 때 빨리 커서 25세 무렵 완성되고, 30세까지 기량을 지키다 31세 무렵부터 꺾입니다. 은퇴가 조금 이릅니다.',
-  normal: '24세 무렵까지 꾸준히, 그 뒤로도 조금씩 커서 27세 무렵 완성됩니다. 27~32세가 전성기이고 33세 무렵부터 꺾입니다.',
-  late: '22세까지는 더디다가 그 뒤에 크고 28세 무렵 완성됩니다. 33세까지 기량을 지키다 34세 무렵부터 천천히 꺾입니다.',
-  veryLate: '24세까지는 더디고 20대 중반에야 본격적으로 커서 29세 무렵 완성됩니다. 35세 가까이 기량을 지키고 천천히 떨어져 선수 생활이 3년쯤 깁니다.',
+  veryEarly: __i18n_k("league.traits.gROWTH_NOTES.veryEarly.d1d4d640"),
+  early: __i18n_k("league.traits.gROWTH_NOTES.early.91fb4081"),
+  normal: __i18n_k("league.traits.gROWTH_NOTES.normal.e2732050"),
+  late: __i18n_k("league.traits.gROWTH_NOTES.late.06088a91"),
+  veryLate: __i18n_k("league.traits.gROWTH_NOTES.veryLate.9feaeade"),
 };
 
 export type TraitKey = Exclude<keyof Traits, 'growth'>;
 export const TRAIT_KEYS: TraitKey[] = ['genius', 'work', 'mental', 'leadership', 'loyalty', 'controversy'];
-export const TRAIT_LABELS: Record<TraitKey, string> = { genius: '천재성', work: '성실성', mental: '멘탈', leadership: '리더십', loyalty: '충성심', controversy: '논란성' };
+export const TRAIT_LABELS: Record<TraitKey, string> = { genius: __i18n_k("league.traits.tRAIT_LABELS.genius.77832cee"), work: __i18n_k("league.traits.tRAIT_LABELS.work.46833a36"), mental: __i18n_k("league.traits.tRAIT_LABELS.mental.48b4c861"), leadership: __i18n_k("league.traits.tRAIT_LABELS.leadership.3386e92f"), loyalty: __i18n_k("league.traits.tRAIT_LABELS.loyalty.2db96ec2"), controversy: __i18n_k("league.traits.tRAIT_LABELS.controversy.5346a603") };
 
 /** Each trait's spread: base, standard deviation, and a rare jump (a genius, a troublemaker). */
 const ROLL: Record<TraitKey, { base: number; sd: number; tail?: [number, number] }> = {

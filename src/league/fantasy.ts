@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* 판타지 드래프트 (1.6.0, scenario 5): in the winter of 2027 every domestic player under contract leaves his club
    and the clubs draft the whole league again, this year's draft class with them, in a snake order drawn by lot.
    Players keep their contracts (the new club takes them over); the class signs rookie deals at the slot of their
@@ -143,7 +144,7 @@ export function makeFantasyPick(s: LeagueState, f: FantasyDraft, p: Player) {
     const u = s.user;
     if (u && teamId === u.teamId) {
       u.fund -= bonus;
-      u.ledger.push({ year: f.year, label: `판타지 드래프트 신인 계약금 · ${p.name}`, amount: -bonus });
+      u.ledger.push({ year: f.year, label: __i18n_k("league.fantasy.makeFantasyPick.label.f180b788", { name: p.name }), amount: -bonus });
     }
   } else if (p.contract) p.contract.teamId = teamId;
   p.teamId = teamId;
@@ -178,9 +179,9 @@ function closeFantasy(s: LeagueState, f: FantasyDraft) {
   const ours = f.picks.filter((x) => x.teamId === u.teamId).slice(0, 5);
   const names = ours.map((x, i) => `${i + 1}R ${s.players[x.id]?.name ?? ''}`);
   const date = `${f.year}-11-25`;
-  addAlert(s, { id: `fantasy-${f.year}`, date, kind: 'achievement', title: '판타지 드래프트 종료', lines: [`${f.rounds}라운드, ${f.picks.length}명이 새 구단을 찾았습니다.`, `우리 구단 상위 지명: ${names.join(' · ')}`, `${FANTASY.seasons[0]}~${FANTASY.seasons.at(-1)} 세 시즌의 성적으로 점수를 매깁니다.`], tone: 'good' });
+  addAlert(s, { id: `fantasy-${f.year}`, date, kind: 'achievement', title: __i18n_k("league.fantasy.closeFantasy.title.4ba0a7a2"), lines: [__i18n_k("league.fantasy.closeFantasy.lines.f6910de3", { rounds: f.rounds, length: f.picks.length }), __i18n_k("league.fantasy.closeFantasy.lines.beabced2", { value: names.join(' · ') }), __i18n_k("league.fantasy.closeFantasy.lines.a048d9ef", { value: FANTASY.seasons[0], value2: FANTASY.seasons.at(-1) })], tone: 'good' });
   const first = f.picks.slice(0, f.order.length).map((x) => `${s.teams.find((t) => t.id === x.teamId)?.short ?? x.teamId} ${s.players[x.id]?.name ?? ''}`);
-  addNews(s, { id: `fantasy-${f.year}`, date, kind: 'move', title: '판타지 드래프트, 리그가 새로 짜였다', body: `1라운드 지명: ${first.join(', ')}.`, quotes: [], facts: { 라운드: f.rounds, 지명: f.picks.length }, players: f.picks.slice(0, f.order.length).map((x) => x.id), mine: false });
+  addNews(s, { id: `fantasy-${f.year}`, date, kind: 'move', title: __i18n_k("league.fantasy.closeFantasy.title.15ce308f"), body: __i18n_k("league.fantasy.closeFantasy.body.29c84e17", { value: first.join(', ') }), quotes: [], facts: { 라운드: f.rounds, 지명: f.picks.length }, players: f.picks.slice(0, f.order.length).map((x) => x.id), mine: false });
 }
 
 /** Our board: the best left by our scouts' order, with where each played. */

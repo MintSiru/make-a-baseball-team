@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Positions a player can handle (V0.7, reworked in V0.11). Every hitter has one main position and up to three
    others he handles (`alt`): there he gives up half the usual gap (model/position.ts outOfPosition). Anywhere
    else costs the full gap and more, until 30 first-team games there make him a real option; a season of 40
@@ -11,7 +12,7 @@ import type { LeagueState } from './state';
 
 export const POSITIONS: Position[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
 
-export const POSITION_SHORT: Record<FieldPos, string> = { C: '포수', '1B': '1루', '2B': '2루', '3B': '3루', SS: '유격', LF: '좌익', CF: '중견', RF: '우익', DH: '지명' };
+export const POSITION_SHORT: Record<FieldPos, string> = { C: __i18n_k("league.positions.pOSITION_SHORT.c.5f31470d"), '1B': __i18n_k("league.positions.pOSITION_SHORT.46c6f9a9"), '2B': __i18n_k("league.positions.pOSITION_SHORT.8011eb7c"), '3B': __i18n_k("league.positions.pOSITION_SHORT.3b17d1b9"), SS: __i18n_k("league.positions.pOSITION_SHORT.sS.685e1674"), LF: __i18n_k("league.positions.pOSITION_SHORT.lF.cab5a283"), CF: __i18n_k("league.positions.pOSITION_SHORT.cF.545b7e1e"), RF: __i18n_k("league.positions.pOSITION_SHORT.rF.e3d9e0b4"), DH: __i18n_k("league.positions.pOSITION_SHORT.dH.68a26d9d") };
 
 const EXPERIENCED = POSITION_FIT.experienced;
 

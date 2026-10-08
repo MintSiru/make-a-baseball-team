@@ -1,3 +1,4 @@
+import { display as __i18n_display } from '../i18n/index';
 /* Sortable table columns: click a heading to sort by it, click again to reverse. Numbers start from the
    largest (best grade first), text from ㄱ; age starts from the youngest. */
 import type { ComponentChildren } from 'preact';
@@ -42,9 +43,9 @@ export function useSort<T, K extends string>(rows: T[], columns: Record<K, SortC
     return (
       <th key={k} class={num ? 'num' : undefined} aria-sort={active ? (sort!.dir === 1 ? 'ascending' : 'descending') : 'none'}>
         <button type="button" class="sort-head" onClick={() => toggle(k)}>
-          {children}
+          {__i18n_display(children)}
           <span class="sort-mark" aria-hidden="true">
-            {active ? (sort!.dir === 1 ? '▲' : '▼') : ''}
+            {__i18n_display(active ? (sort!.dir === 1 ? '▲' : '▼') : '')}
           </span>
         </button>
       </th>

@@ -1,3 +1,4 @@
+import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* Event pop-ups (V0.7.4): the new alerts one at a time (national team, free agents, awards, the hall
    of fame, the season's end, the owner's verdict, postings, achievements, and since V0.11 retirements and
    the articles about our club), and the list of all of them in the club's news. The pop-ups can be turned
@@ -7,23 +8,23 @@ import { useFocusTrap } from './modal';
 import type { Alert, AlertKind } from '../league/alerts';
 
 export const ALERT_LABEL: Record<AlertKind, string> = {
-  national: '국가대표',
+  national: __i18n_k("ui.alerts.aLERT_LABEL.national.3243618b"),
   fa: 'FA',
-  award: '시상',
-  hall: '명예의 전당',
-  season: '시즌',
-  owner: '모기업',
-  posting: '포스팅',
-  achievement: '업적',
-  injury: '부상',
-  military: '병역',
-  retire: '은퇴',
-  move: '선수 이동',
-  life: '선수 소식',
-  game: '경기',
-  record: '기록',
-  scandal: '징계',
-  dispute: '지분 분쟁',
+  award: __i18n_k("ui.alerts.aLERT_LABEL.award.d95a37a4"),
+  hall: __i18n_k("ui.alerts.aLERT_LABEL.hall.6999864f"),
+  season: __i18n_k("ui.alerts.aLERT_LABEL.season.b3000412"),
+  owner: __i18n_k("ui.alerts.aLERT_LABEL.owner.cf76b767"),
+  posting: __i18n_k("ui.alerts.aLERT_LABEL.posting.6734925e"),
+  achievement: __i18n_k("ui.alerts.aLERT_LABEL.achievement.62850cd4"),
+  injury: __i18n_k("ui.alerts.aLERT_LABEL.injury.501fb802"),
+  military: __i18n_k("ui.alerts.aLERT_LABEL.military.82af035c"),
+  retire: __i18n_k("ui.alerts.aLERT_LABEL.retire.5b170d3c"),
+  move: __i18n_k("ui.alerts.aLERT_LABEL.move.311ef0cd"),
+  life: __i18n_k("ui.alerts.aLERT_LABEL.life.1598a25a"),
+  game: __i18n_k("ui.alerts.aLERT_LABEL.game.e0cee61a"),
+  record: __i18n_k("ui.alerts.aLERT_LABEL.record.d84b6f4b"),
+  scandal: __i18n_k("ui.alerts.aLERT_LABEL.scandal.e6681fb0"),
+  dispute: __i18n_k("ui.alerts.aLERT_LABEL.dispute.8cc0c1f5"),
   allstar: '올스타',
 };
 const ICON: Record<AlertKind, string> = { national: '⚾', fa: '✍️', award: '🏆', hall: '🏛️', season: '📅', owner: '🏢', posting: '✈️', achievement: '🎖️', injury: '🩹', military: '🪖', retire: '👋', move: '🔁', life: '💬', game: '📰', record: '📈', scandal: '⚖️', dispute: '📜', allstar: '⭐' };
@@ -121,26 +122,24 @@ export function AlertPopup({ alerts, onDone }: { alerts: Alert[]; onDone: (ids: 
       <div class={`dialog alert-dialog tone-${a.tone ?? 'info'}`} role="alertdialog" aria-modal="true" aria-labelledby="alert-title" aria-describedby="alert-lines" ref={box}>
         <p class="alert-kind">
           <span class="alert-icon" aria-hidden="true">
-            {ICON[a.kind]}
-          </span>{' '}
-          {ALERT_LABEL[a.kind]} · {a.date}
-          {alerts.length > 1 && <span class="alert-count"> {i + 1} / {alerts.length}</span>}
+            {__i18n_display(ICON[a.kind])}
+          </span>{__i18n_display(' ')}
+          {__i18n_display(ALERT_LABEL[a.kind])} · {__i18n_display(a.date)}
+          {__i18n_display(alerts.length > 1 && <span class="alert-count"> {__i18n_display(i + 1)} / {__i18n_display(alerts.length)}</span>)}
         </p>
-        <h2 id="alert-title">{a.title}</h2>
+        <h2 id="alert-title">{__i18n_display(a.title)}</h2>
         <ul id="alert-lines" class="alert-lines">
-          {a.lines.map((line, k) => (
-            <li key={k}>{line}</li>
-          ))}
+          {__i18n_display(a.lines.map((line, k) => (
+            <li key={k}>{__i18n_display(line)}</li>
+          )))}
         </ul>
         <div class="row-actions">
           <button type="button" class="primary" ref={ok} onClick={() => (last ? all() : setI(i + 1))}>
-            {last ? '확인' : '다음'}
+            {__i18n_display(last ? __i18n_k("ui.alerts.alertPopup.468266d6") : __i18n_k("ui.alerts.alertPopup.854c76f3"))}
           </button>
-          {!last && (
-            <button type="button" onClick={all}>
-              모두 확인
-            </button>
-          )}
+          {__i18n_display(!last && (
+            <button type="button" onClick={all}>{__i18n_t("ui.alerts.alertPopup.43c1a81d")}</button>
+          ))}
           <button
             type="button"
             class="link small"
@@ -148,11 +147,9 @@ export function AlertPopup({ alerts, onDone }: { alerts: Alert[]; onDone: (ids: 
               setPopups(false);
               all();
             }}
-          >
-            팝업 끄기
-          </button>
+          >{__i18n_t("ui.alerts.alertPopup.253fe948")}</button>
         </div>
-        <p class="muted small">지난 알림은 우리 구단 → 소식 → 알림에서 다시 볼 수 있습니다.</p>
+        <p class="muted small">{__i18n_t("ui.alerts.alertPopup.f0064645")}</p>
       </div>
     </div>
   );
@@ -164,29 +161,26 @@ export function AlertList({ alerts }: { alerts: Alert[] }) {
   return (
     <>
       <PopupSettings />
-      {alerts.length ? (
+      {__i18n_display(alerts.length ? (
         <ol class="plain alert-list">
-          {[...alerts].reverse().map((a) => (
+          {__i18n_display([...alerts].reverse().map((a) => (
             <li key={a.id} class={`tone-${a.tone ?? 'info'}${a.seen ? '' : ' unseen'}`}>
               <p class="muted small">
-                <span aria-hidden="true">{ICON[a.kind]}</span> {ALERT_LABEL[a.kind]} · {a.date}
-                {!a.seen && <span class="tag">새 알림</span>}
+                <span aria-hidden="true">{__i18n_display(ICON[a.kind])}</span> {__i18n_display(ALERT_LABEL[a.kind])} · {__i18n_display(a.date)}
+                {__i18n_display(!a.seen && <span class="tag">{__i18n_t("ui.alerts.alertList.888f43de")}</span>)}
               </p>
-              <h4>{a.title}</h4>
+              <h4>{__i18n_display(a.title)}</h4>
               <ul>
-                {a.lines.map((line, k) => (
-                  <li key={k}>{line}</li>
-                ))}
+                {__i18n_display(a.lines.map((line, k) => (
+                  <li key={k}>{__i18n_display(line)}</li>
+                )))}
               </ul>
             </li>
-          ))}
+          )))}
         </ol>
       ) : (
-        <p class="muted">
-          아직 알림이 없습니다. 국가대표 선발·결과, FA 시장 결과, 시상, 명예의 전당, 시즌 결과, 모기업 평가, 포스팅, 업적, 은퇴와 우리 구단 기사(경기·기록·부상·선수 이동·선수 소식)가 여기와
-          팝업으로 나옵니다.
-        </p>
-      )}
+        <p class="muted">{__i18n_t("ui.alerts.alertList.2c74b8cb")}</p>
+      ))}
     </>
   );
 }
@@ -207,12 +201,12 @@ export function PopupSettings() {
         소식)도 팝업으로 보기
       </label>
       <fieldset class="alert-kinds" disabled={!on}>
-        <legend>팝업으로 볼 알림</legend>
-        {(Object.keys(ALERT_LABEL) as AlertKind[]).map((k) => (
+        <legend>{__i18n_t("ui.alerts.popupSettings.fedc1a36")}</legend>
+        {__i18n_display((Object.keys(ALERT_LABEL) as AlertKind[]).map((k) => (
           <label key={k} class="check">
-            <input type="checkbox" checked={!off.includes(k)} onChange={(e) => setKind(k, (e.currentTarget as HTMLInputElement).checked)} /> {ALERT_LABEL[k]}
+            <input type="checkbox" checked={!off.includes(k)} onChange={(e) => setKind(k, (e.currentTarget as HTMLInputElement).checked)} /> {__i18n_display(ALERT_LABEL[k])}
           </label>
-        ))}
+        )))}
       </fieldset>
     </>
   );

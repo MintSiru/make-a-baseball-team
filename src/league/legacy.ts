@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The league's memory for the 역대 tab (1.0.1): every club's retired numbers with the player's story and his
    numbers there, and the national team's tournaments. Display only. */
 import type { BatTotals, PitTotals, Player, PlayerId, TeamId } from '../model/types';
@@ -59,17 +60,17 @@ function retiredNumber(s: LeagueState, teamId: TeamId, r: { number: number; play
   const hall = (s.hallOfFame ?? []).some((h) => h.id === p.id);
   const best = [...here].sort((a, b) => b.war - a.war)[0];
   const story: string[] = [];
-  if (isForeign(p)) story.push(`${p.origin.nationality ?? '외국'} 출신 외국인 선수`);
-  else if (p.origin.draftYear && p.origin.overallPick) story.push(`${p.origin.draftYear}년 신인 드래프트 전체 ${p.origin.overallPick}순위`);
+  if (isForeign(p)) story.push(__i18n_k("league.legacy.retiredNumber.8d08ffd5", { value: p.origin.nationality ?? __i18n_k("league.legacy.retiredNumber.380ce337") }));
+  else if (p.origin.draftYear && p.origin.overallPick) story.push(__i18n_k("league.legacy.retiredNumber.b6618d6a", { draftYear: p.origin.draftYear, overallPick: p.origin.overallPick }));
   else if (p.origin.pathway) story.push(p.origin.pathway);
   const debut = major.length ? Math.min(...major.map((c) => c.year)) : null;
-  if (debut) story.push(`${debut}년 1군 데뷔`);
+  if (debut) story.push(__i18n_k("league.legacy.retiredNumber.36545ce7", { debut: debut }));
   const elsewhere = [...new Set(major.filter((c) => c.teamId !== teamId).map((c) => shortName(s, c.teamId)))];
-  if (from !== null) story.push(`${shortName(s, teamId)}에서 ${from}~${to}년 ${here.length}시즌${elsewhere.length ? ` (그 밖에 ${elsewhere.join('·')})` : ''}`);
-  if (best && best.war >= 3) story.push(`최고 시즌 ${best.year}년 WAR ${best.war.toFixed(1)}`);
+  if (from !== null) story.push(__i18n_k("league.legacy.retiredNumber.76721474", { shortName: shortName(s, teamId), from: from, to: to, length: here.length, value: elsewhere.length ? __i18n_k("league.legacy.retiredNumber.b1fbc56e", { value: elsewhere.join('·') }) : '' }));
+  if (best && best.war >= 3) story.push(__i18n_k("league.legacy.retiredNumber.f16fe1e7", { year: best.year, value: best.war.toFixed(1) }));
   if (honours.length) story.push(honours.join(', '));
   const last = major.length ? Math.max(...major.map((c) => c.year)) : null;
-  if (last) story.push(`${last}년 마지막 시즌, ${r.year}년 ${r.number}번 영구결번${hall ? ' · 명예의 전당' : ''}`);
+  if (last) story.push(__i18n_k("league.legacy.retiredNumber.448a9493", { last: last, year: r.year, number: r.number, value: hall ? __i18n_k("league.legacy.retiredNumber.52ec09c3") : '' }));
   return { ...base, position: positionLabel(p), pitcher, seasons: here.length, from, to, bat, pit, war, careerWar: major.reduce((a, c) => a + c.war, 0), honours, hall, story };
 }
 
@@ -87,7 +88,7 @@ export function honoursOf(s: LeagueState, id: PlayerId): string[] {
     gg += a.goldenGloves.filter((g) => g.id === id).length;
     for (const t of a.titles) if (t.id === id) titles.set(t.label, (titles.get(t.label) ?? 0) + 1);
   }
-  const n = (label: string, k: number) => (k > 1 ? `${label} ${k}회` : label);
+  const n = (label: string, k: number) => (k > 1 ? __i18n_k("league.legacy.honoursOf.n.37dd1cbe", { label: label, value: k }) : label);
   return [...(mvp ? [n('MVP', mvp)] : []), ...(rookie ? ['신인왕'] : []), ...(gg ? [n('골든글러브', gg)] : []), ...[...titles].map(([label, k]) => n(label, k))];
 }
 
@@ -129,6 +130,6 @@ export function nationalView(s: LeagueState) {
     })
     .reverse();
   const wins = rows.filter((r) => r.result === '우승' || r.result === '금메달').length;
-  const podiums = rows.filter((r) => ['우승', '금메달', '준우승', '은메달', '동메달', '3위', '4강'].includes(r.result)).length;
+  const podiums = rows.filter((r) => ['우승', '금메달', __i18n_k("league.legacy.nationalView.podiums.3660fdbb"), __i18n_k("league.legacy.nationalView.podiums.4761b4b6"), __i18n_k("league.legacy.nationalView.podiums.dd08cf55"), __i18n_k("league.legacy.nationalView.podiums.7948ecf9"), __i18n_k("league.legacy.nationalView.podiums.82c2c27f")].includes(r.result)).length;
   return { rows, wins, podiums, exemptions: rows.filter((r) => r.medal).length };
 }

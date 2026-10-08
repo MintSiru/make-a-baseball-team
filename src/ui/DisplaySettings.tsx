@@ -1,3 +1,4 @@
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* Display settings (V0.7.6): the colours of the ability bars by 20–80 tier, a preview, whether the grades in
    the tables are coloured too, and the event pop-ups. Changes show at once and stay in this browser. */
 import { useEffect, useRef, useState } from 'preact/hooks';
@@ -21,15 +22,11 @@ export function DisplaySettings({ onClose }: { onClose: () => void }) {
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="display-settings-title" ref={first}>
-        <button type="button" class="close" onClick={onClose} aria-label="닫기">
-          닫기
-        </button>
-        <h2 id="display-settings-title">화면 설정</h2>
+        <button type="button" class="close" onClick={onClose} aria-label={__i18n_t("ui.displaySettings.displaySettings.94b7dba1")}>{__i18n_t("ui.displaySettings.displaySettings.94b7dba1")}</button>
+        <h2 id="display-settings-title">{__i18n_t("ui.displaySettings.displaySettings.b1c35543")}</h2>
         <DisplayOptions />
         <div class="row-actions">
-          <button type="button" class="primary" onClick={onClose}>
-            확인
-          </button>
+          <button type="button" class="primary" onClick={onClose}>{__i18n_t("ui.displaySettings.displaySettings.468266d6")}</button>
         </div>
       </div>
     </div>
@@ -45,117 +42,109 @@ export function DisplayOptions() {
   };
   return (
     <>
-      <p class="muted">이 브라우저에만 저장되고 진행 파일에는 들어가지 않습니다.</p>
+      <p class="muted">{__i18n_t("ui.displaySettings.displayOptions.ea265ed0")}</p>
 
-      <h3>밝기</h3>
-      <div class="segmented" role="group" aria-label="밝기">
-        {(Object.keys(THEME_LABELS) as Theme[]).map((k) => (
+      <h3>{__i18n_t("ui.displaySettings.displayOptions.1a13e026")}</h3>
+      <div class="segmented" role="group" aria-label={__i18n_t("ui.displaySettings.displayOptions.1a13e026")}>
+        {__i18n_display((Object.keys(THEME_LABELS) as Theme[]).map((k) => (
           <button key={k} type="button" aria-pressed={p.theme === k} onClick={() => set({ ...p, theme: k })}>
-            {THEME_LABELS[k]}
+            {__i18n_display(THEME_LABELS[k])}
           </button>
-        ))}
+        )))}
       </div>
-      <p class="muted small">구단 색이 배경에 묻히면 읽을 수 있을 만큼 밝히거나 어둡게 바꿔 씁니다.</p>
+      <p class="muted small">{__i18n_t("ui.displaySettings.displayOptions.a302d3dd")}</p>
 
-      <h3>글자 크기</h3>
-      <div class="segmented" role="group" aria-label="글자 크기">
-        {(Object.keys(SCALE_LABELS) as Scale[]).map((k) => (
+      <h3>{__i18n_t("ui.displaySettings.displayOptions.32b62470")}</h3>
+      <div class="segmented" role="group" aria-label={__i18n_t("ui.displaySettings.displayOptions.32b62470")}>
+        {__i18n_display((Object.keys(SCALE_LABELS) as Scale[]).map((k) => (
           <button key={k} type="button" aria-pressed={p.scale === k} onClick={() => set({ ...p, scale: k })}>
-            {SCALE_LABELS[k]}
+            {__i18n_display(SCALE_LABELS[k])}
           </button>
-        ))}
+        )))}
       </div>
 
-      <h3>능력치 바 색</h3>
-      <div class="preset-list" role="radiogroup" aria-label="능력치 바 색">
-        {ORDER.map((k) => {
+      <h3>{__i18n_t("ui.displaySettings.displayOptions.764bfea3")}</h3>
+      <div class="preset-list" role="radiogroup" aria-label={__i18n_t("ui.displaySettings.displayOptions.764bfea3")}>
+        {__i18n_display(ORDER.map((k) => {
           const preset = k === 'custom' ? null : PRESETS[k];
           const strip = k === 'custom' ? p.custom : (preset!.colors ?? CLUB_STRIP);
           return (
             <label key={k} class="check">
               <input type="radio" name="bar-preset" checked={p.bars === k} onChange={() => set({ ...p, bars: k })} />
-              {preset ? preset.label : '직접 지정'}
-              <span class="muted small"> · {preset ? preset.note : '등급마다 색을 고릅니다'}</span>
-              {strip && (
+              {__i18n_display(preset ? preset.label : __i18n_k("ui.displaySettings.displayOptions.9b941bf8"))}
+              <span class="muted small"> · {__i18n_display(preset ? preset.note : __i18n_k("ui.displaySettings.displayOptions.f6b8f283"))}</span>
+              {__i18n_display(strip && (
                 <span class="strip" aria-hidden="true">
-                  {strip.map((c, t) => (
+                  {__i18n_display(strip.map((c, t) => (
                     <span key={t} style={{ background: c }} />
-                  ))}
+                  )))}
                 </span>
-              )}
+              ))}
             </label>
           );
-        })}
+        }))}
       </div>
-      {p.bars === 'custom' && (
-        <div class="swatches" role="group" aria-label="등급별 색">
-          {TIER_LABELS.map((label, t) => (
+      {__i18n_display(p.bars === 'custom' && (
+        <div class="swatches" role="group" aria-label={__i18n_t("ui.displaySettings.displayOptions.c797f3c4")}>
+          {__i18n_display(TIER_LABELS.map((label, t) => (
             <label key={label}>
               <input
                 type="color"
                 value={p.custom[t]}
-                aria-label={`${label} 색`}
+                aria-label={__i18n_displayText(__i18n_k("ui.displaySettings.displayOptions.508a6d32", { label: label }))}
                 onInput={(e) => {
                   const custom = [...p.custom] as DisplayPrefs['custom'];
                   custom[t] = (e.currentTarget as HTMLInputElement).value;
                   set({ ...p, custom });
                 }}
               />
-              {label}
+              {__i18n_display(label)}
             </label>
-          ))}
-          <button type="button" class="link small" onClick={() => set({ ...p, custom: DEFAULT_PREFS.custom })}>
-            기본 색으로
-          </button>
+          )))}
+          <button type="button" class="link small" onClick={() => set({ ...p, custom: DEFAULT_PREFS.custom })}>{__i18n_t("ui.displaySettings.displayOptions.5887b7d5")}</button>
         </div>
-      )}
+      ))}
 
-      <h4>미리보기</h4>
+      <h4>{__i18n_t("ui.displaySettings.displayOptions.2f1c9d7b")}</h4>
       <div class="gradebars">
-        {SAMPLE.map((g) => (
-          <GradeBar key={g} label={`${g}`} now={g} future={g < 60 ? g + 10 : undefined} />
-        ))}
+        {__i18n_display(SAMPLE.map((g) => (
+          <GradeBar key={g} label={__i18n_displayText(`${g}`)} now={g} future={g < 60 ? g + 10 : undefined} />
+        )))}
       </div>
-      <table class="record-table preview-grades" aria-label="표 미리보기">
+      <table class="record-table preview-grades" aria-label={__i18n_t("ui.displaySettings.displayOptions.e4d01c6f")}>
         <tbody>
           <tr>
-            {SAMPLE.map((g) => (
+            {__i18n_display(SAMPLE.map((g) => (
               <td key={g} class={`num grade-cell t${gradeTier(g)} ${g >= 60 ? 'plus' : g < 40 ? 'minus' : ''}`}>
-                {g}
+                {__i18n_display(g)}
               </td>
-            ))}
+            )))}
           </tr>
         </tbody>
       </table>
-      <p class="muted small">라인업 화면의 능력치 칸은 바와 같은 색을 씁니다 (구단 색일 때는 글자색).</p>
+      <p class="muted small">{__i18n_t("ui.displaySettings.displayOptions.2818931a")}</p>
 
       <label class="check">
         <input type="checkbox" checked={p.tables} onChange={(e) => set({ ...p, tables: (e.currentTarget as HTMLInputElement).checked })} /> 선수 표의 현재·미래 능력치에도 색 입히기
       </label>
 
-      <h3>표</h3>
-      <div class="segmented" role="group" aria-label="표 간격">
-        <button type="button" aria-pressed={p.density === 'compact'} onClick={() => set({ ...p, density: 'compact' })}>
-          촘촘하게 (한 화면에 더 많이)
-        </button>
-        <button type="button" aria-pressed={p.density === 'comfortable'} onClick={() => set({ ...p, density: 'comfortable' })}>
-          넉넉하게
-        </button>
+      <h3>{__i18n_t("ui.displaySettings.displayOptions.c31907e6")}</h3>
+      <div class="segmented" role="group" aria-label={__i18n_t("ui.displaySettings.displayOptions.ab6cb1ec")}>
+        <button type="button" aria-pressed={p.density === 'compact'} onClick={() => set({ ...p, density: 'compact' })}>{__i18n_t("ui.displaySettings.displayOptions.103ea773")}</button>
+        <button type="button" aria-pressed={p.density === 'comfortable'} onClick={() => set({ ...p, density: 'comfortable' })}>{__i18n_t("ui.displaySettings.displayOptions.5f00e131")}</button>
       </div>
 
-      <h3>경기</h3>
+      <h3>{__i18n_t("ui.displaySettings.displayOptions.e0cee61a")}</h3>
       <label class="check">
         <input type="checkbox" checked={p.hideScores} onChange={(e) => set({ ...p, hideScores: (e.currentTarget as HTMLInputElement).checked })} /> 우리 경기 결과 가리기 — 경기 탭에서 점수를 숨기고, 열면 문자중계가 1회부터 흘러갑니다
       </label>
-      <p class="muted small">순위표와 뉴스에는 결과가 그대로 나옵니다. 중계를 끝까지 보거나 "결과 바로 보기"를 누르면 그 경기는 다시 보입니다.</p>
+      <p class="muted small">{__i18n_t("ui.displaySettings.displayOptions.97c4de27")}</p>
 
-      <h3>알림</h3>
+      <h3>{__i18n_t("ui.displaySettings.displayOptions.e29d147e")}</h3>
       <PopupSettings />
 
       <div class="row-actions">
-        <button type="button" onClick={() => set(DEFAULT_PREFS)}>
-          모두 기본값으로
-        </button>
+        <button type="button" onClick={() => set(DEFAULT_PREFS)}>{__i18n_t("ui.displaySettings.displayOptions.95f05922")}</button>
       </div>
     </>
   );

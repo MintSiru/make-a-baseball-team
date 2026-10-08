@@ -1,0 +1,538 @@
+[
+  {
+    "file": "src/club/cities.ts",
+    "replacements": 62
+  },
+  {
+    "file": "src/club/types.ts",
+    "replacements": 14
+  },
+  {
+    "file": "src/core/about.ts",
+    "replacements": 1
+  },
+  {
+    "file": "src/draftroom/biography.js",
+    "replacements": 88
+  },
+  {
+    "file": "src/draftroom/career.js",
+    "replacements": 35
+  },
+  {
+    "file": "src/draftroom/catalog.js",
+    "replacements": 859
+  },
+  {
+    "file": "src/draftroom/clubs.js",
+    "replacements": 60
+  },
+  {
+    "file": "src/draftroom/contracts.js",
+    "replacements": 6
+  },
+  {
+    "file": "src/draftroom/draft-ai.js",
+    "replacements": 54
+  },
+  {
+    "file": "src/draftroom/engine.js",
+    "replacements": 31
+  },
+  {
+    "file": "src/draftroom/grades.js",
+    "replacements": 17
+  },
+  {
+    "file": "src/draftroom/press.js",
+    "replacements": 61
+  },
+  {
+    "file": "src/draftroom/prospects.js",
+    "replacements": 124
+  },
+  {
+    "file": "src/draftroom/scouting.js",
+    "replacements": 49
+  },
+  {
+    "file": "src/draftroom/season.js",
+    "replacements": 53
+  },
+  {
+    "file": "src/draftroom/tuning.js",
+    "replacements": 15
+  },
+  {
+    "file": "src/draftroom/voices.js",
+    "replacements": 106
+  },
+  {
+    "file": "src/draftroom/writer.js",
+    "replacements": 264
+  },
+  {
+    "file": "src/league/actions.ts",
+    "replacements": 5
+  },
+  {
+    "file": "src/league/advice.ts",
+    "replacements": 73
+  },
+  {
+    "file": "src/league/alerts.ts",
+    "replacements": 40
+  },
+  {
+    "file": "src/league/allstar.ts",
+    "replacements": 34
+  },
+  {
+    "file": "src/league/alumni.ts",
+    "replacements": 60
+  },
+  {
+    "file": "src/league/awards.ts",
+    "replacements": 28
+  },
+  {
+    "file": "src/league/ballpark.ts",
+    "replacements": 21
+  },
+  {
+    "file": "src/league/briefing.ts",
+    "replacements": 65
+  },
+  {
+    "file": "src/league/cap.ts",
+    "replacements": 4
+  },
+  {
+    "file": "src/league/clubs.ts",
+    "replacements": 67
+  },
+  {
+    "file": "src/league/combine.ts",
+    "replacements": 22
+  },
+  {
+    "file": "src/league/dispute.ts",
+    "replacements": 47
+  },
+  {
+    "file": "src/league/entry.ts",
+    "replacements": 33
+  },
+  {
+    "file": "src/league/expansion.ts",
+    "replacements": 54
+  },
+  {
+    "file": "src/league/fa.ts",
+    "replacements": 92
+  },
+  {
+    "file": "src/league/facilities.ts",
+    "replacements": 44
+  },
+  {
+    "file": "src/league/fans.ts",
+    "replacements": 1
+  },
+  {
+    "file": "src/league/fantasy.ts",
+    "replacements": 7
+  },
+  {
+    "file": "src/league/finance.ts",
+    "replacements": 9
+  },
+  {
+    "file": "src/league/foreign.ts",
+    "replacements": 30
+  },
+  {
+    "file": "src/league/foreigncap.ts",
+    "replacements": 5
+  },
+  {
+    "file": "src/league/foreignpool.ts",
+    "replacements": 3
+  },
+  {
+    "file": "src/league/foreigntalks.ts",
+    "replacements": 4
+  },
+  {
+    "file": "src/league/gamedetail.ts",
+    "replacements": 39
+  },
+  {
+    "file": "src/league/injuries.ts",
+    "replacements": 74
+  },
+  {
+    "file": "src/league/international.ts",
+    "replacements": 32
+  },
+  {
+    "file": "src/league/interviews.ts",
+    "replacements": 54
+  },
+  {
+    "file": "src/league/legacy.ts",
+    "replacements": 12
+  },
+  {
+    "file": "src/league/life.ts",
+    "replacements": 116
+  },
+  {
+    "file": "src/league/manager.ts",
+    "replacements": 5
+  },
+  {
+    "file": "src/league/market.ts",
+    "replacements": 3
+  },
+  {
+    "file": "src/league/milestones.ts",
+    "replacements": 49
+  },
+  {
+    "file": "src/league/military.ts",
+    "replacements": 10
+  },
+  {
+    "file": "src/league/movenews.ts",
+    "replacements": 116
+  },
+  {
+    "file": "src/league/national.ts",
+    "replacements": 24
+  },
+  {
+    "file": "src/league/news.ts",
+    "replacements": 92
+  },
+  {
+    "file": "src/league/numbers.ts",
+    "replacements": 7
+  },
+  {
+    "file": "src/league/parent.ts",
+    "replacements": 80
+  },
+  {
+    "file": "src/league/pitches.ts",
+    "replacements": 7
+  },
+  {
+    "file": "src/league/players.ts",
+    "replacements": 11
+  },
+  {
+    "file": "src/league/playtext.ts",
+    "replacements": 53
+  },
+  {
+    "file": "src/league/positions.ts",
+    "replacements": 9
+  },
+  {
+    "file": "src/league/posting.ts",
+    "replacements": 6
+  },
+  {
+    "file": "src/league/postseason.ts",
+    "replacements": 30
+  },
+  {
+    "file": "src/league/poststats.ts",
+    "replacements": 15
+  },
+  {
+    "file": "src/league/reports.ts",
+    "replacements": 41
+  },
+  {
+    "file": "src/league/returnees.ts",
+    "replacements": 1
+  },
+  {
+    "file": "src/league/rival.ts",
+    "replacements": 50
+  },
+  {
+    "file": "src/league/rivalry.ts",
+    "replacements": 14
+  },
+  {
+    "file": "src/league/rogue.ts",
+    "replacements": 13
+  },
+  {
+    "file": "src/league/scandals.ts",
+    "replacements": 51
+  },
+  {
+    "file": "src/league/scenarios.ts",
+    "replacements": 113
+  },
+  {
+    "file": "src/league/scouting.ts",
+    "replacements": 4
+  },
+  {
+    "file": "src/league/season.ts",
+    "replacements": 1
+  },
+  {
+    "file": "src/league/seconddraft.ts",
+    "replacements": 5
+  },
+  {
+    "file": "src/league/staff.ts",
+    "replacements": 26
+  },
+  {
+    "file": "src/league/stops.ts",
+    "replacements": 14
+  },
+  {
+    "file": "src/league/strategy.ts",
+    "replacements": 21
+  },
+  {
+    "file": "src/league/trade.ts",
+    "replacements": 57
+  },
+  {
+    "file": "src/league/training.ts",
+    "replacements": 44
+  },
+  {
+    "file": "src/league/traits.ts",
+    "replacements": 15
+  },
+  {
+    "file": "src/league/tuning.ts",
+    "replacements": 16
+  },
+  {
+    "file": "src/league/twelve.ts",
+    "replacements": 10
+  },
+  {
+    "file": "src/league/userclub.ts",
+    "replacements": 76
+  },
+  {
+    "file": "src/league/views.ts",
+    "replacements": 91
+  },
+  {
+    "file": "src/save/check.ts",
+    "replacements": 17
+  },
+  {
+    "file": "src/save/format.ts",
+    "replacements": 9
+  },
+  {
+    "file": "src/save/store.ts",
+    "replacements": 3
+  },
+  {
+    "file": "src/story/errors.ts",
+    "replacements": 11
+  },
+  {
+    "file": "src/story/prompt.ts",
+    "replacements": 10
+  },
+  {
+    "file": "src/story/providers/anthropic.ts",
+    "replacements": 3
+  },
+  {
+    "file": "src/story/providers/gemini.ts",
+    "replacements": 4
+  },
+  {
+    "file": "src/story/providers/openai.ts",
+    "replacements": 3
+  },
+  {
+    "file": "src/story/writer.ts",
+    "replacements": 2
+  },
+  {
+    "file": "src/ui/Alerts.tsx",
+    "replacements": 30
+  },
+  {
+    "file": "src/ui/AllStar.tsx",
+    "replacements": 12
+  },
+  {
+    "file": "src/ui/Alumni.tsx",
+    "replacements": 5
+  },
+  {
+    "file": "src/ui/App.tsx",
+    "replacements": 95
+  },
+  {
+    "file": "src/ui/BoxScore.tsx",
+    "replacements": 21
+  },
+  {
+    "file": "src/ui/Bracket.tsx",
+    "replacements": 21
+  },
+  {
+    "file": "src/ui/Briefing.tsx",
+    "replacements": 3
+  },
+  {
+    "file": "src/ui/ClubSummary.tsx",
+    "replacements": 14
+  },
+  {
+    "file": "src/ui/Decision.tsx",
+    "replacements": 210
+  },
+  {
+    "file": "src/ui/DisplaySettings.tsx",
+    "replacements": 29
+  },
+  {
+    "file": "src/ui/DraftBoard.tsx",
+    "replacements": 22
+  },
+  {
+    "file": "src/ui/FaMarket.tsx",
+    "replacements": 75
+  },
+  {
+    "file": "src/ui/FantasyDraft.tsx",
+    "replacements": 27
+  },
+  {
+    "file": "src/ui/ForeignTalks.tsx",
+    "replacements": 20
+  },
+  {
+    "file": "src/ui/Games.tsx",
+    "replacements": 11
+  },
+  {
+    "file": "src/ui/Help.tsx",
+    "replacements": 3
+  },
+  {
+    "file": "src/ui/History.tsx",
+    "replacements": 52
+  },
+  {
+    "file": "src/ui/Leaders.tsx",
+    "replacements": 58
+  },
+  {
+    "file": "src/ui/Lineup.tsx",
+    "replacements": 61
+  },
+  {
+    "file": "src/ui/Manual.tsx",
+    "replacements": 140
+  },
+  {
+    "file": "src/ui/Market.tsx",
+    "replacements": 73
+  },
+  {
+    "file": "src/ui/MyClub.tsx",
+    "replacements": 82
+  },
+  {
+    "file": "src/ui/NewGame.tsx",
+    "replacements": 83
+  },
+  {
+    "file": "src/ui/Office.tsx",
+    "replacements": 55
+  },
+  {
+    "file": "src/ui/PlayerPanel.tsx",
+    "replacements": 122
+  },
+  {
+    "file": "src/ui/PlayerProfile.tsx",
+    "replacements": 40
+  },
+  {
+    "file": "src/ui/PlayerSearch.tsx",
+    "replacements": 28
+  },
+  {
+    "file": "src/ui/Recovery.tsx",
+    "replacements": 16
+  },
+  {
+    "file": "src/ui/Settings.tsx",
+    "replacements": 56
+  },
+  {
+    "file": "src/ui/Squad.tsx",
+    "replacements": 47
+  },
+  {
+    "file": "src/ui/Standings.tsx",
+    "replacements": 25
+  },
+  {
+    "file": "src/ui/Story.tsx",
+    "replacements": 38
+  },
+  {
+    "file": "src/ui/StorySettings.tsx",
+    "replacements": 19
+  },
+  {
+    "file": "src/ui/TeamRoster.tsx",
+    "replacements": 10
+  },
+  {
+    "file": "src/ui/Training.tsx",
+    "replacements": 13
+  },
+  {
+    "file": "src/ui/Tutorial.tsx",
+    "replacements": 5
+  },
+  {
+    "file": "src/ui/Twelve.tsx",
+    "replacements": 27
+  },
+  {
+    "file": "src/ui/display.ts",
+    "replacements": 15
+  },
+  {
+    "file": "src/ui/format.ts",
+    "replacements": 12
+  },
+  {
+    "file": "src/ui/grades.tsx",
+    "replacements": 6
+  },
+  {
+    "file": "src/ui/sort.tsx",
+    "replacements": 2
+  },
+  {
+    "file": "src/ui/tutorial.ts",
+    "replacements": 141
+  }
+]

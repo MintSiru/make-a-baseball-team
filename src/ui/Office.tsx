@@ -1,3 +1,4 @@
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* The front office (V0.6): the owner's goals and verdicts, the accounts, fans and tickets, the staff and
    the ballpark. One section at a time behind a segmented control. */
 import { useState } from 'preact/hooks';
@@ -26,39 +27,39 @@ import { FACILITIES, FACILITY_KINDS, facilityLevel, facilityOptions, facilityUpk
 
 type Section = 'summary' | 'owner' | 'money' | 'fans' | 'staff' | 'ballpark' | 'facilities' | 'rival' | 'ledger';
 const SECTIONS: [Section, string][] = [
-  ['summary', '요약'],
-  ['owner', '모기업'],
-  ['money', '재정'],
-  ['fans', '관중 · 티켓'],
-  ['staff', '스태프'],
-  ['ballpark', '구장'],
-  ['facilities', '시설'],
-  ['rival', '12구단 · 라이벌'],
-  ['ledger', '자금 내역'],
+  ['summary', __i18n_k("ui.office.sECTIONS.3ea27a4d")],
+  ['owner', __i18n_k("ui.office.sECTIONS.cf76b767")],
+  ['money', __i18n_k("ui.office.sECTIONS.9cc23f63")],
+  ['fans', __i18n_k("ui.office.sECTIONS.592df4d2")],
+  ['staff', __i18n_k("ui.office.sECTIONS.c6e93014")],
+  ['ballpark', __i18n_k("ui.office.sECTIONS.c2998c5f")],
+  ['facilities', __i18n_k("ui.office.sECTIONS.b4de61be")],
+  ['rival', __i18n_k("ui.office.sECTIONS.a91a78ef")],
+  ['ledger', __i18n_k("ui.office.sECTIONS.024b01c3")],
 ];
 
 /** 억 with one decimal ("101.9억"), for reports. */
-const eok = (n: number) => (n ? `${(Math.round(n / 1000) / 10).toLocaleString('ko-KR')}억` : '-');
+const eok = (n: number) => (n ? __i18n_k("ui.office.eok.db0fc332", { value: (Math.round(n / 1000) / 10).toLocaleString('ko-KR') }) : '-');
 const signed = (n: number) => (n < 0 ? `−${eok(-n)}` : n > 0 ? `+${eok(n)}` : '0');
-const people = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}명`;
+const people = (n: number) => __i18n_k("ui.office.people.d8e22743", { value: Math.round(n).toLocaleString('ko-KR') });
 
 const REVENUE: [keyof ClubReport['revenue'], string][] = [
-  ['gate', '입장 수입'],
-  ['broadcast', '중계권 분배'],
-  ['sponsors', '스폰서 · 광고'],
-  ['naming', '명명권'],
-  ['merchandise', '상품'],
-  ['concessions', '식음료 · 임대'],
-  ['postseason', '포스트시즌 배당'],
+  ['gate', __i18n_k("ui.office.rEVENUE.78819cd4")],
+  ['broadcast', __i18n_k("ui.office.rEVENUE.64e095c0")],
+  ['sponsors', __i18n_k("ui.office.rEVENUE.271e26a5")],
+  ['naming', __i18n_k("ui.office.rEVENUE.07ad0206")],
+  ['merchandise', __i18n_k("ui.office.rEVENUE.a4c284ac")],
+  ['concessions', __i18n_k("ui.office.rEVENUE.555b670f")],
+  ['postseason', __i18n_k("ui.office.rEVENUE.bd1bbac3")],
 ];
 const EXPENSES: [keyof ClubReport['expenses'], string][] = [
-  ['players', '선수 연봉'],
-  ['staff', '코칭스태프 · 프런트 팀장'],
-  ['frontOffice', '프런트 · 운영'],
-  ['gameDays', '홈경기 운영'],
-  ['ballpark', '구장 사용 · 관리'],
-  ['farm', '2군 · 잔류군 시설'],
-  ['marketing', '마케팅'],
+  ['players', __i18n_k("ui.office.eXPENSES.13aa5c72")],
+  ['staff', __i18n_k("ui.office.eXPENSES.7e237d70")],
+  ['frontOffice', __i18n_k("ui.office.eXPENSES.dc589bb4")],
+  ['gameDays', __i18n_k("ui.office.eXPENSES.4b416dde")],
+  ['ballpark', __i18n_k("ui.office.eXPENSES.cef6bc71")],
+  ['farm', __i18n_k("ui.office.eXPENSES.c89e0231")],
+  ['marketing', __i18n_k("ui.office.eXPENSES.24c6b09f")],
 ];
 
 function ReportTable({ reports }: { reports: { title: string; r: ClubReport }[] }) {
@@ -69,79 +70,79 @@ function ReportTable({ reports }: { reports: { title: string; r: ClubReport }[] 
         <thead>
           <tr>
             <th />
-            {reports.map((x) => (
+            {__i18n_display(reports.map((x) => (
               <th key={x.title} class="num">
-                {x.title}
+                {__i18n_display(x.title)}
               </th>
-            ))}
+            )))}
           </tr>
         </thead>
         <tbody>
           <tr class="report-head">
-            <th colSpan={reports.length + 1}>수입</th>
+            <th colSpan={reports.length + 1}>{__i18n_t("ui.office.reportTable.1acbb6c3")}</th>
           </tr>
-          {REVENUE.filter(([k]) => reports.some((x) => x.r.revenue[k])).map(([k, label]) => (
+          {__i18n_display(REVENUE.filter(([k]) => reports.some((x) => x.r.revenue[k])).map(([k, label]) => (
             <tr key={k}>
-              <th scope="row">{label}</th>
-              {reports.map((x) => (
+              <th scope="row">{__i18n_display(label)}</th>
+              {__i18n_display(reports.map((x) => (
                 <td key={x.title} class="num">
-                  {eok(x.r.revenue[k])}
+                  {__i18n_display(eok(x.r.revenue[k]))}
                 </td>
-              ))}
+              )))}
             </tr>
-          ))}
+          )))}
           <tr class="report-sum">
-            <th scope="row">수입 합계</th>
-            {reports.map((x) => (
+            <th scope="row">{__i18n_t("ui.office.reportTable.7928fec2")}</th>
+            {__i18n_display(reports.map((x) => (
               <td key={x.title} class="num strong">
-                {eok(total(x.r, 'revenue'))}
+                {__i18n_display(eok(total(x.r, 'revenue')))}
               </td>
-            ))}
+            )))}
           </tr>
           <tr class="report-head">
-            <th colSpan={reports.length + 1}>지출</th>
+            <th colSpan={reports.length + 1}>{__i18n_t("ui.office.reportTable.9636df7e")}</th>
           </tr>
-          {EXPENSES.map(([k, label]) => (
+          {__i18n_display(EXPENSES.map(([k, label]) => (
             <tr key={k}>
-              <th scope="row">{label}</th>
-              {reports.map((x) => (
+              <th scope="row">{__i18n_display(label)}</th>
+              {__i18n_display(reports.map((x) => (
                 <td key={x.title} class="num">
-                  {eok(x.r.expenses[k])}
+                  {__i18n_display(eok(x.r.expenses[k]))}
                 </td>
-              ))}
+              )))}
             </tr>
-          ))}
+          )))}
           <tr class="report-sum">
-            <th scope="row">지출 합계</th>
-            {reports.map((x) => (
+            <th scope="row">{__i18n_t("ui.office.reportTable.0e0bf71e")}</th>
+            {__i18n_display(reports.map((x) => (
               <td key={x.title} class="num strong">
-                {eok(total(x.r, 'expenses'))}
+                {__i18n_display(eok(total(x.r, 'expenses')))}
               </td>
-            ))}
+            )))}
           </tr>
           <tr class="report-sum">
-            <th scope="row">운영 결과</th>
-            {reports.map((x) => (
+            <th scope="row">{__i18n_t("ui.office.reportTable.467ac3b5")}</th>
+            {__i18n_display(reports.map((x) => (
               <td key={x.title} class={`num strong ${x.r.operating >= 0 ? 'plus' : 'minus'}`}>
-                {signed(x.r.operating)}
+                {__i18n_display(signed(x.r.operating))}
               </td>
-            ))}
+            )))}
           </tr>
           <tr>
-            <th scope="row">그 밖의 지출·수입 (계약금·위약금·이적료 등)</th>
-            {reports.map((x) => (
+            <th scope="row">{__i18n_t("ui.office.reportTable.bdee14e5")}</th>
+            {__i18n_display(reports.map((x) => (
               <td key={x.title} class="num">
-                {x.r.cashFlows != null ? signed(x.r.cashFlows) : '-'}
+                {__i18n_display(x.r.cashFlows != null ? signed(x.r.cashFlows) : '-')}
               </td>
-            ))}
+            )))}
           </tr>
           <tr>
-            <th scope="row">모기업(지자체·투자자) 지원</th>
-            {reports.map((x) => (
+            <th scope="row">{__i18n_t("ui.office.reportTable.8ebca1f0")}</th>
+            {__i18n_display(reports.map((x) => (
               <td key={x.title} class="num">
-                {eok(x.r.support)}
+                {__i18n_display(eok(x.r.support))}
               </td>
-            ))}
+            )))}
           </tr>
         </tbody>
       </table>
@@ -185,184 +186,159 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
 
   return (
     <>
-      <div class="segmented office-tabs" role="group" aria-label="구단 운영">
-        {SECTIONS.map(([id, label]) => (
+      <div class="segmented office-tabs" role="group" aria-label={__i18n_t("ui.office.office.6bc69497")}>
+        {__i18n_display(SECTIONS.map(([id, label]) => (
           <button key={id} type="button" aria-pressed={section === id} onClick={() => setSection(id)}>
-            {label}
+            {__i18n_display(label)}
           </button>
-        ))}
+        )))}
       </div>
 
-      {section === 'summary' && (
+      {__i18n_display(section === 'summary' && (
         <div class="cards">
           <div class="card">
-            <p class="card-label">구단 자금</p>
-            <p class="card-value">{u.fund < 0 ? `−${money(-u.fund)}` : money(u.fund)}</p>
+            <p class="card-label">{__i18n_t("ui.office.office.4f7776dd")}</p>
+            <p class="card-value">{__i18n_display(u.fund < 0 ? `−${money(-u.fund)}` : money(u.fund))}</p>
             <p class="card-sub">
-              {budget ? `올해 모기업 지원 ${money(budget.amount)} (개막 때 확정)` : `지원 한도 ${money(u.support ?? 0)}`} ({PARENT_COMPANY_TYPES[u.settings.parentType].label})
+              {__i18n_display(budget ? __i18n_k("ui.office.office.e2a98cef", { money: money(budget.amount) }) : __i18n_k("ui.office.office.1f9754ab", { money: money(u.support ?? 0) }))} ({__i18n_display(PARENT_COMPANY_TYPES[u.settings.parentType].label)})
             </p>
           </div>
-          {budget && current && (
+          {__i18n_display(budget && current && (
             <div class="card">
-              <p class="card-label">{league.year} 예상 연말 자금</p>
-              <p class={`card-value ${expectedFund < 0 ? 'minus' : ''}`}>{expectedFund < 0 ? `−${money(-expectedFund)}` : money(expectedFund)}</p>
-              <p class="card-sub">{expectedFund < 0 ? '모자라면 모기업이 긴급 지원하지만 신뢰도가 떨어집니다' : '남는 돈은 구단 자금으로 쌓입니다'}</p>
+              <p class="card-label">{__i18n_t("ui.office.office.a549279b", { year: league.year })}</p>
+              <p class={`card-value ${expectedFund < 0 ? 'minus' : ''}`}>{__i18n_display(expectedFund < 0 ? `−${money(-expectedFund)}` : money(expectedFund))}</p>
+              <p class="card-sub">{__i18n_display(expectedFund < 0 ? __i18n_k("ui.office.office.b127ecc4") : __i18n_k("ui.office.office.fb59150d"))}</p>
             </div>
-          )}
+          ))}
           <div class="card">
-            <p class="card-label">{payYear}년 연봉 / 예산</p>
-            <p class="card-value">{money(projectedPayroll(league, u.teamId, payYear))}</p>
-            <p class="card-sub">예산 {money(u.payrollBudget)}</p>
+            <p class="card-label">{__i18n_t("ui.office.office.26719725", { payYear: payYear })}</p>
+            <p class="card-value">{__i18n_display(money(projectedPayroll(league, u.teamId, payYear)))}</p>
+            <p class="card-sub">{__i18n_t("ui.office.office.43fc4f2a", { money: money(u.payrollBudget) })}</p>
           </div>
           <div class="card">
-            <p class="card-label">모기업 신뢰도</p>
-            <p class="card-value">{Math.round(u.trust ?? 60)}</p>
-            <p class="card-sub">{ev ? `${ev.year} 평가: 예산 ${ev.change >= 0 ? '+' : ''}${Math.round(ev.change * 100)}%` : '첫 평가는 1군 첫 시즌 뒤'}</p>
+            <p class="card-label">{__i18n_t("ui.office.office.e4762814")}</p>
+            <p class="card-value">{__i18n_display(Math.round(u.trust ?? 60))}</p>
+            <p class="card-sub">{__i18n_display(ev ? __i18n_k("ui.office.office.35024d86", { year: ev.year, value: ev.change >= 0 ? '+' : '', value2: Math.round(ev.change * 100) }) : __i18n_k("ui.office.office.d7179635"))}</p>
           </div>
           <div class="card">
-            <p class="card-label">{inSeason ? `${league.year} 경기당 관중` : '지난 시즌 경기당 관중'}</p>
-            <p class="card-value">{avgNow ? people(avgNow) : last?.homeGames ? people(last.fans / last.homeGames) : '-'}</p>
-            <p class="card-sub">
-              {team.stadium.capacity.toLocaleString('ko-KR')}석{gate?.sellouts ? ` · 매진 ${gate.sellouts}번` : ''}
-            </p>
+            <p class="card-label">{__i18n_display(inSeason ? __i18n_k("ui.office.office.d6202a74", { year: league.year }) : __i18n_k("ui.office.office.ddb533ae"))}</p>
+            <p class="card-value">{__i18n_display(avgNow ? people(avgNow) : last?.homeGames ? people(last.fans / last.homeGames) : '-')}</p>
+            <p class="card-sub">{__i18n_t("ui.office.office.49d5c582", { value: team.stadium.capacity.toLocaleString('ko-KR'), value2: gate?.sellouts ? __i18n_k("ui.office.office.4df2ece0", { sellouts: gate.sellouts }) : '' })}</p>
           </div>
           <div class="card">
-            <p class="card-label">{inSeason ? `${league.year} 예상 운영 결과` : '지난 시즌 운영 결과'}</p>
-            <p class="card-value">{current ? signed(current.operating) : last ? signed(last.operating) : '-'}</p>
-            <p class="card-sub">수입 − 지출 (모기업 지원 전)</p>
+            <p class="card-label">{__i18n_display(inSeason ? __i18n_k("ui.office.office.c7828ad8", { year: league.year }) : __i18n_k("ui.office.office.c7921155"))}</p>
+            <p class="card-value">{__i18n_display(current ? signed(current.operating) : last ? signed(last.operating) : '-')}</p>
+            <p class="card-sub">{__i18n_t("ui.office.office.4f849627")}</p>
           </div>
           <div class="card">
-            <p class="card-label">경쟁균형세 · 상위 40명 ({league.year})</p>
-            <p class="card-value">{money(capTotal(league, u.teamId, league.year))}</p>
-            <p class="card-sub">
-              상한 {money(salaryCapFor(league.year))}
-              {capFloorFor(league.year) ? ` · 하한 ${money(capFloorFor(league.year)!)}` : ''}
-            </p>
+            <p class="card-label">{__i18n_t("ui.office.office.b2f10443", { year: league.year })}</p>
+            <p class="card-value">{__i18n_display(money(capTotal(league, u.teamId, league.year)))}</p>
+            <p class="card-sub">{__i18n_t("ui.office.office.a5785887", { money: money(salaryCapFor(league.year)), value: capFloorFor(league.year) ? __i18n_k("ui.office.office.75c3db8c", { money: money(capFloorFor(league.year)!) }) : '' })}</p>
           </div>
-          {firstTeamIds(league).includes(u.teamId) && league.phase === 'regular' && (
+          {__i18n_display(firstTeamIds(league).includes(u.teamId) && league.phase === 'regular' && (
             <div class="card">
-              <p class="card-label">외국인 샐러리캡 (3명)</p>
-              <p class="card-value">{usd(booksOf(league, u.teamId).spent)}</p>
-              <p class="card-sub">
-                상한 {usd(booksOf(league, u.teamId).cap)} · 옵션은 시즌 뒤 더함
-                {(league.foreignCap?.[u.teamId] ?? []).at(-1)?.over ? ` · 작년 초과 ${(league.foreignCap![u.teamId]!).at(-1)!.streak}년째` : ''}
-              </p>
+              <p class="card-label">{__i18n_t("ui.office.office.2f4e295b")}</p>
+              <p class="card-value">{__i18n_display(usd(booksOf(league, u.teamId).spent))}</p>
+              <p class="card-sub">{__i18n_t("ui.office.office.e38a2ec4", { usd: usd(booksOf(league, u.teamId).cap), value: (league.foreignCap?.[u.teamId] ?? []).at(-1)?.over ? __i18n_k("ui.office.office.fe9a9481", { streak: (league.foreignCap![u.teamId]!).at(-1)!.streak }) : '' })}</p>
             </div>
-          )}
+          ))}
         </div>
-      )}
+      ))}
 
-      {section === 'owner' && (
+      {__i18n_display(section === 'owner' && (
         <>
-          <p>
-            {team.parent.name} · {PARENT_COMPANY_TYPES[u.settings.parentType].label}. {PARENT_COMPANY_TYPES[u.settings.parentType].summary} 모기업은 해마다 목표를 주고 겨울에 평가해서 다음 해 지원 한도와 연봉 예산을
-            최대 10%까지 늘리거나 줄입니다.
-          </p>
+          <p>{__i18n_t("ui.office.office.23e06536", { name: team.parent.name, label: PARENT_COMPANY_TYPES[u.settings.parentType].label, summary: PARENT_COMPANY_TYPES[u.settings.parentType].summary })}</p>
           <div class="cards">
             <div class="card">
-              <p class="card-label">올해 지원 한도</p>
-              <p class="card-value">{money(u.support ?? 0)}</p>
-              <p class="card-sub">{supportLabel(u.settings.parentType)} · 개막 때 예상 적자만큼 이 한도 안에서 미리 줌</p>
+              <p class="card-label">{__i18n_t("ui.office.office.690b214a")}</p>
+              <p class="card-value">{__i18n_display(money(u.support ?? 0))}</p>
+              <p class="card-sub">{__i18n_t("ui.office.office.2a6ceb48", { supportLabel: supportLabel(u.settings.parentType) })}</p>
             </div>
             <div class="card">
-              <p class="card-label">신뢰도</p>
-              <p class="card-value">{Math.round(u.trust ?? 60)} / 100</p>
-              <p class="card-sub">{u.settings.firing ? '15 아래로 떨어지면 해임될 수 있음' : '샌드박스: 해임 없음'}</p>
+              <p class="card-label">{__i18n_t("ui.office.office.02690edc")}</p>
+              <p class="card-value">{__i18n_display(Math.round(u.trust ?? 60))} / 100</p>
+              <p class="card-sub">{__i18n_display(u.settings.firing ? __i18n_k("ui.office.office.b02603a1") : __i18n_k("ui.office.office.10d70f14"))}</p>
             </div>
-            {club?.sponsor && (
+            {__i18n_display(club?.sponsor && (
               <div class="card">
-                <p class="card-label">명명권 스폰서</p>
-                <p class="card-value small">{club.sponsor.name}</p>
-                <p class="card-sub">
-                  연 {money(club.sponsor.annual)} · {club.sponsor.until}년까지 · 목표 {goalText(club.sponsor.goal)}
-                  {club.sponsor.risk ? ` (미달 시 해지 ${Math.round(club.sponsor.risk * 100)}%)` : ''}
-                  {club.sponsor.missed ? ` · ${club.sponsor.missed}년 연속 미달` : ''}
-                </p>
+                <p class="card-label">{__i18n_t("ui.office.office.2d7807db")}</p>
+                <p class="card-value small">{__i18n_display(club.sponsor.name)}</p>
+                <p class="card-sub">{__i18n_t("ui.office.office.40d56696", { money: money(club.sponsor.annual), until: club.sponsor.until, goalText: goalText(club.sponsor.goal), value: club.sponsor.risk ? __i18n_k("ui.office.office.e42a1180", { value: Math.round(club.sponsor.risk * 100) }) : '', value2: club.sponsor.missed ? __i18n_k("ui.office.office.1e437410", { missed: club.sponsor.missed }) : '' })}</p>
               </div>
-            )}
-            {u.mayor && (
+            ))}
+            {__i18n_display(u.mayor && (
               <div class="card">
-                <p class="card-label">시장</p>
+                <p class="card-label">{__i18n_t("ui.office.office.7f591410")}</p>
                 <p class={`card-value small ${u.mayor.stance === 'friendly' ? 'plus' : u.mayor.stance === 'hostile' ? 'minus' : ''}`}>
-                  {u.mayor.name} · {STANCE_LABEL[u.mayor.stance]}
+                  {__i18n_display(u.mayor.name)} · {__i18n_display(STANCE_LABEL[u.mayor.stance])}
                 </p>
-                <p class="card-sub">
-                  {u.mayor.since}~{u.mayor.until}년 · 다음 지방선거 {u.mayor.until}년 6월 · 지원 한도 {u.mayor.stance === 'friendly' ? '+15%' : u.mayor.stance === 'hostile' ? '−15%, 적자에 엄격' : '그대로'}
-                </p>
+                <p class="card-sub">{__i18n_t("ui.office.office.fac6e6a5", { since: u.mayor.since, until: u.mayor.until, until2: u.mayor.until, value: u.mayor.stance === 'friendly' ? '+15%' : u.mayor.stance === 'hostile' ? __i18n_k("ui.office.office.82a36c44") : __i18n_k("ui.office.office.82f499a9") })}</p>
               </div>
-            )}
+            ))}
           </div>
-          {u.settings.parentType === 'citizen' && (
-            <p class="muted small">
-              시민구단: 적자가 지원 한도를 넘거나, 지원 한도의 절반이 넘는 적자가 3년 이어지면 시의회 예산 삭감·행정사무감사·운영비 동결·경영진 교체 압박·혈세 논란 같은 일이 생깁니다. 적대적인 시장일수록 더 자주.
-            </p>
-          )}
-          {u.parentGifts?.length ? (
-            <p class="small">
-              모기업이 사 준 FA: {u.parentGifts.map((g) => `${g.name} (연 ${money(g.annual)}, ${g.from}~${g.to}년, 연봉 예산 밖)`).join(', ')}
-            </p>
-          ) : null}
-          {u.fired && <p class="notice warn">{u.fired}년 겨울, 모기업이 단장을 해임했습니다. 새 게임을 시작하거나 이 구단을 계속 지켜볼 수 있습니다.</p>}
-          <h3>{goals ? `${goals.year} 목표` : '목표'}</h3>
-          {goals ? (
+          {__i18n_display(u.settings.parentType === 'citizen' && (
+            <p class="muted small">{__i18n_t("ui.office.office.a2b02ead")}</p>
+          ))}
+          {__i18n_display(u.parentGifts?.length ? (
+            <p class="small">{__i18n_t("ui.office.office.59e4b678", { value: u.parentGifts.map((g) => __i18n_k("ui.office.office.6be558c9", { name: g.name, money: money(g.annual), from: g.from, to: g.to })).join(', ') })}</p>
+          ) : null)}
+          {__i18n_display(u.fired && <p class="notice warn">{__i18n_t("ui.office.office.667abded", { fired: u.fired })}</p>)}
+          <h3>{__i18n_display(goals ? __i18n_k("ui.office.office.b7fa9f1b", { year: goals.year }) : __i18n_k("ui.office.office.2fbea43b"))}</h3>
+          {__i18n_display(goals ? (
             <ul class="plain">
-              <li>성적: {goals.rank}위 이내</li>
-              <li>관중: 경기당 {goals.fans.toLocaleString('ko-KR')}명</li>
-              <li>재정: 운영 결과(계약금 등 포함)가 {money(-goals.result)} 적자 이내</li>
+              <li>{__i18n_t("ui.office.office.fea44625", { rank: goals.rank })}</li>
+              <li>{__i18n_t("ui.office.office.a2ca70d0", { value: goals.fans.toLocaleString('ko-KR') })}</li>
+              <li>{__i18n_t("ui.office.office.fa6a357a", { money: money(-goals.result) })}</li>
             </ul>
           ) : (
-            <p class="muted">1군에 들어가는 시즌부터 목표가 생깁니다.</p>
-          )}
-          <h3>지난 평가</h3>
-          {u.evaluations?.length ? (
+            <p class="muted">{__i18n_t("ui.office.office.0e94c3fe")}</p>
+          ))}
+          <h3>{__i18n_t("ui.office.office.a5e22b1c")}</h3>
+          {__i18n_display(u.evaluations?.length ? (
             <div class="table-wrap">
               <table class="record-table">
                 <thead>
                   <tr>
-                    <th class="num">연도</th>
-                    <th>성적</th>
-                    <th>관중</th>
-                    <th>재정</th>
-                    <th class="num">예산</th>
-                    <th class="num">신뢰도</th>
+                    <th class="num">{__i18n_t("ui.office.office.d5bc99dd")}</th>
+                    <th>{__i18n_t("ui.office.office.d3bb3576")}</th>
+                    <th>{__i18n_t("ui.office.office.f3384bbb")}</th>
+                    <th>{__i18n_t("ui.office.office.9cc23f63")}</th>
+                    <th class="num">{__i18n_t("ui.office.office.5911d7fd")}</th>
+                    <th class="num">{__i18n_t("ui.office.office.02690edc")}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[...u.evaluations].reverse().map((e) => (
+                  {__i18n_display([...u.evaluations].reverse().map((e) => (
                     <tr key={e.year}>
-                      <td class="num">{e.year}</td>
-                      {e.lines.map((l) => (
+                      <td class="num">{__i18n_display(e.year)}</td>
+                      {__i18n_display(e.lines.map((l) => (
                         <td key={l.label} class={l.ok ? 'plus' : 'minus'}>
-                          {l.ok ? '달성' : '미달'} <span class="muted small">{l.text}</span>
+                          {__i18n_display(l.ok ? __i18n_k("ui.office.office.f3b8c1b4") : __i18n_k("ui.office.office.a72490af"))} <span class="muted small">{__i18n_display(l.text)}</span>
                         </td>
-                      ))}
+                      )))}
                       <td class="num">
-                        {e.change >= 0 ? '+' : ''}
-                        {Math.round(e.change * 100)}%
+                        {__i18n_display(e.change >= 0 ? '+' : '')}
+                        {__i18n_display(Math.round(e.change * 100))}%
                       </td>
-                      <td class="num">{Math.round(e.trust)}</td>
+                      <td class="num">{__i18n_display(Math.round(e.trust))}</td>
                     </tr>
-                  ))}
+                  )))}
                 </tbody>
               </table>
             </div>
           ) : (
-            <p class="muted">아직 평가가 없습니다.</p>
-          )}
+            <p class="muted">{__i18n_t("ui.office.office.cc66b5b6")}</p>
+          ))}
         </>
-      )}
+      ))}
 
-      {section === 'money' && (
+      {__i18n_display(section === 'money' && (
         <>
-          <Help title="결산 방식">
-            1군 시즌 개막 때 모기업이 그해 예산을 확정해 미리 줍니다: 예상 운영 적자와 겨울에 자금에서 쓴 돈(계약금 등)만큼, 지원 한도 안에서. 연봉 예산을 넘겨 쓴 몫은 넣어 주지 않습니다.
-            시즌이 끝나면 실제 운영 결과(수입 − 지출)가 구단 자금에 더해집니다. 예상보다 잘하면 남는 돈은 구단 몫, 못하면 자금에서 나갑니다. 연말에 자금이 마이너스면 모기업이 0까지 긴급
-            지원하지만 신뢰도가 떨어집니다. 1군 진입 전에는 모기업이 적자를 모두 메웁니다. 구장 공사비는 지원 대상이 아니라 자금에서 바로 나갑니다.
-          </Help>
-          {current || reports.length ? (
+          <Help title={__i18n_t("ui.office.office.43aae799")}>{__i18n_t("ui.office.office.d22c946b")}</Help>
+          {__i18n_display(current || reports.length ? (
             <ReportTable
               reports={[
-                ...(current ? [{ title: `${league.year} (예상)`, r: current }] : []),
+                ...(current ? [{ title: __i18n_k("ui.office.office.title.21d87f74", { year: league.year }), r: current }] : []),
                 ...reports
                   .slice(-3)
                   .reverse()
@@ -370,237 +346,216 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
               ]}
             />
           ) : (
-            <p class="muted">아직 결산한 시즌이 없습니다.</p>
-          )}
+            <p class="muted">{__i18n_t("ui.office.office.4bf4deac")}</p>
+          ))}
         </>
-      )}
+      ))}
 
-      {section === 'fans' && club && (
+      {__i18n_display(section === 'fans' && club && (
         <>
           <div class="cards">
             <div class="card">
-              <p class="card-label">팬층</p>
-              <p class="card-value">{club.popularity.toLocaleString('ko-KR')}</p>
-              <p class="card-sub">보통 경기에 올 만한 팬 (2025년 기준, 리그 평균 약 19,000)</p>
+              <p class="card-label">{__i18n_t("ui.office.office.31f5808f")}</p>
+              <p class="card-value">{__i18n_display(club.popularity.toLocaleString('ko-KR'))}</p>
+              <p class="card-sub">{__i18n_t("ui.office.office.a60ee308")}</p>
             </div>
             <div class="card">
-              <p class="card-label">팬 분위기</p>
-              <p class="card-value">{club.interest >= 0.3 ? '뜨거움' : club.interest >= 0.1 ? '좋음' : club.interest > -0.1 ? '보통' : club.interest > -0.3 ? '식음' : '냉랭'}</p>
-              <p class="card-sub">성적·가을야구·스타·프랜차이즈 선수·마케팅을 따라감</p>
+              <p class="card-label">{__i18n_t("ui.office.office.229dfa7f")}</p>
+              <p class="card-value">{__i18n_display(club.interest >= 0.3 ? __i18n_k("ui.office.office.3f164c51") : club.interest >= 0.1 ? __i18n_k("ui.office.office.5cd0d95b") : club.interest > -0.1 ? '보통' : club.interest > -0.3 ? __i18n_k("ui.office.office.e5218525") : __i18n_k("ui.office.office.d5228f84"))}</p>
+              <p class="card-sub">{__i18n_t("ui.office.office.645c0d08")}</p>
             </div>
             <div class="card">
-              <p class="card-label">{inSeason ? `${league.year} 관중` : '지난 시즌 관중'}</p>
-              <p class="card-value">{gate?.games ? people(gate.fans / gate.games) : last?.homeGames ? people(last.fans / last.homeGames) : '-'}</p>
-              <p class="card-sub">
-                {gate?.games ? `홈 ${gate.games}경기 · 누적 ${people(gate.fans)} · 매진 ${gate.sellouts}번` : last ? `누적 ${people(last.fans)}` : ''} · 리그 흥행 지수 {boom(league.year).toFixed(2)}
-              </p>
+              <p class="card-label">{__i18n_display(inSeason ? __i18n_k("ui.office.office.22619ed5", { year: league.year }) : __i18n_k("ui.office.office.385f86ad"))}</p>
+              <p class="card-value">{__i18n_display(gate?.games ? people(gate.fans / gate.games) : last?.homeGames ? people(last.fans / last.homeGames) : '-')}</p>
+              <p class="card-sub">{__i18n_t("ui.office.office.6a3a7463", { value: gate?.games ? __i18n_k("ui.office.office.7fc98ae2", { games: gate.games, people: people(gate.fans), sellouts: gate.sellouts }) : last ? __i18n_k("ui.office.office.47deea69", { people: people(last.fans) }) : '', value2: boom(league.year).toFixed(2) })}</p>
             </div>
           </div>
-          <h3>팬들이 아끼는 선수</h3>
-          <p class="muted small">팬 호감도(0~100)는 우리 구단에서 보낸 해, 최근 성적, 자체 육성·연고지 출신, 수상, 선행·구설 같은 일로 정해집니다. 상위 3명이 유니폼 판매를 끌어올리고, 60이 넘는 선수가 떠나면 팬 분위기가 식습니다.</p>
+          <h3>{__i18n_t("ui.office.office.d69ae5fd")}</h3>
+          <p class="muted small">{__i18n_t("ui.office.office.605b7278")}</p>
           <ol class="plain favourites">
-            {favourites(league, u.teamId, 5).map(({ p, love }) => (
+            {__i18n_display(favourites(league, u.teamId, 5).map(({ p, love }) => (
               <li key={p.id}>
-                {p.name} <span class="muted small">{love}</span>
+                {__i18n_display(p.name)} <span class="muted small">{__i18n_display(love)}</span>
               </li>
-            ))}
+            )))}
           </ol>
-          <h3>티켓 가격</h3>
-          <p class="muted">
-            리그 평균 객단가 {priceWon(1).toLocaleString('ko-KR')}원 기준. 올리면 표 한 장 값은 오르지만 관중이 줄어 굿즈·매점 수입도 줄고, 내리면 그 반대입니다. 늘 매진되는 구단이라면 올려도 빈자리가 덜 생깁니다. 바로 적용됩니다.
-          </p>
+          <h3>{__i18n_t("ui.office.office.59af3a03")}</h3>
+          <p class="muted">{__i18n_t("ui.office.office.1310da3f", { value: priceWon(1).toLocaleString('ko-KR') })}</p>
           <label class="inline-form">
             객단가
-            <select value={club.price.toFixed(2)} onChange={(e) => act({ kind: 'ticketPrice', level: Number((e.currentTarget as HTMLSelectElement).value) })} aria-label="티켓 가격">
-              {Array.from({ length: Math.round((FANS.priceMax - FANS.priceMin) / 0.05) + 1 }, (_, i) => Math.round((FANS.priceMin + i * 0.05) * 100) / 100).map((lv) => (
-                <option key={lv} value={lv.toFixed(2)}>
-                  {Math.round(lv * 100)}% · {priceWon(lv).toLocaleString('ko-KR')}원
-                </option>
-              ))}
+            <select value={club.price.toFixed(2)} onChange={(e) => act({ kind: 'ticketPrice', level: Number((e.currentTarget as HTMLSelectElement).value) })} aria-label={__i18n_t("ui.office.office.59af3a03")}>
+              {__i18n_display(Array.from({ length: Math.round((FANS.priceMax - FANS.priceMin) / 0.05) + 1 }, (_, i) => Math.round((FANS.priceMin + i * 0.05) * 100) / 100).map((lv) => (
+                <option key={lv} value={lv.toFixed(2)}>{__i18n_t("ui.office.office.c586fe06", { value: Math.round(lv * 100), value2: priceWon(lv).toLocaleString('ko-KR') })}</option>
+              )))}
             </select>
           </label>
-          <h3>시즌권</h3>
-          <p class="muted">
-            할인율을 정하면 다음 개막 때 팬 규모와 분위기에 따라 시즌권이 팔리고, 판매액이 개막 때 바로 구단 자금으로 들어옵니다. 시즌권 관중은 성적과 상관없이 경기의 90%를 찾아오지만, 그만큼은 할인된 값만
-            받습니다.
-            {tickets ? ` 올해: ${tickets.sold.toLocaleString('ko-KR')}석 (할인 ${Math.round(tickets.discount * 100)}%), ${money(tickets.paid)}.` : ''}
-          </p>
+          <h3>{__i18n_t("ui.office.office.9e4505ff")}</h3>
+          <p class="muted">{__i18n_t("ui.office.office.627a6285", { value: tickets ? __i18n_k("ui.office.office.57f49a0f", { value: tickets.sold.toLocaleString('ko-KR'), value2: Math.round(tickets.discount * 100), money: money(tickets.paid) }) : '' })}</p>
           <label class="inline-form">
-            {inSeason ? '다음 시즌 할인율' : '할인율'}
-            <select value={String(club.seasonTicketDiscount ?? 0)} onChange={(e) => act({ kind: 'seasonTickets', discount: Number((e.currentTarget as HTMLSelectElement).value) })} aria-label="시즌권 할인율">
-              {[0, 0.1, 0.2, 0.3].map((d) => (
+            {__i18n_display(inSeason ? __i18n_k("ui.office.office.611da534") : __i18n_k("ui.office.office.c9ebe16b"))}
+            <select value={String(club.seasonTicketDiscount ?? 0)} onChange={(e) => act({ kind: 'seasonTickets', discount: Number((e.currentTarget as HTMLSelectElement).value) })} aria-label={__i18n_t("ui.office.office.c6f740eb")}>
+              {__i18n_display([0, 0.1, 0.2, 0.3].map((d) => (
                 <option key={d} value={String(d)}>
-                  {d ? `${Math.round(d * 100)}% 할인` : '할인 없음 (조금만 팔림)'}
+                  {__i18n_display(d ? __i18n_k("ui.office.office.b23ee876", { value: Math.round(d * 100) }) : __i18n_k("ui.office.office.d25e7359"))}
                 </option>
-              ))}
+              )))}
             </select>
           </label>
-          <h3>마케팅</h3>
-          <p class="muted">연 {money(FANS.marketing.base)}이 기본입니다. 더 쓰면 겨울마다 팬 분위기가 조금 좋아지고, 덜 쓰면 식습니다. 지출은 결산에 들어갑니다.</p>
+          <h3>{__i18n_t("ui.office.office.24c6b09f")}</h3>
+          <p class="muted">{__i18n_t("ui.office.office.fd6ec273", { money: money(FANS.marketing.base) })}</p>
           <label class="inline-form">
             연간 마케팅비
-            <select value={String(club.marketing)} onChange={(e) => act({ kind: 'marketing', amount: Number((e.currentTarget as HTMLSelectElement).value) })} aria-label="마케팅비">
-              {Array.from({ length: FANS.marketing.max / 50_000 + 1 }, (_, i) => i * 50_000).map((v) => (
+            <select value={String(club.marketing)} onChange={(e) => act({ kind: 'marketing', amount: Number((e.currentTarget as HTMLSelectElement).value) })} aria-label={__i18n_t("ui.office.office.f3365803")}>
+              {__i18n_display(Array.from({ length: FANS.marketing.max / 50_000 + 1 }, (_, i) => i * 50_000).map((v) => (
                 <option key={v} value={String(v)}>
-                  {v ? money(v) : '0'}
+                  {__i18n_display(v ? money(v) : '0')}
                 </option>
-              ))}
+              )))}
             </select>
           </label>
         </>
-      )}
+      ))}
 
-      {section === 'staff' && club && (
+      {__i18n_display(section === 'staff' && club && (
         <>
-          <p class="muted">
-            코칭스태프와 프런트 팀장은 겨울에 바꿉니다 (계약 만료자가 있거나 첫 겨울에 결정 화면이 나옵니다). 등급 50이 리그 평균입니다. 은퇴한 선수가 지도자·프런트로 돌아오기도 하며, 현역 시절이
-            화려할수록 자주 돌아옵니다 — 지도자 능력은 이름값이 아니라 성실성·멘탈·리더십을 따릅니다.
-          </p>
+          <p class="muted">{__i18n_t("ui.office.office.719f91f5")}</p>
           <div class="table-wrap" tabIndex={0}>
             <table class="record-table">
               <thead>
                 <tr>
-                  <th>자리</th>
-                  <th>이름</th>
-                  <th class="num">등급</th>
-                  <th class="num">나이</th>
-                  <th class="num">연봉</th>
-                  <th>계약</th>
-                  <th>하는 일</th>
+                  <th>{__i18n_t("ui.office.office.9e7bc39f")}</th>
+                  <th>{__i18n_t("ui.office.office.9aa18e50")}</th>
+                  <th class="num">{__i18n_t("ui.office.office.89dbf513")}</th>
+                  <th class="num">{__i18n_t("ui.office.office.6c620e5c")}</th>
+                  <th class="num">{__i18n_t("ui.office.office.cbf383ec")}</th>
+                  <th>{__i18n_t("ui.office.office.b4116369")}</th>
+                  <th>{__i18n_t("ui.office.office.135e66f0")}</th>
                 </tr>
               </thead>
               <tbody>
-                {STAFF_ROLES.map((role) => {
+                {__i18n_display(STAFF_ROLES.map((role) => {
                   const m = club.staff?.[role];
                   return (
                     <tr key={role}>
-                      <th scope="row">{STAFF_LABELS[role]}</th>
+                      <th scope="row">{__i18n_display(STAFF_LABELS[role])}</th>
                       <td>
-                        {m?.name ?? '-'}
-                        {m?.style && <span class="muted"> · {MANAGER_STYLES[m.style].label}</span>}
+                        {__i18n_display(m?.name ?? '-')}
+                        {__i18n_display(m?.style && <span class="muted"> · {__i18n_display(MANAGER_STYLES[m.style].label)}</span>)}
                         <AlumnusTag league={league} m={m} onPlayer={onPlayer} />
                       </td>
-                      <td class="num strong">{m?.rating ?? '-'}</td>
-                      <td class="num">{m?.age ?? '-'}</td>
-                      <td class="num">{m ? money(m.salary) : '-'}</td>
-                      <td>{m ? `${m.until}년까지` : '-'}</td>
+                      <td class="num strong">{__i18n_display(m?.rating ?? '-')}</td>
+                      <td class="num">{__i18n_display(m?.age ?? '-')}</td>
+                      <td class="num">{__i18n_display(m ? money(m.salary) : '-')}</td>
+                      <td>{__i18n_display(m ? __i18n_k("ui.office.office.9c7dfa36", { until: m.until }) : '-')}</td>
                       <td class="muted small">
-                        {STAFF_EFFECTS[role]}
-                        {m?.style ? ` (${MANAGER_STYLES[m.style].note})` : ''}
+                        {__i18n_display(STAFF_EFFECTS[role])}
+                        {__i18n_display(m?.style ? ` (${MANAGER_STYLES[m.style].note})` : '')}
                       </td>
                     </tr>
                   );
-                })}
+                }))}
               </tbody>
             </table>
           </div>
         </>
-      )}
+      ))}
 
-      {section === 'ballpark' && (
+      {__i18n_display(section === 'ballpark' && (
         <>
           <div class="cards">
             <div class="card">
-              <p class="card-label">홈구장</p>
-              <p class="card-value small">{team.stadium.name}</p>
-              <p class="card-sub">
-                {team.stadium.capacity.toLocaleString('ko-KR')}석 · {team.stadium.ownership === 'longTermOperation' ? '장기 관리 위탁 (식음료·광고 수익 구단)' : '지자체 소유 임대'}
-                {team.stadium.park ? ` · 구장 계수 ${team.stadium.park.toFixed(2)}` : ''}
-                {building ? ` · ${plan.opens}년 새 구장 ${plan.seats?.toLocaleString('ko-KR')}석` : ''}
-              </p>
+              <p class="card-label">{__i18n_t("ui.office.office.5b164a3b")}</p>
+              <p class="card-value small">{__i18n_display(team.stadium.name)}</p>
+              <p class="card-sub">{__i18n_t("ui.office.office.705a9981", { value: team.stadium.capacity.toLocaleString('ko-KR'), value2: team.stadium.ownership === 'longTermOperation' ? __i18n_k("ui.office.office.9886484b") : __i18n_k("ui.office.office.3446f47b"), value3: team.stadium.park ? __i18n_k("ui.office.office.cf01af49", { value: team.stadium.park.toFixed(2) }) : '', value4: building ? __i18n_k("ui.office.office.a3d78ace", { opens: plan.opens, value: plan.seats?.toLocaleString('ko-KR') }) : '' })}</p>
             </div>
           </div>
-          <h3>구장 공사</h3>
-          <p class="muted">공사비는 구단 자금에서 바로 나갑니다 (모기업 지원은 운영 적자만 메웁니다). 비시즌(포스트시즌이 끝난 뒤 오프시즌 결정을 하는 동안)에 시작할 수 있고, 한 번에 하나씩 진행합니다. 증축·펜스 공사는 다음 시즌 개막 전에 끝납니다.</p>
+          <h3>{__i18n_t("ui.office.office.dd5f98fe")}</h3>
+          <p class="muted">{__i18n_t("ui.office.office.3239d1e3")}</p>
           <div class="table-wrap">
             <table class="record-table">
               <tbody>
-                {projectOptions(league).map((o) => (
+                {__i18n_display(projectOptions(league).map((o) => (
                   <tr key={o.kind}>
-                    <th scope="row">{o.label}</th>
-                    <td class="muted small">{o.note}</td>
-                    <td class="num">{money(o.cost)}</td>
+                    <th scope="row">{__i18n_display(o.label)}</th>
+                    <td class="muted small">{__i18n_display(o.note)}</td>
+                    <td class="num">{__i18n_display(money(o.cost))}</td>
                     <td>
-                      <button type="button" disabled={!!o.blocked} title={o.blocked ?? ''} onClick={() => act({ kind: 'stadiumProject', project: o.kind as ProjectKind })}>
-                        시작
-                      </button>
-                      {o.blocked && <div class="muted small">{o.blocked}</div>}
+                      <button type="button" disabled={!!o.blocked} title={__i18n_displayText(o.blocked ?? '')} onClick={() => act({ kind: 'stadiumProject', project: o.kind as ProjectKind })}>{__i18n_t("ui.office.office.e89cc866")}</button>
+                      {__i18n_display(o.blocked && <div class="muted small">{__i18n_display(o.blocked)}</div>)}
                     </td>
                   </tr>
-                ))}
+                )))}
               </tbody>
             </table>
           </div>
-          {!!u.projects?.length && (
+          {__i18n_display(!!u.projects?.length && (
             <>
-              <h3>공사 기록</h3>
+              <h3>{__i18n_t("ui.office.office.0a2532f5")}</h3>
               <ul class="plain">
-                {u.projects.map((p, i) => (
-                  <li key={i}>
-                    {p.label} · {money(p.cost)} · {p.opens}년 {p.opens > league.year || (p.opens === league.year && league.phase === 'offseason') ? '완공 예정' : '완공'}
-                  </li>
-                ))}
+                {__i18n_display(u.projects.map((p, i) => (
+                  <li key={i}>{__i18n_t("ui.office.office.5f9fb35e", { label: p.label, money: money(p.cost), opens: p.opens, value: p.opens > league.year || (p.opens === league.year && league.phase === 'offseason') ? __i18n_k("ui.office.office.ec76e26b") : __i18n_k("ui.office.office.0616e1f0") })}</li>
+                )))}
               </ul>
             </>
-          )}
-          <h3>구장 이름</h3>
+          ))}
+          <h3>{__i18n_t("ui.office.office.f61c862b")}</h3>
           <form class="inline-form" onSubmit={rename(stadiumName, 'current')}>
             <label>
               지금 홈구장
               <input value={stadiumName} maxLength={STADIUM_NAME_MAX} onInput={(e) => setStadiumName((e.currentTarget as HTMLInputElement).value)} />
             </label>
-            <button type="submit">바꾸기</button>
+            <button type="submit">{__i18n_t("ui.office.office.75b73b7f")}</button>
           </form>
-          {(building || u.projects?.some((p) => p.kind === 'newPark' && p.opens > league.year)) && (
+          {__i18n_display((building || u.projects?.some((p) => p.kind === 'newPark' && p.opens > league.year)) && (
             <form class="inline-form" onSubmit={rename(future, 'new')}>
               <label>
                 새 구장 이름
-                <input value={future} placeholder={`${cityById(u.settings.cityId)?.name ?? ''} 신구장`} maxLength={STADIUM_NAME_MAX} onInput={(e) => setFuture((e.currentTarget as HTMLInputElement).value)} />
+                <input value={future} placeholder={__i18n_displayText(__i18n_k("ui.office.office.d7422702", { value: cityById(u.settings.cityId)?.name ?? '' }))} maxLength={STADIUM_NAME_MAX} onInput={(e) => setFuture((e.currentTarget as HTMLInputElement).value)} />
               </label>
-              <button type="submit">정하기</button>
+              <button type="submit">{__i18n_t("ui.office.office.be42a39b")}</button>
             </form>
-          )}
+          ))}
         </>
-      )}
+      ))}
 
-      {section === 'facilities' && <Facilities league={league} act={act} />}
+      {__i18n_display(section === 'facilities' && <Facilities league={league} act={act} />)}
 
-      {section === 'rival' && (
+      {__i18n_display(section === 'rival' && (
         <>
-          {league.twelve ? (
+          {__i18n_display(league.twelve ? (
             <RivalryBox league={league} />
           ) : (
             <>
-              <p>12번째 구단이 언제 들어올지 정합니다. 창단 전까지는 언제든 바꿀 수 있습니다.</p>
+              <p>{__i18n_t("ui.office.office.8a0c79d3")}</p>
               <TwelveSettingField
                 value={u.settings.twelve ?? { mode: 'off' }}
                 from={Math.max(u.firstTeamYear, league.phase === 'offseason' ? (league.offseason?.year ?? league.year) + 1 : league.year)}
                 onChange={(setting) => act({ kind: 'twelveSetting', setting })}
               />
-              {u.twelveNo?.length ? <p class="muted small">이사회 부결: {u.twelveNo.join(', ')}년 겨울</p> : null}
+              {__i18n_display(u.twelveNo?.length ? <p class="muted small">{__i18n_t("ui.office.office.ef2d2d30", { value: u.twelveNo.join(', ') })}</p> : null)}
             </>
-          )}
+          ))}
         </>
-      )}
+      ))}
 
-      {section === 'ledger' && (
+      {__i18n_display(section === 'ledger' && (
         <div class="table-wrap" tabIndex={0}>
           <table class="record-table ledger">
             <tbody>
-              {[...u.ledger]
+              {__i18n_display([...u.ledger]
                 .reverse()
                 .slice(0, 60)
                 .map((l, i) => (
                   <tr key={i}>
-                    <td class="num">{l.year}</td>
-                    <td>{l.label}</td>
-                    <td class={`num ${l.amount > 0 ? 'plus' : l.amount < 0 ? 'minus' : ''}`}>{l.amount ? signed(l.amount) : ''}</td>
+                    <td class="num">{__i18n_display(l.year)}</td>
+                    <td>{__i18n_display(l.label)}</td>
+                    <td class={`num ${l.amount > 0 ? 'plus' : l.amount < 0 ? 'minus' : ''}`}>{__i18n_display(l.amount ? signed(l.amount) : '')}</td>
                   </tr>
-                ))}
+                )))}
             </tbody>
           </table>
         </div>
-      )}
+      ))}
     </>
   );
 }
@@ -613,28 +568,25 @@ function Facilities({ league, act }: { league: LeagueState; act: (a: Action) => 
   const works = (u.facilityWorks ?? []).filter((w) => (u.facilities?.[w.kind] ?? 0) < w.level);
   return (
     <>
-      <p class="muted">
-        공사비는 구단 자금에서 한 번에 나가고(모기업 지원 밖), 완공되면 해마다 유지비가 듭니다. 비시즌에 한 번에 하나씩 시작해 다음 시즌부터 쓸 수 있습니다(2군 전용 구장 첫 단계는 2년). 지금 유지비: 구장 시설{' '}
-        {upkeep.ballpark ? `연 ${money(upkeep.ballpark)}` : '없음'}, 훈련 시설 {upkeep.training ? `연 ${money(upkeep.training)}` : '없음'}.
-      </p>
-      {works.length > 0 && <p>공사 중: {works.map((w) => `${FACILITIES[w.kind].label} ${w.level}단계 (${w.opens}년 시즌부터)`).join(', ')}</p>}
-      {(['ballpark', 'training'] as const).map((group) => (
+      <p class="muted">{__i18n_t("ui.office.facilities.40f51d90", { value: ' ', value2: upkeep.ballpark ? __i18n_k("ui.office.facilities.26b4e2d2", { money: money(upkeep.ballpark) }) : __i18n_k("ui.office.facilities.d58fa73a"), value3: upkeep.training ? __i18n_k("ui.office.facilities.26b4e2d2", { money: money(upkeep.training) }) : __i18n_k("ui.office.facilities.d58fa73a") })}</p>
+      {__i18n_display(works.length > 0 && <p>{__i18n_t("ui.office.facilities.48f9a41d", { value: works.map((w) => __i18n_k("ui.office.facilities.40c13d17", { label: FACILITIES[w.kind].label, level: w.level, opens: w.opens })).join(', ') })}</p>)}
+      {__i18n_display((['ballpark', 'training'] as const).map((group) => (
         <div key={group}>
-          <h3>{group === 'ballpark' ? '구장 보강' : '훈련 시설'}</h3>
+          <h3>{__i18n_display(group === 'ballpark' ? __i18n_k("ui.office.facilities.51cd520c") : __i18n_k("ui.office.facilities.3de88399"))}</h3>
           <div class="table-wrap" tabIndex={0}>
             <table class="record-table facilities">
               <thead>
                 <tr>
-                  <th>시설</th>
-                  <th>지금</th>
-                  <th>다음 단계</th>
-                  <th class="num">공사비</th>
-                  <th class="num">유지비</th>
+                  <th>{__i18n_t("ui.office.facilities.b4de61be")}</th>
+                  <th>{__i18n_t("ui.office.facilities.d07eb370")}</th>
+                  <th>{__i18n_t("ui.office.facilities.cd6f9480")}</th>
+                  <th class="num">{__i18n_t("ui.office.facilities.47546b51")}</th>
+                  <th class="num">{__i18n_t("ui.office.facilities.e5e81174")}</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {FACILITY_KINDS.filter((k) => FACILITIES[k].group === group).map((kind) => {
+                {__i18n_display(FACILITY_KINDS.filter((k) => FACILITIES[k].group === group).map((kind) => {
                   const spec = FACILITIES[kind];
                   const level = facilityLevel(league, kind);
                   const o = options.find((x) => x.kind === kind);
@@ -642,29 +594,27 @@ function Facilities({ league, act }: { league: LeagueState; act: (a: Action) => 
                   return (
                     <tr key={kind}>
                       <td>
-                        <strong>{spec.label}</strong>
-                        <div class="muted small">{spec.note}</div>
+                        <strong>{__i18n_display(spec.label)}</strong>
+                        <div class="muted small">{__i18n_display(spec.note)}</div>
                       </td>
-                      <td class="small">{level ? `${level}단계 · ${spec.levels[level - 1]!.effect}` : '없음'}</td>
-                      <td class="small">{nextLevel ? `${o!.level}단계 · ${nextLevel.effect} (${o!.opens}년부터)` : '최고 단계'}</td>
-                      <td class="num">{nextLevel ? money(nextLevel.cost) : '-'}</td>
-                      <td class="num">{nextLevel ? `연 ${money(nextLevel.upkeep)}` : '-'}</td>
+                      <td class="small">{__i18n_display(level ? __i18n_k("ui.office.facilities.ae6cf329", { level: level, effect: spec.levels[level - 1]!.effect }) : __i18n_k("ui.office.facilities.d58fa73a"))}</td>
+                      <td class="small">{__i18n_display(nextLevel ? __i18n_k("ui.office.facilities.4f82a0da", { level: o!.level, effect: nextLevel.effect, opens: o!.opens }) : __i18n_k("ui.office.facilities.14ab5a3d"))}</td>
+                      <td class="num">{__i18n_display(nextLevel ? money(nextLevel.cost) : '-')}</td>
+                      <td class="num">{__i18n_display(nextLevel ? __i18n_k("ui.office.facilities.26b4e2d2", { money: money(nextLevel.upkeep) }) : '-')}</td>
                       <td>
-                        {o && (
-                          <button type="button" disabled={!!o.blocked} title={o.blocked ?? ''} onClick={() => act({ kind: 'facility', facility: kind })}>
-                            짓기
-                          </button>
-                        )}
+                        {__i18n_display(o && (
+                          <button type="button" disabled={!!o.blocked} title={__i18n_displayText(o.blocked ?? '')} onClick={() => act({ kind: 'facility', facility: kind })}>{__i18n_t("ui.office.facilities.c9f20f50")}</button>
+                        ))}
                       </td>
                     </tr>
                   );
-                })}
+                }))}
               </tbody>
             </table>
           </div>
         </div>
-      ))}
-      {options[0]?.blocked && <p class="muted small">{options[0].blocked}</p>}
+      )))}
+      {__i18n_display(options[0]?.blocked && <p class="muted small">{__i18n_display(options[0].blocked)}</p>)}
     </>
   );
 }

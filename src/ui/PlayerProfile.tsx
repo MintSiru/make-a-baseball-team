@@ -1,3 +1,4 @@
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 import { TOOL_LABELS } from '../draftroom';
 import type { PublicPlayer } from '../model/player';
 import type { CombineLine } from '../league/combine';
@@ -16,121 +17,117 @@ interface Props {
 }
 
 export function PlayerProfile({ player: p, age, combine, combineNote, report, workout }: Props) {
-  if (!p) return <aside class="profile empty">후보를 고르면 스카우팅 리포트가 나옵니다.</aside>;
+  if (!p) return <aside class="profile empty">{__i18n_t("ui.playerProfile.playerProfile.c2fea04a")}</aside>;
   const s = p.scouting;
   return (
     <aside class="profile" aria-labelledby="profile-name" tabIndex={0}>
-      <p class="muted">
-        공개 순위 {p.amateur.draftRank}위 · {p.origin.pathway}
-      </p>
-      <h2 id="profile-name">{p.name}</h2>
+      <p class="muted">{__i18n_t("ui.playerProfile.playerProfile.f376a341", { draftRank: p.amateur.draftRank, pathway: p.origin.pathway })}</p>
+      <h2 id="profile-name">{__i18n_display(p.name)}</h2>
       <p class="lede">
-        {roleLabel(p.role)} · {p.archetype}
-        {p.twoWay && ' · 이도류 유망주'}
+        {__i18n_display(roleLabel(p.role))} · {__i18n_display(p.archetype)}
+        {__i18n_display(p.twoWay && __i18n_k("ui.playerProfile.playerProfile.913252ca"))}
       </p>
       <dl class="facts">
         <div>
-          <dt>나이</dt>
-          <dd>만 {age}세</dd>
+          <dt>{__i18n_t("ui.playerProfile.playerProfile.6c620e5c")}</dt>
+          <dd>{__i18n_t("ui.playerProfile.playerProfile.1001e7e6", { age: age })}</dd>
         </div>
         <div>
-          <dt>투타</dt>
-          <dd>{handedness(p)}</dd>
+          <dt>{__i18n_t("ui.playerProfile.playerProfile.2f9a6e1f")}</dt>
+          <dd>{__i18n_display(handedness(p))}</dd>
         </div>
         <div>
-          <dt>체격</dt>
+          <dt>{__i18n_t("ui.playerProfile.playerProfile.691a855d")}</dt>
           <dd>
-            {p.height}cm · {p.weight}kg
+            {__i18n_display(p.height)}cm · {__i18n_display(p.weight)}kg
           </dd>
         </div>
         <div>
-          <dt>병역</dt>
-          <dd>{militaryLabel[p.service.military]}</dd>
+          <dt>{__i18n_t("ui.playerProfile.playerProfile.82af035c")}</dt>
+          <dd>{__i18n_display(militaryLabel[p.service.military])}</dd>
         </div>
-        {p.velocity != null && (
+        {__i18n_display(p.velocity != null && (
           <div>
-            <dt>최고 구속</dt>
-            <dd>{p.velocity}km/h</dd>
+            <dt>{__i18n_t("ui.playerProfile.playerProfile.b2ea2c6b")}</dt>
+            <dd>{__i18n_display(p.velocity)}km/h</dd>
           </div>
-        )}
+        ))}
         <div>
-          <dt>출생</dt>
-          <dd>{p.birthplace}</dd>
+          <dt>{__i18n_t("ui.playerProfile.playerProfile.98633e27")}</dt>
+          <dd>{__i18n_display(p.birthplace)}</dd>
         </div>
       </dl>
       <p>
-        {p.education.pathText} <span class="muted">({p.education.qualification})</span>
+        {__i18n_display(p.education.pathText)} <span class="muted">({__i18n_display(p.education.qualification)})</span>
       </p>
 
-      <h3>스카우팅 등급</h3>
+      <h3>{__i18n_t("ui.playerProfile.playerProfile.7b001924")}</h3>
       <table class="grades">
         <thead>
           <tr>
-            <th>능력</th>
-            <th class="num">현재</th>
-            <th class="num">미래</th>
+            <th>{__i18n_t("ui.playerProfile.playerProfile.8f2a4230")}</th>
+            <th class="num">{__i18n_t("ui.playerProfile.playerProfile.001e4be2")}</th>
+            <th class="num">{__i18n_t("ui.playerProfile.playerProfile.6e0caec5")}</th>
           </tr>
         </thead>
         <tbody>
-          {toolKeysFor(p.role).map((k) => (
+          {__i18n_display(toolKeysFor(p.role).map((k) => (
             <tr key={k}>
-              <th scope="row">{TOOL_LABELS[k]}</th>
-              <td class="num">{s.tools[k] ?? '-'}</td>
-              <td class="num">{s.futureTools[k] ?? '-'}</td>
+              <th scope="row">{__i18n_display(TOOL_LABELS[k])}</th>
+              <td class="num">{__i18n_display(s.tools[k] ?? '-')}</td>
+              <td class="num">{__i18n_display(s.futureTools[k] ?? '-')}</td>
             </tr>
-          ))}
+          )))}
         </tbody>
         <tfoot>
           <tr>
-            <th scope="row">종합</th>
-            <td class="num">{s.current}</td>
-            <td class="num strong">{s.futureValue}</td>
+            <th scope="row">{__i18n_t("ui.playerProfile.playerProfile.f7c86d76")}</th>
+            <td class="num">{__i18n_display(s.current)}</td>
+            <td class="num strong">{__i18n_display(s.futureValue)}</td>
           </tr>
         </tfoot>
       </table>
-      <p class="range">
-        플로어 {s.floor} · 실링 {s.ceiling} · 불확실성 {s.uncertainty}
-      </p>
-      {s.tags.length > 0 && (
+      <p class="range">{__i18n_t("ui.playerProfile.playerProfile.f2d41e73", { floor: s.floor, ceiling: s.ceiling, uncertainty: s.uncertainty })}</p>
+      {__i18n_display(s.tags.length > 0 && (
         <p>
-          {s.tags.map((t) => (
+          {__i18n_display(s.tags.map((t) => (
             <span key={t} class="tag">
-              {t}
+              {__i18n_display(t)}
             </span>
-          ))}
+          )))}
         </p>
-      )}
+      ))}
 
-      <h3>드래프트 컴바인</h3>
-      {combine ? (
+      <h3>{__i18n_t("ui.playerProfile.playerProfile.80d11806")}</h3>
+      {__i18n_display(combine ? (
         <dl class="facts">
-          {combine.map((l) => (
+          {__i18n_display(combine.map((l) => (
             <div key={l.label}>
-              <dt>{l.label}</dt>
-              <dd>{l.value}</dd>
+              <dt>{__i18n_display(l.label)}</dt>
+              <dd>{__i18n_display(l.value)}</dd>
             </div>
-          ))}
+          )))}
         </dl>
       ) : (
-        <p class="muted small">{combineNote ?? '컴바인 기록이 없습니다.'}</p>
-      )}
-      {workout && (
+        <p class="muted small">{__i18n_display(combineNote ?? __i18n_k("ui.playerProfile.playerProfile.bb7eea1e"))}</p>
+      ))}
+      {__i18n_display(workout && (
         <p class="inline-form">
-          <button type="button" disabled={workout.done || !!workout.blocked} title={workout.blocked ?? ''} onClick={workout.onClick}>
-            {workout.done ? '워크아웃 완료' : `개인 워크아웃 (${workout.cost})`}
+          <button type="button" disabled={workout.done || !!workout.blocked} title={__i18n_displayText(workout.blocked ?? '')} onClick={workout.onClick}>
+            {__i18n_display(workout.done ? __i18n_k("ui.playerProfile.playerProfile.c272f4dc") : __i18n_k("ui.playerProfile.playerProfile.560d0493", { cost: workout.cost }))}
           </button>
-          <span class="muted small">불러서 직접 보고 면담하면 우리 스카우트가 이 선수를 훨씬 정확하게 봅니다.</span>
+          <span class="muted small">{__i18n_t("ui.playerProfile.playerProfile.f6a31c22")}</span>
         </p>
-      )}
-      {report && <TraitReportBox report={report} />}
+      ))}
+      {__i18n_display(report && <TraitReportBox report={report} />)}
 
-      <h3>스카우트 메모</h3>
-      <p>{s.strength}</p>
-      <p>{s.weakness}</p>
+      <h3>{__i18n_t("ui.playerProfile.playerProfile.989d5649")}</h3>
+      <p>{__i18n_display(s.strength)}</p>
+      <p>{__i18n_display(s.weakness)}</p>
 
-      <h3>아마추어 기록</h3>
-      <p class="numbers">{recordLine(p.amateur.record)}</p>
-      {p.amateur.awards.length > 0 && <p class="muted">{p.amateur.awards.join(' · ')}</p>}
+      <h3>{__i18n_t("ui.playerProfile.playerProfile.0eb04ce0")}</h3>
+      <p class="numbers">{__i18n_display(recordLine(p.amateur.record))}</p>
+      {__i18n_display(p.amateur.awards.length > 0 && <p class="muted">{__i18n_display(p.amateur.awards.join(' · '))}</p>)}
     </aside>
   );
 }

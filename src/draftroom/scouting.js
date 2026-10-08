@@ -1,37 +1,38 @@
+import { k as __i18n_k } from '../i18n/index.js';
 /* Scout-director logic: club staff tendencies, detailed needs, fit scores and recommendations.
    Reads only the public projection; never trueTools, potentialTools or growth outcomes. */
 // Ported from KBO-Draft-Room df4faad src/core/scouting.js. See docs/UPSTREAM.md.
 import DraftData from './prospects.js';
 
 const D = DraftData;
-const STYLES = { balanced: '균형형', immediate: '즉전형', floor: '안정형', ceiling: '실링형' };
+const STYLES = { balanced: __i18n_k("draftroom.scouting.sTYLES.balanced.81c84478"), immediate: __i18n_k("draftroom.scouting.sTYLES.immediate.f8472100"), floor: __i18n_k("draftroom.scouting.sTYLES.floor.d0c4771a"), ceiling: __i18n_k("draftroom.scouting.sTYLES.ceiling.25ccbc57") };
 const needs = {
   SP: [
-    ['stamina', '긴 이닝을 맡을 선발', 45, '선발 이닝 부담을 줄여야 합니다.'],
-    ['command', '볼넷을 줄일 커맨드형 선발', 45, '선발의 경기 운영 안정성이 필요합니다.'],
-    ['stuff', '헛스윙을 만들 강속구 선발', 50, '타자를 압도할 구위가 부족합니다.'],
+    ['stamina', __i18n_k("draftroom.scouting.needs.sP.3f554f44"), 45, __i18n_k("draftroom.scouting.needs.sP.796b0848")],
+    ['command', __i18n_k("draftroom.scouting.needs.sP.d0e9d9bf"), 45, __i18n_k("draftroom.scouting.needs.sP.b9bb6951")],
+    ['stuff', __i18n_k("draftroom.scouting.needs.sP.7cdb0d82"), 50, __i18n_k("draftroom.scouting.needs.sP.4af6767d")],
   ],
   RP: [
-    ['stuff', '강한 공을 던질 불펜', 50, '접전에서 삼진을 만들 자원이 필요합니다.'],
-    ['command', '스트라이크를 던질 불펜', 45, '불펜의 볼넷을 줄이는 것이 과제입니다.'],
-    ['breaking', '결정구가 있는 불펜', 50, '다른 유형의 결정구를 더하고 싶습니다.'],
+    ['stuff', __i18n_k("draftroom.scouting.needs.rP.e552546f"), 50, __i18n_k("draftroom.scouting.needs.rP.21fc3b84")],
+    ['command', __i18n_k("draftroom.scouting.needs.rP.09a38367"), 45, __i18n_k("draftroom.scouting.needs.rP.8f3f645f")],
+    ['breaking', __i18n_k("draftroom.scouting.needs.rP.87054933"), 50, __i18n_k("draftroom.scouting.needs.rP.5b5dde53")],
   ],
   C: [
-    ['defense', '수비가 안정적인 포수', 45, '포수진의 수비 안정성을 보강합니다.'],
-    ['ready', '바로 백업 경쟁을 할 포수', 40, '단기적으로 포수 뎁스가 필요합니다.'],
-    ['scoutCeiling', '차세대 주전 포수', 50, '장기적인 포수 세대교체를 준비합니다.'],
+    ['defense', __i18n_k("draftroom.scouting.needs.c.de3cee54"), 45, __i18n_k("draftroom.scouting.needs.c.973b7856")],
+    ['ready', __i18n_k("draftroom.scouting.needs.c.6c1ceabb"), 40, __i18n_k("draftroom.scouting.needs.c.a541723e")],
+    ['scoutCeiling', __i18n_k("draftroom.scouting.needs.c.494e039e"), 50, __i18n_k("draftroom.scouting.needs.c.db952e66")],
   ],
   IF: [
-    ['contact', '배트에 공을 맞힐 내야수', 45, '내야 타선의 컨택을 보강합니다.'],
-    ['power', '장타를 보탤 내야수', 50, '코너 내야에 장타가 필요합니다.'],
-    ['defense', '수비가 안정적인 내야수', 45, '내야 수비의 안정성을 높입니다.'],
-    ['floorGrade', '역할이 분명한 내야수', 40, '안정적인 백업 경쟁 자원이 필요합니다.'],
+    ['contact', __i18n_k("draftroom.scouting.needs.iF.1692d49b"), 45, __i18n_k("draftroom.scouting.needs.iF.40ebc9b5")],
+    ['power', __i18n_k("draftroom.scouting.needs.iF.47820b0f"), 50, __i18n_k("draftroom.scouting.needs.iF.8175d79f")],
+    ['defense', __i18n_k("draftroom.scouting.needs.iF.842a8e04"), 45, __i18n_k("draftroom.scouting.needs.iF.0ec297a8")],
+    ['floorGrade', __i18n_k("draftroom.scouting.needs.iF.38ae71f6"), 40, __i18n_k("draftroom.scouting.needs.iF.26be8ab0")],
   ],
   OF: [
-    ['power', '공을 멀리 보낼 외야수', 50, '외야 타선의 장타 생산을 높입니다.'],
-    ['speed', '발이 빠른 외야수', 50, '주루와 외야 기동력을 보강합니다.'],
-    ['defense', '넓게 수비할 외야수', 50, '외야 수비 범위를 개선합니다.'],
-    ['contact', '컨택이 좋은 외야수', 45, '외야 타선의 연결 능력을 보강합니다.'],
+    ['power', __i18n_k("draftroom.scouting.needs.oF.92c3492f"), 50, __i18n_k("draftroom.scouting.needs.oF.97917ff8")],
+    ['speed', __i18n_k("draftroom.scouting.needs.oF.7846c4db"), 50, __i18n_k("draftroom.scouting.needs.oF.999ce5ab")],
+    ['defense', __i18n_k("draftroom.scouting.needs.oF.0e3bf010"), 50, __i18n_k("draftroom.scouting.needs.oF.72c95d97")],
+    ['contact', __i18n_k("draftroom.scouting.needs.oF.1a4b15d9"), 45, __i18n_k("draftroom.scouting.needs.oF.8d3d88cd")],
   ],
 };
 function plans(seed, teams) {
@@ -39,7 +40,7 @@ function plans(seed, teams) {
     teams.map((t) => {
       const r = D.rng(seed + '-club06-' + t.id),
         style = D.pick(Object.keys(STYLES), r),
-        preference = D.pick(['균형', '고졸', '대졸', '해외 경력'], r);
+        preference = D.pick([__i18n_k("draftroom.scouting.plans.preference.45c89bab"), '고졸', '대졸', '해외 경력'], r);
       const detailedNeeds = t.needs.map((role) => {
         const [key, label, target, reason] = D.pick(needs[role], r);
         return { role, key, label, target, reason };
@@ -87,18 +88,18 @@ function score(p, t, style = t.staff?.style || 'balanced') {
   return base + fit(p, t) * 0.065 + bonus;
 }
 function needLine(p, need) {
-  const label = D.grades.LABELS[need.key] || { ready: '현재 기량', scoutCeiling: '미래 가치', floorGrade: '플로어' }[need.key],
+  const label = D.grades.LABELS[need.key] || { ready: __i18n_k("draftroom.scouting.label.ready.7c2a9df6"), scoutCeiling: __i18n_k("draftroom.scouting.label.scoutCeiling.d7ee4a2c"), floorGrade: __i18n_k("draftroom.scouting.label.floorGrade.f5f120bd") }[need.key],
     v = value(p, need.key);
   return v >= need.target
-    ? `찾던 '${need.label}' 유형. ${label} ${D.ko.p(String(v), '으로/로')} 기준(${need.target})을 ${v > need.target ? '넘는다' : '맞춘다'}.`
-    : `'${need.label}'로 보기엔 ${label}${D.ko.particle(label, '이/가')} ${need.target - v}점 모자란다.`;
+    ? __i18n_k("draftroom.scouting.needLine.d447d0f3", { label: need.label, label2: label, value: D.ko.p(String(v), '으로/로'), target: need.target, value2: v > need.target ? __i18n_k("draftroom.scouting.needLine.8e862018") : __i18n_k("draftroom.scouting.needLine.0d40a0d5") })
+    : __i18n_k("draftroom.scouting.needLine.b6a1d748", { label: need.label, label2: label, value: D.ko.particle(label, __i18n_k("draftroom.scouting.needLine.543ff075")), value2: need.target - v });
 }
 function explanation(p, t) {
   const need = t.detailedNeeds?.find((x) => x.role === p.role);
   return [
-    `현재 ${p.ready} / 미래 가치 ${p.scoutCeiling} · ${p.pickTags.join(' + ')}.`,
-    need ? needLine(p, need) : '보강 포지션은 아니다. 재능만 보고 고른 선수.',
-    `플로어 ${p.floorGrade} / 실링 ${p.ceilingGrade} · 불확실성 ${p.uncertainty}.`,
+    __i18n_k("draftroom.scouting.explanation.25ea1a49", { ready: p.ready, scoutCeiling: p.scoutCeiling, value: p.pickTags.join(' + ') }),
+    need ? needLine(p, need) : __i18n_k("draftroom.scouting.explanation.ae39f8ba"),
+    __i18n_k("draftroom.scouting.explanation.f4f583d9", { floorGrade: p.floorGrade, ceilingGrade: p.ceilingGrade, uncertainty: p.uncertainty }),
   ];
 }
 function recommend(players, t, local) {
@@ -112,7 +113,7 @@ function recommend(players, t, local) {
     if (p) chosen.push({ playerId: p.id, angle: STYLES[style], lines: explanation(p, t) });
     if (chosen.length === 3) break;
   }
-  return { staff: t.staff, scope: local ? '지역 1차' : '전국 1라운드', candidates: chosen };
+  return { staff: t.staff, scope: local ? __i18n_k("draftroom.scouting.recommend.scope.e8a3b15a") : __i18n_k("draftroom.scouting.recommend.scope.06780eed"), candidates: chosen };
 }
 const api = { STYLES, needCoverage, plans, value, fit, score, explanation, recommend };
 export default api;

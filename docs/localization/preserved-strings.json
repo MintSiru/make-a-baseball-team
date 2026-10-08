@@ -1,0 +1,4928 @@
+[
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 12,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 13,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 15,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 16,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 17,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 22,
+    "text": "대전·충청·전북",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 23,
+    "text": "부산·울산",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 25,
+    "text": "경기·강원",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 26,
+    "text": "대구·경북",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 27,
+    "text": "광주·전남·제주",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 39,
+    "text": "고교 졸업 예정",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 39,
+    "text": "고교 졸업 예정",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 41,
+    "text": "대학 얼리",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 42,
+    "text": "2년제",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 43,
+    "text": "야구 유학",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 47,
+    "text": "마이너 복귀",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 47,
+    "text": "해외독립 복귀",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 47,
+    "text": "MLB 경험 복귀",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 47,
+    "text": "해외리그 복귀",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 67,
+    "text": "고졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 69,
+    "text": "야구 유학",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 73,
+    "text": "대졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 73,
+    "text": "대학 얼리",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 78,
+    "text": "대학 얼리",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 80,
+    "text": "2년제",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 88,
+    "text": "해외파",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 103,
+    "text": "독립구단",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 132,
+    "text": "야구 유학",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 135,
+    "text": "야구 유학",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 139,
+    "text": "대졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 139,
+    "text": "대학 얼리",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 147,
+    "text": "대학 얼리",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 148,
+    "text": "대학 얼리",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 150,
+    "text": "대학 얼리",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 154,
+    "text": "2년제",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 166,
+    "text": "해외파",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 178,
+    "text": "독립구단",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 265,
+    "text": "고졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/biography.js",
+    "line": 266,
+    "text": "고교 졸업 예정",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 9,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 10,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 11,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 12,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 12,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 13,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 13,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 14,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 15,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 16,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 16,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 17,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 17,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 18,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 18,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 19,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 20,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 20,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 21,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 21,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 22,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 22,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 23,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 23,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 28,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 29,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 30,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 31,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 32,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 35,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 36,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 37,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 38,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 39,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 40,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 41,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 42,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 47,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 48,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 49,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 50,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 51,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 52,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 53,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 54,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 60,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 61,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 62,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 63,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 64,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 68,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 69,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 70,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 71,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 72,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 73,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 74,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 79,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 80,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 81,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 82,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 83,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 84,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 85,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 90,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 91,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 92,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 95,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 96,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 97,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 98,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 99,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 100,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 105,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 106,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 107,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 108,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 109,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 110,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 111,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 112,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 113,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 114,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 114,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 115,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 118,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 119,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 120,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 121,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 122,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 124,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 126,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 127,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 128,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 129,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 130,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 131,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 132,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 133,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 134,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 135,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 136,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 138,
+    "text": "일본",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 139,
+    "text": "일본",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 146,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 147,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 148,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 149,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 152,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 153,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 154,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 155,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 156,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 157,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 158,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 159,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 161,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 162,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 163,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 164,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 165,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 166,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 167,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 168,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 169,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 176,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 177,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 178,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 179,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 180,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 186,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 187,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 188,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 189,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 190,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 191,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 192,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 193,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 194,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 195,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 201,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 202,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 203,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 204,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 205,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 206,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 207,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 208,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 209,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 210,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 212,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 214,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 215,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 217,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 218,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 220,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 222,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 223,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 224,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 226,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 228,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 230,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 231,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 232,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 234,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 235,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 237,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 239,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 240,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 241,
+    "text": "일본",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 242,
+    "text": "일본",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 243,
+    "text": "일본",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 244,
+    "text": "일본",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 245,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 246,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 247,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 248,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 249,
+    "text": "일본",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/catalog.js",
+    "line": 253,
+    "text": "일본",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/clubs.js",
+    "line": 12,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/clubs.js",
+    "line": 14,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/clubs.js",
+    "line": 18,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/clubs.js",
+    "line": 24,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/clubs.js",
+    "line": 26,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/contracts.js",
+    "line": 76,
+    "text": "고졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/contracts.js",
+    "line": 76,
+    "text": "야구 유학",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/draft-ai.js",
+    "line": 12,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/draft-ai.js",
+    "line": 56,
+    "text": "알 수 없는 난이도입니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/draft-ai.js",
+    "line": 94,
+    "text": "안타",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/draft-ai.js",
+    "line": 105,
+    "text": "알 수 없는 정렬 항목입니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/draft-ai.js",
+    "line": 118,
+    "text": "잘못된 정렬 방향입니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 93,
+    "text": "구단, 난이도, 라운드 수를 확인해야 합니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 128,
+    "text": "언론 예상 다음에 추천을 확인합니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 133,
+    "text": "이미 시작한 드래프트입니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 161,
+    "text": "드래프트 진행 중에만 지명할 수 있습니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 164,
+    "text": "현재 순서에서 지명할 수 없는 선수입니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 202,
+    "text": "후보 부족",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 250,
+    "text": "계약 협상은 드래프트가 끝난 뒤 한 번만 합니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 258,
+    "text": "제시액을 확인해야 합니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 311,
+    "text": "재협상 결과를 확인해야 합니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 313,
+    "text": "예산을 넘습니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 353,
+    "text": "육성선수 계약은 드래프트가 끝난 뒤에 합니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 356,
+    "text": "계약할 수 없는 선수입니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 357,
+    "text": "육성선수 계약 예산이 부족합니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 390,
+    "text": "인터뷰 답변은 드래프트 종료 후 한 번만 선택할 수 있습니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 394,
+    "text": "기자회견 답변을 확인해야 합니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 507,
+    "text": "육성 계획을 확인해야 합니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 510,
+    "text": "바꿀 수 없는 포지션입니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 515,
+    "text": "육성 방향을 확인해야 합니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 519,
+    "text": "투타 겸업 여부를 확인해야 합니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 537,
+    "text": "드래프트와 단장 인터뷰를 먼저 완료해야 합니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 564,
+    "text": "첫 시즌을 먼저 진행해야 합니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/engine.js",
+    "line": 568,
+    "text": "병역 결정을 확인해야 합니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/grades.js",
+    "line": 73,
+    "text": "높음",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/grades.js",
+    "line": 73,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/grades.js",
+    "line": 73,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/grades.js",
+    "line": 73,
+    "text": "낮음",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/grades.js",
+    "line": 81,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/grades.js",
+    "line": 111,
+    "text": "높음",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/grades.js",
+    "line": 111,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/grades.js",
+    "line": 128,
+    "text": "즉전감",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/grades.js",
+    "line": 129,
+    "text": "높음",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/grades.js",
+    "line": 130,
+    "text": "실링",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/index.ts",
+    "line": 45,
+    "text": "좌",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/index.ts",
+    "line": 45,
+    "text": "우",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/index.ts",
+    "line": 46,
+    "text": "좌",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/index.ts",
+    "line": 46,
+    "text": "우",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/index.ts",
+    "line": 46,
+    "text": "양",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 18,
+    "text": "으로/로",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 25,
+    "text": "갖춰졌다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 25,
+    "text": "갖춰졌습니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 26,
+    "text": "보완해야 한다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 26,
+    "text": "보완해야 합니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 27,
+    "text": "늘려야 한다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 27,
+    "text": "늘려야 합니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 28,
+    "text": "만든다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 28,
+    "text": "만듭니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 29,
+    "text": "흔들린다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 29,
+    "text": "흔들립니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 30,
+    "text": "높아진다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 30,
+    "text": "높아집니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 31,
+    "text": "빨라진다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 31,
+    "text": "빨라집니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 32,
+    "text": "이어진다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 32,
+    "text": "이어집니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 33,
+    "text": "따라간다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 33,
+    "text": "따라갑니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 34,
+    "text": "뺏는다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 34,
+    "text": "뺏습니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 35,
+    "text": "묶는다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 35,
+    "text": "묶습니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 36,
+    "text": "보여준다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 36,
+    "text": "보여줍니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 37,
+    "text": "한다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 37,
+    "text": "합니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 38,
+    "text": "있다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 38,
+    "text": "있습니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 39,
+    "text": "없다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 39,
+    "text": "없습니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 40,
+    "text": "갖췄다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 40,
+    "text": "갖췄습니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 41,
+    "text": "좋다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 41,
+    "text": "좋습니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 42,
+    "text": "돋보인다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 42,
+    "text": "돋보입니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 43,
+    "text": "간결하다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 43,
+    "text": "간결합니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 44,
+    "text": "매력적이다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 44,
+    "text": "매력적입니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 45,
+    "text": "위력적이다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 45,
+    "text": "위력적입니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 46,
+    "text": "안정적이다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 46,
+    "text": "안정적입니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 47,
+    "text": "과제다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 47,
+    "text": "과제입니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 48,
+    "text": "편이다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 48,
+    "text": "편입니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 49,
+    "text": "부족하다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 49,
+    "text": "부족합니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 50,
+    "text": "필요하다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/ko.js",
+    "line": 50,
+    "text": "필요합니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 6,
+    "text": "민준 서준 도윤 예준 시우 하준 주원 지호 지후 준우 준서 건우 현우 지훈 우진 선우 민재 현준 연우 정우 승우 승현 준혁 지환 승민 유준 준영 진우 성민 태현 동현 수빈 재윤 민성 성현 태민 준호 재현 지민 정민 재민 현수 민수 성훈 상현 동건 동훈 준수 수현 승준 경민 정훈 영준 민규 승훈",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 7,
+    "text": "성준 진호 태준 동혁 상민 병찬 정현 기현 태훈 재훈 석현 현빈 태영 상훈 영훈 도현 재영 정윤 재원 준원 태원 동욱 승환 재환 진영 성진 우성 성빈 종현 종민 창민 창현 효준 강민 규민 대현 경수 경훈 종훈 원준 성우 진수 동우 민우 지웅 태웅 정빈 주형 준형 동준 성원 정호 재호 윤호 상우 동민 현성 규현 주호 명준 경준 태호 지수 윤성 승호 도훈 석준 영민",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 8,
+    "text": "시후 은우 이안 지오 로운 하율 도율 서후 선율 윤우 준희 태오 시훈 우현 건민 민결 지성 도경 태율 은결 재율 규빈 하온 연준 이든 지후 유건 채훈 수호 윤찬 민호 성연 도영 승유 태건 호연 지웅 서율 강현 준범 재하 현서 한결 도훈 민서 세윤 주안 윤서 시안 우림 동하 민율 하진 준하 태하 건휘 지율 도진 승하 현호 주성 태서 민건 준하 서하 재율 은석 경호 동주 성율 가온 라온 누리 새론",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 9,
+    "text": "준 건 훈 혁 찬 결 솔 현 율 원 진 강 빈 윤 담",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 10,
+    "text": "도겸 도하 건희 건호 건형 건영 건준 건율 기범 기훈 기태 기성 기욱 규빈 규원 규호 규태 대영 대호 대훈 대윤 동규 동균 동완 동영 동원 동윤 동진 동찬 명재 명진 명호 문수 민석 민찬 민혁 민형 민호 범수 범준 범진 병규 병민 병수 병우 병진 병현 병훈 상규 상원 상준 상진 상혁 상호 서우 서원 서윤 서진 선규 선민 선재 선호 선혁 성규 성균 성재 성호 세민 세준 세진 세현 수민 수영 수원 승규 승빈 승원 승윤 승재 승진 승찬 시온 시윤 시현 신우 영규 영빈 영서 영수 영우 영재 영진 영찬 영호 용민 용준 용진 우빈 우석 우영 우주 우찬 우혁 원빈 원석 원영 원우 원재 원호 유민 유빈 유성 유찬 유현 윤규 윤재 윤준 윤혁 윤후 은성 은우 은찬 은호 의찬 이준 인규 인성 인우 인호 재경 재균 재서 재성 재우 재준 재찬 재혁 재형 정규 정수 정원 정준 정환 종규 종원 종찬 주영 주찬 준경 준규 준기 준민 준빈 준석 준성 준승 준용 준재 준찬 준현 준후 지안 지완 지원 지유 지율 지한 지현 진규 진서 진성 진석 진원 진혁 진현 찬규 찬민 찬우 찬영 찬용 찬원 찬준 찬혁 창규 창수 창우 창준 창훈 채민 채운 태경 태규 태균 태성 태수 태양 태연 태욱 태윤 태인 태진 태찬 태혁 태환 하람 하민 하성 하영 하윤 한결 한빈 한솔 한준 해성 혁준 현규 현기 현민 현석 현승 현욱 현진 현찬 형민 형준 형진 호준 호진 호영 홍준 환희 효민 효빈 효성 효진 휘준 휘성 희성 희준 희찬",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "김",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "이",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "박",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "최",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "정",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "강",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "조",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "윤",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "장",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "임",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "한",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "오",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "서",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "신",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "권",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "황",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "안",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "송",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "전",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "홍",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "유",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "고",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "문",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "양",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "손",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "배",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "백",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "허",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "남",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "심",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "노",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "하",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "곽",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "성",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "차",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "주",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "우",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "구",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "민",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "류",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "나",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "진",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "지",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "엄",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "채",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "원",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "천",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "방",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "공",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "현",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "함",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "변",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "염",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "여",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "추",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "도",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "소",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "석",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "선",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "설",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "마",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "길",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "연",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "위",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "표",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "명",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "기",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "반",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "왕",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "금",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "옥",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "육",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "인",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "맹",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "제",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "모",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "탁",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "국",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "어",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "은",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "편",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "용",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "예",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "봉",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "경",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "피",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "감",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "남궁",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "황보",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "제갈",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "선우",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 13,
+    "text": "독고",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 15,
+    "text": "선수 이름 생성 후보가 부족합니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/names.js",
+    "line": 16,
+    "text": "완성형 이름 검수 목록과 게임용 가중치입니다. 출생연도별 실제 통계가 아닙니다.",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/draftroom/press.js",
+    "line": 40,
+    "text": "모의 드래프트 후보가 부족합니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 55,
+    "text": "차분한 노력파",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 56,
+    "text": "승부욕 강한 도전자",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 57,
+    "text": "밝은 분위기 메이커",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 58,
+    "text": "분석을 즐기는 연구형",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 59,
+    "text": "책임감 강한 리더",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 60,
+    "text": "말보다 행동하는 실천형",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 61,
+    "text": "꾸준함을 믿는 성실형",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 62,
+    "text": "큰 무대를 즐기는 대담형",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 69,
+    "text": "강속구 선발",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 70,
+    "text": "커맨드형 선발",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 71,
+    "text": "체인지업 좌완",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 72,
+    "text": "땅볼 유도형 선발",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 73,
+    "text": "장신 커브볼러",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 76,
+    "text": "파워 불펜",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 78,
+    "text": "좌완 스페셜리스트",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 80,
+    "text": "포크볼 불펜",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 110,
+    "text": "경기·강원",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 111,
+    "text": "대전·충청·전북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 111,
+    "text": "광주·전남·제주",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 112,
+    "text": "대구·경북",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 112,
+    "text": "부산·울산",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 114,
+    "text": "우승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 139,
+    "text": "우승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 197,
+    "text": "대졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 198,
+    "text": "대학 얼리",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 199,
+    "text": "2년제",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 200,
+    "text": "독립구단",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 201,
+    "text": "해외파",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 202,
+    "text": "마이너 복귀",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 203,
+    "text": "해외독립 복귀",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 224,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 224,
+    "text": "우",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 225,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 225,
+    "text": "우",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 227,
+    "text": "양",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 227,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 227,
+    "text": "우",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 235,
+    "text": "MLB 경험 복귀",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 235,
+    "text": "해외리그 복귀",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 235,
+    "text": "마이너 복귀",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 253,
+    "text": "야구 유학",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 254,
+    "text": "고졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 255,
+    "text": "고졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 276,
+    "text": "대졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 276,
+    "text": "대학 얼리",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 276,
+    "text": "2년제",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 329,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 353,
+    "text": "고졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 353,
+    "text": "야구 유학",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 371,
+    "text": "고졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 371,
+    "text": "야구 유학",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 436,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/prospects.js",
+    "line": 452,
+    "text": "명문",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/scouting.js",
+    "line": 42,
+    "text": "고졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/scouting.js",
+    "line": 42,
+    "text": "대졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/scouting.js",
+    "line": 42,
+    "text": "해외 경력",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/scouting.js",
+    "line": 84,
+    "text": "해외 경력",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/scouting.js",
+    "line": 84,
+    "text": "해외파",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/scouting.js",
+    "line": 93,
+    "text": "으로/로",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/tuning.js",
+    "line": 257,
+    "text": "해외독립 복귀",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/tuning.js",
+    "line": 257,
+    "text": "마이너 복귀",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/tuning.js",
+    "line": 257,
+    "text": "해외리그 복귀",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/tuning.js",
+    "line": 257,
+    "text": "MLB 경험 복귀",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/tuning.js",
+    "line": 265,
+    "text": "금메달",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/tuning.js",
+    "line": 265,
+    "text": "금메달",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/tuning.js",
+    "line": 266,
+    "text": "금메달",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/tuning.js",
+    "line": 266,
+    "text": "금메달",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/tuning.js",
+    "line": 267,
+    "text": "금메달",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/tuning.js",
+    "line": 267,
+    "text": "금메달",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 34,
+    "text": "차분한 노력파",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 35,
+    "text": "승부욕 강한 도전자",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 36,
+    "text": "밝은 분위기 메이커",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 37,
+    "text": "분석을 즐기는 연구형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 38,
+    "text": "책임감 강한 리더",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 39,
+    "text": "말보다 행동하는 실천형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 40,
+    "text": "꾸준함을 믿는 성실형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 41,
+    "text": "큰 무대를 즐기는 대담형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 80,
+    "text": "독립구단",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 81,
+    "text": "대학 얼리",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 82,
+    "text": "대졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 83,
+    "text": "2년제",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 84,
+    "text": "야구 유학",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 85,
+    "text": "해외파",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 90,
+    "text": "차분한 노력파",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/draftroom/voices.js",
+    "line": 148,
+    "text": "높음",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 95,
+    "text": "즉전감",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 96,
+    "text": "실링",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 118,
+    "text": "즉전감",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 131,
+    "text": "고졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 131,
+    "text": "대졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 131,
+    "text": "대학 얼리",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 131,
+    "text": "2년제",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 148,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 150,
+    "text": "고졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 152,
+    "text": "야구 유학",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 153,
+    "text": "2년제",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 154,
+    "text": "독립구단",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 209,
+    "text": "독립구단",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 210,
+    "text": "대졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 211,
+    "text": "2년제",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 212,
+    "text": "야구 유학",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/draftroom/writer.js",
+    "line": 213,
+    "text": "해외파",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/actions.ts",
+    "line": 212,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/alerts.ts",
+    "line": 65,
+    "text": "1루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/alerts.ts",
+    "line": 65,
+    "text": "2루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/alerts.ts",
+    "line": 65,
+    "text": "3루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/allstar.ts",
+    "line": 40,
+    "text": "1루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/allstar.ts",
+    "line": 40,
+    "text": "2루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/allstar.ts",
+    "line": 40,
+    "text": "3루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/allstar.ts",
+    "line": 340,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/allstar.ts",
+    "line": 341,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/alumni.ts",
+    "line": 42,
+    "text": "올스타",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/alumni.ts",
+    "line": 42,
+    "text": "골든글러브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/alumni.ts",
+    "line": 42,
+    "text": "1위",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/alumni.ts",
+    "line": 168,
+    "text": "올스타",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/alumni.ts",
+    "line": 168,
+    "text": "골든글러브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/alumni.ts",
+    "line": 447,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/alumni.ts",
+    "line": 448,
+    "text": "세이브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/alumni.ts",
+    "line": 452,
+    "text": "안타",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/alumni.ts",
+    "line": 455,
+    "text": "안타",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/alumni.ts",
+    "line": 455,
+    "text": "세이브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/alumni.ts",
+    "line": 455,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/awards.ts",
+    "line": 68,
+    "text": "안타",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/awards.ts",
+    "line": 75,
+    "text": "세이브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/awards.ts",
+    "line": 97,
+    "text": "투수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/awards.ts",
+    "line": 98,
+    "text": "1루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/awards.ts",
+    "line": 98,
+    "text": "2루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/awards.ts",
+    "line": 98,
+    "text": "3루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/awards.ts",
+    "line": 121,
+    "text": "신인왕",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/awards.ts",
+    "line": 144,
+    "text": "골든글러브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/awards.ts",
+    "line": 144,
+    "text": "신인왕",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/ballpark.ts",
+    "line": 73,
+    "text": "구단이 없습니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/league/ballpark.ts",
+    "line": 75,
+    "text": "알 수 없는 공사입니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/league/briefing.ts",
+    "line": 43,
+    "text": "1루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/briefing.ts",
+    "line": 43,
+    "text": "2루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/briefing.ts",
+    "line": 43,
+    "text": "3루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/expansion.ts",
+    "line": 220,
+    "text": "독립구단",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/expansion.ts",
+    "line": 220,
+    "text": "해외독립 복귀",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/expansion.ts",
+    "line": 220,
+    "text": "마이너 복귀",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/expansion.ts",
+    "line": 220,
+    "text": "대졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/fa.ts",
+    "line": 438,
+    "text": "꾸준함을 믿는 성실형",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/fa.ts",
+    "line": 439,
+    "text": "분석을 즐기는 연구형",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/fa.ts",
+    "line": 440,
+    "text": "말보다 행동하는 실천형",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/fa.ts",
+    "line": 441,
+    "text": "책임감 강한 리더",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/fa.ts",
+    "line": 445,
+    "text": "승부욕 강한 도전자",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/fa.ts",
+    "line": 445,
+    "text": "큰 무대를 즐기는 대담형",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/fa.ts",
+    "line": 446,
+    "text": "차분한 노력파",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/fa.ts",
+    "line": 446,
+    "text": "밝은 분위기 메이커",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/fa.ts",
+    "line": 450,
+    "text": "큰 무대를 즐기는 대담형",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/facilities.ts",
+    "line": 198,
+    "text": "구단이 없습니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/league/facilities.ts",
+    "line": 200,
+    "text": "더 지을 수 없는 시설입니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 13,
+    "text": "제이크 라이언 카일 브랜든 타일러 코디 딜런 에릭 케빈 저스틴 조던 마이클 알렉스 대니얼 트레버 오스틴 네이선 숀 콜 잭 매트 루크 헌터 체이스 가렛\n      앤드루 브래들리 케이시 데릭 드루 에반 개빈 그랜트 이언 제임스 재러드 제시 조시 키건 로건 메이슨 닉 패트릭 리드 로비 스콧 스펜서 스티븐 테일러 토머스\n      트래비스 웨스 윌 잭슨 브렛 채드 클레이 데인 에이든 파커 헨리 노아 벤 샘 브룩스 코너 데빈 칼렙 캠 마커스 앤서니 브라이스 제이슨 조나단 마일스 오언\n      애런 애덤 앨런 앤디 바비 블레이크 보 브래디 브랜트 브록 버크 캘빈 카터 찰리 크리스 콜튼 코리 크레이그 대런 데이비드 딘 더스틴 에디 엘리\n      에밋 프랭키 개럿 게이브 그레그 그리핀 헤이든 이선 제드 제프 조이 조엘 키스 켄들 랜스 리오 루이 맥스 미치 넬슨 올리버 피트 퀸 랜디 레지\n      라일리 로스 러셀 세스 셰인 스티브 태너 토드 토미 트로이 타이 밴스 웨이드 와이엇 잭 제이든 로니 레이 랜던 쿠퍼 휘트 브렌트",
+    "reason": "foreign name generator components; original spelling preserved"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 19,
+    "text": "밀러 존슨 윌리엄스 브라운 데이비스 윌슨 테일러 앤더슨 토머스 무어 마틴 잭슨 톰프슨 화이트 해리스 클라크 워커 홀 영 앨런 라이트 킹 스콧 그린 베이커\n      애덤스 넬슨 캠벨 파커 에번스 에드워즈 콜린스 스튜어트 모리스 머피 쿡 로저스 모건 쿠퍼 피터슨 리드 베일리 벨 켈리 하워드 워드 콕스 리처드슨 우드 왓슨\n      브룩스 베넷 그레이 헤이스 마이어스 포드 해밀턴 그레이엄 설리번 월리스 웨스트 로스 헨더슨 콜먼 젱킨스 페리 파월 롱 패터슨 휴스 플린 스틸 라일리 로웰\n      맥그리거 오닐 맥도널드 가드너 케인 하퍼 도슨 슐츠 크루거 피셔 호프먼 바우어 레이놀즈 버크 브래디 오코너 해리슨 반스 매슈스 러셀 그리핀 스톤 웰스\n      앤드루스 아널드 볼드윈 바넷 배리 베켓 블랙번 보이드 브래드쇼 브레넌 버넷 캘러핸 카펜터 체임버스 크로퍼드 커닝햄 대니얼스 디킨슨 도너번 더피\n      엘리엇 패럴 플레처 프랭클린 갤러거 길버트 골드슈미트 그레이브스 해거티 해먼드 해닝 하딩 하트먼 헤인스 히긴스 홀랜드 허드슨 잉그럼 제이컵스\n      키팅 켈러 킴브럴 코넬 랭퍼드 로런스 린드블럼 매덕스 맥과이어 맥케이 머서 메릴 몬테로소 무니 노박 오슬런드 페냐 퍼킨스 피어스 포터 퀸런\n      래미지 랭킨 리스 로빈슨 로슨 샌더스 슈미트 슬레이터 스나이더 스펜스 스탠턴 스토크스 설리 테일러슨 톰린 터너 밴더빌트 왓킨스 웨버 휘틀리\n      윌커슨 윈터스 요크 지머먼 코발스키 노보트니 페트로비치 라르손 닐슨 한센 베르크 브루노 로시 페라리 루카 마르티니 콜롬보 비앙키 리치",
+    "reason": "foreign name generator components; original spelling preserved"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 30,
+    "text": "호세 카를로스 미겔 라파엘 안드레스 헥터 루이스 후안 페드로 라몬 에두아르도 프란시스코 호르헤 다니엘 알베르토 마누엘 헤수스 라울 로베르토\n      리카르도 세르히오 빅토르 윌리 엔리케 오스왈도 넬슨 요한 엘비스 프레디 헤르손 아롤디스 앙헬 요르단 에딘손 레난 알렉산데르 크리스티안 로날드 호엘 윌머\n      헤레미 다니 에우헤니오 가브리엘 이반 하비에르 오마르 파블로 사무엘 테오스카르 요안 욘데르 케텔 브라이안 윌손\n      아드리안 알비스 아메드 안토니오 아리스티데스 베니토 브라이스 세사르 다닐로 다리엘 데이비 디에고 엔데르 에스테반 펠릭스 페르난도 그레고리\n      기예르모 하이로 호안 후니오르 레오넬 로렌소 마르셀 마르코 마우리시오 닐로 오를란도 라미로 레이날도 로헬리오 산티아고 세바스티안 토니\n      우마르 비니시오 윌프레도 야스마니 율리에스키 지오반니 헤수스 엘리아스 루르데스 마이켈 오닐 프랭클린 아로센 에우리 길레르모 로우르데스",
+    "reason": "foreign name generator components; original spelling preserved"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 36,
+    "text": "로드리게스 곤잘레스 에르난데스 페레스 산체스 라미레스 토레스 플로레스 리베라 고메스 크루스 모랄레스 오르티스 레예스 메디나 디아스 마르티네스\n      로페스 가르시아 히메네스 카스티요 바르가스 멘도사 게레로 알바레스 로하스 에스피날 폰세 수아레스 카브레라 벨라스케스 소토 누녜스 아코스타 발데스\n      파디야 오르테가 세구라 카스트로 마르테 데헤수스 알몬테 테하다 베탄세스 피네다 모야 비야르 우레냐 파레데스 아브레우 콘트레라스 에스코바르 몬테로\n      아길라르 알폰소 아라에스 바르보사 벨트란 카브레라 칼데론 카라스코 세스페데스 시스네로스 도밍게스 두란 에스트라다 파하르도 가예고스 기옌 구스만\n      이글레시아스 라라 레온 루고 마차도 말도나도 마르케스 메히아 미란다 나바로 오수나 팔라시오스 파체코 퀸테로 라모스 렌기포 로블레스 로사리오\n      살라사르 세라노 시에라 솔라노 수베로 타피아 토바르 우리아스 바예 비스카이노 사모라 아스투디요 페냐 디아스 그리할바 아로요 알카라",
+    "reason": "foreign name generator components; original spelling preserved"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 45,
+    "text": "주릭슨 디디 잰더 켄리 안드렐톤 셰들런 체드윅 레이마르 저메인 시드니 롤런드 웬델 듀레인 커트니 엘리아스 레인델 엘리셔 라이언 주니어 랜디\n      샤를로 지오바니 레이믈 장데르 시더릭 로저 하이트 에드윈 저스틴 다샤 브랜던 레나르트 웨슬리 케빈 데니스",
+    "reason": "foreign name generator components; original spelling preserved"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 47,
+    "text": "시몬스 그레고리우스 보하르츠 얀선 스홉 프로파르 오두버르 마르티스 레이스 플로렌시아 판헤이스 페르보르트 데용 판데르베르 코르넬리아 하위스만\n      마르티나 베르나디나 리엘스 알벤토사 존스 발렌티나 세실리아 콜로니아 판다이크 바커르 펠트하위스 메이르 스밋 페이터르스",
+    "reason": "foreign name generator components; original spelling preserved"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 52,
+    "text": "치아구 루카스 가브리에우 마테우스 이고르 하파에우 레오나르두 에리키 브루누 지에구 비토르 다니에우 엔히키 펠리피 안드레 조나탕 무릴루 오타비우 파울루 히카르두",
+    "reason": "foreign name generator components; original spelling preserved"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 53,
+    "text": "비에이라 실바 산투스 올리베이라 소자 페헤이라 코스타 히베이루 알메이다 카르발류 고메스 마르칭스 아라우주 바르보자 핀투 모레이라 카바우칸치 멘지스",
+    "reason": "foreign name generator components; original spelling preserved"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 56,
+    "text": "쇼타 다이키 유토 가이토 료 하야토 겐타 소마 다쿠야 유마 렌 하루토 고헤이 쇼 겐지 슌스케 료타 다이치 유키 아쓰시 가즈키 류세이 신야 도모야 히로토\n      마사키 준 게이타 요시키 다이스케 고키 소타 하루키 나오키 유다이 아키라 다케루 쓰바사 고타 신노스케 유스케 히데키 가쓰야 마코토 다이고 쇼헤이\n      류타 고이치 와타루 다쓰야 히로키 겐토 슈토 아유무 요시노부",
+    "reason": "foreign name generator components; original spelling preserved"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 59,
+    "text": "다나카 사토 스즈키 다카하시 와타나베 이토 야마모토 나카무라 고바야시 가토 요시다 야마다 마쓰모토 이노우에 기무라 하야시 사이토 시미즈 야마구치 모리\n      이케다 하시모토 아베 이시카와 오가와 마에다 후지타 오카다 곤도 무라카미 엔도 아오키 사카모토 니시무라 후쿠다 오타 미우라 후지이 오카모토 마쓰다\n      나카지마 나카가와 하라다 오노 다무라 다케우치 가네코 와다 나카노 이시이 우에다 모리타 하라 시바타 사카이 구도 요코야마 미야자키 미야모토 오시마",
+    "reason": "foreign name generator components; original spelling preserved"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 64,
+    "text": "즈웨이 위안 하오 청 쥔 이팅 원제 자하오 웨이룬 쯔캉 청위 보원 유싱 옌팅 즈하오 궈화 젠밍 톈위 자오위 쥔제 보쉬안 이항 핀하오 웨이제 성허 둥린 자웨이 쿤이",
+    "reason": "foreign name generator components; original spelling preserved"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 65,
+    "text": "린 천 황 장 리우 우 차이 양 왕 셰 궈 쩡 쑤 저우 뤄 쉬 정 훙 쩡 랴오 판 펑 뤼 쑹 리 주 예",
+    "reason": "foreign name generator components; original spelling preserved"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 73,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 106,
+    "text": " 주니어",
+    "reason": "foreign name generation order and saved spelling preserved"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 130,
+    "text": "일본",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 131,
+    "text": "일본",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 132,
+    "text": "일본",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/foreign.ts",
+    "line": 143,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/foreigntalks.ts",
+    "line": 93,
+    "text": "수락할 듯",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/foreigntalks.ts",
+    "line": 93,
+    "text": "역제안 예상",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/foreigntalks.ts",
+    "line": 93,
+    "text": "결렬 위험",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/foreigntalks.ts",
+    "line": 96,
+    "text": "수락할 듯",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/foreigntalks.ts",
+    "line": 96,
+    "text": "역제안 예상",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/foreigntalks.ts",
+    "line": 96,
+    "text": "결렬 위험",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/gamedetail.ts",
+    "line": 14,
+    "text": "세이브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/gamedetail.ts",
+    "line": 92,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/gamedetail.ts",
+    "line": 92,
+    "text": "패",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/injuries.ts",
+    "line": 253,
+    "text": "1루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/injuries.ts",
+    "line": 253,
+    "text": "2루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/injuries.ts",
+    "line": 253,
+    "text": "3루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/injuries.ts",
+    "line": 270,
+    "text": "예상 기간",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/injuries.ts",
+    "line": 270,
+    "text": "복귀 예정",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/international.ts",
+    "line": 143,
+    "text": "금메달",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/international.ts",
+    "line": 143,
+    "text": "우승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/interviews.ts",
+    "line": 56,
+    "text": "차분한 노력파",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/interviews.ts",
+    "line": 57,
+    "text": "승부욕 강한 도전자",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/interviews.ts",
+    "line": 58,
+    "text": "밝은 분위기 메이커",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/interviews.ts",
+    "line": 59,
+    "text": "분석을 즐기는 연구형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/interviews.ts",
+    "line": 60,
+    "text": "책임감 강한 리더",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/interviews.ts",
+    "line": 61,
+    "text": "말보다 행동하는 실천형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/interviews.ts",
+    "line": 62,
+    "text": "꾸준함을 믿는 성실형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/interviews.ts",
+    "line": 63,
+    "text": "큰 무대를 즐기는 대담형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/interviews.ts",
+    "line": 70,
+    "text": "분석을 즐기는 연구형",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/josa.ts",
+    "line": 20,
+    "text": "으로",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/league/josa.ts",
+    "line": 20,
+    "text": "로",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/league/josa.ts",
+    "line": 21,
+    "text": "이",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/league/josa.ts",
+    "line": 21,
+    "text": "가",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/league/josa.ts",
+    "line": 22,
+    "text": "을",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/league/josa.ts",
+    "line": 22,
+    "text": "를",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/league/josa.ts",
+    "line": 23,
+    "text": "과",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/league/josa.ts",
+    "line": 23,
+    "text": "와",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/league/josa.ts",
+    "line": 24,
+    "text": "은",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/league/josa.ts",
+    "line": 24,
+    "text": "는",
+    "reason": "Korean morphology or name-generation data; original retained"
+  },
+  {
+    "source": "src/league/legacy.ts",
+    "line": 91,
+    "text": "신인왕",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/legacy.ts",
+    "line": 91,
+    "text": "골든글러브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/legacy.ts",
+    "line": 115,
+    "text": "그 밖",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/legacy.ts",
+    "line": 126,
+    "text": "그 밖",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/legacy.ts",
+    "line": 126,
+    "text": "그 밖",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/legacy.ts",
+    "line": 131,
+    "text": "우승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/legacy.ts",
+    "line": 131,
+    "text": "금메달",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/legacy.ts",
+    "line": 132,
+    "text": "우승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/legacy.ts",
+    "line": 132,
+    "text": "금메달",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/life.ts",
+    "line": 256,
+    "text": "월 ",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/life.ts",
+    "line": 427,
+    "text": "월 ",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/manager.ts",
+    "line": 30,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/manager.ts",
+    "line": 30,
+    "text": "양",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/manager.ts",
+    "line": 90,
+    "text": "양",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/manager.ts",
+    "line": 91,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/manager.ts",
+    "line": 311,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/manager.ts",
+    "line": 378,
+    "text": "원 포인트",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/manager.ts",
+    "line": 406,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/manager.ts",
+    "line": 491,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/milestones.ts",
+    "line": 23,
+    "text": "우승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/movenews.ts",
+    "line": 44,
+    "text": "1루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/movenews.ts",
+    "line": 44,
+    "text": "2루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/movenews.ts",
+    "line": 44,
+    "text": "3루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/national.ts",
+    "line": 24,
+    "text": "1루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/national.ts",
+    "line": 24,
+    "text": "2루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/national.ts",
+    "line": 24,
+    "text": "3루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/national.ts",
+    "line": 263,
+    "text": "금메달",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 63,
+    "text": "차분한 노력파",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 64,
+    "text": "승부욕 강한 도전자",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 65,
+    "text": "밝은 분위기 메이커",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 66,
+    "text": "분석을 즐기는 연구형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 67,
+    "text": "책임감 강한 리더",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 68,
+    "text": "말보다 행동하는 실천형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 69,
+    "text": "꾸준함을 믿는 성실형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 70,
+    "text": "큰 무대를 즐기는 대담형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 116,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 116,
+    "text": "패",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 205,
+    "text": "안타",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 206,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 207,
+    "text": "세이브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 365,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 365,
+    "text": "패",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/news.ts",
+    "line": 365,
+    "text": "세이브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/offseason.ts",
+    "line": 235,
+    "text": "신인왕",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/offseason.ts",
+    "line": 235,
+    "text": "골든글러브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/offseason.ts",
+    "line": 262,
+    "text": "높음",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/offseason.ts",
+    "line": 262,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/offseason.ts",
+    "line": 262,
+    "text": "낮음",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/pitches.ts",
+    "line": 46,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/pitches.ts",
+    "line": 47,
+    "text": "일본",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/players.ts",
+    "line": 104,
+    "text": "유틸리티",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/players.ts",
+    "line": 166,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/players.ts",
+    "line": 166,
+    "text": "우",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/players.ts",
+    "line": 166,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/players.ts",
+    "line": 166,
+    "text": "양",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/players.ts",
+    "line": 166,
+    "text": "우",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/players.ts",
+    "line": 178,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/players.ts",
+    "line": 178,
+    "text": "우",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/players.ts",
+    "line": 182,
+    "text": "유틸리티",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/players.ts",
+    "line": 203,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/players.ts",
+    "line": 204,
+    "text": "즉전감",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/playtext.ts",
+    "line": 45,
+    "text": "땅볼",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/postseason.ts",
+    "line": 338,
+    "text": "1위",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/postseason.ts",
+    "line": 368,
+    "text": "포스트시즌 진출 실패",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/postseason.ts",
+    "line": 391,
+    "text": "포스트시즌 진출 실패",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/poststats.ts",
+    "line": 24,
+    "text": "우승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/poststats.ts",
+    "line": 53,
+    "text": "우승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/poststats.ts",
+    "line": 81,
+    "text": "안타",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/poststats.ts",
+    "line": 86,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/poststats.ts",
+    "line": 87,
+    "text": "세이브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/reports.ts",
+    "line": 27,
+    "text": "높음",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/reports.ts",
+    "line": 27,
+    "text": "보통",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/reports.ts",
+    "line": 27,
+    "text": "낮음",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/reports.ts",
+    "line": 44,
+    "text": "낮음",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/reports.ts",
+    "line": 44,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/reports.ts",
+    "line": 44,
+    "text": "높음",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/reports.ts",
+    "line": 49,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/reports.ts",
+    "line": 50,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/reports.ts",
+    "line": 98,
+    "text": "높음",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/reports.ts",
+    "line": 98,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/reports.ts",
+    "line": 98,
+    "text": "낮음",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/reports.ts",
+    "line": 176,
+    "text": "낮음",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/rival.ts",
+    "line": 183,
+    "text": "독립구단",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/rival.ts",
+    "line": 183,
+    "text": "해외독립 복귀",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/rival.ts",
+    "line": 183,
+    "text": "마이너 복귀",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/rival.ts",
+    "line": 183,
+    "text": "대졸",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/scouting.ts",
+    "line": 139,
+    "text": "미래 등급",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/training.ts",
+    "line": 24,
+    "text": "미국",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/training.ts",
+    "line": 24,
+    "text": "일본",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/training.ts",
+    "line": 43,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/training.ts",
+    "line": 54,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/training.ts",
+    "line": 65,
+    "text": "미국",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/training.ts",
+    "line": 77,
+    "text": "일본",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/traits.ts",
+    "line": 21,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/traits.ts",
+    "line": 47,
+    "text": "차분한 노력파",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/traits.ts",
+    "line": 48,
+    "text": "승부욕 강한 도전자",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/traits.ts",
+    "line": 49,
+    "text": "밝은 분위기 메이커",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/traits.ts",
+    "line": 50,
+    "text": "분석을 즐기는 연구형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/traits.ts",
+    "line": 51,
+    "text": "책임감 강한 리더",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/traits.ts",
+    "line": 52,
+    "text": "말보다 행동하는 실천형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/traits.ts",
+    "line": 53,
+    "text": "꾸준함을 믿는 성실형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/traits.ts",
+    "line": 54,
+    "text": "큰 무대를 즐기는 대담형",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/tuning.ts",
+    "line": 803,
+    "text": "강속구 선발",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/tuning.ts",
+    "line": 804,
+    "text": "파워 불펜",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/tuning.ts",
+    "line": 805,
+    "text": "커맨드형 선발",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/tuning.ts",
+    "line": 806,
+    "text": "장신 커브볼러",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/tuning.ts",
+    "line": 807,
+    "text": "포크볼 불펜",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/tuning.ts",
+    "line": 808,
+    "text": "체인지업 좌완",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/tuning.ts",
+    "line": 820,
+    "text": "장신 커브볼러",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/tuning.ts",
+    "line": 821,
+    "text": "포크볼 불펜",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/tuning.ts",
+    "line": 822,
+    "text": "체인지업 좌완",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/tuning.ts",
+    "line": 823,
+    "text": "땅볼 유도형 선발",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/tuning.ts",
+    "line": 824,
+    "text": "좌완 스페셜리스트",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/tuning.ts",
+    "line": 825,
+    "text": "파워 불펜",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/league/userclub.ts",
+    "line": 139,
+    "text": "구단이 없습니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 29,
+    "text": "1루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 29,
+    "text": "2루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 29,
+    "text": "3루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 79,
+    "text": "세이브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 235,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 236,
+    "text": "세이브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 244,
+    "text": "안타",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 354,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 354,
+    "text": "우",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 370,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 370,
+    "text": "패",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 385,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 385,
+    "text": "패",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 509,
+    "text": "안타",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 512,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 515,
+    "text": "세이브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 521,
+    "text": "안타",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 524,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 526,
+    "text": "세이브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 571,
+    "text": "밝은 분위기 메이커",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 577,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/league/views.ts",
+    "line": 577,
+    "text": "패",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/model/player.ts",
+    "line": 11,
+    "text": "좌",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/model/player.ts",
+    "line": 11,
+    "text": "우",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/model/player.ts",
+    "line": 11,
+    "text": "좌",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/model/player.ts",
+    "line": 11,
+    "text": "우",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/model/player.ts",
+    "line": 11,
+    "text": "양",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/model/player.ts",
+    "line": 11,
+    "text": "좌",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/model/player.ts",
+    "line": 11,
+    "text": "우",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/model/player.ts",
+    "line": 11,
+    "text": "양",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/model/player.ts",
+    "line": 12,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/model/player.ts",
+    "line": 12,
+    "text": "우",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/model/player.ts",
+    "line": 12,
+    "text": "좌",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/model/types.ts",
+    "line": 229,
+    "text": "좌",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/model/types.ts",
+    "line": 229,
+    "text": "우",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/model/types.ts",
+    "line": 230,
+    "text": "좌",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/model/types.ts",
+    "line": 230,
+    "text": "우",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/model/types.ts",
+    "line": 230,
+    "text": "양",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/save/compress.ts",
+    "line": 33,
+    "text": "이 브라우저는 압축된 진행 파일을 열 수 없습니다.",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/story/providers/gemini.ts",
+    "line": 52,
+    "text": "`API 오류 ${res.status}`",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/story/providers/openai.ts",
+    "line": 47,
+    "text": "`API 오류 ${res.status}`",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/ui/Alerts.tsx",
+    "line": 27,
+    "text": "올스타",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 15,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Decision.tsx",
+    "line": 77,
+    "text": "높음",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Decision.tsx",
+    "line": 77,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Decision.tsx",
+    "line": 77,
+    "text": "낮음",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Decision.tsx",
+    "line": 88,
+    "text": "1루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Decision.tsx",
+    "line": 88,
+    "text": "2루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Decision.tsx",
+    "line": 88,
+    "text": "3루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Games.tsx",
+    "line": 36,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Games.tsx",
+    "line": 36,
+    "text": "패",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/History.tsx",
+    "line": 332,
+    "text": "우승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/History.tsx",
+    "line": 332,
+    "text": "금메달",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Leaders.tsx",
+    "line": 47,
+    "text": "올스타",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Leaders.tsx",
+    "line": 176,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Leaders.tsx",
+    "line": 177,
+    "text": "패",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/MyClub.tsx",
+    "line": 212,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/MyClub.tsx",
+    "line": 212,
+    "text": "패",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/MyClub.tsx",
+    "line": 335,
+    "text": "세이브",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Office.tsx",
+    "line": 388,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 26,
+    "text": "1루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 26,
+    "text": "2루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 26,
+    "text": "3루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 733,
+    "text": "우승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 794,
+    "text": "우승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/PlayerSearch.tsx",
+    "line": 24,
+    "text": "1루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/PlayerSearch.tsx",
+    "line": 25,
+    "text": "2루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/PlayerSearch.tsx",
+    "line": 26,
+    "text": "3루수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Recovery.tsx",
+    "line": 147,
+    "text": "알 수 없는 오류",
+    "reason": "Error text: ambiguous developer/player use; original retained"
+  },
+  {
+    "source": "src/ui/Settings.tsx",
+    "line": 27,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Squad.tsx",
+    "line": 77,
+    "text": "투수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Squad.tsx",
+    "line": 102,
+    "text": "투수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Story.tsx",
+    "line": 19,
+    "text": "올스타",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Story.tsx",
+    "line": 22,
+    "text": "올스타",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Story.tsx",
+    "line": 109,
+    "text": "승",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Story.tsx",
+    "line": 109,
+    "text": "패",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/Training.tsx",
+    "line": 47,
+    "text": "투수",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/display.ts",
+    "line": 32,
+    "text": "보통",
+    "reason": "shared Korean identifier / parser token; translate only at display boundary"
+  },
+  {
+    "source": "src/ui/sort.tsx",
+    "line": 16,
+    "text": "1루수",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/ui/sort.tsx",
+    "line": 16,
+    "text": "2루수",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/ui/sort.tsx",
+    "line": 16,
+    "text": "3루수",
+    "reason": "internal identifier / key / type / comparison"
+  },
+  {
+    "source": "src/ui/sort.tsx",
+    "line": 16,
+    "text": "원 포인트",
+    "reason": "internal identifier / key / type / comparison"
+  }
+]

@@ -1,3 +1,4 @@
+import { display as __i18n_display, t as __i18n_t } from '../i18n/index';
 /* The tutorial card (V0.7.5): one lesson at a time above the screen, never in the way of the game. */
 import type { Action } from '../league/actions';
 import type { LeagueState } from '../league/state';
@@ -8,18 +9,14 @@ export function TutorialCard({ league, tab, view, onAct }: { league: LeagueState
   if (!lesson) return null;
   return (
     <aside class="tutorial" aria-labelledby="tutorial-title">
-      <p class="tutorial-kind">튜토리얼 · {lesson.index}번째 안내</p>
-      <h2 id="tutorial-title">{lesson.title}</h2>
-      {lesson.body.map((p, i) => (
-        <p key={i}>{p}</p>
-      ))}
+      <p class="tutorial-kind">{__i18n_t("ui.tutorial.tutorialCard.1d113f33", { index: lesson.index })}</p>
+      <h2 id="tutorial-title">{__i18n_display(lesson.title)}</h2>
+      {__i18n_display(lesson.body.map((p, i) => (
+        <p key={i}>{__i18n_display(p)}</p>
+      )))}
       <div class="row-actions">
-        <button type="button" class="primary" onClick={() => onAct({ kind: 'tutorial', seen: lesson.id })}>
-          알겠어요
-        </button>
-        <button type="button" class="link" onClick={() => onAct({ kind: 'tutorial', off: true })}>
-          튜토리얼 끄기
-        </button>
+        <button type="button" class="primary" onClick={() => onAct({ kind: 'tutorial', seen: lesson.id })}>{__i18n_t("ui.tutorial.tutorialCard.de96f038")}</button>
+        <button type="button" class="link" onClick={() => onAct({ kind: 'tutorial', off: true })}>{__i18n_t("ui.tutorial.tutorialCard.0937d694")}</button>
       </div>
     </aside>
   );

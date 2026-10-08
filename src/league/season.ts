@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The regular season, one game day at a time: registered days, games, injuries and roster moves. */
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
@@ -80,7 +81,7 @@ export function startSeason(s: LeagueState) {
   s.boxes = {};
   s.pbp = {};
   setGoals(s, s.year);
-  if (s.user && s.user.firstTeamYear === s.year) milestone(s, s.year, `${s.year} 1군 첫 시즌 개막`, 'firstTeam');
+  if (s.user && s.user.firstTeamYear === s.year) milestone(s, s.year, __i18n_k("league.season.startSeason.8c583704", { year: s.year }), 'firstTeam');
   // The owner's budget for the season and season tickets (V0.12).
   openBooks(s);
 }

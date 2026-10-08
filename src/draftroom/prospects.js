@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index.js';
 /* Seeded fictional prospects. Public scouting estimates are separate from hidden ability. */
 // Ported from KBO-Draft-Room df4faad src/core/prospects.js. See docs/UPSTREAM.md.
 import DraftCatalog from './catalog.js';
@@ -50,7 +51,7 @@ function shuffle(xs, r) {
   return out;
 }
 const normal = (r) => (r() + r() + r() - 1.5) / 1.5;
-const SCHOOL_STYLES = ['투수 육성', '수비 기본기', '타격 중심', '기동력 야구'];
+const SCHOOL_STYLES = [__i18n_k("draftroom.prospects.sCHOOL_STYLES.d7c7ce4c"), __i18n_k("draftroom.prospects.sCHOOL_STYLES.eee8c1ac"), __i18n_k("draftroom.prospects.sCHOOL_STYLES.8701ac09"), __i18n_k("draftroom.prospects.sCHOOL_STYLES.e5f2e5da")];
 const PERSONALITIES = [
   '차분한 노력파',
   '승부욕 강한 도전자',
@@ -66,52 +67,52 @@ const PERSONALITIES = [
 // prettier-ignore
 const ARCHETYPES = {
   SP: [
-    ['강속구 선발', '높은 타점의 빠른 공으로 헛스윙을 유도한다.', '긴 이닝에서 릴리스 포인트가 흔들린다.', '구속 유지'],
-    ['커맨드형 선발', '스트라이크 선점과 경기 운영이 안정적이다.', '타순이 한 바퀴 돈 뒤 결정구가 필요하다.', '변화구 완성'],
-    ['체인지업 좌완', '좌우 타자 모두에게 체인지업을 던질 수 있다.', '빠른 공의 평균 구속을 높여야 한다.', '체력 보강'],
-    ['땅볼 유도형 선발', '투심의 움직임과 낮은 코스 공략이 좋다.', '주자가 있을 때 투구 템포가 빨라진다.', '주자 관리'],
-    ['장신 커브볼러', '낙차 큰 커브와 투구 각도가 매력적이다.', '상하체 타이밍을 일정하게 맞춰야 한다.', '폼 안정화'],
+    ['강속구 선발', __i18n_k("draftroom.prospects.aRCHETYPES.sP.0d7ec4e2"), __i18n_k("draftroom.prospects.aRCHETYPES.sP.3eb6d6fa"), __i18n_k("draftroom.prospects.aRCHETYPES.sP.ae868f9e")],
+    ['커맨드형 선발', __i18n_k("draftroom.prospects.aRCHETYPES.sP.5e4f6741"), __i18n_k("draftroom.prospects.aRCHETYPES.sP.328b6bba"), __i18n_k("draftroom.prospects.aRCHETYPES.sP.9822c047")],
+    ['체인지업 좌완', __i18n_k("draftroom.prospects.aRCHETYPES.sP.3975b466"), __i18n_k("draftroom.prospects.aRCHETYPES.sP.fc33d47b"), __i18n_k("draftroom.prospects.aRCHETYPES.sP.99d871d2")],
+    ['땅볼 유도형 선발', __i18n_k("draftroom.prospects.aRCHETYPES.sP.538f3c36"), __i18n_k("draftroom.prospects.aRCHETYPES.sP.fd835365"), __i18n_k("draftroom.prospects.aRCHETYPES.sP.2bd4789c")],
+    ['장신 커브볼러', __i18n_k("draftroom.prospects.aRCHETYPES.sP.66e46cbf"), __i18n_k("draftroom.prospects.aRCHETYPES.sP.fd9ab91c"), __i18n_k("draftroom.prospects.aRCHETYPES.sP.010b856d")],
   ],
   RP: [
-    ['파워 불펜', '짧은 이닝에서 강한 빠른 공과 슬라이더가 돋보인다.', '연투 시 회복 루틴을 정립해야 한다.', '회복 루틴'],
-    ['제구형 불펜', '과감한 몸쪽 승부로 유리한 카운트를 만든다.', '몰린 실투가 장타로 이어지는 편이다.', '실투 관리'],
-    ['좌완 스페셜리스트', '좌타자 바깥쪽으로 달아나는 공이 위력적이다.', '우타자에게 쓸 구종이 하나 더 필요하다.', '구종 확장'],
-    ['낮은 팔각도 불펜', '낯선 투구 각도로 타자의 타이밍을 뺏는다.', '좌우 타자 상대 편차를 줄여야 한다.', '상대별 대응'],
-    ['포크볼 불펜', '결정구의 낙차와 헛스윙 유도 능력이 좋다.', '불리한 카운트에서도 포크볼에 의존한다.', '빠른 공 제구'],
+    ['파워 불펜', __i18n_k("draftroom.prospects.aRCHETYPES.rP.8e133215"), __i18n_k("draftroom.prospects.aRCHETYPES.rP.6e958584"), __i18n_k("draftroom.prospects.aRCHETYPES.rP.9061348f")],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.rP.e2eee185"), __i18n_k("draftroom.prospects.aRCHETYPES.rP.45f1cdc8"), __i18n_k("draftroom.prospects.aRCHETYPES.rP.6e3bc637"), __i18n_k("draftroom.prospects.aRCHETYPES.rP.7a87b564")],
+    ['좌완 스페셜리스트', __i18n_k("draftroom.prospects.aRCHETYPES.rP.52c925f7"), __i18n_k("draftroom.prospects.aRCHETYPES.rP.d0c7cbaa"), __i18n_k("draftroom.prospects.aRCHETYPES.rP.c618b402")],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.rP.58abc028"), __i18n_k("draftroom.prospects.aRCHETYPES.rP.7d1c397e"), __i18n_k("draftroom.prospects.aRCHETYPES.rP.200bb2d3"), __i18n_k("draftroom.prospects.aRCHETYPES.rP.906090f0")],
+    ['포크볼 불펜', __i18n_k("draftroom.prospects.aRCHETYPES.rP.f6bb28d4"), __i18n_k("draftroom.prospects.aRCHETYPES.rP.e3679c57"), __i18n_k("draftroom.prospects.aRCHETYPES.rP.4ad6fbe8")],
   ],
   C: [
-    ['수비형 포수', '블로킹과 송구 동작이 간결하다.', '빠른 공에 밀리는 타격을 보완해야 한다.', '배트 스피드'],
-    ['공격형 포수', '강한 타구와 코스별 대응력이 돋보인다.', '포구와 후반 체력 관리가 과제다.', '포구 안정'],
-    ['균형형 포수', '기본기와 선구안이 균형 있게 갖춰졌다.', '한 가지 확실한 주전 경쟁력이 필요하다.', '체력 보강'],
-    ['강견 포수', '빠른 송구와 주자 견제 능력이 좋다.', '변화구 블로킹 때 자세가 높아진다.', '블로킹'],
-    ['리더형 포수', '투수와의 소통과 경기 흐름 읽기가 좋다.', '장타를 늘리려면 하체 힘이 필요하다.', '타구 질'],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.c.25565967"), __i18n_k("draftroom.prospects.aRCHETYPES.c.dbc3521b"), __i18n_k("draftroom.prospects.aRCHETYPES.c.91499167"), __i18n_k("draftroom.prospects.aRCHETYPES.c.29c536f6")],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.c.8915540f"), __i18n_k("draftroom.prospects.aRCHETYPES.c.53ab971a"), __i18n_k("draftroom.prospects.aRCHETYPES.c.0272cf6f"), __i18n_k("draftroom.prospects.aRCHETYPES.c.88902d3e")],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.c.a9b195e2"), __i18n_k("draftroom.prospects.aRCHETYPES.c.68df0eb1"), __i18n_k("draftroom.prospects.aRCHETYPES.c.aafff346"), __i18n_k("draftroom.prospects.aRCHETYPES.c.99d871d2")],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.c.27509b50"), __i18n_k("draftroom.prospects.aRCHETYPES.c.89647e24"), __i18n_k("draftroom.prospects.aRCHETYPES.c.26f5aef0"), __i18n_k("draftroom.prospects.aRCHETYPES.c.fe0dea7f")],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.c.fcc08f58"), __i18n_k("draftroom.prospects.aRCHETYPES.c.10201afb"), __i18n_k("draftroom.prospects.aRCHETYPES.c.77f5dc3e"), __i18n_k("draftroom.prospects.aRCHETYPES.c.0ed3e05c")],
   ],
   IF: [
-    ['공수형 내야수', '타구 판단과 송구 정확성이 안정적이다.', '강한 공을 당겨 치는 힘이 부족하다.', '타구 질'],
-    ['거포 코너 내야수', '실투를 장타로 연결하는 힘이 있다.', '변화구 대처와 수비 범위가 과제다.', '변화구 대응'],
-    ['기동형 유격수', '첫발과 넓은 수비 범위가 돋보인다.', '프로 일정에 버틸 체력을 늘려야 한다.', '체력 보강'],
-    ['선구안형 내야수', '유인구를 참아내며 긴 승부를 만든다.', '빠른 타구에 대한 수비 반응을 보완해야 한다.', '수비 반응'],
-    ['멀티 내야수', '여러 내야 위치에서 기본기를 보여준다.', '주 포지션에서 확실한 무기가 필요하다.', '주 포지션 정착'],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.iF.2a1f0a37"), __i18n_k("draftroom.prospects.aRCHETYPES.iF.828323ea"), __i18n_k("draftroom.prospects.aRCHETYPES.iF.f4e8d7e8"), __i18n_k("draftroom.prospects.aRCHETYPES.iF.0ed3e05c")],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.iF.dd19b9fe"), __i18n_k("draftroom.prospects.aRCHETYPES.iF.bfc6c610"), __i18n_k("draftroom.prospects.aRCHETYPES.iF.ef05f1bb"), __i18n_k("draftroom.prospects.aRCHETYPES.iF.db055d95")],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.iF.9b3672ee"), __i18n_k("draftroom.prospects.aRCHETYPES.iF.c1a4a126"), __i18n_k("draftroom.prospects.aRCHETYPES.iF.0b06c06b"), __i18n_k("draftroom.prospects.aRCHETYPES.iF.99d871d2")],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.iF.71995077"), __i18n_k("draftroom.prospects.aRCHETYPES.iF.e85161c1"), __i18n_k("draftroom.prospects.aRCHETYPES.iF.248cd28c"), __i18n_k("draftroom.prospects.aRCHETYPES.iF.de54b296")],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.iF.28031bbe"), __i18n_k("draftroom.prospects.aRCHETYPES.iF.9f71b1e7"), __i18n_k("draftroom.prospects.aRCHETYPES.iF.06ce04f6"), __i18n_k("draftroom.prospects.aRCHETYPES.iF.b188da95")],
   ],
   OF: [
-    ['중견수 유망주', '빠른 첫발과 넓은 수비 범위를 갖췄다.', '타석에서 공격 범위가 넓은 편이다.', '선구안'],
-    ['장타형 외야수', '높은 타구 속도와 담장을 넘길 힘이 있다.', '삼진을 줄이고 코너 수비를 다져야 한다.', '변화구 대응'],
-    ['콘택트 외야수', '배트 컨트롤과 반대 방향 타격이 좋다.', '장타를 늘리기 위한 근력이 부족하다.', '타구 질'],
-    ['강견 외야수', '정확한 장거리 송구로 주자를 묶는다.', '낮게 떨어지는 공에 배트가 따라간다.', '선구안'],
-    ['기동형 외야수', '주루 판단과 번트, 작전 수행이 좋다.', '강한 타구를 꾸준히 만드는 것이 과제다.', '타격 중심 이동'],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.oF.2ac63470"), __i18n_k("draftroom.prospects.aRCHETYPES.oF.1603f7f3"), __i18n_k("draftroom.prospects.aRCHETYPES.oF.f8c24d09"), __i18n_k("draftroom.prospects.aRCHETYPES.oF.ac886d4a")],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.oF.3f0cab37"), __i18n_k("draftroom.prospects.aRCHETYPES.oF.fbb17e4d"), __i18n_k("draftroom.prospects.aRCHETYPES.oF.2528444a"), __i18n_k("draftroom.prospects.aRCHETYPES.oF.db055d95")],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.oF.232cd720"), __i18n_k("draftroom.prospects.aRCHETYPES.oF.ffeae834"), __i18n_k("draftroom.prospects.aRCHETYPES.oF.eedfcd0d"), __i18n_k("draftroom.prospects.aRCHETYPES.oF.0ed3e05c")],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.oF.cd5d9d97"), __i18n_k("draftroom.prospects.aRCHETYPES.oF.a4e8ed93"), __i18n_k("draftroom.prospects.aRCHETYPES.oF.0cc170fd"), __i18n_k("draftroom.prospects.aRCHETYPES.oF.ac886d4a")],
+    [__i18n_k("draftroom.prospects.aRCHETYPES.oF.989c91c4"), __i18n_k("draftroom.prospects.aRCHETYPES.oF.7d1edea8"), __i18n_k("draftroom.prospects.aRCHETYPES.oF.816aac20"), __i18n_k("draftroom.prospects.aRCHETYPES.oF.11465645")],
   ],
 };
 // Amateur tournaments. Descriptive only: results come from their own streams and never change players.
-const HS_NATIONAL = '다이아몬드 데일리배 전국고교야구대회',
-  COLLEGE_NATIONAL = '퓨처 베이스볼배 대학야구 왕중왕전',
-  JUNIOR_COLLEGE_NATIONAL = '퓨처 베이스볼배 전문대학 야구대회',
+const HS_NATIONAL = __i18n_k("draftroom.prospects.hS_NATIONAL.5b4476fa"),
+  COLLEGE_NATIONAL = __i18n_k("draftroom.prospects.cOLLEGE_NATIONAL.44c5af5b"),
+  JUNIOR_COLLEGE_NATIONAL = __i18n_k("draftroom.prospects.jUNIOR_COLLEGE_NATIONAL.4de9ca9e"),
   NATIONAL_QUALIFIERS = 4; // top four of each regional/conference event go to the national event
 const COLLEGE_CONFERENCES = [
-  ['수도권', ['서울', '인천', '경기·강원']],
-  ['충청·호남권', ['대전·충청·전북', '광주·전남·제주']],
-  ['영남권', ['대구·경북', '부산·울산', '경남']],
+  [__i18n_k("draftroom.prospects.cOLLEGE_CONFERENCES.b3590bfe"), [__i18n_k("draftroom.prospects.cOLLEGE_CONFERENCES.ea9858ee"), __i18n_k("draftroom.prospects.cOLLEGE_CONFERENCES.41402f7e"), '경기·강원']],
+  [__i18n_k("draftroom.prospects.cOLLEGE_CONFERENCES.e1c050ad"), ['대전·충청·전북', '광주·전남·제주']],
+  [__i18n_k("draftroom.prospects.cOLLEGE_CONFERENCES.a98d86de"), ['대구·경북', '부산·울산', __i18n_k("draftroom.prospects.cOLLEGE_CONFERENCES.7aeadd5c")]],
 ];
-const placeLabel = (i) => (i === 0 ? '우승' : i === 1 ? '준우승' : i < 4 ? '4강' : i < 8 ? '8강' : '예선');
+const placeLabel = (i) => (i === 0 ? '우승' : i === 1 ? __i18n_k("draftroom.prospects.placeLabel.3660fdbb") : i < 4 ? __i18n_k("draftroom.prospects.placeLabel.82c2c27f") : i < 8 ? __i18n_k("draftroom.prospects.placeLabel.bea9cec6") : __i18n_k("draftroom.prospects.placeLabel.efb15c9f"));
 const strength = (s) => Bio.TIERS[s.tier].team;
 
 /** Single-elimination bracket; the strongest entrants get byes up to the next power of two. */
@@ -136,14 +137,14 @@ function bracket(entrants, r) {
   }
   return reached; // id -> best round reached (1 = champion, 2 = final, 4 = semi-final ...)
 }
-const roundLabel = (n) => (n === 1 ? '우승' : n === 2 ? '준우승' : `${n}강`);
+const roundLabel = (n) => (n === 1 ? '우승' : n === 2 ? __i18n_k("draftroom.prospects.roundLabel.3660fdbb") : __i18n_k("draftroom.prospects.roundLabel.0e854629", { n: n }));
 
 function schoolHonors(seed) {
   const map = {};
   // Regional events. The seed key keeps its original label so the rankings (and players) stay the same.
   const regional = REGIONS.map((region) => ({
-    key: region + ' 고교대회',
-    label: region + ' 권역 주말리그',
+    key: __i18n_k("draftroom.prospects.regional.key.6e101381", { region: region }),
+    label: __i18n_k("draftroom.prospects.regional.label.66d071e5", { region: region }),
     list: Cat.institutions.filter((x) => ['high-school', 'hs-club'].includes(x.kind) && x.region === region),
   }));
   const hsQualifiers = [];
@@ -157,11 +158,11 @@ function schoolHonors(seed) {
   }
   // College league: one ranking over all colleges (original stream), read per conference.
   const colleges = Cat.institutions.filter((x) => x.kind === 'college');
-  const r = rng(seed + '-school-event-전국 대학대회');
+  const r = rng(__i18n_k("draftroom.prospects.schoolHonors.r.2147c880", { seed: seed }));
   const collegeRank = colleges.map((s) => ({ s, score: Bio.TIERS[s.tier].team * 60 + r() * 55 })).sort((a, b) => b.score - a.score).map((x) => x.s);
   const collegeQualifiers = [];
   for (const [name, regions] of COLLEGE_CONFERENCES) {
-    const label = `대학리그 ${name}`;
+    const label = __i18n_k("draftroom.prospects.schoolHonors.label.65d1967c", { name: name });
     collegeRank.filter((s) => regions.includes(s.region)).forEach((s, i) => {
       map[s.id] = { event: label, result: placeLabel(i), award: i < 2 ? `${label} ${placeLabel(i)}` : null, national: null };
       if (i < NATIONAL_QUALIFIERS) collegeQualifiers.push(s);
@@ -169,13 +170,13 @@ function schoolHonors(seed) {
   }
   // Two-year colleges: one league, then the top four meet in their own tournament.
   const juniors = Cat.institutions.filter((x) => x.kind === 'college2');
-  const rj = rng(seed + '-school-event-2년제');
+  const rj = rng(__i18n_k("draftroom.prospects.schoolHonors.rj.91b38c0c", { seed: seed }));
   const juniorQualifiers = [];
   juniors
     .map((s) => ({ s, score: Bio.TIERS[s.tier].team * 60 + rj() * 55 }))
     .sort((a, b) => b.score - a.score)
     .forEach(({ s }, i) => {
-      map[s.id] = { event: '전문대학 리그', result: `${i + 1}위`, award: i === 0 ? '전문대학 리그 1위' : null, national: null };
+      map[s.id] = { event: __i18n_k("draftroom.prospects.schoolHonors.event.bd2e96fc"), result: __i18n_k("draftroom.prospects.schoolHonors.result.290bdca7", { value: i + 1 }), award: i === 0 ? __i18n_k("draftroom.prospects.schoolHonors.award.878c136f") : null, national: null };
       if (i < NATIONAL_QUALIFIERS) juniorQualifiers.push(s);
     });
   // National events from the qualifiers.
@@ -272,12 +273,12 @@ function generatePool(seed) {
     const height = type === 4 && role === 'SP' ? 190 + Math.floor(r() * 7) : 174 + Math.floor(r() * 19),
       weight = round(68 + (height - 174) * 0.6 + r() * 15 + (type === 1 && !pitcher ? 7 : 0));
     const awards = [];
-    if (high && ready >= 45 && r() < 0.35) awards.push('U-18 대표팀');
-    if (['대졸', '대학 얼리', '2년제'].includes(pathway) && ready >= 45 && r() < 0.25) awards.push('대학 대표팀');
+    if (high && ready >= 45 && r() < 0.35) awards.push(__i18n_k("draftroom.prospects.generatePool.67a28002"));
+    if (['대졸', '대학 얼리', '2년제'].includes(pathway) && ready >= 45 && r() < 0.25) awards.push(__i18n_k("draftroom.prospects.generatePool.f45e2ce3"));
     // Shared school results: school reputation affects team success, not a direct AVG/ERA multiplier.
     if (schoolTournament?.award) awards.push(schoolTournament.award);
     if (schoolTournament?.national?.award) awards.push(schoolTournament.national.award);
-    if (ready >= 45 && r() < 0.25) awards.push(pitcher ? '소속 대회 우수투수상' : '소속 대회 타격상');
+    if (ready >= 45 && r() < 0.25) awards.push(pitcher ? __i18n_k("draftroom.prospects.generatePool.41960e75") : __i18n_k("draftroom.prospects.generatePool.411ea424"));
     const record = amateurRecord(
       {
         role,
@@ -326,7 +327,7 @@ function generatePool(seed) {
       personality: pick(PERSONALITIES, r),
       favoriteTeam: favoriteTeam(bio.highSchoolRegion, r),
       lateDevelopment: talent.growthCurve === 'late',
-      confidence: record.games >= 25 ? '보통' : '관찰 표본 적음',
+      confidence: record.games >= 25 ? '보통' : __i18n_k("draftroom.prospects.generatePool.confidence.24373bd2"),
     });
   }
   // Scouting notes come from the public grades on a text-only stream, after all players are generated.

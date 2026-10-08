@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* KBO postseason (RULES.md §1): wild card (4th vs 5th, 4th starts one win up and advances on a tie),
    semi-playoff (3rd, best of five), playoff (2nd, best of five), Korean Series (1st, best of seven).
    Postseason games play until decided (game assumption; stats stay out of season totals — since 1.4.0 they are kept
@@ -187,7 +188,7 @@ export function playPostseason(s: LeagueState) {
   while (postseasonDay(s));
 }
 
-const ROUND_NAME: Record<SeriesResult['round'], string> = { wildcard: '와일드카드 결정전', semipo: '준플레이오프', po: '플레이오프', ks: '한국시리즈' };
+const ROUND_NAME: Record<SeriesResult['round'], string> = { wildcard: __i18n_k("league.postseason.rOUND_NAME.wildcard.82702aa7"), semipo: __i18n_k("league.postseason.rOUND_NAME.semipo.42e1bde5"), po: __i18n_k("league.postseason.rOUND_NAME.po.4651993c"), ks: __i18n_k("league.postseason.rOUND_NAME.ks.3c8e7785") };
 
 /** Our club's series, won or lost: an article and an alert. */
 function seriesNews(s: LeagueState, ended: LiveSeries[]) {
@@ -201,13 +202,13 @@ function seriesNews(s: LeagueState, ended: LiveSeries[]) {
     const opp = s.teams.find((t) => t.id === (x.high === u.teamId ? x.low : x.high))!.short;
     const [mine, theirs] = x.high === u.teamId ? [x.hw, x.lw] : [x.lw, x.hw];
     const date = x.games.at(-1)?.date ?? x.date;
-    const title = won ? (x.round === 'ks' ? `${me}, 한국시리즈 우승!` : `${me}, ${opp} 꺾고 ${ROUND_NAME[x.round]} 통과`) : `${me}, ${ROUND_NAME[x.round]}에서 ${opp}에 패해 탈락`;
+    const title = won ? (x.round === 'ks' ? __i18n_k("league.postseason.seriesNews.title.b6fdb4de", { me: me }) : __i18n_k("league.postseason.seriesNews.title.139f69be", { me: me, opp: opp, value: ROUND_NAME[x.round] })) : __i18n_k("league.postseason.seriesNews.title.0fa2ef1e", { me: me, value: ROUND_NAME[x.round], opp: opp });
     addNews(s, {
       id: `series-${s.year}-${x.round}-${u.teamId}`,
       date,
       kind: 'game',
       title,
-      body: `${won ? iga(me) : eunneun(me)} ${ROUND_NAME[x.round]}에서 ${wagwa(opp)} 맞붙어 ${mine}승 ${theirs}패로 ${won ? (x.round === 'ks' ? '정상에 올랐다.' : '다음 무대로 간다.') : '시즌을 마쳤다.'}`,
+      body: __i18n_k("league.postseason.seriesNews.body.25f549e9", { value: won ? iga(me) : eunneun(me), value2: ROUND_NAME[x.round], opp: wagwa(opp), mine: mine, theirs: theirs, value3: won ? (x.round === 'ks' ? __i18n_k("league.postseason.seriesNews.body.43c2d684") : __i18n_k("league.postseason.seriesNews.body.c371e40b")) : __i18n_k("league.postseason.seriesNews.body.797dcb00") }),
       quotes: [],
       facts: { round: ROUND_NAME[x.round], club: me, opponent: opp, wins: mine, losses: theirs },
       players: [],
@@ -300,7 +301,7 @@ export function bracketView(s: LeagueState): BracketView | null {
     if (!id || !b) return { teamId: id ?? null, label: fallback };
     const i = b.seeds.indexOf(id);
     if (i < 0) return { teamId: id, label: fallback };
-    return { teamId: id, label: b.mode === 'one' ? `${i + 1}위` : `${i < 3 ? '드림' : '매직'} ${(i % 3) + 1}위` };
+    return { teamId: id, label: b.mode === 'one' ? __i18n_k("league.postseason.seedLabel.label.290bdca7", { value: i + 1 }) : __i18n_k("league.postseason.seedLabel.label.04d70338", { value: i < 3 ? __i18n_k("league.postseason.seedLabel.label.c2c3ed38") : __i18n_k("league.postseason.seedLabel.label.c01e9ae7"), value2: (i % 3) + 1 }) };
   };
   const marks = (high: TeamId, games: SeriesResult['games']) =>
     games.map((g) => {
@@ -332,10 +333,10 @@ export function bracketView(s: LeagueState): BracketView | null {
     if (!series.length && b) {
       const [s0, s1, s2, s3, s4, s5] = b.seeds;
       if (b.mode === 'one') {
-        if (round === 'wildcard') series = [waiting(round, seedLabel(s3, '4위'), seedLabel(s4, '5위'), 2)];
-        if (round === 'semipo') series = [waiting(round, seedLabel(s2, '3위'), winnerOf('wildcard') ? seedLabel(winnerOf('wildcard'), '') : { teamId: null, label: '와일드카드 승자' }, 3)];
-        if (round === 'po') series = [waiting(round, seedLabel(s1, '2위'), winnerOf('semipo') ? seedLabel(winnerOf('semipo'), '') : { teamId: null, label: '준PO 승자' }, 3)];
-        if (round === 'ks') series = [waiting(round, seedLabel(s0, '1위'), winnerOf('po') ? seedLabel(winnerOf('po'), '') : { teamId: null, label: 'PO 승자' }, 4)];
+        if (round === 'wildcard') series = [waiting(round, seedLabel(s3, __i18n_k("league.postseason.bracketView.49a435d8")), seedLabel(s4, __i18n_k("league.postseason.bracketView.c8c0358f")), 2)];
+        if (round === 'semipo') series = [waiting(round, seedLabel(s2, __i18n_k("league.postseason.bracketView.7948ecf9")), winnerOf('wildcard') ? seedLabel(winnerOf('wildcard'), '') : { teamId: null, label: __i18n_k("league.postseason.bracketView.label.cb698be3") }, 3)];
+        if (round === 'po') series = [waiting(round, seedLabel(s1, __i18n_k("league.postseason.bracketView.442411ad")), winnerOf('semipo') ? seedLabel(winnerOf('semipo'), '') : { teamId: null, label: __i18n_k("league.postseason.bracketView.label.de953763") }, 3)];
+        if (round === 'ks') series = [waiting(round, seedLabel(s0, '1위'), winnerOf('po') ? seedLabel(winnerOf('po'), '') : { teamId: null, label: __i18n_k("league.postseason.bracketView.label.05a7144b") }, 4)];
       } else {
         // Two leagues: the spots are played (or not) at the start; then each league winner's playoff, then the final.
         if (round === 'po') {
@@ -343,11 +344,11 @@ export function bracketView(s: LeagueState): BracketView | null {
             const w = winnerOf('semipo', (x) => x.high === third && x.low === second);
             return w ? seedLabel(w, '') : seedLabel(second, '');
           };
-          series = [waiting(round, seedLabel(s0, '드림 1위'), spot(s2, s4), 4), waiting(round, seedLabel(s3, '매직 1위'), spot(s5, s1), 4)];
+          series = [waiting(round, seedLabel(s0, __i18n_k("league.postseason.bracketView.d77a90d7")), spot(s2, s4), 4), waiting(round, seedLabel(s3, __i18n_k("league.postseason.bracketView.846e9986")), spot(s5, s1), 4)];
         }
         if (round === 'ks') {
           const po = done.filter((x) => x.round === 'po').map((x) => x.winner);
-          series = [waiting(round, po[0] ? seedLabel(po[0], '') : { teamId: null, label: 'PO 승자' }, po[1] ? seedLabel(po[1], '') : { teamId: null, label: 'PO 승자' }, 4)];
+          series = [waiting(round, po[0] ? seedLabel(po[0], '') : { teamId: null, label: __i18n_k("league.postseason.bracketView.label.05a7144b") }, po[1] ? seedLabel(po[1], '') : { teamId: null, label: __i18n_k("league.postseason.bracketView.label.05a7144b") }, 4)];
         }
       }
     }
@@ -369,13 +370,13 @@ function oursIn(s: LeagueState, rounds: BracketRound[], me: TeamId, b: Bracket |
   const live = mine.find((x) => x.state === 'live');
   if (live) {
     const [w, l] = live.high.teamId === me ? [live.hw, live.lw] : [live.lw, live.hw];
-    return `${ROUND_NAME[live.round]} ${w}승 ${l}패${live.next ? ` · 다음 ${live.next.game}차전` : ''}`;
+    return __i18n_k("league.postseason.oursIn.d11bb1fd", { value: ROUND_NAME[live.round], w: w, l: l, value2: live.next ? __i18n_k("league.postseason.oursIn.c28dacbf", { game: live.next.game }) : '' });
   }
   const lost = mine.find((x) => x.state === 'done' && x.winner !== me);
-  if (lost) return lost.round === 'ks' ? '한국시리즈 준우승' : `${ROUND_NAME[lost.round]} 탈락`;
-  if (mine.some((x) => x.round === 'ks' && x.winner === me)) return '한국시리즈 우승';
+  if (lost) return lost.round === 'ks' ? __i18n_k("league.postseason.oursIn.d3bd9b4b") : __i18n_k("league.postseason.oursIn.80e2ba84", { value: ROUND_NAME[lost.round] });
+  if (mine.some((x) => x.round === 'ks' && x.winner === me)) return __i18n_k("league.postseason.oursIn.0b104a90");
   const wait = mine.find((x) => x.state === 'waiting');
-  return wait ? `${ROUND_NAME[wait.round]}에서 기다리는 중` : '다음 라운드를 기다리는 중';
+  return wait ? __i18n_k("league.postseason.oursIn.3272023b", { value: ROUND_NAME[wait.round] }) : __i18n_k("league.postseason.oursIn.e0961d9f");
 }
 
 /** The status bar's line while the postseason is on: the round, how far along, and our club. */
@@ -387,7 +388,7 @@ export function postseasonStatus(s: LeagueState): string | null {
   const round = v.rounds[i];
   if (!round) return null;
   const next = round.series.find((x) => x.next)?.next;
-  const when = next ? ` · 다음 경기 ${Number(next.date.slice(5, 7))}월 ${Number(next.date.slice(8))}일` : '';
-  const ours = v.ours && v.ours !== '포스트시즌 진출 실패' ? ` · 우리 구단 ${v.ours}` : '';
-  return `${s.year} 포스트시즌 · ${round.label} (${i + 1}/${v.rounds.length}라운드)${ours}${when}`;
+  const when = next ? __i18n_k("league.postseason.postseasonStatus.when.b9f4fecb", { number: Number(next.date.slice(5, 7)), number2: Number(next.date.slice(8)) }) : '';
+  const ours = v.ours && v.ours !== '포스트시즌 진출 실패' ? __i18n_k("league.postseason.postseasonStatus.ours.43c1fc21", { ours: v.ours }) : '';
+  return __i18n_k("league.postseason.postseasonStatus.8d7f8c8e", { year: s.year, label: round.label, value: i + 1, length: v.rounds.length, ours: ours, when: when });
 }

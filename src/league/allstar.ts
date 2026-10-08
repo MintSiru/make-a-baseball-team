@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The All-Star game (1.2.0, from the 1.0 feedback), the KBO's way (RULES.md §9, game assumptions on the dates).
 
    Two sides: 드림 올스타 (the clubs of SSG, 롯데, 삼성, 두산, KT) and 나눔 올스타 (LG, NC, KIA, 키움, 한화); a new club
@@ -32,12 +33,12 @@ import { ALL_STAR as A } from './tuning';
 
 export type AllStarSide = 'dream' | 'nanum';
 export const SIDES: AllStarSide[] = ['dream', 'nanum'];
-export const SIDE_LABEL: Record<AllStarSide, string> = { dream: '드림 올스타', nanum: '나눔 올스타' };
+export const SIDE_LABEL: Record<AllStarSide, string> = { dream: __i18n_k("league.allstar.sIDE_LABEL.dream.58e7ade7"), nanum: __i18n_k("league.allstar.sIDE_LABEL.nanum.6f46ad29") };
 const DREAM = new Set(['ssg', 'lotte', 'samsung', 'doosan', 'kt']);
 
 export type Spot = 'SP' | 'RP' | 'CL' | 'C' | '1B' | '2B' | '3B' | 'SS' | 'OF' | 'DH';
 export const SPOTS: Spot[] = ['SP', 'RP', 'CL', 'C', '1B', '2B', '3B', 'SS', 'OF', 'DH'];
-export const SPOT_LABEL: Record<Spot, string> = { SP: '선발투수', RP: '중간투수', CL: '마무리투수', C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', OF: '외야수', DH: '지명타자' };
+export const SPOT_LABEL: Record<Spot, string> = { SP: __i18n_k("league.allstar.sPOT_LABEL.sP.cd036b1a"), RP: __i18n_k("league.allstar.sPOT_LABEL.rP.b99cb270"), CL: __i18n_k("league.allstar.sPOT_LABEL.cL.b7ea46c0"), C: __i18n_k("league.allstar.sPOT_LABEL.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("league.allstar.sPOT_LABEL.sS.3e24c7f1"), OF: __i18n_k("league.allstar.sPOT_LABEL.oF.7435120b"), DH: __i18n_k("league.allstar.sPOT_LABEL.dH.8eba4676") };
 /** Places at a spot on each side. */
 export const SEATS: Record<Spot, number> = { SP: 1, RP: 1, CL: 1, C: 1, '1B': 1, '2B': 1, '3B': 1, SS: 1, OF: 3, DH: 1 };
 
@@ -273,7 +274,7 @@ function elect(s: LeagueState, a: AllStarState, date: string) {
     squads[side] = squad;
   }
   a.squads = squads;
-  for (const id of elected) (s.players[id]!.honors ??= []).push(`${s.year} 올스타 베스트12`);
+  for (const id of elected) (s.players[id]!.honors ??= []).push(__i18n_k("league.allstar.elect.05313858", { year: s.year }));
   electNews(s, a, date);
 }
 
@@ -351,7 +352,7 @@ function playAllStar(s: LeagueState, a: AllStarState, date: string) {
   const winner: AllStarSide | null = runs.dream > runs.nanum ? 'dream' : runs.nanum > runs.dream ? 'nanum' : null;
   const mvp = mvpOf(s, out, winner === homeSide ? 'home' : winner === awaySide ? 'away' : null);
   a.game = { boxId, date, host, runs, mvp, derby: d };
-  if (mvp) (s.players[mvp]!.honors ??= []).push(`${s.year} 미스터 올스타`);
+  if (mvp) (s.players[mvp]!.honors ??= []).push(__i18n_k("league.allstar.playAllStar.c1465cfc", { year: s.year }));
   (s.allStarHistory ??= []).push({ year: s.year, runs, mvp, derby: d.winner, host, elected: a.elected! });
   gameNews(s, a, box.id);
 }
@@ -384,8 +385,8 @@ function openNews(s: LeagueState, a: AllStarState, date: string) {
     id: `allstar-open-${a.year}`,
     date,
     kind: 'allstar',
-    title: `${a.year} 올스타 팬 투표 시작`,
-    body: `${a.year} KBO 올스타 베스트12를 뽑는 투표가 시작됐다. 팬 투표(70%)와 선수단 투표(30%)를 합쳐 ${a.year}년 ${Number(A.dates.close.slice(0, 2))}월 ${Number(A.dates.close.slice(3))}일까지 뽑는다. 구단마다 포지션별 후보 한 명(외야수 세 명)을 냈다.${mine.length ? ` 우리 구단에서는 ${names(s, mine)}${particle(name(s, mine.at(-1)!), iga)} 후보에 올랐다.` : ''}`,
+    title: __i18n_k("league.allstar.openNews.title.b5280be5", { year: a.year }),
+    body: __i18n_k("league.allstar.openNews.body.46b5acfc", { year: a.year, year2: a.year, number: Number(A.dates.close.slice(0, 2)), number2: Number(A.dates.close.slice(3)), value: mine.length ? __i18n_k("league.allstar.openNews.body.21873040", { names: names(s, mine), particle: particle(name(s, mine.at(-1)!), iga) }) : '' }),
     quotes: [],
     facts: { year: a.year, candidates: a.candidates.length },
     players: mine,
@@ -403,8 +404,8 @@ function tallyNews(s: LeagueState, a: AllStarState, date: string) {
     id: `allstar-tally-${date}`,
     date,
     kind: 'allstar',
-    title: `올스타 투표 ${n}차 중간 집계: ${top ? `${name(s, top.id)} 최다 득표` : ''}`,
-    body: `${top ? `${short(s, top.teamId)} ${iga(name(s, top.id))} 팬 투표 ${top.fans.toLocaleString('ko-KR')}표로 전체 1위를 달렸다. ` : ''}${mine.length ? `우리 구단 ${names(s, mine)}${particle(name(s, mine.at(-1)!), eunneun)} 포지션 1위다.` : ourBest(s, rows)}`,
+    title: __i18n_k("league.allstar.tallyNews.title.021ec4ae", { n: n, value: top ? __i18n_k("league.allstar.tallyNews.title.91c86468", { name: name(s, top.id) }) : '' }),
+    body: __i18n_k("league.allstar.tallyNews.body.b5f18a27", { value: top ? __i18n_k("league.allstar.tallyNews.body.6764ab8e", { short: short(s, top.teamId), name: iga(name(s, top.id)), value: top.fans.toLocaleString('ko-KR') }) : '', value2: mine.length ? __i18n_k("league.allstar.tallyNews.body.4feaed00", { names: names(s, mine), particle: particle(name(s, mine.at(-1)!), eunneun) }) : ourBest(s, rows) }),
     quotes: [],
     facts: { tally: n, leader: top ? name(s, top.id) : '' },
     detail: SIDES.flatMap((side) => SPOTS.map((spot) => `${SIDE_LABEL[side]} ${SPOT_LABEL[spot]}: ${leaders.filter((r) => r.side === side && r.spot === spot).map((r) => `${name(s, r.id)}(${short(s, r.teamId)})`).join(', ')}`)),
@@ -415,27 +416,27 @@ function tallyNews(s: LeagueState, a: AllStarState, date: string) {
 /** Our candidate closest to a place, when none holds one. */
 function ourBest(s: LeagueState, rows: TallyRow[]): string {
   const best = rows.filter((r) => r.teamId === s.user?.teamId).sort((x, y) => x.rank - SEATS[x.spot] - (y.rank - SEATS[y.spot]) || y.score - x.score)[0];
-  return best ? `우리 구단에서는 ${SPOT_LABEL[best.spot]} ${iga(name(s, best.id))} ${best.rank}위로 가장 앞서 있다.` : '';
+  return best ? __i18n_k("league.allstar.ourBest.3272bd9c", { value: SPOT_LABEL[best.spot], name: iga(name(s, best.id)), rank: best.rank }) : '';
 }
 
 function electNews(s: LeagueState, a: AllStarState, date: string) {
   if (!s.user) return;
   const mine = ours(s, a.elected!);
   const picked = ours(s, [...a.squads!.dream, ...a.squads!.nanum]).filter((id) => !mine.includes(id));
-  const lines = [mine.length ? `베스트12: ${mine.map((id) => name(s, id)).join(', ')}` : '', picked.length ? `감독 추천: ${picked.map((id) => name(s, id)).join(', ')}` : ''].filter(Boolean);
+  const lines = [mine.length ? __i18n_k("league.allstar.electNews.lines.0498b138", { value: mine.map((id) => name(s, id)).join(', ') }) : '', picked.length ? __i18n_k("league.allstar.electNews.lines.f027e0d8", { value: picked.map((id) => name(s, id)).join(', ') }) : ''].filter(Boolean);
   addNews(s, {
     id: `allstar-elect-${a.year}`,
     date,
     kind: 'allstar',
-    title: `${a.year} 올스타 베스트12 확정`,
-    body: `투표가 끝나 드림과 나눔 올스타의 베스트12가 정해졌다. 감독 추천 선수까지 양 팀 ${A.squad}명씩이다. ${lines.length ? `우리 구단은 ${lines.join(' / ')}.` : '우리 구단 선수는 뽑히지 못했다.'}`,
+    title: __i18n_k("league.allstar.electNews.title.20e93bc8", { year: a.year }),
+    body: __i18n_k("league.allstar.electNews.body.9c0db210", { squad: A.squad, value: lines.length ? __i18n_k("league.allstar.electNews.body.7a9f4f35", { value: lines.join(' / ') }) : __i18n_k("league.allstar.electNews.body.c99d38e6") }),
     quotes: [],
     facts: { year: a.year, ours: mine.length + picked.length },
     detail: SIDES.map((side) => `${SIDE_LABEL[side]}: ${a.squads![side].map((id) => `${name(s, id)}(${short(s, s.players[id]!.teamId ?? '')})${a.elected!.includes(id) ? '★' : ''}`).join(', ')}`),
     players: [...mine, ...picked],
   });
   if (mine.length + picked.length)
-    addAlert(s, { id: `allstar-elect-${a.year}`, date, kind: 'allstar', title: `올스타 선발: 우리 구단 ${mine.length + picked.length}명`, lines, tone: 'good', players: [...mine, ...picked] });
+    addAlert(s, { id: `allstar-elect-${a.year}`, date, kind: 'allstar', title: __i18n_k("league.allstar.electNews.title.6133b673", { value: mine.length + picked.length }), lines, tone: 'good', players: [...mine, ...picked] });
 }
 
 function gameNews(s: LeagueState, a: AllStarState, boxId: string) {
@@ -450,17 +451,17 @@ function gameNews(s: LeagueState, a: AllStarState, boxId: string) {
     id: `allstar-game-${a.year}`,
     date: g.date,
     kind: 'allstar',
-    title: `${a.year} 올스타전 ${win ? `${SIDE_LABEL[win]} 승리` : '무승부'}${mvp ? `, 미스터 올스타 ${mvp.name}` : ''}`,
-    body: `${short(s, g.host)}의 안방에서 열린 ${a.year} 올스타전에서 ${win ? `${iga(SIDE_LABEL[win])} ${ro(win === 'dream' ? `${g.runs.dream}-${g.runs.nanum}` : `${g.runs.nanum}-${g.runs.dream}`)} 이겼다` : `드림과 나눔이 ${ro(score)} 비겼다`}. ${mvp ? `${short(s, mvp.teamId ?? '')} ${iga(mvp.name)} 미스터 올스타에 뽑혔다. ` : ''}전날 홈런 레이스에서는 ${derbyWinner ? `${short(s, derbyWinner.teamId ?? '')} ${iga(derbyWinner.name)}` : ''} 정상에 섰다.`,
+    title: __i18n_k("league.allstar.gameNews.title.006e49f7", { year: a.year, value: win ? __i18n_k("league.allstar.gameNews.title.d4f578e1", { value: SIDE_LABEL[win] }) : __i18n_k("league.allstar.gameNews.title.ff1b1cbc"), value2: mvp ? __i18n_k("league.allstar.gameNews.title.19a2ec49", { name: mvp.name }) : '' }),
+    body: __i18n_k("league.allstar.gameNews.body.49517a96", { short: short(s, g.host), year: a.year, value: win ? __i18n_k("league.allstar.gameNews.body.6ead9275", { value: iga(SIDE_LABEL[win]), value2: ro(win === 'dream' ? `${g.runs.dream}-${g.runs.nanum}` : `${g.runs.nanum}-${g.runs.dream}`) }) : __i18n_k("league.allstar.gameNews.body.8d9b8269", { score: ro(score) }), value2: mvp ? __i18n_k("league.allstar.gameNews.body.d0a5131b", { short: short(s, mvp.teamId ?? ''), name: iga(mvp.name) }) : '', value3: derbyWinner ? `${short(s, derbyWinner.teamId ?? '')} ${iga(derbyWinner.name)}` : '' }),
     quotes: [],
     facts: { year: a.year, dream: g.runs.dream, nanum: g.runs.nanum, mvp: mvp?.name ?? '', derby: derbyWinner?.name ?? '' },
-    detail: g.derby.rounds.map((r) => `홈런 레이스 ${name(s, r.id)}: 예선 ${r.first}개${r.final !== undefined ? `, 결승 ${r.final}개` : ''}`),
+    detail: g.derby.rounds.map((r) => __i18n_k("league.allstar.gameNews.detail.42208318", { name: name(s, r.id), first: r.first, value: r.final !== undefined ? __i18n_k("league.allstar.gameNews.detail.062b152b", { final: r.final }) : '' })),
     players: mine,
   });
   // 미스터 올스타 from our club talks to the reporters.
   const iv = g.mvp && mine.includes(g.mvp) ? heroInterview(s, g.mvp, g.date, { kind: 'allStarMvp' }, `allstar-${a.year}`) : null;
   if (iv) addNews(s, iv);
-  if (mine.length) addAlert(s, { id: `allstar-game-${a.year}`, date: g.date, kind: 'allstar', title: mine.includes(g.mvp ?? '') ? `미스터 올스타: ${mvp!.name}` : `홈런 레이스 우승: ${derbyWinner!.name}`, lines: [`올스타전 드림 ${g.runs.dream} : 나눔 ${g.runs.nanum}`], tone: 'good', players: mine });
+  if (mine.length) addAlert(s, { id: `allstar-game-${a.year}`, date: g.date, kind: 'allstar', title: mine.includes(g.mvp ?? '') ? __i18n_k("league.allstar.gameNews.title.12b95c36", { name: mvp!.name }) : __i18n_k("league.allstar.gameNews.title.809180e7", { name: derbyWinner!.name }), lines: [__i18n_k("league.allstar.gameNews.lines.ff106683", { dream: g.runs.dream, nanum: g.runs.nanum })], tone: 'good', players: mine });
   void boxId;
 }
 
@@ -485,11 +486,11 @@ export function allStarView(s: LeagueState) {
 export function checkCampaign(s: LeagueState): string | null {
   const u = s.user;
   const a = s.allStar?.year === s.year ? s.allStar : null;
-  if (!u) return '구단이 없습니다.';
-  if (!a || a.elected) return '올스타 투표 기간이 아닙니다.';
-  if (a.campaign) return '이미 투표 독려 캠페인을 했습니다.';
-  if (!a.candidates.some((c) => c.teamId === u.teamId)) return '우리 구단 후보가 없습니다.';
-  if (u.fund < A.campaign.cost) return '구단 자금이 부족합니다.';
+  if (!u) return __i18n_k("league.allstar.checkCampaign.272add95");
+  if (!a || a.elected) return __i18n_k("league.allstar.checkCampaign.0f1d621d");
+  if (a.campaign) return __i18n_k("league.allstar.checkCampaign.d0875f36");
+  if (!a.candidates.some((c) => c.teamId === u.teamId)) return __i18n_k("league.allstar.checkCampaign.c66e1ae2");
+  if (u.fund < A.campaign.cost) return __i18n_k("league.allstar.checkCampaign.2ffbf119");
   return null;
 }
 
@@ -502,6 +503,6 @@ export function runCampaign(s: LeagueState, date: string) {
   count(s, a, date);
   a.campaign = true;
   u.fund -= A.campaign.cost;
-  u.ledger.push({ year: s.year, label: '올스타 팬 투표 독려 캠페인', amount: -A.campaign.cost });
-  (u.log ??= []).push({ year: s.year, text: '올스타 팬 투표 독려 캠페인' });
+  u.ledger.push({ year: s.year, label: __i18n_k("league.allstar.runCampaign.label.f8654907"), amount: -A.campaign.cost });
+  (u.log ??= []).push({ year: s.year, text: __i18n_k("league.allstar.runCampaign.text.f8654907") });
 }

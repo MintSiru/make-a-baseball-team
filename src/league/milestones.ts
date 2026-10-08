@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The club's story (V0.7): a timeline of firsts and big moments, and achievements the general manager
    unlocks. Both are the user's club only and never touch the simulation. */
 import type { StoredBox } from './boxscore';
@@ -13,24 +14,24 @@ export interface Achievement {
 }
 
 export const ACHIEVEMENTS: Achievement[] = [
-  { id: 'founded', label: '창단', note: '11번째 구단을 세웠다' },
-  { id: 'firstWin', label: '첫 승', note: '1군 첫 승리' },
-  { id: 'walkOff', label: '끝내기', note: '홈에서 끝내기 승리' },
-  { id: 'noHitter', label: '노히트 노런', note: '상대에게 안타를 하나도 내주지 않은 경기' },
-  { id: 'winning', label: '5할 승률', note: '승률 5할 이상 시즌' },
-  { id: 'playoffs', label: '첫 가을야구', note: '포스트시즌 진출' },
-  { id: 'pennant', label: '정규시즌 1위', note: '정규시즌 우승' },
-  { id: 'champion', label: '한국시리즈 우승', note: '우승' },
-  { id: 'dynasty', label: '왕조', note: '한국시리즈 3회 우승' },
-  { id: 'mvp', label: 'MVP 배출', note: '우리 선수가 MVP' },
-  { id: 'rookie', label: '신인왕 배출', note: '우리 선수가 신인왕' },
-  { id: 'homegrown', label: '키운 스타', note: '우리가 뽑은 선수가 한 시즌 WAR 5 이상' },
-  { id: 'crowd', label: '100만 관중', note: '한 시즌 홈 관중 100만 명' },
-  { id: 'sellouts', label: '매진 행렬', note: '한 시즌 매진 30번' },
-  { id: 'profit', label: '흑자 경영', note: '운영 결과 흑자 시즌' },
-  { id: 'posting', label: '메이저리거 배출', note: '포스팅으로 메이저리그 진출' },
-  { id: 'retiredNumber', label: '영구결번', note: '우리 구단의 영구결번' },
-  { id: 'hallOfFame', label: '명예의 전당', note: '우리 구단 출신 명예의 전당 헌액' },
+  { id: 'founded', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.22817f11"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.a0ce0ff1") },
+  { id: 'firstWin', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.322c05b0"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.64dd18b6") },
+  { id: 'walkOff', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.38f4c682"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.b7aae489") },
+  { id: 'noHitter', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.b1faa7c8"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.b23a0740") },
+  { id: 'winning', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.d1db6ed1"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.e75e1289") },
+  { id: 'playoffs', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.83425fb3"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.7fb83a6e") },
+  { id: 'pennant', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.cef6f7cf"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.57469c0e") },
+  { id: 'champion', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.0b104a90"), note: '우승' },
+  { id: 'dynasty', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.c1954b65"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.04bc5c68") },
+  { id: 'mvp', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.e4b44955"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.429cf477") },
+  { id: 'rookie', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.6a9b2ed2"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.a5e5412b") },
+  { id: 'homegrown', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.b26207d9"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.c391f889") },
+  { id: 'crowd', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.2d4d1772"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.1121dbdf") },
+  { id: 'sellouts', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.df7f55a3"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.7eb7c6c4") },
+  { id: 'profit', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.8ad2d286"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.ecf319c1") },
+  { id: 'posting', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.9433ab29"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.b2a47079") },
+  { id: 'retiredNumber', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.adad27c2"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.0fb75504") },
+  { id: 'hallOfFame', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.6999864f"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.ffcebc4c") },
 ];
 
 /** Adds a line to the club timeline (once per key). */
@@ -47,7 +48,7 @@ export function unlock(s: LeagueState, id: string, year: number, detail = '') {
   const a = ACHIEVEMENTS.find((x) => x.id === id);
   if (!u || !a || u.achievements?.some((x) => x.id === id)) return;
   (u.achievements ??= []).push({ id, year });
-  milestone(s, year, `업적 달성: ${a.label}${detail ? ` (${detail})` : ''}`);
+  milestone(s, year, __i18n_k("league.milestones.unlock.742fa29d", { label: a.label, value: detail ? ` (${detail})` : '' }));
   const date = s.phase === 'regular' ? (s.schedule[Math.max(0, s.next - 1)]?.date ?? `${year}-03-01`) : `${year}-11-01`;
   achievementAlert(s, id, a.label, a.note, date, detail);
 }
@@ -63,15 +64,15 @@ export function gameMoments(s: LeagueState, box: StoredBox) {
   const opp = s.teams.find((t) => t.id === (us ? box.away : box.home))?.short ?? '';
   if (won) {
     if (!u.achievements?.some((x) => x.id === 'firstWin')) {
-      unlock(s, 'firstWin', year, `${box.date} ${opp}전`);
-      milestone(s, year, `${box.date} ${opp}전 1군 첫 승`, 'firstWin');
+      unlock(s, 'firstWin', year, __i18n_k("league.milestones.gameMoments.7f5f8b64", { date: box.date, opp: opp }));
+      milestone(s, year, __i18n_k("league.milestones.gameMoments.796a1239", { date: box.date, opp: opp }), 'firstWin');
     }
     // Home team scoring the winning run in its last half inning.
-    if (us === 1 && box.line[1].length === box.line[0].length && (box.line[1].at(-1) ?? 0) > 0) unlock(s, 'walkOff', year, `${box.date} ${opp}전`);
+    if (us === 1 && box.line[1].length === box.line[0].length && (box.line[1].at(-1) ?? 0) > 0) unlock(s, 'walkOff', year, __i18n_k("league.milestones.gameMoments.7f5f8b64", { date: box.date, opp: opp }));
   }
   if (box.rhe[them]![1] === 0 && box.line[them]!.length >= 9) {
-    unlock(s, 'noHitter', year, `${box.date} ${opp}전`);
-    milestone(s, year, `${box.date} ${opp}전 노히트 노런`);
+    unlock(s, 'noHitter', year, __i18n_k("league.milestones.gameMoments.7f5f8b64", { date: box.date, opp: opp }));
+    milestone(s, year, __i18n_k("league.milestones.gameMoments.fc4d5aab", { date: box.date, opp: opp }));
   }
 }
 
@@ -82,21 +83,21 @@ export function seasonMoments(s: LeagueState, year: number, awards: SeasonAwards
   if (!u || !h) return;
   const row = h.table.find((r) => r.teamId === u.teamId);
   if (row) {
-    if (row.pct >= 0.5) unlock(s, 'winning', year, `${row.w}승 ${row.l}패`);
+    if (row.pct >= 0.5) unlock(s, 'winning', year, __i18n_k("league.milestones.seasonMoments.44b431c7", { w: row.w, l: row.l }));
     if (madePostseason(h, u.teamId)) {
       unlock(s, 'playoffs', year);
-      milestone(s, year, `${year} 첫 포스트시즌 진출 (${row.rank}위)`, 'playoffs');
+      milestone(s, year, __i18n_k("league.milestones.seasonMoments.58b18668", { year: year, rank: row.rank }), 'playoffs');
     }
     if (row.rank === 1) {
       unlock(s, 'pennant', year);
-      milestone(s, year, `${year} 정규시즌 1위 (${row.w}승 ${row.l}패)`);
+      milestone(s, year, __i18n_k("league.milestones.seasonMoments.d8ad4c92", { year: year, w: row.w, l: row.l }));
     }
   }
   if (h.champion === u.teamId) {
     unlock(s, 'champion', year);
-    milestone(s, year, `${year} 한국시리즈 우승`);
+    milestone(s, year, __i18n_k("league.milestones.seasonMoments.623ff410", { year: year }));
     const titles = s.history.filter((x) => x.champion === u.teamId).length;
-    if (titles >= 3) unlock(s, 'dynasty', year, `${titles}번째 우승`);
+    if (titles >= 3) unlock(s, 'dynasty', year, __i18n_k("league.milestones.seasonMoments.f343d132", { titles: titles }));
   }
   const name = (id: string | null) => (id ? s.players[id]?.name : null);
   const ours = (id: string | null) => !!id && s.players[id]?.career.find((c) => c.year === year && !c.level)?.teamId === u.teamId;
@@ -106,7 +107,7 @@ export function seasonMoments(s: LeagueState, year: number, awards: SeasonAwards
   }
   if (awards && ours(awards.rookie)) {
     unlock(s, 'rookie', year, name(awards.rookie)!);
-    milestone(s, year, `${name(awards.rookie)} ${year} 신인왕`);
+    milestone(s, year, __i18n_k("league.milestones.seasonMoments.1e910b86", { name: name(awards.rookie), year: year }));
   }
   for (const p of Object.values(s.players)) {
     const c = p.career.find((x) => x.year === year && !x.level && x.teamId === u.teamId);
@@ -114,8 +115,8 @@ export function seasonMoments(s: LeagueState, year: number, awards: SeasonAwards
   }
   const report = s.clubs?.[u.teamId]?.reports.find((r) => r.year === year);
   if (report) {
-    if (report.fans >= 1_000_000) unlock(s, 'crowd', year, `${report.fans.toLocaleString('ko-KR')}명`);
+    if (report.fans >= 1_000_000) unlock(s, 'crowd', year, __i18n_k("league.milestones.seasonMoments.d8e22743", { value: report.fans.toLocaleString('ko-KR') }));
     if (report.operating >= 0 && report.homeGames) unlock(s, 'profit', year);
-    if ((report.sellouts ?? 0) >= 30) unlock(s, 'sellouts', year, `${report.sellouts}번`);
+    if ((report.sellouts ?? 0) >= 30) unlock(s, 'sellouts', year, __i18n_k("league.milestones.seasonMoments.29555f1e", { sellouts: report.sellouts }));
   }
 }

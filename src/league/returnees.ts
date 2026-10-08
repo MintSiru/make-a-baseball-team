@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Players coming home from abroad (V0.7.3, RULES.md §6).
    - Posted players: the club that posted him keeps his rights (보류권), so a player who comes back to
      the KBO signs with that club only. After his major league deal ends he may come home each winter
@@ -154,7 +155,7 @@ export function draftReturnees(s: LeagueState, draftYear: number): Player[] {
     p.status = 'amateur';
     p.proSince = draftYear + 1;
     delete p.origin.overallPick;
-    p.education.pathText = `${p.education.pathText} → ${p.abroad.left + 1}년 해외 진출 → ${draftYear - R.wait}년 복귀 (2년 유예)`;
+    p.education.pathText = __i18n_k("league.returnees.draftReturnees.b83df5aa", { pathText: p.education.pathText, value: p.abroad.left + 1, value2: draftYear - R.wait });
     out.push(p);
   }
   return out;

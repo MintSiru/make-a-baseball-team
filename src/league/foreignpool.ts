@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Foreign players with KBO experience on the market (V0.7.3). A foreign player whose club lets him go —
    released or replaced during the season, or not re-signed in the winter — and who is not leaving for a
    bigger league stays on the list through two winters. Any club may sign him: as an in-season
@@ -97,13 +98,13 @@ export function kboLine(s: LeagueState, p: Player): string {
   const c = kboRecord(p);
   const from = poolEntry(s, p.id)?.from;
   const club = (id: TeamId | undefined) => s.teams.find((t) => t.id === id)?.short ?? '';
-  if (!c) return `KBO 경력 · ${club(from)} (1군 기록 없음)`;
+  if (!c) return __i18n_k("league.foreignpool.kboLine.e43b1829", { club: club(from) });
   const line = isPitcher(p)
     ? c.pit
-      ? `${c.pit.w}승 ${c.pit.l}패 ERA ${(c.pit.outs ? (27 * c.pit.er) / c.pit.outs : 0).toFixed(2)}`
+      ? __i18n_k("league.foreignpool.kboLine.line.fc02a825", { w: c.pit.w, l: c.pit.l, value: (c.pit.outs ? (27 * c.pit.er) / c.pit.outs : 0).toFixed(2) })
       : ''
     : c.bat
-      ? `타율 ${(c.bat.ab ? c.bat.h / c.bat.ab : 0).toFixed(3).replace(/^0/, '')} ${c.bat.hr}홈런`
+      ? __i18n_k("league.foreignpool.kboLine.line.ee082e90", { value: (c.bat.ab ? c.bat.h / c.bat.ab : 0).toFixed(3).replace(/^0/, ''), hr: c.bat.hr })
       : '';
   return `KBO ${c.year} ${club(c.teamId)} · ${line} · WAR ${c.war.toFixed(1)}`;
 }

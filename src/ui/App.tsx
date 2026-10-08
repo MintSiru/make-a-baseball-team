@@ -1,3 +1,4 @@
+import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 import { scenarioDef } from '../league/scenarios';
 import { setEra, startYear } from '../league/era';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
@@ -57,17 +58,17 @@ const newSeed = () => `kbo-${Math.floor(Math.random() * 36 ** 6).toString(36)}`;
 type Tab = 'decision' | 'club' | 'market' | 'games' | 'standings' | 'leaders' | 'team' | 'history' | 'draft' | 'settings' | 'help';
 const TABS: { id: Tab; label: string; userOnly?: boolean; waiting?: boolean }[] = [
   // Only while the game waits for a decision (the winter's steps): the other screens stay open beside it.
-  { id: 'decision', label: '결정할 일', waiting: true },
-  { id: 'club', label: '우리 구단', userOnly: true },
-  { id: 'market', label: '이적시장', userOnly: true },
-  { id: 'games', label: '경기' },
-  { id: 'standings', label: '순위' },
-  { id: 'leaders', label: '기록' },
-  { id: 'team', label: '구단' },
-  { id: 'history', label: '역대' },
-  { id: 'draft', label: '드래프트 후보' },
-  { id: 'settings', label: '설정' },
-  { id: 'help', label: '도움말' },
+  { id: 'decision', label: __i18n_k("ui.app.tABS.label.2d179fd7"), waiting: true },
+  { id: 'club', label: __i18n_k("ui.app.tABS.label.8cc09c32"), userOnly: true },
+  { id: 'market', label: __i18n_k("ui.app.tABS.label.e11828a8"), userOnly: true },
+  { id: 'games', label: __i18n_k("ui.app.tABS.label.e0cee61a") },
+  { id: 'standings', label: __i18n_k("ui.app.tABS.label.d15876f1") },
+  { id: 'leaders', label: __i18n_k("ui.app.tABS.label.d84b6f4b") },
+  { id: 'team', label: __i18n_k("ui.app.tABS.label.58756112") },
+  { id: 'history', label: __i18n_k("ui.app.tABS.label.1ab3847c") },
+  { id: 'draft', label: __i18n_k("ui.app.tABS.label.0db7daf2") },
+  { id: 'settings', label: __i18n_k("ui.app.tABS.label.c14a567e") },
+  { id: 'help', label: __i18n_k("ui.app.tABS.label.e2654ac5") },
 ];
 
 const AUTO_KINDS: NewsItem['kind'][] = ['season', 'award', 'month', 'interview'];
@@ -77,22 +78,22 @@ const AUTO_PAUSE: Partial<Record<StoryError, number>> = { rate: 60, busy: 180, n
 const AUTO_TRIES = 3;
 /** Seconds between automatic articles, so a backlog does not go out as a burst. */
 const AUTO_GAP = 5;
-const seconds = (sec: number) => (sec < 60 ? `${sec}초` : `${Math.ceil(sec / 60)}분`);
+const seconds = (sec: number) => (sec < 60 ? __i18n_k("ui.app.seconds.c4a2109c", { sec: sec }) : __i18n_k("ui.app.seconds.32ba7f5b", { value: Math.ceil(sec / 60) }));
 
 const PHASE: Record<LeagueState['phase'], CalendarPhase> = { regular: 'regularSeason', postseason: 'postseason', offseason: 'offseason' };
 const snapshotSave = (s: LeagueState) => makeSave(s.seed, [], { at: { year: s.year, phase: PHASE[s.phase] }, state: s });
 
 function statusLine(s: LeagueState) {
-  if (s.pending) return `${s.offseason ? `${s.offseason.year} 오프시즌` : `${s.year}`} · 결정할 일이 있습니다`;
+  if (s.pending) return __i18n_k("ui.app.statusLine.93c4cfd1", { value: s.offseason ? __i18n_k("ui.app.statusLine.dfc7fe9a", { year: s.offseason.year }) : `${s.year}` });
   if (s.phase === 'postseason') {
     const live = postseasonStatus(s);
     if (live) return live;
     const ks = s.postseason.find((x) => x.round === 'ks');
-    return `${s.year} 시즌 종료 · 우승 ${ks ? shortName(s, ks.winner) : '-'}`;
+    return __i18n_k("ui.app.statusLine.86001336", { year: s.year, value: ks ? shortName(s, ks.winner) : '-' });
   }
-  if (regularOver(s)) return `${s.year} 정규시즌 종료 · 포스트시즌을 기다리는 중`;
+  if (regularOver(s)) return __i18n_k("ui.app.statusLine.18db41b9", { year: s.year });
   const date = nextDate(s);
-  return `${s.year} 정규시즌 · 다음 경기일 ${date ? `${Number(date.slice(5, 7))}월 ${Number(date.slice(8))}일` : '-'}`;
+  return __i18n_k("ui.app.statusLine.dfb24da9", { year: s.year, value: date ? __i18n_k("ui.app.statusLine.a629d4ea", { number: Number(date.slice(5, 7)), number2: Number(date.slice(8)) }) : '-' });
 }
 
 export function App() {
@@ -156,7 +157,7 @@ export function App() {
       }
       await st.put(AUTO_SLOT, snapshotSave(s));
     } catch {
-      setNotice('진행을 자동 저장하지 못했습니다. 진행 파일로 저장해 두세요.');
+      setNotice(__i18n_k("ui.app.app.persist.32df8d08"));
     }
   };
   // V0.14: everyday steps save a moment later, one write at a time (a burst of clicks is one write).
@@ -182,7 +183,7 @@ export function App() {
   // 1.6.0: a league for 「백 투 더 패스트」 starts its history ten years earlier (a different build, kept apart).
   const build = (s: string, era = 0) => {
     const key = era ? `${s}|era${era}` : s;
-    if (building.current?.seed !== key) building.current = { seed: key, promise: createInWorker(s, (year) => setProgress(`${year} 시즌`), era) };
+    if (building.current?.seed !== key) building.current = { seed: key, promise: createInWorker(s, (year) => setProgress(__i18n_k("ui.app.build.promise.de766445", { year: year })), era) };
     return building.current.promise;
   };
 
@@ -207,13 +208,13 @@ export function App() {
           if (saved?.migratedFrom) {
             // Keep the original before the carried-forward game overwrites the autosave.
             await st.copy(AUTO_SLOT, `backup-${saved.migratedFrom}`).catch(() => undefined);
-            setNotice(`이전 버전(시뮬레이션 ${saved.migratedFrom})의 진행을 ${RELEASE} 규칙으로 옮겨 이어 합니다. 지나간 기록은 그대로이고, 앞으로의 경기와 성장은 새 규칙을 따릅니다.`);
+            setNotice(__i18n_k("ui.app.app.e6bc6a6d", { migratedFrom: saved.migratedFrom, rELEASE: RELEASE }));
           }
         }
       } catch (e) {
         // 1.4.1: a damaged autosave is set aside (never copied over a good backup) and the recovery choices come up.
         await setAsideDamaged(st).catch(() => undefined);
-        setNotice(`자동 저장을 열지 못했습니다. ${e instanceof Error ? e.message : String(e)} 아래에서 백업으로 되돌리거나 진행 파일을 불러올 수 있습니다.`);
+        setNotice(__i18n_k("ui.app.app.e6f5b9c2", { value: e instanceof Error ? e.message : String(e) }));
         setRecovering(true);
       } finally {
         setLoading(false);
@@ -231,7 +232,7 @@ export function App() {
     if (days !== null && days < 14) return;
     reminded.current = true;
     setNotice(
-      `${days === null ? '이 게임을 아직 진행 파일로 저장한 적이 없습니다' : `마지막으로 진행 파일을 저장한 지 ${days}일 지났습니다`}. 브라우저가 사이트 데이터를 지우면 자동 저장도 함께 사라지니, 설정 → 저장에서 진행 파일로 보관해 두세요. 아이폰·아이패드는 홈 화면에 추가해서 열면 더 오래 남습니다.`,
+      __i18n_k("ui.app.app.25ab35e0", { value: days === null ? __i18n_k("ui.app.app.1ad2d9fc") : __i18n_k("ui.app.app.32d4944c", { days: days }) }),
     );
   }, [league?.seed, league?.year, store]);
 
@@ -290,7 +291,7 @@ export function App() {
     if (run.n > 40) return;
     const input = autoDecision(s);
     if (!input || checkDecision(s, input)) return;
-    void actRef.current({ kind: 'decide', input }, '스카우트가 결정하는 중', false);
+    void actRef.current({ kind: 'decide', input }, __i18n_k("ui.app.app.93376cf8"), false);
   }, [version, busy, loading]);
 
   // A new decision brings its screen forward (the other tabs stay open beside it); once the winter is
@@ -301,7 +302,7 @@ export function App() {
     else setTab((t) => (t === 'decision' ? (latest.current?.user ? 'club' : 'standings') : t));
   }, [waitingKey]);
 
-  if (loading || !store) return <main class="loading">불러오는 중</main>;
+  if (loading || !store) return <main class="loading">{__i18n_t("ui.app.app.e090c88e")}</main>;
 
   /** Asks the chosen model for an article and stores it on the latest league state. */
   async function writeStory(item: NewsItem, auto = false) {
@@ -323,7 +324,7 @@ export function App() {
         // Wait it out, then try this article again (a few times at most).
         const sec = Math.max(pause, out.retryAfter ?? 0);
         autoPause.current = Date.now() + sec * 1000;
-        note = ` 자동 모드는 ${seconds(sec)} 쉬었다가 이어갑니다.`;
+        note = __i18n_k("ui.app.app.writeStory.e60f20b6", { seconds: seconds(sec) });
         const tries = (autoTries.current.get(item.id) ?? 0) + 1;
         autoTries.current.set(item.id, tries);
         if (auto && tries < AUTO_TRIES) autoTried.current.delete(item.id);
@@ -333,9 +334,9 @@ export function App() {
           saveSettings(off);
           return off;
         });
-        note = ' 자동 모드를 껐습니다. 확인한 뒤 AI 기사 설정에서 다시 켜세요.';
+        note = __i18n_k("ui.app.app.writeStory.7de49f3c");
       }
-      setNotice(`AI 기사: ${out.message} (원래 기사를 씁니다)${note}`);
+      setNotice(__i18n_k("ui.app.app.writeStory.ec1540a5", { message: out.message, note: note }));
       return;
     }
     if (auto) autoPause.current = Date.now() + AUTO_GAP * 1000;
@@ -355,14 +356,14 @@ export function App() {
   }
 
   const found = async (settings: ExpansionSettings, s: string) => {
-    setBusy('리그의 과거를 만드는 중');
+    setBusy(__i18n_k("ui.app.app.found.2015bb35"));
     const era = scenarioDef(settings.scenario)?.era ?? 0;
     let base = await build(s, era);
     base = await applyInWorker(base, { kind: 'toFounding' });
     let next = applyHere(base, { kind: 'found', settings });
     // 살려야 한다: the runaway AI's five years, off the page.
     if (settings.scenario === 'rescue') {
-      setBusy('AI가 구단을 운영하는 중 (5년)');
+      setBusy(__i18n_k("ui.app.app.found.8e215bcd"));
       next = await applyInWorker(next, { kind: 'rogue' });
     }
     building.current = null;
@@ -373,7 +374,7 @@ export function App() {
   };
 
   const spectate = async (s: string) => {
-    setBusy('리그의 과거를 만드는 중');
+    setBusy(__i18n_k("ui.app.app.spectate.2015bb35"));
     const next = await build(s);
     building.current = null;
     show(next);
@@ -387,15 +388,15 @@ export function App() {
     try {
       const save = parseSave(await readSaveFile(file));
       const state = save.snapshot?.state as LeagueState | undefined;
-      if (!state?.teams) throw new SaveError('damaged', '진행 파일에 리그 상태가 없습니다.');
+      if (!state?.teams) throw new SaveError('damaged', __i18n_k("ui.app.app.importSave.8f84f785"));
       building.current = null;
       setRecovering(false);
       show(state);
       setTab(state.user ? 'club' : 'standings');
       await saveNow(store!, state);
-      setNotice(save.migratedFrom ? `이전 버전(시뮬레이션 ${save.migratedFrom})의 진행 파일을 ${RELEASE} 규칙으로 옮겨 불러왔습니다.` : '진행 파일을 불러왔습니다.');
+      setNotice(save.migratedFrom ? __i18n_k("ui.app.app.importSave.e3c248bc", { migratedFrom: save.migratedFrom, rELEASE: RELEASE }) : __i18n_k("ui.app.app.importSave.e3648aa1"));
     } catch (e) {
-      setNotice(e instanceof SaveError ? e.message : '진행 파일을 읽지 못했습니다.');
+      setNotice(e instanceof SaveError ? e.message : __i18n_k("ui.app.app.importSave.e2604b5b"));
     }
   };
 
@@ -404,8 +405,8 @@ export function App() {
       <>
         <header class="masthead">
           <div>
-            <h1>KBO 신구단</h1>
-            <p class="muted">버전 {RELEASE}</p>
+            <h1>{__i18n_t("ui.app.app.7fd36273")}</h1>
+            <p class="muted">{__i18n_t("ui.app.app.ec12bca1", { rELEASE: RELEASE })}</p>
           </div>
           <div class="row-actions">
             {/* 1.4.1: a game kept as a file, or one of the autosave's backups, can be picked up from the start. */}
@@ -413,17 +414,13 @@ export function App() {
               진행 파일 불러오기
               <input type="file" accept="application/json,.json,.gz" onChange={(e) => importSave((e.currentTarget as HTMLInputElement).files?.[0])} />
             </label>
-            <button type="button" aria-pressed={recovering} onClick={() => setRecovering((x) => !x)}>
-              백업에서 되돌리기
-            </button>
-            <button type="button" onClick={() => setDisplayOpen(true)}>
-              화면 설정
-            </button>
+            <button type="button" aria-pressed={recovering} onClick={() => setRecovering((x) => !x)}>{__i18n_t("ui.app.app.53ba8c13")}</button>
+            <button type="button" onClick={() => setDisplayOpen(true)}>{__i18n_t("ui.app.app.b1c35543")}</button>
           </div>
         </header>
-        {displayOpen && <DisplaySettings onClose={() => setDisplayOpen(false)} />}
-        {notice && <p class="notice">{notice}</p>}
-        {recovering && <Recovery title="이전 진행으로 되돌리기" />}
+        {__i18n_display(displayOpen && <DisplaySettings onClose={() => setDisplayOpen(false)} />)}
+        {__i18n_display(notice && <p class="notice">{__i18n_display(notice)}</p>)}
+        {__i18n_display(recovering && <Recovery title={__i18n_t("ui.app.app.c817428e")} />)}
         <NewGame seed={seed} busy={busy && `${busy}${progress ? ` · ${progress}` : ''}`} onFound={found} onSpectate={spectate} />
       </>
     );
@@ -435,7 +432,7 @@ export function App() {
       const base = latest.current;
       if (!base) return;
       if (base.pending && !allowedWhileWaiting(action)) {
-        setNotice('먼저 결정할 일을 끝내세요. 기다리는 동안에는 구단 운영(티켓·마케팅·구장)과 기사만 바꿀 수 있습니다.');
+        setNotice(__i18n_k("ui.app.act.step.d4504a6a"));
         return;
       }
       setBusy(label);
@@ -470,11 +467,11 @@ export function App() {
   const saveStory = (s: StorySettingsT) => {
     setStorySettings(s);
     saveSettings(s);
-    setNotice('AI 기사 설정을 저장했습니다.');
+    setNotice(__i18n_k("ui.app.app.saveStory.cc20ba25"));
   };
 
   const newGame = () => {
-    if (!window.confirm('지금 게임을 두고 새 게임을 시작할까요? 진행 파일로 저장하지 않은 진행은 새 게임을 창단하면 사라집니다.')) return;
+    if (!window.confirm(__i18n_k("ui.app.app.newGame.869a8dfd"))) return;
     setLeague(null);
   };
 
@@ -495,43 +492,23 @@ export function App() {
   const postLive = league.phase === 'postseason' && !!league.bracket && !league.bracket.done;
   const controls = league.pending ? null : postLive ? (
     <>
-      <button type="button" onClick={() => act({ kind: 'postseasonDay' }, '경기 중', false)}>
-        다음 경기
-      </button>
-      <button type="button" onClick={() => act({ kind: 'postseasonRound' }, '포스트시즌 진행 중', false)}>
-        이번 라운드 끝까지
-      </button>
-      <button type="button" onClick={() => act({ kind: 'postseason' }, '포스트시즌 진행 중', true)}>
-        포스트시즌 끝까지
-      </button>
+      <button type="button" onClick={() => act({ kind: 'postseasonDay' }, __i18n_k("ui.app.app.controls.e39c3d6f"), false)}>{__i18n_t("ui.app.app.controls.3b6ea03a")}</button>
+      <button type="button" onClick={() => act({ kind: 'postseasonRound' }, __i18n_k("ui.app.app.controls.9edd7286"), false)}>{__i18n_t("ui.app.app.controls.2878bba4")}</button>
+      <button type="button" onClick={() => act({ kind: 'postseason' }, __i18n_k("ui.app.app.controls.9edd7286"), true)}>{__i18n_t("ui.app.app.controls.8d2f8637")}</button>
     </>
   ) : league.phase === 'postseason' ? (
-    <button type="button" onClick={() => act({ kind: 'nextSeason' }, '오프시즌 진행 중', true)}>
-      다음 시즌으로
-    </button>
+    <button type="button" onClick={() => act({ kind: 'nextSeason' }, __i18n_k("ui.app.app.controls.caf40e73"), true)}>{__i18n_t("ui.app.app.controls.0f1609e9")}</button>
   ) : regularOver(league) ? (
     <>
-      <button type="button" onClick={() => act({ kind: 'postseasonStart' }, '대진 추첨 중', false)}>
-        포스트시즌 시작
-      </button>
-      <button type="button" onClick={() => act({ kind: 'postseason' }, '포스트시즌 진행 중', true)}>
-        포스트시즌 끝까지
-      </button>
+      <button type="button" onClick={() => act({ kind: 'postseasonStart' }, __i18n_k("ui.app.app.controls.55dbee7a"), false)}>{__i18n_t("ui.app.app.controls.0af8f4bd")}</button>
+      <button type="button" onClick={() => act({ kind: 'postseason' }, __i18n_k("ui.app.app.controls.9edd7286"), true)}>{__i18n_t("ui.app.app.controls.8d2f8637")}</button>
     </>
   ) : (
     <>
-      <button type="button" onClick={() => act({ kind: 'days', days: 1 }, '경기 중', false)}>
-        하루
-      </button>
-      <button type="button" onClick={() => act({ kind: 'days', days: 6, stops: true }, '경기 중', false)}>
-        1주
-      </button>
-      <button type="button" onClick={() => act({ kind: 'days', days: 26, stops: true }, '한 달 진행 중', true)}>
-        한 달
-      </button>
-      <button type="button" onClick={() => act({ kind: 'regularEnd', stops: true }, '정규시즌 진행 중', true)}>
-        정규시즌 끝까지
-      </button>
+      <button type="button" onClick={() => act({ kind: 'days', days: 1 }, __i18n_k("ui.app.app.controls.e39c3d6f"), false)}>{__i18n_t("ui.app.app.controls.c3537d9a")}</button>
+      <button type="button" onClick={() => act({ kind: 'days', days: 6, stops: true }, __i18n_k("ui.app.app.controls.e39c3d6f"), false)}>{__i18n_t("ui.app.app.controls.3d84dffe")}</button>
+      <button type="button" onClick={() => act({ kind: 'days', days: 26, stops: true }, __i18n_k("ui.app.app.controls.3b268e0d"), true)}>{__i18n_t("ui.app.app.controls.f425e3ef")}</button>
+      <button type="button" onClick={() => act({ kind: 'regularEnd', stops: true }, __i18n_k("ui.app.app.controls.8373c66d"), true)}>{__i18n_t("ui.app.app.controls.1e9ed42f")}</button>
     </>
   );
 
@@ -543,58 +520,46 @@ export function App() {
 
   return (
     <div class="app" style={accent ? ({ '--accent': accent.accent, '--accent-ink': accent.ink } as Record<string, string>) : undefined}>
-      <a class="skip-link" href="#main">
-        본문으로 건너뛰기
-      </a>
+      <a class="skip-link" href="#main">{__i18n_t("ui.app.app.f509a430")}</a>
       {/* V0.7.7: on a wide screen the club, the screens and the saves stay in a sidebar and only the page
           scrolls; on a phone everything flows top to bottom as before. */}
       <aside class="sidebar">
         <header class="masthead">
           <div>
-            <h1>{userTeam ? userTeam.name : 'KBO 신구단'}</h1>
-            <p class="muted">
-              {userTeam ? `단장 · 버전 ${RELEASE}` : `관전 모드 · 버전 ${RELEASE}`} · 시드 {league.seed}
-            </p>
+            <h1>{__i18n_display(userTeam ? userTeam.name : __i18n_k("ui.app.app.7fd36273"))}</h1>
+            <p class="muted">{__i18n_t("ui.app.app.9cf15945", { value: userTeam ? __i18n_k("ui.app.app.41a35f43", { rELEASE: RELEASE }) : __i18n_k("ui.app.app.b03985f3", { rELEASE: RELEASE }), seed: league.seed })}</p>
           </div>
           <div class="row-actions">
-            {tutorialPaused(league) && (
-              <button type="button" onClick={() => act({ kind: 'tutorial', on: true }, '튜토리얼', false)}>
-                튜토리얼 다시 켜기
-              </button>
-            )}
-            {unseen.length > 0 && !popups && (
-              <button type="button" onClick={() => setAlertsOpen(true)}>
-                새 알림 {unseen.length}
-              </button>
-            )}
-            <button type="button" aria-current={tab === 'settings' ? 'page' : undefined} onClick={() => setTab('settings')}>
-              설정
-            </button>
+            {__i18n_display(tutorialPaused(league) && (
+              <button type="button" onClick={() => act({ kind: 'tutorial', on: true }, __i18n_k("ui.app.app.aca4b433"), false)}>{__i18n_t("ui.app.app.f626ade9")}</button>
+            ))}
+            {__i18n_display(unseen.length > 0 && !popups && (
+              <button type="button" onClick={() => setAlertsOpen(true)}>{__i18n_t("ui.app.app.8b7e42a7", { length: unseen.length })}</button>
+            ))}
+            <button type="button" aria-current={tab === 'settings' ? 'page' : undefined} onClick={() => setTab('settings')}>{__i18n_t("ui.app.app.c14a567e")}</button>
           </div>
         </header>
-        {league.user && <ClubSummary league={league} onTab={setTab} />}
-        <nav class="tabs" aria-label="화면">
-          {TABS.filter((t) => (!t.userOnly || league.user) && (!t.waiting || league.pending)).map((t) => (
+        {__i18n_display(league.user && <ClubSummary league={league} onTab={setTab} />)}
+        <nav class="tabs" aria-label={__i18n_t("ui.app.app.43c786f1")}>
+          {__i18n_display(TABS.filter((t) => (!t.userOnly || league.user) && (!t.waiting || league.pending)).map((t) => (
             <button key={t.id} type="button" class={t.waiting ? 'tab-waiting' : undefined} aria-current={tab === t.id ? 'page' : undefined} onClick={() => setTab(t.id)}>
-              {t.label}
+              {__i18n_display(t.label)}
             </button>
-          ))}
+          )))}
         </nav>
         <footer class="footer">
           <div class="save-actions">
-            <button type="button" onClick={exportSave} disabled={!!busy}>
-              진행 파일 저장
-            </button>
+            <button type="button" onClick={exportSave} disabled={!!busy}>{__i18n_t("ui.app.app.2ba578d5")}</button>
             <label class="file-button">
               불러오기
               <input type="file" accept="application/json,.json,.gz" onChange={(e) => importSave((e.currentTarget as HTMLInputElement).files?.[0])} />
             </label>
-            <span class="muted">{store.kind === 'indexedDB' ? '자동 저장됨' : '이 브라우저에서는 자동 저장을 쓸 수 없습니다. 진행 파일로 저장하세요.'}</span>
+            <span class="muted">{__i18n_display(store.kind === 'indexedDB' ? __i18n_k("ui.app.app.cdf1c4df") : __i18n_k("ui.app.app.9fa95b75"))}</span>
           </div>
-          <p class="muted small">{DISCLAIMER}</p>
+          <p class="muted small">{__i18n_display(DISCLAIMER)}</p>
         </footer>
       </aside>
-      {storyOpen && (
+      {__i18n_display(storyOpen && (
         <StorySettings
           settings={storySettings}
           usage={usage.current}
@@ -605,40 +570,40 @@ export function App() {
             setStoryOpen(false);
           }}
         />
-      )}
-      {(popups || alertsOpen) && !busy && unseen.length > 0 && (
+      ))}
+      {__i18n_display((popups || alertsOpen) && !busy && unseen.length > 0 && (
         <AlertPopup
           key={unseen[0]!.id}
           alerts={unseen}
           onDone={(ids) => {
             setAlertsOpen(false);
             // Articles left out of the pop-ups count as read with the rest (they stay in the list).
-            void act({ kind: 'alertsSeen', ids: [...ids, ...unseenAll.filter((a) => !unseen.includes(a)).map((a) => a.id)] }, '알림 확인', false);
+            void act({ kind: 'alertsSeen', ids: [...ids, ...unseenAll.filter((a) => !unseen.includes(a)).map((a) => a.id)] }, __i18n_k("ui.app.app.f0dd4af2"), false);
           }}
         />
-      )}
+      ))}
       <div class="progress-bar">
         <p class="status" aria-live="polite">
-          {busy ?? statusLine(league)}
+          {__i18n_display(busy ?? statusLine(league))}
         </p>
         <fieldset class="controls" disabled={!!busy}>
-          {controls}
+          {__i18n_display(controls)}
         </fieldset>
       </div>
       <main class="page" id="main" tabIndex={-1} data-version={version}>
-        {notice && (
+        {__i18n_display(notice && (
           <p class="notice" role="status">
-            {notice}
+            {__i18n_display(notice)}
           </p>
-        )}
+        ))}
         <Guard resetKey={`${tab}|${clubView}`} onBack={() => setTab(tab === 'standings' ? (league.user ? 'club' : 'leaders') : 'standings')}>
-        <TutorialCard league={league} tab={tab} view={tab === 'club' ? clubView : undefined} onAct={(a) => act(a, '튜토리얼', false)} />
-        {tab === 'decision' && league.pending && <Decision league={league} onPlayer={setPlayerId} onSubmit={(input) => act({ kind: 'decide', input }, '진행 중', false)} />}
-        {tab === 'club' && league.user && (
+        <TutorialCard league={league} tab={tab} view={tab === 'club' ? clubView : undefined} onAct={(a) => act(a, __i18n_k("ui.app.app.aca4b433"), false)} />
+        {__i18n_display(tab === 'decision' && league.pending && <Decision league={league} onPlayer={setPlayerId} onSubmit={(input) => act({ kind: 'decide', input }, __i18n_k("ui.app.app.7890cafc"), false)} />)}
+        {__i18n_display(tab === 'club' && league.user && (
           <MyClub
             league={league}
             onPlayer={setPlayerId}
-            onAct={(a) => act(a, '처리 중', false)}
+            onAct={(a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false)}
             onView={setClubView}
             onGo={(g) => {
               if (g.tab !== 'market') return;
@@ -647,36 +612,36 @@ export function App() {
             }}
             story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }}
           />
-        )}
-        {tab === 'market' && league.user && (
-          <Market key={marketIntent.n} league={league} intent={marketIntent.n ? marketIntent : undefined} onPlayer={setPlayerId} onAct={(a) => act(a, '처리 중', false)} />
-        )}
-        {tab === 'games' && <Games league={league} onOpen={setBoxId} />}
-        {tab === 'standings' && <Standings league={league} onTeam={openTeam} onBox={setBoxId} onAct={league.user ? (a) => act(a, '처리 중', false) : undefined} />}
-        {tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} onBox={setBoxId} onAct={league.user ? (a) => act(a, '처리 중', false) : undefined} />}
-        {tab === 'team' && <TeamRoster league={league} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />}
-        {tab === 'history' && <History league={league} onPlayer={setPlayerId} />}
-        {tab === 'settings' && (
+        ))}
+        {__i18n_display(tab === 'market' && league.user && (
+          <Market key={marketIntent.n} league={league} intent={marketIntent.n ? marketIntent : undefined} onPlayer={setPlayerId} onAct={(a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false)} />
+        ))}
+        {__i18n_display(tab === 'games' && <Games league={league} onOpen={setBoxId} />)}
+        {__i18n_display(tab === 'standings' && <Standings league={league} onTeam={openTeam} onBox={setBoxId} onAct={league.user ? (a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false) : undefined} />)}
+        {__i18n_display(tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} onBox={setBoxId} onAct={league.user ? (a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false) : undefined} />)}
+        {__i18n_display(tab === 'team' && <TeamRoster league={league} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />)}
+        {__i18n_display(tab === 'history' && <History league={league} onPlayer={setPlayerId} />)}
+        {__i18n_display(tab === 'settings' && (
           <Settings
             league={league}
             store={store}
             busy={!!busy}
             story={{ settings: storySettings, usage: usage.current, pausedUntil: storySettings.auto ? autoPause.current : 0, onSave: saveStory }}
-            onAct={(a) => act(a, '처리 중', false)}
+            onAct={(a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false)}
             onExport={exportSave}
             onImport={importSave}
             onNewGame={newGame}
           />
-        )}
-        {tab === 'help' && <Manual />}
-        {tab === 'draft' && (
+        ))}
+        {__i18n_display(tab === 'help' && <Manual />)}
+        {__i18n_display(tab === 'draft' && (
           <div class="layout">
             <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} ourView={league?.user ? (p) => scoutView(league!, p) : undefined} />
             <PlayerProfile
               player={prospect && publicView(prospect)}
               age={prospect && prospectAge(prospect)}
               combine={prospect && league && combineHeld(league, draftYear) && attends(league.seed, draftYear, prospect) ? combineLines(league.seed, draftYear, prospect) : null}
-              combineNote={league && !combineHeld(league, draftYear) ? `${draftYear}년 8월 25일 컴바인에서 측정합니다 (공개 순위 60위 안 초청).` : '컴바인에 나오지 않았습니다.'}
+              combineNote={league && !combineHeld(league, draftYear) ? __i18n_k("ui.app.app.dabfaec3", { draftYear: draftYear }) : __i18n_k("ui.app.app.5e6c4cae")}
               report={prospect && league?.user ? traitReport(league, prospect) : null}
               workout={
                 prospect && league?.user
@@ -684,16 +649,16 @@ export function App() {
                       done: workoutsOf(league, draftYear).includes(prospect.id),
                       blocked: checkWorkout(league, draftYear, prospect.id),
                       cost: money(COMBINE.workoutCost),
-                      onClick: () => act({ kind: 'workout', draftYear, id: prospect.id, name: prospect.name }, '처리 중', false),
+                      onClick: () => act({ kind: 'workout', draftYear, id: prospect.id, name: prospect.name }, __i18n_k("ui.app.app.onClick.bd04d7e4"), false),
                     }
                   : undefined
               }
             />
           </div>
-        )}
+        ))}
         </Guard>
       </main>
-      {boxId && league && (
+      {__i18n_display(boxId && league && (
         <BoxScore
           league={league}
           id={boxId}
@@ -702,19 +667,19 @@ export function App() {
             setBoxId(null);
             setPlayerId(pid);
           }}
-          onAct={(a) => act(a, '기사 쓰는 중', false)}
+          onAct={(a) => act(a, __i18n_k("ui.app.app.8dd94575"), false)}
           story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }}
         />
-      )}
-      {playerId && league && (
+      ))}
+      {__i18n_display(playerId && league && (
         <PlayerPanel
           league={league}
           id={playerId}
           onClose={() => setPlayerId(null)}
-          onInterview={(pid) => act({ kind: 'interview', id: pid }, '인터뷰 중', false)}
-          onAct={(a) => act(a, '처리 중', false)}
+          onInterview={(pid) => act({ kind: 'interview', id: pid }, __i18n_k("ui.app.app.7296f88b"), false)}
+          onAct={(a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false)}
         />
-      )}
+      ))}
     </div>
   );
 }

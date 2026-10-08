@@ -1,3 +1,4 @@
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* Foreign player talks on the decision screen (1.3.0): what we offer each new signing (guaranteed money and options,
    his club's fee on top, the scouts' read of his answer), and the figure and years for each player we re-sign. Offers
    are kept as text in the decision's choices ("g:<id>", "o:<id>" in 만 달러; "a:<id>", "y:<id>" for re-signings). */
@@ -39,25 +40,25 @@ export function ForeignOffers({
   choose: (key: string, value: string) => void;
 }) {
   const rows = ids.filter((id) => terms[id]);
-  if (!rows.length) return <p class="muted">계약할 선수를 고르면 여기서 제안 조건을 정합니다.</p>;
+  if (!rows.length) return <p class="muted">{__i18n_t("ui.foreignTalks.foreignOffers.f40f6c09")}</p>;
   return (
     <div class="table-wrap" tabIndex={0}>
       <table class="record-table foreign-offers">
-        <caption>제안 조건 (만 달러)</caption>
+        <caption>{__i18n_t("ui.foreignTalks.foreignOffers.8ab04ae2")}</caption>
         <thead>
           <tr>
-            <th>선수</th>
-            <th class="num">희망 보장액</th>
-            <th class="num">이적료</th>
-            <th>다른 제안</th>
-            <th>보장 (계약금+연봉)</th>
-            <th>옵션</th>
-            <th class="num">총액 / 상한</th>
-            <th>스카우트 예상</th>
+            <th>{__i18n_t("ui.foreignTalks.foreignOffers.c37450d6")}</th>
+            <th class="num">{__i18n_t("ui.foreignTalks.foreignOffers.0aa20f27")}</th>
+            <th class="num">{__i18n_t("ui.foreignTalks.foreignOffers.fd3e4a69")}</th>
+            <th>{__i18n_t("ui.foreignTalks.foreignOffers.7c1430c8")}</th>
+            <th>{__i18n_t("ui.foreignTalks.foreignOffers.62066cd8")}</th>
+            <th>{__i18n_t("ui.foreignTalks.foreignOffers.3c7dbce6")}</th>
+            <th class="num">{__i18n_t("ui.foreignTalks.foreignOffers.d0fde472")}</th>
+            <th>{__i18n_t("ui.foreignTalks.foreignOffers.cf9b747a")}</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((id) => {
+          {__i18n_display(rows.map((id) => {
             const p = league.players[id]!;
             const t = terms[id]!;
             const offer = offerOf(league, id, t, choices);
@@ -65,20 +66,20 @@ export function ForeignOffers({
             const total = dealTotal(t, offer);
             return (
               <tr key={id}>
-                <td>{p.name}</td>
+                <td>{__i18n_display(p.name)}</td>
                 <td class="num">
-                  {usd(t.counter ?? t.ask)}
-                  {t.counter ? <span class="tag">역제안</span> : null}
+                  {__i18n_display(usd(t.counter ?? t.ask))}
+                  {__i18n_display(t.counter ? <span class="tag">{__i18n_t("ui.foreignTalks.foreignOffers.239c3bd1")}</span> : null)}
                 </td>
-                <td class="num">{t.fee ? usd(t.fee) : '-'}</td>
-                <td>{t.rival ? t.rival.label : '-'}</td>
+                <td class="num">{__i18n_display(t.fee ? usd(t.fee) : '-')}</td>
+                <td>{__i18n_display(t.rival ? t.rival.label : '-')}</td>
                 <td>
                   <input
                     type="number"
                     min={1}
                     step={1}
                     class="money-input"
-                    aria-label={`${p.name} 보장액 (만 달러)`}
+                    aria-label={__i18n_displayText(__i18n_k("ui.foreignTalks.foreignOffers.3d1b66b0", { name: p.name }))}
                     value={choices[`g:${id}`] ?? toMan(offer.guaranteed)}
                     onInput={(e) => choose(`g:${id}`, (e.currentTarget as HTMLInputElement).value)}
                   />
@@ -89,24 +90,21 @@ export function ForeignOffers({
                     min={0}
                     step={1}
                     class="money-input"
-                    aria-label={`${p.name} 옵션 (만 달러)`}
+                    aria-label={__i18n_displayText(__i18n_k("ui.foreignTalks.foreignOffers.c14104e0", { name: p.name }))}
                     value={choices[`o:${id}`] ?? toMan(offer.options)}
                     onInput={(e) => choose(`o:${id}`, (e.currentTarget as HTMLInputElement).value)}
                   />
                 </td>
                 <td class={`num ${total > cap ? 'minus' : ''}`}>
-                  {usd(total)} / {usd(cap)}
+                  {__i18n_display(usd(total))} / {__i18n_display(usd(cap))}
                 </td>
-                <td>{outlook(t, offer)}</td>
+                <td>{__i18n_display(outlook(t, offer))}</td>
               </tr>
             );
-          })}
+          }))}
         </tbody>
       </table>
-      <p class="muted small">
-        보장액(계약금·연봉)과 옵션(좋은 시즌 뒤 지급)을 정해 제안합니다. 선수는 옵션 1달러를 보장 0.5달러쯤으로 칩니다. 이적료는 원소속 구단에 주는 돈으로 상한(총액)에 들어가고 구단 자금에서 나갑니다. 다른 곳의 제안이
-        더 좋으면 그만큼 받아야 옵니다. 선수는 받아들이거나, 역제안하거나, 협상을 끝냅니다 — 최대 3차까지, 그 사이 다른 리그로 가는 선수도 있습니다. 스카우트 예상은 어림입니다.
-      </p>
+      <p class="muted small">{__i18n_t("ui.foreignTalks.foreignOffers.9ebbe9d0")}</p>
     </div>
   );
 }
@@ -131,52 +129,50 @@ export function RenewOffers({
   return (
     <div class="table-wrap" tabIndex={0}>
       <table class="record-table foreign-offers">
-        <caption>재계약 조건 (만 달러, 한 시즌)</caption>
+        <caption>{__i18n_t("ui.foreignTalks.renewOffers.2f510d1f")}</caption>
         <thead>
           <tr>
-            <th>선수</th>
-            <th class="num">요구액</th>
-            <th>제안</th>
-            <th>기간</th>
-            <th>구단 애정 (코치 평가)</th>
+            <th>{__i18n_t("ui.foreignTalks.renewOffers.c37450d6")}</th>
+            <th class="num">{__i18n_t("ui.foreignTalks.renewOffers.5a38f48b")}</th>
+            <th>{__i18n_t("ui.foreignTalks.renewOffers.6ef251ee")}</th>
+            <th>{__i18n_t("ui.foreignTalks.renewOffers.2622331e")}</th>
+            <th>{__i18n_t("ui.foreignTalks.renewOffers.2c68f39f")}</th>
           </tr>
         </thead>
         <tbody>
-          {shown.map((r) => {
+          {__i18n_display(shown.map((r) => {
             const p = league.players[r.id]!;
             const loyalty = traitReport(league, p)?.reads.find((x) => x.key === 'loyalty');
             return (
               <tr key={r.id}>
                 <td>
-                  {p.name} <span class="muted small">만 {ageIn(p, next)}세</span>
+                  {__i18n_display(p.name)} <span class="muted small">{__i18n_t("ui.foreignTalks.renewOffers.8ff6b63f", { ageIn: ageIn(p, next) })}</span>
                 </td>
-                <td class="num">{usd(r.ask)}</td>
+                <td class="num">{__i18n_display(usd(r.ask))}</td>
                 <td>
                   <input
                     type="number"
                     min={1}
                     step={1}
                     class="money-input"
-                    aria-label={`${p.name} 재계약 제안 (만 달러)`}
+                    aria-label={__i18n_displayText(__i18n_k("ui.foreignTalks.renewOffers.6d9e359a", { name: p.name }))}
                     value={choices[`a:${r.id}`] ?? toMan(r.ask)}
                     onInput={(e) => choose(`a:${r.id}`, (e.currentTarget as HTMLInputElement).value)}
                   />
                 </td>
                 <td>
-                  <select aria-label={`${p.name} 계약 기간`} value={choices[`y:${r.id}`] ?? '1'} onChange={(e) => choose(`y:${r.id}`, (e.currentTarget as HTMLSelectElement).value)}>
-                    <option value="1">1년</option>
-                    <option value="2">2년</option>
+                  <select aria-label={__i18n_displayText(__i18n_k("ui.foreignTalks.renewOffers.2b11bcb2", { name: p.name }))} value={choices[`y:${r.id}`] ?? '1'} onChange={(e) => choose(`y:${r.id}`, (e.currentTarget as HTMLSelectElement).value)}>
+                    <option value="1">{__i18n_t("ui.foreignTalks.renewOffers.495b63c7")}</option>
+                    <option value="2">{__i18n_t("ui.foreignTalks.renewOffers.f093b9f1")}</option>
                   </select>
                 </td>
-                <td>{loyalty?.text ? `${loyalty.text} · 확신 ${loyalty.sure}` : '파악 못 함'}</td>
+                <td>{__i18n_display(loyalty?.text ? __i18n_k("ui.foreignTalks.renewOffers.9a0fd875", { text: loyalty.text, sure: loyalty.sure }) : __i18n_k("ui.foreignTalks.renewOffers.da8abd91"))}</td>
               </tr>
             );
-          })}
+          }))}
         </tbody>
       </table>
-      <p class="muted small">
-        요구액 그대로 1년이면 반드시 남습니다. 깎아서 제안하면 구단에 대한 애정이 큰 선수일수록 받아들이고, 거절하면 떠납니다. 2년 계약은 31세 이상이 반기고 젊은 선수는 조금 더 받아야 합니다.
-      </p>
+      <p class="muted small">{__i18n_t("ui.foreignTalks.renewOffers.fdc186b4")}</p>
     </div>
   );
 }

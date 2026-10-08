@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Staff (V0.6, RULES.md §13). Every club has eight department heads: the manager, hitting, pitching and
    fielding coaches, the futures (development) manager, the scouting director, the head trainer and the
    head of analytics. Each has a 20–80 rating shown in five-point steps, a salary and a contract. What
@@ -25,33 +26,33 @@ const names = DraftNames as unknown as { makeName: (r: () => number, used: Set<s
 export const STAFF_ROLES: StaffRole[] = ['manager', 'hitting', 'pitching', 'fielding', 'farm', 'scouting', 'medical', 'analytics'];
 
 export const STAFF_LABELS: Record<StaffRole, string> = {
-  manager: '감독',
-  hitting: '타격코치',
-  pitching: '투수코치',
-  fielding: '수비·주루코치',
-  farm: '퓨처스 감독',
-  scouting: '스카우트 팀장',
-  medical: '트레이닝 팀장',
-  analytics: '전력분석 팀장',
+  manager: __i18n_k("league.staff.sTAFF_LABELS.manager.daec431c"),
+  hitting: __i18n_k("league.staff.sTAFF_LABELS.hitting.8a5c9a74"),
+  pitching: __i18n_k("league.staff.sTAFF_LABELS.pitching.0b977195"),
+  fielding: __i18n_k("league.staff.sTAFF_LABELS.fielding.526edd08"),
+  farm: __i18n_k("league.staff.sTAFF_LABELS.farm.347796cf"),
+  scouting: __i18n_k("league.staff.sTAFF_LABELS.scouting.5added0a"),
+  medical: __i18n_k("league.staff.sTAFF_LABELS.medical.2ac3944c"),
+  analytics: __i18n_k("league.staff.sTAFF_LABELS.analytics.b8d925c1"),
 };
 
 export const STAFF_EFFECTS: Record<StaffRole, string> = {
-  manager: '라인업·기용에서 선수를 더 정확히 봄, 운영 성향',
-  hitting: '타자 능력 성장',
-  pitching: '투수 능력 성장',
-  fielding: '수비·주루 성장',
-  farm: '24세 이하 2군 선수 성장',
-  scouting: '아마추어 선수 평가 정확도',
-  medical: '부상 빈도와 기간',
-  analytics: '수비 위치 선정, 플래툰',
+  manager: __i18n_k("league.staff.sTAFF_EFFECTS.manager.debae7ab"),
+  hitting: __i18n_k("league.staff.sTAFF_EFFECTS.hitting.83397383"),
+  pitching: __i18n_k("league.staff.sTAFF_EFFECTS.pitching.ab556c5f"),
+  fielding: __i18n_k("league.staff.sTAFF_EFFECTS.fielding.3482de67"),
+  farm: __i18n_k("league.staff.sTAFF_EFFECTS.farm.6360df79"),
+  scouting: __i18n_k("league.staff.sTAFF_EFFECTS.scouting.63023a6f"),
+  medical: __i18n_k("league.staff.sTAFF_EFFECTS.medical.df18d4af"),
+  analytics: __i18n_k("league.staff.sTAFF_EFFECTS.analytics.6c6b3420"),
 };
 
 export const MANAGER_STYLES: Record<ManagerStyle, { label: string; note: string }> = {
-  balanced: { label: '균형형', note: '특별한 성향 없음' },
-  smallBall: { label: '작전형', note: '번트·도루를 더 자주' },
-  youth: { label: '육성형', note: '젊은 선수에게 기회를 더' },
-  quickHook: { label: '불펜 중시', note: '선발을 일찍 내림' },
-  patient: { label: '선발 중시', note: '선발을 오래 끌고 감' },
+  balanced: { label: __i18n_k("league.staff.balanced.label.81c84478"), note: __i18n_k("league.staff.balanced.note.759413c2") },
+  smallBall: { label: __i18n_k("league.staff.smallBall.label.e53e3915"), note: __i18n_k("league.staff.smallBall.note.98cfe5b6") },
+  youth: { label: __i18n_k("league.staff.youth.label.82ee1a8f"), note: __i18n_k("league.staff.youth.note.bb224171") },
+  quickHook: { label: __i18n_k("league.staff.quickHook.label.10759c2a"), note: __i18n_k("league.staff.quickHook.note.25a12ff8") },
+  patient: { label: __i18n_k("league.staff.patient.label.8af3ec49"), note: __i18n_k("league.staff.patient.note.0d736305") },
 };
 
 const round5 = (x: number) => Math.max(20, Math.min(80, Math.round(x / 5) * 5));

@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Each AI club's plan (1.6.0, from the 1.4 review): on top of the common trade value (trade.ts), a club weighs a
    player by what it is trying to do. A club near the top goes for now (contend), one at the bottom with an old
    roster or out of the race builds for later (rebuild), the rest stay balanced. It also knows where it is short
@@ -17,10 +18,10 @@ import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from './sta
 import { STRATEGY as S } from './tuning';
 
 export type ClubMode = 'contend' | 'balanced' | 'rebuild';
-export const MODE_LABEL: Record<ClubMode, string> = { contend: '우승 도전', balanced: '균형', rebuild: '리빌딩' };
+export const MODE_LABEL: Record<ClubMode, string> = { contend: __i18n_k("league.strategy.mODE_LABEL.contend.24a019cb"), balanced: __i18n_k("league.strategy.mODE_LABEL.balanced.45c89bab"), rebuild: __i18n_k("league.strategy.mODE_LABEL.rebuild.f7c61df8") };
 
 export type Spot = 'SP' | 'RP' | 'C' | 'IF' | 'OF';
-export const SPOT_LABEL: Record<Spot, string> = { SP: '선발투수', RP: '불펜', C: '포수', IF: '내야수', OF: '외야수' };
+export const SPOT_LABEL: Record<Spot, string> = { SP: __i18n_k("league.strategy.sPOT_LABEL.sP.cd036b1a"), RP: __i18n_k("league.strategy.sPOT_LABEL.rP.5b8607a3"), C: __i18n_k("league.strategy.sPOT_LABEL.c.5f31470d"), IF: __i18n_k("league.strategy.sPOT_LABEL.iF.d7fc242c"), OF: __i18n_k("league.strategy.sPOT_LABEL.oF.7435120b") };
 /** How many at each spot a first team leans on. */
 const CORE: Record<Spot, number> = { SP: 5, RP: 6, C: 1, IF: 4, OF: 3 };
 
@@ -80,14 +81,14 @@ export function clubStrategy(s: LeagueState, teamId: TeamId): ClubStrategy {
   const room = salaryCapFor(next) - capTotal(s, teamId, next);
   const st = standing(s, teamId);
   let mode: ClubMode = 'balanced';
-  let why = '전력과 미래를 고르게 봅니다.';
+  let why = __i18n_k("league.strategy.clubStrategy.why.a630e0a2");
   // Early in the season a club goes by last year; later by where it stands now.
   if (st.rank <= S.contendRank && (st.share < 0.25 || st.behind <= 0)) {
     mode = 'contend';
-    why = `${st.rank}위${st.share >= 0.25 ? '' : '(지난 시즌)'}로 우승을 노립니다. 지금 쓸 선수를 더 높이 봅니다.`;
+    why = __i18n_k("league.strategy.clubStrategy.99089f67", { rank: st.rank, value: st.share >= 0.25 ? '' : __i18n_k("league.strategy.clubStrategy.e6de1983") });
   } else if (st.rank > st.clubs - S.rebuildBottom && (age >= S.oldCore || (st.share >= 0.5 && st.behind >= S.outOfRace))) {
     mode = 'rebuild';
-    why = age >= S.oldCore ? `하위권에 주축 평균 ${age.toFixed(1)}세로 늙어 리빌딩 중입니다. 젊은 선수와 지명권을 선호합니다.` : `가을야구에서 ${Math.round(st.behind)}경기 차로 멀어져 리빌딩 중입니다. 젊은 선수와 지명권을 선호합니다.`;
+    why = age >= S.oldCore ? __i18n_k("league.strategy.clubStrategy.4b263ca3", { value: age.toFixed(1) }) : __i18n_k("league.strategy.clubStrategy.65566450", { value: Math.round(st.behind) });
   }
   return { mode, why, needs, age, room };
 }
@@ -114,11 +115,11 @@ export function planGuard(s: LeagueState, teamId: TeamId, plan: ClubStrategy, gi
     .map((id) => s.players[id]!)
     .filter((p) => !isForeign(p) && !gives.some((g) => g.id === p.id));
   const plus = [...left, ...gets];
-  if (gives.some((p) => spotOf(p) === 'C') && plus.filter((p) => spotOf(p) === 'C').length < S.keep.C) return `${name}: 포수가 모자라 더 내줄 수 없다고 합니다.`;
-  if (gives.some((p) => spotOf(p) === 'SP') && plus.filter((p) => spotOf(p) === 'SP').length < S.keep.SP) return `${name}: 선발투수가 모자라 더 내줄 수 없다고 합니다.`;
+  if (gives.some((p) => spotOf(p) === 'C') && plus.filter((p) => spotOf(p) === 'C').length < S.keep.C) return __i18n_k("league.strategy.planGuard.9f23596c", { name: name });
+  if (gives.some((p) => spotOf(p) === 'SP') && plus.filter((p) => spotOf(p) === 'SP').length < S.keep.SP) return __i18n_k("league.strategy.planGuard.27848eb0", { name: name });
   const season = s.phase === 'regular' || s.phase === 'postseason' ? s.year : s.year + 1;
   const added = gets.reduce((a, p) => a + salaryIn(p, season), 0) - gives.reduce((a, p) => a + salaryIn(p, season), 0);
-  if (added > 0 && added > plan.room) return `${name}: 받으면 샐러리캡을 넘어 연봉을 더 떠안을 수 없다고 합니다 (여유 ${Math.max(0, Math.round(plan.room / 10000))}억).`;
+  if (added > 0 && added > plan.room) return __i18n_k("league.strategy.planGuard.b99f3e9b", { name: name, value: Math.max(0, Math.round(plan.room / 10000)) });
   return null;
 }
 
@@ -126,13 +127,13 @@ export function planGuard(s: LeagueState, teamId: TeamId, plan: ClubStrategy, gi
 export function planReasons(s: LeagueState, teamId: TeamId, plan: ClubStrategy, gets: Player[], picks: number, cash: number): string[] {
   const name = s.teams.find((t) => t.id === teamId)?.short ?? teamId;
   const out = [`${name} · ${MODE_LABEL[plan.mode]}: ${plan.why}`];
-  if (plan.needs.length) out.push(`부족한 자리: ${plan.needs.map((k) => SPOT_LABEL[k]).join(', ')}`);
+  if (plan.needs.length) out.push(__i18n_k("league.strategy.planReasons.f3ef1a81", { value: plan.needs.map((k) => SPOT_LABEL[k]).join(', ') }));
   for (const p of gets) {
     const k = planFactor(s, plan, p);
-    if (k >= 1.1) out.push(`${p.name}: ${plan.needs.includes(spotOf(p)) ? `${SPOT_LABEL[spotOf(p)]} 보강이 필요해 반깁니다` : plan.mode === 'contend' ? '당장 쓸 수 있어 반깁니다' : '젊어서 반깁니다'}.`);
-    else if (k <= 0.9) out.push(`${p.name}: ${plan.mode === 'rebuild' ? '나이가 많아 리빌딩 중인 구단엔 덜 필요합니다' : '아직 덜 여물어 지금은 덜 필요합니다'}.`);
+    if (k >= 1.1) out.push(__i18n_k("league.strategy.planReasons.86e653e4", { name: p.name, value: plan.needs.includes(spotOf(p)) ? __i18n_k("league.strategy.planReasons.e6dda645", { value: SPOT_LABEL[spotOf(p)] }) : plan.mode === 'contend' ? __i18n_k("league.strategy.planReasons.12f87a5c") : __i18n_k("league.strategy.planReasons.c2faf004") }));
+    else if (k <= 0.9) out.push(__i18n_k("league.strategy.planReasons.86e653e4", { name: p.name, value: plan.mode === 'rebuild' ? __i18n_k("league.strategy.planReasons.a25d7de4") : __i18n_k("league.strategy.planReasons.8407af5e") }));
   }
-  if (picks && plan.mode !== 'balanced') out.push(plan.mode === 'rebuild' ? '지명권을 높이 봅니다.' : '지명권보다 지금 전력을 원합니다.');
-  if (cash && plan.mode === 'rebuild') out.push('현금도 반깁니다.');
+  if (picks && plan.mode !== 'balanced') out.push(plan.mode === 'rebuild' ? __i18n_k("league.strategy.planReasons.76223a91") : __i18n_k("league.strategy.planReasons.8d1bac8f"));
+  if (cash && plan.mode === 'rebuild') out.push(__i18n_k("league.strategy.planReasons.22e7f930"));
   return out;
 }

@@ -1,3 +1,4 @@
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* The user's club in three views: an overview you can read at a glance, the squads (with the general
    manager's moves), and the front office (money, ballpark, club facts). */
 import { useEffect, useState } from 'preact/hooks';
@@ -64,31 +65,29 @@ export function MyClub({
       <div class="page-head">
         <div>
           <h2 id="myclub-title">
-            <span class="swatch" style={{ background: team.color }} aria-hidden="true" /> {team.name}
+            <span class="swatch" style={{ background: team.color }} aria-hidden="true" /> {__i18n_display(team.name)}
           </h2>
-          <p class="muted">
-            {city.name} · {PARENT_COMPANY_TYPES[u.settings.parentType].label} {team.parent.name} · {team.stadium.name} {team.stadium.capacity.toLocaleString('ko-KR')}석
-          </p>
+          <p class="muted">{__i18n_t("ui.myClub.myClub.7a2d3f31", { name: city.name, label: PARENT_COMPANY_TYPES[u.settings.parentType].label, name2: team.parent.name, name3: team.stadium.name, value: team.stadium.capacity.toLocaleString('ko-KR') })}</p>
         </div>
-        <div class="segmented" role="group" aria-label="우리 구단 보기">
-          {(
+        <div class="segmented" role="group" aria-label={__i18n_t("ui.myClub.myClub.8cd1adbf")}>
+          {__i18n_display((
             [
-              ['overview', '개요'],
-              ['squad', '선수단'],
-              ['lineup', '라인업'],
-              ['training', '해외 연수'],
-              ['story', '소식'],
-              ['office', '구단 운영'],
+              ['overview', __i18n_k("ui.myClub.myClub.476966c5")],
+              ['squad', __i18n_k("ui.myClub.myClub.5b9daec2")],
+              ['lineup', __i18n_k("ui.myClub.myClub.4c31ef82")],
+              ['training', __i18n_k("ui.myClub.myClub.b4927759")],
+              ['story', __i18n_k("ui.myClub.myClub.d77486d9")],
+              ['office', __i18n_k("ui.myClub.myClub.6bc69497")],
             ] as [View, string][]
           ).map(([id, label]) => (
             <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>
-              {label}
+              {__i18n_display(label)}
             </button>
-          ))}
+          )))}
         </div>
       </div>
-      {u.fired && <p class="notice warn">{u.fired}년 겨울, 모기업이 단장을 해임했습니다. 새 게임을 시작하거나 이 구단을 계속 지켜볼 수 있습니다.</p>}
-      {view === 'overview' && (
+      {__i18n_display(u.fired && <p class="notice warn">{__i18n_t("ui.myClub.myClub.667abded", { fired: u.fired })}</p>)}
+      {__i18n_display(view === 'overview' && (
         <>
           <ScenarioCard league={league} />
           <Briefing
@@ -101,20 +100,20 @@ export function MyClub({
           />
           <Overview league={league} onPlayer={onPlayer} />
         </>
-      )}
-      {view === 'squad' && <Management league={league} onPlayer={onPlayer} onAct={onAct} setMsg={setMsg} />}
-      {view === 'lineup' && <Lineup league={league} teamId={u.teamId} onPlayer={onPlayer} onAct={onAct} />}
-      {view === 'training' && <Training league={league} onAct={onAct} onPlayer={onPlayer} />}
-      {view === 'story' && <Story league={league} {...story} />}
-      {view === 'office' && <Office league={league} onAct={onAct} setMsg={setMsg} onPlayer={onPlayer} />}
-      {msg && (
+      ))}
+      {__i18n_display(view === 'squad' && <Management league={league} onPlayer={onPlayer} onAct={onAct} setMsg={setMsg} />)}
+      {__i18n_display(view === 'lineup' && <Lineup league={league} teamId={u.teamId} onPlayer={onPlayer} onAct={onAct} />)}
+      {__i18n_display(view === 'training' && <Training league={league} onAct={onAct} onPlayer={onPlayer} />)}
+      {__i18n_display(view === 'story' && <Story league={league} {...story} />)}
+      {__i18n_display(view === 'office' && <Office league={league} onAct={onAct} setMsg={setMsg} onPlayer={onPlayer} />)}
+      {__i18n_display(msg && (
         <p class="toast" role="status">
-          {msg}
-          <button type="button" class="link" onClick={() => setMsg('')} aria-label="닫기">
+          {__i18n_display(msg)}
+          <button type="button" class="link" onClick={() => setMsg('')} aria-label={__i18n_t("ui.myClub.myClub.94b7dba1")}>
             ✕
           </button>
         </p>
-      )}
+      ))}
     </section>
   );
 }
@@ -140,67 +139,65 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
   const share = Math.min(1, payroll / Math.max(1, u.payrollBudget));
   const upcoming = league.phase === 'regular' ? league.schedule.slice(league.next).filter((g) => g.home === me || g.away === me).slice(0, 6) : [];
   const steps = [
-    { year: startYear(), label: '창단 승인 · 트라이아웃' },
-    { year: startYear(), label: '첫 신인 드래프트' },
-    ...(u.firstTeamYear === startYear() + 2 ? [{ year: startYear() + 1, label: '퓨처스리그' }] : []),
-    { year: u.firstTeamYear - 1, label: '특별지명 · FA · 외국인' },
-    { year: u.firstTeamYear, label: '1군 진입' },
+    { year: startYear(), label: __i18n_k("ui.myClub.steps.label.bc754946") },
+    { year: startYear(), label: __i18n_k("ui.myClub.steps.label.f4703124") },
+    ...(u.firstTeamYear === startYear() + 2 ? [{ year: startYear() + 1, label: __i18n_k("ui.myClub.steps.label.51439b09") }] : []),
+    { year: u.firstTeamYear - 1, label: __i18n_k("ui.myClub.steps.label.0b486138") },
+    { year: u.firstTeamYear, label: __i18n_k("ui.myClub.steps.label.48bea069") },
   ];
   return (
     <>
       <div class="cards">
         <div class="card">
-          <p class="card-label">{inFirstTeam ? `${league.year} 1군 순위` : `${league.year} 퓨처스리그`}</p>
-          <p class="card-value">{inFirstTeam && row ? `${row.rank}위` : games.length ? `${record.w}승 ${record.l}패` : '창단 준비'}</p>
+          <p class="card-label">{__i18n_display(inFirstTeam ? __i18n_k("ui.myClub.overview.6b921fd2", { year: league.year }) : __i18n_k("ui.myClub.overview.b5dc6dec", { year: league.year }))}</p>
+          <p class="card-value">{__i18n_display(inFirstTeam && row ? __i18n_k("ui.myClub.overview.b372d067", { rank: row.rank }) : games.length ? __i18n_k("ui.myClub.overview.44b431c7", { w: record.w, l: record.l }) : __i18n_k("ui.myClub.overview.d103f6c7"))}</p>
           <p class="card-sub">
-            {inFirstTeam && row ? `${row.w}승 ${row.l}패 ${row.t}무 · 승률 ${rates.fmt3(row.pct)}${row.gb ? ` · ${row.gb}경기 차` : ''}` : `1군 진입 ${u.firstTeamYear}년`}
+            {__i18n_display(inFirstTeam && row ? __i18n_k("ui.myClub.overview.133887b6", { w: row.w, l: row.l, value: row.t, value2: rates.fmt3(row.pct), value3: row.gb ? __i18n_k("ui.myClub.overview.66ea1b23", { gb: row.gb }) : '' }) : __i18n_k("ui.myClub.overview.265daa15", { firstTeamYear: u.firstTeamYear }))}
           </p>
         </div>
         <div class="card">
-          <p class="card-label">{payYear}년 연봉 / 예산</p>
-          <p class="card-value">{money(payroll)}</p>
+          <p class="card-label">{__i18n_t("ui.myClub.overview.26719725", { payYear: payYear })}</p>
+          <p class="card-value">{__i18n_display(money(payroll))}</p>
           <div class="bar" aria-hidden="true">
             <span style={{ width: `${Math.round(share * 100)}%` }} class={payroll > u.payrollBudget ? 'over' : ''} />
           </div>
-          <p class="card-sub">예산 {money(u.payrollBudget)}</p>
+          <p class="card-sub">{__i18n_t("ui.myClub.overview.43fc4f2a", { money: money(u.payrollBudget) })}</p>
         </div>
         <div class="card">
-          <p class="card-label">구단 자금</p>
-          <p class="card-value">{money(u.fund)}</p>
-          <p class="card-sub">계약금·영입비·옵션에 씀</p>
+          <p class="card-label">{__i18n_t("ui.myClub.overview.4f7776dd")}</p>
+          <p class="card-value">{__i18n_display(money(u.fund))}</p>
+          <p class="card-sub">{__i18n_t("ui.myClub.overview.9af74a3f")}</p>
         </div>
         <div class="card">
-          <p class="card-label">소속선수</p>
+          <p class="card-label">{__i18n_t("ui.myClub.overview.78280b3f")}</p>
           <p class="card-value">
-            {registeredIds(league, me).length}
-            <span class="card-unit">/{rosterLimit(league.year)}명</span>
+            {__i18n_display(registeredIds(league, me).length)}
+            <span class="card-unit">{__i18n_t("ui.myClub.overview.60cd9e6b", { rosterLimit: rosterLimit(league.year) })}</span>
           </p>
-          <p class="card-sub">
-            1군 {league.rosters[me]!.active.length}/{firstTeamSize(league, me)} · 육성 {developmentIds(league, me).length}/{OFFSEASON.development.cap}
-          </p>
+          <p class="card-sub">{__i18n_t("ui.myClub.overview.208d4895", { length: league.rosters[me]!.active.length, firstTeamSize: firstTeamSize(league, me), length2: developmentIds(league, me).length, cap: OFFSEASON.development.cap })}</p>
         </div>
       </div>
 
-      {league.year <= u.firstTeamYear && (
-        <ol class="stepper" aria-label="창단 일정">
-          {steps.map((st) => {
+      {__i18n_display(league.year <= u.firstTeamYear && (
+        <ol class="stepper" aria-label={__i18n_t("ui.myClub.overview.f0c2eeda")}>
+          {__i18n_display(steps.map((st) => {
             const done = league.year > st.year || (league.year === st.year && inFirstTeam);
             return (
               <li key={st.label} class={done ? 'done' : ''}>
-                <span class="num">{st.year}</span>
-                {st.label}
+                <span class="num">{__i18n_display(st.year)}</span>
+                {__i18n_display(st.label)}
               </li>
             );
-          })}
+          }))}
         </ol>
-      )}
+      ))}
 
       <div class="dash-grid">
-        <section class="panel" tabIndex={0} aria-label="최근 경기">
-          <h3>최근 경기</h3>
-          {games.length ? (
+        <section class="panel" tabIndex={0} aria-label={__i18n_t("ui.myClub.overview.8eaf05a2")}>
+          <h3>{__i18n_t("ui.myClub.overview.8eaf05a2")}</h3>
+          {__i18n_display(games.length ? (
             <ul class="results">
-              {games
+              {__i18n_display(games
                 .slice(-8)
                 .reverse()
                 .map((g) => {
@@ -209,80 +206,80 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
                   const res = mine > theirs ? 'W' : mine < theirs ? 'L' : 'T';
                   return (
                     <li key={g.id}>
-                      <span class={`result ${res}`}>{res === 'W' ? '승' : res === 'L' ? '패' : '무'}</span>
+                      <span class={`result ${res}`}>{__i18n_display(res === 'W' ? '승' : res === 'L' ? '패' : __i18n_k("ui.myClub.overview.56c5af5b"))}</span>
                       <span class="num score">
-                        {mine}:{theirs}
+                        {__i18n_display(mine)}:{__i18n_display(theirs)}
                       </span>
-                      {home ? 'vs' : '@'} {shortName(league, home ? g.away : g.home)} <span class="muted">{g.date.slice(5).replace('-', '/')}</span>
+                      {__i18n_display(home ? 'vs' : '@')} {__i18n_display(shortName(league, home ? g.away : g.home))} <span class="muted">{__i18n_display(g.date.slice(5).replace('-', '/'))}</span>
                     </li>
                   );
-                })}
+                }))}
             </ul>
           ) : (
-            <p class="empty">아직 경기가 없습니다.</p>
-          )}
+            <p class="empty">{__i18n_t("ui.myClub.overview.b373034f")}</p>
+          ))}
         </section>
-        <section class="panel" tabIndex={0} aria-label="순위">
-          <h3>순위</h3>
-          {inFirstTeam && table.length ? (
+        <section class="panel" tabIndex={0} aria-label={__i18n_t("ui.myClub.overview.d15876f1")}>
+          <h3>{__i18n_t("ui.myClub.overview.d15876f1")}</h3>
+          {__i18n_display(inFirstTeam && table.length ? (
             <table class="mini-table">
               <tbody>
-                {table.map((r) => (
+                {__i18n_display(table.map((r) => (
                   <tr key={r.teamId} class={r.teamId === me ? 'mine' : ''}>
-                    <td class="num">{r.rank}</td>
-                    <td>{shortName(league, r.teamId)}</td>
+                    <td class="num">{__i18n_display(r.rank)}</td>
+                    <td>{__i18n_display(shortName(league, r.teamId))}</td>
                     <td class="num">
-                      {r.w}-{r.l}-{r.t}
+                      {__i18n_display(r.w)}-{__i18n_display(r.l)}-{__i18n_display(r.t)}
                     </td>
-                    <td class="num">{rates.fmt3(r.pct)}</td>
-                    <td class="num muted">{r.gb ? r.gb : '-'}</td>
+                    <td class="num">{__i18n_display(rates.fmt3(r.pct))}</td>
+                    <td class="num muted">{__i18n_display(r.gb ? r.gb : '-')}</td>
                   </tr>
-                ))}
+                )))}
               </tbody>
             </table>
           ) : (
-            <p class="empty">1군에 들어가는 {u.firstTeamYear}년부터 순위가 나옵니다.</p>
-          )}
+            <p class="empty">{__i18n_t("ui.myClub.overview.1a1da1c9", { firstTeamYear: u.firstTeamYear })}</p>
+          ))}
         </section>
-        <section class="panel" tabIndex={0} aria-label="팀 리더">
-          <h3>팀 리더</h3>
+        <section class="panel" tabIndex={0} aria-label={__i18n_t("ui.myClub.overview.e1c45f5a")}>
+          <h3>{__i18n_t("ui.myClub.overview.e1c45f5a")}</h3>
           <TeamLeaders league={league} onPlayer={onPlayer} />
         </section>
-        <section class="panel" tabIndex={0} aria-label="부상 · 결장">
-          <h3>부상 · 결장</h3>
+        <section class="panel" tabIndex={0} aria-label={__i18n_t("ui.myClub.overview.07b747e0")}>
+          <h3>{__i18n_t("ui.myClub.overview.07b747e0")}</h3>
           <Absences league={league} onPlayer={onPlayer} />
         </section>
-        <section class="panel" tabIndex={0} aria-label="다가오는 경기">
-          <h3>다가오는 경기</h3>
-          {upcoming.length ? (
+        <section class="panel" tabIndex={0} aria-label={__i18n_t("ui.myClub.overview.62daa2c1")}>
+          <h3>{__i18n_t("ui.myClub.overview.62daa2c1")}</h3>
+          {__i18n_display(upcoming.length ? (
             <ul class="plain upcoming">
-              {upcoming.map((g) => (
+              {__i18n_display(upcoming.map((g) => (
                 <li key={g.id}>
-                  <span class="muted num">{g.date.slice(5).replace('-', '/')}</span> {g.home === me ? 'vs' : '@'} {shortName(league, g.home === me ? g.away : g.home)}
-                  <span class="muted small">{g.home === me ? ' 홈' : ' 원정'}</span>
+                  <span class="muted num">{__i18n_display(g.date.slice(5).replace('-', '/'))}</span> {__i18n_display(g.home === me ? 'vs' : '@')} {__i18n_display(shortName(league, g.home === me ? g.away : g.home))}
+                  <span class="muted small">{__i18n_display(g.home === me ? __i18n_k("ui.myClub.overview.cf9acf5c") : __i18n_k("ui.myClub.overview.a8e57c97"))}</span>
                 </li>
-              ))}
+              )))}
             </ul>
           ) : (
-            <p class="empty">{league.phase === 'regular' ? '남은 경기가 없습니다.' : '시즌이 끝났습니다.'}</p>
-          )}
+            <p class="empty">{__i18n_display(league.phase === 'regular' ? __i18n_k("ui.myClub.overview.c372dc4c") : __i18n_k("ui.myClub.overview.974a96d9"))}</p>
+          ))}
         </section>
-        <section class="panel" tabIndex={0} aria-label="구단 소식">
-          <h3>구단 소식</h3>
-          {u.log?.length ? (
+        <section class="panel" tabIndex={0} aria-label={__i18n_t("ui.myClub.overview.433c886b")}>
+          <h3>{__i18n_t("ui.myClub.overview.433c886b")}</h3>
+          {__i18n_display(u.log?.length ? (
             <ul class="club-log">
-              {[...u.log]
+              {__i18n_display([...u.log]
                 .reverse()
                 .slice(0, 30)
                 .map((l, i) => (
                   <li key={i}>
-                    <span class="num muted">{l.year}</span> {l.text}
+                    <span class="num muted">{__i18n_display(l.year)}</span> {__i18n_display(l.text)}
                   </li>
-                ))}
+                )))}
             </ul>
           ) : (
-            <p class="empty">아직 소식이 없습니다.</p>
-          )}
+            <p class="empty">{__i18n_t("ui.myClub.overview.abed1363")}</p>
+          ))}
         </section>
       </div>
     </>
@@ -296,22 +293,20 @@ function Absences({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
     .filter(([id]) => league.players[id]?.teamId === me)
     .sort((a, b) => Number(!!a[1].dtd) - Number(!!b[1].dtd) || a[1].until.localeCompare(b[1].until));
   const soldiers = Object.values(league.players).filter((p) => p.teamId === me && p.status === 'military');
-  if (!out.length && !soldiers.length) return <p class="empty">빠진 선수가 없습니다.</p>;
+  if (!out.length && !soldiers.length) return <p class="empty">{__i18n_t("ui.myClub.absences.7a97eb18")}</p>;
   return (
     <ul class="plain absences">
-      {out.map(([id, i]) => (
+      {__i18n_display(out.map(([id, i]) => (
         <li key={id}>
           <button type="button" class="link" onClick={() => onPlayer(id)}>
-            {league.players[id]!.name}
-          </button>{' '}
-          <span class={`tag${i.dtd ? '' : ' warn'}`}>{i.dtd ? '결장' : i.onList ? '부상자 명단' : '재활'}</span> <span class="muted small">{injuryNote(i)}</span>
+            {__i18n_display(league.players[id]!.name)}
+          </button>{__i18n_display(' ')}
+          <span class={`tag${i.dtd ? '' : ' warn'}`}>{__i18n_display(i.dtd ? __i18n_k("ui.myClub.absences.7d657386") : i.onList ? __i18n_k("ui.myClub.absences.12d2111d") : __i18n_k("ui.myClub.absences.3a5f44c3"))}</span> <span class="muted small">{__i18n_display(injuryNote(i))}</span>
         </li>
+      )))}
+      {__i18n_display(soldiers.length > 0 && (
+        <li class="muted small">{__i18n_t("ui.myClub.absences.83b05acc", { length: soldiers.length, value: soldiers.map((p) => __i18n_k("ui.myClub.absences.131f9845", { name: p.name, value: p.service.route === 'sangmu' ? __i18n_k("ui.myClub.absences.d2a2ca0f") : p.service.route === 'social' ? __i18n_k("ui.myClub.absences.f695b002") : __i18n_k("ui.myClub.absences.519e09aa") })).join(', ') })}</li>
       ))}
-      {soldiers.length > 0 && (
-        <li class="muted small">
-          군 복무 {soldiers.length}명: {soldiers.map((p) => `${p.name}(${p.service.route === 'sangmu' ? '상무' : p.service.route === 'social' ? '사회복무' : '현역'})`).join(', ')}
-        </li>
-      )}
     </ul>
   );
 }
@@ -327,33 +322,33 @@ function TeamLeaders({ league, onPlayer }: { league: LeagueState; onPlayer: (id:
   const pits = lines.filter(([, l]) => l.pit && l.pit.outs > 0);
   const best = (xs: Entry[], key: (x: Entry) => number, low = false) => [...xs].sort((a, b) => (low ? key(a) - key(b) : key(b) - key(a)))[0];
   const items: { title: string; entry?: Entry; value: (e: Entry) => string }[] = [
-    { title: '타율', entry: best(bats, ([, l]) => rates.avg(l.bat!)), value: ([, l]) => rates.fmt3(rates.avg(l.bat!)) },
-    { title: '홈런', entry: best(bats, ([, l]) => l.bat!.hr), value: ([, l]) => `${l.bat!.hr}` },
+    { title: __i18n_k("ui.myClub.items.title.1eb19e0a"), entry: best(bats, ([, l]) => rates.avg(l.bat!)), value: ([, l]) => rates.fmt3(rates.avg(l.bat!)) },
+    { title: __i18n_k("ui.myClub.items.title.9162d3a3"), entry: best(bats, ([, l]) => l.bat!.hr), value: ([, l]) => `${l.bat!.hr}` },
     { title: 'OPS', entry: best(bats, ([, l]) => rates.ops(l.bat!)), value: ([, l]) => rates.fmt3(rates.ops(l.bat!)) },
-    { title: '평균자책점', entry: best(pits.filter(([, l]) => l.pit!.outs >= games * 2), ([, l]) => rates.era(l.pit!), true), value: ([, l]) => rates.era(l.pit!).toFixed(2) },
-    { title: '승리', entry: best(pits, ([, l]) => l.pit!.w), value: ([, l]) => `${l.pit!.w}` },
+    { title: __i18n_k("ui.myClub.items.title.f0f9146b"), entry: best(pits.filter(([, l]) => l.pit!.outs >= games * 2), ([, l]) => rates.era(l.pit!), true), value: ([, l]) => rates.era(l.pit!).toFixed(2) },
+    { title: __i18n_k("ui.myClub.items.title.90e5e4d2"), entry: best(pits, ([, l]) => l.pit!.w), value: ([, l]) => `${l.pit!.w}` },
     { title: '세이브', entry: best(pits, ([, l]) => l.pit!.sv), value: ([, l]) => `${l.pit!.sv}` },
   ];
-  if (!lines.length) return <p class="empty">아직 기록이 없습니다.</p>;
+  if (!lines.length) return <p class="empty">{__i18n_t("ui.myClub.teamLeaders.be27edb9")}</p>;
   return (
     <dl class="leaders-mini">
-      {items.map((it) => (
+      {__i18n_display(items.map((it) => (
         <div key={it.title}>
-          <dt>{it.title}</dt>
+          <dt>{__i18n_display(it.title)}</dt>
           <dd>
-            {it.entry ? (
+            {__i18n_display(it.entry ? (
               <>
                 <button type="button" class="link" onClick={() => onPlayer(it.entry![0])}>
-                  {league.players[it.entry[0]]?.name}
-                </button>{' '}
-                <span class="num strong">{it.value(it.entry)}</span>
+                  {__i18n_display(league.players[it.entry[0]]?.name)}
+                </button>{__i18n_display(' ')}
+                <span class="num strong">{__i18n_display(it.value(it.entry))}</span>
               </>
             ) : (
               '-'
-            )}
+            ))}
           </dd>
         </div>
-      ))}
+      )))}
     </dl>
   );
 }
@@ -378,25 +373,25 @@ function Management({ league, onPlayer, onAct, setMsg }: { league: LeagueState; 
     manual && inSeason && squad !== 'military'
       ? (r: Row) => {
           const options: [string, string][] = [];
-          if (squad !== 'active' && !r.development) options.push(['active', '1군 등록']);
-          if (squad === 'active') options.push(['futures', '말소 (퓨처스로)']);
-          if (squad === 'third') options.push(['futures', '퓨처스로']);
-          if (squad !== 'third') options.push(['third', '잔류군으로']);
-          if (r.development) options.push(['register', '정식 등록']);
-          if (r.role === 'SP' || r.role === 'RP') options.push(['role', r.role === 'SP' ? '불펜 투수로' : '선발 투수로']);
+          if (squad !== 'active' && !r.development) options.push(['active', __i18n_k("ui.myClub.management.buttons.2d59a29f")]);
+          if (squad === 'active') options.push(['futures', __i18n_k("ui.myClub.management.buttons.d871bf18")]);
+          if (squad === 'third') options.push(['futures', __i18n_k("ui.myClub.management.buttons.83e5b1fc")]);
+          if (squad !== 'third') options.push(['third', __i18n_k("ui.myClub.management.buttons.14ade685")]);
+          if (r.development) options.push(['register', __i18n_k("ui.myClub.management.buttons.1f0b92a7")]);
+          if (r.role === 'SP' || r.role === 'RP') options.push(['role', r.role === 'SP' ? __i18n_k("ui.myClub.management.buttons.ab8df524") : __i18n_k("ui.myClub.management.buttons.183edd64")]);
           const run = (v: string) => {
             if (v === 'register') register(r.id);
             else if (v === 'role') onAct({ kind: 'setRole', id: r.id, role: r.role === 'SP' ? 'RP' : 'SP' });
             else if (v) move(r.id, v as SquadName);
           };
           return (
-            <select class="cell-select" aria-label={`${r.name} 관리`} value="" onChange={(e) => run((e.target as HTMLSelectElement).value)}>
-              <option value="">이동·보직…</option>
-              {options.map(([v, label]) => (
+            <select class="cell-select" aria-label={__i18n_displayText(__i18n_k("ui.myClub.management.buttons.106c178c", { name: r.name }))} value="" onChange={(e) => run((e.target as HTMLSelectElement).value)}>
+              <option value="">{__i18n_t("ui.myClub.management.buttons.62f06e85")}</option>
+              {__i18n_display(options.map(([v, label]) => (
                 <option key={v + label} value={v}>
-                  {label}
+                  {__i18n_display(label)}
                 </option>
-              ))}
+              )))}
             </select>
           );
         }
@@ -407,47 +402,43 @@ function Management({ league, onPlayer, onAct, setMsg }: { league: LeagueState; 
           r.penRole ? (
             <select
               class="cell-select"
-              aria-label={`${r.name} 불펜 보직`}
+              aria-label={__i18n_displayText(__i18n_k("ui.myClub.management.roleControl.3a9b33d3", { name: r.name }))}
               value={r.penRoleSet ? r.penRole : ''}
               onChange={(e) => onAct({ kind: 'penRole', id: r.id, role: ((e.target as HTMLSelectElement).value || null) as BullpenRole | null })}
             >
-              <option value="">감독: {PEN_ROLE_LABELS[r.penRole]}</option>
-              {PEN_ROLES.map((x) => (
+              <option value="">{__i18n_t("ui.myClub.management.roleControl.5584154c", { value: PEN_ROLE_LABELS[r.penRole] })}</option>
+              {__i18n_display(PEN_ROLES.map((x) => (
                 <option key={x} value={x}>
-                  {PEN_ROLE_LABELS[x]}
+                  {__i18n_display(PEN_ROLE_LABELS[x])}
                 </option>
-              ))}
+              )))}
             </select>
           ) : !r.pitcher ? (
             <select
               class="cell-select"
-              aria-label={`${r.name} 플래툰`}
+              aria-label={__i18n_displayText(__i18n_k("ui.myClub.management.roleControl.9ea13513", { name: r.name }))}
               value={r.platoon ?? ''}
               onChange={(e) => onAct({ kind: 'platoon', id: r.id, side: ((e.target as HTMLSelectElement).value || null) as 'L' | 'R' | null })}
             >
-              <option value="">매일 출전 후보</option>
-              <option value="L">좌완 상대만</option>
-              <option value="R">우완 상대만</option>
+              <option value="">{__i18n_t("ui.myClub.management.roleControl.5c234521")}</option>
+              <option value="L">{__i18n_t("ui.myClub.management.roleControl.d27582c8")}</option>
+              <option value="R">{__i18n_t("ui.myClub.management.roleControl.04eda77c")}</option>
             </select>
           ) : undefined
       : undefined;
   const toolbar = (
-    <div class="segmented" role="group" aria-label="엔트리 관리">
-      <button type="button" aria-pressed={!manual} onClick={() => onAct({ kind: 'entryMode', mode: 'auto' })}>
-        감독에게 맡기기
-      </button>
-      <button type="button" aria-pressed={manual} onClick={() => onAct({ kind: 'entryMode', mode: 'manual' })}>
-        직접 관리
-      </button>
+    <div class="segmented" role="group" aria-label={__i18n_t("ui.myClub.management.toolbar.eb9e29cc")}>
+      <button type="button" aria-pressed={!manual} onClick={() => onAct({ kind: 'entryMode', mode: 'auto' })}>{__i18n_t("ui.myClub.management.toolbar.c22fc0ad")}</button>
+      <button type="button" aria-pressed={manual} onClick={() => onAct({ kind: 'entryMode', mode: 'manual' })}>{__i18n_t("ui.myClub.management.toolbar.2273e06d")}</button>
     </div>
   );
   return (
     <>
       <p class="muted">
-        {manual
-          ? '직접 관리: 1군 등록·말소, 퓨처스·잔류군 배치, 선발·불펜 보직(마무리·셋업맨·필승조·추격조·롱릴리프·원 포인트), 플래툰(좌완·우완 상대 선발)을 정합니다. 정하지 않은 자리는 감독이 채웁니다. 말소한 선수는 10일 뒤 다시 등록할 수 있습니다.'
-          : '감독에게 맡기기: 감독이 열흘마다 1군을 다시 짜고, 퓨처스 출전조와 잔류군을 나눕니다.'}
-        {manual && !inSeason && ' 선수 이동은 정규시즌 중에 할 수 있습니다.'}
+        {__i18n_display(manual
+          ? __i18n_k("ui.myClub.management.33df9976")
+          : __i18n_k("ui.myClub.management.c2f6f619"))}
+        {__i18n_display(manual && !inSeason && __i18n_k("ui.myClub.management.04b78a59"))}
       </p>
       <Squad league={league} teamId={u.teamId} onPlayer={onPlayer} actions={buttons} posControl={roleControl} toolbar={toolbar} />
     </>
@@ -464,16 +455,14 @@ function ScenarioCard({ league }: { league: LeagueState }) {
   const tone = x.status === 'won' ? 'good' : x.status === 'lost' ? 'bad' : '';
   return (
     <section class={`scenario-card ${tone}`} aria-labelledby="scenario-title">
-      <h3 id="scenario-title">
-        시나리오 「{x.title}」 {x.status === 'won' ? '· 달성' : x.status === 'lost' ? '· 실패' : ''}
-      </h3>
+      <h3 id="scenario-title">{__i18n_t("ui.myClub.scenarioCard.fd180df4", { title: x.title, value: x.status === 'won' ? __i18n_k("ui.myClub.scenarioCard.852d48a6") : x.status === 'lost' ? __i18n_k("ui.myClub.scenarioCard.b2a76f8a") : '' })}</h3>
       <p>
-        <strong>목표</strong> {x.goal}
+        <strong>{__i18n_t("ui.myClub.scenarioCard.2fbea43b")}</strong> {__i18n_display(x.goal)}
       </p>
       <ul>
-        {x.lines.map((line) => (
-          <li key={line}>{line}</li>
-        ))}
+        {__i18n_display(x.lines.map((line) => (
+          <li key={line}>{__i18n_display(line)}</li>
+        )))}
       </ul>
     </section>
   );

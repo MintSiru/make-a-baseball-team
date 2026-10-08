@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* A future that moves (V0.12). A young player's ceiling is not fixed at the draft: every winter it can jump (a
    breakout), stall, or drift a little, and a season that says so makes the jump or the stall likelier. During
    the season the scouts revise a young player's future grade month by month from what they see: his numbers
@@ -124,17 +125,17 @@ function scoutNews(s: LeagueState, p: Player, from: number, to: number, date: st
   const line = (minor ? s.futures?.lines : s.lines)?.[p.id];
   const stat = isPitcher(p)
     ? line?.pit
-      ? `평균자책점 ${era(line.pit).toFixed(2)} (${Math.floor(line.pit.outs / 3)}이닝)`
+      ? __i18n_k("league.scouting.scoutNews.stat.fd720153", { value: era(line.pit).toFixed(2), value2: Math.floor(line.pit.outs / 3) })
       : ''
     : line?.bat
-      ? `OPS ${(obp(line.bat) + slg(line.bat)).toFixed(3).replace(/^0/, '')} (${line.bat.pa}타석)`
+      ? __i18n_k("league.scouting.scoutNews.stat.732fc777", { value: (obp(line.bat) + slg(line.bat)).toFixed(3).replace(/^0/, ''), pa: line.bat.pa })
       : '';
   addNews(s, {
     id: `scout-${p.id}-${date}`,
     date,
     kind: 'interview',
-    title: `${p.name}, 스카우트 평가 ${up ? '상승' : '하락'} (미래 ${from} → ${to})`,
-    body: `${minor ? '퓨처스리그' : '1군'}에서 ${stat}. 스카우트 팀이 ${p.name}의 미래 등급을 ${from}에서 ${to}로 ${up ? '올렸다' : '낮췄다'}.`,
+    title: __i18n_k("league.scouting.scoutNews.title.03773cc3", { name: p.name, value: up ? __i18n_k("league.scouting.scoutNews.title.3dc47b86") : __i18n_k("league.scouting.scoutNews.title.79282c4f"), from: from, to: to }),
+    body: __i18n_k("league.scouting.scoutNews.body.a4e33c33", { value: minor ? __i18n_k("league.scouting.scoutNews.body.51439b09") : __i18n_k("league.scouting.scoutNews.body.ef2caeba"), stat: stat, name: p.name, from: from, to: to, value2: up ? __i18n_k("league.scouting.scoutNews.body.4a61d670") : __i18n_k("league.scouting.scoutNews.body.58a282f0") }),
     quotes: [],
     facts: { 선수: p.name, '미래 등급': `${from} → ${to}`, 기록: stat },
     players: [p.id],

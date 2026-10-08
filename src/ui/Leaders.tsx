@@ -1,3 +1,4 @@
+import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 import { useState } from 'preact/hooks';
 import type { LeagueState } from '../league/state';
 import { leaders, rates, seasonStats } from '../league/views';
@@ -16,62 +17,60 @@ export function Leaders({ league, onPlayer, onBox, onAct }: { league: LeagueStat
   const data = leaders(league);
   const block = (title: string, rows: { id: string; name: string; team: string; value: string }[]) => (
     <div class="leader-block" key={title}>
-      <h4>{title}</h4>
-      {rows.length === 0 ? (
-        <p class="muted">기록 없음</p>
+      <h4>{__i18n_display(title)}</h4>
+      {__i18n_display(rows.length === 0 ? (
+        <p class="muted">{__i18n_t("ui.leaders.leaders.block.2de28099")}</p>
       ) : (
         <ol>
-          {rows.map((r) => (
+          {__i18n_display(rows.map((r) => (
             <li key={r.id}>
               <button type="button" class="link" onClick={() => onPlayer(r.id)}>
-                {r.name}
-              </button>{' '}
-              <span class="muted">{r.team}</span>
-              <span class="num leader-value">{r.value}</span>
+                {__i18n_display(r.name)}
+              </button>{__i18n_display(' ')}
+              <span class="muted">{__i18n_display(r.team)}</span>
+              <span class="num leader-value">{__i18n_display(r.value)}</span>
             </li>
-          ))}
+          )))}
         </ol>
-      )}
+      ))}
     </div>
   );
   return (
     <section aria-labelledby="leaders-title">
-      <h2 id="leaders-title">{league.year} 기록</h2>
-      <div class="segmented" role="group" aria-label="보기">
-        {(
+      <h2 id="leaders-title">{__i18n_t("ui.leaders.leaders.880aa107", { year: league.year })}</h2>
+      <div class="segmented" role="group" aria-label={__i18n_t("ui.leaders.leaders.58d6978a")}>
+        {__i18n_display((
           [
-            ['leaders', '부문별 순위'],
-            ['batters', '타자 전체'],
-            ['pitchers', '투수 전체'],
-            ['postseason', '포스트시즌'],
+            ['leaders', __i18n_k("ui.leaders.leaders.50827b9b")],
+            ['batters', __i18n_k("ui.leaders.leaders.00fdfc8a")],
+            ['pitchers', __i18n_k("ui.leaders.leaders.6491cbc9")],
+            ['postseason', __i18n_k("ui.leaders.leaders.a0f7a345")],
             ['allstar', '올스타'],
           ] as [View, string][]
         ).map(([id, label]) => (
           <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>
-            {label}
+            {__i18n_display(label)}
           </button>
-        ))}
+        )))}
       </div>
-      {view === 'allstar' && <AllStar league={league} onPlayer={onPlayer} onBox={onBox} onAct={onAct} />}
-      {view === 'postseason' && <PostseasonBoards league={league} block={block} />}
-      <p class="muted" hidden={view === 'allstar' || view === 'postseason'}>
-        비율 기록은 규정타석 {data.qualifying.pa}타석, 규정이닝 {data.qualifying.innings}이닝 이상. 제목을 누르면 정렬됩니다.
-      </p>
-      {view === 'leaders' && (
+      {__i18n_display(view === 'allstar' && <AllStar league={league} onPlayer={onPlayer} onBox={onBox} onAct={onAct} />)}
+      {__i18n_display(view === 'postseason' && <PostseasonBoards league={league} block={block} />)}
+      <p class="muted" hidden={view === 'allstar' || view === 'postseason'}>{__i18n_t("ui.leaders.leaders.0cfe29e8", { pa: data.qualifying.pa, innings: data.qualifying.innings })}</p>
+      {__i18n_display(view === 'leaders' && (
         <>
-          <h3>타자</h3>
-          <div class="leader-grid">{data.batting.map((c) => block(c.title, c.rows))}</div>
-          <h3>투수</h3>
-          <div class="leader-grid">{data.pitching.map((c) => block(c.title, c.rows))}</div>
+          <h3>{__i18n_t("ui.leaders.leaders.5db174c6")}</h3>
+          <div class="leader-grid">{__i18n_display(data.batting.map((c) => block(c.title, c.rows)))}</div>
+          <h3>{__i18n_t("ui.leaders.leaders.ef406667")}</h3>
+          <div class="leader-grid">{__i18n_display(data.pitching.map((c) => block(c.title, c.rows)))}</div>
         </>
-      )}
-      {(view === 'batters' || view === 'pitchers') && (
+      ))}
+      {__i18n_display((view === 'batters' || view === 'pitchers') && (
         <label class="check">
-          <input type="checkbox" checked={qualifiedOnly} onChange={() => setQualifiedOnly(!qualifiedOnly)} /> 규정 {view === 'batters' ? '타석' : '이닝'} 채운 선수만
+          <input type="checkbox" checked={qualifiedOnly} onChange={() => setQualifiedOnly(!qualifiedOnly)} /> 규정 {__i18n_display(view === 'batters' ? __i18n_k("ui.leaders.leaders.0a3d002c") : __i18n_k("ui.leaders.leaders.639a1f2f"))} 채운 선수만
         </label>
-      )}
-      {view === 'batters' && <BatterTable league={league} onPlayer={onPlayer} qualifiedOnly={qualifiedOnly} />}
-      {view === 'pitchers' && <PitcherTable league={league} onPlayer={onPlayer} qualifiedOnly={qualifiedOnly} />}
+      ))}
+      {__i18n_display(view === 'batters' && <BatterTable league={league} onPlayer={onPlayer} qualifiedOnly={qualifiedOnly} />)}
+      {__i18n_display(view === 'pitchers' && <PitcherTable league={league} onPlayer={onPlayer} qualifiedOnly={qualifiedOnly} />)}
     </section>
   );
 }
@@ -97,56 +96,56 @@ function BatterTable({ league, onPlayer, qualifiedOnly }: { league: LeagueState;
       <table class="record-table stats-table">
         <thead>
           <tr>
-            {th('name', '이름')}
-            {th('team', '구단')}
-            {th('pos', '포지션')}
-            {th('g', '경기', true)}
-            {th('pa', '타석', true)}
-            {th('avg', '타율', true)}
-            {th('obp', '출루율', true)}
-            {th('slg', '장타율', true)}
-            {th('ops', 'OPS', true)}
-            {th('hr', '홈런', true)}
-            {th('rbi', '타점', true)}
-            {th('r', '득점', true)}
-            {th('sb', '도루', true)}
-            {th('bb', '볼넷', true)}
-            {th('k', '삼진', true)}
-            {th('babip', 'BABIP', true)}
-            {th('wrc', 'wRC+', true)}
-            {th('war', 'WAR', true)}
+            {__i18n_display(th('name', __i18n_k("ui.leaders.batterTable.9aa18e50")))}
+            {__i18n_display(th('team', __i18n_k("ui.leaders.batterTable.58756112")))}
+            {__i18n_display(th('pos', __i18n_k("ui.leaders.batterTable.81922a91")))}
+            {__i18n_display(th('g', __i18n_k("ui.leaders.batterTable.e0cee61a"), true))}
+            {__i18n_display(th('pa', __i18n_k("ui.leaders.batterTable.0a3d002c"), true))}
+            {__i18n_display(th('avg', __i18n_k("ui.leaders.batterTable.1eb19e0a"), true))}
+            {__i18n_display(th('obp', __i18n_k("ui.leaders.batterTable.bb6ef1b2"), true))}
+            {__i18n_display(th('slg', __i18n_k("ui.leaders.batterTable.7e66b88d"), true))}
+            {__i18n_display(th('ops', 'OPS', true))}
+            {__i18n_display(th('hr', __i18n_k("ui.leaders.batterTable.9162d3a3"), true))}
+            {__i18n_display(th('rbi', __i18n_k("ui.leaders.batterTable.fed1c588"), true))}
+            {__i18n_display(th('r', __i18n_k("ui.leaders.batterTable.4b4a98b9"), true))}
+            {__i18n_display(th('sb', __i18n_k("ui.leaders.batterTable.91e54831"), true))}
+            {__i18n_display(th('bb', __i18n_k("ui.leaders.batterTable.21e0537f"), true))}
+            {__i18n_display(th('k', __i18n_k("ui.leaders.batterTable.3f349ed1"), true))}
+            {__i18n_display(th('babip', 'BABIP', true))}
+            {__i18n_display(th('wrc', 'wRC+', true))}
+            {__i18n_display(th('war', 'WAR', true))}
           </tr>
         </thead>
         <tbody>
-          {sorted.map((r) => (
+          {__i18n_display(sorted.map((r) => (
             <tr key={r.id} class="player-row">
               <td>
                 <button type="button" class="link" onClick={() => onPlayer(r.id)}>
-                  {r.name}
+                  {__i18n_display(r.name)}
                 </button>
               </td>
-              <td>{r.team}</td>
-              <td>{r.pos}</td>
-              <td class="num">{r.g}</td>
-              <td class="num">{r.pa}</td>
-              <td class="num">{f3(r.avg)}</td>
-              <td class="num">{f3(r.obp)}</td>
-              <td class="num">{f3(r.slg)}</td>
-              <td class="num strong">{f3(r.ops)}</td>
-              <td class="num">{r.hr}</td>
-              <td class="num">{r.rbi}</td>
-              <td class="num">{r.r}</td>
-              <td class="num">{r.sb}</td>
-              <td class="num">{r.bb}</td>
-              <td class="num">{r.k}</td>
-              <td class="num">{f3(r.babip)}</td>
-              <td class="num">{r.wrc}</td>
-              <td class="num">{r.war.toFixed(1)}</td>
+              <td>{__i18n_display(r.team)}</td>
+              <td>{__i18n_display(r.pos)}</td>
+              <td class="num">{__i18n_display(r.g)}</td>
+              <td class="num">{__i18n_display(r.pa)}</td>
+              <td class="num">{__i18n_display(f3(r.avg))}</td>
+              <td class="num">{__i18n_display(f3(r.obp))}</td>
+              <td class="num">{__i18n_display(f3(r.slg))}</td>
+              <td class="num strong">{__i18n_display(f3(r.ops))}</td>
+              <td class="num">{__i18n_display(r.hr)}</td>
+              <td class="num">{__i18n_display(r.rbi)}</td>
+              <td class="num">{__i18n_display(r.r)}</td>
+              <td class="num">{__i18n_display(r.sb)}</td>
+              <td class="num">{__i18n_display(r.bb)}</td>
+              <td class="num">{__i18n_display(r.k)}</td>
+              <td class="num">{__i18n_display(f3(r.babip))}</td>
+              <td class="num">{__i18n_display(r.wrc)}</td>
+              <td class="num">{__i18n_display(r.war.toFixed(1))}</td>
             </tr>
-          ))}
+          )))}
         </tbody>
       </table>
-      {!sorted.length && <p class="muted">아직 기록이 없습니다.</p>}
+      {__i18n_display(!sorted.length && <p class="muted">{__i18n_t("ui.leaders.batterTable.be27edb9")}</p>)}
     </div>
   );
 }
@@ -169,56 +168,56 @@ function PitcherTable({ league, onPlayer, qualifiedOnly }: { league: LeagueState
       <table class="record-table stats-table">
         <thead>
           <tr>
-            {th('name', '이름')}
-            {th('team', '구단')}
-            {th('g', '경기', true)}
-            {th('gs', '선발', true)}
-            {th('w', '승', true)}
-            {th('l', '패', true)}
-            {th('sv', '세', true)}
-            {th('hld', '홀', true)}
-            {th('outs', '이닝', true)}
-            {th('era', 'ERA', true)}
-            {th('whip', 'WHIP', true)}
-            {th('fip', 'FIP', true)}
-            {th('k', '삼진', true)}
-            {th('bb', '볼넷', true)}
-            {th('k9', 'K/9', true)}
-            {th('bb9', 'BB/9', true)}
-            {th('babip', 'BABIP', true)}
-            {th('war', 'WAR', true)}
+            {__i18n_display(th('name', __i18n_k("ui.leaders.pitcherTable.9aa18e50")))}
+            {__i18n_display(th('team', __i18n_k("ui.leaders.pitcherTable.58756112")))}
+            {__i18n_display(th('g', __i18n_k("ui.leaders.pitcherTable.e0cee61a"), true))}
+            {__i18n_display(th('gs', __i18n_k("ui.leaders.pitcherTable.a88271df"), true))}
+            {__i18n_display(th('w', '승', true))}
+            {__i18n_display(th('l', '패', true))}
+            {__i18n_display(th('sv', __i18n_k("ui.leaders.pitcherTable.c5e4d00d"), true))}
+            {__i18n_display(th('hld', __i18n_k("ui.leaders.pitcherTable.10a4423a"), true))}
+            {__i18n_display(th('outs', __i18n_k("ui.leaders.pitcherTable.639a1f2f"), true))}
+            {__i18n_display(th('era', 'ERA', true))}
+            {__i18n_display(th('whip', 'WHIP', true))}
+            {__i18n_display(th('fip', 'FIP', true))}
+            {__i18n_display(th('k', __i18n_k("ui.leaders.pitcherTable.3f349ed1"), true))}
+            {__i18n_display(th('bb', __i18n_k("ui.leaders.pitcherTable.21e0537f"), true))}
+            {__i18n_display(th('k9', 'K/9', true))}
+            {__i18n_display(th('bb9', 'BB/9', true))}
+            {__i18n_display(th('babip', 'BABIP', true))}
+            {__i18n_display(th('war', 'WAR', true))}
           </tr>
         </thead>
         <tbody>
-          {sorted.map((r) => (
+          {__i18n_display(sorted.map((r) => (
             <tr key={r.id} class="player-row">
               <td>
                 <button type="button" class="link" onClick={() => onPlayer(r.id)}>
-                  {r.name}
+                  {__i18n_display(r.name)}
                 </button>
               </td>
-              <td>{r.team}</td>
-              <td class="num">{r.g}</td>
-              <td class="num">{r.gs}</td>
-              <td class="num">{r.w}</td>
-              <td class="num">{r.l}</td>
-              <td class="num">{r.sv}</td>
-              <td class="num">{r.hld}</td>
-              <td class="num">{rates.ip(r.outs)}</td>
-              <td class="num strong">{f2(r.era)}</td>
-              <td class="num">{f2(r.whip)}</td>
-              <td class="num">{f2(r.fip)}</td>
-              <td class="num">{r.k}</td>
-              <td class="num">{r.bb}</td>
-              <td class="num">{r.k9.toFixed(1)}</td>
-              <td class="num">{r.bb9.toFixed(1)}</td>
-              <td class="num">{f3(r.babip)}</td>
-              <td class="num">{r.war.toFixed(1)}</td>
+              <td>{__i18n_display(r.team)}</td>
+              <td class="num">{__i18n_display(r.g)}</td>
+              <td class="num">{__i18n_display(r.gs)}</td>
+              <td class="num">{__i18n_display(r.w)}</td>
+              <td class="num">{__i18n_display(r.l)}</td>
+              <td class="num">{__i18n_display(r.sv)}</td>
+              <td class="num">{__i18n_display(r.hld)}</td>
+              <td class="num">{__i18n_display(rates.ip(r.outs))}</td>
+              <td class="num strong">{__i18n_display(f2(r.era))}</td>
+              <td class="num">{__i18n_display(f2(r.whip))}</td>
+              <td class="num">{__i18n_display(f2(r.fip))}</td>
+              <td class="num">{__i18n_display(r.k)}</td>
+              <td class="num">{__i18n_display(r.bb)}</td>
+              <td class="num">{__i18n_display(r.k9.toFixed(1))}</td>
+              <td class="num">{__i18n_display(r.bb9.toFixed(1))}</td>
+              <td class="num">{__i18n_display(f3(r.babip))}</td>
+              <td class="num">{__i18n_display(r.war.toFixed(1))}</td>
             </tr>
-          ))}
+          )))}
         </tbody>
       </table>
-      {!sorted.length && <p class="muted">아직 기록이 없습니다.</p>}
+      {__i18n_display(!sorted.length && <p class="muted">{__i18n_t("ui.leaders.pitcherTable.be27edb9")}</p>)}
     </div>
   );
 }
@@ -226,14 +225,14 @@ function PitcherTable({ league, onPlayer, qualifiedOnly }: { league: LeagueState
 /** 1.4.0: the latest postseason's leaders and every postseason's (postseason games stay out of the season's records). */
 function PostseasonBoards({ league, block }: { league: LeagueState; block: (title: string, rows: { id: string; name: string; team: string; value: string }[]) => preact.JSX.Element }) {
   const b = postseasonBoards(league);
-  if (b.year == null) return <p class="muted">아직 포스트시즌 기록이 없습니다. 1.4.0부터 쌓입니다(그 전 버전의 진행 파일은 다음 포스트시즌부터).</p>;
+  if (b.year == null) return <p class="muted">{__i18n_t("ui.leaders.postseasonBoards.c749df8b")}</p>;
   return (
     <>
-      <h3>{b.year} 포스트시즌</h3>
-      <div class="leader-grid">{b.latest.map((c) => block(c.label, c.rows))}</div>
-      <h3>포스트시즌 통산{b.since != null && b.since !== b.year ? ` (${b.since}~)` : ''}</h3>
-      <div class="leader-grid">{b.ever.map((c) => block(c.label, c.rows))}</div>
-      <p class="muted small">포스트시즌 기록은 정규시즌 기록·시상과 따로 셉니다. 1.4.0 이전 버전에서 치른 포스트시즌은 기록이 남아 있지 않습니다.</p>
+      <h3>{__i18n_t("ui.leaders.postseasonBoards.c2bc62c6", { year: b.year })}</h3>
+      <div class="leader-grid">{__i18n_display(b.latest.map((c) => block(c.label, c.rows)))}</div>
+      <h3>{__i18n_t("ui.leaders.postseasonBoards.af368305", { value: b.since != null && b.since !== b.year ? ` (${b.since}~)` : '' })}</h3>
+      <div class="leader-grid">{__i18n_display(b.ever.map((c) => block(c.label, c.rows)))}</div>
+      <p class="muted small">{__i18n_t("ui.leaders.postseasonBoards.43432f95")}</p>
     </>
   );
 }

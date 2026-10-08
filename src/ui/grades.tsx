@@ -1,3 +1,4 @@
+import { display as __i18n_display } from '../i18n/index';
 /* 20–80 grades on screen: the ability bar and the class that colours a grade by its tier (display.ts). */
 import { gradeTier } from './display';
 
@@ -9,16 +10,16 @@ export function GradeBar({ label, now, future, note }: { label: string; now: num
   const pct = (g: number) => `${((Math.max(20, Math.min(80, g)) - 20) / 60) * 100}%`;
   return (
     <div class="gradebar">
-      <span class="gradebar-label">{label}</span>
+      <span class="gradebar-label">{__i18n_display(label)}</span>
       <span class="gradebar-track" aria-hidden="true">
-        {now != null && <span class={`gradebar-fill t${gradeTier(now)}`} style={{ width: pct(now) }} />}
-        {future != null && future > (now ?? 0) && <span class="gradebar-future" style={{ left: pct(future) }} />}
+        {__i18n_display(now != null && <span class={`gradebar-fill t${gradeTier(now)}`} style={{ width: pct(now) }} />)}
+        {__i18n_display(future != null && future > (now ?? 0) && <span class="gradebar-future" style={{ left: pct(future) }} />)}
       </span>
       <span class="gradebar-num">
-        {now ?? '-'}
-        {future != null && future !== now && <span class="muted"> → {future}</span>}
+        {__i18n_display(now ?? '-')}
+        {__i18n_display(future != null && future !== now && <span class="muted"> → {__i18n_display(future)}</span>)}
       </span>
-      {note && <span class="gradebar-note muted">{note}</span>}
+      {__i18n_display(note && <span class="gradebar-note muted">{__i18n_display(note)}</span>)}
     </div>
   );
 }

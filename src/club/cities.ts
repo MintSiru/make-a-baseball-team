@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Candidate homes for the expansion club. Population is the 2022-11 resident count (Korean Wikipedia
    city list), stadium seats are real (docs/RULES.md §10), and the cities are the ones actually
    bidding for an 11th club or a futures club in 2026 (RULES.md §12). `market` (0–100) and
@@ -16,23 +17,23 @@ export interface City {
 }
 
 export const CITIES: City[] = [
-  { id: 'ulsan', name: '울산', province: '울산광역시', population: 1_135_423, stadium: { name: '울산문수야구장', seats: 12_088, real: true }, market: 80, competition: '부산 롯데와 가깝지만 광역시 단독 시장', note: '2026 퓨처스리그 시민구단 울산 웨일즈의 연고지' },
-  { id: 'goyang', name: '고양', province: '경기도', population: 1_045_497, stadium: { name: '고양 국가대표 야구훈련장', seats: 7_000, real: false }, market: 72, competition: '서울 3개 구단과 수도권을 나눔', note: '키움 퓨처스(고양 히어로즈) 훈련장. 좌석 수는 게임 가정' },
-  { id: 'cheongju', name: '청주', province: '충청북도', population: 855_326, stadium: { name: '청주야구장', seats: 10_500, real: true }, market: 70, competition: '대전 한화와 충청권을 나눔', note: '충북 돔구장·프로구단 유치 공약(2026 지방선거)' },
-  { id: 'seongnam', name: '성남', province: '경기도', population: 922_025, stadium: { name: '성남 임시 구장', seats: 7_000, real: false }, market: 66, competition: '서울·수원 구단과 가까움', note: '종합운동장 리모델링·돔구장 유치 공약. 야구장이 없어 임시 구장(게임 가정)' },
-  { id: 'jeonju', name: '전주', province: '전북특별자치도', population: 666_517, stadium: { name: '전주 임시 구장', seats: 7_000, real: false }, market: 64, competition: '전북에 연고 구단이 없음 (쌍방울 레이더스 이후)', note: '신축 야구장 2027년 말 완공 예정(규모 미확인). 그 전까지 임시 구장(게임 가정)' },
-  { id: 'hwaseong', name: '화성', province: '경기도', population: 880_859, stadium: { name: '화성 임시 구장', seats: 7_000, real: false }, market: 60, competition: '수원 KT와 가까움', note: '프로구단 유치 추진. 임시 구장(게임 가정)' },
-  { id: 'cheonan', name: '천안', province: '충청남도', population: 682_199, stadium: { name: '천안 임시 구장', seats: 7_000, real: false }, market: 56, competition: '대전 한화와 가까움', note: '임시 구장(게임 가정)' },
-  { id: 'pohang', name: '포항', province: '경상북도', population: 501_109, stadium: { name: '포항야구장', seats: 12_247, real: true }, market: 46, competition: '대구 삼성의 제2 홈구장', note: '' },
-  { id: 'jeju', name: '제주', province: '제주특별자치도', population: 492_306, stadium: { name: '제주오라종합경기장 야구장', seats: 8_500, real: true }, market: 42, competition: '경쟁 구단 없음, 원정 이동 부담', note: '' },
-  { id: 'gunsan', name: '군산', province: '전북특별자치도', population: 269_023, stadium: { name: '월명종합경기장 야구장', seats: 11_000, real: true }, market: 34, competition: '전북 야구 열기(군산상일고)', note: 'KIA 제2 홈구장' },
-  { id: 'chuncheon', name: '춘천', province: '강원특별자치도', population: 284_645, stadium: { name: '의암야구장', seats: 8_160, real: true }, market: 32, competition: '강원에 연고 구단 없음', note: '' },
+  { id: 'ulsan', name: __i18n_k("club.cities.cITIES.name.b90ae636"), province: __i18n_k("club.cities.cITIES.province.79012109"), population: 1_135_423, stadium: { name: __i18n_k("club.cities.stadium.name.24eecbac"), seats: 12_088, real: true }, market: 80, competition: __i18n_k("club.cities.cITIES.competition.9c9f532b"), note: __i18n_k("club.cities.cITIES.note.565c5305") },
+  { id: 'goyang', name: __i18n_k("club.cities.cITIES.name.c7311e99"), province: __i18n_k("club.cities.cITIES.province.bfcc2516"), population: 1_045_497, stadium: { name: __i18n_k("club.cities.stadium.name.480bf942"), seats: 7_000, real: false }, market: 72, competition: __i18n_k("club.cities.cITIES.competition.6c15cd8c"), note: __i18n_k("club.cities.cITIES.note.6a3cb708") },
+  { id: 'cheongju', name: __i18n_k("club.cities.cITIES.name.d2f21306"), province: __i18n_k("club.cities.cITIES.province.49414766"), population: 855_326, stadium: { name: __i18n_k("club.cities.stadium.name.cc718f86"), seats: 10_500, real: true }, market: 70, competition: __i18n_k("club.cities.cITIES.competition.e42ba227"), note: __i18n_k("club.cities.cITIES.note.436f89d8") },
+  { id: 'seongnam', name: __i18n_k("club.cities.cITIES.name.a227ab1c"), province: __i18n_k("club.cities.cITIES.province.bfcc2516"), population: 922_025, stadium: { name: __i18n_k("club.cities.stadium.name.2631094a"), seats: 7_000, real: false }, market: 66, competition: __i18n_k("club.cities.cITIES.competition.f9d3c840"), note: __i18n_k("club.cities.cITIES.note.fa3e93ed") },
+  { id: 'jeonju', name: __i18n_k("club.cities.cITIES.name.64ada749"), province: __i18n_k("club.cities.cITIES.province.59b03450"), population: 666_517, stadium: { name: __i18n_k("club.cities.stadium.name.2e5ca709"), seats: 7_000, real: false }, market: 64, competition: __i18n_k("club.cities.cITIES.competition.a67db996"), note: __i18n_k("club.cities.cITIES.note.8d51bb3f") },
+  { id: 'hwaseong', name: __i18n_k("club.cities.cITIES.name.2644d147"), province: __i18n_k("club.cities.cITIES.province.bfcc2516"), population: 880_859, stadium: { name: __i18n_k("club.cities.stadium.name.0954f211"), seats: 7_000, real: false }, market: 60, competition: __i18n_k("club.cities.cITIES.competition.570829c0"), note: __i18n_k("club.cities.cITIES.note.9487efc3") },
+  { id: 'cheonan', name: __i18n_k("club.cities.cITIES.name.ffee1233"), province: __i18n_k("club.cities.cITIES.province.2d0a6a6a"), population: 682_199, stadium: { name: __i18n_k("club.cities.stadium.name.62a0dac8"), seats: 7_000, real: false }, market: 56, competition: __i18n_k("club.cities.cITIES.competition.3d5399d0"), note: __i18n_k("club.cities.cITIES.note.4f2c773e") },
+  { id: 'pohang', name: __i18n_k("club.cities.cITIES.name.a8164928"), province: __i18n_k("club.cities.cITIES.province.e6011691"), population: 501_109, stadium: { name: __i18n_k("club.cities.stadium.name.ce74fe8c"), seats: 12_247, real: true }, market: 46, competition: __i18n_k("club.cities.cITIES.competition.c1a0eea4"), note: '' },
+  { id: 'jeju', name: __i18n_k("club.cities.cITIES.name.b6966f66"), province: __i18n_k("club.cities.cITIES.province.44239ae2"), population: 492_306, stadium: { name: __i18n_k("club.cities.stadium.name.3ab3ff2d"), seats: 8_500, real: true }, market: 42, competition: __i18n_k("club.cities.cITIES.competition.639792bc"), note: '' },
+  { id: 'gunsan', name: __i18n_k("club.cities.cITIES.name.013f3691"), province: __i18n_k("club.cities.cITIES.province.59b03450"), population: 269_023, stadium: { name: __i18n_k("club.cities.stadium.name.5e1d70b7"), seats: 11_000, real: true }, market: 34, competition: __i18n_k("club.cities.cITIES.competition.6c7e3cd1"), note: __i18n_k("club.cities.cITIES.note.3874e6c6") },
+  { id: 'chuncheon', name: __i18n_k("club.cities.cITIES.name.da0de687"), province: __i18n_k("club.cities.cITIES.province.728d9f63"), population: 284_645, stadium: { name: __i18n_k("club.cities.stadium.name.8f589253"), seats: 8_160, real: true }, market: 32, competition: __i18n_k("club.cities.cITIES.competition.107dab74"), note: '' },
 ];
 
 /** 1.6.0: homes only a scenario starts in (scenarios.ts). */
 export const SCENARIO_CITIES: City[] = [
-  { id: 'seoul', name: '서울', province: '서울특별시', population: 9_386_034, stadium: { name: '목동야구장', seats: 10_500, real: false }, market: 78, competition: 'LG·두산(잠실)과 키움(고척)까지 세 구단이 이미 나눠 가진 최대 시장', note: '목동야구장은 2008~2015년 히어로즈의 홈. 좌석 수는 게임 가정' },
-  { id: 'ulleung', name: '울릉', province: '경상북도 울릉군', population: 9_000, stadium: { name: '울릉 임시 야구장', seats: 3_000, real: false }, market: 4, competition: '섬. 원정마다 배와 비행기를 타야 하고, 육지 팬이 홈 경기에 오기도 어렵다', note: '야구장이 없어 임시 구장(게임 가정)' },
+  { id: 'seoul', name: __i18n_k("club.cities.sCENARIO_CITIES.name.ea9858ee"), province: __i18n_k("club.cities.sCENARIO_CITIES.province.3964bd52"), population: 9_386_034, stadium: { name: __i18n_k("club.cities.stadium.name.5a4b31e1"), seats: 10_500, real: false }, market: 78, competition: __i18n_k("club.cities.sCENARIO_CITIES.competition.7a0da299"), note: __i18n_k("club.cities.sCENARIO_CITIES.note.44d6c238") },
+  { id: 'ulleung', name: __i18n_k("club.cities.sCENARIO_CITIES.name.e2971049"), province: __i18n_k("club.cities.sCENARIO_CITIES.province.9c479e8f"), population: 9_000, stadium: { name: __i18n_k("club.cities.stadium.name.cc8463f9"), seats: 3_000, real: false }, market: 4, competition: __i18n_k("club.cities.sCENARIO_CITIES.competition.f5759ff0"), note: __i18n_k("club.cities.sCENARIO_CITIES.note.e55b2828") },
 ];
 
 export const cityById = (id: string) => CITIES.find((c) => c.id === id) ?? SCENARIO_CITIES.find((c) => c.id === id);

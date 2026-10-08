@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The twelfth club, the rival (V0.9). The player designs it (or lets the scouts suggest one) when it is founded:
    in a set winter, or when the board puts a twelfth club to the clubs (and the player may vote it down).
 
@@ -31,14 +32,14 @@ export const RIVAL_ID = 'rival';
 
 export const rivalTeam = (s: LeagueState) => (s.twelve ? s.teams.find((t) => t.id === s.twelve!.teamId) : undefined);
 const short = (s: LeagueState, id: TeamId) => s.teams.find((t) => t.id === id)?.short ?? id;
-const eok = (manwon: number) => `${Math.round(manwon / 1000) / 10}억`;
+const eok = (manwon: number) => __i18n_k("league.rival.eok.db0fc332", { value: Math.round(manwon / 1000) / 10 });
 
 // ── The founding decision ────────────────────────────────────────────────────────────────────────
 
 // None of the fictional set's nicknames (clubs.ts), so the two never look alike (V0.16).
-const NICKNAMES = ['스톰', '나이츠', '팰컨스', '썬더스', '블레이즈', '제츠', '레인저스', '스파크스', '오로라', '타이탄스'];
+const NICKNAMES = [__i18n_k("league.rival.nICKNAMES.6b9d548f"), __i18n_k("league.rival.nICKNAMES.3ac2fc0b"), __i18n_k("league.rival.nICKNAMES.d879a040"), __i18n_k("league.rival.nICKNAMES.ebdf4f1b"), __i18n_k("league.rival.nICKNAMES.c925ba8c"), __i18n_k("league.rival.nICKNAMES.cd8a523b"), __i18n_k("league.rival.nICKNAMES.cc1316b9"), __i18n_k("league.rival.nICKNAMES.06c6d51e"), __i18n_k("league.rival.nICKNAMES.89894865"), __i18n_k("league.rival.nICKNAMES.ab605bde")];
 const COLORS = ['#0b7a75', '#7b2d8e', '#c0392b', '#1b4f9c', '#d35400', '#2e7d32', '#455a64', '#8d6e63'];
-const COMPANIES = ['한빛그룹', '대륙건설', '새솔식품', '누리통신', '푸른에너지', '온누리유통'];
+const COMPANIES = [__i18n_k("league.rival.cOMPANIES.3497e002"), __i18n_k("league.rival.cOMPANIES.1d9f59ee"), __i18n_k("league.rival.cOMPANIES.6da5a1f0"), __i18n_k("league.rival.cOMPANIES.f7be3f40"), __i18n_k("league.rival.cOMPANIES.0e2e428b"), __i18n_k("league.rival.cOMPANIES.2cfd9501")];
 const GM_KEYS: GmStyle[] = ['balanced', 'develop', 'winNow', 'moneyball'];
 const MANAGER_KEYS = Object.keys(MANAGER_STYLES) as ManagerStyle[];
 
@@ -61,7 +62,7 @@ export function suggestRival(s: LeagueState, year: number): RivalSettings {
     color: pickOf(COLORS.filter((c) => c !== mine)),
     cityId: city.id,
     parentType,
-    parentName: parentType === 'citizen' ? `${city.name}시` : pickOf(COMPANIES),
+    parentName: parentType === 'citizen' ? __i18n_k("league.rival.suggestRival.parentName.7afbb51f", { name: city.name }) : pickOf(COMPANIES),
     gm: pickOf(GM_KEYS),
     manager: pickOf(MANAGER_KEYS),
     format: 'single',
@@ -86,16 +87,16 @@ export function rivalDecision(s: LeagueState, year: number): Decision | null {
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
 export function checkRival(s: LeagueState, d: Extract<Decision, { kind: 'rival' }>, settings: RivalSettings | null): string | null {
-  if (!settings) return d.event ? null : '창단 연도를 정해 두었으므로 창단을 막을 수 없습니다.';
+  if (!settings) return d.event ? null : __i18n_k("league.rival.checkRival.df9654c6");
   const name = settings.name.trim(),
     sh = settings.short.trim();
-  if (name.length < 2 || name.length > 12) return '구단명은 2~12자로 정하세요.';
-  if (sh.length < 1 || sh.length > 4) return '약칭은 1~4자로 정하세요.';
-  if (s.teams.some((t) => t.name === name || t.short === sh)) return '다른 구단과 같은 이름이나 약칭입니다.';
-  if (!rivalCities(s).some((c) => c.id === settings.cityId)) return '연고지를 고르세요 (우리 구단과 같은 도시는 안 됩니다).';
-  if (!HEX.test(settings.color)) return '구단 색을 고르세요.';
-  if (!settings.parentName.trim() || settings.parentName.trim().length > 20) return '모기업(운영 주체) 이름을 20자 안으로 정하세요.';
-  if (!(settings.gm in GM_STYLES) || !(settings.manager in MANAGER_STYLES) || !['single', 'two'].includes(settings.format)) return '운영 방식을 고르세요.';
+  if (name.length < 2 || name.length > 12) return __i18n_k("league.rival.checkRival.8c3925ec");
+  if (sh.length < 1 || sh.length > 4) return __i18n_k("league.rival.checkRival.d701ef54");
+  if (s.teams.some((t) => t.name === name || t.short === sh)) return __i18n_k("league.rival.checkRival.1e7dd4b8");
+  if (!rivalCities(s).some((c) => c.id === settings.cityId)) return __i18n_k("league.rival.checkRival.d8e9fdfd");
+  if (!HEX.test(settings.color)) return __i18n_k("league.rival.checkRival.8ae07e14");
+  if (!settings.parentName.trim() || settings.parentName.trim().length > 20) return __i18n_k("league.rival.checkRival.14518bda");
+  if (!(settings.gm in GM_STYLES) || !(settings.manager in MANAGER_STYLES) || !['single', 'two'].includes(settings.format)) return __i18n_k("league.rival.checkRival.8ef0aae4");
   return null;
 }
 
@@ -107,10 +108,10 @@ export function resolveRival(s: LeagueState, d: Extract<Decision, { kind: 'rival
     addNews(s, {
       date: `${d.year}-12-10`,
       kind: 'season',
-      title: 'KBO 이사회, 12구단 창단 안건 부결',
-      body: `KBO 이사회가 12번째 구단 창단 신청을 표결에 부쳤으나 부결됐다. 리그는 당분간 11구단 체제로 간다.`,
+      title: __i18n_k("league.rival.resolveRival.title.de0d0d75"),
+      body: __i18n_k("league.rival.resolveRival.body.eae3f872"),
       quotes: [],
-      facts: { year: d.year, result: '부결' },
+      facts: { year: d.year, result: __i18n_k("league.rival.facts.result.7893245f") },
       players: [],
       mine: true,
     });
@@ -136,7 +137,7 @@ export function foundRival(s: LeagueState, settings: RivalSettings, year: number
     firstTeamFrom: firstTeam,
     benefitsUntil: firstTeam + EXPANSION_DEFAULTS.benefitSeasons - 1,
     parent: { type: settings.parentType, name: settings.parentName.trim() },
-    stadium: { name: city.stadium.real ? city.stadium.name : `${city.name}야구장`, size: seats < 15_000 ? 'small' : 'medium', capacity: seats, ownership: 'municipalLease' },
+    stadium: { name: city.stadium.real ? city.stadium.name : __i18n_k("league.rival.stadium.name.fcdb7146", { name: city.name }), size: seats < 15_000 ? 'small' : 'medium', capacity: seats, ownership: 'municipalLease' },
   };
   s.teams.push(team);
   s.rosters[RIVAL_ID] = emptyRoster();
@@ -146,15 +147,13 @@ export function foundRival(s: LeagueState, settings: RivalSettings, year: number
   staff.manager.style = settings.manager;
   const signed = rivalTryout(s, year);
   const date = `${year}-12-10`;
-  const format = settings.format === 'two' ? '드림·매직 양대 리그' : '12구단 단일 리그';
+  const format = settings.format === 'two' ? __i18n_k("league.rival.foundRival.format.6374c518") : __i18n_k("league.rival.foundRival.format.a14f2bc9");
   addNews(s, {
     date,
     kind: 'season',
-    title: `12번째 구단 '${team.name}' 창단 승인`,
+    title: __i18n_k("league.rival.foundRival.title.ef34c9f3", { name: team.name }),
     body:
-      `KBO 이사회가 ${city.name}을 연고로 하는 ${team.name}의 창단을 승인했다. ${team.parent.name}이 운영을 맡고, 홈구장은 ${team.stadium.name}(${seats.toLocaleString('ko-KR')}석)이다. ` +
-      `${year + 1}년 퓨처스리그를 거쳐 ${firstTeam}년 1군에 들어오며, 그때부터 리그는 ${format}로 치러진다. 트라이아웃으로 ${signed}명과 계약했고, 올겨울 신인 드래프트에서 우선지명 2명과 매 라운드 첫 지명권을 받는다. ` +
-      `구단은 '${GM_STYLES[settings.gm].label}' 운영을 내걸었고, 초대 감독은 ${staff.manager.name}(${MANAGER_STYLES[settings.manager].label})이다.`,
+      __i18n_k("league.rival.foundRival.body.e9aa4a94", { value: __i18n_k("league.rival.foundRival.body.93cb4003", { name: city.name, name2: team.name, name3: team.parent.name, name4: team.stadium.name, value: seats.toLocaleString('ko-KR') }), value2: __i18n_k("league.rival.foundRival.body.f0cffd1e", { value: year + 1, firstTeam: firstTeam, format: format, signed: signed }), value3: __i18n_k("league.rival.foundRival.body.b2c5a0f3", { label: GM_STYLES[settings.gm].label, name: staff.manager.name, label2: MANAGER_STYLES[settings.manager].label }) }),
     quotes: [],
     facts: { club: team.name, city: city.name, firstTeam, format, gm: GM_STYLES[settings.gm].label },
     players: [],
@@ -164,13 +163,13 @@ export function foundRival(s: LeagueState, settings: RivalSettings, year: number
     id: `rival-founded-${year}`,
     date,
     kind: 'season',
-    title: `12구단 ${team.name} 창단`,
+    title: __i18n_k("league.rival.foundRival.title.5d640ae1", { name: team.name }),
     lines: [
-      `${city.name} 연고, ${year + 1} 퓨처스 → ${firstTeam} 1군 진입, ${format}`,
-      `${year + 1}년 겨울 특별지명: 우리 구단도 보호선수 ${EXPANSION_DEFAULTS.specialDraft.protected}명을 뺀 선수 1명을 내줄 수 있습니다 (보상금 ${eok(EXPANSION_DEFAULTS.specialDraft.feePerPlayer)}).`,
+      __i18n_k("league.rival.foundRival.lines.b88843a6", { name: city.name, value: year + 1, firstTeam: firstTeam, format: format }),
+      __i18n_k("league.rival.foundRival.lines.ce66483c", { value: year + 1, protected: EXPANSION_DEFAULTS.specialDraft.protected, eok: eok(EXPANSION_DEFAULTS.specialDraft.feePerPlayer) }),
     ],
   });
-  milestone(s, year, `12구단 ${team.name} 창단 (${city.name}) — 우리의 라이벌`, 'rivalFounded');
+  milestone(s, year, __i18n_k("league.rival.foundRival.8b44c495", { name: team.name, name2: city.name }), 'rivalFounded');
 }
 
 /** The founding tryout: independent-league players, returnees from abroad and young players let go this year. */
@@ -220,9 +219,9 @@ export function rivalProtectDecision(s: LeagueState, next: number): Decision | n
 }
 
 export function checkRivalProtect(d: Extract<Decision, { kind: 'rivalProtect' }>, ids: PlayerId[]): string | null {
-  if (ids.some((id) => !d.candidates.includes(id))) return '보호할 수 없는 선수입니다.';
-  if (new Set(ids).size !== ids.length) return '같은 선수를 두 번 골랐습니다.';
-  if (ids.length > d.protect) return `보호선수는 ${d.protect}명까지입니다.`;
+  if (ids.some((id) => !d.candidates.includes(id))) return __i18n_k("league.rival.checkRivalProtect.ac069ce3");
+  if (new Set(ids).size !== ids.length) return __i18n_k("league.rival.checkRivalProtect.c2006dff");
+  if (ids.length > d.protect) return __i18n_k("league.rival.checkRivalProtect.a472dff3", { protect: d.protect });
   return null;
 }
 
@@ -265,13 +264,13 @@ export function rivalSpecialDraft(s: LeagueState, next: number) {
     s.rosters[tw.teamId]!.futures.push(p.id);
     picks.push({ from: teamId, id: p.id, name: p.name });
     if (mine) {
-      crossing(s, p, teamId, tw.teamId, '특별지명', `${next - 1}-11-28`, false);
-      farewell(s, p, teamId, '특별지명', `${next - 1}-11-28`);
+      crossing(s, p, teamId, tw.teamId, __i18n_k("league.rival.rivalSpecialDraft.c6ab1579"), `${next - 1}-11-28`, false);
+      farewell(s, p, teamId, __i18n_k("league.rival.rivalSpecialDraft.c6ab1579"), `${next - 1}-11-28`);
     }
     if (mine && u) {
       u.fund += P.feePerPlayer;
-      u.ledger.push({ year: next - 1, label: `특별지명 보상금 수령 · ${p.name} (${short(s, tw.teamId)})`, amount: P.feePerPlayer });
-      (u.log ??= []).push({ year: next - 1, text: `${p.name}, 12구단 ${short(s, tw.teamId)} 특별지명으로 이적 (보상금 ${eok(P.feePerPlayer)})` });
+      u.ledger.push({ year: next - 1, label: __i18n_k("league.rival.rivalSpecialDraft.label.cf6f5144", { name: p.name, short: short(s, tw.teamId) }), amount: P.feePerPlayer });
+      (u.log ??= []).push({ year: next - 1, text: __i18n_k("league.rival.rivalSpecialDraft.text.3742cb78", { name: p.name, short: short(s, tw.teamId), eok: eok(P.feePerPlayer) }) });
     }
   }
   tw.picks = picks;
@@ -281,10 +280,10 @@ export function rivalSpecialDraft(s: LeagueState, next: number) {
   addNews(s, {
     date,
     kind: 'move',
-    title: `${team.short}, 특별지명으로 ${picks.length}명 영입${ours ? ` · ${ours.name}도 떠나` : ''}`,
-    body: `${team.name}가 기존 구단의 보호선수 ${P.protected}명 외 선수를 한 명씩 지명했다(선수당 보상금 ${eok(P.feePerPlayer)}). ${picks.map((x) => `${short(s, x.from)} ${x.name}`).join(', ')}.`,
+    title: __i18n_k("league.rival.rivalSpecialDraft.title.08521a57", { short: team.short, length: picks.length, value: ours ? __i18n_k("league.rival.rivalSpecialDraft.title.f8e0ee14", { name: ours.name }) : '' }),
+    body: __i18n_k("league.rival.rivalSpecialDraft.body.0f585088", { name: team.name, protected: P.protected, eok: eok(P.feePerPlayer), value: picks.map((x) => `${short(s, x.from)} ${x.name}`).join(', ') }),
     quotes: [],
-    facts: { type: '특별지명', club: team.name, count: picks.length },
+    facts: { type: __i18n_k("league.rival.facts.type.c6ab1579"), club: team.name, count: picks.length },
     players: picks.map((x) => x.id),
     mine: true,
   });
@@ -293,9 +292,9 @@ export function rivalSpecialDraft(s: LeagueState, next: number) {
       id: `rival-special-${next}`,
       date,
       kind: 'season',
-      title: `특별지명 · ${ours.name} ${team.short}행`,
+      title: __i18n_k("league.rival.rivalSpecialDraft.title.6d7d8d77", { name: ours.name, short: team.short }),
       lines: [
-        `${team.name}가 보호선수 밖의 ${ours.name}을(를) 지명했습니다. 보상금 ${eok(P.feePerPlayer)}을 받았습니다.`,
+        __i18n_k("league.rival.rivalSpecialDraft.lines.e32dfd3e", { name: team.name, name2: ours.name, eok: eok(P.feePerPlayer) }),
         ...picks.filter((x) => x !== ours).map((x) => `${short(s, x.from)} ${x.name}`),
       ],
       tone: 'bad',

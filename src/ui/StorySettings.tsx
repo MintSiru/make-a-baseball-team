@@ -1,3 +1,4 @@
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, rich as __i18n_rich, t as __i18n_t } from '../i18n/index';
 /* AI article settings (V0.7): provider, the player's own API key, model, and automatic writing. */
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useFocusTrap } from './modal';
@@ -17,10 +18,8 @@ export function StorySettings({ onClose, ...props }: Props & { onClose: () => vo
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="story-settings-title" ref={box}>
-        <button type="button" class="close" onClick={onClose} aria-label="닫기">
-          닫기
-        </button>
-        <h2 id="story-settings-title">AI 기사 설정</h2>
+        <button type="button" class="close" onClick={onClose} aria-label={__i18n_t("ui.storySettings.storySettings.94b7dba1")}>{__i18n_t("ui.storySettings.storySettings.94b7dba1")}</button>
+        <h2 id="story-settings-title">{__i18n_t("ui.storySettings.storySettings.a8a3d611")}</h2>
         <StoryOptions {...props} />
       </div>
     </div>
@@ -36,30 +35,27 @@ export function StoryOptions({ settings, usage, pausedUntil = 0, onSave }: Props
   const key = s.keys[s.provider] ?? '';
   const model = s.models[s.provider] ?? p.defaultModel;
   const load = async () => {
-    setMsg('모델 목록을 불러오는 중…');
+    setMsg(__i18n_k("ui.storySettings.storyOptions.load.0a351c98"));
     try {
       const list = await p.listModels(key);
       setModels(list);
-      setMsg(`${list.length}개 모델`);
+      setMsg(__i18n_k("ui.storySettings.storyOptions.load.d06448e8", { length: list.length }));
     } catch (e) {
-      setMsg(`불러오지 못했습니다: ${e instanceof Error ? e.message : String(e)}`);
+      setMsg(__i18n_k("ui.storySettings.storyOptions.load.8379d457", { value: e instanceof Error ? e.message : String(e) }));
     }
   };
   return (
     <>
-      <p class="muted">
-        선택 기능입니다. 본인 API 키로 Claude·GPT·Gemini 가운데 하나가 기사와 인터뷰를 다시 씁니다. 게임에는 공개 정보(경기 결과·기록·이름)만 보내고, 숫자가 사실과 다르면 원래 기사를 씁니다. 결과는
-        진행 파일에 저장되지만 <strong>API 키는 저장되지 않습니다</strong>. 요금은 각 회사 요금제대로 본인 계정에 청구됩니다.
-      </p>
+      <p class="muted">{__i18n_rich("ui.storySettings.storyOptions.339a4ade", { value: <strong>{__i18n_t("ui.storySettings.storyOptions.c8debb0f")}</strong> })}</p>
       <div class="form-grid">
         <label>
           제공자
           <select value={s.provider} onChange={(e) => setS({ ...s, provider: (e.currentTarget as HTMLSelectElement).value as ProviderId })}>
-            {Object.values(PROVIDERS).map((x) => (
+            {__i18n_display(Object.values(PROVIDERS).map((x) => (
               <option key={x.id} value={x.id}>
-                {x.label}
+                {__i18n_display(x.label)}
               </option>
-            ))}
+            )))}
           </select>
         </label>
         <label>
@@ -68,18 +64,16 @@ export function StoryOptions({ settings, usage, pausedUntil = 0, onSave }: Props
         </label>
         <label>
           모델
-          <input list="story-models" value={model} placeholder={p.defaultModel || '모델 이름'} onInput={(e) => setS({ ...s, models: { ...s.models, [s.provider]: (e.currentTarget as HTMLInputElement).value } })} />
+          <input list="story-models" value={model} placeholder={__i18n_displayText(p.defaultModel || __i18n_k("ui.storySettings.storyOptions.4ae2eb63"))} onInput={(e) => setS({ ...s, models: { ...s.models, [s.provider]: (e.currentTarget as HTMLInputElement).value } })} />
           <datalist id="story-models">
-            {models.map((m) => (
+            {__i18n_display(models.map((m) => (
               <option key={m} value={m} />
-            ))}
+            )))}
           </datalist>
         </label>
         <div>
-          <button type="button" disabled={!key} onClick={load}>
-            모델 목록 불러오기
-          </button>{' '}
-          <span class="muted small">{msg}</span>
+          <button type="button" disabled={!key} onClick={load}>{__i18n_t("ui.storySettings.storyOptions.d7254c44")}</button>{__i18n_display(' ')}
+          <span class="muted small">{__i18n_display(msg)}</span>
         </div>
       </div>
       <label class="check">
@@ -92,21 +86,15 @@ export function StoryOptions({ settings, usage, pausedUntil = 0, onSave }: Props
       <label class="check">
         <input type="checkbox" checked={s.remember} onChange={(e) => setS({ ...s, remember: (e.currentTarget as HTMLInputElement).checked })} /> 이 브라우저에 설정과 키 기억하기
       </label>
-      {s.remember && <p class="notice warn">키가 이 브라우저 저장소에 남습니다. 같은 주소의 다른 페이지나 이 컴퓨터를 쓰는 사람이 읽을 수 있으니, 공용 컴퓨터에서는 켜지 마세요.</p>}
-      <p class="muted small">
-        이번 세션 사용량: 기사 {usage.articles}개 · 입력 {usage.input.toLocaleString('ko-KR')} 토큰 · 출력 {usage.output.toLocaleString('ko-KR')} 토큰
-      </p>
-      {pausedUntil > Date.now() && (
-        <p class="muted small">자동 모드가 요청 한도나 서버 혼잡으로 {new Date(pausedUntil).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}까지 쉬었다가 이어 씁니다.</p>
-      )}
-      <p class="muted small">요청 한도(429)나 서버 혼잡(500·503·529)은 한 번 더 시도하고, 그래도 안 되면 자동 모드가 잠시 쉽니다. 크레딧·하루 한도가 바닥나거나 키가 틀리면 자동 모드가 꺼집니다.</p>
+      {__i18n_display(s.remember && <p class="notice warn">{__i18n_t("ui.storySettings.storyOptions.4a678414")}</p>)}
+      <p class="muted small">{__i18n_t("ui.storySettings.storyOptions.50bb5a3a", { articles: usage.articles, value: usage.input.toLocaleString('ko-KR'), value2: usage.output.toLocaleString('ko-KR') })}</p>
+      {__i18n_display(pausedUntil > Date.now() && (
+        <p class="muted small">{__i18n_t("ui.storySettings.storyOptions.93fa27a7", { value: new Date(pausedUntil).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) })}</p>
+      ))}
+      <p class="muted small">{__i18n_t("ui.storySettings.storyOptions.2b7aaa2f")}</p>
       <div class="row-actions">
-        <button type="button" class="primary" onClick={() => onSave(s)}>
-          저장
-        </button>
-        <button type="button" onClick={() => onSave({ ...s, keys: {} })}>
-          키 지우기
-        </button>
+        <button type="button" class="primary" onClick={() => onSave(s)}>{__i18n_t("ui.storySettings.storyOptions.1f1712ac")}</button>
+        <button type="button" onClick={() => onSave({ ...s, keys: {} })}>{__i18n_t("ui.storySettings.storyOptions.c82ce3d3")}</button>
       </div>
     </>
   );

@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The military medical grade after an operation (V0.7.7; RULES.md §11).
 
    Korea's conscription exam grades health 1~7: 1~3급 serve on active duty (현역, or 상무 for athletes),
@@ -23,7 +24,7 @@ import { OFFSEASON } from './tuning';
 const M = () => OFFSEASON.military.exam;
 const KNEE = /십자인대|아킬레스|연골/;
 
-export const gradeLabel = (grade: number) => (grade >= 5 ? '5급 전시근로역' : grade === 4 ? '4급 보충역' : `${grade}급 현역`);
+export const gradeLabel = (grade: number) => (grade >= 5 ? __i18n_k("league.military.gradeLabel.c95d6d83") : grade === 4 ? __i18n_k("league.military.gradeLabel.807b3872") : __i18n_k("league.military.gradeLabel.8c571e36", { grade: grade }));
 
 /** The player's service line: "미필 · 4급 보충역 (전방십자인대 재건술)". */
 export function serviceNote(p: Pick<Player, 'service'>): string {
@@ -72,14 +73,14 @@ function examAlert(s: LeagueState, p: Player, year: number, discharged = false) 
     id: `exam-${year}-${p.id}`,
     date: `${year}-11-20`,
     kind: 'military',
-    title: e.grade >= 5 ? `${p.name} 병역 면제 (5급 전시근로역)` : `${p.name} 4급 보충역 판정`,
+    title: e.grade >= 5 ? __i18n_k("league.military.examAlert.title.b1e9a666", { name: p.name }) : __i18n_k("league.military.examAlert.title.caddf37a", { name: p.name }),
     lines:
       e.grade >= 5
-        ? [discharged ? `사회복무 중 재검에서 5급 판정을 받아 소집해제됩니다. 바로 팀에 돌아옵니다.` : `${e.reason} 이후 재검에서 5급 판정. 평시에는 복무하지 않습니다.`]
-        : [`${e.reason} 이후 병역판정 4급. 상무·현역 입대는 할 수 없고 사회복무요원(21개월, 그동안 경기 출전 불가)으로 복무합니다.`, `재활 중에 소집되면 복무와 재활을 함께 할 수 있습니다.`],
+        ? [discharged ? __i18n_k("league.military.examAlert.lines.566e69a8") : __i18n_k("league.military.examAlert.lines.22665d05", { reason: e.reason })]
+        : [__i18n_k("league.military.examAlert.lines.84ebadd1", { reason: e.reason }), __i18n_k("league.military.examAlert.lines.08735591")],
     tone: e.grade >= 5 ? 'good' : undefined,
     players: [p.id],
   });
   const u = s.user!;
-  (u.log ??= []).push({ year, text: `${eunneun(p.name)} 병역판정 ${gradeLabel(e.grade)}${discharged ? ' (소집해제)' : ''} — ${e.reason}` });
+  (u.log ??= []).push({ year, text: __i18n_k("league.military.examAlert.text.0c219eb6", { name: eunneun(p.name), gradeLabel: gradeLabel(e.grade), value: discharged ? __i18n_k("league.military.examAlert.text.4ad9daed") : '', reason: e.reason }) });
 }

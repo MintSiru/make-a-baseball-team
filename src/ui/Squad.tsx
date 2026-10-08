@@ -1,3 +1,4 @@
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* A club's players, one squad at a time (1군 / 퓨처스 / 잔류군 / 군 복무), pitchers and hitters in
    separate tables with the numbers that matter for each. Every heading sorts. The user's club adds a
    column of move buttons. */
@@ -14,10 +15,10 @@ export type Row = ReturnType<typeof rosterView>['active'][number];
 export type SquadKey = 'active' | 'futures' | 'third' | 'military';
 
 const SQUADS: { key: SquadKey; label: string; note?: string }[] = [
-  { key: 'active', label: '1군' },
-  { key: 'futures', label: '퓨처스' },
-  { key: 'third', label: '잔류군', note: '퓨처스 경기에 나가지 않고 재활·훈련하는 선수들입니다. 경기에 나가는 것만큼은 아니지만 훈련한 시간도 성장에 반영됩니다.' },
-  { key: 'military', label: '군 복무' },
+  { key: 'active', label: __i18n_k("ui.squad.sQUADS.label.ef2caeba") },
+  { key: 'futures', label: __i18n_k("ui.squad.sQUADS.label.e6607847") },
+  { key: 'third', label: __i18n_k("ui.squad.sQUADS.label.0dce8d6b"), note: __i18n_k("ui.squad.sQUADS.note.38331eee") },
+  { key: 'military', label: __i18n_k("ui.squad.sQUADS.label.285374d7") },
 ];
 
 const f3 = rates.fmt3;
@@ -26,23 +27,19 @@ const salaryText = (r: Row) => (r.usd ? usd(r.usd) : money(r.salary));
 function Name({ r, onPlayer }: { r: Row; onPlayer: (id: string) => void }) {
   return (
     <td class="name-cell">
-      <span class="uniform">{r.number ?? ''}</span>
+      <span class="uniform">{__i18n_display(r.number ?? '')}</span>
       <button type="button" class="link" onClick={() => onPlayer(r.id)}>
-        {r.name}
+        {__i18n_display(r.name)}
       </button>
-      {r.foreign && <span class="tag">외국인</span>}
-      {r.development && <span class="tag">육성</span>}
-      {r.injured && (
-        <span class="tag warn" title={r.injury}>
-          부상
-        </span>
-      )}
-      {r.knock && (
-        <span class="tag" title={r.injury}>
-          결장
-        </span>
-      )}
-      {r.away && <span class="tag">대표팀</span>}
+      {__i18n_display(r.foreign && <span class="tag">{__i18n_t("ui.squad.name.5bd804b7")}</span>)}
+      {__i18n_display(r.development && <span class="tag">{__i18n_t("ui.squad.name.818f3b79")}</span>)}
+      {__i18n_display(r.injured && (
+        <span class="tag warn" title={__i18n_displayText(r.injury)}>{__i18n_t("ui.squad.name.501fb802")}</span>
+      ))}
+      {__i18n_display(r.knock && (
+        <span class="tag" title={__i18n_displayText(r.injury)}>{__i18n_t("ui.squad.name.7d657386")}</span>
+      ))}
+      {__i18n_display(r.away && <span class="tag">{__i18n_t("ui.squad.name.a567cc15")}</span>)}
     </td>
   );
 }
@@ -74,52 +71,52 @@ function PitcherTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; on
       <table class="record-table squad-table">
         <thead>
           <tr>
-            {th('name', '투수')}
-            {th('pos', '보직')}
-            {th('age', '나이', true)}
-            {th('grade', '현재', true)}
-            {th('future', '미래', true)}
-            {th('g', '경기', true)}
-            {th('wl', '승-패', true)}
-            {th('svh', '세/홀', true)}
-            {th('ip', '이닝', true)}
-            {th('era', 'ERA', true)}
-            {th('whip', 'WHIP', true)}
-            {th('k', '삼진', true)}
-            {th('salary', '연봉', true)}
-            {actions && <th class="actions-head">관리</th>}
+            {__i18n_display(th('name', '투수'))}
+            {__i18n_display(th('pos', __i18n_k("ui.squad.pitcherTable.d2fcd57f")))}
+            {__i18n_display(th('age', __i18n_k("ui.squad.pitcherTable.6c620e5c"), true))}
+            {__i18n_display(th('grade', __i18n_k("ui.squad.pitcherTable.001e4be2"), true))}
+            {__i18n_display(th('future', __i18n_k("ui.squad.pitcherTable.6e0caec5"), true))}
+            {__i18n_display(th('g', __i18n_k("ui.squad.pitcherTable.e0cee61a"), true))}
+            {__i18n_display(th('wl', __i18n_k("ui.squad.pitcherTable.9660dd73"), true))}
+            {__i18n_display(th('svh', __i18n_k("ui.squad.pitcherTable.df8372bc"), true))}
+            {__i18n_display(th('ip', __i18n_k("ui.squad.pitcherTable.639a1f2f"), true))}
+            {__i18n_display(th('era', 'ERA', true))}
+            {__i18n_display(th('whip', 'WHIP', true))}
+            {__i18n_display(th('k', __i18n_k("ui.squad.pitcherTable.3f349ed1"), true))}
+            {__i18n_display(th('salary', __i18n_k("ui.squad.pitcherTable.cbf383ec"), true))}
+            {__i18n_display(actions && <th class="actions-head">{__i18n_t("ui.squad.pitcherTable.c29fba5a")}</th>)}
           </tr>
         </thead>
         <tbody>
-          {sorted.map((r) => {
+          {__i18n_display(sorted.map((r) => {
             const x = p(r);
             return (
               <tr key={r.id} class="player-row">
                 <Name r={r} onPlayer={onPlayer} />
                 <td>
-                  {posControl?.(r) ?? (
+                  {__i18n_display(posControl?.(r) ?? (
                     <>
-                      {r.pos.replace('투수', '')}
-                      {r.penRoleSet && <span class="muted"> (지정)</span>}
+                      {__i18n_display(r.pos.replace('투수', ''))}
+                      {__i18n_display(r.penRoleSet && <span class="muted">{__i18n_t("ui.squad.pitcherTable.16b82790")}</span>)}
                     </>
-                  )}
-                  {r.starterInPen && <span class="muted"> (선발형)</span>}
+                  ))}
+                  {__i18n_display(r.starterInPen && <span class="muted">{__i18n_t("ui.squad.pitcherTable.811281ad")}</span>)}
                 </td>
-                <td class="num">{r.age}</td>
-                <td class={`num ${gradeClass(r.grade)}`}>{r.grade}</td>
-                <td class={`num strong ${gradeClass(r.future)}`}>{r.future}</td>
-                <td class="num">{x?.g ?? '-'}</td>
-                <td class="num">{x ? `${x.w}-${x.l}` : '-'}</td>
-                <td class="num">{x ? `${x.sv}/${x.hld}` : '-'}</td>
-                <td class="num">{x ? rates.ip(x.outs) : '-'}</td>
-                <td class="num strong">{x?.outs ? rates.era(x).toFixed(2) : '-'}</td>
-                <td class="num">{x?.outs ? rates.whip(x).toFixed(2) : '-'}</td>
-                <td class="num">{x?.k ?? '-'}</td>
-                <td class="num">{salaryText(r)}</td>
-                {actions && <td>{actions(r)}</td>}
+                <td class="num">{__i18n_display(r.age)}</td>
+                <td class={`num ${gradeClass(r.grade)}`}>{__i18n_display(r.grade)}</td>
+                <td class={`num strong ${gradeClass(r.future)}`}>{__i18n_display(r.future)}</td>
+                <td class="num">{__i18n_display(x?.g ?? '-')}</td>
+                <td class="num">{__i18n_display(x ? `${x.w}-${x.l}` : '-')}</td>
+                <td class="num">{__i18n_display(x ? `${x.sv}/${x.hld}` : '-')}</td>
+                <td class="num">{__i18n_display(x ? rates.ip(x.outs) : '-')}</td>
+                <td class="num strong">{__i18n_display(x?.outs ? rates.era(x).toFixed(2) : '-')}</td>
+                <td class="num">{__i18n_display(x?.outs ? rates.whip(x).toFixed(2) : '-')}</td>
+                <td class="num">{__i18n_display(x?.k ?? '-')}</td>
+                <td class="num">{__i18n_display(salaryText(r))}</td>
+                {__i18n_display(actions && <td>{__i18n_display(actions(r))}</td>)}
               </tr>
             );
-          })}
+          }))}
         </tbody>
       </table>
     </div>
@@ -152,46 +149,46 @@ function HitterTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; onP
       <table class="record-table squad-table">
         <thead>
           <tr>
-            {th('name', '야수')}
-            {th('pos', '포지션')}
-            {th('age', '나이', true)}
-            {th('grade', '현재', true)}
-            {th('future', '미래', true)}
-            {th('g', '경기', true)}
-            {th('avg', '타율', true)}
-            {th('hr', '홈런', true)}
-            {th('rbi', '타점', true)}
-            {th('sb', '도루', true)}
-            {th('ops', 'OPS', true)}
-            {th('salary', '연봉', true)}
-            {actions && <th class="actions-head">관리</th>}
+            {__i18n_display(th('name', __i18n_k("ui.squad.hitterTable.9dac0c64")))}
+            {__i18n_display(th('pos', __i18n_k("ui.squad.hitterTable.81922a91")))}
+            {__i18n_display(th('age', __i18n_k("ui.squad.hitterTable.6c620e5c"), true))}
+            {__i18n_display(th('grade', __i18n_k("ui.squad.hitterTable.001e4be2"), true))}
+            {__i18n_display(th('future', __i18n_k("ui.squad.hitterTable.6e0caec5"), true))}
+            {__i18n_display(th('g', __i18n_k("ui.squad.hitterTable.e0cee61a"), true))}
+            {__i18n_display(th('avg', __i18n_k("ui.squad.hitterTable.1eb19e0a"), true))}
+            {__i18n_display(th('hr', __i18n_k("ui.squad.hitterTable.9162d3a3"), true))}
+            {__i18n_display(th('rbi', __i18n_k("ui.squad.hitterTable.fed1c588"), true))}
+            {__i18n_display(th('sb', __i18n_k("ui.squad.hitterTable.91e54831"), true))}
+            {__i18n_display(th('ops', 'OPS', true))}
+            {__i18n_display(th('salary', __i18n_k("ui.squad.hitterTable.cbf383ec"), true))}
+            {__i18n_display(actions && <th class="actions-head">{__i18n_t("ui.squad.hitterTable.c29fba5a")}</th>)}
           </tr>
         </thead>
         <tbody>
-          {sorted.map((r) => {
+          {__i18n_display(sorted.map((r) => {
             const x = b(r);
             return (
               <tr key={r.id} class="player-row">
                 <Name r={r} onPlayer={onPlayer} />
                 <td>
-                  {r.pos}
-                  {r.also.length > 0 && <span class="muted small"> · {r.also.join('·')}</span>}
-                  {posControl?.(r) ?? (r.platoon && <span class="muted"> ({r.platoon === 'L' ? '좌완 상대' : '우완 상대'})</span>)}
+                  {__i18n_display(r.pos)}
+                  {__i18n_display(r.also.length > 0 && <span class="muted small"> · {__i18n_display(r.also.join('·'))}</span>)}
+                  {__i18n_display(posControl?.(r) ?? (r.platoon && <span class="muted"> ({__i18n_display(r.platoon === 'L' ? __i18n_k("ui.squad.hitterTable.67500ef8") : __i18n_k("ui.squad.hitterTable.04afaad8"))})</span>))}
                 </td>
-                <td class="num">{r.age}</td>
-                <td class={`num ${gradeClass(r.grade)}`}>{r.grade}</td>
-                <td class={`num strong ${gradeClass(r.future)}`}>{r.future}</td>
-                <td class="num">{x?.g ?? '-'}</td>
-                <td class="num">{x?.ab ? f3(rates.avg(x)) : '-'}</td>
-                <td class="num">{x?.hr ?? '-'}</td>
-                <td class="num">{x?.rbi ?? '-'}</td>
-                <td class="num">{x?.sb ?? '-'}</td>
-                <td class="num strong">{x?.pa ? f3(rates.ops(x)) : '-'}</td>
-                <td class="num">{salaryText(r)}</td>
-                {actions && <td>{actions(r)}</td>}
+                <td class="num">{__i18n_display(r.age)}</td>
+                <td class={`num ${gradeClass(r.grade)}`}>{__i18n_display(r.grade)}</td>
+                <td class={`num strong ${gradeClass(r.future)}`}>{__i18n_display(r.future)}</td>
+                <td class="num">{__i18n_display(x?.g ?? '-')}</td>
+                <td class="num">{__i18n_display(x?.ab ? f3(rates.avg(x)) : '-')}</td>
+                <td class="num">{__i18n_display(x?.hr ?? '-')}</td>
+                <td class="num">{__i18n_display(x?.rbi ?? '-')}</td>
+                <td class="num">{__i18n_display(x?.sb ?? '-')}</td>
+                <td class="num strong">{__i18n_display(x?.pa ? f3(rates.ops(x)) : '-')}</td>
+                <td class="num">{__i18n_display(salaryText(r))}</td>
+                {__i18n_display(actions && <td>{__i18n_display(actions(r))}</td>)}
               </tr>
             );
-          })}
+          }))}
         </tbody>
       </table>
     </div>
@@ -224,18 +221,18 @@ export function Squad({
   return (
     <div class="squad">
       <div class="squad-bar">
-        <div class="segmented" role="group" aria-label="선수단">
-          {SQUADS.map((x) => (
+        <div class="segmented" role="group" aria-label={__i18n_t("ui.squad.squad.5b9daec2")}>
+          {__i18n_display(SQUADS.map((x) => (
             <button key={x.key} type="button" aria-pressed={key === x.key} onClick={() => setKey(x.key)}>
-              {x.label} <span class="count">{roster[x.key].length}</span>
+              {__i18n_display(x.label)} <span class="count">{__i18n_display(roster[x.key].length)}</span>
             </button>
-          ))}
+          )))}
         </div>
-        {toolbar}
+        {__i18n_display(toolbar)}
       </div>
-      {note && <p class="muted">{note}</p>}
-      {futuresNumbers && <p class="muted">기록은 올해 퓨처스리그(상무 포함) 성적입니다.</p>}
-      {!rows.length && <p class="empty">선수가 없습니다.</p>}
+      {__i18n_display(note && <p class="muted">{__i18n_display(note)}</p>)}
+      {__i18n_display(futuresNumbers && <p class="muted">{__i18n_t("ui.squad.squad.8bd0631b")}</p>)}
+      {__i18n_display(!rows.length && <p class="empty">{__i18n_t("ui.squad.squad.8abc45cd")}</p>)}
       <PitcherTable rows={rows.filter((r) => r.pitcher)} onPlayer={onPlayer} actions={actions?.(key)} posControl={posControl?.(key)} />
       <HitterTable rows={rows.filter((r) => !r.pitcher)} onPlayer={onPlayer} actions={actions?.(key)} posControl={posControl?.(key)} />
     </div>

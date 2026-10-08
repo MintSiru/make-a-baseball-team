@@ -1,3 +1,4 @@
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, rich as __i18n_rich, t as __i18n_t } from '../i18n/index';
 /* The club at a glance (V0.7): who plays where on the field today, the batting order against a
    right- or left-handed starter, the rotation (next starter marked) and the bullpen by role. For the
    user's club (V0.8) the general manager's lineup card: spots and positions he fixes, the rotation order. */
@@ -29,12 +30,12 @@ const SPOTS: Record<string, [number, number]> = {
 const onField = (name: string) => (name.length > 5 && name.includes(' ') ? name.split(' ').at(-1)! : name);
 
 /** A 20–80 grade cell, coloured above 60 and below 40. */
-const Grade = ({ g }: { g: number }) => <td class={`num grade-cell t${gradeTier(g)} ${g >= 60 ? 'plus' : g < 40 ? 'minus' : ''}`}>{g || '-'}</td>;
+const Grade = ({ g }: { g: number }) => <td class={`num grade-cell t${gradeTier(g)} ${g >= 60 ? 'plus' : g < 40 ? 'minus' : ''}`}>{__i18n_display(g || '-')}</td>;
 
 /** 종합 · 구위/제구/변화구/체력 · 최고 구속. */
 const ArmLine = ({ p }: { p: { grade: number; tools: { stuff: number; command: number; breaking: number; stamina: number }; velocity: number | null } }) => (
-  <span title="현재 · 구위/제구/변화구/체력 · 최고 구속">
-    <strong>{p.grade}</strong> ({p.tools.stuff}/{p.tools.command}/{p.tools.breaking}/{p.tools.stamina}){p.velocity ? ` · ${p.velocity}km/h` : ''}
+  <span title={__i18n_t("ui.lineup.armLine.50898354")}>
+    <strong>{__i18n_display(p.grade)}</strong> ({__i18n_display(p.tools.stuff)}/{__i18n_display(p.tools.command)}/{__i18n_display(p.tools.breaking)}/{__i18n_display(p.tools.stamina)}){__i18n_display(p.velocity ? ` · ${p.velocity}km/h` : '')}
   </span>
 );
 
@@ -43,7 +44,7 @@ const f3 = (x: number | null) => (x == null ? '-' : rates.fmt3(x));
 export function Lineup({ league, teamId, onPlayer, onAct }: { league: LeagueState; teamId: string; onPlayer: (id: string) => void; onAct?: (a: Action) => void }) {
   const [vs, setVs] = useState<'R' | 'L'>('R');
   const v = lineupView(league, teamId, vs);
-  if (!v || v.lineup.length < 9) return <p class="muted">1군 선수가 모자라 라인업을 짤 수 없습니다.</p>;
+  if (!v || v.lineup.length < 9) return <p class="muted">{__i18n_t("ui.lineup.lineup.a99fd3fe")}</p>;
   const next = v.starters.find((x) => x.next) ?? v.starters[0];
   const field = [
     ...v.lineup.filter((b) => b.pos !== 'DH').map((b) => ({ pos: b.pos as string, id: b.id, name: b.name, number: b.number, grade: b.grade })),
@@ -53,131 +54,121 @@ export function Lineup({ league, teamId, onPlayer, onAct }: { league: LeagueStat
   const style = v.style && v.style !== 'balanced' ? MANAGER_STYLES[v.style] : null;
   return (
     <div class="lineup">
-      <div class="segmented" role="group" aria-label="상대 선발">
-        <button type="button" aria-pressed={vs === 'R'} onClick={() => setVs('R')}>
-          상대 우완 선발
-        </button>
-        <button type="button" aria-pressed={vs === 'L'} onClick={() => setVs('L')}>
-          상대 좌완 선발
-        </button>
+      <div class="segmented" role="group" aria-label={__i18n_t("ui.lineup.lineup.673abc38")}>
+        <button type="button" aria-pressed={vs === 'R'} onClick={() => setVs('R')}>{__i18n_t("ui.lineup.lineup.ada149f8")}</button>
+        <button type="button" aria-pressed={vs === 'L'} onClick={() => setVs('L')}>{__i18n_t("ui.lineup.lineup.b044607c")}</button>
       </div>
-      {style && (
-        <p class="small">
-          감독 성향: <strong>{style.label}</strong> <span class="muted">({style.note})</span>
-        </p>
-      )}
-      {v.resting.length > 0 && (
-        <p class="notice">
-          다음 경기({v.resting[0]!.date.slice(5).replace('-', '/')}) 휴식 예정: {v.resting.map((r) => `${r.name}(${r.pos})`).join(', ')} — 감독이 체력 관리로 쉬게 합니다.
-        </p>
-      )}
-      {onAct && teamId === league.user?.teamId && <CardEditor league={league} vs={vs} lineup={v.lineup} starters={v.starters} onAct={onAct} />}
-      <Help title="라인업을 짜는 방식">
-        감독이 평소 짜는 라인업입니다 (직접 관리에서 정한 플래툰·불펜 보직과 단장 라인업 카드의 고정 자리 반영). 타격과 포지션별 수비를 함께 따져 9명과 수비 위치를 정하고, 가장 좋은 타자 셋을 1·2·4번, 다음 둘을 3·5번에 둡니다(작전형 감독은 출루·발 빠른 타자를 앞에, 거포를 중심에). 시즌 중에는 주전 포수가 5~6경기에 한 번, 34세 이상은 11~12경기에 한 번꼴로 쉽니다. 부상·대표팀 선수는 빠집니다. 능력치는 스카우팅 등급(20~80)이며, 투수는 현재 (구위/제구/변화구/체력) 순입니다.
-      </Help>
+      {__i18n_display(style && (
+        <p class="small">{__i18n_rich("ui.lineup.lineup.9cb053aa", { value: <strong>{__i18n_display(style.label)}</strong>, value2: <span class="muted">({__i18n_display(style.note)})</span> })}</p>
+      ))}
+      {__i18n_display(v.resting.length > 0 && (
+        <p class="notice">{__i18n_t("ui.lineup.lineup.66d9ed37", { value: v.resting[0]!.date.slice(5).replace('-', '/'), value2: v.resting.map((r) => `${r.name}(${r.pos})`).join(', ') })}</p>
+      ))}
+      {__i18n_display(onAct && teamId === league.user?.teamId && <CardEditor league={league} vs={vs} lineup={v.lineup} starters={v.starters} onAct={onAct} />)}
+      <Help title={__i18n_t("ui.lineup.lineup.a17455c9")}>{__i18n_t("ui.lineup.lineup.3e29b7e7")}</Help>
       <div class="lineup-grid">
-        <svg viewBox="0 0 400 320" class="diamond" role="img" aria-label="수비 위치">
+        <svg viewBox="0 0 400 320" class="diamond" role="img" aria-label={__i18n_t("ui.lineup.lineup.7a9dc5f1")}>
           <path d="M200 300 L40 140 A230 230 0 0 1 360 140 Z" class="grass" />
           <path d="M200 290 L290 200 L200 115 L110 200 Z" class="infield" />
-          {field.map((f) => {
+          {__i18n_display(field.map((f) => {
             const [x, y] = SPOTS[f.pos] ?? [0, 0];
             return (
               <g key={f.pos} class="spot" onClick={() => onPlayer(f.id)}>
                 <rect x={x - 50} y={y - 16} width={100} height={32} rx={6} />
                 <text x={x} y={y - 2} text-anchor="middle" class="spot-pos">
-                  {f.pos === 'P' ? '선발' : f.pos}
-                  {f.number != null ? ` #${f.number}` : ''} · {f.grade}
+                  {__i18n_display(f.pos === 'P' ? __i18n_k("ui.lineup.lineup.a88271df") : f.pos)}
+                  {__i18n_display(f.number != null ? ` #${f.number}` : '')} · {__i18n_display(f.grade)}
                 </text>
                 <text x={x} y={y + 12} text-anchor="middle" class="spot-name">
-                  {onField(f.name)}
+                  {__i18n_display(onField(f.name))}
                 </text>
               </g>
             );
-          })}
+          }))}
         </svg>
         <div>
-          <h3>타순</h3>
+          <h3>{__i18n_t("ui.lineup.lineup.790bde97")}</h3>
           <table class="record-table">
             <thead>
               <tr>
                 <th class="num">#</th>
-                <th>타자</th>
-                <th>위치</th>
-                <th>타</th>
-                <th class="num" title="현재 종합 등급">현재</th>
-                <th class="num" title="컨택">컨</th>
-                <th class="num" title="파워">파</th>
-                <th class="num" title="선구안">선</th>
-                <th class="num" title="주력">주</th>
-                <th class="num" title="수비">수</th>
-                <th class="num">타율</th>
+                <th>{__i18n_t("ui.lineup.lineup.5db174c6")}</th>
+                <th>{__i18n_t("ui.lineup.lineup.3d9d982d")}</th>
+                <th>{__i18n_t("ui.lineup.lineup.8198fd54")}</th>
+                <th class="num" title={__i18n_t("ui.lineup.lineup.c9495a96")}>{__i18n_t("ui.lineup.lineup.001e4be2")}</th>
+                <th class="num" title={__i18n_t("ui.lineup.lineup.5edb7838")}>{__i18n_t("ui.lineup.lineup.22b8c755")}</th>
+                <th class="num" title={__i18n_t("ui.lineup.lineup.99517041")}>{__i18n_t("ui.lineup.lineup.4c537d13")}</th>
+                <th class="num" title={__i18n_t("ui.lineup.lineup.ac886d4a")}>{__i18n_t("ui.lineup.lineup.22dc8896")}</th>
+                <th class="num" title={__i18n_t("ui.lineup.lineup.4038619b")}>{__i18n_t("ui.lineup.lineup.752244cf")}</th>
+                <th class="num" title={__i18n_t("ui.lineup.lineup.ed9be858")}>{__i18n_t("ui.lineup.lineup.c04eb2ef")}</th>
+                <th class="num">{__i18n_t("ui.lineup.lineup.1eb19e0a")}</th>
                 <th class="num">OPS</th>
-                <th class="num">홈런</th>
+                <th class="num">{__i18n_t("ui.lineup.lineup.9162d3a3")}</th>
               </tr>
             </thead>
             <tbody>
-              {v.lineup.map((b) => (
+              {__i18n_display(v.lineup.map((b) => (
                 <tr key={b.id}>
-                  <td class="num">{b.order}</td>
+                  <td class="num">{__i18n_display(b.order)}</td>
                   <td>
                     <button type="button" class="link" onClick={() => onPlayer(b.id)}>
-                      {b.name}
+                      {__i18n_display(b.name)}
                     </button>
-                    {b.fixed && <span class="tag" title="단장이 고정한 자리">고정</span>}
+                    {__i18n_display(b.fixed && <span class="tag" title={__i18n_t("ui.lineup.lineup.f8a31f8b")}>{__i18n_t("ui.lineup.lineup.4f48c004")}</span>)}
                   </td>
-                  <td>{b.pos}</td>
-                  <td>{b.bats}</td>
-                  <td class={`num strong ${gradeClass(b.grade)}`}>{b.grade}</td>
+                  <td>{__i18n_display(b.pos)}</td>
+                  <td>{__i18n_display(b.bats)}</td>
+                  <td class={`num strong ${gradeClass(b.grade)}`}>{__i18n_display(b.grade)}</td>
                   <Grade g={b.tools.contact} />
                   <Grade g={b.tools.power} />
                   <Grade g={b.tools.eye} />
                   <Grade g={b.tools.speed} />
                   <Grade g={b.tools.defense} />
-                  <td class="num">{f3(b.avg)}</td>
-                  <td class="num strong">{f3(b.ops)}</td>
-                  <td class="num">{b.hr}</td>
+                  <td class="num">{__i18n_display(f3(b.avg))}</td>
+                  <td class="num strong">{__i18n_display(f3(b.ops))}</td>
+                  <td class="num">{__i18n_display(b.hr)}</td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
-          {dh && <p class="muted small">지명타자: {dh.name}</p>}
+          {__i18n_display(dh && <p class="muted small">{__i18n_t("ui.lineup.lineup.8a47b77e", { name: dh.name })}</p>)}
         </div>
       </div>
       <div class="lineup-grid">
         <div>
-          <h3>선발 로테이션</h3>
+          <h3>{__i18n_t("ui.lineup.lineup.cad4826e")}</h3>
           <ol class="plain">
-            {v.starters.map((p) => (
+            {__i18n_display(v.starters.map((p) => (
               <li key={p.id}>
                 <button type="button" class="link" onClick={() => onPlayer(p.id)}>
-                  {p.name}
-                </button>{' '}
+                  {__i18n_display(p.name)}
+                </button>{__i18n_display(' ')}
                 <span class="muted small">
-                  {p.throws}투 · <ArmLine p={p} /> · {p.w}승 {p.l}패 · ERA {p.era == null ? '-' : p.era.toFixed(2)}
+                  {__i18n_display(p.throws)}투 · <ArmLine p={p} /> · {__i18n_display(p.w)}승 {__i18n_display(p.l)}패 · ERA {__i18n_display(p.era == null ? '-' : p.era.toFixed(2))}
                 </span>
-                {p.next && <span class="tag">다음 등판</span>}
-                {p.mine && <span class="tag" title="단장이 정한 로테이션">지정</span>}
+                {__i18n_display(p.next && <span class="tag">{__i18n_t("ui.lineup.lineup.ae82f6eb")}</span>)}
+                {__i18n_display(p.mine && <span class="tag" title={__i18n_t("ui.lineup.lineup.195089c9")}>{__i18n_t("ui.lineup.lineup.678af713")}</span>)}
               </li>
-            ))}
+            )))}
           </ol>
         </div>
         <div>
-          <h3>불펜</h3>
+          <h3>{__i18n_t("ui.lineup.lineup.5b8607a3")}</h3>
           <ol class="plain">
-            {v.bullpen.map((p) => (
+            {__i18n_display(v.bullpen.map((p) => (
               <li key={p.id}>
-                <span class="tag">{p.role}</span>{' '}
+                <span class="tag">{__i18n_display(p.role)}</span>{__i18n_display(' ')}
                 <button type="button" class="link" onClick={() => onPlayer(p.id)}>
-                  {p.name}
-                </button>{' '}
+                  {__i18n_display(p.name)}
+                </button>{__i18n_display(' ')}
                 <span class="muted small">
-                  {p.throws}투 · <ArmLine p={p} /> · {p.sv}세 {p.hld}홀 · ERA {p.era == null ? '-' : p.era.toFixed(2)}
+                  {__i18n_display(p.throws)}투 · <ArmLine p={p} /> · {__i18n_display(p.sv)}세 {__i18n_display(p.hld)}홀 · ERA {__i18n_display(p.era == null ? '-' : p.era.toFixed(2))}
                 </span>
               </li>
-            ))}
+            )))}
           </ol>
-          <h3>벤치</h3>
-          <p>{v.bench.length ? v.bench.map((b) => `${b.name}(${b.pos} ${b.grade}${b.injured ? '·부상' : ''})`).join(', ') : '-'}</p>
+          <h3>{__i18n_t("ui.lineup.lineup.63ae8ec7")}</h3>
+          <p>{__i18n_display(v.bench.length ? v.bench.map((b) => __i18n_k("ui.lineup.lineup.262159bf", { name: b.name, pos: b.pos, grade: b.grade, value: b.injured ? __i18n_k("ui.lineup.lineup.cc5713ba") : '' })).join(', ') : '-')}</p>
         </div>
       </div>
     </div>
@@ -187,7 +178,7 @@ export function Lineup({ league, teamId, onPlayer, onAct }: { league: LeagueStat
 // ── The general manager's lineup card (V0.8) ────────────────────────────────────────────────────────
 
 const FIELD: FieldPos[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
-const FIELD_NAMES: Record<FieldPos, string> = { C: '포수', '1B': '1루', '2B': '2루', '3B': '3루', SS: '유격', LF: '좌익', CF: '중견', RF: '우익', DH: '지명' };
+const FIELD_NAMES: Record<FieldPos, string> = { C: __i18n_k("ui.lineup.fIELD_NAMES.c.5f31470d"), '1B': __i18n_k("ui.lineup.fIELD_NAMES.46c6f9a9"), '2B': __i18n_k("ui.lineup.fIELD_NAMES.8011eb7c"), '3B': __i18n_k("ui.lineup.fIELD_NAMES.3b17d1b9"), SS: __i18n_k("ui.lineup.fIELD_NAMES.sS.685e1674"), LF: __i18n_k("ui.lineup.fIELD_NAMES.lF.cab5a283"), CF: __i18n_k("ui.lineup.fIELD_NAMES.cF.545b7e1e"), RF: __i18n_k("ui.lineup.fIELD_NAMES.rF.e3d9e0b4"), DH: __i18n_k("ui.lineup.fIELD_NAMES.dH.68a26d9d") };
 const emptyCard = (): LineupCard => ({ R: Array(9).fill(null), L: Array(9).fill(null), rotation: [], rest: true });
 const fixedCount = (list: (LineupSlot | null)[]) => list.filter(Boolean).length;
 
@@ -222,48 +213,45 @@ function CardEditor({ league, vs, lineup, starters, onAct }: { league: LeagueSta
     setSlot(i, { id, pos });
   };
   const summary = saved
-    ? `고정한 자리: 우완 상대 ${fixedCount(saved.R)} · 좌완 상대 ${fixedCount(saved.L)} · 로테이션 ${saved.rotation.length}명${saved.rest ? '' : ' · 고정 선수는 쉬지 않음'}`
-    : '모두 감독에게 맡기고 있습니다.';
+    ? __i18n_k("ui.lineup.cardEditor.summary.3ec4bb25", { fixedCount: fixedCount(saved.R), fixedCount2: fixedCount(saved.L), length: saved.rotation.length, value: saved.rest ? '' : __i18n_k("ui.lineup.cardEditor.summary.e3babfd2") })
+    : __i18n_k("ui.lineup.cardEditor.summary.07c16200");
   return (
     <div class="lineup-card">
       <p class="small">
-        <strong>단장 라인업 카드</strong> · {summary}{' '}
+        <strong>{__i18n_t("ui.lineup.cardEditor.a7c332ca")}</strong> · {__i18n_display(summary)}{__i18n_display(' ')}
         <button type="button" class="link" onClick={() => setOpen(!open)} aria-expanded={open}>
-          {open ? '접기' : '직접 짜기'}
+          {__i18n_display(open ? __i18n_k("ui.lineup.cardEditor.0d2c2495") : __i18n_k("ui.lineup.cardEditor.bc686f79"))}
         </button>
       </p>
-      {open && (
+      {__i18n_display(open && (
         <div class="card-editor">
-          <p class="muted small">
-            고정한 자리는 그 선수가 그 위치에서 그 타순에 나섭니다. 비운 자리는 감독이 남은 선수와 위치로 채우고 타순도 감독 방식대로 넣습니다. 고정한 선수가 다치거나 1군에 없으면 감독이 대신 채웁니다. 지금 보고
-            있는 상대 {vs === 'R' ? '우완' : '좌완'} 선발용 라인업입니다.
-          </p>
+          <p class="muted small">{__i18n_t("ui.lineup.cardEditor.545c1224", { value: vs === 'R' ? __i18n_k("ui.lineup.cardEditor.5fbba1d3") : __i18n_k("ui.lineup.cardEditor.c03a5dae") })}</p>
           <table class="record-table card-table">
             <thead>
               <tr>
                 <th class="num">#</th>
-                <th>타자</th>
-                <th>위치</th>
-                <th class="muted">지금</th>
+                <th>{__i18n_t("ui.lineup.cardEditor.5db174c6")}</th>
+                <th>{__i18n_t("ui.lineup.cardEditor.3d9d982d")}</th>
+                <th class="muted">{__i18n_t("ui.lineup.cardEditor.d07eb370")}</th>
               </tr>
             </thead>
             <tbody>
-              {list.map((slot, i) => {
+              {__i18n_display(list.map((slot, i) => {
                 const now = lineup[i];
                 const who = slot ? hitters.find((p) => p.id === slot.id) : undefined;
                 // Main and listed positions marked (V0.11): anywhere else costs him more in the field.
-                const mark = (pos: FieldPos) => (pos === 'DH' || !who ? '' : who.position === pos ? ' · 주' : (who.alt ?? []).includes(pos as Exclude<FieldPos, 'DH'>) ? ' · 부' : ' · 낯섦');
+                const mark = (pos: FieldPos) => (pos === 'DH' || !who ? '' : who.position === pos ? __i18n_k("ui.lineup.cardEditor.mark.2f822934") : (who.alt ?? []).includes(pos as Exclude<FieldPos, 'DH'>) ? __i18n_k("ui.lineup.cardEditor.mark.d4d0388e") : __i18n_k("ui.lineup.cardEditor.mark.43ae42e9"));
                 return (
                   <tr key={i}>
-                    <td class="num">{i + 1}</td>
+                    <td class="num">{__i18n_display(i + 1)}</td>
                     <td>
-                      <select value={slot?.id ?? ''} onChange={(e) => pick(i, (e.currentTarget as HTMLSelectElement).value)} aria-label={`${i + 1}번 타자`}>
-                        <option value="">감독에게</option>
-                        {hitters.map((p) => (
+                      <select value={slot?.id ?? ''} onChange={(e) => pick(i, (e.currentTarget as HTMLSelectElement).value)} aria-label={__i18n_displayText(__i18n_k("ui.lineup.cardEditor.45dd7706", { value: i + 1 }))}>
+                        <option value="">{__i18n_t("ui.lineup.cardEditor.2984b900")}</option>
+                        {__i18n_display(hitters.map((p) => (
                           <option key={p.id} value={p.id}>
-                            {p.name} ({p.position ?? '투'} {p.scouting.current})
+                            {__i18n_display(p.name)} ({__i18n_display(p.position ?? __i18n_k("ui.lineup.cardEditor.28090143"))} {__i18n_display(p.scouting.current)})
                           </option>
-                        ))}
+                        )))}
                       </select>
                     </td>
                     <td>
@@ -271,39 +259,33 @@ function CardEditor({ league, vs, lineup, starters, onAct }: { league: LeagueSta
                         value={slot?.pos ?? ''}
                         disabled={!slot}
                         onChange={(e) => slot && setSlot(i, { ...slot, pos: (e.currentTarget as HTMLSelectElement).value as FieldPos })}
-                        aria-label={`${i + 1}번 수비 위치`}
+                        aria-label={__i18n_displayText(__i18n_k("ui.lineup.cardEditor.202ba2ba", { value: i + 1 }))}
                       >
-                        {!slot && <option value="">-</option>}
-                        {FIELD.map((pos) => (
+                        {__i18n_display(!slot && <option value="">-</option>)}
+                        {__i18n_display(FIELD.map((pos) => (
                           <option key={pos} value={pos}>
-                            {FIELD_NAMES[pos]}
-                            {mark(pos)}
+                            {__i18n_display(FIELD_NAMES[pos])}
+                            {__i18n_display(mark(pos))}
                           </option>
-                        ))}
+                        )))}
                       </select>
                     </td>
-                    <td class="muted small">{now ? `${now.name} (${now.pos})` : '-'}</td>
+                    <td class="muted small">{__i18n_display(now ? `${now.name} (${now.pos})` : '-')}</td>
                   </tr>
                 );
-              })}
+              }))}
             </tbody>
           </table>
           <div class="row-actions">
-            <button type="button" onClick={() => setCard((c) => ({ ...c, [vs]: lineup.slice(0, 9).map((b) => ({ id: b.id, pos: b.pos as FieldPos })) }))}>
-              지금 라인업 그대로 고정
-            </button>
-            <button type="button" onClick={() => setCard((c) => ({ ...c, [vs]: c[vs === 'R' ? 'L' : 'R'].map((x) => (x ? { ...x } : null)) }))}>
-              {vs === 'R' ? '좌완' : '우완'} 상대 라인업 복사
-            </button>
-            <button type="button" onClick={() => setCard((c) => ({ ...c, [vs]: Array(9).fill(null) }))}>
-              이 라인업 모두 감독에게
-            </button>
+            <button type="button" onClick={() => setCard((c) => ({ ...c, [vs]: lineup.slice(0, 9).map((b) => ({ id: b.id, pos: b.pos as FieldPos })) }))}>{__i18n_t("ui.lineup.cardEditor.eeca4d4a")}</button>
+            <button type="button" onClick={() => setCard((c) => ({ ...c, [vs]: c[vs === 'R' ? 'L' : 'R'].map((x) => (x ? { ...x } : null)) }))}>{__i18n_t("ui.lineup.cardEditor.987bdbce", { value: vs === 'R' ? __i18n_k("ui.lineup.cardEditor.c03a5dae") : __i18n_k("ui.lineup.cardEditor.5fbba1d3") })}</button>
+            <button type="button" onClick={() => setCard((c) => ({ ...c, [vs]: Array(9).fill(null) }))}>{__i18n_t("ui.lineup.cardEditor.50422528")}</button>
           </div>
-          <h4>선발 로테이션</h4>
+          <h4>{__i18n_t("ui.lineup.cardEditor.cad4826e")}</h4>
           <div class="rotation-picks">
-            {[0, 1, 2, 3, 4].map((i) => (
+            {__i18n_display([0, 1, 2, 3, 4].map((i) => (
               <label key={i}>
-                {i + 1}선발
+                {__i18n_display(i + 1)}선발
                 <select
                   value={card.rotation[i] ?? ''}
                   onChange={(e) => {
@@ -315,32 +297,28 @@ function CardEditor({ league, vs, lineup, starters, onAct }: { league: LeagueSta
                       return { ...c, rotation: r.filter(Boolean) };
                     });
                   }}
-                  aria-label={`${i + 1}선발`}
+                  aria-label={__i18n_displayText(__i18n_k("ui.lineup.cardEditor.44016365", { value: i + 1 }))}
                 >
-                  <option value="">감독에게{starters[i] && !card.rotation[i] ? ` (${starters[i]!.name})` : ''}</option>
-                  {arms.map((p) => (
+                  <option value="">{__i18n_t("ui.lineup.cardEditor.baa70d5e", { value: starters[i] && !card.rotation[i] ? ` (${starters[i]!.name})` : '' })}</option>
+                  {__i18n_display(arms.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name} ({p.role === 'SP' ? '선발' : '불펜'} {p.scouting.current})
+                      {__i18n_display(p.name)} ({__i18n_display(p.role === 'SP' ? __i18n_k("ui.lineup.cardEditor.a88271df") : __i18n_k("ui.lineup.cardEditor.5b8607a3"))} {__i18n_display(p.scouting.current)})
                     </option>
-                  ))}
+                  )))}
                 </select>
               </label>
-            ))}
+            )))}
           </div>
           <label class="check">
             <input type="checkbox" checked={card.rest} onChange={(e) => setCard((c) => ({ ...c, rest: (e.currentTarget as HTMLInputElement).checked }))} /> 고정한 선수도 감독의 휴식일에는 쉬게 하기
           </label>
           <div class="row-actions">
-            <button type="button" class="primary" disabled={!!problem || !changed} onClick={() => onAct({ kind: 'lineupCard', card })}>
-              카드 저장
-            </button>
-            <button type="button" disabled={!saved} onClick={() => onAct({ kind: 'lineupCard', card: null })}>
-              모두 감독에게 돌려주기
-            </button>
-            {problem && <span class="notice inline">{problem}</span>}
+            <button type="button" class="primary" disabled={!!problem || !changed} onClick={() => onAct({ kind: 'lineupCard', card })}>{__i18n_t("ui.lineup.cardEditor.ecee235b")}</button>
+            <button type="button" disabled={!saved} onClick={() => onAct({ kind: 'lineupCard', card: null })}>{__i18n_t("ui.lineup.cardEditor.e8b344d7")}</button>
+            {__i18n_display(problem && <span class="notice inline">{__i18n_display(problem)}</span>)}
           </div>
         </div>
-      )}
+      ))}
     </div>
   );
 }

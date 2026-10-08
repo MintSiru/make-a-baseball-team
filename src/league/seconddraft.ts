@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The second draft (2차 드래프트, RULES.md §6): every other winter since 2023. Each club protects 35;
    players in their first three pro years, this winter's free-agent signings and foreign players are
    exempt. Clubs pick in reverse order of the standings for three rounds (the bottom three get two more
@@ -95,15 +96,15 @@ export function makeSecondPick(s: LeagueState, sd: SecondDraftState, id: PlayerI
   const short = (t: TeamId) => s.teams.find((x) => x.id === t)?.short ?? t;
   if (u && slot.teamId === u.teamId) {
     u.fund -= fee;
-    u.ledger.push({ year: sd.year, label: `2차 드래프트 ${slot.round}라운드 · ${p.name} 양도금`, amount: -fee });
-    (u.log ??= []).push({ year: sd.year, text: `2차 드래프트 ${slot.round}라운드 ${p.name} 지명 (${short(from)}에서)` });
+    u.ledger.push({ year: sd.year, label: __i18n_k("league.seconddraft.makeSecondPick.label.891daa9c", { round: slot.round, name: p.name }), amount: -fee });
+    (u.log ??= []).push({ year: sd.year, text: __i18n_k("league.seconddraft.makeSecondPick.text.ad3a3b59", { round: slot.round, name: p.name, short: short(from) }) });
   }
   if (u && from === u.teamId) {
     u.fund += fee;
-    u.ledger.push({ year: sd.year, label: `2차 드래프트 · ${p.name} 양도금`, amount: fee });
-    (u.log ??= []).push({ year: sd.year, text: `2차 드래프트로 ${iga(p.name)} ${ro(short(slot.teamId))} 이적` });
+    u.ledger.push({ year: sd.year, label: __i18n_k("league.seconddraft.makeSecondPick.label.545b0033", { name: p.name }), amount: fee });
+    (u.log ??= []).push({ year: sd.year, text: __i18n_k("league.seconddraft.makeSecondPick.text.019f27ea", { name: iga(p.name), short: ro(short(slot.teamId)) }) });
   }
-  logTransaction(s, `2차 드래프트 ${slot.round}R: ${short(slot.teamId)} ${p.name} (${short(from)}에서)`);
+  logTransaction(s, __i18n_k("league.seconddraft.makeSecondPick.bf720a3a", { round: slot.round, short: short(slot.teamId), name: p.name, short2: short(from) }));
   moveNews(s, { type: 'secondDraft', teamId: slot.teamId, from, id, round: slot.round }, `${sd.year}-11-20`);
 }
 

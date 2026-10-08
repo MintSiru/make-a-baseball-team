@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* What the player can do, as state transitions. The UI and the worker both call these. */
 import { runRogue } from './rogue';
 import { setEra, startYear } from './era';
@@ -209,8 +210,8 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     case 'difficulty': {
       const u = s.user;
       if (!u || u.settings.difficulty === action.level) break;
-      const label = { easy: '쉬움', normal: '보통', hard: '어려움' } as const;
-      milestone(s, s.offseason?.year ?? s.year, `난이도 변경: ${label[u.settings.difficulty]} → ${label[action.level]}`);
+      const label = { easy: __i18n_k("league.actions.label.easy.aeb16cc3"), normal: '보통', hard: __i18n_k("league.actions.label.hard.485e4f6a") } as const;
+      milestone(s, s.offseason?.year ?? s.year, __i18n_k("league.actions.apply.fc7d2de8", { value: label[u.settings.difficulty], value2: label[action.level] }));
       u.settings.difficulty = action.level;
       break;
     }
@@ -302,7 +303,7 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     case 'foreignVeteran': {
       if (!s.user || (action.seasons !== null && ![5, 8].includes(action.seasons)) || (s.foreignVeteran ?? null) === action.seasons) break;
       s.foreignVeteran = action.seasons;
-      milestone(s, s.offseason?.year ?? s.year, action.seasons ? `외국인 장기 근속 규정: KBO ${action.seasons}시즌 이상은 외국인 엔트리 제외` : '외국인 장기 근속 규정 해제');
+      milestone(s, s.offseason?.year ?? s.year, action.seasons ? __i18n_k("league.actions.apply.e689101c", { seasons: action.seasons }) : __i18n_k("league.actions.apply.a4c1dacc"));
       break;
     }
     case 'workout':

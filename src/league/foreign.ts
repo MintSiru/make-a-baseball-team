@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Foreign players: nationalities, names, where they played before, and what they ask for.
 
    Names are common given/family names put together at random and written the way KBO rosters spell
@@ -71,19 +72,19 @@ type Pool = keyof typeof NAMES;
 /** Nationality for a regular foreign player: mostly American, then the Caribbean and Latin America. */
 const REGULAR_NATIONS: [string, number, Pool][] = [
   ['미국', 0.52, 'west'],
-  ['도미니카공화국', 0.15, 'latin'],
-  ['베네수엘라', 0.1, 'latin'],
-  ['쿠바', 0.04, 'latin'],
-  ['멕시코', 0.04, 'latin'],
-  ['푸에르토리코', 0.03, 'latin'],
-  ['캐나다', 0.03, 'west'],
-  ['파나마', 0.02, 'latin'],
-  ['콜롬비아', 0.02, 'latin'],
+  [__i18n_k("league.foreign.rEGULAR_NATIONS.fa1579e0"), 0.15, 'latin'],
+  [__i18n_k("league.foreign.rEGULAR_NATIONS.c95139a2"), 0.1, 'latin'],
+  [__i18n_k("league.foreign.rEGULAR_NATIONS.b0447764"), 0.04, 'latin'],
+  [__i18n_k("league.foreign.rEGULAR_NATIONS.b0e06d09"), 0.04, 'latin'],
+  [__i18n_k("league.foreign.rEGULAR_NATIONS.82b9030e"), 0.03, 'latin'],
+  [__i18n_k("league.foreign.rEGULAR_NATIONS.55045089"), 0.03, 'west'],
+  [__i18n_k("league.foreign.rEGULAR_NATIONS.03b4aef6"), 0.02, 'latin'],
+  [__i18n_k("league.foreign.rEGULAR_NATIONS.67a84e81"), 0.02, 'latin'],
   // V0.12: the rest of the baseball world sends a few.
-  ['퀴라소', 0.02, 'dutch'],
-  ['니카라과', 0.01, 'latin'],
-  ['네덜란드', 0.01, 'dutch'],
-  ['브라질', 0.01, 'brazil'],
+  [__i18n_k("league.foreign.rEGULAR_NATIONS.44eab996"), 0.02, 'dutch'],
+  [__i18n_k("league.foreign.rEGULAR_NATIONS.77dde5e9"), 0.01, 'latin'],
+  [__i18n_k("league.foreign.rEGULAR_NATIONS.7a5ca87b"), 0.01, 'dutch'],
+  [__i18n_k("league.foreign.rEGULAR_NATIONS.432b9eb5"), 0.01, 'brazil'],
 ];
 
 const pick = <T>(xs: readonly T[], r: () => number) => xs[Math.floor(r() * xs.length)]!;
@@ -130,8 +131,8 @@ const ASIA_LEVELS: [ForeignLevel, number, number, number, number, string, Pool][
   ['npb', 0.35, 1, 0, 30_000, '일본', 'japan'],
   ['npbFarm', 0.2, -1, 1, -10_000, '일본', 'japan'],
   ['jpIndie', 0.15, -3, 5, -50_000, '일본', 'japan'],
-  ['cpbl', 0.15, 0, 0, 0, '대만', 'taiwan'],
-  ['abl', 0.15, -1, 1, -20_000, '호주', 'west'],
+  ['cpbl', 0.15, 0, 0, 0, __i18n_k("league.foreign.aSIA_LEVELS.6be27bc7"), 'taiwan'],
+  ['abl', 0.15, -1, 1, -20_000, __i18n_k("league.foreign.aSIA_LEVELS.5db69ec1"), 'west'],
 ];
 
 export function background(asiaQuota: boolean, r: () => number): Background {
@@ -154,11 +155,11 @@ export function careerText(level: ForeignLevel, pitcher: boolean, age: number, g
       const w = Math.floor(games * (0.05 + r() * 0.1)),
         l = Math.floor(games * (0.06 + r() * 0.1));
       const eraV = 4.3 + (55 - grade) * 0.08 + r() * 1.2;
-      return `MLB ${seasons}시즌 ${games}경기 ${w}승 ${l}패 평균자책점 ${eraV.toFixed(2)}`;
+      return __i18n_k("league.foreign.careerText.mlbLine.a788963f", { seasons: seasons, games: games, w: w, l: l, value: eraV.toFixed(2) });
     }
     const avgV = 0.215 + (grade - 50) * 0.003 + r() * 0.03;
     const hr = Math.round(games * (0.02 + (grade - 50) * 0.004 + r() * 0.02));
-    return `MLB ${seasons}시즌 ${games}경기 타율 ${fmt3(avgV)} ${Math.max(0, hr)}홈런`;
+    return __i18n_k("league.foreign.careerText.mlbLine.d8fa8285", { seasons: seasons, games: games, fmt3: fmt3(avgV), value: Math.max(0, hr) });
   };
   switch (level) {
     case 'mlb': {
@@ -167,35 +168,35 @@ export function careerText(level: ForeignLevel, pitcher: boolean, age: number, g
     }
     case 'mlbCup': {
       const seasons = 1 + Math.floor(r() * 3);
-      return `${mlbLine(seasons, pitcher ? 5 + Math.floor(r() * 45) : 10 + Math.floor(r() * 110))} · 트리플A ${years}시즌`;
+      return __i18n_k("league.foreign.careerText.93ca74f0", { mlbLine: mlbLine(seasons, pitcher ? 5 + Math.floor(r() * 45) : 10 + Math.floor(r() * 110)), years: years });
     }
     case 'aaa':
-      return `트리플A ${years}시즌 · MLB 경력 없음`;
+      return __i18n_k("league.foreign.careerText.f5afddd0", { years: years });
     case 'npb':
-      return `일본 NPB ${Math.min(years, 5)}시즌 1군 ${pitcher ? 15 + Math.floor(r() * 70) : 40 + Math.floor(r() * 200)}경기`;
+      return __i18n_k("league.foreign.careerText.2b4bbc6a", { value: Math.min(years, 5), value2: pitcher ? 15 + Math.floor(r() * 70) : 40 + Math.floor(r() * 200) });
     case 'npbFarm':
-      return `일본 NPB ${Math.min(years, 5)}시즌, 주로 2군 (1군 ${Math.floor(r() * 20)}경기)`;
+      return __i18n_k("league.foreign.careerText.ffaf1aff", { value: Math.min(years, 5), value2: Math.floor(r() * 20) });
     case 'jpIndie':
-      return `일본 독립리그 ${Math.min(years, 4)}시즌`;
+      return __i18n_k("league.foreign.careerText.f0c8edb3", { value: Math.min(years, 4) });
     case 'cpbl':
-      return `대만 CPBL ${Math.min(years, 6)}시즌`;
+      return __i18n_k("league.foreign.careerText.04045b9b", { value: Math.min(years, 6) });
     case 'abl':
-      return `호주 ABL ${Math.min(years, 6)}시즌`;
+      return __i18n_k("league.foreign.careerText.11521d9b", { value: Math.min(years, 6) });
     case 'indie':
-      return `미국 독립리그 ${Math.min(years, 4)}시즌${r() < 0.5 ? ` · 트리플A ${1 + Math.floor(r() * 2)}시즌` : ''}`;
+      return __i18n_k("league.foreign.careerText.9933223e", { value: Math.min(years, 4), value2: r() < 0.5 ? __i18n_k("league.foreign.careerText.d41d90fc", { value: 1 + Math.floor(r() * 2) }) : '' });
   }
 }
 
 export const LEVEL_LABELS: Record<ForeignLevel, string> = {
   mlb: 'MLB',
-  mlbCup: 'MLB·트리플A',
-  aaa: '트리플A',
+  mlbCup: __i18n_k("league.foreign.lEVEL_LABELS.mlbCup.31cdb591"),
+  aaa: __i18n_k("league.foreign.lEVEL_LABELS.aaa.41479c1d"),
   npb: 'NPB',
-  npbFarm: 'NPB 2군',
-  jpIndie: '일본 독립리그',
+  npbFarm: __i18n_k("league.foreign.lEVEL_LABELS.npbFarm.602ac124"),
+  jpIndie: __i18n_k("league.foreign.lEVEL_LABELS.jpIndie.881e13ad"),
   cpbl: 'CPBL',
   abl: 'ABL',
-  indie: '미국 독립리그',
+  indie: __i18n_k("league.foreign.lEVEL_LABELS.indie.d7a662ab"),
 };
 
 /** What a new foreign player asks for in total (US dollars): grade and background, under the caps (RULES.md §5). */
@@ -214,4 +215,4 @@ export function splitContract(total: number, r: () => number): { bonus: number; 
 }
 
 /** US dollars the way Korean baseball news writes them: "85만 달러", "120만 달러". */
-export const usd = (n: number) => `${(Math.round(n / 1000) / 10).toLocaleString('ko-KR')}만 달러`;
+export const usd = (n: number) => __i18n_k("league.foreign.usd.f2e37495", { value: (Math.round(n / 1000) / 10).toLocaleString('ko-KR') });

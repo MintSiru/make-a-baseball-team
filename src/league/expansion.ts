@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The user's expansion club: founding in summer 2026, the first drafts, the special draft from the
    other clubs, free agents, foreign players and the step up to the first team.
 
@@ -82,11 +83,11 @@ const PARENT_MONEY: Record<ParentCompanyType, { fund: number; payroll: number; d
 const DIFFICULTY_MONEY = DIFFICULTY.money;
 
 export const STADIUM_PLANS = {
-  existing: { label: '연고지 구장 그대로 사용', seats: null as number | null, opens: null as number | null },
+  existing: { label: __i18n_k("league.expansion.existing.label.eb9ed559"), seats: null as number | null, opens: null as number | null },
   // Opening three to five seasons after the founding (2029–2031 in the usual calendar).
-  newMedium: { label: '중형 신축 (1만 5천 석)', seats: 15_000, get opens() { return startYear() + 3; } },
-  newLarge: { label: '대형 신축 (2만 2천 석)', seats: 22_000, get opens() { return startYear() + 4; } },
-  dome: { label: '돔구장 신축 (2만 석)', seats: 20_000, get opens() { return startYear() + 5; } },
+  newMedium: { label: __i18n_k("league.expansion.newMedium.label.ce1f6012"), seats: 15_000, get opens() { return startYear() + 3; } },
+  newLarge: { label: __i18n_k("league.expansion.newLarge.label.b74bcba1"), seats: 22_000, get opens() { return startYear() + 4; } },
+  dome: { label: __i18n_k("league.expansion.dome.label.db5119df"), seats: 20_000, get opens() { return startYear() + 5; } },
 } as const;
 
 export function budgetFor(settings: ExpansionSettings) {
@@ -129,21 +130,21 @@ export function foundingRisks(settings: ExpansionSettings): string[] {
   const b = budgetFor(settings);
   const city = cityById(settings.cityId)!;
   const out: string[] = [];
-  const eok = (n: number) => `${Math.round(n / 10000)}억`;
+  const eok = (n: number) => __i18n_k("league.expansion.foundingRisks.eok.db0fc332", { value: Math.round(n / 10000) });
   const foreign = Math.round((OFFSEASON.foreign.newReserveUSD * 3 + KBO_2026.foreign.asiaQuotaCapUSD) * MANWON_PER_USD);
-  out.push(`외국인 3명과 아시아쿼터 1명 몫으로 연봉 예산에서 약 ${eok(foreign)}을 남겨 두어야 합니다 (예산 ${eok(b.payrollBudget)} 중 ${Math.round((foreign / b.payrollBudget) * 100)}%). FA에 다 쓰면 외국인을 못 채웁니다.`);
-  if (city.market < 50) out.push(`시장 규모 ${city.market}: 관중·굿즈·광고 수입이 리그 하위권이라 해마다 운영 적자가 큽니다. 모기업의 재정 목표를 맞추기 어렵습니다.`);
-  else if (city.market >= 75) out.push(`시장 규모 ${city.market}: 수입은 넉넉하지만 ${city.competition}.`);
+  out.push(__i18n_k("league.expansion.foundingRisks.fa4f3aab", { eok: eok(foreign), eok2: eok(b.payrollBudget), value: Math.round((foreign / b.payrollBudget) * 100) }));
+  if (city.market < 50) out.push(__i18n_k("league.expansion.foundingRisks.b43324b9", { market: city.market }));
+  else if (city.market >= 75) out.push(__i18n_k("league.expansion.foundingRisks.a334a86c", { market: city.market, competition: city.competition }));
   const seats = settings.stadium === 'existing' ? city.stadium.seats : null;
-  if (seats != null && seats < 10_000) out.push(`${city.stadium.name} ${seats.toLocaleString('ko-KR')}석: 매진돼도 입장 수입 상한이 낮습니다. 증축이나 신축 전까지 관중 목표가 수입을 막습니다.`);
-  if (settings.stadium !== 'existing') out.push(`신축 구장은 ${STADIUM_PLANS[settings.stadium].opens}년에 열립니다. 그때까지 ${city.stadium.name}을 쓰고, 신축 몫으로 연봉 예산이 5억 늘어납니다.`);
-  if (settings.parentType === 'conglomerate') out.push('대기업 모기업: 1군 3년째부터 7위, 5년째부터 5위 안을 바랍니다. 성적 비중이 커서 하위권이 이어지면 신뢰도가 빠르게 떨어집니다.');
-  if (settings.parentType === 'midsize') out.push('강소·중견기업: 재정 목표의 비중이 가장 큽니다. 적자를 줄이면 지원이 늘지만 큰 FA 계약은 부담입니다.');
-  if (settings.parentType === 'namingRights') out.push('명명권 스폰서: 지원금이 가장 적고, 계약이 끝날 때마다 스폰서(와 구단명)가 바뀔 수 있습니다. 드물게 창단 투자자와 지분 분쟁이 생깁니다.');
-  if (settings.parentType === 'citizen') out.push('시민구단: 시의회가 해마다 예산을 심사하고, 4년마다 시장 선거로 지원이 흔들립니다. 적자가 크면 감사와 예산 삭감이 옵니다. 대신 팬 충성도가 높습니다.');
-  out.push(settings.promotion === 'immediate' ? '바로 1군: 첫 겨울에 특별지명·FA·외국인으로 한꺼번에 전력을 만들어야 합니다. 첫 시즌은 하위권이 보통입니다.' : '퓨처스 1년: 2027년에 신인을 키울 시간이 있지만 1군 데뷔가 한 해 늦습니다.');
-  if (settings.firing) out.push(`해임 있음: 신뢰도가 ${PARENT.fireBelow} 아래로 떨어진 겨울에 해임됩니다 (1군 3년째부터${settings.scenario === 'comeback' ? ', 재기 시나리오는 2년째부터' : ''}).`);
-  if (settings.difficulty === 'hard') out.push('어려움: 예산이 15% 적고, 트레이드 상대가 더 많이 요구하며, 신뢰도가 더 빨리 떨어집니다.');
+  if (seats != null && seats < 10_000) out.push(__i18n_k("league.expansion.foundingRisks.46e7df40", { name: city.stadium.name, value: seats.toLocaleString('ko-KR') }));
+  if (settings.stadium !== 'existing') out.push(__i18n_k("league.expansion.foundingRisks.55abc3c9", { opens: STADIUM_PLANS[settings.stadium].opens, name: city.stadium.name }));
+  if (settings.parentType === 'conglomerate') out.push(__i18n_k("league.expansion.foundingRisks.a15cfdb2"));
+  if (settings.parentType === 'midsize') out.push(__i18n_k("league.expansion.foundingRisks.49d0c912"));
+  if (settings.parentType === 'namingRights') out.push(__i18n_k("league.expansion.foundingRisks.7e7cc5ec"));
+  if (settings.parentType === 'citizen') out.push(__i18n_k("league.expansion.foundingRisks.e09fbc64"));
+  out.push(settings.promotion === 'immediate' ? __i18n_k("league.expansion.foundingRisks.0746f336") : __i18n_k("league.expansion.foundingRisks.7e610145"));
+  if (settings.firing) out.push(__i18n_k("league.expansion.foundingRisks.8a38701e", { fireBelow: PARENT.fireBelow, value: settings.scenario === 'comeback' ? __i18n_k("league.expansion.foundingRisks.ea3abb94") : '' }));
+  if (settings.difficulty === 'hard') out.push(__i18n_k("league.expansion.foundingRisks.1e12cf59"));
   return out;
 }
 
@@ -187,13 +188,13 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
   if (settings.scenario) s.user.scenario = { status: 'active' };
   // A citizen club is founded by the mayor elected in June 2026 (parent.ts).
   if (settings.parentType === 'citizen') s.user.mayor = electMayor(s, y0);
-  spend(s, 'KBO 가입금', b.entryFee, true);
-  spend(s, '야구발전기금', b.developmentFund, true);
-  s.user.ledger.push({ year: s.year, label: `가입 예치금 ${b.deposit / 10000}억 (KBO 보관, 지출 아님)`, amount: 0 });
-  if (plan.opens) s.user.ledger.push({ year: s.year, label: `${plan.label} ${plan.opens}년 개장 예정 (지자체 건설)`, amount: 0 });
+  spend(s, __i18n_k("league.expansion.foundClub.b77f9a73"), b.entryFee, true);
+  spend(s, __i18n_k("league.expansion.foundClub.db42ddad"), b.developmentFund, true);
+  s.user.ledger.push({ year: s.year, label: __i18n_k("league.expansion.foundClub.label.6c985efe", { value: b.deposit / 10000 }), amount: 0 });
+  if (plan.opens) s.user.ledger.push({ year: s.year, label: __i18n_k("league.expansion.foundClub.label.4fa11646", { label: plan.label, opens: plan.opens }), amount: 0 });
   // 1.6.0, scenario 강철야구: the first squad is retired players and players nobody drafted, and a bigger tryout.
   s.pending = settings.scenario === 'steel' ? { kind: 'tryout', candidates: [...comebackPool(s), ...tryoutPool(s).filter((p) => p.status === 'amateur')].map((p) => p.id), max: STEEL.tryout } : { kind: 'tryout', candidates: tryoutPool(s).map((p) => p.id), max: 20 };
-  milestone(s, y0, `${foundingDate()} ${team.name} 창단 승인 (${city.name})`, 'founded');
+  milestone(s, y0, __i18n_k("league.expansion.foundClub.01955d41", { foundingDate: foundingDate(), name: team.name, name2: city.name }), 'founded');
   unlock(s, 'founded', y0);
 }
 
@@ -246,12 +247,12 @@ function draftSlots(s: LeagueState, draftYear: number, order: TeamId[]): DraftSl
   if (tw && !order.includes(tw.teamId) && draftYear + 1 <= tw.firstTeam) founding.push({ teamId: tw.teamId, first: draftYear === tw.founded });
   if (!founding.length) return standardSlots(order);
   const slots: DraftSlot[] = [];
-  for (const f of founding) if (f.first) for (let i = 0; i < EXPANSION_DEFAULTS.rookiePriorityPicks; i++) slots.push({ teamId: f.teamId, label: '우선지명' });
+  for (const f of founding) if (f.first) for (let i = 0; i < EXPANSION_DEFAULTS.rookiePriorityPicks; i++) slots.push({ teamId: f.teamId, label: __i18n_k("league.expansion.draftSlots.label.b31947fa") });
   const rounds = standardSlots(order).length / order.length;
   for (let round = 1; round <= rounds; round++) {
     for (const f of founding) slots.push({ teamId: f.teamId, label: `${round}R` });
     for (const teamId of order) slots.push({ teamId, label: `${round}R` });
-    if (round === 2) for (const f of founding) if (f.first) for (let i = 0; i < EXPANSION_DEFAULTS.extraPicksAfterRound2; i++) slots.push({ teamId: f.teamId, label: '특별지명' });
+    if (round === 2) for (const f of founding) if (f.first) for (let i = 0; i < EXPANSION_DEFAULTS.extraPicksAfterRound2; i++) slots.push({ teamId: f.teamId, label: __i18n_k("league.expansion.draftSlots.label.c6ab1579") });
   }
   return slots;
 }
@@ -437,7 +438,7 @@ export const projectedPayroll = (s: LeagueState, teamId: TeamId, season: number)
 export function checkDecision(s: LeagueState, input: DecisionInput): string | null {
   const d = s.pending;
   const u = user(s);
-  if (!d || d.kind !== input.kind) return '지금 내릴 결정이 아닙니다.';
+  if (!d || d.kind !== input.kind) return __i18n_k("league.expansion.checkDecision.d443b36f");
   if (isAnnualInput(input)) return checkAnnual(s, d, input);
   const next = nextSeasonOf(s);
   const payrollAfter = (ids: PlayerId[]) => projectedPayroll(s, u.teamId, next) + ids.reduce((a, id) => a + (salaryIn(s.players[id]!, next) || renewSalary(s.players[id]!, next)), 0);
@@ -445,39 +446,39 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
     case 'tryout':
     case 'released': {
       const dd = d as Extract<Decision, { kind: 'tryout' | 'released' }>;
-      if (input.ids.some((id) => !dd.candidates.includes(id))) return '명단에 없는 선수입니다.';
-      if (input.ids.length > dd.max) return `최대 ${dd.max}명까지 계약할 수 있습니다.`;
+      if (input.ids.some((id) => !dd.candidates.includes(id))) return __i18n_k("league.expansion.checkDecision.98ce3a2b");
+      if (input.ids.length > dd.max) return __i18n_k("league.expansion.checkDecision.3c960698", { max: dd.max });
       return null;
     }
     case 'fantasyPick': {
       const f = s.offseason?.fantasy;
-      if (!f) return '판타지 드래프트 중이 아닙니다.';
-      if (input.id && !f.pool.includes(input.id)) return '이미 지명됐거나 명단에 없는 선수입니다.';
-      if (input.autoUntil != null && (!Number.isInteger(input.autoUntil) || input.autoUntil < 1)) return '맡길 라운드를 고르세요.';
+      if (!f) return __i18n_k("league.expansion.checkDecision.3fa20ab1");
+      if (input.id && !f.pool.includes(input.id)) return __i18n_k("league.expansion.checkDecision.11dcd2b0");
+      if (input.autoUntil != null && (!Number.isInteger(input.autoUntil) || input.autoUntil < 1)) return __i18n_k("league.expansion.checkDecision.67c59ed1");
       return null;
     }
     case 'draftPick': {
       const draft = s.offseason?.draft;
-      if (!draft) return '드래프트 중이 아닙니다.';
-      if (input.id && !draft.pool.includes(input.id)) return '이미 지명됐거나 명단에 없는 선수입니다.';
+      if (!draft) return __i18n_k("league.expansion.checkDecision.0ed089e1");
+      if (input.id && !draft.pool.includes(input.id)) return __i18n_k("league.expansion.checkDecision.11dcd2b0");
       return null;
     }
     case 'specialDraft': {
       const dd = d as Extract<Decision, { kind: 'specialDraft' }>;
-      for (const [teamId, id] of Object.entries(input.picks)) if (!dd.lists[teamId]?.includes(id)) return '보호선수이거나 명단에 없는 선수입니다.';
+      for (const [teamId, id] of Object.entries(input.picks)) if (!dd.lists[teamId]?.includes(id)) return __i18n_k("league.expansion.checkDecision.c53e54a2");
       const cost = Object.keys(input.picks).length * dd.fee;
-      if (cost > u.fund) return `창단 자금이 부족합니다 (필요 ${cost / 10000}억).`;
-      if (cost > 0 && payrollAfter(Object.values(input.picks)) > u.payrollBudget) return '연봉 예산을 넘습니다.';
+      if (cost > u.fund) return __i18n_k("league.expansion.checkDecision.7fe7aebf", { value: cost / 10000 });
+      if (cost > 0 && payrollAfter(Object.values(input.picks)) > u.payrollBudget) return __i18n_k("league.expansion.checkDecision.84d90a10");
       return null;
     }
     case 'roster': {
       const dd = d as Extract<Decision, { kind: 'roster' }>;
-      if (input.ids.some((id) => !dd.candidates.includes(id))) return '우리 선수단에 없는 선수입니다.';
-      if (input.ids.length < dd.release) return `소속선수 한도 ${dd.limit}명을 맞추려면 ${dd.release}명을 정리해야 합니다.`;
+      if (input.ids.some((id) => !dd.candidates.includes(id))) return __i18n_k("league.expansion.checkDecision.cbbbf8df");
+      if (input.ids.length < dd.release) return __i18n_k("league.expansion.checkDecision.a1e081c4", { limit: dd.limit, release: dd.release });
       const develop = input.develop ?? [];
-      if (develop.some((id) => !input.ids.includes(id))) return '육성 전환은 정리할 선수 중에서 고릅니다.';
+      if (develop.some((id) => !input.ids.includes(id))) return __i18n_k("league.expansion.checkDecision.22686096");
       // Only new conversions count: a club can already be over the cap through trades or the second draft.
-      if (develop.length && developmentIds(s, u.teamId).length + develop.length > OFFSEASON.development.cap) return `육성선수는 ${OFFSEASON.development.cap}명까지입니다.`;
+      if (develop.length && developmentIds(s, u.teamId).length + develop.length > OFFSEASON.development.cap) return __i18n_k("league.expansion.checkDecision.bb840372", { cap: OFFSEASON.development.cap });
       return null;
     }
     case 'rival':
@@ -486,10 +487,10 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       return checkRivalProtect(d as Extract<Decision, { kind: 'rivalProtect' }>, input.ids);
     case 'foreign': {
       const dd = d as Extract<Decision, { kind: 'foreign' }>;
-      if (input.ids.some((id) => !dd.candidates.includes(id))) return '명단에 없는 선수입니다.';
+      if (input.ids.some((id) => !dd.candidates.includes(id))) return __i18n_k("league.expansion.checkDecision.98ce3a2b");
       const picked = input.ids.map((id) => s.players[id]!);
-      if (picked.filter((p) => !p.origin.asiaQuota).length > dd.regular) return `외국인 선수는 ${dd.regular}명까지 더 계약할 수 있습니다.`;
-      if (picked.filter((p) => p.origin.asiaQuota).length > dd.asia) return `아시아쿼터는 ${dd.asia}명까지입니다.`;
+      if (picked.filter((p) => !p.origin.asiaQuota).length > dd.regular) return __i18n_k("league.expansion.checkDecision.96e5184c", { regular: dd.regular });
+      if (picked.filter((p) => p.origin.asiaQuota).length > dd.asia) return __i18n_k("league.expansion.checkDecision.b5555ee3", { asia: dd.asia });
       let payroll = projectedPayroll(s, u.teamId, next),
         fees = 0;
       for (const p of picked) {
@@ -499,13 +500,13 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
           continue;
         }
         const o = input.offers?.[p.id] ?? suggestedOffer(t, newSigningCap(p));
-        if (!(o.guaranteed > 0) || !(o.options >= 0)) return `${p.name}: 제안 금액이 잘못됐습니다.`;
-        if (dealTotal(t, o) > newSigningCap(p)) return `${p.name}: 이적료까지 더한 총액이 ${usd(newSigningCap(p))}을 넘습니다.`;
+        if (!(o.guaranteed > 0) || !(o.options >= 0)) return __i18n_k("league.expansion.checkDecision.4291e95d", { name: p.name });
+        if (dealTotal(t, o) > newSigningCap(p)) return __i18n_k("league.expansion.checkDecision.b75d2c42", { name: p.name, usd: usd(newSigningCap(p)) });
         payroll += Math.round(o.guaranteed * MANWON_PER_USD);
         fees += Math.round(t.fee * MANWON_PER_USD);
       }
-      if (input.ids.length && payroll > u.payrollBudget) return '연봉 예산을 넘습니다.';
-      if (fees > 0 && fees > u.fund) return '이적료를 낼 구단 자금이 부족합니다.';
+      if (input.ids.length && payroll > u.payrollBudget) return __i18n_k("league.expansion.checkDecision.84d90a10");
+      if (fees > 0 && fees > u.fund) return __i18n_k("league.expansion.checkDecision.3db45ed5");
       return null;
     }
   }
@@ -556,7 +557,7 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
         p.teamId = u.teamId;
         if (p.contract) p.contract.teamId = u.teamId;
         s.rosters[u.teamId]!.futures.push(p.id);
-        spend(s, `특별지명 보상금 · ${s.teams.find((t) => t.id === teamId)?.short} ${p.name}`, fee);
+        spend(s, __i18n_k("league.expansion.resolveDecision.306fab83", { short: s.teams.find((t) => t.id === teamId)?.short, name: p.name }), fee);
       }
       break;
     }
@@ -637,29 +638,29 @@ function resolveForeign(s: LeagueState, dd: Extract<Decision, { kind: 'foreign' 
         c.usd!.fee = t.fee;
         const won = Math.round(t.fee * MANWON_PER_USD);
         u.fund -= won;
-        u.ledger.push({ year: next - 1, label: `${p.name} 이적료`, amount: -won });
+        u.ledger.push({ year: next - 1, label: __i18n_k("league.expansion.resolveForeign.label.7bfb281d", { name: p.name }), amount: -won });
       }
       leavePool(s, id);
       sign(s, p, u.teamId, c);
       talking.delete(id);
       signed.push(p);
-      log.push(`${p.name}: 보장 ${usd(offer.guaranteed)}${offer.options ? ` · 옵션 ${usd(offer.options)}` : ''}에 계약${t.fee ? ` (이적료 ${usd(t.fee)})` : ''}`);
+      log.push(__i18n_k("league.expansion.resolveForeign.bb2ee22c", { name: p.name, usd: usd(offer.guaranteed), value: offer.options ? __i18n_k("league.expansion.resolveForeign.7aade862", { usd: usd(offer.options) }) : '', value2: t.fee ? __i18n_k("league.expansion.resolveForeign.133dce41", { usd: usd(t.fee) }) : '' }));
     } else if (answer.kind === 'counter') {
       t.counter = answer.amount;
       t.last = 'counter';
-      log.push(`${p.name}: 보장 ${usd(answer.amount)}을 역제안`);
+      log.push(__i18n_k("league.expansion.resolveForeign.794d9cc2", { name: p.name, usd: usd(answer.amount) }));
     } else {
-      log.push(`${p.name}: 협상 결렬`);
+      log.push(__i18n_k("league.expansion.resolveForeign.3cdf40a5", { name: p.name }));
       drop(id);
     }
   }
-  for (const line of log) (u.log ??= []).push({ year: next - 1, text: `외국인 협상 ${round}차: ${line}` });
+  for (const line of log) (u.log ??= []).push({ year: next - 1, text: __i18n_k("league.expansion.resolveForeign.text.e8959e05", { round: round, line: line }) });
   // Those we did not talk to this round may sign somewhere else (on the talks' screen only).
   for (const id of [...talking]) {
     const t = dd.terms?.[id];
     if (!t || input.ids.includes(id)) continue;
     if (signsElsewhere(t, `${s.seed}|foreign-elsewhere|${next}|${id}|${round}`)) {
-      log.push(`${s.players[id]!.name}: ${t.rival?.label ?? '다른 구단'}과 계약`);
+      log.push(__i18n_k("league.expansion.resolveForeign.bda6babd", { name: s.players[id]!.name, value: t.rival?.label ?? __i18n_k("league.expansion.resolveForeign.c094ff4c") }));
       drop(id);
     }
   }

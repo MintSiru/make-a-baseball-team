@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index.js';
 /* Season simulation for one drafted player: health → role → playing time → stats → growth → scores.
    Every balance number lives in tuning.js.
 
@@ -269,27 +270,27 @@ function planScoreOf(p, { startGrade, growth, yearIndex, games, route, daysLost 
 
 // ---------------------------------------------------------------- text
 
-const ROUTE_LABELS = { backup: '백업·보조 역할', cameo: '짧은 1군 경험', futures: '퓨처스 육성', rehab: '장기 재활' };
+const ROUTE_LABELS = { backup: __i18n_k("draftroom.season.rOUTE_LABELS.backup.dc6815b7"), cameo: __i18n_k("draftroom.season.rOUTE_LABELS.cameo.54c4b0f0"), futures: __i18n_k("draftroom.season.rOUTE_LABELS.futures.b2508852"), rehab: __i18n_k("draftroom.season.rOUTE_LABELS.rehab.0e39ac51") };
 function routeLabel(route, core, pitcher) {
-  return route === 'regular' ? (core ? (pitcher ? '핵심 투수' : '핵심 주전') : '1군 안착') : ROUTE_LABELS[route];
+  return route === 'regular' ? (core ? (pitcher ? __i18n_k("draftroom.season.routeLabel.29798e0d") : __i18n_k("draftroom.season.routeLabel.6307bf87")) : __i18n_k("draftroom.season.routeLabel.15ec5b66")) : ROUTE_LABELS[route];
 }
 const REASONS = {
-  'development-first': ['시즌 시작 기량으로는 1군 문턱을 넘지 못했다. 퓨처스에서 실전을 쌓았다.', '올해는 퓨처스에서 경기 수를 채우는 데 집중했다.', '1군보다 2군 실전이 먼저라는 판단이었다.'],
-  'long-rehab': ['부상으로 {days}일을 쉬었다. 시즌 대부분을 재활로 보냈다.', '{days}일 공백. 올해는 재활이 전부였다.'],
-  'role-retained': ['지난해 자리를 그대로 지켰다.', '작년에 따낸 1군 자리를 올해도 놓치지 않았다.', '보직 경쟁 없이 자리를 이어 갔다.'],
-  'poor-form-and-ability': ['지난해 부진이 길었고 기량도 떨어졌다. 퓨처스로 내려가 다시 만들었다.', '부진과 기량 하락이 겹쳤다. 2군에서 재정비했다.'],
-  'poor-form': ['지난해 부진으로 역할이 줄었다. 백업에서 다시 시작했다.', '성적이 떨어지면서 출전 기회도 줄었다.'],
-  'role-competition': ['1군에는 남았지만 경쟁에서 밀려 출전이 줄었다.', '자리는 지켰지만 경쟁자와 기회를 나눠 가졌다.'],
-  'cohort-competition': ['같은 포지션 동기들이 먼저 자리를 차지했다. 백업부터 시작했다.', '동기들과의 자리 싸움에서 한발 늦었다.'],
-  'earned-role': ['캠프에서 경쟁을 이겨 1군 자리를 따냈다.', '시즌 초반부터 1군에 자리를 잡았다.', '기회를 받자마자 자리를 굳혔다.'],
-  'trial-opportunity': ['1군에서 몇 차례 시험 기회를 받았다.', '1군과 2군을 오가며 기회를 받았다.'],
-  'trial-investment': ['상위 지명 선수답게 1군 맛을 봤다.', '구단이 기대를 걸고 1군 기회를 줬다.'],
+  'development-first': [__i18n_k("draftroom.season.rEASONS.370febb9"), __i18n_k("draftroom.season.rEASONS.94fa45ca"), __i18n_k("draftroom.season.rEASONS.1e605419")],
+  'long-rehab': [__i18n_k("draftroom.season.rEASONS.3400fabd"), __i18n_k("draftroom.season.rEASONS.0cced0e8")],
+  'role-retained': [__i18n_k("draftroom.season.rEASONS.f9c1f833"), __i18n_k("draftroom.season.rEASONS.8153fef5"), __i18n_k("draftroom.season.rEASONS.05a9cd9f")],
+  'poor-form-and-ability': [__i18n_k("draftroom.season.rEASONS.8461a015"), __i18n_k("draftroom.season.rEASONS.427e49e1")],
+  'poor-form': [__i18n_k("draftroom.season.rEASONS.124b44d6"), __i18n_k("draftroom.season.rEASONS.8d426524")],
+  'role-competition': [__i18n_k("draftroom.season.rEASONS.00d85669"), __i18n_k("draftroom.season.rEASONS.c449f8e6")],
+  'cohort-competition': [__i18n_k("draftroom.season.rEASONS.29205dcb"), __i18n_k("draftroom.season.rEASONS.a85c708f")],
+  'earned-role': [__i18n_k("draftroom.season.rEASONS.b5ded8ce"), __i18n_k("draftroom.season.rEASONS.8b7c5910"), __i18n_k("draftroom.season.rEASONS.a6c713ff")],
+  'trial-opportunity': [__i18n_k("draftroom.season.rEASONS.6f612148"), __i18n_k("draftroom.season.rEASONS.8bcb3b5b")],
+  'trial-investment': [__i18n_k("draftroom.season.rEASONS.e709637b"), __i18n_k("draftroom.season.rEASONS.00998e15")],
 };
 /** Why the player had this role. Text only, from its own stream. */
 function reasonText(reason, daysLost, investment, r) {
   const key = reason === 'trial-opportunity' && investment > 0 ? 'trial-investment' : reason;
   const line = REASONS[key][Math.floor(r() * REASONS[key].length)].replace('{days}', daysLost);
-  return line + (daysLost && reason !== 'long-rehab' ? ` 부상으로 ${daysLost}일 결장했다.` : '');
+  return line + (daysLost && reason !== 'long-rehab' ? __i18n_k("draftroom.season.reasonText.849aa2c6", { daysLost: daysLost }) : '');
 }
 /** Top velocity for the season (pitchers). Draws from its own stream, so it never affects results. */
 function seasonVelocity(p, after, r) {
@@ -297,10 +298,10 @@ function seasonVelocity(p, after, r) {
   const V = T.velocity;
   return round(clamp(p.velocity + (after.stuff - p.trueTools.stuff) * T.generation.velocity.perStuff + normal(r) * V.noise, V.min, V.max));
 }
-const growthLabel = (growth) => T.scores.growthLabels.find(([min]) => growth >= min)?.[1] ?? '기량 후퇴';
+const growthLabel = (growth) => T.scores.growthLabels.find(([min]) => growth >= min)?.[1] ?? __i18n_k("draftroom.season.growthLabel.263baf79");
 
 const pickLine = (lines, r) => lines[Math.floor(r() * lines.length)];
-const RETURN_NOTES = ['전역하고 시즌 중반에 팀으로 돌아왔다.', '여름에 전역해 남은 시즌을 소화했다.', '복무를 마치고 시즌 도중 합류했다.'];
+const RETURN_NOTES = [__i18n_k("draftroom.season.rETURN_NOTES.571958b2"), __i18n_k("draftroom.season.rETURN_NOTES.4e83366f"), __i18n_k("draftroom.season.rETURN_NOTES.68903790")];
 
 /**
  * Public future value after a season. Scouts blend last year's estimate with what the player now looks
@@ -345,11 +346,11 @@ function warOf(stats, p, tools) {
   return round(runs / W.runsPerWin, 1);
 }
 
-const SERVICE_LABELS = { sangmu: '상무 (군 복무)', army: '현역 복무', social: '사회복무요원' };
+const SERVICE_LABELS = { sangmu: __i18n_k("draftroom.season.sERVICE_LABELS.sangmu.b6946340"), army: __i18n_k("draftroom.season.sERVICE_LABELS.army.da54d3e7"), social: __i18n_k("draftroom.season.sERVICE_LABELS.social.454485ce") };
 const SERVICE_NOTES = {
-  sangmu: ['상무에서 퓨처스리그 경기를 뛰며 복무했다.', '상무 소속으로 퓨처스리그에 꾸준히 나섰다.', '상무에서 실전 감각을 유지했다.'],
-  army: ['현역으로 복무하며 야구를 쉬었다. 전역 뒤 몸을 다시 만들어야 한다.', '현역 복무로 한 시즌을 비웠다.', '군 복무 기간이라 공을 잡지 못했다.'],
-  social: ['사회복무요원으로 근무하며 퇴근 뒤 개인 훈련을 이어 갔다.', '사회복무요원 복무 중. 개인 운동으로 감각을 유지했다.'],
+  sangmu: [__i18n_k("draftroom.season.sERVICE_NOTES.sangmu.f843722d"), __i18n_k("draftroom.season.sERVICE_NOTES.sangmu.ca523a1f"), __i18n_k("draftroom.season.sERVICE_NOTES.sangmu.676e9ddc")],
+  army: [__i18n_k("draftroom.season.sERVICE_NOTES.army.130edc42"), __i18n_k("draftroom.season.sERVICE_NOTES.army.3c5e6e99"), __i18n_k("draftroom.season.sERVICE_NOTES.army.c0406fae")],
+  social: [__i18n_k("draftroom.season.sERVICE_NOTES.social.b7128803"), __i18n_k("draftroom.season.sERVICE_NOTES.social.ce0614b7")],
 };
 
 /** A season spent in military service. Sangmu plays a futures season; other service loses some sharpness. */
@@ -391,7 +392,7 @@ function serviceSeason(p, selection, g, team, previous, yearIndex, type, focus =
     growth,
     growthLabel: growthLabel(growth),
     velocity: seasonVelocity(p, after, rng(tag('velocity'))),
-    developmentNote: `${SERVICE_LABELS[type]} · 현재 기량 ${previous.scoutReady} → ${observed.ready}`,
+    developmentNote: __i18n_k("draftroom.season.serviceSeason.developmentNote.7605ddf8", { value: SERVICE_LABELS[type], scoutReady: previous.scoutReady, ready: observed.ready }),
     note: pickLine(SERVICE_NOTES[type], rng(tag('text'))),
     routeReason: 'service',
     limited: false,
@@ -399,7 +400,7 @@ function serviceSeason(p, selection, g, team, previous, yearIndex, type, focus =
     contribution: 0,
     war: 0,
     planScore: null,
-    target: '복무',
+    target: __i18n_k("draftroom.season.serviceSeason.target.0685b692"),
     unexpected: false,
     startGrade: previous.scoutReady,
     startTools: { ...previous.publicTools },
@@ -486,7 +487,7 @@ function simulatePlayer(p, selection, g, team, fit, previous = null, yearIndex =
     growth,
     growthLabel: growthLabel(growth),
     velocity: seasonVelocity(p, after, rng(tag('velocity'))),
-    developmentNote: `${G.LABELS[bestTool]} 중심 훈련 · 현재 기량 ${startGrade} → ${observed.ready}`,
+    developmentNote: __i18n_k("draftroom.season.simulatePlayer.developmentNote.2b6b64f7", { value: G.LABELS[bestTool], startGrade: startGrade, ready: observed.ready }),
     note,
     routeReason: reason,
     limited,
@@ -494,7 +495,7 @@ function simulatePlayer(p, selection, g, team, fit, previous = null, yearIndex =
     contribution: round(contributionOf(stats, tools)),
     war: warOf(stats, p, tools),
     planScore,
-    target: p.ready >= 45 ? '1군 경쟁 도전' : '퓨처스 적응·기술 발전',
+    target: p.ready >= 45 ? __i18n_k("draftroom.season.simulatePlayer.target.f392c1d0") : __i18n_k("draftroom.season.simulatePlayer.target.606e3b7d"),
     unexpected: route === 'regular' && selection.round >= 4,
     startGrade,
     startTools: { ...startTools },
@@ -534,12 +535,12 @@ function evaluate(g, season, players, team) {
     needScore,
     production,
     future,
-    text: '첫해 보직과 성장 과정을 함께 본 평가입니다.',
+    text: __i18n_k("draftroom.season.evaluate.text.dab4c292"),
     missing: team.needs.filter((role) => !roles.has(role)).map((role) => D.ROLES[role]),
     majorCount,
     regularCount,
     developmentCount: season.length - majorCount,
-    planMessage: `1군 경험 ${majorCount}명 · 안착 ${regularCount}명. 보강은 포지션과 세부 유형 적합도를 함께 봅니다. 미래 평가는 공개 전망과 관측된 발전에 근거합니다.`,
+    planMessage: __i18n_k("draftroom.season.evaluate.planMessage.5d1fdf94", { majorCount: majorCount, regularCount: regularCount }),
   };
 }
 

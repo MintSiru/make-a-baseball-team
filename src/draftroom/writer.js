@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index.js';
 /* Writer: scouting notes, draft news, fan comments and mock-draft blurbs.
 
    Rules for everything in here:
@@ -29,55 +30,55 @@ const isPitcher = (p) => p.role === 'SP' || p.role === 'RP';
 // ------------------------------------------------------------ scouting notes (강점 / 과제)
 
 // Pitch the breaking-ball line talks about, from the archetype index (see ARCHETYPES in prospects.js).
-const pitchName = (p) => (p.role === 'SP' ? ['슬라이더', '슬라이더', '체인지업', '투심', '커브'] : ['슬라이더', '슬라이더', '슬라이더', '싱커', '포크볼'])[p.type] ?? '슬라이더';
+const pitchName = (p) => (p.role === 'SP' ? [__i18n_k("draftroom.writer.pitchName.18bc88bf"), __i18n_k("draftroom.writer.pitchName.18bc88bf"), __i18n_k("draftroom.writer.pitchName.49e1dacd"), __i18n_k("draftroom.writer.pitchName.c2a8d278"), __i18n_k("draftroom.writer.pitchName.2ab848c1")] : [__i18n_k("draftroom.writer.pitchName.18bc88bf"), __i18n_k("draftroom.writer.pitchName.18bc88bf"), __i18n_k("draftroom.writer.pitchName.18bc88bf"), __i18n_k("draftroom.writer.pitchName.7390f5bb"), __i18n_k("draftroom.writer.pitchName.a8a41ff9")])[p.type] ?? __i18n_k("draftroom.writer.pitchName.18bc88bf");
 
 const GOOD = {
-  stuff: ['직구에 힘이 있다. 높은 코스로 헛스윙을 뺏는다.', '공 끝이 살아 있어 타자 앞에서 한 번 더 뻗는다.', '구속보다 체감이 빠른 공이다. 타자들이 계속 늦는다.', '직구 하나로 카운트를 잡고 승부까지 간다.'],
-  command: ['원하는 코스에 넣는다. 볼넷으로 무너지는 유형이 아니다.', '초구 스트라이크 비율이 높다. 카운트 싸움이 된다.', '제구가 안정적이라 투구 수가 적다.', '양쪽 코너를 다 쓴다. 볼 배합이 어른스럽다.'],
-  breaking: ['{pitch} 각이 날카롭다. 결정구로 바로 쓸 수 있다.', '{pitch|을/를} 원하는 카운트에 던진다.', '{pitch|이/가} 직구와 같은 팔 스윙에서 나온다.', '{pitch|으로/로} 헛스윙을 만든다. 좌우 타자 가리지 않는다.'],
-  stamina: ['투구 수 100개 가까이 가도 구위가 유지된다.', '연투에도 회복이 빠르다.', '긴 이닝을 맡겨도 버틴다. 체력은 이미 선발감이다.'],
-  contact: ['배트 컨트롤이 좋다. 삼진이 적다.', '반대 방향으로 밀어 치는 타격이 된다.', '공을 오래 보고 맞히는 능력이 있다.', '어떤 카운트에서도 인플레이 타구를 만든다.'],
-  power: ['타구 속도가 빠르다. 제대로 맞으면 담장을 넘긴다.', '당겨 치는 힘이 있다. 장타가 꾸준히 나온다.', '몸쪽 공을 끌어당겨 넘길 수 있다.'],
-  speed: ['1루까지 4초 초반. 내야 안타가 많다.', '주루 판단이 빠르고 도루 스타트가 좋다.', '발로 한 베이스를 더 가는 선수다.'],
-  eye: ['유인구에 잘 속지 않는다. 볼넷을 고를 줄 안다.', '존을 아는 타자다. 불리한 카운트에서도 버틴다.'],
-  defenseC: ['블로킹이 안정적이고 2루 송구가 빠르다.', '프레이밍이 좋다. 투수들이 편하게 던진다.', '어깨가 강해 도루 저지가 된다.'],
-  defenseIF: ['첫발이 빠르고 송구가 정확하다.', '글러브 핸들링이 부드럽다. 까다로운 바운드도 잡는다.', '수비 범위가 넓다. 유격수도 볼 수 있다.'],
-  defenseOF: ['타구 판단이 빠르다. 수비 범위가 넓다.', '어깨가 강해 주자를 묶는다.', '펜스 플레이를 겁내지 않는다.'],
+  stuff: [__i18n_k("draftroom.writer.gOOD.stuff.1467845b"), __i18n_k("draftroom.writer.gOOD.stuff.7516a094"), __i18n_k("draftroom.writer.gOOD.stuff.00355158"), __i18n_k("draftroom.writer.gOOD.stuff.447e6f21")],
+  command: [__i18n_k("draftroom.writer.gOOD.command.a019c12f"), __i18n_k("draftroom.writer.gOOD.command.6709de76"), __i18n_k("draftroom.writer.gOOD.command.6778a5b4"), __i18n_k("draftroom.writer.gOOD.command.4ce7beba")],
+  breaking: [__i18n_k("draftroom.writer.gOOD.breaking.6e6e4aa5"), __i18n_k("draftroom.writer.gOOD.breaking.3d26ec8b"), __i18n_k("draftroom.writer.gOOD.breaking.d2293971"), __i18n_k("draftroom.writer.gOOD.breaking.aab2e655")],
+  stamina: [__i18n_k("draftroom.writer.gOOD.stamina.bc4f736d"), __i18n_k("draftroom.writer.gOOD.stamina.f5426a5d"), __i18n_k("draftroom.writer.gOOD.stamina.e1d0feee")],
+  contact: [__i18n_k("draftroom.writer.gOOD.contact.631a2993"), __i18n_k("draftroom.writer.gOOD.contact.c8b151b6"), __i18n_k("draftroom.writer.gOOD.contact.f2962263"), __i18n_k("draftroom.writer.gOOD.contact.cdcda0c8")],
+  power: [__i18n_k("draftroom.writer.gOOD.power.bce8716f"), __i18n_k("draftroom.writer.gOOD.power.1be17431"), __i18n_k("draftroom.writer.gOOD.power.e2a4956f")],
+  speed: [__i18n_k("draftroom.writer.gOOD.speed.9a009331"), __i18n_k("draftroom.writer.gOOD.speed.bb544c83"), __i18n_k("draftroom.writer.gOOD.speed.d601a45c")],
+  eye: [__i18n_k("draftroom.writer.gOOD.eye.2ccffce6"), __i18n_k("draftroom.writer.gOOD.eye.1f4919d9")],
+  defenseC: [__i18n_k("draftroom.writer.gOOD.defenseC.010d2119"), __i18n_k("draftroom.writer.gOOD.defenseC.e2a6dbb2"), __i18n_k("draftroom.writer.gOOD.defenseC.d7ddcf0b")],
+  defenseIF: [__i18n_k("draftroom.writer.gOOD.defenseIF.002cd44e"), __i18n_k("draftroom.writer.gOOD.defenseIF.02063b61"), __i18n_k("draftroom.writer.gOOD.defenseIF.ad5ad6c9")],
+  defenseOF: [__i18n_k("draftroom.writer.gOOD.defenseOF.c4ae253b"), __i18n_k("draftroom.writer.gOOD.defenseOF.9b458f92"), __i18n_k("draftroom.writer.gOOD.defenseOF.d3856d51")],
 };
 const BAD = {
-  stuff: ['직구 구위가 평범하다. 몰리면 맞는다.', '직구로 헛스윙을 못 뺏는다. 결정구가 늘 변화구다.'],
-  command: ['제구가 들쭉날쭉하다. 볼넷이 많다.', '릴리스 포인트가 흔들린다. 같은 공을 두 번 못 던진다.', '주자가 나가면 제구가 급격히 흔들린다.'],
-  breaking: ['변화구가 밋밋하다. 결정구가 필요하다.', '변화구 제구가 안 돼 결국 직구 타이밍에 걸린다.', '{pitch|이/가} 손에서 빠지는 날이 많다.'],
-  stamina: ['5이닝이 넘어가면 구위가 떨어진다.', '체력이 약하다. 짧은 이닝이 맞는 유형이다.'],
-  contact: ['변화구에 배트가 따라 나간다. 삼진이 많다.', '빠른 공에 밀린다. 타이밍이 늦다.', '스윙이 커서 콘택트가 들쭉날쭉하다.'],
-  power: ['타구에 힘이 부족하다. 장타가 거의 없다.', '맞혀도 외야를 넘기지 못한다. 근력이 과제다.'],
-  speed: ['발이 느려 주루에서 손해를 본다.', '주력이 떨어져 병살타가 많다.'],
-  eye: ['초구부터 방망이가 나간다. 볼넷이 적다.'],
-  defenseC: ['블로킹과 포구가 불안하다.', '2루 송구가 느리다. 도루를 자주 허용한다.'],
-  defenseIF: ['송구 실책이 잦다.', '첫발이 늦어 옆 타구에 약하다.'],
-  defenseOF: ['타구 판단이 늦다. 뒤로 가는 타구에 약하다.', '어깨가 약해 주자에게 한 베이스를 더 준다.'],
+  stuff: [__i18n_k("draftroom.writer.bAD.stuff.c030f978"), __i18n_k("draftroom.writer.bAD.stuff.ebfc6afe")],
+  command: [__i18n_k("draftroom.writer.bAD.command.754dd81a"), __i18n_k("draftroom.writer.bAD.command.86a3831d"), __i18n_k("draftroom.writer.bAD.command.03e04c5b")],
+  breaking: [__i18n_k("draftroom.writer.bAD.breaking.3109d24f"), __i18n_k("draftroom.writer.bAD.breaking.103b702f"), __i18n_k("draftroom.writer.bAD.breaking.e9db6add")],
+  stamina: [__i18n_k("draftroom.writer.bAD.stamina.d15ab983"), __i18n_k("draftroom.writer.bAD.stamina.277ae859")],
+  contact: [__i18n_k("draftroom.writer.bAD.contact.4958c2c2"), __i18n_k("draftroom.writer.bAD.contact.81bc3a99"), __i18n_k("draftroom.writer.bAD.contact.318dd4a9")],
+  power: [__i18n_k("draftroom.writer.bAD.power.fc173001"), __i18n_k("draftroom.writer.bAD.power.4b6f95be")],
+  speed: [__i18n_k("draftroom.writer.bAD.speed.bd9d2ca9"), __i18n_k("draftroom.writer.bAD.speed.dfc6e4e4")],
+  eye: [__i18n_k("draftroom.writer.bAD.eye.a424d7a4")],
+  defenseC: [__i18n_k("draftroom.writer.bAD.defenseC.03e5e1a4"), __i18n_k("draftroom.writer.bAD.defenseC.c4bf77fa")],
+  defenseIF: [__i18n_k("draftroom.writer.bAD.defenseIF.30546638"), __i18n_k("draftroom.writer.bAD.defenseIF.75c4348a")],
+  defenseOF: [__i18n_k("draftroom.writer.bAD.defenseOF.864a0814"), __i18n_k("draftroom.writer.bAD.defenseOF.b0948177")],
 };
 const noteKey = (p, tool) => (tool === 'defense' ? 'defense' + (p.role === 'C' ? 'C' : p.role === 'IF' ? 'IF' : 'OF') : tool);
 
 // Grade 45–50: solid but not a carrying tool.
 const FAIR = {
-  stuff: ['직구 힘은 평균 이상이다.', '직구가 묵직하다. 구속은 더 오를 여지가 있다.', '직구 회전이 괜찮다.'],
-  command: ['제구가 크게 흔들리지 않는다.', '스트라이크를 던질 줄 안다.', '볼넷으로 자멸하는 유형은 아니다.'],
-  breaking: ['{pitch|은/는} 이미 쓸 만하다.', '{pitch} 하나는 확실히 던진다.', '변화구 감각이 있다.'],
-  stamina: ['선발로 5이닝은 버틴다.', '체력은 문제없다.'],
-  contact: ['맞히는 재주가 있다.', '콘택트는 평균 이상이다.', '타석에서 쉽게 물러서지 않는다.'],
-  power: ['힘은 있다. 타구에 무게가 실린다.', '가끔 큰 타구가 나온다.'],
-  speed: ['발이 빠른 편이다.', '주루는 평균 이상.'],
-  eye: ['볼넷을 고를 줄 안다.'],
-  defenseC: ['포구는 안정적이다.', '포수 기본기가 돼 있다.'],
-  defenseIF: ['수비 기본기가 탄탄하다.', '송구가 안정적이다.'],
-  defenseOF: ['외야 수비는 무난하다.', '어깨는 평균 이상이다.'],
+  stuff: [__i18n_k("draftroom.writer.fAIR.stuff.2af6a2f0"), __i18n_k("draftroom.writer.fAIR.stuff.3efef538"), __i18n_k("draftroom.writer.fAIR.stuff.234d6a29")],
+  command: [__i18n_k("draftroom.writer.fAIR.command.bca856af"), __i18n_k("draftroom.writer.fAIR.command.ae5bb10f"), __i18n_k("draftroom.writer.fAIR.command.13b0ca8c")],
+  breaking: [__i18n_k("draftroom.writer.fAIR.breaking.c1fb0978"), __i18n_k("draftroom.writer.fAIR.breaking.78d6742f"), __i18n_k("draftroom.writer.fAIR.breaking.b8b761d8")],
+  stamina: [__i18n_k("draftroom.writer.fAIR.stamina.270c320f"), __i18n_k("draftroom.writer.fAIR.stamina.059d1fed")],
+  contact: [__i18n_k("draftroom.writer.fAIR.contact.91a37e09"), __i18n_k("draftroom.writer.fAIR.contact.4b7f0adf"), __i18n_k("draftroom.writer.fAIR.contact.f1a3d24d")],
+  power: [__i18n_k("draftroom.writer.fAIR.power.3523bbe4"), __i18n_k("draftroom.writer.fAIR.power.4e1cce08")],
+  speed: [__i18n_k("draftroom.writer.fAIR.speed.38a39aa2"), __i18n_k("draftroom.writer.fAIR.speed.32b5595f")],
+  eye: [__i18n_k("draftroom.writer.fAIR.eye.348ffa0d")],
+  defenseC: [__i18n_k("draftroom.writer.fAIR.defenseC.d7296dec"), __i18n_k("draftroom.writer.fAIR.defenseC.5e675abb")],
+  defenseIF: [__i18n_k("draftroom.writer.fAIR.defenseIF.18484ea8"), __i18n_k("draftroom.writer.fAIR.defenseIF.67919083")],
+  defenseOF: [__i18n_k("draftroom.writer.fAIR.defenseOF.586a8bdf"), __i18n_k("draftroom.writer.fAIR.defenseOF.95dcdf75")],
 };
-const PLAIN = ['눈에 띄는 무기는 아직 없다.', '툴은 평범하지만 {tool|이/가} 그나마 낫다.', '아직 전체적으로 평균 아래다.', '{tool|이/가} 가장 낫지만 무기라고 하긴 이르다.'];
-const UPSIDE = ['몸이 아직 덜 여물었다. 힘이 붙으면 한 단계 올라설 선수다.', '1~2년 뒤 평가가 크게 달라질 수 있다.', '{grow} 쪽은 앞으로 더 좋아질 여지가 크다.', '지금보다 몸이 커진 뒤를 봐야 하는 선수다.'];
-const READY = { pitcher: ['프로 공에도 바로 적응할 완성도다.', '당장 1군 불펜에서 던질 수 있다.'], hitter: ['프로 투수 공에도 적응이 빠를 타입이다.', '당장 1군 대타·대수비로 쓸 수 있다.'] };
-const SHORT = ['{tool|은/는} 아직 평균에 못 미친다.', '{tool} 쪽 보완이 먼저다.', '{tool|이/가} 약점으로 꼽힌다.'];
-const SLOW = ['직구 최고 {v}km/h. 구속을 더 끌어올려야 한다.', '최고 {v}km/h로 구속이 아쉽다.', '구속이 {v}km/h에서 멈춰 있다. 힘을 더 붙여야 한다.'];
+const PLAIN = [__i18n_k("draftroom.writer.pLAIN.3e410664"), __i18n_k("draftroom.writer.pLAIN.1f2bbe6f"), __i18n_k("draftroom.writer.pLAIN.72915dbb"), __i18n_k("draftroom.writer.pLAIN.2a09c05c")];
+const UPSIDE = [__i18n_k("draftroom.writer.uPSIDE.b62ace8f"), __i18n_k("draftroom.writer.uPSIDE.a46f702a"), __i18n_k("draftroom.writer.uPSIDE.f5cc4bdb"), __i18n_k("draftroom.writer.uPSIDE.b631d88e")];
+const READY = { pitcher: [__i18n_k("draftroom.writer.rEADY.pitcher.32a5164c"), __i18n_k("draftroom.writer.rEADY.pitcher.833de4d3")], hitter: [__i18n_k("draftroom.writer.rEADY.hitter.7df9ce7c"), __i18n_k("draftroom.writer.rEADY.hitter.4a7b3913")] };
+const SHORT = [__i18n_k("draftroom.writer.sHORT.6d3c7db2"), __i18n_k("draftroom.writer.sHORT.6e0768cd"), __i18n_k("draftroom.writer.sHORT.b3c51ec0")];
+const SLOW = [__i18n_k("draftroom.writer.sLOW.d9ef3159"), __i18n_k("draftroom.writer.sLOW.d9dd29ed"), __i18n_k("draftroom.writer.sLOW.6e72d4e7")];
 
 /** Strength and development-task lines from the public tool grades, projections and velocity. */
 function scoutNotes(p, r) {
@@ -90,7 +91,7 @@ function scoutNotes(p, r) {
   const vars = { pitch: pitchName(p), tool: G.LABELS[bestTool], grow: G.LABELS[growTool], v: p.velocity };
 
   const strength = [];
-  if (pitcher && p.velocity >= 148) strength.push(`최고 ${p.velocity}km/h.`);
+  if (pitcher && p.velocity >= 148) strength.push(__i18n_k("draftroom.writer.scoutNotes.ae54167c", { velocity: p.velocity }));
   strength.push(fill(one(bestGrade >= 55 ? GOOD[noteKey(p, bestTool)] : bestGrade >= 45 ? FAIR[noteKey(p, bestTool)] : PLAIN, r), vars));
   if (p.pickTags?.includes('즉전감')) strength.push(one(READY[pitcher ? 'pitcher' : 'hitter'], r));
   else if (growBy >= 10 || p.pickTags?.includes('실링')) strength.push(fill(one(UPSIDE, r), vars));
@@ -98,8 +99,8 @@ function scoutNotes(p, r) {
   let weakness;
   if (pitcher && p.velocity <= 141) weakness = fill(one(SLOW, r), vars);
   else if (pitcher && p.velocity >= 147 && p.tools.stuff <= 40 && p.tools.command > 30)
-    weakness = one(['구속은 나오는데 공이 가볍다. 회전수가 아쉽다.', '빠른 공이 밋밋하게 들어간다. 구속만큼 헛스윙이 안 나온다.'], r);
-  else if (worstGrade >= 50) weakness = '약점이 두드러지지 않는다. 한 가지 확실한 무기를 만드는 게 과제다.';
+    weakness = one([__i18n_k("draftroom.writer.scoutNotes.9c856fbb"), __i18n_k("draftroom.writer.scoutNotes.d19b985d")], r);
+  else if (worstGrade >= 50) weakness = __i18n_k("draftroom.writer.scoutNotes.e08573d9");
   else if (worstGrade >= 40) weakness = fill(one(SHORT, r), { ...vars, tool: G.LABELS[worstTool] });
   else weakness = fill(one(BAD[noteKey(p, worstTool)], r), vars);
   return { strength: strength.join(' '), weakness };
@@ -107,15 +108,15 @@ function scoutNotes(p, r) {
 
 // ------------------------------------------------------------ mock drafts
 
-const TOOL_ADJ = { stuff: '힘 있는 공을 던지는', command: '제구가 되는', breaking: '변화구가 좋은', stamina: '긴 이닝을 버티는',
-  contact: '정확하게 맞히는', power: '한 방이 있는', speed: '발 빠른', defense: '수비가 좋은', eye: '눈 좋은' };
+const TOOL_ADJ = { stuff: __i18n_k("draftroom.writer.tOOL_ADJ.stuff.9dee11e2"), command: __i18n_k("draftroom.writer.tOOL_ADJ.command.f5f047ce"), breaking: __i18n_k("draftroom.writer.tOOL_ADJ.breaking.53040e3b"), stamina: __i18n_k("draftroom.writer.tOOL_ADJ.stamina.e2bad391"),
+  contact: __i18n_k("draftroom.writer.tOOL_ADJ.contact.661891e7"), power: __i18n_k("draftroom.writer.tOOL_ADJ.power.2bdc24d8"), speed: __i18n_k("draftroom.writer.tOOL_ADJ.speed.f04b628d"), defense: __i18n_k("draftroom.writer.tOOL_ADJ.defense.f39d0532"), eye: __i18n_k("draftroom.writer.tOOL_ADJ.eye.100944ba") };
 function mockReason(p, outletId, r) {
   const tag = p.pickTags[0];
   const [best] = Object.entries(p.tools).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
-  const now = ['당장 1군 엔트리에 넣을 수 있는 완성도.', '캠프부터 경쟁시킬 수 있는 선수.', '가장 빨리 1군에 올라올 후보.', '즉시 전력 기준으로는 이 순번에 가장 가깝다.'];
-  const later = ['2~3년 뒤를 보는 지명.', '지금보다 3년 뒤가 더 궁금한 선수.', '실링은 이번 클래스 상위권.', '키워서 쓰는 팀이라면 놓치기 어렵다.'];
-  const role = isPitcher(p) && p.velocity >= 147 ? `${p.velocity}km/h를 던지는 ${ROLES[p.role]}.` : `${TOOL_ADJ[best]} ${ROLES[p.role]}.`;
-  return `${role} ${one(outletId === 'diamond' || tag === '즉전감' ? now : later, r)}`;
+  const now = [__i18n_k("draftroom.writer.mockReason.now.1c289a6b"), __i18n_k("draftroom.writer.mockReason.now.0ae849e8"), __i18n_k("draftroom.writer.mockReason.now.829ddd39"), __i18n_k("draftroom.writer.mockReason.now.cbf263d5")];
+  const later = [__i18n_k("draftroom.writer.mockReason.later.3f3bf381"), __i18n_k("draftroom.writer.mockReason.later.b2e29bd0"), __i18n_k("draftroom.writer.mockReason.later.f6aa3cee"), __i18n_k("draftroom.writer.mockReason.later.e4332752")];
+  const role = isPitcher(p) && p.velocity >= 147 ? __i18n_k("draftroom.writer.mockReason.role.f72c195d", { velocity: p.velocity, value: ROLES[p.role] }) : `${TOOL_ADJ[best]} ${ROLES[p.role]}.`;
+  return __i18n_k("draftroom.writer.mockReason.98d17e2c", { role: role, one: one(outletId === 'diamond' || tag === '즉전감' ? now : later, r) });
 }
 
 // ------------------------------------------------------------ draft news
@@ -128,12 +129,12 @@ const DAY = (() => {
 function amateurFact(p) {
   const r = p.record;
   if (!r) return '';
-  const where = p.pathway === '고졸' ? '올해 고교 무대에서' : ['대졸', '대학 얼리', '2년제'].includes(p.pathway) ? '대학리그에서' : p.proExperience ? '해외 마지막 시즌' : '지난 시즌';
+  const where = p.pathway === '고졸' ? __i18n_k("draftroom.writer.amateurFact.where.11f5a65b") : ['대졸', '대학 얼리', '2년제'].includes(p.pathway) ? __i18n_k("draftroom.writer.amateurFact.where.bc85195c") : p.proExperience ? __i18n_k("draftroom.writer.amateurFact.where.4f6f556d") : __i18n_k("draftroom.writer.amateurFact.where.a6e3cbeb");
   if (r.kind === 'pitcher') {
     const ip = `${Math.floor(r.outs / 3)}${r.outs % 3 ? '⅓⅔'[r.outs % 3 - 1] : ''}`;
-    return `${where} ${r.games}경기 ${ip}이닝, 평균자책점 ${r.era.toFixed(2)}, 탈삼진 ${r.k}개를 기록했다.`;
+    return __i18n_k("draftroom.writer.amateurFact.8fd19c89", { where: where, games: r.games, ip: ip, value: r.era.toFixed(2), value2: r.k });
   }
-  return `${where} ${r.games}경기 타율 ${r.avg.toFixed(3).replace(/^0/, '')}, ${r.hr}홈런 ${r.sb}도루를 기록했다.`;
+  return __i18n_k("draftroom.writer.amateurFact.fe1bbee8", { where: where, games: r.games, value: r.avg.toFixed(3).replace(/^0/, ''), hr: r.hr, sb: r.sb });
 }
 
 /**
@@ -143,77 +144,77 @@ function amateurFact(p) {
 function draftNews(p, t, selection, f, r) {
   const role = ROLES[p.role];
   const age = p.age ? `(${p.age})` : '';
-  const where = selection.round === 0 ? '지역 1차 지명으로' : `1라운드 ${((selection.overall - 1) % 10) + 1}순위로`;
+  const where = selection.round === 0 ? __i18n_k("draftroom.writer.draftNews.where.3270c3fd") : __i18n_k("draftroom.writer.draftNews.where.c90e2158", { value: ((selection.overall - 1) % 10) + 1 });
   const hook =
-    isPitcher(p) && p.velocity >= 150 ? `최고 ${p.velocity}km/h ${p.throwHand === '좌' ? '좌완' : '우완'}`
-    : f.local ? '연고 출신'
-    : p.pathway === '고졸' && p.rank <= 5 ? '고교 최대어'
-    : p.proExperience ? '해외파 유턴'
-    : p.pathway === '야구 유학' ? '유학파'
-    : p.pathway === '2년제' ? '2년제 출신'
-    : p.pathway === '독립구단' ? '독립리그 출신'
+    isPitcher(p) && p.velocity >= 150 ? __i18n_k("draftroom.writer.draftNews.hook.2556ad6e", { velocity: p.velocity, value: p.throwHand === '좌' ? __i18n_k("draftroom.writer.draftNews.hook.c03a5dae") : __i18n_k("draftroom.writer.draftNews.hook.5fbba1d3") })
+    : f.local ? __i18n_k("draftroom.writer.draftNews.hook.029228e1")
+    : p.pathway === '고졸' && p.rank <= 5 ? __i18n_k("draftroom.writer.draftNews.hook.31c2eb5f")
+    : p.proExperience ? __i18n_k("draftroom.writer.draftNews.hook.79148c74")
+    : p.pathway === '야구 유학' ? __i18n_k("draftroom.writer.draftNews.hook.70c7b517")
+    : p.pathway === '2년제' ? __i18n_k("draftroom.writer.draftNews.hook.5ab2a0fa")
+    : p.pathway === '독립구단' ? __i18n_k("draftroom.writer.draftNews.hook.049071bc")
     : role;
   const headlines = f.reach
-    ? [`${t.short}, ${selection.round === 0 ? '지역 1차' : '1라운드'}에 ${p.name}… "우리 눈엔 1순위"`, `예상 밖 선택… ${t.short}, ${hook} ${p.name} 지명`, `${t.short}의 과감한 선택, ${p.name}`]
+    ? [__i18n_k("draftroom.writer.draftNews.headlines.8aa4b1d2", { short: t.short, value: selection.round === 0 ? __i18n_k("draftroom.writer.draftNews.headlines.e8a3b15a") : __i18n_k("draftroom.writer.draftNews.headlines.10f073b3"), name: p.name }), __i18n_k("draftroom.writer.draftNews.headlines.c4690102", { short: t.short, hook: hook, name: p.name }), __i18n_k("draftroom.writer.draftNews.headlines.a4f4ba46", { short: t.short, name: p.name })]
     : f.value
-      ? [`${t.short}, ${hook} ${p.name}${K.particle(p.name, '을/를')} 잡았다`, `'이 순번에?' ${t.short}, ${p.name} 품었다`, `${p.name}, 예상보다 늦게… 웃은 건 ${t.short}`]
+      ? [__i18n_k("draftroom.writer.draftNews.headlines.e287abfc", { short: t.short, hook: hook, name: p.name, value: K.particle(p.name, __i18n_k("draftroom.writer.draftNews.headlines.c57d3d52")) }), __i18n_k("draftroom.writer.draftNews.headlines.910e7e47", { short: t.short, name: p.name }), __i18n_k("draftroom.writer.draftNews.headlines.5272184a", { name: p.name, short: t.short })]
       : f.matched.length
-        ? [`${t.short}, 예상대로 ${hook} ${p.name}`, `${t.short}의 선택은 ${p.name}… 모의지명 적중`]
+        ? [__i18n_k("draftroom.writer.draftNews.headlines.8b7d0a36", { short: t.short, hook: hook, name: p.name }), __i18n_k("draftroom.writer.draftNews.headlines.1e705c33", { short: t.short, name: p.name })]
         : f.fit >= 80
-          ? [`${t.short}, 급한 불 껐다… ${hook} ${p.name} 지명`, `${t.short}, ${role} 보강 1순위 과제에 ${p.name}`]
-          : [`${t.short}, ${hook} ${p.name} 지명`, `${t.short}의 1라운드는 ${p.name}`];
-  const lead = `${t.name}${K.particle(t.name, '이/가')} ${DAY.month}월 ${DAY.day}일 열린 ${Bio.ENTRY_YEAR} KBO 신인 드래프트에서 ${where} ${p.school} ${role} ${p.name}${age}${K.particle(p.name, '을/를')} 지명했다.`;
+          ? [__i18n_k("draftroom.writer.draftNews.headlines.9c6df1cb", { short: t.short, hook: hook, name: p.name }), __i18n_k("draftroom.writer.draftNews.headlines.fa224a60", { short: t.short, role: role, name: p.name })]
+          : [__i18n_k("draftroom.writer.draftNews.headlines.0ebdafc6", { short: t.short, hook: hook, name: p.name }), __i18n_k("draftroom.writer.draftNews.headlines.7b87402b", { short: t.short, name: p.name })];
+  const lead = __i18n_k("draftroom.writer.draftNews.lead.a80edf47", { name: t.name, value: K.particle(t.name, __i18n_k("draftroom.writer.draftNews.lead.543ff075")), month: DAY.month, day: DAY.day, eNTRY_YEAR: Bio.ENTRY_YEAR, where: where, school: p.school, role: role, name2: p.name, age: age, value2: K.particle(p.name, __i18n_k("draftroom.writer.draftNews.lead.c57d3d52")) });
   const facts = [amateurFact(p)];
-  if (isPitcher(p) && p.velocity) facts.push(`최고 구속은 ${p.velocity}km/h.`);
-  if (p.awards?.length) facts.push(`${p.awards[0]} 경력도 있다.`);
+  if (isPitcher(p) && p.velocity) facts.push(__i18n_k("draftroom.writer.draftNews.ede340c5", { velocity: p.velocity }));
+  if (p.awards?.length) facts.push(__i18n_k("draftroom.writer.draftNews.d23b4b6c", { value: p.awards[0] }));
   const context = f.reach
-    ? one([`모의지명에서는 이름이 거론되지 않았던 선수다. 남은 후보 가운데 공개 순위는 ${f.remainingRank}번째였다.`, `공개 순위로는 더 뒤에 불릴 선수였지만 ${t.short}의 판단은 달랐다.`], r)
+    ? one([__i18n_k("draftroom.writer.draftNews.context.9e84de54", { remainingRank: f.remainingRank }), __i18n_k("draftroom.writer.draftNews.context.93a288c6", { short: t.short })], r)
     : f.value
-      ? one([`공개 순위 ${p.rank}위로, 더 앞 순번에서 불릴 것으로 예상됐다.`, `앞 순번 구단들이 지나친 덕에 ${t.short} 차례까지 남았다.`], r)
+      ? one([__i18n_k("draftroom.writer.draftNews.context.8e6e15ac", { rank: p.rank }), __i18n_k("draftroom.writer.draftNews.context.aebef258", { short: t.short })], r)
       : f.matched.length
-        ? `${f.matched.join('·')}의 모의지명과 같은 선택이다.`
+        ? __i18n_k("draftroom.writer.draftNews.context.2ba7fa96", { value: f.matched.join('·') })
         : f.fit >= 60
-          ? `${role}${K.particle(role, '은/는')} ${t.short}의 보강 ${t.needs.indexOf(p.role) + 1}순위 포지션이다.`
-          : `보강 포지션보다 선수 개인의 재능을 우선했다.`;
+          ? __i18n_k("draftroom.writer.draftNews.context.533790f5", { role: role, value: K.particle(role, __i18n_k("draftroom.writer.draftNews.context.d54d1c05")), short: t.short, value2: t.needs.indexOf(p.role) + 1 })
+          : __i18n_k("draftroom.writer.draftNews.context.c1d0d8b5");
   const quote = one(
     f.fit >= 60
-      ? [`필요한 자리에 가장 좋은 선수가 남아 있었다`, `처음부터 이 선수를 보고 준비했다`, `${role} 쪽을 오래 지켜봤다`]
-      : [`포지션보다 선수를 봤다`, `이 순번에서 가장 높게 평가한 선수`, `재능만 보면 고민할 이유가 없었다`],
+      ? [__i18n_k("draftroom.writer.draftNews.quote.7da54a90"), __i18n_k("draftroom.writer.draftNews.quote.1667ecb1"), __i18n_k("draftroom.writer.draftNews.quote.082d83f2", { role: role })]
+      : [__i18n_k("draftroom.writer.draftNews.quote.73ecddde"), __i18n_k("draftroom.writer.draftNews.quote.d902a418"), __i18n_k("draftroom.writer.draftNews.quote.fced3391")],
     r,
   );
-  const body = [lead, ...facts, context, `${t.short} 구단 관계자는 “${quote}”고 말했다.`].filter(Boolean).join(' ');
+  const body = [lead, ...facts, context, __i18n_k("draftroom.writer.draftNews.body.1232e5b0", { short: t.short, quote: quote })].filter(Boolean).join(' ');
   return { headline: one(headlines, r), body, comments: fanComments(p, t, selection, f, r) };
 }
 
 // ------------------------------------------------------------ fan comments
 
-const HANDLES = ['직관가는길', '퓨처스덕후', '2군구장지박령', '야구는9회말', '불펜걱정러', '드래프트광', '외야석한줄', '원정석매진',
-  '연간회원권', '개막전티켓팅', '포수난민', '좌완수집가', '야잘알지망생', '치맥직관', '응원단장친구', '스코어북', '육성이답이다',
-  '가을야구가자', '신인은사랑', '더그아웃뷰', '홈런존', '만년하위권', '1루측관중'];
+const HANDLES = [__i18n_k("draftroom.writer.hANDLES.ae546754"), __i18n_k("draftroom.writer.hANDLES.dbdca31a"), __i18n_k("draftroom.writer.hANDLES.dba11a85"), __i18n_k("draftroom.writer.hANDLES.1e912b57"), __i18n_k("draftroom.writer.hANDLES.593c9d1c"), __i18n_k("draftroom.writer.hANDLES.cdf5a1bd"), __i18n_k("draftroom.writer.hANDLES.082bc285"), __i18n_k("draftroom.writer.hANDLES.aaf4be13"),
+  __i18n_k("draftroom.writer.hANDLES.2bc3411f"), __i18n_k("draftroom.writer.hANDLES.e4500296"), __i18n_k("draftroom.writer.hANDLES.91ed1a09"), __i18n_k("draftroom.writer.hANDLES.7791ccd7"), __i18n_k("draftroom.writer.hANDLES.15acf25c"), __i18n_k("draftroom.writer.hANDLES.baccb556"), __i18n_k("draftroom.writer.hANDLES.95f69f47"), __i18n_k("draftroom.writer.hANDLES.868501a6"), __i18n_k("draftroom.writer.hANDLES.c9463ff6"),
+  __i18n_k("draftroom.writer.hANDLES.a055b19e"), __i18n_k("draftroom.writer.hANDLES.c3fb76f6"), __i18n_k("draftroom.writer.hANDLES.79b33806"), __i18n_k("draftroom.writer.hANDLES.ef3604c8"), __i18n_k("draftroom.writer.hANDLES.53d9c2ff"), __i18n_k("draftroom.writer.hANDLES.1bfff8aa")];
 
 function fanComments(p, t, selection, f, r) {
   const role = ROLES[p.role],
     need = ROLES[t.needs[0]];
   const says = [];
   const add = (tone, lines) => says.push({ tone, text: one(lines, r) });
-  if (f.fit >= 60) add('반색', [`${role} 급했는데 잘 뽑았다`, `드디어 ${role}! 몇 년째 이 자리만 기다림`, `이번엔 필요한 자리 알고 뽑았네`]);
-  else add('갸웃', [`${need} 급하다니까 또 ${role}?`, `${need}는 다음 라운드에서 뽑겠지…`, `재능 보고 뽑은 거면 인정`]);
-  if (f.reach) add('의문', ['이 순번에? 좀 이르지 않나', '모의지명엔 이름도 없던데', '스카우트팀이 뭘 봤는지 궁금하다']);
-  if (f.value) add('환호', ['이 선수가 여기까지 남아 있었다고?', '앞 순번 팀들 뭐 함 ㅋㅋ 꿀픽', '순번 대비 최고의 선택']);
-  if (f.matched.length) add('담담', ['예상대로 갔네', '기사에서 본 그대로', '다들 예상한 픽']);
-  if (f.owned) add('걱정', [`${role} 또 뽑았네 ㅋㅋ`, '같은 포지션 두 명이면 경쟁은 되겠다']);
-  if (f.local) add('반가움', ['연고지 출신이라 더 정감 간다', '동네 학교 출신 반갑다', `${p.school} 경기 몇 번 봤는데 잘하더라`]);
-  if (isPitcher(p) && p.velocity >= 148) add('기대', [`${p.velocity} 던지는 신인이면 일단 합격`, '구속은 확실히 매력 있다', '제구만 잡히면 무섭겠다']);
-  if (p.ready >= 45) add('기대', ['내년 캠프에서 바로 보고 싶다', '즉전감이라니 1군에서 빨리 보자']);
-  else add('인내', ['2~3년은 기다려야 할 듯', '퓨처스에서 몸 좀 만들고 오자', '급하게 쓰지 말고 제대로 키우자']);
-  if (p.pathway === '독립구단') add('응원', ['독립리그에서 버틴 거 대단하다', '다시 기회 잡은 거 멋지다']);
-  if (p.pathway === '대졸') add('담담', ['대학 4년 동안 꾸준했지', '대졸이라 적응은 빠를 듯']);
-  if (p.pathway === '2년제') add('담담', ['2년제에서 몸 좀 만들고 나왔겠지', '전문대 리그 기록 좋던데', '고졸 때보다 확실히 성장했다더라']);
-  if (p.pathway === '야구 유학') add('기대', ['유학파는 기본기가 탄탄하던데', '어린 나이에 혼자 유학 간 것부터 대단하다']);
-  if (p.proExperience || p.pathway === '해외파') add('기대', ['해외 경험 있는 선수 반갑다', '미국에서 뭘 배워 왔는지 궁금']);
-  add('응원', ['잘 커서 오래 뛰자', '이름 외워 둔다', '사인볼 받으러 간다', '부상 없이만 크자']);
+  if (f.fit >= 60) add(__i18n_k("draftroom.writer.fanComments.30b00c4c"), [__i18n_k("draftroom.writer.fanComments.9ceec40f", { role: role }), __i18n_k("draftroom.writer.fanComments.f379622f", { role: role }), __i18n_k("draftroom.writer.fanComments.b2dece17")]);
+  else add(__i18n_k("draftroom.writer.fanComments.dd059baf"), [__i18n_k("draftroom.writer.fanComments.85d03cfc", { need: need, role: role }), __i18n_k("draftroom.writer.fanComments.e447badc", { need: need }), __i18n_k("draftroom.writer.fanComments.5586d20b")]);
+  if (f.reach) add(__i18n_k("draftroom.writer.fanComments.8dea5a91"), [__i18n_k("draftroom.writer.fanComments.3da09810"), __i18n_k("draftroom.writer.fanComments.bd6ca9ee"), __i18n_k("draftroom.writer.fanComments.ff72e2ff")]);
+  if (f.value) add(__i18n_k("draftroom.writer.fanComments.24e4a7fc"), [__i18n_k("draftroom.writer.fanComments.9694d20c"), __i18n_k("draftroom.writer.fanComments.4ddd704c"), __i18n_k("draftroom.writer.fanComments.f9499a2f")]);
+  if (f.matched.length) add(__i18n_k("draftroom.writer.fanComments.4fdca3a8"), [__i18n_k("draftroom.writer.fanComments.889128c2"), __i18n_k("draftroom.writer.fanComments.345f6826"), __i18n_k("draftroom.writer.fanComments.0d9a7b75")]);
+  if (f.owned) add(__i18n_k("draftroom.writer.fanComments.0128ad97"), [__i18n_k("draftroom.writer.fanComments.3357457d", { role: role }), __i18n_k("draftroom.writer.fanComments.ff094da5")]);
+  if (f.local) add(__i18n_k("draftroom.writer.fanComments.e216cf73"), [__i18n_k("draftroom.writer.fanComments.e2b8706d"), __i18n_k("draftroom.writer.fanComments.c5b5f85c"), __i18n_k("draftroom.writer.fanComments.b4e37e37", { school: p.school })]);
+  if (isPitcher(p) && p.velocity >= 148) add(__i18n_k("draftroom.writer.fanComments.be340810"), [__i18n_k("draftroom.writer.fanComments.1ec6497b", { velocity: p.velocity }), __i18n_k("draftroom.writer.fanComments.8be7a4b0"), __i18n_k("draftroom.writer.fanComments.bb74d8f0")]);
+  if (p.ready >= 45) add(__i18n_k("draftroom.writer.fanComments.be340810"), [__i18n_k("draftroom.writer.fanComments.d8d61fef"), __i18n_k("draftroom.writer.fanComments.3ea6364a")]);
+  else add(__i18n_k("draftroom.writer.fanComments.4430c792"), [__i18n_k("draftroom.writer.fanComments.ee71af30"), __i18n_k("draftroom.writer.fanComments.2bb21e4d"), __i18n_k("draftroom.writer.fanComments.3dc12c0b")]);
+  if (p.pathway === '독립구단') add(__i18n_k("draftroom.writer.fanComments.e37fcb1a"), [__i18n_k("draftroom.writer.fanComments.a534ad35"), __i18n_k("draftroom.writer.fanComments.92e37a67")]);
+  if (p.pathway === '대졸') add(__i18n_k("draftroom.writer.fanComments.4fdca3a8"), [__i18n_k("draftroom.writer.fanComments.8c20904c"), __i18n_k("draftroom.writer.fanComments.f32088e9")]);
+  if (p.pathway === '2년제') add(__i18n_k("draftroom.writer.fanComments.4fdca3a8"), [__i18n_k("draftroom.writer.fanComments.00783acd"), __i18n_k("draftroom.writer.fanComments.4c865f8a"), __i18n_k("draftroom.writer.fanComments.726ec238")]);
+  if (p.pathway === '야구 유학') add(__i18n_k("draftroom.writer.fanComments.be340810"), [__i18n_k("draftroom.writer.fanComments.d9497976"), __i18n_k("draftroom.writer.fanComments.5612e92e")]);
+  if (p.proExperience || p.pathway === '해외파') add(__i18n_k("draftroom.writer.fanComments.be340810"), [__i18n_k("draftroom.writer.fanComments.8cf9826d"), __i18n_k("draftroom.writer.fanComments.7d76ae02")]);
+  add(__i18n_k("draftroom.writer.fanComments.e37fcb1a"), [__i18n_k("draftroom.writer.fanComments.79c0b670"), __i18n_k("draftroom.writer.fanComments.c11d9f38"), __i18n_k("draftroom.writer.fanComments.cfd7f76c"), __i18n_k("draftroom.writer.fanComments.e6333a02")]);
   const names = some(HANDLES, 3, r);
-  return some(says, 3, r).map((c, i) => ({ handle: i === 0 && r() < 0.5 ? `${t.short}팬${10 + Math.floor(r() * 20)}년` : names[i], tone: c.tone, text: c.text }));
+  return some(says, 3, r).map((c, i) => ({ handle: i === 0 && r() < 0.5 ? __i18n_k("draftroom.writer.fanComments.handle.16aa008c", { short: t.short, value: 10 + Math.floor(r() * 20) }) : names[i], tone: c.tone, text: c.text }));
 }
 
 const api = { one, some, fill, scoutNotes, mockReason, draftNews, fanComments };

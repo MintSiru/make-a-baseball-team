@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Facilities (V0.10): what the user's club can build besides more seats and new fences (ballpark.ts). Ballpark
    improvements bring money in (premium seats, a new scoreboard, food and shops) or keep players healthier (the
    grass); training facilities grow players faster, keep them healthy and slow the veterans' decline. Each comes in
@@ -29,86 +30,86 @@ export interface FacilitySpec {
 
 export const FACILITIES: Record<FacilityKind, FacilitySpec> = {
   premium: {
-    label: '좌석 리모델링 · 프리미엄석',
+    label: __i18n_k("league.facilities.premium.label.43af90a4"),
     group: 'ballpark',
-    note: '테이블석·스카이박스를 늘려 관중 한 명당 티켓 수입이 오름',
+    note: __i18n_k("league.facilities.premium.note.90ec67a1"),
     levels: [
-      { cost: 400_000, upkeep: 10_000, build: 1, effect: '티켓 수입 +6%' },
-      { cost: 600_000, upkeep: 15_000, build: 1, effect: '티켓 수입 +12%' },
+      { cost: 400_000, upkeep: 10_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.1f860dcc") },
+      { cost: 600_000, upkeep: 15_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.89b295ed") },
     ],
   },
   scoreboard: {
-    label: '대형 전광판 · LED 조명',
+    label: __i18n_k("league.facilities.scoreboard.label.17c8dd33"),
     group: 'ballpark',
-    note: '경기장 경험이 좋아져 관중 수요가 조금 늘고, 들어서는 해 팬 관심이 오름',
-    levels: [{ cost: 600_000, upkeep: 15_000, build: 1, effect: '관중 수요 +3%, 개장 때 팬 관심 +0.03' }],
+    note: __i18n_k("league.facilities.scoreboard.note.92f0d9c6"),
+    levels: [{ cost: 600_000, upkeep: 15_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.e7ce0922") }],
   },
   turf: {
-    label: '천연잔디 · 배수 시설',
+    label: __i18n_k("league.facilities.turf.label.c4bd29a1"),
     group: 'ballpark',
-    note: '그라운드가 좋아져 부상이 조금 줄어듦',
-    levels: [{ cost: 250_000, upkeep: 10_000, build: 1, effect: '부상 확률 −5%' }],
+    note: __i18n_k("league.facilities.turf.note.0f97b92c"),
+    levels: [{ cost: 250_000, upkeep: 10_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.bfd9734d") }],
   },
   concessions: {
-    label: '먹거리 · 편의시설',
+    label: __i18n_k("league.facilities.concessions.label.15adb391"),
     group: 'ballpark',
-    note: '매장과 편의시설을 늘려 식음료·상품 수입이 오름',
+    note: __i18n_k("league.facilities.concessions.note.11ec5d5a"),
     levels: [
-      { cost: 300_000, upkeep: 5_000, build: 1, effect: '식음료 수입 +15%' },
-      { cost: 400_000, upkeep: 8_000, build: 1, effect: '식음료 수입 +30%' },
+      { cost: 300_000, upkeep: 5_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.ea8ee1cb") },
+      { cost: 400_000, upkeep: 8_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.78023a36") },
     ],
   },
   indoor: {
-    label: '실내 연습장',
+    label: __i18n_k("league.facilities.indoor.label.76426b1a"),
     group: 'training',
-    note: '날씨와 상관없이 훈련: 모든 선수의 성장이 조금 빨라짐',
+    note: __i18n_k("league.facilities.indoor.note.32874ac2"),
     levels: [
-      { cost: 800_000, upkeep: 20_000, build: 1, effect: '성장 +3%' },
-      { cost: 1_000_000, upkeep: 30_000, build: 1, effect: '성장 +6%' },
+      { cost: 800_000, upkeep: 20_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.fdf5dc85") },
+      { cost: 1_000_000, upkeep: 30_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.6b3fcbe1") },
     ],
   },
   gym: {
-    label: '트레이닝센터 · 웨이트장',
+    label: __i18n_k("league.facilities.gym.label.c983b074"),
     group: 'training',
-    note: '근력·컨디셔닝: 부상이 줄고 베테랑의 노쇠가 늦어짐',
+    note: __i18n_k("league.facilities.gym.note.9fa940d2"),
     levels: [
-      { cost: 600_000, upkeep: 15_000, build: 1, effect: '부상 확률 −6%, 노쇠 −10%' },
-      { cost: 800_000, upkeep: 20_000, build: 1, effect: '부상 확률 −12%, 노쇠 −20%' },
+      { cost: 600_000, upkeep: 15_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.c66fc1fa") },
+      { cost: 800_000, upkeep: 20_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.bc7e306d") },
     ],
   },
   rehab: {
-    label: '재활센터',
+    label: __i18n_k("league.facilities.rehab.label.a8a841e9"),
     group: 'training',
-    note: '재활 장비와 전담 트레이너: 부상 기간이 짧아짐',
+    note: __i18n_k("league.facilities.rehab.note.ae1a0d7e"),
     levels: [
-      { cost: 500_000, upkeep: 15_000, build: 1, effect: '부상 기간 −8%' },
-      { cost: 700_000, upkeep: 20_000, build: 1, effect: '부상 기간 −15%' },
+      { cost: 500_000, upkeep: 15_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.81f17d8c") },
+      { cost: 700_000, upkeep: 20_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.b859bd89") },
     ],
   },
   analytics: {
-    label: '데이터 분석실 · 트래킹 장비',
+    label: __i18n_k("league.facilities.analytics.label.7b5e307f"),
     group: 'training',
-    note: '투구·타구 추적 장비와 분석원: 성장과 해외 연수 효과가 커짐',
+    note: __i18n_k("league.facilities.analytics.note.7bc7547a"),
     levels: [
-      { cost: 300_000, upkeep: 20_000, build: 1, effect: '성장 +2%, 해외 연수 효과 +10%' },
-      { cost: 500_000, upkeep: 30_000, build: 1, effect: '성장 +4%, 해외 연수 효과 +20%' },
+      { cost: 300_000, upkeep: 20_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.940165c2") },
+      { cost: 500_000, upkeep: 30_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.a6b099f8") },
     ],
   },
   futuresPark: {
-    label: '2군 전용 구장 (퓨처스 파크)',
+    label: __i18n_k("league.facilities.futuresPark.label.9d9d1b0a"),
     group: 'training',
-    note: '2군 경기장·숙소·훈련장을 갖춘 단지: 24세 이하 선수의 성장이 빨라짐',
+    note: __i18n_k("league.facilities.futuresPark.note.2f522e9a"),
     levels: [
-      { cost: 2_500_000, upkeep: 50_000, build: 2, effect: '24세 이하 성장 +5%' },
-      { cost: 1_500_000, upkeep: 70_000, build: 1, effect: '24세 이하 성장 +10%' },
-      { cost: 2_000_000, upkeep: 90_000, build: 1, effect: '24세 이하 성장 +15%' },
+      { cost: 2_500_000, upkeep: 50_000, build: 2, effect: __i18n_k("league.facilities.levels.effect.af8096b0") },
+      { cost: 1_500_000, upkeep: 70_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.f3a3e1c3") },
+      { cost: 2_000_000, upkeep: 90_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.3748359c") },
     ],
   },
   dorm: {
-    label: '선수단 숙소',
+    label: __i18n_k("league.facilities.dorm.label.95192ef2"),
     group: 'training',
-    note: '어린 선수들이 함께 지내며 훈련: 23세 이하 성장이 빨라짐',
-    levels: [{ cost: 600_000, upkeep: 10_000, build: 1, effect: '23세 이하 성장 +4%' }],
+    note: __i18n_k("league.facilities.dorm.note.e1a2acec"),
+    levels: [{ cost: 600_000, upkeep: 10_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.fbe0a4ac") }],
   },
 };
 
@@ -182,11 +183,11 @@ export function facilityOptions(s: LeagueState): FacilityOption[] {
     if (level > spec.levels.length) return [];
     const L = spec.levels[level - 1]!;
     const blocked = busy
-      ? '진행 중인 시설 공사가 있습니다 (한 번에 하나).'
+      ? __i18n_k("league.facilities.facilityOptions.blocked.a7a8d6a5")
       : s.phase !== 'offseason'
-        ? '공사는 비시즌에만 시작할 수 있습니다.'
+        ? __i18n_k("league.facilities.facilityOptions.blocked.df97ea07")
         : L.cost > u.fund
-          ? '구단 자금이 부족합니다.'
+          ? __i18n_k("league.facilities.facilityOptions.blocked.2ffbf119")
           : null;
     return [{ kind, level, cost: L.cost, opens: next + L.build - 1, blocked }];
   });
@@ -202,9 +203,9 @@ export function startFacility(s: LeagueState, kind: FacilityKind) {
   const year = s.offseason?.year ?? s.year;
   const spec = FACILITIES[kind];
   u.fund -= o.cost;
-  u.ledger.push({ year, label: `시설 공사 · ${spec.label} ${o.level}단계`, amount: -o.cost, capital: true });
+  u.ledger.push({ year, label: __i18n_k("league.facilities.startFacility.label.f61f16b3", { label: spec.label, level: o.level }), amount: -o.cost, capital: true });
   (u.facilityWorks ??= []).push({ kind, level: o.level, opens: o.opens, cost: o.cost });
-  (u.log ??= []).push({ year, text: `${spec.label} ${o.level}단계 공사 시작 (${Math.round(o.cost / 10000)}억, ${o.opens}년 시즌부터)` });
+  (u.log ??= []).push({ year, text: __i18n_k("league.facilities.startFacility.text.cabda71e", { label: spec.label, level: o.level, value: Math.round(o.cost / 10000), opens: o.opens }) });
 }
 
 /** Works due by `season` are finished: the level counts from that season. Returns what opened. */
@@ -216,7 +217,7 @@ export function openFacilities(s: LeagueState, season: number): FacilityKind[] {
     if (w.opens !== season || (u.facilities?.[w.kind] ?? 0) >= w.level) continue;
     (u.facilities ??= {})[w.kind] = w.level;
     opened.push(w.kind);
-    (u.log ??= []).push({ year: season - 1, text: `${FACILITIES[w.kind].label} ${w.level}단계 완공: ${season} 시즌부터 (${FACILITIES[w.kind].levels[w.level - 1]!.effect})` });
+    (u.log ??= []).push({ year: season - 1, text: __i18n_k("league.facilities.openFacilities.text.93ceb158", { label: FACILITIES[w.kind].label, level: w.level, season: season, effect: FACILITIES[w.kind].levels[w.level - 1]!.effect }) });
   }
   return opened;
 }
