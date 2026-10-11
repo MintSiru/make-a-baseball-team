@@ -5,7 +5,7 @@
    rookie draft → (expansion special draft) → roster limits → released players → foreign players.
    The user's club can make the game wait at a step for a decision (see OffseasonHooks). */
 import { ruleYear } from './era';
-import { observe, overall, rng, toGrade, type Tools } from '../draftroom';
+import { hashUnit, observe, overall, rng, toGrade, type Tools } from '../draftroom';
 import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { budgetBonus, foreignContract, MANWON_PER_USD, renewSalary, rookieContract, salaryIn, slotBonus, usdTotal } from './contracts';
@@ -731,7 +731,8 @@ export function refreshForeigners(s: LeagueState, next: number, r: () => number)
         sign(s, known, t.id, foreignContract(t.id, next, splitContract(price(foreignPoolAsk(s, known), asia), rng(`${s.seed}|foreign-pool-terms|${next}|${id}`)), asia));
         return;
       }
-      const p = makeForeign(s.seed, id, next, { kind, asiaQuota: asia });
+      // 1.7.0: now and then an old big-league name (players.ts veteranOnMarket).
+      const p = makeForeign(s.seed, id, next, { kind, asiaQuota: asia, veteran: !asia && hashUnit(`${s.seed}|ai-veteran|${id}`) < AI_VETERAN });
       sign(s, p, t.id, foreignContract(t.id, next, splitContract(price(p.origin.background!.ask, asia), r), asia));
     };
     for (let i = pitchers; i < 2 && regular.length + k < slots.regular; i++) add('pitcher', false);
@@ -739,6 +740,9 @@ export function refreshForeigners(s: LeagueState, next: number, r: () => number)
     if (slots.asia && !staying.some((p) => p.origin.asiaQuota)) add(r() < 0.75 ? 'pitcher' : 'hitter', true);
   }
 }
+
+/** 1.7.0: the share of an AI club's new regular foreign signings who are old big-league names. */
+const AI_VETERAN = 0.05;
 
 // ── The whole offseason ──────────────────────────────────────────────────────────────────────────
 

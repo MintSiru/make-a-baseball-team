@@ -187,6 +187,22 @@ export function careerText(level: ForeignLevel, pitcher: boolean, age: number, g
   }
 }
 
+/** 1.7.0: an old big leaguer's career, e.g. "MLB 13시즌 312경기 98승 87패 평균자책점 4.05 · 올스타 2회". */
+export function veteranCareer(pitcher: boolean, age: number, r: () => number): string {
+  const seasons = Math.max(8, Math.min(age - 22, 9 + Math.floor(r() * 6)));
+  const stars = r() < 0.55 ? 1 + Math.floor(r() * 3) : 0;
+  const allStar = stars ? __i18n_k("league.foreign.text.b631f5b7", { n: stars }) : '';
+  if (pitcher) {
+    const games = seasons * (20 + Math.floor(r() * 12));
+    const w = Math.round(games * (0.26 + r() * 0.08)),
+      l = Math.round(games * (0.22 + r() * 0.08));
+    return __i18n_k("league.foreign.text.abd523b5", { seasons, games, w, l, era: (3.6 + r() * 0.9).toFixed(2), allStar });
+  }
+  const games = seasons * (95 + Math.floor(r() * 45));
+  const hr = Math.round(games * (0.1 + r() * 0.08));
+  return __i18n_k("league.foreign.text.ac1ac17e", { seasons, games: games.toLocaleString('ko-KR'), avg: fmt3(0.252 + r() * 0.035), hr, allStar });
+}
+
 export const LEVEL_LABELS: Record<ForeignLevel, string> = {
   mlb: 'MLB',
   mlbCup: __i18n_k("league.foreign.lEVEL_LABELS.mlbCup.31cdb591"),

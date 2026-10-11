@@ -696,6 +696,9 @@ export const FOREIGN = {
   asiaShift: -4,
   /** V0.11: a regular (not Asia-quota) signing is now and then a star, `shift` grade points better (the 70s). */
   star: { chance: 0.07, shift: 7 },
+  /** 1.7.0: now and then an old big-league name comes on the market (카라스코, 클레빈저, 노바): 34–38, a long MLB
+      career, the top price, and anyone's guess how much is left (a wide spread around a good grade, and more injuries). */
+  veteran: { chance: 0.3, shift: 4, spread: 7, injuryRisk: 0.13 },
   /** V0.11: where foreign hitters play (share), with the fielding and speed that go with it and a shift to the bat
       (a centre fielder or shortstop hits for less power). Shares follow recent KBO imports (RULES.md S72). */
   hitterPositions: [

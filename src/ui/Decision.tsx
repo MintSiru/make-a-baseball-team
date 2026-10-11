@@ -235,7 +235,7 @@ function PlayerTable({
                     : p.service.postedIn !== undefined
                       ? __i18n_k("ui.decision.playerTable.378a9635", { postedIn: p.service.postedIn })
                       : p.origin.kind === 'foreign'
-                        ? `${p.archetype} · ${p.education.pathText}`
+                        ? `${p.origin.background?.veteran ? __i18n_t("ui.decision.text.f2667506") : ''}${p.archetype} · ${p.education.pathText}`
                         : p.career.length
                           ? __i18n_k("ui.decision.playerTable.e16b5dd5")
                           : p.origin.pathway)}

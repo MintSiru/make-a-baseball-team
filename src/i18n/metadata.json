@@ -65486,5 +65486,167 @@
       }
     },
     "locations": []
+  },
+  "league.adapt.text.6b09925d": {
+    "source": "src/league/adapt.ts",
+    "line": 73,
+    "params": {},
+    "locations": []
+  },
+  "league.adapt.text.7bc4a700": {
+    "source": "src/league/adapt.ts",
+    "line": 73,
+    "params": {},
+    "locations": []
+  },
+  "league.adapt.text.0905ceb4": {
+    "source": "src/league/adapt.ts",
+    "line": 74,
+    "params": {},
+    "locations": []
+  },
+  "league.adapt.text.ff9330e9": {
+    "source": "src/league/adapt.ts",
+    "line": 74,
+    "params": {},
+    "locations": []
+  },
+  "league.adapt.text.145137d8": {
+    "source": "src/league/adapt.ts",
+    "line": 74,
+    "params": {},
+    "locations": []
+  },
+  "league.adapt.text.82e06cb6": {
+    "source": "src/league/adapt.ts",
+    "line": 74,
+    "params": {},
+    "locations": []
+  },
+  "league.adapt.text.dd5a5b48": {
+    "source": "src/league/adapt.ts",
+    "line": 79,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.adapt.text.54f581c7": {
+    "source": "src/league/adapt.ts",
+    "line": 80,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      },
+      "what": {
+        "expression": "what"
+      },
+      "why": {
+        "expression": "why"
+      }
+    },
+    "locations": []
+  },
+  "league.adapt.text.c1562fc1": {
+    "source": "src/league/adapt.ts",
+    "line": 86,
+    "params": {},
+    "locations": []
+  },
+  "league.reports.text.951a6ab7": {
+    "source": "src/league/reports.ts",
+    "line": 142,
+    "params": {},
+    "locations": []
+  },
+  "league.reports.text.9c55387f": {
+    "source": "src/league/reports.ts",
+    "line": 174,
+    "params": {},
+    "locations": []
+  },
+  "league.reports.text.468ae049": {
+    "source": "src/league/reports.ts",
+    "line": 175,
+    "params": {},
+    "locations": []
+  },
+  "league.foreign.text.b631f5b7": {
+    "source": "src/league/foreign.ts",
+    "line": 194,
+    "params": {
+      "n": {
+        "expression": "stars"
+      }
+    },
+    "locations": []
+  },
+  "league.foreign.text.abd523b5": {
+    "source": "src/league/foreign.ts",
+    "line": 199,
+    "params": {
+      "seasons": {
+        "expression": "seasons"
+      },
+      "games": {
+        "expression": "games"
+      },
+      "w": {
+        "expression": "w"
+      },
+      "l": {
+        "expression": "l"
+      },
+      "era": {
+        "expression": "(3.6 + r() * 0.9).toFixed(2)"
+      },
+      "allStar": {
+        "expression": "allStar"
+      }
+    },
+    "locations": []
+  },
+  "league.foreign.text.ac1ac17e": {
+    "source": "src/league/foreign.ts",
+    "line": 203,
+    "params": {
+      "seasons": {
+        "expression": "seasons"
+      },
+      "games": {
+        "expression": "games.toLocaleString('ko-KR')"
+      },
+      "avg": {
+        "expression": "fmt3(0.252 + r() * 0.035)"
+      },
+      "hr": {
+        "expression": "hr"
+      },
+      "allStar": {
+        "expression": "allStar"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.f2667506": {
+    "source": "src/ui/Market.tsx",
+    "line": 435,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.f2667506": {
+    "source": "src/ui/Decision.tsx",
+    "line": 238,
+    "params": {},
+    "locations": []
   }
 }

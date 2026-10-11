@@ -6753,5 +6753,22 @@
   "league.views.text.46160651": "대수비",
   "league.playtext.text.2c2b34d5": "대타 {name} ({out} 대신)",
   "league.playtext.text.6a7dbf39": "대주자 {name} ({out} 대신)",
-  "league.playtext.text.6420ae1f": "대수비 {name}, {pos} ({out} 대신)"
+  "league.playtext.text.6420ae1f": "대수비 {name}, {pos} ({out} 대신)",
+  "league.adapt.text.6b09925d": "공이 한가운데로 몰리고 변화구가 통하지 않는다",
+  "league.adapt.text.7bc4a700": "낯선 투수들의 공에 배트가 따라가지 못한다",
+  "league.adapt.text.0905ceb4": "음식과 생활이 맞지 않아 체중이 크게 줄었다",
+  "league.adapt.text.ff9330e9": "가족이 한국 생활을 힘들어해 마음이 떠났다는 말이 나온다",
+  "league.adapt.text.145137d8": "KBO의 스트라이크존에 끝내 적응하지 못하고 있다",
+  "league.adapt.text.82e06cb6": "향수병에 시달린다는 이야기가 들린다",
+  "league.adapt.text.dd5a5b48": "{club} {name}, 한국 무대 적응에 애를 먹다",
+  "league.adapt.text.54f581c7": "{club} 외국인 선수 {name} 시즌 초반부터 고전하고 있다. {what}. 구단 관계자는 \"{why}\"고 전했다. 시즌이 끝날 때까지 제 모습을 찾기 어렵다는 관측이 많다.",
+  "league.adapt.text.c1562fc1": "한국 무대 적응에 실패해 고전하고 있다",
+  "league.reports.text.951a6ab7": "적응력",
+  "league.reports.text.9c55387f": "낯선 환경에 적응하는 데 시간이 걸릴 수 있다는 평가.",
+  "league.reports.text.468ae049": "어디서든 금세 녹아드는 성격이라는 평가.",
+  "league.foreign.text.b631f5b7": " · 올스타 {n}회",
+  "league.foreign.text.abd523b5": "MLB {seasons}시즌 {games}경기 {w}승 {l}패 평균자책점 {era}{allStar}",
+  "league.foreign.text.ac1ac17e": "MLB {seasons}시즌 {games}경기 타율 {avg} {hr}홈런{allStar}",
+  "ui.market.text.f2667506": "빅리그 베테랑 · ",
+  "ui.decision.text.f2667506": "빅리그 베테랑 · "
 }

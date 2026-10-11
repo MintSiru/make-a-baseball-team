@@ -15,6 +15,7 @@ import { EXPANSION_DEFAULTS, KBO_2026 } from '../rules/kbo2026';
 import { platoonFactor } from './pitches';
 import { ENGINE, STAFF } from './tuning';
 import { formOf } from './life';
+import { adaptPenalty } from './adapt';
 import { bigGameEdge } from './traits';
 
 const STARTER_LIMIT = ENGINE.starterLimit;
@@ -492,7 +493,7 @@ export function managerLean(s: LeagueState, teamId: TeamId, base: Prefer = none)
     his composure in a postseason game (1.1.0, every club). */
 function withForm(s: LeagueState, date: string, team: TeamIn): TeamIn {
   const big = s.phase === 'postseason';
-  const today = (p: Player) => formOf(p, date) + (big ? bigGameEdge(p) : 0);
+  const today = (p: Player) => formOf(p, date) - adaptPenalty(p, s.year) + (big ? bigGameEdge(p) : 0);
   for (const b of [...team.lineup, ...(team.bench ?? [])]) {
     const f = today(s.players[b.id]!);
     if (!f) continue;

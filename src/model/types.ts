@@ -149,7 +149,7 @@ export interface PlayerOrigin {
   nationality?: string;
   asiaQuota?: boolean;
   /** Foreign players: where he played before and what he asked for when he came (US dollars). */
-  background?: { level: ForeignLevel; text: string; ask: number };
+  background?: { level: ForeignLevel; text: string; ask: number; /** 1.7.0: an old big-league name. */ veteran?: boolean };
 }
 
 export type ForeignLevel = 'mlb' | 'mlbCup' | 'aaa' | 'npb' | 'npbFarm' | 'jpIndie' | 'cpbl' | 'abl' | 'indie';
@@ -265,6 +265,8 @@ export interface Player {
   honors?: string[];
   /** Injuries so far (first team and futures). */
   injuries?: InjuryRecord[];
+  /** 1.7.0 (adapt.ts): the season he failed to adapt to the KBO, and the grade points his main tools lose in games. */
+  adaptFail?: { year: number; date: string; delta: number };
   /** Uniform number and the club it belongs to (a player who moves gets a new one). */
   number?: number;
   numberTeam?: TeamId;

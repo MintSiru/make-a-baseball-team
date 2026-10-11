@@ -6753,5 +6753,22 @@
   "league.views.text.46160651": "Def. sub",
   "league.playtext.text.2c2b34d5": "Pinch hitter {name} bats for {out}",
   "league.playtext.text.6a7dbf39": "Pinch runner {name} runs for {out}",
-  "league.playtext.text.6420ae1f": "Defensive replacement {name} takes over at {pos} for {out}"
+  "league.playtext.text.6420ae1f": "Defensive replacement {name} takes over at {pos} for {out}",
+  "league.adapt.text.6b09925d": "His pitches keep catching the middle of the plate and his breaking balls aren't fooling anyone",
+  "league.adapt.text.7bc4a700": "His bat can't catch up with pitchers he has never seen",
+  "league.adapt.text.0905ceb4": "The food and the lifestyle don't suit him, and he has lost a lot of weight",
+  "league.adapt.text.ff9330e9": "His family is struggling with life in Korea, and word is his heart isn't in it",
+  "league.adapt.text.145137d8": "He still hasn't adjusted to the KBO strike zone",
+  "league.adapt.text.82e06cb6": "We hear he is badly homesick",
+  "league.adapt.text.dd5a5b48": "{club}'s {name} struggles to adapt to Korea",
+  "league.adapt.text.54f581c7": "{club}'s foreign player {name} has struggled since early in the season. {what}. \"{why},\" a club official said. Many doubt he will find his form before the season is out.",
+  "league.adapt.text.c1562fc1": "Has failed to adapt to Korea and is struggling",
+  "league.reports.text.951a6ab7": "Adaptability",
+  "league.reports.text.9c55387f": "May take time to settle into new surroundings.",
+  "league.reports.text.468ae049": "Fits in quickly wherever he goes.",
+  "league.foreign.text.b631f5b7": " · {n, plural, one{# All-Star selection} other{# All-Star selections}}",
+  "league.foreign.text.abd523b5": "MLB: {seasons, plural, one{# season} other{# seasons}}, {games} G, {w}-{l}, {era} ERA{allStar}",
+  "league.foreign.text.ac1ac17e": "MLB: {seasons, plural, one{# season} other{# seasons}}, {games} G, {avg} AVG, {hr} HR{allStar}",
+  "ui.market.text.f2667506": "Big-league veteran · ",
+  "ui.decision.text.f2667506": "Big-league veteran · "
 }

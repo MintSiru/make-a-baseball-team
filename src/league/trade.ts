@@ -14,7 +14,7 @@ import { today } from './entry';
 import { splitContract } from './foreign';
 import { movePlayer } from './market';
 import { leaveLeague, removeFromRoster, rosterLimit } from './offseason';
-import { ageIn, currentValue, isForeign, isPitcher, keepValue, makeForeign } from './players';
+import { ageIn, currentValue, isForeign, isPitcher, keepValue, makeForeign, veteranOnMarket } from './players';
 import { currentStandings } from './season';
 import { firstTeamIds, orgPlayers, registeredIds, type DraftSlot, type LeagueState, type TradeExtras } from './state';
 import { crossing } from './rivalry';
@@ -23,6 +23,7 @@ import { TRADES, DIFFICULTY } from './tuning';
 import { moveNews } from './movenews';
 import { cashFactor, clubStrategy, pickFactor, planFactor, planGuard, planReasons, spotOf } from './strategy';
 import { capRoom, chargeForeign, slotForeigners } from './foreigncap';
+import { failedToAdapt } from './adapt';
 import { firstTeamSize, foreignSlots } from './manager';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry, toForeignPool } from './foreignpool';
 
@@ -467,6 +468,13 @@ export function foreignMarket(s: LeagueState, teamId: TeamId): Player[] {
       p.status = 'amateur';
       out.push(p);
     }
+  // 1.7.0: now and then an old big-league name.
+  const vet = veteranOnMarket(`${s.seed}|fm${s.year}-${teamId}-${used}`);
+  if (vet) {
+    const p = makeForeign(s.seed, `fm${s.year}-${teamId}-${used}-v`, s.year, { kind: vet.kind, asiaQuota: false, veteran: true });
+    p.status = 'amateur';
+    out.unshift(p);
+  }
   return [...foreignPoolPlayers(s), ...out];
 }
 
@@ -547,6 +555,7 @@ export function aiForeignChanges(s: LeagueState, date: string, r: () => number) 
         const line = s.lines[p.id];
         const inj = s.injuries[p.id];
         if (inj && inj.until > addDays(date, 42)) return true;
+        if (failedToAdapt(p, s.year)) return true;
         if (isPitcher(p)) return !!line?.pit && line.pit.outs >= 120 && (27 * line.pit.er) / line.pit.outs > TRADES.foreign.badEra;
         const b = line?.bat;
         if (!b || b.pa < 180) return false;

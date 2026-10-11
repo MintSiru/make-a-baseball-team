@@ -432,7 +432,7 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
         onPlayer={(id) => poolEntry(league, id) && onPlayer(id)}
         extra={{
           title: __i18n_k("ui.market.foreign.title.b4de910d"),
-          value: (p) => __i18n_k("ui.market.foreign.value.48bbb81b", { usd: usd(foreignPriceNow(league, p)), value: p.origin.asiaQuota ? __i18n_k("ui.market.foreign.value.55b0ea0f") : '', archetype: p.archetype, value2: poolEntry(league, p.id) ? kboLine(league, p) : (p.origin.background?.text ?? '') }),
+          value: (p) => __i18n_k("ui.market.foreign.value.48bbb81b", { usd: usd(foreignPriceNow(league, p)), value: p.origin.asiaQuota ? __i18n_k("ui.market.foreign.value.55b0ea0f") : p.origin.background?.veteran ? __i18n_t("ui.market.text.f2667506") : '', archetype: p.archetype, value2: poolEntry(league, p.id) ? kboLine(league, p) : (p.origin.background?.text ?? '') }),
           sort: (p) => foreignPriceNow(league, p),
         }}
         action={(p) => (

@@ -6753,5 +6753,22 @@
   "league.views.text.46160651": "守備固め",
   "league.playtext.text.2c2b34d5": "代打 {name}（{out}に代わって）",
   "league.playtext.text.6a7dbf39": "代走 {name}（{out}に代わって）",
-  "league.playtext.text.6420ae1f": "守備固め {name}、{pos}へ（{out}に代わって）"
+  "league.playtext.text.6420ae1f": "守備固め {name}、{pos}へ（{out}に代わって）",
+  "league.adapt.text.6b09925d": "球が真ん中に集まり、変化球も通用しない",
+  "league.adapt.text.7bc4a700": "見慣れない投手の球にバットがついていかない",
+  "league.adapt.text.0905ceb4": "食事や生活が合わず、体重が大きく落ちた",
+  "league.adapt.text.ff9330e9": "家族が韓国での生活に苦労し、気持ちが離れているとの声も出ている",
+  "league.adapt.text.145137d8": "KBOのストライクゾーンにいまだ適応できていない",
+  "league.adapt.text.82e06cb6": "ホームシックに苦しんでいるという話も聞こえてくる",
+  "league.adapt.text.dd5a5b48": "{club}の{name}、韓国の舞台への適応に苦しむ",
+  "league.adapt.text.54f581c7": "{club}の外国人選手{name}がシーズン序盤から苦戦している。{what}。球団関係者は「{why}」と伝えた。シーズン終了までに本来の姿を取り戻すのは難しいとの見方が多い。",
+  "league.adapt.text.c1562fc1": "韓国の舞台に適応できず苦戦している",
+  "league.reports.text.951a6ab7": "適応力",
+  "league.reports.text.9c55387f": "慣れない環境に適応するのに時間がかかるかもしれないとの評価。",
+  "league.reports.text.468ae049": "どこでもすぐに溶け込む性格との評価。",
+  "league.foreign.text.b631f5b7": " · オールスター{n}回",
+  "league.foreign.text.abd523b5": "MLB {seasons}シーズン {games}試合 {w}勝{l}敗 防御率{era}{allStar}",
+  "league.foreign.text.ac1ac17e": "MLB {seasons}シーズン {games}試合 打率{avg} {hr}本塁打{allStar}",
+  "ui.market.text.f2667506": "メジャーのベテラン · ",
+  "ui.decision.text.f2667506": "メジャーのベテラン · "
 }

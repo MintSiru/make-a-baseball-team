@@ -22,7 +22,9 @@ import { CITIES } from '../src/club/cities';
 import { extensionOptions, extensionProblem } from '../src/league/extensions';
 import { captainDay, captainsProblem } from '../src/league/captains';
 import { clubhouse } from '../src/league/views';
-import { ageIn } from '../src/league/players';
+import { ageIn, makeForeign, veteranOnMarket } from '../src/league/players';
+import { ADAPT, adaptabilityOf, adaptDay, adaptPenalty, failChance } from '../src/league/adapt';
+import { traitReport } from '../src/league/reports';
 
 export const loadSave = (v = '1.4.0') => parseSave(gunzipSync(readFileSync(new URL(`./fixtures/save-${v}.json.gz`, import.meta.url))).toString('utf8')).snapshot!.state as LeagueState;
 
@@ -241,5 +243,67 @@ describe('the captaincy', () => {
     const meeting = t.news!.find((n) => n.id === `captain-meeting-${date}`)!;
     expect(meeting).toBeTruthy();
     if (cap.hidden.traits!.leadership >= 60) expect(t.players[ours.find((p) => p.id !== cap.id)!.id]!.life?.form?.delta).toBeGreaterThan(0);
+  });
+});
+
+describe('foreign players adapting, and old big-league names', () => {
+  it('a hidden adaptability: easier for Asia-quota players; a few rookies fail, and pay for it in games all season', () => {
+    const regular = Array.from({ length: 400 }, (_, i) => makeForeign('adapt-test', `r${i}`, 2027, { kind: i % 2 ? 'pitcher' : 'hitter', asiaQuota: false }));
+    const asia = Array.from({ length: 400 }, (_, i) => makeForeign('adapt-test', `a${i}`, 2027, { kind: 'pitcher', asiaQuota: true }));
+    const mean = (xs: number[]) => xs.reduce((a, x) => a + x, 0) / xs.length;
+    expect(mean(asia.map(adaptabilityOf))).toBeGreaterThan(mean(regular.map(adaptabilityOf)) + 5);
+    // Two checks in his first season: about one rookie import in ten fails.
+    const fail = mean(regular.map((p) => 1 - (1 - failChance(adaptabilityOf(p))) ** 2));
+    expect(fail).toBeGreaterThan(0.04);
+    expect(fail).toBeLessThan(0.16);
+    expect(failChance(60)).toBe(0);
+
+    // A low-adaptability rookie on our club, at a check date: he may lose his touch.
+    const s = loadSave();
+    const u = s.user!;
+    const date = `${s.year}-${ADAPT.checks[0]}`;
+    let failed: ReturnType<typeof makeForeign> | null = null;
+    for (let i = 0; i < 3000 && !failed; i++) {
+      const p = makeForeign(s.seed, `adapt-${i}`, s.year, { kind: 'hitter', asiaQuota: false });
+      if (adaptabilityOf(p) > 30) continue;
+      p.teamId = u.teamId;
+      p.career = [];
+      s.players[p.id] = p;
+      s.rosters[u.teamId]!.active.push(p.id);
+      adaptDay(s, date);
+      if (p.adaptFail) failed = p;
+      else {
+        s.rosters[u.teamId]!.active.pop();
+        delete s.players[p.id];
+      }
+    }
+    expect(failed).not.toBeNull();
+    expect(adaptPenalty(failed!, s.year)).toBeGreaterThanOrEqual(ADAPT.drop[0]);
+    expect(adaptPenalty(failed!, s.year + 1)).toBe(0);
+    expect(s.news!.some((n) => n.id === `adapt-${failed!.id}` && n.mine)).toBe(true);
+    // The scouts and coaches read it like the other hidden traits.
+    expect(traitReport(s, failed!)!.reads.some((r) => r.key === 'adapt')).toBe(true);
+    // Not on other days, and never twice.
+    const before = s.news!.length;
+    adaptDay(s, `${s.year}-06-01`);
+    adaptDay(s, date);
+    expect(s.news!.length).toBe(before);
+  });
+
+  it('now and then an old big-league name: 34–38, a long MLB career, the top price', () => {
+    const keys = Array.from({ length: 400 }, (_, i) => veteranOnMarket(`k${i}`));
+    const share = keys.filter(Boolean).length / keys.length;
+    expect(share).toBeGreaterThan(0.2);
+    expect(share).toBeLessThan(0.4);
+    for (let i = 0; i < 40; i++) {
+      const p = makeForeign('vet-test', `v${i}`, 2027, { kind: i % 3 ? 'pitcher' : 'hitter', asiaQuota: false, veteran: true });
+      expect(ageIn(p, 2027)).toBeGreaterThanOrEqual(34);
+      expect(ageIn(p, 2027)).toBeLessThanOrEqual(39);
+      expect(p.origin.background!.veteran).toBe(true);
+      expect(p.origin.background!.text).toMatch(/^MLB \d+시즌/);
+      expect(p.origin.background!.ask).toBeGreaterThanOrEqual(800_000);
+    }
+    // An ordinary signing is as before.
+    expect(makeForeign('vet-test', 'x1', 2027, { kind: 'pitcher', asiaQuota: false })).toEqual(makeForeign('vet-test', 'x1', 2027, { kind: 'pitcher', asiaQuota: false, veteran: false }));
   });
 });

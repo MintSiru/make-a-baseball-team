@@ -4,6 +4,7 @@ import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { draftWatchDay } from './draftlog';
 import { captainDay } from './captains';
+import { adaptDay } from './adapt';
 import { simulateGame } from './engine/game';
 import { emptySplit, type GameOut, type PlayEvent, type Splits, type TeamBox } from './engine/types';
 import { compactBox, isUserGame, keepBox } from './boxscore';
@@ -273,6 +274,8 @@ export function playDay(s: LeagueState): boolean {
   combineDay(s, date, () => applyCombine(s.seed, s.year, draftClass(s.seed, s.year)));
   // 1.7.0: the draft class in the papers (draftlog.ts).
   draftWatchDay(s, date);
+  // 1.7.0: foreigners in their first season who fail to adapt (adapt.ts).
+  adaptDay(s, date);
   const day = s.next;
   // The first game day of a month: last month's story.
   if (day > 0 && s.schedule[day - 1]!.date.slice(5, 7) !== date.slice(5, 7)) {
