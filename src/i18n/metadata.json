@@ -63906,5 +63906,87 @@
     "line": 446,
     "params": {},
     "locations": []
+  },
+  "league.entry.text.6240b64c": {
+    "source": "src/league/entry.ts",
+    "line": 141,
+    "params": {
+      "hand": {
+        "expression": "hand"
+      }
+    },
+    "locations": []
+  },
+  "ui.lineup.text.0cd0b3db": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 258,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.fe6e550f": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 294,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.e463a7c6": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 309,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.f57e55b6": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 310,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.22ea85cb": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 321,
+    "params": {
+      "value": {
+        "expression": "i + 1"
+      }
+    },
+    "locations": []
+  },
+  "ui.lineup.text.ff7651d3": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 337,
+    "params": {
+      "value": {
+        "expression": "i + 1"
+      }
+    },
+    "locations": []
+  },
+  "ui.lineup.text.60af2f80": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 346,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.e3b5f9c3": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 354,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.44016365": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 366,
+    "params": {
+      "value": {
+        "expression": "i + 1"
+      }
+    },
+    "locations": []
+  },
+  "ui.lineup.text.19052110": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 391,
+    "params": {},
+    "locations": []
   }
 }

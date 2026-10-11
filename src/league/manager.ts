@@ -177,8 +177,11 @@ export interface LineupOptions {
   date?: string;
   /** The manager's style: a small-ball manager sets a traditional order (table-setters, then power). */
   style?: string;
-  /** The general manager's fixed spots (V0.8): index = batting order; a player who cannot play today is left to the manager. */
+  /** The general manager's fixed spots (V0.8): index = batting order; a player who cannot play today is left to the manager.
+      1.7.0: a spot without a position fixes the order only. */
   card?: (LineupSlot | null)[];
+  /** 1.7.0: players fixed at a position only; the manager picks where they bat. */
+  places?: { id: PlayerId; pos: FieldPos }[];
   /** Fixed players still get the manager's days off. */
   cardRest?: boolean;
 }
@@ -190,19 +193,32 @@ export interface LineupOptions {
  * off, the most power bats 4th), the next two 3rd and 5th, the rest by quality. A small-ball manager
  * keeps the traditional order instead: on-base and speed at the top, power in the middle.
  */
+/** A player whose spot in the order is fixed is in the lineup whatever his fit (1.7.0). */
+const MUST_PLAY = 10_000;
+
 export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none, pitchersBat = false, vs?: 'L' | 'R', opts: LineupOptions = {}): BatterIn[] {
   let hitters = ids.map((id) => s.players[id]!).filter((p) => !isPitcher(p) && available(s, p.id));
-  // The general manager's fixed spots, for the players who can play (and play once, at one position each).
+  // The general manager's fixed spots, for the players who can play (and play once, at one position each). 1.7.0: a
+  // spot may fix the order only (no position), and a player may be fixed at a position only (`places`).
   const fixed = new Map<number, LineupSlot>();
-  if (opts.card) {
+  const placed = new Map<PlayerId, FieldPos>();
+  if (opts.card || opts.places) {
     const seen = new Set<string>();
-    opts.card.forEach((slot, i) => {
-      if (!slot || i > 8 || seen.has(slot.id) || seen.has(`@${slot.pos}`) || !hitters.some((p) => p.id === slot.id)) return;
-      seen.add(slot.id).add(`@${slot.pos}`);
+    (opts.card ?? []).forEach((slot, i) => {
+      if (!slot || i > 8 || seen.has(slot.id) || (slot.pos && seen.has(`@${slot.pos}`)) || !hitters.some((p) => p.id === slot.id)) return;
+      seen.add(slot.id);
+      if (slot.pos) seen.add(`@${slot.pos}`), placed.set(slot.id, slot.pos);
       fixed.set(i, slot);
     });
+    const players = new Set([...fixed.values()].map((x) => x.id));
+    for (const x of opts.places ?? []) {
+      if (seen.has(x.id) || seen.has(`@${x.pos}`) || !hitters.some((p) => p.id === x.id) || players.size >= 9) continue;
+      seen.add(x.id).add(`@${x.pos}`);
+      players.add(x.id);
+      placed.set(x.id, x.pos);
+    }
   }
-  const fixedIds = new Set([...fixed.values()].map((x) => x.id));
+  const fixedIds = new Set([...[...fixed.values()].map((x) => x.id), ...placed.keys()]);
   if (opts.date) {
     // Days off: a resting catcher needs another catcher on the bench.
     const date = opts.date;
@@ -217,6 +233,7 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
     if (hitters.length - resting.size >= 9) {
       hitters = hitters.filter((p) => !resting.has(p.id));
       for (const [i, slot] of fixed) if (resting.has(slot.id)) fixed.delete(i);
+      for (const id of [...placed.keys()]) if (resting.has(id)) placed.delete(id);
     }
   }
   if (pitchersBat && hitters.length < 9) {
@@ -241,13 +258,15 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
     const cost = fitPenalty(p, pos, games(p));
     return hitScore(p) + DEF_WEIGHT[pos as Position] * (pub(p, 'defense') - cost - 45) - (cost >= 12 ? MISFIT : 0);
   };
-  // The manager fills the positions nobody was fixed at with the players nobody fixed.
-  const takenPos = new Set([...fixed.values()].map((x) => x.pos));
+  // The manager fills the positions nobody was fixed at with the players nobody placed; a player whose spot in the
+  // order is fixed without a position plays, at the position the manager finds best for him.
+  const takenPos = new Set(placed.values());
   const openPos = SLOTS.filter((pos) => !takenPos.has(pos));
-  const free = hitters.filter((p) => ![...fixed.values()].some((x) => x.id === p.id));
-  const pick = assign(openPos.map((pos) => free.map((p) => fieldValue(p, pos))));
+  const free = hitters.filter((p) => !placed.has(p.id));
+  const mustPlay = new Set([...fixed.values()].filter((x) => !placed.has(x.id)).map((x) => x.id));
+  const pick = assign(openPos.map((pos) => free.map((p) => fieldValue(p, pos) + (mustPlay.has(p.id) ? MUST_PLAY : 0))));
   const slots = [
-    ...[...fixed.values()].map((x) => ({ p: s.players[x.id]!, pos: x.pos })),
+    ...[...placed].map(([id, pos]) => ({ p: s.players[id]!, pos })),
     ...openPos.map((pos, i) => ({ p: free[pick[i]!], pos })).filter((x): x is { p: Player; pos: FieldPos } => !!x.p),
   ];
 
@@ -286,6 +305,7 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
     order = [lead, top[0]!, next[0]!, cleanup, fifth, ...rest];
   }
   // Fixed spots stay where the general manager put them; the manager's order fills the others.
+  for (const [i, f] of [...fixed]) if (!order.some((x) => x.p.id === f.id)) fixed.delete(i);
   if (fixed.size && order.length >= 9) {
     const rest = order.filter((x) => ![...fixed.values()].some((f) => f.id === x.p.id));
     order = Array.from({ length: 9 }, (_, i) => {
@@ -496,7 +516,7 @@ export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away:
     const lineup = lineupFor(s, me.ids, me.prefer, futures, vs, {
       date: !futures && s.phase === 'regular' ? date : undefined,
       style: me.style,
-      ...(me.card ? { card: me.card[vs ?? 'R'], cardRest: me.card.rest } : {}),
+      ...(me.card ? { card: me.card[vs ?? 'R'], places: me.card.places?.[vs ?? 'R'], cardRest: me.card.rest } : {}),
     });
     if (lineup.length < 9) return null;
     // All out: only today's starter and the starters who pitched in the last two days stay out of the bullpen.

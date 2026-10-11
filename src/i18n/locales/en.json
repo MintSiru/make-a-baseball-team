@@ -6556,5 +6556,16 @@
   "league.movenews.text.35b3f284": "Foreign Player Signing",
   "ui.market.text.e32158d5": "Sign Into Open Spot",
   "ui.market.text.03f13cab": "Open: {regular} foreign · {asia} Asian Quota (no release needed)",
-  "ui.market.text.7994e59f": "Sign"
+  "ui.market.text.7994e59f": "Sign",
+  "league.entry.text.6240b64c": "{hand}: more than nine players are locked.",
+  "ui.lineup.text.0cd0b3db": "With the position set to \"Manager's Choice\", the player bats in that spot and the manager picks where he plays.",
+  "ui.lineup.text.fe6e550f": "Manager's Choice (Order Only)",
+  "ui.lineup.text.e463a7c6": "Lock Position Only",
+  "ui.lineup.text.f57e55b6": "Set only the position and the manager decides where he bats. Players already in the batting order above can't be picked.",
+  "ui.lineup.text.22ea85cb": "Position-locked player {value}",
+  "ui.lineup.text.ff7651d3": "Position of player {value}",
+  "ui.lineup.text.60af2f80": "Remove",
+  "ui.lineup.text.e3b5f9c3": "Add Position-Only Lock",
+  "ui.lineup.text.44016365": "SP{value}",
+  "ui.lineup.text.19052110": "Locked players still get the manager's rest days"
 }

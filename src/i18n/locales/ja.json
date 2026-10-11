@@ -6556,5 +6556,16 @@
   "league.movenews.text.35b3f284": "外国人選手獲得",
   "ui.market.text.e32158d5": "空き枠に獲得",
   "ui.market.text.03f13cab": "空き：外国人{regular}枠・アジア枠{asia}枠（放出なし）",
-  "ui.market.text.7994e59f": "獲得"
+  "ui.market.text.7994e59f": "獲得",
+  "league.entry.text.6240b64c": "{hand}：固定した選手が9名を超えています。",
+  "ui.lineup.text.0cd0b3db": "守備位置を「監督に委任」にすると、その選手はその打順で出場し、守備位置は監督が決めます。",
+  "ui.lineup.text.fe6e550f": "監督に委任（打順のみ固定）",
+  "ui.lineup.text.e463a7c6": "守備位置のみ固定",
+  "ui.lineup.text.f57e55b6": "守備位置だけを決めると、打順は監督が決めます。上の打順表に入れた選手は選べません。",
+  "ui.lineup.text.22ea85cb": "守備位置のみ固定した選手 {value}",
+  "ui.lineup.text.ff7651d3": "{value}人目の選手の守備位置",
+  "ui.lineup.text.60af2f80": "外す",
+  "ui.lineup.text.e3b5f9c3": "守備位置のみ固定する選手を追加",
+  "ui.lineup.text.44016365": "{value}番手先発",
+  "ui.lineup.text.19052110": "固定した選手も監督の休養日には休ませる"
 }

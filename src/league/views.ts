@@ -419,7 +419,7 @@ export function lineupView(s: LeagueState, teamId: TeamId, vs: 'L' | 'R') {
   const { style, prefer } = managerLean(s, teamId);
   // The user's club: the general manager's fixed spots (V0.8).
   const card = cardFor(s, { teamId });
-  const withCard = card ? { card: card[vs], cardRest: card.rest } : {};
+  const withCard = card ? { card: card[vs], places: card.places?.[vs], cardRest: card.rest } : {};
   const usual = lineupFor(s, active, prefer, false, vs, { style, ...withCard });
   const next = s.phase === 'regular' ? s.schedule.slice(s.next).find((g) => g.home === teamId || g.away === teamId) : undefined;
   const nextIds = next ? new Set(lineupFor(s, active, prefer, false, vs, { style, date: next.date, ...withCard }).map((b) => b.id)) : null;
@@ -432,7 +432,7 @@ export function lineupView(s: LeagueState, teamId: TeamId, vs: 'L' | 'R') {
       id: b.id,
       order: i + 1,
       pos: b.pos,
-      fixed: card?.[vs][i]?.id === b.id,
+      fixed: card?.[vs][i]?.id === b.id || !!card?.places?.[vs].some((x) => x.id === b.id),
       name: p.name,
       number: p.numberTeam === teamId ? p.number : undefined,
       bats: p.bats,

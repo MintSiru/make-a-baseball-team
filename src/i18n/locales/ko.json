@@ -6556,5 +6556,16 @@
   "league.movenews.text.35b3f284": "외국인 영입",
   "ui.market.text.e32158d5": "빈 자리에 영입",
   "ui.market.text.03f13cab": "외국인 {regular}자리 · 아시아쿼터 {asia}자리 비어 있음 (내보낼 선수 없음)",
-  "ui.market.text.7994e59f": "영입"
+  "ui.market.text.7994e59f": "영입",
+  "league.entry.text.6240b64c": "{hand}: 고정한 선수가 9명을 넘습니다.",
+  "ui.lineup.text.0cd0b3db": "포지션을 \"감독에게 맡김\"으로 두면 그 선수는 그 타순에 나서고 수비 위치는 감독이 정합니다.",
+  "ui.lineup.text.fe6e550f": "감독에게 맡김 (타순만 고정)",
+  "ui.lineup.text.e463a7c6": "포지션만 고정",
+  "ui.lineup.text.f57e55b6": "수비 위치만 정해 두면 타순은 감독이 정합니다. 타순 표에 이미 넣은 선수는 고를 수 없습니다.",
+  "ui.lineup.text.22ea85cb": "포지션만 고정한 선수 {value}",
+  "ui.lineup.text.ff7651d3": "{value}번째 선수의 포지션",
+  "ui.lineup.text.60af2f80": "빼기",
+  "ui.lineup.text.e3b5f9c3": "포지션만 고정할 선수 추가",
+  "ui.lineup.text.44016365": "{value}선발",
+  "ui.lineup.text.19052110": "고정한 선수도 감독의 휴식일에는 쉬게 하기"
 }

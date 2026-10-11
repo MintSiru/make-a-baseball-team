@@ -180,7 +180,12 @@ export function Lineup({ league, teamId, onPlayer, onAct }: { league: LeagueStat
 const FIELD: FieldPos[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
 const FIELD_NAMES: Record<FieldPos, string> = { C: __i18n_k("ui.lineup.fIELD_NAMES.c.5f31470d"), '1B': __i18n_k("ui.lineup.fIELD_NAMES.46c6f9a9"), '2B': __i18n_k("ui.lineup.fIELD_NAMES.8011eb7c"), '3B': __i18n_k("ui.lineup.fIELD_NAMES.3b17d1b9"), SS: __i18n_k("ui.lineup.fIELD_NAMES.sS.685e1674"), LF: __i18n_k("ui.lineup.fIELD_NAMES.lF.cab5a283"), CF: __i18n_k("ui.lineup.fIELD_NAMES.cF.545b7e1e"), RF: __i18n_k("ui.lineup.fIELD_NAMES.rF.e3d9e0b4"), DH: __i18n_k("ui.lineup.fIELD_NAMES.dH.68a26d9d") };
 const emptyCard = (): LineupCard => ({ R: Array(9).fill(null), L: Array(9).fill(null), rotation: [], rest: true });
-const fixedCount = (list: (LineupSlot | null)[]) => list.filter(Boolean).length;
+const fixedCount = (list: (LineupSlot | null)[], places: unknown[] = []) => list.filter(Boolean).length + places.length;
+/** A card as saved: no `places` when nobody is fixed at a position only (1.7.0). */
+const tidy = (c: LineupCard): LineupCard => {
+  const { places, ...rest } = c;
+  return places && (places.R.length || places.L.length) ? { ...rest, places } : rest;
+};
 
 type Row = { id: string; name: string; pos: string; order: number };
 type Arm = { id: string; name: string };
@@ -192,7 +197,15 @@ function CardEditor({ league, vs, lineup, starters, onAct }: { league: LeagueSta
   // Players who have left the club since drop out of the draft (they would not play anyway).
   const ours = (id: string) => league.players[id]?.teamId === u.teamId;
   const clean = (c: LineupCard | undefined): LineupCard =>
-    c ? { R: c.R.map((x) => (x && ours(x.id) ? { ...x } : null)), L: c.L.map((x) => (x && ours(x.id) ? { ...x } : null)), rotation: c.rotation.filter(ours), rest: c.rest } : emptyCard();
+    c
+      ? tidy({
+          R: c.R.map((x) => (x && ours(x.id) ? { ...x } : null)),
+          L: c.L.map((x) => (x && ours(x.id) ? { ...x } : null)),
+          ...(c.places ? { places: { R: c.places.R.filter((x) => ours(x.id)), L: c.places.L.filter((x) => ours(x.id)) } } : {}),
+          rotation: c.rotation.filter(ours),
+          rest: c.rest,
+        })
+      : emptyCard();
   const [card, setCard] = useState<LineupCard>(() => clean(saved));
   // A saved card (or a cleared one) resets the draft.
   useEffect(() => setCard(clean(saved)), [saved]);
@@ -200,20 +213,36 @@ function CardEditor({ league, vs, lineup, starters, onAct }: { league: LeagueSta
   const hitters = active.filter((p) => !isPitcher(p) || p.twoWay).sort((a, b) => b.scouting.current - a.scouting.current);
   const arms = active.filter(isPitcher).sort((a, b) => (a.role === b.role ? b.scouting.current - a.scouting.current : a.role === 'SP' ? -1 : 1));
   const list = card[vs];
-  const problem = checkLineupCard(league, card);
-  const changed = JSON.stringify(card) !== JSON.stringify(saved ?? emptyCard());
+  // 1.7.0: players fixed at a position only, the manager choosing where they bat.
+  const places = card.places?.[vs] ?? [];
+  const problem = checkLineupCard(league, tidy(card));
+  const changed = JSON.stringify(tidy(card)) !== JSON.stringify(saved ? tidy(saved) : emptyCard());
   const setSlot = (i: number, slot: LineupSlot | null) => setCard((c) => ({ ...c, [vs]: c[vs].map((x, k) => (k === i ? slot : x)) }));
+  const setPlaces = (f: (xs: { id: string; pos: FieldPos }[]) => { id: string; pos: FieldPos }[]) =>
+    setCard((c) => {
+      const now = c.places ?? { R: [], L: [] };
+      return { ...c, places: { ...now, [vs]: f(now[vs]) } };
+    });
+  const takenPos = (except?: string) => new Set<FieldPos>([...list.filter((x) => x && x.id !== except && x.pos).map((x) => x!.pos!), ...places.filter((x) => x.id !== except).map((x) => x.pos)]);
+  const usedIds = new Set([...list.filter(Boolean).map((x) => x!.id), ...places.map((x) => x.id)]);
+  const addPlace = () => {
+    const p = hitters.find((h) => !usedIds.has(h.id));
+    if (!p) return;
+    const taken = takenPos();
+    const pos = [p.position ?? undefined, ...FIELD].find((x): x is FieldPos => !!x && !taken.has(x));
+    if (pos) setPlaces((xs) => [...xs, { id: p.id, pos }]);
+  };
   const pick = (i: number, id: string) => {
     if (!id) return setSlot(i, null);
     const p = league.players[id]!;
     // Where he plays now, or his own position, or the first one free.
-    const taken = new Set(list.filter((x, k) => x && k !== i).map((x) => x!.pos));
+    const taken = new Set([...list.filter((x, k) => x && k !== i).map((x) => x!.pos), ...places.map((x) => x.pos)]);
     const now = lineup.find((b) => b.id === id)?.pos as FieldPos | undefined;
     const pos = [now, p.position ?? undefined, 'DH' as FieldPos, ...FIELD].find((x): x is FieldPos => !!x && !taken.has(x)) ?? 'DH';
     setSlot(i, { id, pos });
   };
   const summary = saved
-    ? __i18n_k("ui.lineup.cardEditor.summary.3ec4bb25", { fixedCount: fixedCount(saved.R), fixedCount2: fixedCount(saved.L), length: saved.rotation.length, value: saved.rest ? '' : __i18n_k("ui.lineup.cardEditor.summary.e3babfd2") })
+    ? __i18n_k("ui.lineup.cardEditor.summary.3ec4bb25", { fixedCount: fixedCount(saved.R, saved.places?.R), fixedCount2: fixedCount(saved.L, saved.places?.L), length: saved.rotation.length, value: saved.rest ? '' : __i18n_k("ui.lineup.cardEditor.summary.e3babfd2") })
     : __i18n_k("ui.lineup.cardEditor.summary.07c16200");
   return (
     <div class="lineup-card">
@@ -226,6 +255,7 @@ function CardEditor({ league, vs, lineup, starters, onAct }: { league: LeagueSta
       {__i18n_display(open && (
         <div class="card-editor">
           <p class="muted small">{__i18n_t("ui.lineup.cardEditor.545c1224", { value: vs === 'R' ? __i18n_k("ui.lineup.cardEditor.5fbba1d3") : __i18n_k("ui.lineup.cardEditor.c03a5dae") })}</p>
+          <p class="muted small">{__i18n_t("ui.lineup.text.0cd0b3db")}</p>
           <table class="record-table card-table">
             <thead>
               <tr>
@@ -258,10 +288,10 @@ function CardEditor({ league, vs, lineup, starters, onAct }: { league: LeagueSta
                       <select
                         value={slot?.pos ?? ''}
                         disabled={!slot}
-                        onChange={(e) => slot && setSlot(i, { ...slot, pos: (e.currentTarget as HTMLSelectElement).value as FieldPos })}
+                        onChange={(e) => slot && setSlot(i, { ...slot, pos: ((e.currentTarget as HTMLSelectElement).value || null) as FieldPos | null })}
                         aria-label={__i18n_displayText(__i18n_k("ui.lineup.cardEditor.202ba2ba", { value: i + 1 }))}
                       >
-                        {__i18n_display(!slot && <option value="">-</option>)}
+                        <option value="">{slot ? __i18n_t("ui.lineup.text.fe6e550f") : '-'}</option>
                         {__i18n_display(FIELD.map((pos) => (
                           <option key={pos} value={pos}>
                             {__i18n_display(FIELD_NAMES[pos])}
@@ -276,16 +306,64 @@ function CardEditor({ league, vs, lineup, starters, onAct }: { league: LeagueSta
               }))}
             </tbody>
           </table>
+          <h4>{__i18n_t("ui.lineup.text.e463a7c6")}</h4>
+          <p class="muted small">{__i18n_t("ui.lineup.text.f57e55b6")}</p>
+          {places.length > 0 && (
+            <ul class="place-list">
+              {places.map((x, i) => (
+                <li key={i}>
+                  <select
+                    value={x.id}
+                    onChange={(e) => {
+                      const id = (e.currentTarget as HTMLSelectElement).value;
+                      setPlaces((xs) => xs.map((y, k) => (k === i ? { ...y, id } : y)));
+                    }}
+                    aria-label={__i18n_t("ui.lineup.text.22ea85cb", { value: i + 1 })}
+                  >
+                    {hitters
+                      .filter((p) => p.id === x.id || !usedIds.has(p.id))
+                      .map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} ({p.position ?? __i18n_k("ui.lineup.cardEditor.28090143")} {p.scouting.current})
+                        </option>
+                      ))}
+                  </select>
+                  <select
+                    value={x.pos}
+                    onChange={(e) => {
+                      const pos = (e.currentTarget as HTMLSelectElement).value as FieldPos;
+                      setPlaces((xs) => xs.map((y, k) => (k === i ? { ...y, pos } : y)));
+                    }}
+                    aria-label={__i18n_t("ui.lineup.text.ff7651d3", { value: i + 1 })}
+                  >
+                    {FIELD.filter((pos) => pos === x.pos || !takenPos(x.id).has(pos)).map((pos) => (
+                      <option key={pos} value={pos}>
+                        {FIELD_NAMES[pos]}
+                      </option>
+                    ))}
+                  </select>
+                  <button type="button" class="link" onClick={() => setPlaces((xs) => xs.filter((_, k) => k !== i))}>
+                    {__i18n_t("ui.lineup.text.60af2f80")}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
           <div class="row-actions">
-            <button type="button" onClick={() => setCard((c) => ({ ...c, [vs]: lineup.slice(0, 9).map((b) => ({ id: b.id, pos: b.pos as FieldPos })) }))}>{__i18n_t("ui.lineup.cardEditor.eeca4d4a")}</button>
-            <button type="button" onClick={() => setCard((c) => ({ ...c, [vs]: c[vs === 'R' ? 'L' : 'R'].map((x) => (x ? { ...x } : null)) }))}>{__i18n_t("ui.lineup.cardEditor.987bdbce", { value: vs === 'R' ? __i18n_k("ui.lineup.cardEditor.c03a5dae") : __i18n_k("ui.lineup.cardEditor.5fbba1d3") })}</button>
-            <button type="button" onClick={() => setCard((c) => ({ ...c, [vs]: Array(9).fill(null) }))}>{__i18n_t("ui.lineup.cardEditor.50422528")}</button>
+            <button type="button" disabled={usedIds.size >= 9 || takenPos().size >= FIELD.length} onClick={addPlace}>
+              {__i18n_t("ui.lineup.text.e3b5f9c3")}
+            </button>
+          </div>
+          <div class="row-actions">
+            <button type="button" onClick={() => setCard((c) => ({ ...c, [vs]: lineup.slice(0, 9).map((b) => ({ id: b.id, pos: b.pos as FieldPos })), places: { ...(c.places ?? { R: [], L: [] }), [vs]: [] } }))}>{__i18n_t("ui.lineup.cardEditor.eeca4d4a")}</button>
+            <button type="button" onClick={() => setCard((c) => ({ ...c, [vs]: c[vs === 'R' ? 'L' : 'R'].map((x) => (x ? { ...x } : null)), places: { ...(c.places ?? { R: [], L: [] }), [vs]: (c.places?.[vs === 'R' ? 'L' : 'R'] ?? []).map((x) => ({ ...x })) } }))}>{__i18n_t("ui.lineup.cardEditor.987bdbce", { value: vs === 'R' ? __i18n_k("ui.lineup.cardEditor.c03a5dae") : __i18n_k("ui.lineup.cardEditor.5fbba1d3") })}</button>
+            <button type="button" onClick={() => setCard((c) => ({ ...c, [vs]: Array(9).fill(null), places: { ...(c.places ?? { R: [], L: [] }), [vs]: [] } }))}>{__i18n_t("ui.lineup.cardEditor.50422528")}</button>
           </div>
           <h4>{__i18n_t("ui.lineup.cardEditor.cad4826e")}</h4>
           <div class="rotation-picks">
             {__i18n_display([0, 1, 2, 3, 4].map((i) => (
               <label key={i}>
-                {__i18n_display(i + 1)}선발
+                {__i18n_t("ui.lineup.text.44016365", { value: i + 1 })}
                 <select
                   value={card.rotation[i] ?? ''}
                   onChange={(e) => {
@@ -310,10 +388,10 @@ function CardEditor({ league, vs, lineup, starters, onAct }: { league: LeagueSta
             )))}
           </div>
           <label class="check">
-            <input type="checkbox" checked={card.rest} onChange={(e) => setCard((c) => ({ ...c, rest: (e.currentTarget as HTMLInputElement).checked }))} /> 고정한 선수도 감독의 휴식일에는 쉬게 하기
+            <input type="checkbox" checked={card.rest} onChange={(e) => setCard((c) => ({ ...c, rest: (e.currentTarget as HTMLInputElement).checked }))} /> {__i18n_t("ui.lineup.text.19052110")}
           </label>
           <div class="row-actions">
-            <button type="button" class="primary" disabled={!!problem || !changed} onClick={() => onAct({ kind: 'lineupCard', card })}>{__i18n_t("ui.lineup.cardEditor.ecee235b")}</button>
+            <button type="button" class="primary" disabled={!!problem || !changed} onClick={() => onAct({ kind: 'lineupCard', card: tidy(card) })}>{__i18n_t("ui.lineup.cardEditor.ecee235b")}</button>
             <button type="button" disabled={!saved} onClick={() => onAct({ kind: 'lineupCard', card: null })}>{__i18n_t("ui.lineup.cardEditor.e8b344d7")}</button>
             {__i18n_display(problem && <span class="notice inline">{__i18n_display(problem)}</span>)}
           </div>

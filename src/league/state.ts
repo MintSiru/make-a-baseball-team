@@ -383,7 +383,8 @@ export interface NationalEntry {
 
 export interface LineupSlot {
   id: PlayerId;
-  pos: import('./engine/types').FieldPos;
+  /** 1.7.0: null — the spot in the order is fixed, the manager picks where he plays. */
+  pos: import('./engine/types').FieldPos | null;
 }
 
 /**
@@ -394,6 +395,8 @@ export interface LineupSlot {
 export interface LineupCard {
   R: (LineupSlot | null)[];
   L: (LineupSlot | null)[];
+  /** 1.7.0: players fixed at a position only (the manager picks where they bat), against each hand. */
+  places?: { R: { id: PlayerId; pos: import('./engine/types').FieldPos }[]; L: { id: PlayerId; pos: import('./engine/types').FieldPos }[] };
   rotation: PlayerId[];
   rest: boolean;
 }
