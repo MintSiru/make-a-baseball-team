@@ -5,8 +5,10 @@ import { nationalView, retiredNumbersView } from '../league/legacy';
 import type { LeagueState } from '../league/state';
 import { awardsView, recordRoom, shortName, teamOf } from '../league/views';
 import { avg, era, ip, obp, ops, slg } from '../league/stats';
+import { draftView, draftYears } from '../league/draftlog';
+import { gradeClass } from './grades';
 
-type View = 'seasons' | 'awards' | 'records' | 'hall' | 'retired' | 'national';
+type View = 'seasons' | 'awards' | 'records' | 'hall' | 'retired' | 'national' | 'draft';
 
 export function History({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
   const [view, setView] = useState<View>('seasons');
@@ -22,6 +24,7 @@ export function History({ league, onPlayer }: { league: LeagueState; onPlayer: (
             ['hall', __i18n_k("ui.history.history.6999864f")],
             ['retired', __i18n_k("ui.history.history.adad27c2")],
             ['national', __i18n_k("ui.history.history.3243618b")],
+            ['draft', __i18n_t("ui.history.text.dddce47e")],
           ] as [View, string][]
         ).map(([id, label]) => (
           <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>
@@ -35,6 +38,7 @@ export function History({ league, onPlayer }: { league: LeagueState; onPlayer: (
       {__i18n_display(view === 'hall' && <Hall league={league} onPlayer={onPlayer} />)}
       {__i18n_display(view === 'retired' && <Retired league={league} onPlayer={onPlayer} />)}
       {__i18n_display(view === 'national' && <National league={league} onPlayer={onPlayer} />)}
+      {view === 'draft' && <Drafts league={league} onPlayer={onPlayer} />}
     </section>
   );
 }
@@ -338,6 +342,84 @@ function National({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
                 </td>
               </tr>
             )))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+/** 1.7.0: every rookie draft on record, a year at a time, and what became of each pick. */
+function Drafts({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
+  const years = draftYears(league);
+  const [year, setYear] = useState<number | null>(null);
+  const [mine, setMine] = useState(false);
+  if (!years.length) return <p class="muted">{__i18n_t("ui.history.text.ee9f3d26")}</p>;
+  const shown = year ?? years[0]!;
+  const me = league.user?.teamId;
+  const rows = draftView(league, shown).filter((x) => !mine || x.teamId === me);
+  return (
+    <>
+      <div class="row-actions">
+        <label>
+          {__i18n_t("ui.history.text.dddce47e")}{' '}
+          <select value={shown} onChange={(e) => setYear(Number((e.currentTarget as HTMLSelectElement).value))} aria-label={__i18n_t("ui.history.text.efa6b44a")}>
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {__i18n_t("ui.history.text.1490cbc9", { year: y, next: y + 1 })}
+              </option>
+            ))}
+          </select>
+        </label>
+        {me && (
+          <label class="check">
+            <input type="checkbox" checked={mine} onChange={(e) => setMine((e.currentTarget as HTMLInputElement).checked)} /> {__i18n_t("ui.history.text.8d086308")}
+          </label>
+        )}
+      </div>
+      <p class="muted small">{__i18n_t("ui.history.text.6e7bba2f")}</p>
+      <div class="table-wrap">
+        <table class="record-table">
+          <thead>
+            <tr>
+              <th class="num">{__i18n_t("ui.history.text.7f7af771")}</th>
+              <th>{__i18n_t("ui.history.text.58756112")}</th>
+              <th>{__i18n_t("ui.history.text.c37450d6")}</th>
+              <th>{__i18n_t("ui.history.text.81922a91")}</th>
+              <th>{__i18n_t("ui.history.text.16b62f5c")}</th>
+              <th class="num">{__i18n_t("ui.history.text.65932266")}</th>
+              <th>{__i18n_t("ui.history.text.d07eb370")}</th>
+              <th class="num">{__i18n_t("ui.history.text.d91dd513")}</th>
+              <th class="num">{__i18n_t("ui.history.text.e0cee61a")}</th>
+              <th class="num">WAR</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((x) => (
+              <tr key={x.id} class={x.teamId === me ? 'mine' : undefined}>
+                <td class="num">
+                  {x.overall}
+                  {x.label && <span class="muted small"> {x.label}</span>}
+                </td>
+                <td>{x.club}</td>
+                <td>
+                  {x.inLeague ? (
+                    <button type="button" class="link" onClick={() => onPlayer(x.id)}>
+                      {x.name}
+                    </button>
+                  ) : (
+                    x.name
+                  )}
+                </td>
+                <td>{x.pos}</td>
+                <td class="small">{x.from}</td>
+                <td class={`num ${gradeClass(x.grade)}`}>{x.grade ?? '-'}</td>
+                <td>{x.now}</td>
+                <td class="num">{x.seasons}</td>
+                <td class="num">{x.games}</td>
+                <td class="num">{x.war.toFixed(1)}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

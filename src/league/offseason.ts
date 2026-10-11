@@ -27,6 +27,7 @@ import { batterWar, leagueContext, pitcherWar } from './stats';
 import { maybeRetireNumber } from './numbers';
 import { balanceDepth, changePosition, learnPositions, positionMove } from './positions';
 import { driftPotential, futureBefore, winterReport } from './scouting';
+import { logPick } from './draftlog';
 import { applyDemotionCuts, settleFinances } from './finance';
 import { awardHonours, computeAwards, hallOfFameCheck } from './awards';
 import { seasonMoments } from './milestones';
@@ -472,6 +473,7 @@ export function makePick(s: LeagueState, d: DraftState, p: Player) {
   const overall = d.next + 1;
   p.origin.overallPick = overall;
   p.origin.draftGrade = p.scouting.futureValue;
+  logPick(s, p, slot.teamId, d.year, overall, slot.label);
   if (slot.via) p.origin.pickVia = slot.via;
   d.pool = d.pool.filter((id) => id !== p.id);
   const clubs = new Set(d.slots.map((x) => x.teamId)).size;

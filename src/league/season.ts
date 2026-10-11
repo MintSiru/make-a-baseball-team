@@ -2,6 +2,7 @@ import { k as __i18n_k } from '../i18n/index';
 /* The regular season, one game day at a time: registered days, games, injuries and roster moves. */
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
+import { draftWatchDay } from './draftlog';
 import { simulateGame } from './engine/game';
 import { emptySplit, type GameOut, type PlayEvent, type Splits, type TeamBox } from './engine/types';
 import { compactBox, isUserGame, keepBox } from './boxscore';
@@ -268,6 +269,8 @@ export function playDay(s: LeagueState): boolean {
   // The All-Star voting and game (1.2.0), the draft combine (1.3.0).
   allStarDay(s, date);
   combineDay(s, date, () => applyCombine(s.seed, s.year, draftClass(s.seed, s.year)));
+  // 1.7.0: the draft class in the papers (draftlog.ts).
+  draftWatchDay(s, date);
   const day = s.next;
   // The first game day of a month: last month's story.
   if (day > 0 && s.schedule[day - 1]!.date.slice(5, 7) !== date.slice(5, 7)) {

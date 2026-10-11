@@ -13,6 +13,7 @@ import { available, lineupFor } from '../src/league/manager';
 import { isPitcher } from '../src/league/players';
 import { parseSave } from '../src/save/format';
 import { futureBefore, winterReport } from '../src/league/scouting';
+import { draftView, draftWatchDay, draftYears } from '../src/league/draftlog';
 import { ageIn } from '../src/league/players';
 
 export const loadSave = (v = '1.4.0') => parseSave(gunzipSync(readFileSync(new URL(`./fixtures/save-${v}.json.gz`, import.meta.url))).toString('utf8')).snapshot!.state as LeagueState;
@@ -99,5 +100,28 @@ describe('the future grade moves once a season', () => {
     expect(story.players).toEqual(expect.arrayContaining([ours[0]!.id, ours[1]!.id]));
     expect(story.title).toContain('오름 1명');
     expect(ageIn(ours[0]!, s.year)).toBeLessThanOrEqual(27);
+  });
+});
+
+describe('the draft over the years', () => {
+  it('an older save reads its picks back from the players, with what became of them', () => {
+    const s = loadSave();
+    const years = draftYears(s);
+    expect(years.length).toBeGreaterThan(3);
+    const rows = draftView(s, years[1]!);
+    expect(rows.length).toBeGreaterThan(30);
+    expect(rows.map((r) => r.overall)).toEqual([...rows.map((r) => r.overall)].sort((a, b) => a - b));
+    expect(rows.every((r) => r.club && r.now)).toBe(true);
+  });
+
+  it('the papers write about the class three times a season', () => {
+    const s = loadSave();
+    s.phase = 'regular';
+    draftWatchDay(s, `${s.year}-08-15`);
+    const ids = (s.news ?? []).filter((n) => n.id.startsWith(`draft-watch-${s.year}-`)).map((n) => n.id);
+    expect(ids.sort()).toEqual([`draft-watch-${s.year}-race`, `draft-watch-${s.year}-spotlight`, `draft-watch-${s.year}-top10`].sort());
+    const before = s.news!.length;
+    draftWatchDay(s, `${s.year}-08-16`);
+    expect(s.news!.length).toBe(before);
   });
 });

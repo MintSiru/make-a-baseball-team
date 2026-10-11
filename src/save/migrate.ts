@@ -16,9 +16,10 @@ import { openMarket, roundDecision } from '../league/fa';
 import { DIFFICULTY } from '../league/tuning';
 import { rollPersonality, rollTraits } from '../league/traits';
 import { FOREIGN_TYPES, foreignTypeOf } from '../league/players';
+import { backfillDraftLog } from '../league/draftlog';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0', '1.2.0', '1.3.0', '1.4.0'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0', '1.2.0', '1.3.0', '1.4.0', '1.6.0'];
 
 type Loose = Record<string, unknown>;
 
@@ -112,6 +113,9 @@ export function migrateState(raw: unknown, from: string): LeagueState {
   // 1.6.0: players grow and age on the new curves (a 27–32 prime) from the next winter; a club founded before has no
   // scenario (a free founding) and stops at all the moments (stops.ts) unless the settings say otherwise.
   if (s.user) s.user.settings.scenario ??= null;
+  // 1.7.0: the draft record, read back from the players still in the league (draftlog.ts); draft-day grades and
+  // future grades once a season start with the next draft and winter.
+  backfillDraftLog(s);
   s.sim = SIM_VERSION;
   return s;
 }

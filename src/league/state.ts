@@ -571,6 +571,8 @@ export interface LeagueState {
   foreignChanges?: Record<TeamId, number>;
   /** League moves for the news feed: trades, waiver claims, foreign changes. */
   transactions?: { date: string; text: string }[];
+  /** 1.7.0 (draftlog.ts): every rookie draft pick, kept after the player leaves the league. */
+  draftLog?: import('./draftlog').DraftPick[];
   /** One-off market events already run this season ("2027-trades-06"). */
   marketDone?: string[];
   /** 1.3.0 (postseason.ts): the postseason being played, game day by game day. */
