@@ -64550,5 +64550,312 @@
     "line": 387,
     "params": {},
     "locations": []
+  },
+  "ui.format.text.83e431ea": {
+    "source": "src/ui/format.ts",
+    "line": 40,
+    "params": {
+      "value": {
+        "expression": "(dollars / 1e8).toFixed(1).replace(/\\.0$/, '')"
+      }
+    },
+    "locations": []
+  },
+  "ui.format.text.03eb0232": {
+    "source": "src/ui/format.ts",
+    "line": 46,
+    "params": {
+      "value": {
+        "expression": "(man / 1e4).toFixed(1).replace(/\\.0$/, '')"
+      }
+    },
+    "locations": []
+  },
+  "ui.format.text.0f58c9d7": {
+    "source": "src/ui/format.ts",
+    "line": 47,
+    "params": {
+      "e": {
+        "expression": "e"
+      },
+      "value": {
+        "expression": "rest.toLocaleString('ko-KR')"
+      }
+    },
+    "locations": []
+  },
+  "ui.format.text.0459d678": {
+    "source": "src/ui/format.ts",
+    "line": 47,
+    "params": {
+      "e": {
+        "expression": "e"
+      }
+    },
+    "locations": []
+  },
+  "ui.format.text.daa704a4": {
+    "source": "src/ui/format.ts",
+    "line": 47,
+    "params": {
+      "value": {
+        "expression": "man.toLocaleString('ko-KR')"
+      }
+    },
+    "locations": []
+  },
+  "ui.displaySettings.text.e4bf6796": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 148,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.21ba070b": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 152,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.ac692280": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 153,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.1e8a41f7": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 154,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.6de37e5a": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 162,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.1c0fc803": {
+    "source": "src/club/cities.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.bfcc2516": {
+    "source": "src/club/cities.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.481cebaf": {
+    "source": "src/club/cities.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.4d947560": {
+    "source": "src/club/cities.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.87d1086a": {
+    "source": "src/club/cities.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.894682d9": {
+    "source": "src/club/cities.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.747482fc": {
+    "source": "src/club/cities.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.699a2777": {
+    "source": "src/club/cities.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.f560dc60": {
+    "source": "src/club/cities.ts",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.d8058abf": {
+    "source": "src/club/cities.ts",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.570829c0": {
+    "source": "src/club/cities.ts",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.435a8215": {
+    "source": "src/club/cities.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.a1097f3c": {
+    "source": "src/club/cities.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.00bce46f": {
+    "source": "src/club/cities.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.06c4d0ac": {
+    "source": "src/club/cities.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.210a875a": {
+    "source": "src/club/cities.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.2fbe3086": {
+    "source": "src/club/cities.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.b15e94a7": {
+    "source": "src/club/cities.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.3d5399d0": {
+    "source": "src/club/cities.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.25f70fc3": {
+    "source": "src/club/cities.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.728d9f63": {
+    "source": "src/club/cities.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.8ec95401": {
+    "source": "src/club/cities.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.88946298": {
+    "source": "src/club/cities.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.c446c4c9": {
+    "source": "src/club/cities.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.d4b3a794": {
+    "source": "src/club/cities.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.f2e9a2ee": {
+    "source": "src/club/cities.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.5ba7ff76": {
+    "source": "src/club/cities.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.99e45246": {
+    "source": "src/club/cities.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.52bc45da": {
+    "source": "src/club/cities.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.92199e8b": {
+    "source": "src/club/cities.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.1bd9ee29": {
+    "source": "src/club/cities.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.e6011691": {
+    "source": "src/club/cities.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.58239ebd": {
+    "source": "src/club/cities.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.a88c175a": {
+    "source": "src/club/cities.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "ui.format.text.cf82e02a": {
+    "source": "src/ui/format.ts",
+    "line": 40,
+    "params": {
+      "value": {
+        "expression": "Math.round(dollars).toLocaleString('ko-KR')"
+      }
+    },
+    "locations": []
+  },
+  "ui.format.text.2440e83a": {
+    "source": "src/ui/format.ts",
+    "line": 45,
+    "params": {
+      "value": {
+        "expression": "Math.round(yen).toLocaleString('ko-KR')"
+      }
+    },
+    "locations": []
   }
 }

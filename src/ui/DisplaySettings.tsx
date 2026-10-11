@@ -145,6 +145,22 @@ export function DisplayOptions() {
       </label>
       <p class="muted small">{__i18n_t("ui.displaySettings.displayOptions.97c4de27")}</p>
 
+      <h3>{__i18n_t("ui.displaySettings.text.e4bf6796")}</h3>
+      <div class="segmented" role="group" aria-label={__i18n_t("ui.displaySettings.text.e4bf6796")}>
+        {(
+          [
+            ['krw', __i18n_t("ui.displaySettings.text.21ba070b")],
+            ['usd', __i18n_t("ui.displaySettings.text.ac692280")],
+            ['jpy', __i18n_t("ui.displaySettings.text.1e8a41f7")],
+          ] as const
+        ).map(([c, label]) => (
+          <button key={c} type="button" aria-pressed={p.currency === c} onClick={() => set({ ...p, currency: c })}>
+            {label}
+          </button>
+        ))}
+      </div>
+      <p class="muted small">{__i18n_t("ui.displaySettings.text.6de37e5a")}</p>
+
       <h3>{__i18n_t("ui.displaySettings.text.93bec45d")}</h3>
       <div class="segmented" role="group" aria-label={__i18n_t("ui.displaySettings.text.93bec45d")}>
         <button type="button" aria-pressed={p.futureView === 'season'} onClick={() => set({ ...p, futureView: 'season' })}>

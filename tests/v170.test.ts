@@ -2,7 +2,7 @@
    tryout's ages in v160b) and the new features. */
 import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { apply } from '../src/league/actions';
 import { isForeign } from '../src/league/players';
 import { removeFromRoster } from '../src/league/offseason';
@@ -17,6 +17,8 @@ import { draftView, draftWatchDay, draftYears } from '../src/league/draftlog';
 import { developPlayer, GRADE_KEYS } from '../src/league/offseason';
 import { rng } from '../src/draftroom';
 import { pitchFeed } from '../src/league/pitchfeed';
+import { money, moneyShort } from '../src/ui/format';
+import { CITIES } from '../src/club/cities';
 import { ageIn } from '../src/league/players';
 
 export const loadSave = (v = '1.4.0') => parseSave(gunzipSync(readFileSync(new URL(`./fixtures/save-${v}.json.gz`, import.meta.url))).toString('utf8')).snapshot!.state as LeagueState;
@@ -163,5 +165,26 @@ describe('the relay a pitch at a time', () => {
       expect(result.bases).toEqual(e.bases);
       expect(result.score).toEqual(e.score);
     }
+  });
+});
+
+describe('amounts in won, dollars or yen; more homes', () => {
+  it('converts at the fixed rates, won by default', () => {
+    const prefs = (currency: string) => vi.stubGlobal('localStorage', { getItem: () => JSON.stringify({ currency }) });
+    expect(money(17500)).toBe('1억 7,500만');
+    prefs('usd');
+    expect(money(14000)).toBe('10만 달러');
+    expect(money(14)).toBe('100달러');
+    prefs('jpy');
+    expect(money(10000)).toBe('1,075만 엔');
+    expect(moneyShort(200000)).toBe('2.2억 엔');
+    prefs('krw');
+    expect(money(10000)).toBe('1억');
+    vi.unstubAllGlobals();
+  });
+
+  it('has twenty homes to choose from', () => {
+    expect(CITIES.length).toBe(20);
+    expect(new Set(CITIES.map((c) => c.id)).size).toBe(20);
   });
 });

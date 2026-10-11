@@ -27,6 +27,8 @@ export interface DisplayPrefs {
   hideScores: boolean;
   /** 1.7.0: 'draft' shows a pro's future grade as it was on draft day only (the rest is the GM's own guess). */
   futureView: 'season' | 'draft';
+  /** 1.7.0: amounts in won (the game's own), or converted to dollars or yen at a fixed rate. */
+  currency: 'krw' | 'usd' | 'jpy';
 }
 
 export type Theme = 'system' | 'light' | 'dark';
@@ -44,7 +46,7 @@ export const PRESETS: Record<Exclude<BarPreset, 'custom'>, { label: string; note
   mono: { label: __i18n_k("ui.display.mono.label.d1e6f293"), note: __i18n_k("ui.display.mono.note.c6e34ea1"), colors: ['var(--rule)', 'var(--ink-2)', 'var(--ink-2)', 'var(--ink)', 'var(--ink)'] },
 };
 
-export const DEFAULT_PREFS: DisplayPrefs = { bars: 'club', custom: [...PRESETS.scale.colors!] as Colors, tables: false, density: 'compact', theme: 'system', scale: 'normal', hideScores: false, futureView: 'season' };
+export const DEFAULT_PREFS: DisplayPrefs = { bars: 'club', custom: [...PRESETS.scale.colors!] as Colors, tables: false, density: 'compact', theme: 'system', scale: 'normal', hideScores: false, futureView: 'season', currency: 'krw' };
 
 const HEX = /^#[0-9a-f]{6}$/i;
 
@@ -60,7 +62,7 @@ export function parseDisplay(raw: string | null): DisplayPrefs {
   const custom = DEFAULT_PREFS.custom.map((d, i) => (Array.isArray(v.custom) && typeof v.custom[i] === 'string' && HEX.test(v.custom[i]) ? v.custom[i] : d)) as Colors;
   const theme: Theme = v.theme === 'light' || v.theme === 'dark' ? v.theme : 'system';
   const scale: Scale = v.scale === 'small' || v.scale === 'large' ? v.scale : 'normal';
-  return { bars, custom, tables: v.tables === true, density: v.density === 'comfortable' ? 'comfortable' : 'compact', theme, scale, hideScores: v.hideScores === true, futureView: v.futureView === 'draft' ? 'draft' : 'season' };
+  return { bars, custom, tables: v.tables === true, density: v.density === 'comfortable' ? 'comfortable' : 'compact', theme, scale, hideScores: v.hideScores === true, futureView: v.futureView === 'draft' ? 'draft' : 'season', currency: v.currency === 'usd' || v.currency === 'jpy' ? v.currency : 'krw' };
 }
 
 /** The five tier colours to set, or null for the stylesheet's own. */
