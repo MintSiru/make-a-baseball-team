@@ -27,6 +27,8 @@ import { ADAPT, adaptabilityOf, adaptDay, adaptPenalty, failChance } from '../sr
 import { traitReport } from '../src/league/reports';
 import { FREAK, FREAK_KEYS, freakDay } from '../src/league/freak';
 import { firstTeamIds } from '../src/league/state';
+import { backfillMlb, leaveMlb, mlbSeason, mlbView, mlbWinter } from '../src/league/mlb';
+import { post } from '../src/league/posting';
 
 export const loadSave = (v = '1.4.0') => parseSave(gunzipSync(readFileSync(new URL(`./fixtures/save-${v}.json.gz`, import.meta.url))).toString('utf8')).snapshot!.state as LeagueState;
 
@@ -339,5 +341,69 @@ describe('freak injuries', () => {
       expect(n.mine).toBe(p.teamId === u.teamId);
     }
     expect(FREAK_KEYS).toEqual(expect.arrayContaining(['car', 'stairs', 'kid', 'sink', 'hangover']));
+  });
+});
+
+describe('our players in the major leagues', () => {
+  it('a posted player who signs joins a club; each winter adds his season there, and the list shows him', () => {
+    const s = loadSave();
+    const next = s.year + 1;
+    const domestic = Object.values(s.players)
+      .filter((p) => p.status === 'active' && p.teamId && !isForeign(p) && p.career.some((c) => !c.level))
+      .sort((a, b) => b.scouting.current - a.scouting.current);
+    let star = null as (typeof domestic)[number] | null;
+    for (const p of domestic.slice(0, 40)) {
+      if (post(s, p.id, next).deal) {
+        star = p;
+        break;
+      }
+    }
+    expect(star).not.toBeNull();
+    const m = star!.mlb!;
+    expect(m.posted).toBe(next - 1);
+    expect(m.seasons).toHaveLength(0);
+    expect(star!.status).toBe('overseas');
+    // Two winters abroad: two seasons, the same each time it is asked.
+    mlbWinter(s, next);
+    mlbWinter(s, next);
+    mlbWinter(s, next + 1);
+    expect(m.seasons.map((x) => x.year)).toEqual([next, next + 1]);
+    expect(mlbSeason(star!, next, m.club)).toEqual(m.seasons[0]);
+    const line = m.seasons[0]!;
+    if (line.bat) expect(line.bat.avg).toBeGreaterThan(0.1);
+    else expect(line.pit!.era).toBeGreaterThan(1);
+    const row = mlbView(s).find((x) => x.id === star!.id)!;
+    expect(row.totals.seasons).toBe(2);
+    expect(row.status).toContain(m.seasons.at(-1)!.club);
+    // He comes home: no more seasons.
+    leaveMlb(star!, next + 1, 'back');
+    mlbWinter(s, next + 2);
+    expect(m.seasons).toHaveLength(2);
+  });
+
+  it('a big-league regular plays in the majors, a fringe player mostly in triple-A', () => {
+    const s = loadSave();
+    const all = Object.values(s.players).filter((p) => p.status === 'active' && !isForeign(p) && !isPitcher(p));
+    const best = [...all].sort((a, b) => b.scouting.current - a.scouting.current)[0]!;
+    const weak = [...all].sort((a, b) => a.scouting.current - b.scouting.current)[0]!;
+    const good = mlbSeason(best, s.year, 'X');
+    const poor = mlbSeason(weak, s.year, 'X');
+    expect(good.aaa).toBeUndefined();
+    expect(poor.aaa).toBe(true);
+    expect(good.bat!.pa).toBeGreaterThan(poor.bat!.pa);
+  });
+
+  it('saves from before 1.7.0 get the deal and seasons of players already abroad', () => {
+    const s = loadSave();
+    const p = Object.values(s.players).find((x) => x.status === 'active' && x.teamId && !isForeign(x) && x.career.some((c) => !c.level))!;
+    const posted = s.year - 3;
+    p.service.postedIn = posted;
+    p.career = p.career.filter((c) => c.year <= posted);
+    delete p.mlb;
+    p.status = 'overseas';
+    p.teamId = null;
+    backfillMlb(s, () => 2);
+    expect(p.mlb!.years).toBe(2);
+    expect(p.mlb!.seasons.map((x) => x.year)).toEqual([posted + 1, posted + 2]);
   });
 });

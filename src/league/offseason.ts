@@ -35,6 +35,7 @@ import { addNews, seasonNews } from './news';
 import { seasonFans } from './fans';
 import { aiStaffWinter } from './staff';
 import { runAiPosting } from './posting';
+import { mlbWinter } from './mlb';
 import { FUTURES, GROWTH, OFFSEASON as O, STAFF } from './tuning';
 import { aiTakesKnown, expireForeignPool, foreignPoolAsk, leavePool, poolChoice, toForeignPool } from './foreignpool';
 import { draftReturnees } from './returnees';
@@ -842,6 +843,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         break;
       }
       case 'posting':
+        // 1.7.0: last season's line for our players in the majors (mlb.ts), then this winter's postings.
+        mlbWinter(s, year);
         runAiPosting(s, next);
         break;
       case 'freeAgency': {

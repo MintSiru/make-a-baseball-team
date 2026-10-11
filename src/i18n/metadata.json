@@ -65934,5 +65934,411 @@
     "line": 110,
     "params": {},
     "locations": []
+  },
+  "league.mlb.text.433506b7": {
+    "source": "src/league/mlb.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.4d983536": {
+    "source": "src/league/mlb.ts",
+    "line": 25,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.a8131387": {
+    "source": "src/league/mlb.ts",
+    "line": 26,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.0edb4398": {
+    "source": "src/league/mlb.ts",
+    "line": 27,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.994db9aa": {
+    "source": "src/league/mlb.ts",
+    "line": 28,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.4ad6ee9b": {
+    "source": "src/league/mlb.ts",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.682478b5": {
+    "source": "src/league/mlb.ts",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.2c88953f": {
+    "source": "src/league/mlb.ts",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.2117c5f5": {
+    "source": "src/league/mlb.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.936b0de1": {
+    "source": "src/league/mlb.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.6b492fd8": {
+    "source": "src/league/mlb.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.b383d0bc": {
+    "source": "src/league/mlb.ts",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.22920928": {
+    "source": "src/league/mlb.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.be822f8d": {
+    "source": "src/league/mlb.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.64aaffe1": {
+    "source": "src/league/mlb.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.ae702200": {
+    "source": "src/league/mlb.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.d5fcffbe": {
+    "source": "src/league/mlb.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.260bbc7a": {
+    "source": "src/league/mlb.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.9ba9e328": {
+    "source": "src/league/mlb.ts",
+    "line": 42,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.7fd58e09": {
+    "source": "src/league/mlb.ts",
+    "line": 43,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.b2a2812a": {
+    "source": "src/league/mlb.ts",
+    "line": 161,
+    "params": {
+      "club": {
+        "expression": "s.teams.find((t) => t.id === p.teamId)?.short ?? ''"
+      }
+    },
+    "locations": []
+  },
+  "league.mlb.text.27473dab": {
+    "source": "src/league/mlb.ts",
+    "line": 161,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.5b170d3c": {
+    "source": "src/league/mlb.ts",
+    "line": 161,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.61a94fdb": {
+    "source": "src/league/mlb.ts",
+    "line": 161,
+    "params": {
+      "club": {
+        "expression": "m.seasons.at(-1)?.club ?? m.club"
+      }
+    },
+    "locations": []
+  },
+  "ui.mlb.text.6b5935cf": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 19,
+    "params": {
+      "year": {
+        "expression": "m.posted"
+      },
+      "club": {
+        "expression": "m.club"
+      },
+      "years": {
+        "expression": "m.years"
+      },
+      "money": {
+        "expression": "usd(m.total)"
+      }
+    },
+    "locations": []
+  },
+  "ui.mlb.text.680cd28c": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 21,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.d5bc99dd": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 28,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.58756112": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.e0cee61a": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.a88271df": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.3b1908b7": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.36260e2c": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.a3fa83d2": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.639a1f2f": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.3e23c769": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.0a3d002c": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 45,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.1eb19e0a": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 46,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.bb6ef1b2": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.7e66b88d": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.9162d3a3": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.fed1c588": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.91e54831": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.43eda7fb": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 62,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.6ceb560a": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 94,
+    "params": {
+      "n": {
+        "expression": "t.seasons"
+      }
+    },
+    "locations": []
+  },
+  "ui.mlb.text.e7427ef1": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 125,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.f09594e8": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 134,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.78b95a83": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 137,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.6734925e": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 142,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.c37450d6": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 143,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.e947ec49": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 144,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.b4116369": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 145,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.001e4be2": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 146,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.b3000412": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 147,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.bf2ff44a": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 148,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.a30a1b76": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 162,
+    "params": {
+      "club": {
+        "expression": "x.club"
+      },
+      "years": {
+        "expression": "x.years"
+      },
+      "money": {
+        "expression": "usd(x.total)"
+      }
+    },
+    "locations": []
+  },
+  "ui.mlb.text.5b8f8b09": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 167,
+    "params": {
+      "w": {
+        "expression": "x.totals.pit.w"
+      },
+      "l": {
+        "expression": "x.totals.pit.l"
+      },
+      "sv": {
+        "expression": "x.totals.pit.sv"
+      },
+      "era": {
+        "expression": "x.totals.pit.era.toFixed(2)"
+      }
+    },
+    "locations": []
+  },
+  "ui.mlb.text.16111fb7": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 169,
+    "params": {
+      "avg": {
+        "expression": "f3(x.totals.bat.avg)"
+      },
+      "hr": {
+        "expression": "x.totals.bat.hr"
+      },
+      "rbi": {
+        "expression": "x.totals.bat.rbi"
+      }
+    },
+    "locations": []
+  },
+  "ui.history.text.35362dc0": {
+    "source": "src/ui/History.tsx",
+    "line": 29,
+    "params": {},
+    "locations": []
   }
 }

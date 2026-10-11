@@ -275,8 +275,32 @@ export interface Player {
   /** A draftee who refused to sign and went abroad (V0.7.3): when, and the draft he comes back through
       after the KBO's two-year wait (null: he stays abroad). */
   abroad?: { left: number; draft: number | null };
+  /** 1.7.0 (mlb.ts): a posted player's major league career — the deal, the club and each season abroad. */
+  mlb?: MlbCareer;
   /** Life off the field (V0.10, the user's players only): family, form, what fans think, what happened. */
   life?: PlayerLife;
+}
+
+export interface MlbCareer {
+  /** The winter he was posted, his guaranteed deal (years, US dollars) and his club. */
+  posted: number;
+  years: number;
+  total: number;
+  club: string;
+  seasons: MlbSeason[];
+  /** The winter he came home to the KBO, or ended his career abroad. */
+  back?: number;
+  ended?: number;
+}
+
+/** One season abroad: big-league games (the rest of it in triple-A when `aaa`). */
+export interface MlbSeason {
+  year: number;
+  club: string;
+  aaa?: boolean;
+  bat?: { g: number; pa: number; avg: number; obp: number; slg: number; hr: number; rbi: number; sb: number };
+  pit?: { g: number; gs: number; ip: number; w: number; l: number; sv: number; era: number; k: number };
+  war: number;
 }
 
 /** V0.10. Kept only for the user's club's players, so the shared simulation never reads it for others. */

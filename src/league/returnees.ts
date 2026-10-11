@@ -17,6 +17,7 @@ import { developPlayer, leaveLeague, removeFromRoster, rosterLimit, sign } from 
 import { ageIn, currentValue, isForeign, keepValue } from './players';
 import { registeredIds, type LeagueState } from './state';
 import { moveNews } from './movenews';
+import { leaveMlb, mlbWinter } from './mlb';
 
 const R = {
   /** Chance a posted player comes home in a winter after his deal: base, per extra year, from 33. */
@@ -111,12 +112,16 @@ export function homecomings(s: LeagueState, next: number): ReturnOffer[] {
   const u = s.user;
   if (!u) return [];
   const mine: ReturnOffer[] = [];
+  // 1.7.0: their season in the majors first (mlb.ts).
+  mlbWinter(s, year);
   for (const p of postedAbroad(s)) {
     if (ageIn(p, next) > R.maxAge) {
+      leaveMlb(p, year, 'ended');
       leaveLeague(s, p, 'retired');
       continue;
     }
     if (!comesHome(s, p, year)) continue;
+    leaveMlb(p, year, 'back');
     const before = currentValue(p);
     ageAbroad(s, p, p.service.postedIn! + 1, year);
     const o = { id: p.id, ...offerFor(p, next, before), abroad: year - p.service.postedIn! };

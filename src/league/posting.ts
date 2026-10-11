@@ -20,6 +20,7 @@ import { milestone, unlock } from './milestones';
 import { POSTING } from './tuning';
 import { postingAlert } from './alerts';
 import { moveNews } from './movenews';
+import { joinMlb } from './mlb';
 
 const P = KBO_2026.posting;
 
@@ -103,6 +104,7 @@ export function post(s: LeagueState, id: PlayerId, next: number): PostingResult 
     u.ledger.push({ year: next - 1, label: __i18n_k("league.posting.post.label.250352bd", { name: p.name }), amount: won });
   }
   leaveLeague(s, p, 'overseas');
+  joinMlb(p, next - 1, market);
   return { id, teamId, deal: { ...market, fee } };
 }
 

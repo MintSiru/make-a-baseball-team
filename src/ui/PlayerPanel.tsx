@@ -20,6 +20,7 @@ import { usd } from '../league/foreign';
 import { handedness, militaryLabel, money, toolKeysFor } from './format';
 import { GradeBar, shownFuture, showsFutureDetail } from './grades';
 import { GradeChart } from './GradeChart';
+import { MlbTable } from './Mlb';
 import { serviceNote } from '../league/military';
 import type { TraitReport } from '../league/reports';
 import { kboSeasons } from '../league/foreigncap';
@@ -71,7 +72,7 @@ export function TraitReportBox({ report }: { report: TraitReport }) {
    with the records split again into the regular season, the postseason, career highs and left/right. The part
    last opened stays open for the next player. */
 type Part = 'ability' | 'records' | 'report' | 'profile' | 'injuries';
-type RecordView = 'seasons' | 'post' | 'highs' | 'splits';
+type RecordView = 'seasons' | 'post' | 'highs' | 'splits' | 'mlb';
 const PARTS: { key: Part; label: string }[] = [
   { key: 'ability', label: __i18n_k("ui.playerPanel.pARTS.label.9e9117d0") },
   { key: 'records', label: __i18n_k("ui.playerPanel.pARTS.label.d84b6f4b") },
@@ -84,6 +85,7 @@ const RECORD_VIEWS: { key: RecordView; label: string }[] = [
   { key: 'post', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.a0f7a345") },
   { key: 'highs', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.dc5975f8") },
   { key: 'splits', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.1df210e9") },
+  { key: 'mlb', label: 'MLB' },
 ];
 let lastPart: Part = 'ability';
 let lastRecords: RecordView = 'seasons';
@@ -430,14 +432,15 @@ export function PlayerPanel({
         {__i18n_display(shown === 'records' && (
           <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.d84b6f4b")}>
             <div class="segmented record-views" role="group" aria-label={__i18n_t("ui.playerPanel.playerPanel.493c08af")}>
-              {__i18n_display(RECORD_VIEWS.map((x) => (
+              {__i18n_display(RECORD_VIEWS.filter((x) => x.key !== 'mlb' || p.mlb).map((x) => (
                 <button key={x.key} type="button" aria-pressed={records === x.key} onClick={() => setRecords(x.key)}>
                   {__i18n_display(x.label)}
                   {__i18n_display(x.key === 'post' && post.length > 0 && <span class="count">{__i18n_display(post.length)}</span>)}
                 </button>
               )))}
             </div>
-            {__i18n_display(records === 'seasons' && (
+            {records === 'mlb' && p.mlb && <MlbTable p={p} />}
+            {__i18n_display((records === 'seasons' || (records === 'mlb' && !p.mlb)) && (
               <>
                 <SeasonTable league={league} card={card} pitcher={pitcher} />
                 <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.7e2cbab5")}</p>

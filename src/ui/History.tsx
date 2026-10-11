@@ -7,8 +7,9 @@ import { awardsView, recordRoom, shortName, teamOf } from '../league/views';
 import { avg, era, ip, obp, ops, slg } from '../league/stats';
 import { draftView, draftYears } from '../league/draftlog';
 import { gradeClass } from './grades';
+import { MlbList } from './Mlb';
 
-type View = 'seasons' | 'awards' | 'records' | 'hall' | 'retired' | 'national' | 'draft';
+type View = 'seasons' | 'awards' | 'records' | 'hall' | 'retired' | 'national' | 'draft' | 'mlb';
 
 export function History({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
   const [view, setView] = useState<View>('seasons');
@@ -25,6 +26,7 @@ export function History({ league, onPlayer }: { league: LeagueState; onPlayer: (
             ['retired', __i18n_k("ui.history.history.adad27c2")],
             ['national', __i18n_k("ui.history.history.3243618b")],
             ['draft', __i18n_t("ui.history.text.dddce47e")],
+            ['mlb', __i18n_t("ui.history.text.35362dc0")],
           ] as [View, string][]
         ).map(([id, label]) => (
           <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>
@@ -39,6 +41,7 @@ export function History({ league, onPlayer }: { league: LeagueState; onPlayer: (
       {__i18n_display(view === 'retired' && <Retired league={league} onPlayer={onPlayer} />)}
       {__i18n_display(view === 'national' && <National league={league} onPlayer={onPlayer} />)}
       {view === 'draft' && <Drafts league={league} onPlayer={onPlayer} />}
+      {view === 'mlb' && <MlbList league={league} onPlayer={onPlayer} />}
     </section>
   );
 }

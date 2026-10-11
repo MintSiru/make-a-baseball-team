@@ -10,7 +10,7 @@ import { FOREIGN } from './tuning';
 import { rollPersonality, rollTraits } from './traits';
 
 export const ageIn = (p: Player, year: number) => ageOn(p.birthday, `${year}-04-01`);
-export const isPitcher = (p: Player) => isPitcherRole(p.role);
+export const isPitcher = (p: Pick<Player, 'role'>) => isPitcherRole(p.role);
 
 /** Hitting value from public tools (defense handled by position). */
 export const batValue = (t: Tools) => 0.3 * (t.contact ?? 30) + 0.3 * (t.power ?? 30) + 0.22 * (t.eye ?? 30) + 0.1 * (t.speed ?? 30) + 0.08 * (t.defense ?? 30);
