@@ -6866,5 +6866,21 @@
   "ui.manual.text.951a6ab7": "適応力",
   "ui.manual.text.ac35cade": "外国人選手の隠れた能力値。低いと1年目に韓国の舞台に適応できず、そのシーズンずっと大きく調子を落とすことがあります。アジア枠と日本でプレーした選手は適応しやすく、コーチ・スカウトの評価から推し量れます。",
   "ui.manual.text.35362dc0": "MLB挑戦",
-  "ui.manual.text.0710e589": "ポスティングでメジャーリーグの球団と契約した選手には、毎年メジャーリーグの成績が積み上がります（歴代 → MLB挑戦、選手画面の記録 → MLB）。契約が終わると戻ってくることもあります。"
+  "ui.manual.text.0710e589": "ポスティングでメジャーリーグの球団と契約した選手には、毎年メジャーリーグの成績が積み上がります（歴代 → MLB挑戦、選手画面の記録 → MLB）。契約が終わると戻ってくることもあります。",
+  "ui.boxScore.text.6d7d5b05": "打球: {text}",
+  "ui.boxScore.text.c72996aa": "ボール",
+  "ui.boxScore.text.4a03be0a": "ストライク",
+  "ui.boxScore.text.6145417a": "空振り",
+  "ui.boxScore.text.1bd463ff": "ファウル",
+  "ui.boxScore.text.74b03362": "打球",
+  "ui.boxScore.text.58ef970a": "死球",
+  "ui.boxScore.text.442c081e": "投球位置: {value}",
+  "league.stops.text.f08a5ece": "ポストシーズンの自チームの試合前（リアルタイム観戦またはスキップ）",
+  "ui.app.text.06ff4ff1": "今日は{round}第{game}戦",
+  "ui.app.text.ada6554e": "{opp}戦 · {where}",
+  "ui.app.text.13a46f96": "ホーム",
+  "ui.app.text.ef6b033f": "ビジター",
+  "ui.app.text.1fe38266": "リアルタイム観戦",
+  "ui.app.text.1a3c3146": "結果だけ見る",
+  "ui.app.text.7dae039f": "最後まで飛ばす"
 }

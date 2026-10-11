@@ -36,11 +36,11 @@ export type Action =
   /** `stops` (1.6.0): end the run early at the moments the user asked to stop for (stops.ts). */
   | { kind: 'days'; days: number; stops?: boolean }
   | { kind: 'regularEnd'; stops?: boolean }
-  | { kind: 'postseason' }
+  | { kind: 'postseason'; stops?: boolean }
   /** 1.3.0: the postseason step by step — draw the bracket, the next game day, the rest of the round. */
   | { kind: 'postseasonStart' }
   | { kind: 'postseasonDay' }
-  | { kind: 'postseasonRound' }
+  | { kind: 'postseasonRound'; stops?: boolean }
   /** 1.3.0: our plan for the next postseason game (starter null: the manager's choice). */
   | { kind: 'postPlan'; starter?: PlayerId | null; allOut?: boolean }
   /** 1.3.0: a prospect in for a private workout before the draft. */
@@ -143,7 +143,7 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       foundClub(s, action.settings);
       break;
     case 'postseason':
-      if (regularOver(s) || (s.phase === 'postseason' && s.bracket && !s.bracket.done)) playPostseason(s);
+      if (regularOver(s) || (s.phase === 'postseason' && s.bracket && !s.bracket.done)) playPostseason(s, !!action.stops);
       break;
     case 'postseasonStart':
       if (regularOver(s)) startPostseason(s);
@@ -152,7 +152,7 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       if (s.phase === 'postseason') postseasonDay(s);
       break;
     case 'postseasonRound':
-      if (s.phase === 'postseason') postseasonRound(s);
+      if (s.phase === 'postseason') postseasonRound(s, !!action.stops);
       break;
     case 'postPlan': {
       const u = s.user;

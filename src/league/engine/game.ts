@@ -45,6 +45,8 @@ interface Side {
   lines: BattingLine[];
   bench: BenchIn[];
   subs: { ph: number; pr: number; def: number };
+  /** 1.7.1: slots a substitute has taken (a late glove goes in only for a starter). */
+  subbed: Set<number>;
   apps: Appearance[];
   pen: RelieverIn[];
   next: number; // lineup index of the next batter
@@ -88,6 +90,7 @@ function makeSide(team: TeamIn): Side {
     lines: [...bat],
     bench: [...(team.bench ?? [])],
     subs: { ph: 0, pr: 0, def: 0 },
+    subbed: new Set(),
     apps: [],
     pen: [...team.bullpen],
     next: 0,
@@ -113,6 +116,7 @@ function substitute(side: Side, slot: number, b: BenchIn, kind: Sub['kind']): Su
   line.sub = kind;
   side.lines.splice(side.lines.indexOf(side.bat[slot]!) + 1, 0, line);
   side.bat[slot] = line;
+  side.subbed.add(slot);
   fielding(side);
   return { kind, in: b.id, out, pos };
 }
@@ -158,7 +162,8 @@ function defensiveSub(side: Side, inning: number, myLead: number): Sub | null {
   if (inning < S.defInning || side.subs.def >= S.defMax || myLead < 1 || myLead > S.defLead || !side.bench.length) return null;
   let pick: { slot: number; b: BenchIn; gain: number } | null = null;
   side.lineup.forEach((cur, slot) => {
-    if (cur.pos === 'DH') return;
+    // Not again in a slot a substitute has taken (no glove-for-a-bat-for-a-glove in extra innings).
+    if (cur.pos === 'DH' || side.subbed.has(slot)) return;
     for (const b of side.bench) {
       const glove = b.defenseAt[cur.pos] ?? 0;
       const gain = (glove - cur.defense) * (FIELD_WEIGHT[cur.pos] ?? 0);

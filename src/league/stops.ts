@@ -9,13 +9,15 @@ import { addAlert } from './alerts';
 import { firstTeamIds, type LeagueState } from './state';
 import { standings } from './standings';
 
-export type StopKind = 'injury' | 'deadline' | 'debut' | 'race';
-export const STOP_KINDS: StopKind[] = ['injury', 'deadline', 'debut', 'race'];
+export type StopKind = 'injury' | 'deadline' | 'debut' | 'race' | 'bigGame';
+export const STOP_KINDS: StopKind[] = ['injury', 'deadline', 'debut', 'race', 'bigGame'];
 export const STOP_LABEL: Record<StopKind, string> = {
   injury: __i18n_k("league.stops.sTOP_LABEL.injury.8609c770"),
   deadline: __i18n_k("league.stops.sTOP_LABEL.deadline.9b2951ae"),
   debut: __i18n_k("league.stops.sTOP_LABEL.debut.d6f96edd"),
   race: __i18n_k("league.stops.sTOP_LABEL.race.41b44b9f"),
+  // 1.7.1 (postseason.ts): the day of our postseason game, to watch it live or skip it.
+  bigGame: __i18n_k("league.stops.text.f08a5ece"),
 };
 /** Out this long or more stops the run. */
 const LONG = 21;

@@ -2,7 +2,7 @@ import { k as __i18n_k } from '../i18n/index';
 /* Our players in the major leagues (1.7.0, from the 1.6 feedback: 포스팅으로 MLB에 진출한 선수 확인, MLB 성적 표시).
    A player who signs through the posting system (posting.ts) joins a big-league club, and each winter his season
    there is written into his record: games, the slash line and home runs, or innings, wins and ERA, and a WAR. How
-   he does follows his ability against big-league play (a KBO grade of about 62 is a big-league regular), his age
+   he does follows his ability against big-league play (a KBO grade of about 64 is a big-league regular), his age
    and luck; a player not good enough spends much of the year in triple-A. When his deal ends he may sign on
    elsewhere for another year; he stops when he comes home (returnees.ts) or ends his career abroad.
    The seasons are drawn from the player's id and the year alone, never the league's streams. */
@@ -13,7 +13,7 @@ import type { LeagueState } from './state';
 
 export const MLB = {
   /** The KBO grade of a big-league regular. */
-  par: 62,
+  par: 64,
   /** Grade points lost each year past 31. */
   aging: 1.5,
   /** Under this (grade − par) he spends most of the year in triple-A. */
@@ -82,14 +82,15 @@ export function mlbSeason(p: Player, year: number, club: string): MlbSeason {
   const g = Math.max(1, Math.round(150 * share));
   const pa = Math.round(g * (aaa ? 3 : 3.9));
   const t = p.hidden.current;
-  const avg = clamp(0.248 + rel * 0.004 + ((t.contact ?? 50) - 55) * 0.0015 + normal(r) * 0.018, 0.12, 0.36);
+  const avg = clamp(0.243 + rel * 0.0025 + ((t.contact ?? 50) - 55) * 0.001 + normal(r) * 0.015, 0.12, 0.34);
   const obp = clamp(avg + 0.06 + ((t.eye ?? 50) - 50) * 0.0018 + normal(r) * 0.008, avg + 0.02, 0.46);
-  const iso = clamp(0.14 + rel * 0.004 + ((t.power ?? 50) - 55) * 0.0035 + normal(r) * 0.02, 0.03, 0.32);
-  const hr = Math.max(0, Math.round(pa * (iso * 0.22 + normal(r) * 0.004)));
+  const iso = clamp(0.135 + rel * 0.003 + ((t.power ?? 50) - 55) * 0.0025 + normal(r) * 0.02, 0.03, 0.3);
+  const hr = Math.max(0, Math.round(pa * (iso * 0.18 + normal(r) * 0.004)));
   const rbi = Math.round(hr * 2.2 + pa * avg * 0.22);
   const sb = Math.max(0, Math.round(g * (((t.speed ?? 40) - 45) * 0.004 + r() * 0.05)));
   const ops = obp + avg + iso;
-  const war = Math.round(((ops - 0.71) * pa * 0.055 + (pa / 600) * 1.2) * 10) / 10;
+  // Runs above average from the OPS, and the regular's worth over a replacement (a .950 OPS season is about 5).
+  const war = Math.round(((ops - 0.71) * pa * 0.022 + (pa / 600) * 1.8) * 10) / 10;
   return { year, club, ...(aaa ? { aaa: true } : {}), bat: { g, pa, avg: round3(avg), obp: round3(obp), slg: round3(avg + iso), hr, rbi, sb }, war };
 }
 
@@ -183,4 +184,9 @@ export function backfillMlb(s: LeagueState, dealYears: (p: Player) => number) {
     }
     if (firstHome !== null) p.mlb!.back = firstHome - 1;
   }
+}
+
+/** 1.7.1: seasons written by 1.7.0 read again on the revised scale (it made a KBO star an MLB MVP every year). */
+export function rescoreMlb(s: LeagueState) {
+  for (const p of Object.values(s.players)) if (p.mlb) p.mlb.seasons = p.mlb.seasons.map((x) => mlbSeason(p, x.year, x.club));
 }

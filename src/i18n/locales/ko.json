@@ -6866,5 +6866,21 @@
   "ui.manual.text.951a6ab7": "적응력",
   "ui.manual.text.ac35cade": "외국인 선수의 숨은 능력치. 낮으면 첫 시즌에 한국 무대 적응에 실패해 그 시즌 내내 경기력이 크게 떨어질 수 있습니다. 아시아쿼터와 일본에서 뛴 선수는 적응이 쉽고, 코치·스카우트 평가에서 짐작할 수 있습니다.",
   "ui.manual.text.35362dc0": "MLB 진출",
-  "ui.manual.text.0710e589": "포스팅으로 메이저리그 구단과 계약한 선수는 해마다 메이저리그 성적이 쌓입니다(역대 → MLB 진출, 선수 화면 기록 → MLB). 계약이 끝나면 돌아올 수도 있습니다."
+  "ui.manual.text.0710e589": "포스팅으로 메이저리그 구단과 계약한 선수는 해마다 메이저리그 성적이 쌓입니다(역대 → MLB 진출, 선수 화면 기록 → MLB). 계약이 끝나면 돌아올 수도 있습니다.",
+  "ui.boxScore.text.6d7d5b05": "타구: {text}",
+  "ui.boxScore.text.c72996aa": "볼",
+  "ui.boxScore.text.4a03be0a": "스트라이크",
+  "ui.boxScore.text.6145417a": "헛스윙",
+  "ui.boxScore.text.1bd463ff": "파울",
+  "ui.boxScore.text.74b03362": "타격",
+  "ui.boxScore.text.58ef970a": "몸에 맞는 공",
+  "ui.boxScore.text.442c081e": "투구 위치: {value}",
+  "league.stops.text.f08a5ece": "가을야구 우리 경기 전 (실시간 관전 또는 넘기기)",
+  "ui.app.text.06ff4ff1": "오늘 {round} {game}차전",
+  "ui.app.text.ada6554e": "{opp}전 · {where}",
+  "ui.app.text.13a46f96": "홈",
+  "ui.app.text.ef6b033f": "원정",
+  "ui.app.text.1fe38266": "실시간 관전",
+  "ui.app.text.1a3c3146": "결과만 보기",
+  "ui.app.text.7dae039f": "끝까지 넘기기"
 }

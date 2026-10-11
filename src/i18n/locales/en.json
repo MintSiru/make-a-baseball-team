@@ -6866,5 +6866,21 @@
   "ui.manual.text.951a6ab7": "Adaptability",
   "ui.manual.text.ac35cade": "A foreign player's hidden trait. If it is low, he may fail to adapt to Korea in his first season and play far below his ability for the rest of it. Asia quota players and those who played in Japan settle more easily; the coaches' and scouts' reports give a hint.",
   "ui.manual.text.35362dc0": "To MLB",
-  "ui.manual.text.0710e589": "A player who signs with a major league club through the posting system builds a major league record each year (History → To MLB, player screen Records → MLB). He may come back when his deal ends."
+  "ui.manual.text.0710e589": "A player who signs with a major league club through the posting system builds a major league record each year (History → To MLB, player screen Records → MLB). He may come back when his deal ends.",
+  "ui.boxScore.text.6d7d5b05": "Ball in play: {text}",
+  "ui.boxScore.text.c72996aa": "Ball",
+  "ui.boxScore.text.4a03be0a": "Strike",
+  "ui.boxScore.text.6145417a": "Swinging strike",
+  "ui.boxScore.text.1bd463ff": "Foul",
+  "ui.boxScore.text.74b03362": "In play",
+  "ui.boxScore.text.58ef970a": "Hit by pitch",
+  "ui.boxScore.text.442c081e": "Pitch locations: {value}",
+  "league.stops.text.f08a5ece": "Before our postseason games (watch live or skip)",
+  "ui.app.text.06ff4ff1": "Today: {round}, Game {game}",
+  "ui.app.text.ada6554e": "vs {opp} · {where}",
+  "ui.app.text.13a46f96": "Home",
+  "ui.app.text.ef6b033f": "Away",
+  "ui.app.text.1fe38266": "Watch live",
+  "ui.app.text.1a3c3146": "Result only",
+  "ui.app.text.7dae039f": "Skip to the end"
 }
