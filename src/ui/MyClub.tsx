@@ -12,8 +12,9 @@ import { projectedPayroll } from '../league/expansion';
 import { firstTeamSize, PEN_ROLE_LABELS, PEN_ROLES } from '../league/manager';
 import type { BullpenRole } from '../league/engine/types';
 import { rosterLimit } from '../league/offseason';
-import { isPitcher } from '../league/players';
-import { developmentIds, registeredIds, type LeagueState, type Squad as SquadName } from '../league/state';
+import { ageIn, isPitcher } from '../league/players';
+import { captainsOf, captainsProblem } from '../league/captains';
+import { developmentIds, orgIds, registeredIds, type LeagueState, type Squad as SquadName } from '../league/state';
 import { OFFSEASON } from '../league/tuning';
 import { injuryNote, rates, shortName, standingsView } from '../league/views';
 import { money } from './format';
@@ -440,8 +441,87 @@ function Management({ league, onPlayer, onAct, setMsg }: { league: LeagueState; 
           : __i18n_k("ui.myClub.management.c2f6f619"))}
         {__i18n_display(manual && !inSeason && __i18n_k("ui.myClub.management.04b78a59"))}
       </p>
+      <CaptainsCard league={league} onAct={onAct} />
       <Squad league={league} teamId={u.teamId} onPlayer={onPlayer} actions={buttons} posControl={roleControl} toolbar={toolbar} />
     </>
+  );
+}
+
+/** 1.7.0: the captain and vice-captains (captains.ts). */
+function CaptainsCard({ league, onAct }: { league: LeagueState; onAct: (a: Action) => void }) {
+  const u = league.user!;
+  const saved = u.captains;
+  const [open, setOpen] = useState(false);
+  const [captain, setCaptain] = useState<string>(saved?.captain ?? '');
+  const [vice, setVice] = useState<string[]>(saved?.vice ?? []);
+  useEffect(() => {
+    setCaptain(saved?.captain ?? '');
+    setVice(saved?.vice ?? []);
+  }, [saved]);
+  const players = orgIds(league, u.teamId)
+    .map((id) => league.players[id]!)
+    .sort((a, b) => ageIn(b, league.year) - ageIn(a, league.year) || b.scouting.current - a.scouting.current);
+  const now = captainsOf(league);
+  const problem = captainsProblem(league, captain || null, vice.filter(Boolean));
+  const label = (id: string) => {
+    const p = league.players[id]!;
+    return __i18n_t("ui.myClub.text.13e52963", { name: p.name, age: ageIn(p, league.year), pers: p.personality });
+  };
+  return (
+    <div class="captains-card">
+      <p class="small">
+        <strong>{__i18n_t("ui.myClub.text.a6940a86")}</strong>{' · '}
+        {now.captain ? __i18n_t("ui.myClub.text.0a2cb492", { name: now.captain.name, vice: now.vice.length ? __i18n_t("ui.myClub.text.d03ae0e4", { names: now.vice.map((p) => p.name).join(', ') }) : '' }) : __i18n_t("ui.myClub.text.e24b0801")}{' '}
+        <button type="button" class="link" aria-expanded={open} onClick={() => setOpen(!open)}>
+          {open ? __i18n_t("ui.myClub.text.0d2c2495") : __i18n_t("ui.myClub.text.be42a39b")}
+        </button>
+      </p>
+      {open && (
+        <div class="card-editor">
+          <p class="muted small">{__i18n_t("ui.myClub.text.00856882")}</p>
+          <label>
+            {__i18n_t("ui.myClub.text.a6ef8381")}{' '}
+            <select value={captain} onChange={(e) => setCaptain((e.currentTarget as HTMLSelectElement).value)}>
+              <option value="">{__i18n_t("ui.myClub.text.d58fa73a")}</option>
+              {players.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {label(p.id)}
+                </option>
+              ))}
+            </select>
+          </label>
+          {[0, 1].map((i) => (
+            <label key={i}>
+              {__i18n_t("ui.myClub.text.a00b62df", { n: i + 1 })}{' '}
+              <select
+                value={vice[i] ?? ''}
+                onChange={(e) => {
+                  const id = (e.currentTarget as HTMLSelectElement).value;
+                  setVice((v) => {
+                    const next = [...v];
+                    next[i] = id;
+                    return next.filter((x, k) => x || k < next.length - 1);
+                  });
+                }}
+              >
+                <option value="">{__i18n_t("ui.myClub.text.d58fa73a")}</option>
+                {players.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {label(p.id)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
+          <div class="row-actions">
+            <button type="button" class="primary" disabled={!!problem} onClick={() => onAct({ kind: 'captains', captain: captain || null, vice: vice.filter(Boolean) })}>
+              {__i18n_t("ui.myClub.text.c378fc0c")}
+            </button>
+            {problem && <span class="notice inline">{problem}</span>}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

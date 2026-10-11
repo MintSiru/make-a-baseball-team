@@ -64857,5 +64857,574 @@
       }
     },
     "locations": []
+  },
+  "league.extensions.text.184c07ee": {
+    "source": "src/league/extensions.ts",
+    "line": 53,
+    "params": {},
+    "locations": []
+  },
+  "league.extensions.text.a34a68b4": {
+    "source": "src/league/extensions.ts",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "league.extensions.text.026f3688": {
+    "source": "src/league/extensions.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.extensions.text.68d7e4c9": {
+    "source": "src/league/extensions.ts",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "league.extensions.text.a96b8581": {
+    "source": "src/league/extensions.ts",
+    "line": 58,
+    "params": {},
+    "locations": []
+  },
+  "league.extensions.text.da623983": {
+    "source": "src/league/extensions.ts",
+    "line": 59,
+    "params": {},
+    "locations": []
+  },
+  "league.extensions.text.1340ac5e": {
+    "source": "src/league/extensions.ts",
+    "line": 60,
+    "params": {
+      "age": {
+        "expression": "EXTENSION.maxAge + 1"
+      }
+    },
+    "locations": []
+  },
+  "league.extensions.text.05e9fedf": {
+    "source": "src/league/extensions.ts",
+    "line": 61,
+    "params": {},
+    "locations": []
+  },
+  "league.extensions.text.748a8898": {
+    "source": "src/league/extensions.ts",
+    "line": 68,
+    "params": {
+      "date": {
+        "expression": "said.slice(5).replace('-', '/')"
+      }
+    },
+    "locations": []
+  },
+  "league.extensions.text.772f360c": {
+    "source": "src/league/extensions.ts",
+    "line": 107,
+    "params": {},
+    "locations": []
+  },
+  "league.extensions.text.b3bd73f8": {
+    "source": "src/league/extensions.ts",
+    "line": 116,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "years": {
+        "expression": "years"
+      }
+    },
+    "locations": []
+  },
+  "league.extensions.text.460d80fc": {
+    "source": "src/league/extensions.ts",
+    "line": 129,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "years": {
+        "expression": "years"
+      },
+      "money": {
+        "expression": "eok(option.total)"
+      },
+      "from": {
+        "expression": "start"
+      },
+      "to": {
+        "expression": "start + years - 1"
+      }
+    },
+    "locations": []
+  },
+  "league.extensions.text.5686494b": {
+    "source": "src/league/extensions.ts",
+    "line": 135,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "wagwa(p.name)",
+        "particle": "과/와"
+      },
+      "years": {
+        "expression": "years"
+      },
+      "money": {
+        "expression": "eok(option.total)"
+      }
+    },
+    "locations": []
+  },
+  "league.extensions.text.cdbc43ce": {
+    "source": "src/league/extensions.ts",
+    "line": 136,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      },
+      "name": {
+        "expression": "wagwa(p.name)",
+        "particle": "과/와"
+      },
+      "years": {
+        "expression": "years"
+      },
+      "money": {
+        "expression": "eok(option.total)"
+      },
+      "from": {
+        "expression": "start"
+      },
+      "annual": {
+        "expression": "eok(option.annual)"
+      },
+      "who": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.e837c83d": {
+    "source": "src/league/captains.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.captains.text.b95b5e52": {
+    "source": "src/league/captains.ts",
+    "line": 35,
+    "params": {
+      "n": {
+        "expression": "CAPTAIN.vice"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.c25e7f7a": {
+    "source": "src/league/captains.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.captains.text.2fdf1b06": {
+    "source": "src/league/captains.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "league.captains.text.5b1a7726": {
+    "source": "src/league/captains.ts",
+    "line": 54,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.393d843e": {
+    "source": "src/league/captains.ts",
+    "line": 55,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      },
+      "name": {
+        "expression": "eulreul(p.name)",
+        "particle": "을/를"
+      },
+      "pers": {
+        "expression": "p.personality"
+      },
+      "vice": {
+        "expression": "vice.length ? L(' 부주장은 {names}.', { names: vice.map((id) => s.players[id]?.name ?? '').join(', ') }) : ''"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.333c39f7": {
+    "source": "src/league/captains.ts",
+    "line": 59,
+    "params": {
+      "names": {
+        "expression": "vice.map((id) => s.players[id]?.name ?? '').join(', ')"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.8da23788": {
+    "source": "src/league/captains.ts",
+    "line": 84,
+    "params": {
+      "name": {
+        "expression": "captain.name"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.2dab69f3": {
+    "source": "src/league/captains.ts",
+    "line": 84,
+    "params": {
+      "name": {
+        "expression": "captain.name"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.28ff118c": {
+    "source": "src/league/captains.ts",
+    "line": 84,
+    "params": {
+      "name": {
+        "expression": "captain.name"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.6370c488": {
+    "source": "src/league/captains.ts",
+    "line": 122,
+    "params": {},
+    "locations": []
+  },
+  "league.captains.text.a5fc9093": {
+    "source": "src/league/captains.ts",
+    "line": 127,
+    "params": {
+      "streak": {
+        "expression": "streak"
+      },
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "captain.name"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.d4129b44": {
+    "source": "src/league/captains.ts",
+    "line": 127,
+    "params": {
+      "streak": {
+        "expression": "streak"
+      },
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.479fe341": {
+    "source": "src/league/captains.ts",
+    "line": 129,
+    "params": {
+      "name": {
+        "expression": "iga(captain.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.f7087255": {
+    "source": "src/league/captains.ts",
+    "line": 130,
+    "params": {
+      "name": {
+        "expression": "iga(captain.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.1ad41150": {
+    "source": "src/league/captains.ts",
+    "line": 145,
+    "params": {},
+    "locations": []
+  },
+  "league.captains.text.2e8817f0": {
+    "source": "src/league/captains.ts",
+    "line": 150,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "captain.name"
+      },
+      "other": {
+        "expression": "wagwa(other.name)",
+        "particle": "과/와"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.9e14ab78": {
+    "source": "src/league/captains.ts",
+    "line": 151,
+    "params": {
+      "name": {
+        "expression": "iga(captain.name)",
+        "particle": "이/가"
+      },
+      "other": {
+        "expression": "wagwa(other.name)",
+        "particle": "과/와"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.74814040": {
+    "source": "src/league/captains.ts",
+    "line": 161,
+    "params": {},
+    "locations": []
+  },
+  "league.captains.text.1ea6fdb3": {
+    "source": "src/league/captains.ts",
+    "line": 166,
+    "params": {
+      "name": {
+        "expression": "captain.name"
+      },
+      "kid": {
+        "expression": "kid.name"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.8f2a2459": {
+    "source": "src/league/captains.ts",
+    "line": 167,
+    "params": {
+      "name": {
+        "expression": "iga(captain.name)",
+        "particle": "이/가"
+      },
+      "kid": {
+        "expression": "eulreul(kid.name)",
+        "particle": "을/를"
+      },
+      "kid2": {
+        "expression": "iga(kid.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.86341c1f": {
+    "source": "src/league/captains.ts",
+    "line": 176,
+    "params": {},
+    "locations": []
+  },
+  "league.captains.text.ff474cf7": {
+    "source": "src/league/captains.ts",
+    "line": 181,
+    "params": {
+      "name": {
+        "expression": "iga(captain.name)",
+        "particle": "이/가"
+      },
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.captains.text.763884f2": {
+    "source": "src/league/captains.ts",
+    "line": 182,
+    "params": {
+      "name": {
+        "expression": "iga(captain.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.13e52963": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 468,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "age": {
+        "expression": "ageIn(p, league.year)"
+      },
+      "pers": {
+        "expression": "p.personality"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.a6940a86": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 473,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.0a2cb492": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 474,
+    "params": {
+      "name": {
+        "expression": "now.captain.name"
+      },
+      "vice": {
+        "expression": "now.vice.length ? L(' · 부주장 {names}', { names: now.vice.map((p) => p.name).join(', ') }) : ''"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.d03ae0e4": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 474,
+    "params": {
+      "names": {
+        "expression": "now.vice.map((p) => p.name).join(', ')"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.e24b0801": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 474,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.0d2c2495": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 476,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.be42a39b": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 476,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.00856882": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 481,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.a6ef8381": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 483,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.d58fa73a": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 485,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.a00b62df": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 495,
+    "params": {
+      "n": {
+        "expression": "i + 1"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.c378fc0c": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 518,
+    "params": {},
+    "locations": []
+  },
+  "ui.squad.text.a6ef8381": {
+    "source": "src/ui/Squad.tsx",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "ui.squad.text.cb8f9e32": {
+    "source": "src/ui/Squad.tsx",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.e03ccaea": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 839,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.e52c8464": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 845,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.bcc042ee": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 848,
+    "params": {
+      "years": {
+        "expression": "x.years"
+      },
+      "annual": {
+        "expression": "money(x.annual)"
+      },
+      "total": {
+        "expression": "money(x.total)"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.6ef251ee": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 853,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.9d415c3d": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 855,
+    "params": {},
+    "locations": []
   }
 }

@@ -3105,3 +3105,8 @@ fieldset.stops {
 .lamps.strike .lamp.on { background: #e0b021; border-color: #e0b021; }
 .lamps.out .lamp.on { background: #d0412f; border-color: #d0412f; }
 .pitch-log { max-height: 14rem; overflow-y: auto; }
+
+/* 1.7.0: the captaincy (MyClub.tsx) and its tag on the roster. */
+.captains-card { margin: 0.4rem 0 0.6rem; }
+.captains-card label { display: inline-flex; gap: 0.3rem; align-items: center; margin: 0.2rem 0.8rem 0.2rem 0; }
+.tag.captain { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }

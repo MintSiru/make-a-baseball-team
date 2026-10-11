@@ -19,6 +19,9 @@ import { rng } from '../src/draftroom';
 import { pitchFeed } from '../src/league/pitchfeed';
 import { money, moneyShort } from '../src/ui/format';
 import { CITIES } from '../src/club/cities';
+import { extensionOptions, extensionProblem } from '../src/league/extensions';
+import { captainDay, captainsProblem } from '../src/league/captains';
+import { clubhouse } from '../src/league/views';
 import { ageIn } from '../src/league/players';
 
 export const loadSave = (v = '1.4.0') => parseSave(gunzipSync(readFileSync(new URL(`./fixtures/save-${v}.json.gz`, import.meta.url))).toString('utf8')).snapshot!.state as LeagueState;
@@ -186,5 +189,57 @@ describe('amounts in won, dollars or yen; more homes', () => {
   it('has twenty homes to choose from', () => {
     expect(CITIES.length).toBe(20);
     expect(new Set(CITIES.map((c) => c.id)).size).toBe(20);
+  });
+});
+
+describe('multi-year deals before free agency', () => {
+  it('two to six years for a domestic player short of free agency; a yes sets the seasons from next year', () => {
+    const s = loadSave();
+    const u = s.user!;
+    const p = Object.values(s.players).filter((x) => x.teamId === u.teamId && !extensionProblem(s, x.id)).sort((a, b) => b.scouting.current - a.scouting.current)[0]!;
+    expect(p).toBeTruthy();
+    const opts = extensionOptions(s, p.id);
+    expect(opts.map((x) => x.years)).toEqual(expect.arrayContaining([2, 3, 4]));
+    for (const o of opts) expect(o.total).toBe(o.annual * o.years);
+    const foreign = Object.values(s.players).find((x) => x.teamId === u.teamId && isForeign(x))!;
+    expect(extensionProblem(s, foreign.id)).not.toBeNull();
+    // A loyal player on easy says yes almost always; a no would shut the door for a month.
+    p.hidden.traits!.loyalty = 100;
+    u.settings.difficulty = 'easy';
+    let t = apply(s, { kind: 'extend', id: p.id, years: 3 });
+    if (t.players[p.id]!.contract!.kind !== 'multiYear') {
+      expect(extensionProblem(t, p.id)).toMatch(/거절/);
+      t.user!.extensionTalks = {};
+      t = apply(t, { kind: 'extend', id: p.id, years: 4 });
+      if (t.players[p.id]!.contract!.kind !== 'multiYear') return;
+    }
+    const c = t.players[p.id]!.contract!;
+    expect(c.kind).toBe('multiYear');
+    expect(c.salaries.filter((x) => x.season > s.year).map((x) => x.season).slice(0, 3)).toEqual([s.year + 1, s.year + 2, s.year + 3]);
+    expect(t.news!.some((n) => n.id.startsWith(`extension-${p.id}`))).toBe(true);
+    expect(extensionProblem(t, p.id)).not.toBeNull();
+  });
+});
+
+describe('the captaincy', () => {
+  it('is named from our players, shows in the clubhouse and calls a meeting at the fifth loss in a row', () => {
+    const s = loadSave();
+    const u = s.user!;
+    const ours = s.rosters[u.teamId]!.active.map((id) => s.players[id]!);
+    const cap = [...ours].sort((a, b) => b.hidden.traits!.leadership - a.hidden.traits!.leadership)[0]!;
+    const other = Object.values(s.players).find((p) => p.teamId && p.teamId !== u.teamId)!;
+    expect(captainsProblem(s, other.id, [])).not.toBeNull();
+    expect(captainsProblem(s, cap.id, [cap.id])).not.toBeNull();
+    const t = apply(s, { kind: 'captains', captain: cap.id, vice: [ours.find((p) => p.id !== cap.id)!.id] });
+    expect(t.user!.captains!.captain).toBe(cap.id);
+    expect(clubhouse(t, u.teamId).notes.some((n) => n.includes(cap.name))).toBe(true);
+    // Five losses in a row.
+    const date = t.schedule[t.next]!.date;
+    t.scores.push({ id: 'w', date, home: u.teamId, away: other.teamId!, hs: 1, as: 0, att: 0 });
+    for (let i = 0; i < 5; i++) t.scores.push({ id: `x${i}`, date, home: u.teamId, away: other.teamId!, hs: 0, as: 1, att: 0 });
+    captainDay(t, date, false);
+    const meeting = t.news!.find((n) => n.id === `captain-meeting-${date}`)!;
+    expect(meeting).toBeTruthy();
+    if (cap.hidden.traits!.leadership >= 60) expect(t.players[ours.find((p) => p.id !== cap.id)!.id]!.life?.form?.delta).toBeGreaterThan(0);
   });
 });

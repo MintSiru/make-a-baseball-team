@@ -15,6 +15,7 @@ import { currentStandings } from './season';
 import { SANGMU } from './futures';
 import { cardFor, lineupFor, managerLean, penRoles, PEN_ROLE_LABELS, rotationFor } from './manager';
 import { isDevelopment, type LeagueState } from './state';
+import { captaincyLift } from './captains';
 import { avg, babip, babipAllowed, batterWar, era, fip, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
 import { addInto, emptyBat, emptyPit } from './state';
 import { traitsOf } from './traits';
@@ -132,6 +133,8 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
       number: p.numberTeam === teamId ? (p.number ?? null) : null,
       foreign: isForeign(p),
       development: isDevelopment(p),
+      /** 1.7.0: our captain ('C') or a vice-captain ('VC'). */
+      captain: u?.captains?.captain === id ? ('C' as const) : u?.captains?.vice.includes(id) ? ('VC' as const) : null,
       pitcher: isPitcher(p),
       pos: usage ?? positionLabel(p),
       /** Hitters: other positions he handles (V0.7). */
@@ -573,7 +576,9 @@ export function clubhouse(s: LeagueState, teamId: TeamId) {
   const leaders = roster.filter((p) => traitsOf(p).leadership >= LEADER && ageIn(p, s.year) >= 28).length;
   const makers = roster.filter((p) => p.personality === '밝은 분위기 메이커').length;
   const hurt = Object.entries(s.injuries).filter(([id, i]) => !i.dtd && s.players[id]?.teamId === teamId).length;
-  const score = (w + l ? (w / (w + l) - 0.5) * 2 : 0) + leaders * 0.08 + makers * 0.05 - hurt * 0.03 + (lastRes === 'W' ? 0.03 : lastRes === 'L' ? -0.03 : 0) * Math.min(streak, 6);
+  // 1.7.0: our captaincy (captains.ts).
+  const cap = teamId === s.user?.teamId ? captaincyLift(s) : null;
+  const score = (w + l ? (w / (w + l) - 0.5) * 2 : 0) + leaders * 0.08 + makers * 0.05 - hurt * 0.03 + (lastRes === 'W' ? 0.03 : lastRes === 'L' ? -0.03 : 0) * Math.min(streak, 6) + (cap?.lift ?? 0);
   const label = score >= 0.5 ? __i18n_k("league.views.clubhouse.label.a5d2fc54") : score >= 0.2 ? __i18n_k("league.views.clubhouse.label.5cd0d95b") : score > -0.2 ? __i18n_k("league.views.clubhouse.label.681592dc") : score > -0.5 ? __i18n_k("league.views.clubhouse.label.d6a40ea2") : __i18n_k("league.views.clubhouse.label.fef32446");
   const notes = [
     games.length ? __i18n_k("league.views.clubhouse.notes.0444399b", { w: w, l: l }) : __i18n_k("league.views.clubhouse.notes.74496d87"),
@@ -581,6 +586,7 @@ export function clubhouse(s: LeagueState, teamId: TeamId) {
     leaders ? __i18n_k("league.views.clubhouse.notes.9daf8a74", { leaders: leaders }) : __i18n_k("league.views.clubhouse.notes.acbbe47c"),
     makers ? __i18n_k("league.views.clubhouse.notes.0ca3f9fb", { makers: makers }) : '',
     hurt ? __i18n_k("league.views.clubhouse.notes.8b617938", { hurt: hurt }) : '',
+    cap?.note ?? '',
   ].filter(Boolean);
   return { label, score, notes, form: res };
 }

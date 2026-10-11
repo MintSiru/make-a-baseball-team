@@ -31,6 +31,11 @@ function Name({ r, onPlayer }: { r: Row; onPlayer: (id: string) => void }) {
       <button type="button" class="link" onClick={() => onPlayer(r.id)}>
         {__i18n_display(r.name)}
       </button>
+      {r.captain && (
+        <span class="tag captain" title={r.captain === 'C' ? __i18n_t("ui.squad.text.a6ef8381") : __i18n_t("ui.squad.text.cb8f9e32")}>
+          {r.captain}
+        </span>
+      )}
       {__i18n_display(r.foreign && <span class="tag">{__i18n_t("ui.squad.name.5bd804b7")}</span>)}
       {__i18n_display(r.development && <span class="tag">{__i18n_t("ui.squad.name.818f3b79")}</span>)}
       {__i18n_display(r.injured && (

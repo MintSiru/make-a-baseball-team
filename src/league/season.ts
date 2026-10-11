@@ -3,6 +3,7 @@ import { k as __i18n_k } from '../i18n/index';
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { draftWatchDay } from './draftlog';
+import { captainDay } from './captains';
 import { simulateGame } from './engine/game';
 import { emptySplit, type GameOut, type PlayEvent, type Splits, type TeamBox } from './engine/types';
 import { compactBox, isUserGame, keepBox } from './boxscore';
@@ -300,6 +301,8 @@ export function playDay(s: LeagueState): boolean {
     rollInjuries(s, out.home, date, r, (id, teamId) => lineOf(s, id, teamId));
     rollInjuries(s, out.away, date, r, (id, teamId) => lineOf(s, id, teamId));
   }
+  // 1.7.0: our captain's meeting in a slump and his moment of the month (captains.ts).
+  captainDay(s, date, day > 0 && s.schedule[day - 1]!.date.slice(5, 7) !== date.slice(5, 7));
   playFuturesDay(s, date);
   // Every ten game days the manager looks at the whole roster again; otherwise only injuries force moves.
   maintainRosters(s, date, day > 0 && Math.floor(s.next / (firstTeamIds(s).length / 2)) % 10 === 0);

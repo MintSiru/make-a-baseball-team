@@ -23,6 +23,7 @@ import { GradeChart } from './GradeChart';
 import { serviceNote } from '../league/military';
 import type { TraitReport } from '../league/reports';
 import { kboSeasons } from '../league/foreigncap';
+import { extensionCooldown, extensionOptions, extensionProblem } from '../league/extensions';
 import { postRows, postTotals, type PostRow } from '../league/poststats';
 
 const POSITION_NAMES: Record<string, string> = { C: __i18n_k("ui.playerPanel.pOSITION_NAMES.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("ui.playerPanel.pOSITION_NAMES.sS.3e24c7f1"), LF: __i18n_k("ui.playerPanel.pOSITION_NAMES.lF.73836db2"), CF: __i18n_k("ui.playerPanel.pOSITION_NAMES.cF.56780b2a"), RF: __i18n_k("ui.playerPanel.pOSITION_NAMES.rF.a28a0ef8") };
@@ -485,6 +486,7 @@ export function PlayerPanel({
         {__i18n_display(shown === 'profile' && (
           <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.032e3f1f")}>
             {__i18n_display(onAct && ours && <NumberField key={`${p.id}-${wearing ?? ''}`} league={league} id={p.id} current={wearing} onAct={onAct} />)}
+            {onAct && ours && <ExtensionOffer league={league} id={p.id} onAct={onAct} />}
             {__i18n_display(onAct && ours && (p.life?.suspicion?.signs ?? 0) > 0 && (
               <p class="inline-form">
                 <span class="small">{__i18n_t("ui.playerPanel.playerPanel.35b81cd9")}</span>
@@ -820,5 +822,39 @@ function NumberField({ league, id, current, onAct }: { league: LeagueState; id: 
       </button>
       {__i18n_display(problem && text.trim() !== '' && <span class="muted small">{__i18n_display(problem)}</span>)}
     </p>
+  );
+}
+
+/** 1.7.0: a multi-year deal before free agency (extensions.ts), two to six years. */
+function ExtensionOffer({ league, id, onAct }: { league: LeagueState; id: string; onAct: (a: Action) => void }) {
+  const problem = extensionProblem(league, id);
+  const [years, setYears] = useState(4);
+  // Only a recent no is worth telling; otherwise he is not someone to offer one to.
+  if (problem && problem !== extensionCooldown(league, id)) return null;
+  const options = problem ? [] : extensionOptions(league, id);
+  const pick = options.find((x) => x.years === years) ?? options.at(-1);
+  return (
+    <div class="inline-form extension">
+      <span class="small">
+        <strong>{__i18n_t("ui.playerPanel.text.e03ccaea")}</strong>
+      </span>
+      {problem ? (
+        <span class="muted small">{problem}</span>
+      ) : (
+        <>
+          <select value={String(pick?.years ?? years)} onChange={(e) => setYears(Number((e.currentTarget as HTMLSelectElement).value))} aria-label={__i18n_t("ui.playerPanel.text.e52c8464")}>
+            {options.map((x) => (
+              <option key={x.years} value={String(x.years)}>
+                {__i18n_t("ui.playerPanel.text.bcc042ee", { years: x.years, annual: money(x.annual), total: money(x.total) })}
+              </option>
+            ))}
+          </select>
+          <button type="button" disabled={!pick} onClick={() => pick && onAct({ kind: 'extend', id, years: pick.years })}>
+            {__i18n_t("ui.playerPanel.text.6ef251ee")}
+          </button>
+          <span class="muted small">{__i18n_t("ui.playerPanel.text.9d415c3d")}</span>
+        </>
+      )}
+    </div>
   );
 }
