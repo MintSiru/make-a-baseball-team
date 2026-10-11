@@ -66340,5 +66340,65 @@
     "line": 29,
     "params": {},
     "locations": []
+  },
+  "ui.manual.text.e03ccaea": {
+    "source": "src/ui/Manual.tsx",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.6e4e226c": {
+    "source": "src/ui/Manual.tsx",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.a6940a86": {
+    "source": "src/ui/Manual.tsx",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.72e9bc37": {
+    "source": "src/ui/Manual.tsx",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.d65f371c": {
+    "source": "src/ui/Manual.tsx",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.74bff193": {
+    "source": "src/ui/Manual.tsx",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.951a6ab7": {
+    "source": "src/ui/Manual.tsx",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.ac35cade": {
+    "source": "src/ui/Manual.tsx",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.35362dc0": {
+    "source": "src/ui/Manual.tsx",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.0710e589": {
+    "source": "src/ui/Manual.tsx",
+    "line": 35,
+    "params": {},
+    "locations": []
   }
 }

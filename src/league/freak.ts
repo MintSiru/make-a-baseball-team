@@ -142,5 +142,6 @@ export function freakDay(s: LeagueState, date: string) {
   }
 }
 
-/** The kinds, for tests. */
+/** The kinds, and the names their injuries go by in the history (for tests). */
 export const FREAK_KEYS = FREAKS.map((f) => f.key);
+export const FREAK_PARTS = FREAKS.map((f) => f.part());

@@ -6856,5 +6856,15 @@
   "ui.mlb.text.a30a1b76": "{club}, {years, plural, one{# year} other{# years}}, {money}",
   "ui.mlb.text.5b8f8b09": "{w}-{l}, {sv} SV, {era} ERA",
   "ui.mlb.text.16111fb7": "{avg} AVG, {hr} HR, {rbi} RBI",
-  "ui.history.text.35362dc0": "To MLB"
+  "ui.history.text.35362dc0": "To MLB",
+  "ui.manual.text.e03ccaea": "Multi-year deals before free agency",
+  "ui.manual.text.6e4e226c": "Sign a domestic player for two to six years before he reaches free agency (player screen → Info). Seasons before free agency pay like a merit raise, seasons after a little under his market value, starting next season. If he says no, you can ask again a month later.",
+  "ui.manual.text.a6940a86": "Captaincy",
+  "ui.manual.text.72e9bc37": "Name a captain and two vice-captains on My Club. A responsible captain with strong leadership lifts the clubhouse and calls a players' meeting after five straight losses. A controversial one may clash with teammates.",
+  "ui.manual.text.d65f371c": "Pinch hitters, pinch runners, defensive replacements",
+  "ui.manual.text.74bff193": "From the 7th inning of a close game the manager uses his bench: a better bat against the pitcher, a fast runner for a slow one in a one-run game, a better glove to protect a small lead. A substitute takes the batting order spot of the player he replaces.",
+  "ui.manual.text.951a6ab7": "Adaptability",
+  "ui.manual.text.ac35cade": "A foreign player's hidden trait. If it is low, he may fail to adapt to Korea in his first season and play far below his ability for the rest of it. Asia quota players and those who played in Japan settle more easily; the coaches' and scouts' reports give a hint.",
+  "ui.manual.text.35362dc0": "To MLB",
+  "ui.manual.text.0710e589": "A player who signs with a major league club through the posting system builds a major league record each year (History → To MLB, player screen Records → MLB). He may come back when his deal ends."
 }

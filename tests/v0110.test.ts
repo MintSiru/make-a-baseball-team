@@ -41,7 +41,8 @@ beforeAll(() => {
   // Two of our veterans want to retire this winter: one is talked round, the other goes.
   const next = s.year + 1;
   const vets = orgPlayers(s, EXPANSION_ID)
-    .filter((p) => p.status === 'active' && p.origin.kind !== 'foreign')
+    // (Service done: a player still owing it may be enlisted that winter instead.)
+    .filter((p) => p.status === 'active' && p.origin.kind !== 'foreign' && p.service.military !== 'pending')
     .slice(0, 2);
   for (const p of vets) {
     at(p, 41, next);

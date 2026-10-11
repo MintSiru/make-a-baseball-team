@@ -183,7 +183,8 @@ export function record(s: LeagueState, box: TeamBox, date: string, lines: Record
     const { id: _id, pos: _pos, split, sub, ...counts } = b;
     addInto(bat, counts);
     if (split && lines === s.lines) addSplits(bat, split);
-    if (lines === s.lines) (bat.posG ??= {})[b.pos] = (bat.posG[b.pos] ?? 0) + 1;
+    // Games at a position are the starts there (1.7.0: a substitute's inning or two does not count).
+    if (lines === s.lines && !sub) (bat.posG ??= {})[b.pos] = (bat.posG[b.pos] ?? 0) + 1;
     // 1.7.0: a pinch runner or a late glove played in the game too.
     if (b.pa > 0 || sub) bat.g++;
   }
