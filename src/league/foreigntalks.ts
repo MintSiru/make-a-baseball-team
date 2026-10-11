@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Talks with foreign players (1.3.0, from the 1.1 feedback). A new signing is no longer a price on a list: each
    candidate has an agent's ask for his guaranteed money (계약금 + 연봉), a transfer fee his club wants before it lets
    him go (이적료, part of the KBO's 100만 달러 for a new signing, never his), and now and then an offer elsewhere — a
@@ -52,9 +53,9 @@ export function termsFor(seed: string, next: number, p: Player, ask: number): Fo
   const R = T.rival;
   const roll = r();
   let rival: ForeignTerms['rival'] = null;
-  if (!asia && grade >= R.npb.from && roll < R.npb.chance) rival = { label: '일본 구단', value: round10k(ask * (R.npb.value[0] + r() * (R.npb.value[1] - R.npb.value[0]))) };
-  else if (!asia && roll < R.npb.chance + R.mlb.chance) rival = { label: '메이저리그 초청 마이너 계약', value: round10k(ask * (R.mlb.value[0] + r() * (R.mlb.value[1] - R.mlb.value[0]))) };
-  else if (roll < R.npb.chance + R.mlb.chance + R.other.chance) rival = { label: asia ? '자국 리그 구단' : '대만 구단', value: round10k(ask * (R.other.value[0] + r() * (R.other.value[1] - R.other.value[0]))) };
+  if (!asia && grade >= R.npb.from && roll < R.npb.chance) rival = { label: __i18n_k("league.foreigntalks.termsFor.label.dbd7cd89"), value: round10k(ask * (R.npb.value[0] + r() * (R.npb.value[1] - R.npb.value[0]))) };
+  else if (!asia && roll < R.npb.chance + R.mlb.chance) rival = { label: __i18n_k("league.foreigntalks.termsFor.label.2ad02fed"), value: round10k(ask * (R.mlb.value[0] + r() * (R.mlb.value[1] - R.mlb.value[0]))) };
+  else if (roll < R.npb.chance + R.mlb.chance + R.other.chance) rival = { label: asia ? __i18n_k("league.foreigntalks.termsFor.label.b7840b6a") : __i18n_k("league.foreigntalks.termsFor.label.56292372"), value: round10k(ask * (R.other.value[0] + r() * (R.other.value[1] - R.other.value[0]))) };
   return {
     ask: round10k(ask * (T.guaranteedShare[0] + r() * (T.guaranteedShare[1] - T.guaranteedShare[0]))),
     fee,

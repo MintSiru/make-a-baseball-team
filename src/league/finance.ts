@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Club finances (V0.6, RULES.md §13). After every season each club gets a report: revenue from the gate,
    sponsors (and a naming-rights fee), the league's broadcast money shared equally, merchandise,
    concessions and the postseason pool; expenses for players, staff, the front office, game days, the
@@ -92,7 +93,7 @@ export function applyDemotionCuts(s: LeagueState, year: number) {
   for (const p of orgPlayers(s, u.teamId)) {
     const cut = demotionCut(s, p, year);
     if (cut <= 0) continue;
-    u.ledger.push({ year, label: `2군 감액 · ${p.name}`, amount: cut });
+    u.ledger.push({ year, label: __i18n_k("league.finance.applyDemotionCuts.label.7af3b205", { name: p.name }), amount: cut });
     u.fund += cut;
   }
 }
@@ -173,13 +174,13 @@ export function settleFinances(s: LeagueState, year: number, table: { teamId: Te
         // banked at opening too), and an empty fund is topped up at a cost in trust.
         const tickets = clubState(s, t.id).seasonTickets;
         u.fund += report.operating - (tickets?.year === year ? tickets.paid : 0);
-        u.ledger.push({ year, label: `${year} 시즌 운영 결산 (수입 − 지출${tickets?.year === year ? ', 시즌권 선판매분 제외' : ''})`, amount: report.operating - (tickets?.year === year ? tickets.paid : 0), settlement: true });
+        u.ledger.push({ year, label: __i18n_k("league.finance.settleFinances.label.4fc3fe70", { year: year, value: tickets?.year === year ? __i18n_k("league.finance.settleFinances.label.937e406a") : '' }), amount: report.operating - (tickets?.year === year ? tickets.paid : 0), settlement: true });
         report.support = budget.amount + emergencySupport(s, year);
       } else {
         const deficit = -(report.operating + Math.min(0, cash));
         report.support = parentSupport(s, t.id, deficit, year);
         u.fund += report.operating + report.support;
-        u.ledger.push({ year, label: `${year} 시즌 운영 결산 (수입 − 지출)`, amount: report.operating, settlement: true });
+        u.ledger.push({ year, label: __i18n_k("league.finance.settleFinances.label.3a90ee4b", { year: year }), amount: report.operating, settlement: true });
         if (report.support) u.ledger.push({ year, label: supportLabel(t.parent.type), amount: report.support, settlement: true });
       }
       u.settledAt = u.ledger.length;
@@ -201,7 +202,7 @@ function emergencySupport(s: LeagueState, year: number): number {
   const E = F.emergency;
   const drop = Math.min(E.most, E.base + Math.floor(amount / E.per));
   u.trust = Math.max(0, (u.trust ?? 60) - drop);
-  u.ledger.push({ year, label: `모기업 긴급 지원 (예산 초과, 신뢰도 −${drop})`, amount, settlement: true });
+  u.ledger.push({ year, label: __i18n_k("league.finance.emergencySupport.label.e60fe3f4", { drop: drop }), amount, settlement: true });
   return amount;
 }
 
@@ -226,10 +227,10 @@ export function openBooks(s: LeagueState) {
   const amount = Math.min(u.support ?? need, Math.round(need / 1000) * 1000);
   u.seasonSupport = { year: s.year, amount };
   u.fund += amount;
-  u.ledger.push({ year: s.year, label: `${s.year} ${supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type)} (시즌 예산 확정)`, amount, settlement: true });
+  u.ledger.push({ year: s.year, label: __i18n_k("league.finance.openBooks.label.4119d9fc", { year: s.year, supportLabel: supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type) }), amount, settlement: true });
   if (tickets?.year === s.year && tickets.paid) {
     u.fund += tickets.paid;
-    u.ledger.push({ year: s.year, label: `${s.year} 시즌권 ${tickets.sold.toLocaleString('ko-KR')}석 판매 (할인 ${Math.round(tickets.discount * 100)}%)`, amount: tickets.paid, settlement: true });
+    u.ledger.push({ year: s.year, label: __i18n_k("league.finance.openBooks.label.086c82a0", { year: s.year, value: tickets.sold.toLocaleString('ko-KR'), value2: Math.round(tickets.discount * 100) }), amount: tickets.paid, settlement: true });
   }
 }
 
@@ -250,7 +251,7 @@ function sellSeasonTickets(s: LeagueState) {
 }
 
 export const supportLabel = (type: string) =>
-  type === 'citizen' ? '지자체 출자·시민주주 지원' : type === 'namingRights' ? '투자자 지원' : '모기업 지원 (광고·운영 지원금)';
+  type === 'citizen' ? __i18n_k("league.finance.supportLabel.cb656803") : type === 'namingRights' ? __i18n_k("league.finance.supportLabel.f49549e7") : __i18n_k("league.finance.supportLabel.3aa623c2");
 
 /**
  * A running estimate for the whole season: the gate so far carried over the remaining home games (or,

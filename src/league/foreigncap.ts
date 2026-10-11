@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The foreign players' salary cap (V0.7.8, RULES.md §5; KBO 2023~).
 
    A club's three foreign players may cost at most $4M in a season: salary, signing bonus, transfer fee and
@@ -120,16 +121,16 @@ export function settleForeignCap(s: LeagueState, year: number) {
     const u = s.user;
     if (u && teamId === u.teamId && over > 0) {
       u.fund -= levy;
-      u.ledger.push({ year, label: `외국인 샐러리캡 제재금 (초과 ${streak}년째)`, amount: -levy });
-      const usd = (n: number) => `${Math.round(n / 10_000)}만 달러`;
+      u.ledger.push({ year, label: __i18n_k("league.foreigncap.settleForeignCap.label.4b6671c0", { streak: streak }), amount: -levy });
+      const usd = (n: number) => __i18n_k("league.foreigncap.settleForeignCap.usd.f2e37495", { value: Math.round(n / 10_000) });
       addAlert(s, {
         id: `foreign-cap-${year}`,
         date: `${year}-11-10`,
         kind: 'owner',
-        title: '외국인 샐러리캡 초과',
+        title: __i18n_k("league.foreigncap.settleForeignCap.title.122abbe1"),
         lines: [
-          `외국인 선수 총액 ${usd(spent)} / 상한 ${usd(b.cap)} → 초과 ${usd(over)}`,
-          `제재금 ${Math.round(levy / 10000)}억 (초과분의 ${Math.round(F.capLevies[Math.min(streak, F.capLevies.length) - 1]! * 100)}%)${streak >= F.capPickDropFrom ? `, ${year + 2} 신인 2라운드 지명권 9순위 하락` : ''}`,
+          __i18n_k("league.foreigncap.settleForeignCap.lines.772be2fd", { usd: usd(spent), usd2: usd(b.cap), usd3: usd(over) }),
+          __i18n_k("league.foreigncap.settleForeignCap.lines.d5f4b489", { value: Math.round(levy / 10000), value2: Math.round(F.capLevies[Math.min(streak, F.capLevies.length) - 1]! * 100), value3: streak >= F.capPickDropFrom ? __i18n_k("league.foreigncap.settleForeignCap.lines.4d009d66", { value: year + 2 }) : '' }),
         ],
         tone: 'bad',
       });

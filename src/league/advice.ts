@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Why the scouts recommend what they do (1.5.0, from the 1.4 review): for the decision waiting, the rule the
    recommendation follows, what it picks, and what choosing otherwise costs. It reads the recommendation itself
    (autoDecision) and the public grades, so it explains rather than adds a second opinion. */
@@ -16,7 +17,7 @@ export interface Advice {
   tradeoff: string;
 }
 
-const won = (n: number) => (Math.abs(n) >= 10_000 ? `${(n / 10_000).toFixed(1).replace(/\.0$/, '')}억` : `${Math.round(n).toLocaleString('ko-KR')}만`);
+const won = (n: number) => (Math.abs(n) >= 10_000 ? __i18n_k("league.advice.won.db0fc332", { value: (n / 10_000).toFixed(1).replace(/\.0$/, '') }) : __i18n_k("league.advice.won.cd1481f0", { value: Math.round(n).toLocaleString('ko-KR') }));
 const MAX = 6;
 
 export function adviceFor(s: LeagueState): Advice | null {
@@ -27,106 +28,106 @@ export function adviceFor(s: LeagueState): Advice | null {
   const next = (s.offseason?.year ?? s.year) + 1;
   const who = (id: PlayerId) => {
     const p = s.players[id];
-    return p ? `${p.name} (${isPitcher(p) ? p.role : (p.position ?? '야수')}, 만 ${ageIn(p, next)}세, 현재 ${p.scouting.current} · 미래 ${p.scouting.futureValue})` : id;
+    return p ? __i18n_k("league.advice.adviceFor.who.d9026792", { name: p.name, value: isPitcher(p) ? p.role : (p.position ?? __i18n_k("league.advice.adviceFor.who.9dac0c64")), ageIn: ageIn(p, next), current: p.scouting.current, futureValue: p.scouting.futureValue }) : id;
   };
-  const list = (ids: PlayerId[]) => [...ids.slice(0, MAX).map(who), ...(ids.length > MAX ? [`외 ${ids.length - MAX}명`] : [])];
-  const none = (ids: PlayerId[], what: string) => (ids.length ? list(ids) : [`${what} 없음`]);
-  const KEEP = '보유 가치(현재 등급에, 23세 이하는 미래 등급을 절반, 26세 이하는 30% 섞은 값)';
+  const list = (ids: PlayerId[]) => [...ids.slice(0, MAX).map(who), ...(ids.length > MAX ? [__i18n_k("league.advice.adviceFor.list.6ff92439", { value: ids.length - MAX })] : [])];
+  const none = (ids: PlayerId[], what: string) => (ids.length ? list(ids) : [__i18n_k("league.advice.adviceFor.none.170ac933", { what: what })]);
+  const KEEP = __i18n_k("league.advice.adviceFor.kEEP.9d965e55");
 
   switch (input.kind) {
     case 'tryout':
-      return { rule: `${KEEP}가 높은 순으로 12명.`, picks: list(input.ids), tradeoff: '덜 뽑으면 연봉이 줄지만 퓨처스 1년을 버틸 선수층이 얇아집니다. 더 뽑으면 소속선수 자리를 일찍 채웁니다.' };
+      return { rule: __i18n_k("league.advice.adviceFor.rule.14eb66c9", { kEEP: KEEP }), picks: list(input.ids), tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.b1a2e603") };
     case 'released':
-      return { rule: `방출 선수 가운데 ${KEEP}가 높은 5명까지.`, picks: none(input.ids, '데려올 만한 선수'), tradeoff: '즉시 쓸 경력 선수지만 나이가 많아 몇 해 뒤 자리를 비워야 합니다.' };
+      return { rule: __i18n_k("league.advice.adviceFor.rule.4c685e4d", { kEEP: KEEP }), picks: none(input.ids, __i18n_k("league.advice.adviceFor.picks.82625a47")), tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.e1225907") };
     case 'specialDraft': {
       const picks = Object.values(input.picks);
       return {
-        rule: '구단마다 보호선수 밖에서 보유 가치가 가장 높은 선수를, 좋은 선수부터 자금·연봉 예산이 허락하는 만큼.',
-        picks: none(picks, '지명'),
-        tradeoff: '한 명마다 보상금이 나갑니다. 덜 뽑으면 자금이 남아 FA·외국인에 쓸 수 있지만 1군 첫해 전력이 약해집니다.',
+        rule: __i18n_k("league.advice.adviceFor.rule.69b93c75"),
+        picks: none(picks, __i18n_k("league.advice.adviceFor.picks.68a26d9d")),
+        tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.a9ba8e15"),
       };
     }
     case 'roster':
-      return { rule: `소속선수 한도를 맞추도록 ${KEEP}가 가장 낮은 선수부터 정리.`, picks: list(input.ids), tradeoff: '젊은 선수를 남기려면 대신 다른 선수를 정리해야 합니다. 정리한 선수 중 원하는 선수는 육성선수로 다시 계약해 한도 밖에 둘 수 있습니다.' };
+      return { rule: __i18n_k("league.advice.adviceFor.rule.f96655c0", { kEEP: KEEP }), picks: list(input.ids), tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.8d9e8466") };
     case 'foreign': {
       const offers = input.offers ?? {};
       return {
-        rule: '정규 외국인은 투수 2명·타자 1명, 아시아쿼터 1명을 공개 등급 순으로, 신규 상한과 외국인 샐러리캡 안에서 희망 보장액 그대로(옵션 없이) 제안.',
-        picks: input.ids.length ? input.ids.map((id) => `${who(id)}${offers[id] ? ` · 보장 ${(offers[id]!.guaranteed / 10_000).toFixed(0)}만 달러` : ''}`) : ['예산·상한 안에서 계약할 후보 없음'],
-        tradeoff: '보장액을 깎으면 돈은 아끼지만 역제안이나 결렬, 그 사이 다른 리그로 갈 위험이 있습니다. 옵션은 선수가 절반 가치로 봅니다.',
+        rule: __i18n_k("league.advice.adviceFor.rule.ad9f1ddf"),
+        picks: input.ids.length ? input.ids.map((id) => __i18n_k("league.advice.adviceFor.picks.3b180262", { who: who(id), value: offers[id] ? __i18n_k("league.advice.adviceFor.picks.91e7eb3c", { value: (offers[id]!.guaranteed / 10_000).toFixed(0) }) : '' })) : [__i18n_k("league.advice.adviceFor.picks.e1fe44d2")],
+        tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.81276f34"),
       };
     }
     case 'military': {
       const orders = Object.entries(input.orders);
-      const label = { sangmu: '상무 지원', army: '현역 입대', social: '사회복무' } as Record<string, string>;
+      const label = { sangmu: __i18n_k("league.advice.label.sangmu.ac73dafe"), army: __i18n_k("league.advice.label.army.b1da4883"), social: __i18n_k("league.advice.label.social.f695b002") } as Record<string, string>;
       return {
-        rule: '나이 때문에 꼭 가야 하는 선수는 상무 합격 가능성이 25% 이상이면 상무, 아니면 현역. 1군 주전이 아닌 23세 이상은 상무 가능성 30% 이상이면 지금 지원. 1군 주전은 미룹니다.',
-        picks: orders.length ? orders.map(([id, o]) => `${who(id)} → ${label[o] ?? o}`) : ['지금 보낼 선수 없음'],
-        tradeoff: '주전을 지금 보내면 1군 전력이 빠지고, 미루면 서른 전에 가야 할 때 상무 자리가 없을 수 있습니다. 상무는 퓨처스에서 뛰며 기량이 이어집니다.',
+        rule: __i18n_k("league.advice.adviceFor.rule.d93488b0"),
+        picks: orders.length ? orders.map(([id, o]) => `${who(id)} → ${label[o] ?? o}`) : [__i18n_k("league.advice.adviceFor.picks.71a21ed8")],
+        tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.fa9cb942"),
       };
     }
     case 'rookieBonus': {
       const total = Object.values(input.offers).reduce((a, b) => a + b, 0);
       const short = d.kind === 'rookieBonus' ? d.picks.filter((p) => input.offers[p.id] !== p.ask).length : 0;
       return {
-        rule: '자금이 허락하는 한 요구액을 그대로 주고, 모자라면 슬롯 금액.',
-        picks: [`계약금 합계 ${won(total)}${short ? ` · ${short}명은 슬롯 금액` : ''}`],
-        tradeoff: '슬롯 금액으로 깎으면 자금은 남지만 선수가 서운해하고, 해외로 갈 수 있는 선수는 협상이 틀어질 수 있습니다.',
+        rule: __i18n_k("league.advice.adviceFor.rule.d4d9b680"),
+        picks: [__i18n_k("league.advice.adviceFor.picks.2ea6abe4", { won: won(total), value: short ? __i18n_k("league.advice.adviceFor.picks.a0d6df42", { short: short }) : '' })],
+        tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.40d69921"),
       };
     }
     case 'development':
-      return { rule: '미래 등급이 높은 순으로, 한 해 영입 한도까지.', picks: none(input.ids, '영입'), tradeoff: '육성선수는 한도 밖이라 소속선수 자리를 쓰지 않지만, 1군에 올리려면 정식 계약으로 바꿔야 합니다.' };
+      return { rule: __i18n_k("league.advice.adviceFor.rule.ebf03d99"), picks: none(input.ids, __i18n_k("league.advice.adviceFor.picks.7994e59f")), tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.09f9ef4d") };
     case 'camp': {
       const moves = Object.entries(input.plans).filter(([, plan]) => plan.position);
       return {
-        rule: '수비 능력이 지금 포지션에 맞지 않는 선수만 한 칸 쉬운 포지션으로(유격수 → 2루·3루 → 1루·외야 → 지명).',
-        picks: moves.length ? moves.map(([id, plan]) => `${who(id)} → ${plan.position}`) : ['옮길 선수 없음'],
-        tradeoff: '포지션을 바꾼 첫해에는 수비가 흔들립니다. 그대로 두면 수비 손해가 계속됩니다.',
+        rule: __i18n_k("league.advice.adviceFor.rule.92e06d9e"),
+        picks: moves.length ? moves.map(([id, plan]) => `${who(id)} → ${plan.position}`) : [__i18n_k("league.advice.adviceFor.picks.6d0af5ca")],
+        tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.1d408b7e"),
       };
     }
     case 'retire':
-      return { rule: '등급 50 이상이고 설득이 통할 가능성이 30% 이상인 선수만 붙잡습니다.', picks: none(input.ids, '붙잡을 선수'), tradeoff: '붙잡으면 한 해 더 쓰지만 연봉이 들고 기량이 더 떨어질 수 있습니다. 보내면 자리가 젊은 선수에게 갑니다.' };
+      return { rule: __i18n_k("league.advice.adviceFor.rule.e049e905"), picks: none(input.ids, __i18n_k("league.advice.adviceFor.picks.5c6950b1")), tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.e2b3546a") };
     case 'faOptions':
-      return { rule: '보유 가치 45 이상이고, 그 선수가 시장에서 받을 금액이 남은 연봉의 80% 이상일 때만 옵션을 행사.', picks: none(input.keep, '행사'), tradeoff: '행사하면 확실히 남지만 연봉이 고정되고, 포기하면 그 돈을 FA 시장에 쓸 수 있습니다.' };
+      return { rule: __i18n_k("league.advice.adviceFor.rule.077be73f"), picks: none(input.keep, __i18n_k("league.advice.adviceFor.picks.a6e55f8c")), tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.c07ca09d") };
     case 'faProtect':
     case 'secondProtect':
-      return { rule: '보유 가치가 높은 순으로 보호 명단을 채웁니다.', picks: list(input.ids), tradeoff: '보호하지 않은 선수 중 한 명을 다른 구단이 데려갈 수 있습니다. 젊은 유망주를 보호하려면 고참 한 명을 빼야 합니다.' };
+      return { rule: __i18n_k("league.advice.adviceFor.rule.2f705ae8"), picks: list(input.ids), tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.276381a9") };
     case 'salaries':
-      return { rule: '모두 성적 기준(가치에 맞는 금액)으로 제안.', picks: ['전원 성적 기준'], tradeoff: '깎으면 예산은 남지만 연봉 조정 신청과 불만이 늘고, 올려 주면 사기가 오르지만 예산이 듭니다.' };
+      return { rule: __i18n_k("league.advice.adviceFor.rule.7b248f20"), picks: [__i18n_k("league.advice.adviceFor.picks.f05fcc20")], tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.9d4f6911") };
     case 'sponsor':
-      return { rule: '연간 후원금이 가장 큰 제안.', picks: d.kind === 'sponsor' ? [d.offers[input.index]?.name ?? ''] : [], tradeoff: '후원금이 큰 곳은 목표도 까다로울 수 있습니다. 목표를 못 채우면 다음 계약이 나빠집니다.' };
+      return { rule: __i18n_k("league.advice.adviceFor.rule.8c8a9a37"), picks: d.kind === 'sponsor' ? [d.offers[input.index]?.name ?? ''] : [], tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.3de4bca6") };
     case 'staff': {
       const hires = Object.entries(input.hires);
       return {
-        rule: '계약이 끝난 자리에서, 후보의 평가가 지금 사람보다 10 이상 높을 때만 바꿉니다(위약금이 드는 교체는 하지 않음).',
-        picks: hires.length ? hires.map(([role, id]) => `${STAFF_LABELS[role as StaffRole]}: ${d.kind === 'staff' ? (d.rows.find((r) => r.role === role)?.candidates.find((c) => c.id === id)?.name ?? id) : id}`) : ['모두 유지·재계약'],
-        tradeoff: '평가가 높은 사람일수록 연봉이 높고, 계약 기간이 남은 사람을 바꾸면 남은 연봉을 위약금으로 냅니다.',
+        rule: __i18n_k("league.advice.adviceFor.rule.8a0a18f8"),
+        picks: hires.length ? hires.map(([role, id]) => `${STAFF_LABELS[role as StaffRole]}: ${d.kind === 'staff' ? (d.rows.find((r) => r.role === role)?.candidates.find((c) => c.id === id)?.name ?? id) : id}`) : [__i18n_k("league.advice.adviceFor.picks.47797117")],
+        tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.8a50ac29"),
       };
     }
     case 'returnee':
-      return { rule: '보유 가치 45 이상인 선수를 좋은 순으로, 예산이 허락하는 만큼.', picks: none(input.ids, '데려올 선수'), tradeoff: '데려오지 않은 선수는 보류권이 풀려 다른 구단이 데려갈 수 있습니다.' };
+      return { rule: __i18n_k("league.advice.adviceFor.rule.cc2f83ff"), picks: none(input.ids, __i18n_k("league.advice.adviceFor.picks.f9839282")), tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.ff5291f6") };
     case 'posting':
-      return { rule: '27세 이상은 꿈을 좇게 해 주고 이적료를 받고, 그보다 어린 선수는 남깁니다.', picks: input.id ? [who(input.id)] : ['보내지 않음'], tradeoff: '보내면 이적료가 들어오지만 주전 한 명이 빠집니다. 남기면 서운해할 수 있습니다.' };
+      return { rule: __i18n_k("league.advice.adviceFor.rule.2930bc17"), picks: input.id ? [who(input.id)] : [__i18n_k("league.advice.adviceFor.picks.fbd57e0a")], tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.97e0bf90") };
     case 'secondPick':
-      return { rule: '보유 가치 50 이상이고 양도금을 낼 자금이 있을 때만 지명.', picks: input.id ? [who(input.id)] : ['지명하지 않음'], tradeoff: '양도금이 나가고 소속선수 자리를 하나 씁니다.' };
+      return { rule: __i18n_k("league.advice.adviceFor.rule.bf880257"), picks: input.id ? [who(input.id)] : [__i18n_k("league.advice.adviceFor.picks.bef6677a")], tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.549e7254") };
     case 'foreignRenew':
-      return { rule: '올해 WAR이 기준 이상인 선수를 WAR 순으로, 새 외국인 몫을 남겨 두고 외국인 샐러리캡 안에서 재계약.', picks: none(input.keep, '재계약'), tradeoff: '재계약하지 않은 선수는 다른 구단이 데려갈 수 있습니다. 새 외국인은 검증이 안 됐지만 더 쌀 수 있습니다.' };
+      return { rule: __i18n_k("league.advice.adviceFor.rule.ea376c90"), picks: none(input.keep, __i18n_k("league.advice.adviceFor.picks.994331cf")), tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.66b7f878") };
     case 'faCompensation':
-      return { rule: '명단 맨 위 선수의 보유 가치가 50 이상이면 선수를, 아니면 돈으로 보상받습니다.', picks: input.player ? [who(input.player)] : ['보상금만'], tradeoff: '선수를 받으면 보상금이 줄어듭니다.' };
+      return { rule: __i18n_k("league.advice.adviceFor.rule.4ef6c272"), picks: input.player ? [who(input.player)] : [__i18n_k("league.advice.adviceFor.picks.1695d428")], tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.ba8dbe2a") };
     case 'national': {
       const rows = d.kind === 'national' ? d.rows : [];
       const exempt = rows.filter((r) => r.exemption).map((r) => r.id);
       return {
-        rule: '다친 선수만 남게 해 달라고 요청하고, 건강한 선수는 보냅니다.',
-        picks: input.ids.length ? input.ids.map(who) : ['모두 보냄'],
-        tradeoff: `대표팀에 가면 그동안 경기에 못 나오지만 등록일수는 그대로 쌓입니다.${exempt.length ? ` 이 대회에서 메달을 따면 병역 혜택을 받을 수 있는 선수가 ${exempt.length}명 있습니다.` : ''} 건강한 선수를 빼 달라고 하면 팬들의 관심이 식고 선수 본인도 서운해하며, 대표팀이 거절할 수도 있습니다.`,
+        rule: __i18n_k("league.advice.adviceFor.rule.34ebb92f"),
+        picks: input.ids.length ? input.ids.map(who) : [__i18n_k("league.advice.adviceFor.picks.d9a37283")],
+        tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.27bd7e9c", { value: exempt.length ? __i18n_k("league.advice.adviceFor.tradeoff.950b51b3", { length: exempt.length }) : '' }),
       };
     }
     case 'meddle':
       return {
-        rule: '구단주의 뜻을 따르는 것이 기본. 감독 교체 지시에서 구단주가 미는 사람이 지금 감독보다 등급이 10 넘게 낮고 신뢰도가 40을 넘을 때만 거절합니다.',
-        picks: [input.answer === 'obey' ? '따른다' : '거절한다'],
-        tradeoff: '따르면 신뢰도가 조금 오르지만 구단 운영이 구단주 뜻대로 흔들립니다. 거절하면 신뢰도가 깎이고, 신뢰도가 15 아래로 떨어진 겨울에는 해임됩니다.',
+        rule: __i18n_k("league.advice.adviceFor.rule.3797364a"),
+        picks: [input.answer === 'obey' ? __i18n_k("league.advice.adviceFor.picks.53383ff3") : __i18n_k("league.advice.adviceFor.picks.c3df1fb6")],
+        tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.6a510576"),
       };
     default:
       return null;

@@ -1,10 +1,11 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Display settings (V0.7.6): the colours of the 20–80 ability bars, and whether the grades in the tables are
    coloured too. A per-browser preference like the alert pop-ups: never in the save, so a shared save file
    opens in the reader's own colours. */
 
 /** Five tiers of the 20–80 scale: under 40, 40s, 50s, 60s, 70 and up. */
 export type Tier = 0 | 1 | 2 | 3 | 4;
-export const TIER_LABELS = ['40 미만', '40–49', '50–59', '60–69', '70 이상'] as const;
+export const TIER_LABELS = [__i18n_k("ui.display.tIER_LABELS.0d9ea195"), '40–49', '50–59', '60–69', __i18n_k("ui.display.tIER_LABELS.722c51be")] as const;
 export const gradeTier = (g: number): Tier => (g >= 70 ? 4 : g >= 60 ? 3 : g >= 50 ? 2 : g >= 40 ? 1 : 0);
 
 export type BarPreset = 'club' | 'scale' | 'safe' | 'mono' | 'custom';
@@ -28,17 +29,17 @@ export interface DisplayPrefs {
 
 export type Theme = 'system' | 'light' | 'dark';
 export type Scale = 'small' | 'normal' | 'large';
-export const THEME_LABELS: Record<Theme, string> = { system: '기기 설정 따르기', light: '밝게', dark: '어둡게' };
-export const SCALE_LABELS: Record<Scale, string> = { small: '작게', normal: '보통', large: '크게' };
+export const THEME_LABELS: Record<Theme, string> = { system: __i18n_k("ui.display.tHEME_LABELS.system.6c3e1f09"), light: __i18n_k("ui.display.tHEME_LABELS.light.1dc155ce"), dark: __i18n_k("ui.display.tHEME_LABELS.dark.8beb3ca0") };
+export const SCALE_LABELS: Record<Scale, string> = { small: __i18n_k("ui.display.sCALE_LABELS.small.2247a832"), normal: '보통', large: __i18n_k("ui.display.sCALE_LABELS.large.69d7538d") };
 /** How much the page is scaled for each text size. */
 export const SCALE_ZOOM: Record<Scale, number> = { small: 0.92, normal: 1, large: 1.12 };
 
 /** null: the stylesheet's own colours (the club colour above 60, grey in the middle, pale under 40). */
 export const PRESETS: Record<Exclude<BarPreset, 'custom'>, { label: string; note: string; colors: Colors | null }> = {
-  club: { label: '구단 색 (기본)', note: '60 이상은 구단 색, 40 미만은 옅게', colors: null },
-  scale: { label: '등급별 색', note: '빨강–주황–노랑–초록–파랑', colors: ['#c8412f', '#e0862c', '#cfab2a', '#3d9a4f', '#2f6fd6'] },
-  safe: { label: '색약 친화', note: '주황–회색–파랑, 적록 구분 없이', colors: ['#b85c00', '#e39b43', '#8c8c8c', '#4f93d1', '#1f5fa6'] },
-  mono: { label: '흑백', note: '진할수록 높음', colors: ['var(--rule)', 'var(--ink-2)', 'var(--ink-2)', 'var(--ink)', 'var(--ink)'] },
+  club: { label: __i18n_k("ui.display.club.label.6200c0aa"), note: __i18n_k("ui.display.club.note.6dcee184"), colors: null },
+  scale: { label: __i18n_k("ui.display.scale.label.c797f3c4"), note: __i18n_k("ui.display.scale.note.2ca80346"), colors: ['#c8412f', '#e0862c', '#cfab2a', '#3d9a4f', '#2f6fd6'] },
+  safe: { label: __i18n_k("ui.display.safe.label.f9206346"), note: __i18n_k("ui.display.safe.note.262c389d"), colors: ['#b85c00', '#e39b43', '#8c8c8c', '#4f93d1', '#1f5fa6'] },
+  mono: { label: __i18n_k("ui.display.mono.label.d1e6f293"), note: __i18n_k("ui.display.mono.note.c6e34ea1"), colors: ['var(--rule)', 'var(--ink-2)', 'var(--ink-2)', 'var(--ink)', 'var(--ink)'] },
 };
 
 export const DEFAULT_PREFS: DisplayPrefs = { bars: 'club', custom: [...PRESETS.scale.colors!] as Colors, tables: false, density: 'compact', theme: 'system', scale: 'normal', hideScores: false };

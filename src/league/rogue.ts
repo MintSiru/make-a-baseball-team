@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* 살려야 한다 (1.6.0, scenario 7): a runaway "genius GM" AI runs the club from the founding through its fifth season.
    It answers every decision by itself — mostly as the scouts would, but it drafts for now over the future and gives
    every player what he asks — and each winter it does its own damage: the best young players traded for veterans,
@@ -66,8 +67,8 @@ function rogueWinter(s: LeagueState, year: number): string[] {
     movePlayer(s, p, club);
     movePlayer(s, vet, me);
     const team = s.teams.find((t) => t.id === club)!.short;
-    done.push(`유망주 ${p.name}(${ageIn(p, next)}세) ↔ ${team} ${vet.name}(${ageIn(vet, next)}세) 트레이드`);
-    addNews(s, { id: `rogue-trade-${year}-${p.id}`, date: `${year}-11-15`, kind: 'move', title: `AI 단장, 유망주 ${p.name} 내주고 ${vet.name} 영입`, body: `"경험이 곧 데이터입니다." AI 단장은 ${team}에 ${p.name}을 보내고 ${ageIn(vet, next)}세 ${vet.name}을 데려왔다.`, quotes: [], facts: {}, players: [p.id, vet.id], mine: true });
+    done.push(__i18n_k("league.rogue.rogueWinter.d84a0d78", { name: p.name, ageIn: ageIn(p, next), team: team, name2: vet.name, ageIn2: ageIn(vet, next) }));
+    addNews(s, { id: `rogue-trade-${year}-${p.id}`, date: `${year}-11-15`, kind: 'move', title: __i18n_k("league.rogue.rogueWinter.title.53320f19", { name: p.name, name2: vet.name }), body: __i18n_k("league.rogue.rogueWinter.body.df2bfd43", { team: team, name: p.name, ageIn: ageIn(vet, next), name2: vet.name }), quotes: [], facts: {}, players: [p.id, vet.id], mine: true });
   }
   // Big deals for players past thirty.
   const old = ours()
@@ -77,19 +78,19 @@ function rogueWinter(s: LeagueState, year: number): string[] {
   for (const p of old) {
     const annual = Math.round((Math.max(renewSalary(p, next), salaryIn(p, year)) * ROGUE.extensionRaise) / 1000) * 1000;
     p.contract = { teamId: me, kind: 'multiYear', signedIn: year, signingBonus: 0, salaries: Array.from({ length: ROGUE.extensionYears }, (_, i) => ({ season: next + i, amount: annual })) };
-    done.push(`${p.name}(${ageIn(p, next)}세) ${ROGUE.extensionYears}년 연 ${Math.round(annual / 10_000)}억 연장 계약`);
+    done.push(__i18n_k("league.rogue.rogueWinter.6a8b4952", { name: p.name, ageIn: ageIn(p, next), extensionYears: ROGUE.extensionYears, value: Math.round(annual / 10_000) }));
   }
   // Its own manager, the top ticket price, no marketing, its own projects.
   const staff = staffOf(s, me);
   const pick = makeStaff(s, 'manager', `rogue-${year}`, year, -15, { club: me });
-  done.push(`${staff.manager.name} 감독 경질, ${pick.name}(등급 ${pick.rating}) 선임`);
+  done.push(__i18n_k("league.rogue.rogueWinter.93d8b82a", { name: staff.manager.name, name2: pick.name, rating: pick.rating }));
   staff.manager = { ...pick, id: `st-${me}-manager-rogue-${year}`, until: next + 2 };
   const club = clubState(s, me);
   club.price = FANS.priceMax;
   club.marketing = FANS.marketing.min;
   u.fund -= ROGUE.projects;
-  u.ledger.push({ year, label: 'AI 단장의 "혁신 프로젝트"', amount: -ROGUE.projects });
-  done.push(`입장권 최고가, 마케팅 0, "혁신 프로젝트" ${Math.round(ROGUE.projects / 10_000)}억`);
+  u.ledger.push({ year, label: __i18n_k("league.rogue.rogueWinter.label.fb955a09"), amount: -ROGUE.projects });
+  done.push(__i18n_k("league.rogue.rogueWinter.e9e9e6f7", { value: Math.round(ROGUE.projects / 10_000) }));
   return done;
 }
 
@@ -122,16 +123,16 @@ export function runRogue(s: LeagueState): LeagueState {
   u.trust = 60;
   delete u.fired;
   const team = s.teams.find((t) => t.id === u.teamId)!;
-  const ranks = s.history.filter((h) => h.year >= startYear()).map((h) => `${h.year} ${h.table.find((x) => x.teamId === u.teamId)?.rank ?? '-'}위`);
+  const ranks = s.history.filter((h) => h.year >= startYear()).map((h) => __i18n_k("league.rogue.runRogue.ranks.69ecb200", { year: h.year, value: h.table.find((x) => x.teamId === u.teamId)?.rank ?? '-' }));
   addAlert(s, {
     id: `rogue-${end}`,
     date: `${end}-11-01`,
     kind: 'achievement',
-    title: 'AI의 전원을 내렸습니다',
-    lines: [`${team.name}의 지난 5년: ${ranks.join(' · ') || '기록 없음'}`, ...damage.slice(-4), `이제부터 단장의 시간입니다. ${end + 1}~${end + 3} 세 시즌 안에 한국시리즈 우승을 노리세요.`],
+    title: __i18n_k("league.rogue.runRogue.title.388ae560"),
+    lines: [__i18n_k("league.rogue.runRogue.lines.88bf1a29", { name: team.name, value: ranks.join(' · ') || __i18n_k("league.rogue.runRogue.lines.2de28099") }), ...damage.slice(-4), __i18n_k("league.rogue.runRogue.lines.7ad55645", { value: end + 1, value2: end + 3 })],
     tone: 'bad',
   });
-  addNews(s, { id: `rogue-${end}`, date: `${end}-11-01`, kind: 'move', title: `${team.short}, 폭주한 AI 단장 퇴출… 새 단장 취임`, body: `${team.name}이 5년 동안 구단을 운영한 AI 단장을 내보내고 새 단장을 앉혔다. 노장 위주의 선수단과 큰 연장 계약이 숙제로 남았다.`, quotes: [], facts: {}, players: [], mine: true });
+  addNews(s, { id: `rogue-${end}`, date: `${end}-11-01`, kind: 'move', title: __i18n_k("league.rogue.runRogue.title.66d30457", { short: team.short }), body: __i18n_k("league.rogue.runRogue.body.35e218ac", { name: team.name }), quotes: [], facts: {}, players: [], mine: true });
   return s;
 }
 

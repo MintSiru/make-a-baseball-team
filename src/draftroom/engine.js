@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index.js';
 /* Game engine: draft order, legal picks, CPU picks, phase flow, seasons and save restore.
    A game is plain JSON. Everything except the user's own choices is derived from the seed. */
 // Ported from KBO-Draft-Room df4faad src/core/engine.js. See docs/UPSTREAM.md.
@@ -61,23 +62,23 @@ function fit(p, t) {
   return S.fit(p, t);
 }
 function fitLabel(p, t) {
-  return fit(p, t) >= 80 ? '핵심 보강' : fit(p, t) >= 60 ? '뎁스 보강' : '여유 자원';
+  return fit(p, t) >= 80 ? __i18n_k("draftroom.engine.fitLabel.717ba8d4") : fit(p, t) >= 60 ? __i18n_k("draftroom.engine.fitLabel.3a2df04f") : __i18n_k("draftroom.engine.fitLabel.f5919620");
 }
 function outlook(p) {
-  return p.ready >= 45 ? '1군 경쟁 후보' : p.ready >= 35 ? '적응 후 도전' : '퓨처스 육성 우선';
+  return p.ready >= 45 ? __i18n_k("draftroom.engine.outlook.b5d32615") : p.ready >= 35 ? __i18n_k("draftroom.engine.outlook.84a29aac") : __i18n_k("draftroom.engine.outlook.3da2b527");
 }
 function upsideLabel(p) {
   return p.scoutCeiling >= 60
-    ? '상위 주전 전망'
+    ? __i18n_k("draftroom.engine.upsideLabel.9926f9d8")
     : p.scoutCeiling >= 50
-      ? '평균 주전 전망'
+      ? __i18n_k("draftroom.engine.upsideLabel.015c4bbe")
       : p.scoutCeiling >= 40
-        ? '역할 확보 전망'
-        : '추가 육성 필요';
+        ? __i18n_k("draftroom.engine.upsideLabel.bc46199b")
+        : __i18n_k("draftroom.engine.upsideLabel.3769b80d");
 }
 function makeSchedule(local, rounds = ROUNDS) {
   const a = [];
-  if (local) for (const t of TEAMS) a.push({ teamId: t.id, round: 0, label: '지역 1차' });
+  if (local) for (const t of TEAMS) a.push({ teamId: t.id, round: 0, label: __i18n_k("draftroom.engine.makeSchedule.label.e8a3b15a") });
   for (let round = 1; round <= rounds; round++)
     for (const t of TEAMS) a.push({ teamId: t.id, round, label: round + 'R' });
   return a;
@@ -342,7 +343,7 @@ function undrafted(g) {
 }
 function devEntry(g, teamId, playerId) {
   const k = (g.devSigns || []).length;
-  return { teamId, round: g.rounds + 1, label: '육성', dev: true, playerId, overall: g.schedule.length + k + 1, fit: fit(getPlayer(g, playerId), teamFor(g, teamId)) };
+  return { teamId, round: g.rounds + 1, label: __i18n_k("draftroom.engine.devEntry.label.818f3b79"), dev: true, playerId, overall: g.schedule.length + k + 1, fit: fit(getPlayer(g, playerId), teamFor(g, teamId)) };
 }
 /**
  * The user signs up to `max` undrafted players; then each CPU club, in draft order, signs cpuMin–cpuMax more.
@@ -351,7 +352,7 @@ function devEntry(g, teamId, playerId) {
 function signDevelopment(g, ids = []) {
   const D_ = TUNING.devContracts;
   if (g.phase !== 'signing') throw Error('육성선수 계약은 드래프트가 끝난 뒤에 합니다.');
-  if (!Array.isArray(ids) || ids.length > D_.max || new Set(ids).size !== ids.length) throw Error('육성선수는 최대 ' + D_.max + '명입니다.');
+  if (!Array.isArray(ids) || ids.length > D_.max || new Set(ids).size !== ids.length) throw Error(__i18n_k("draftroom.engine.signDevelopment.3178ed17", { max: D_.max }));
   const free = new Set(undrafted(g).map((p) => p.id));
   if (!ids.every((id) => free.has(id))) throw Error('계약할 수 없는 선수입니다.');
   if (ids.length * TUNING.contracts.devCost > budgetLeft(g)) throw Error('육성선수 계약 예산이 부족합니다.');
@@ -376,13 +377,13 @@ function gmQuestions(g) {
   const first = mySignedPicks(g)[0];
   const qs = Press.gmQuestions({
     first: first ? R.project(getPlayer(g, first.playerId)) : null,
-    firstLabel: first ? (first.round === 0 ? '지역 1차로' : `${first.label}에서`) : '',
+    firstLabel: first ? (first.round === 0 ? __i18n_k("draftroom.engine.qs.firstLabel.05d36d1a") : __i18n_k("draftroom.engine.qs.firstLabel.63ddf975", { label: first.label })) : '',
     refused: refusals(g, g.teamId).map((t) => getPlayer(g, t.playerId).name),
     spentShare: spent(g) / g.budgets[g.teamId],
     boost: Deal.growthBoost(budgetLeft(g), g.budgets[g.teamId]),
     team: teamFor(g),
   });
-  return [...qs, { id: 'pledge', question: '이번 지명으로 무엇을 보여 주실 겁니까?', options: gmOptions(g) }];
+  return [...qs, { id: 'pledge', question: __i18n_k("draftroom.engine.gmQuestions.question.14fbd561"), options: gmOptions(g) }];
 }
 /** `choice`: the pledge; `answers`: { first, issue } option ids (the first option when omitted). */
 function chooseGM(g, choice, answers = {}) {
@@ -411,21 +412,21 @@ function pledgeOutcomes(g) {
     regularHere = (y, id) => y.records.some((r) => r.playerId === id && r.teamId === g.teamId && r.route === 'regular');
   if (first && g.gmAnswers?.first === 'now' && years[0]) {
     const kept = years[0].records.some((r) => r.playerId === first.playerId && r.stats.games > 0);
-    out.push({ yearIndex: 0, label: '첫 지명 즉시 전력 약속', delta: kept ? 3 : -3, kept });
+    out.push({ yearIndex: 0, label: __i18n_k("draftroom.engine.pledgeOutcomes.label.a47cea67"), delta: kept ? 3 : -3, kept });
   }
   if (first && g.gmAnswers?.first === 'project') {
     const at = years.slice(0, 4).findIndex((y) => regularHere(y, first.playerId));
-    if (at >= 0) out.push({ yearIndex: at, label: '첫 지명 주전 육성 약속', delta: 4, kept: true });
-    else if (years.length >= 4) out.push({ yearIndex: 3, label: '첫 지명 주전 육성 약속', delta: -3, kept: false });
+    if (at >= 0) out.push({ yearIndex: at, label: __i18n_k("draftroom.engine.pledgeOutcomes.label.7521b6a0"), delta: 4, kept: true });
+    else if (years.length >= 4) out.push({ yearIndex: 3, label: __i18n_k("draftroom.engine.pledgeOutcomes.label.7521b6a0"), delta: -3, kept: false });
   }
   if (g.gmChoice === 'core5' && years.length >= 5) {
     const n = mySignedPicks(g).filter((s) => years.slice(0, 5).some((y) => regularHere(y, s.playerId))).length;
-    out.push({ yearIndex: 4, label: `5년 주전 셋 약속 (${n}명)`, delta: n >= 3 ? 5 : -5, kept: n >= 3 });
+    out.push({ yearIndex: 4, label: __i18n_k("draftroom.engine.pledgeOutcomes.label.24f70de4", { n: n }), delta: n >= 3 ? 5 : -5, kept: n >= 3 });
   }
   return out;
 }
 function fanState(g) {
-  const timeline = [{ label: '시작 전', delta: 0, score: 50 }];
+  const timeline = [{ label: __i18n_k("draftroom.engine.timeline.label.bcfe1cbb"), delta: 0, score: 50 }];
   let score = 50;
   function entry(label, delta) {
     score = clamp(score + delta, 0, 100);
@@ -434,15 +435,15 @@ function fanState(g) {
   for (const n of g.news.filter((n) => n.teamId === g.teamId)) entry(n.reason, n.delta);
   if (g.phase !== 'negotiation' && g.offers) {
     const lost = refusals(g, g.teamId).length;
-    entry(`계약 협상 · ${lost ? `지명 거부 ${lost}명` : '전원 계약'}`, lost ? lost * TUNING.contracts.refusalFan : 0);
+    entry(__i18n_k("draftroom.engine.fanState.cf08d6c1", { value: lost ? __i18n_k("draftroom.engine.fanState.e4eb686a", { lost: lost }) : __i18n_k("draftroom.engine.fanState.c0785a4e") }), lost ? lost * TUNING.contracts.refusalFan : 0);
   }
   if (g.gmChoice) {
     for (const q of gmQuestions(g).filter((q) => q.id !== 'pledge')) {
       const o = q.options.find((o) => o.id === g.gmAnswers?.[q.id]);
-      if (o) entry('기자회견 · ' + o.title, o.delta);
+      if (o) entry(__i18n_k("draftroom.engine.fanState.a462c188", { title: o.title }), o.delta);
     }
     const c = gmOptions(g).find((c) => c.id === g.gmChoice);
-    entry('기자회견 · ' + c.title, c.delta);
+    entry(__i18n_k("draftroom.engine.fanState.a462c188", { title: c.title }), c.delta);
   }
   if (g.season) {
     const a = Press.accountability(
@@ -451,7 +452,7 @@ function fanState(g) {
       g.season,
       teamFor(g),
     );
-    entry('첫 시즌 약속 · ' + a.status, a.bonus);
+    entry(__i18n_k("draftroom.engine.fanState.12afd046", { status: a.status }), a.bonus);
   }
   const pledges = pledgeOutcomes(g);
   // Every season: the club's finish, how many of this class held a regular job here, national medals.
@@ -465,12 +466,12 @@ function fanState(g) {
       medals = y.awards.filter((a) => a.scope === 'national' && own.has(a.playerId) && /메달/.test(a.title)).length;
     score = Math.round(clamp(score + (50 - score) * F.fade, 0, 100));
     const delta = F.byRank[rank - 1] + (champion ? F.champion : 0) + Math.min(F.maxRegulars, regulars) * F.perRegular + Math.min(F.maxMedals, medals);
-    entry(`${y.year} 시즌 · ${rank}위${champion ? ' · 우승' : ''} · 동기 주전 ${regulars}명${medals ? ` · 국가대표 메달 ${medals}명` : ''}`, delta);
-    for (const o of pledges.filter((o) => o.yearIndex === y.year - Bio.ENTRY_YEAR)) entry(`${o.label} · ${o.kept ? '지킴' : '못 지킴'}`, o.delta);
+    entry(__i18n_k("draftroom.engine.fanState.0402f8f5", { year: y.year, rank: rank, value: champion ? __i18n_k("draftroom.engine.fanState.a54a65c5") : '', regulars: regulars, value2: medals ? __i18n_k("draftroom.engine.fanState.0c24d413", { medals: medals }) : '' }), delta);
+    for (const o of pledges.filter((o) => o.yearIndex === y.year - Bio.ENTRY_YEAR)) entry(__i18n_k("draftroom.engine.fanState.8f5ca8ee", { label: o.label, value: o.kept ? __i18n_k("draftroom.engine.fanState.581b7049") : __i18n_k("draftroom.engine.fanState.011a5f54") }), o.delta);
   }
   return {
     score,
-    label: score >= 65 ? '기대 우세' : score >= 45 ? '관망' : score >= 30 ? '우려 우세' : '신뢰 회복 필요',
+    label: score >= 65 ? __i18n_k("draftroom.engine.fanState.label.108848d9") : score >= 45 ? __i18n_k("draftroom.engine.fanState.label.8630cbaf") : score >= 30 ? __i18n_k("draftroom.engine.fanState.label.e298c644") : __i18n_k("draftroom.engine.fanState.label.b42ec721"),
     timeline,
   };
 }

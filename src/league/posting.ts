@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The posting system (포스팅, RULES.md §4): after seven seasons a player may ask his club to post him
    to the major leagues. A club posts at most one player a winter. If a major league club signs him in
    the 30-day window, his KBO club receives a release fee from the guaranteed value (20% of the first
@@ -84,22 +85,22 @@ export function post(s: LeagueState, id: PlayerId, next: number): PostingResult 
   p.service.postedIn = next - 1;
   const short = s.teams.find((t) => t.id === teamId)?.short ?? teamId;
   if (!market) {
-    logTransaction(s, `포스팅: ${short} ${iga(p.name)} 메이저리그 계약에 실패해 잔류`);
+    logTransaction(s, __i18n_k("league.posting.post.f6795404", { short: short, name: iga(p.name) }));
     moveNews(s, { type: 'posting', teamId, id, deal: null }, `${next - 1}-11-10`);
     postingAlert(s, p, teamId, next - 1, null);
     return { id, teamId, deal: null };
   }
   const fee = postingFee(market.total);
-  logTransaction(s, `포스팅: ${short} ${p.name} 메이저리그 ${market.years}년 ${usd(market.total)} 계약 (이적료 ${usd(fee)})`);
+  logTransaction(s, __i18n_k("league.posting.post.c30adfd5", { short: short, name: p.name, years: market.years, usd: usd(market.total), usd2: usd(fee) }));
   moveNews(s, { type: 'posting', teamId, id, deal: { ...market, fee } }, `${next - 1}-11-10`);
   postingAlert(s, p, teamId, next - 1, { years: market.years, total: usd(market.total), fee: usd(fee) });
   const u = s.user;
   if (u && teamId === u.teamId) {
     unlock(s, 'posting', next - 1, p.name);
-    milestone(s, next - 1, `${p.name} 메이저리그 진출 (${market.years}년 ${usd(market.total)})`);
+    milestone(s, next - 1, __i18n_k("league.posting.post.24ee77da", { name: p.name, years: market.years, usd: usd(market.total) }));
     const won = Math.round(fee * MANWON_PER_USD);
     u.fund += won;
-    u.ledger.push({ year: next - 1, label: `포스팅 이적료 · ${p.name}`, amount: won });
+    u.ledger.push({ year: next - 1, label: __i18n_k("league.posting.post.label.250352bd", { name: p.name }), amount: won });
   }
   leaveLeague(s, p, 'overseas');
   return { id, teamId, deal: { ...market, fee } };
@@ -118,6 +119,6 @@ export function runAiPosting(s: LeagueState, next: number) {
 /** A line for the user's log about how the posting went. */
 export function postingNote(s: LeagueState, res: PostingResult, name: string) {
   return res.deal
-    ? `${name} 메이저리그 진출: ${res.deal.years}년 ${usd(res.deal.total)}, 이적료 ${usd(res.deal.fee)} 수령`
-    : `${eulreul(name)} 포스팅했지만 계약한 메이저리그 구단이 없어 잔류합니다`;
+    ? __i18n_k("league.posting.postingNote.febb2441", { name: name, years: res.deal.years, usd: usd(res.deal.total), usd2: usd(res.deal.fee) })
+    : __i18n_k("league.posting.postingNote.52f64213", { name: eulreul(name) });
 }

@@ -1,3 +1,4 @@
+import { display as __i18n_display, t as __i18n_t } from '../i18n/index';
 /* The general manager's briefing on the club overview (1.5.0): the few things that matter most now, each with what
    was seen, the choices and what they cost, and buttons to the screens that make them. */
 import { briefing, type BriefGo } from '../league/briefing';
@@ -7,34 +8,34 @@ export function Briefing({ league, onGo }: { league: LeagueState; onGo: (g: Brie
   const items = briefing(league);
   return (
     <section class="briefing" aria-labelledby="briefing-title">
-      <h3 id="briefing-title">단장 브리핑</h3>
-      {items.length === 0 ? (
-        <p class="muted">지금 급한 일은 없습니다. 선수단과 라인업은 감독이 꾸려 갑니다.</p>
+      <h3 id="briefing-title">{__i18n_t("ui.briefing.briefing.e1cca07a")}</h3>
+      {__i18n_display(items.length === 0 ? (
+        <p class="muted">{__i18n_t("ui.briefing.briefing.cd219ff2")}</p>
       ) : (
         <ol class="brief-list">
-          {items.map((x) => (
+          {__i18n_display(items.map((x) => (
             <li key={x.id} class={`brief ${x.tone}`}>
-              <p class="brief-title">{x.title}</p>
+              <p class="brief-title">{__i18n_display(x.title)}</p>
               <ul class="plain small">
-                {x.facts.map((f) => (
-                  <li key={f}>{f}</li>
-                ))}
+                {__i18n_display(x.facts.map((f) => (
+                  <li key={f}>{__i18n_display(f)}</li>
+                )))}
               </ul>
               <div class="brief-actions">
-                {x.options.map((o) => (
+                {__i18n_display(x.options.map((o) => (
                   <span key={o.label} class="brief-option">
                     <button type="button" onClick={() => onGo(o.go)}>
-                      {o.label}
+                      {__i18n_display(o.label)}
                     </button>
-                    {o.note && <span class="muted small">{o.note}</span>}
+                    {__i18n_display(o.note && <span class="muted small">{__i18n_display(o.note)}</span>)}
                   </span>
-                ))}
+                )))}
               </div>
             </li>
-          ))}
+          )))}
         </ol>
-      )}
-      <p class="muted small">스카우트 등급·성적·부상·예산·모기업 목표로 고른 것입니다. 숨은 능력은 알 수 없으니 판단은 단장의 몫입니다.</p>
+      ))}
+      <p class="muted small">{__i18n_t("ui.briefing.briefing.0ae878ec")}</p>
     </section>
   );
 }

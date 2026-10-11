@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index.js';
 /* Fictional educational histories. Current qualification != birthplace or old school. */
 // Ported from KBO-Draft-Room df4faad src/core/biography.js. See docs/UPSTREAM.md.
 import DraftCatalog from './catalog.js';
@@ -7,24 +8,24 @@ const DRAFT_DATE = '2026-09-16',
   DRAFT_YEAR = 2026,
   ENTRY_YEAR = 2027;
 const REGIONS = [
-  '서울',
-  '경남',
+  __i18n_k("draftroom.biography.rEGIONS.ea9858ee"),
+  __i18n_k("draftroom.biography.rEGIONS.7aeadd5c"),
   '대전·충청·전북',
   '부산·울산',
-  '인천',
+  __i18n_k("draftroom.biography.rEGIONS.41402f7e"),
   '경기·강원',
   '대구·경북',
   '광주·전남·제주',
 ];
 const CITIES = {
-  서울: ['서울 종로구', '서울 강동구', '서울 은평구', '서울 동작구', '서울 강서구'],
-  경남: ['창원', '진주', '김해', '거제', '사천'],
-  '대전·충청·전북': ['대전', '천안', '청주', '세종', '전주', '익산'],
-  '부산·울산': ['부산 동래구', '부산 영도구', '부산 해운대구', '울산 남구', '울산 중구'],
-  인천: ['인천 미추홀구', '인천 연수구', '인천 서구', '인천 강화군'],
-  '경기·강원': ['수원', '평택', '고양', '성남', '하남', '강릉', '춘천', '동해'],
-  '대구·경북': ['대구', '포항', '경주', '안동', '구미'],
-  '광주·전남·제주': ['광주', '목포', '여수', '순천', '제주', '서귀포'],
+  서울: [__i18n_k("draftroom.biography.cITIES.message.71d9dd43"), __i18n_k("draftroom.biography.cITIES.message.91bf00f1"), __i18n_k("draftroom.biography.cITIES.message.ce691fd7"), __i18n_k("draftroom.biography.cITIES.message.014d6389"), __i18n_k("draftroom.biography.cITIES.message.c5003be8")],
+  경남: [__i18n_k("draftroom.biography.cITIES.message.d517715a"), __i18n_k("draftroom.biography.cITIES.message.c446c4c9"), __i18n_k("draftroom.biography.cITIES.message.435a8215"), __i18n_k("draftroom.biography.cITIES.message.868f7fbe"), __i18n_k("draftroom.biography.cITIES.message.10da22f1")],
+  '대전·충청·전북': [__i18n_k("draftroom.biography.cITIES.1e783cc6"), __i18n_k("draftroom.biography.cITIES.ffee1233"), __i18n_k("draftroom.biography.cITIES.d2f21306"), __i18n_k("draftroom.biography.cITIES.210a875a"), __i18n_k("draftroom.biography.cITIES.64ada749"), __i18n_k("draftroom.biography.cITIES.1801c5fc")],
+  '부산·울산': [__i18n_k("draftroom.biography.cITIES.aed8af26"), __i18n_k("draftroom.biography.cITIES.a8f4acdb"), __i18n_k("draftroom.biography.cITIES.546ba657"), __i18n_k("draftroom.biography.cITIES.b00e43e0"), __i18n_k("draftroom.biography.cITIES.e68f5b53")],
+  인천: [__i18n_k("draftroom.biography.cITIES.message.a134357c"), __i18n_k("draftroom.biography.cITIES.message.8d7b66b1"), __i18n_k("draftroom.biography.cITIES.message.70b39ea2"), __i18n_k("draftroom.biography.cITIES.message.1792b391")],
+  '경기·강원': [__i18n_k("draftroom.biography.cITIES.08ccbbe9"), __i18n_k("draftroom.biography.cITIES.f560dc60"), __i18n_k("draftroom.biography.cITIES.c7311e99"), __i18n_k("draftroom.biography.cITIES.a227ab1c"), __i18n_k("draftroom.biography.cITIES.8b26cefa"), __i18n_k("draftroom.biography.cITIES.35543581"), __i18n_k("draftroom.biography.cITIES.da0de687"), __i18n_k("draftroom.biography.cITIES.d672dce0")],
+  '대구·경북': [__i18n_k("draftroom.biography.cITIES.604f78d4"), __i18n_k("draftroom.biography.cITIES.a8164928"), __i18n_k("draftroom.biography.cITIES.1bd9ee29"), __i18n_k("draftroom.biography.cITIES.f6652dd7"), __i18n_k("draftroom.biography.cITIES.19136699")],
+  '광주·전남·제주': [__i18n_k("draftroom.biography.cITIES.ad0d7d4b"), __i18n_k("draftroom.biography.cITIES.27f5a39c"), __i18n_k("draftroom.biography.cITIES.5ba7ff76"), __i18n_k("draftroom.biography.cITIES.1d78e09b"), __i18n_k("draftroom.biography.cITIES.b6966f66"), __i18n_k("draftroom.biography.cITIES.d63a985b")],
 };
 const TIERS = {
   명문: { ready: 4, weight: 1.8, team: 0.82 },
@@ -37,14 +38,14 @@ const pick = (xs, r) => xs[Math.floor(r() * xs.length)];
 // Per pathway: education, entry category (drives talent generation), qualification and quota eligibility.
 const PATHWAY_INFO = {
   고졸: { education: '고교 졸업 예정', entry: 'high-school', qualification: '고교 졸업 예정' },
-  대졸: { education: '대학 졸업(예정)', entry: 'college-graduate', qualification: '대학 졸업 예정', quota: true, collegeYear: 4 },
-  '대학 얼리': { education: '대학 재학', entry: 'college-early', qualification: '대학 2학년 얼리 참가', collegeYear: 2 },
-  '2년제': { education: '전문대 졸업 예정', entry: 'college-two-year', qualification: '2년제 대학 졸업 예정', quota: true, collegeYear: 2 },
-  '야구 유학': { education: '해외 고교 졸업 예정', entry: 'study-abroad', qualification: '해외 고교 졸업 예정' },
-  독립구단: { education: '고교 졸업', entry: 'independent', qualification: '독립구단 지원' },
-  해외파: { education: '대학 졸업(예정)', entry: 'overseas', qualification: '해외 대학 졸업' },
+  대졸: { education: __i18n_k("draftroom.biography.message.education.30007684"), entry: 'college-graduate', qualification: __i18n_k("draftroom.biography.message.qualification.f6edad66"), quota: true, collegeYear: 4 },
+  '대학 얼리': { education: __i18n_k("draftroom.biography.pATHWAY_INFO.education.872d1210"), entry: 'college-early', qualification: __i18n_k("draftroom.biography.pATHWAY_INFO.qualification.7f32aad5"), collegeYear: 2 },
+  '2년제': { education: __i18n_k("draftroom.biography.pATHWAY_INFO.education.2492908e"), entry: 'college-two-year', qualification: __i18n_k("draftroom.biography.pATHWAY_INFO.qualification.53e74ef0"), quota: true, collegeYear: 2 },
+  '야구 유학': { education: __i18n_k("draftroom.biography.pATHWAY_INFO.education.f15ef1a7"), entry: 'study-abroad', qualification: __i18n_k("draftroom.biography.pATHWAY_INFO.qualification.f15ef1a7") },
+  독립구단: { education: __i18n_k("draftroom.biography.message.education.61948271"), entry: 'independent', qualification: __i18n_k("draftroom.biography.message.qualification.a2382cae") },
+  해외파: { education: __i18n_k("draftroom.biography.message.education.30007684"), entry: 'overseas', qualification: __i18n_k("draftroom.biography.message.qualification.65bd8a18") },
 };
-const RETURN_LEVELS = { '마이너 복귀': ['A', 'AA', 'AAA'], '해외독립 복귀': ['해외 독립'], 'MLB 경험 복귀': ['MLB'], '해외리그 복귀': ['NPB 2군', 'CPBL', 'LMB', 'ABL'] };
+const RETURN_LEVELS = { '마이너 복귀': ['A', 'AA', 'AAA'], '해외독립 복귀': [__i18n_k("draftroom.biography.rETURN_LEVELS.400951ad")], 'MLB 경험 복귀': ['MLB'], '해외리그 복귀': [__i18n_k("draftroom.biography.rETURN_LEVELS.602ac124"), 'CPBL', 'LMB', 'ABL'] };
 function choose(xs, r) {
   let n = r() * xs.reduce((s, x) => s + (x.weight || TIERS[x.tier]?.weight || 1), 0);
   for (const x of xs) {
@@ -129,10 +130,10 @@ function makeBiography(r, region, pathway) {
       tier: hs.tier,
       start: iso(hsGrad - 3, 3),
       end: iso(hsGrad, 2, 28),
-      status: hs.kind === 'hs-club' ? (high ? '활동 종료 예정' : '활동 종료') : high || pathway === '야구 유학' ? '졸업 예정' : '졸업',
+      status: hs.kind === 'hs-club' ? (high ? __i18n_k("draftroom.biography.history.status.e2991e2c") : __i18n_k("draftroom.biography.history.status.9d74244d")) : high || pathway === '야구 유학' ? __i18n_k("draftroom.biography.history.status.f00303ef") : __i18n_k("draftroom.biography.history.status.ca51f06f"),
       note:
-        hs.kind === 'hs-club' ? '고교 연령 클럽팀에서 뛰었습니다.'
-        : pathway === '야구 유학' ? `중학교를 마치고 ${hs.country}으로 야구 유학을 떠났습니다.`
+        hs.kind === 'hs-club' ? __i18n_k("draftroom.biography.history.note.7e0e9103")
+        : pathway === '야구 유학' ? __i18n_k("draftroom.biography.history.note.3cf890ad", { country: hs.country })
         : '',
     },
   ];
@@ -145,11 +146,11 @@ function makeBiography(r, region, pathway) {
       tier: current.tier,
       start: iso(hsGrad, 3),
       end: pathway === '대학 얼리' ? null : iso(ENTRY_YEAR, 2, 28),
-      status: pathway === '대학 얼리' ? '2학년 재학 · 얼리 참가' : '졸업 예정',
+      status: pathway === '대학 얼리' ? __i18n_k("draftroom.biography.makeBiography.status.8c293b47") : __i18n_k("draftroom.biography.makeBiography.status.f00303ef"),
       note:
         pathway === '대학 얼리'
-          ? '졸업 전 조기 참가입니다. 대졸 의무지명에는 포함하지 않습니다.'
-          : '게임에서는 4년제 과정으로 단순화합니다.',
+          ? __i18n_k("draftroom.biography.makeBiography.note.c154105d")
+          : __i18n_k("draftroom.biography.makeBiography.note.d7e41505"),
     });
   if (pathway === '2년제')
     history.push({
@@ -160,8 +161,8 @@ function makeBiography(r, region, pathway) {
       tier: current.tier,
       start: iso(hsGrad, 3),
       end: iso(ENTRY_YEAR, 2, 28),
-      status: '졸업 예정',
-      note: '2년제 과정을 마쳤습니다. 대졸 의무지명 대상입니다.',
+      status: __i18n_k("draftroom.biography.makeBiography.status.f00303ef"),
+      note: __i18n_k("draftroom.biography.makeBiography.note.d82ec013"),
     });
   if (pathway === '해외파')
     history.push({
@@ -172,8 +173,8 @@ function makeBiography(r, region, pathway) {
       tier: null,
       start: iso(hsGrad, current.academicStartMonth),
       end: iso(DRAFT_YEAR, current.academicEndMonth, 28),
-      status: '졸업',
-      note: '해외 대학 4년 과정을 마쳤습니다.',
+      status: __i18n_k("draftroom.biography.makeBiography.status.ca51f06f"),
+      note: __i18n_k("draftroom.biography.makeBiography.note.2aa0d1ce"),
     });
   if (pathway === '독립구단') {
     let independentStart = hsGrad;
@@ -191,7 +192,7 @@ function makeBiography(r, region, pathway) {
         tier: college.tier,
         start: iso(hsGrad, 3),
         end: iso(independentStart, 2, 28),
-        status: '졸업',
+        status: __i18n_k("draftroom.biography.makeBiography.status.ca51f06f"),
         note: '',
       });
     }
@@ -203,8 +204,8 @@ function makeBiography(r, region, pathway) {
       tier: null,
       start: iso(independentStart, 3),
       end: null,
-      status: '활동 중',
-      note: '졸업 이후 독립구단에서 다시 기회를 준비했습니다.',
+      status: __i18n_k("draftroom.biography.makeBiography.status.d38db827"),
+      note: __i18n_k("draftroom.biography.makeBiography.note.54fca7e5"),
     });
   }
   if (returning)
@@ -216,8 +217,8 @@ function makeBiography(r, region, pathway) {
       tier: null,
       start: iso(hsGrad, 3),
       end: iso(DRAFT_YEAR, 8, 31),
-      status: '국내 프로 첫 도전',
-      note: '국내 프로 입단 전 해외 리그에서 뛰었습니다. 기록은 해외 마지막 시즌 기준입니다.',
+      status: __i18n_k("draftroom.biography.makeBiography.status.f95ee99d"),
+      note: __i18n_k("draftroom.biography.makeBiography.note.ff9096bc"),
     });
   const proExperience = returning
     ? {
@@ -225,12 +226,12 @@ function makeBiography(r, region, pathway) {
         seasons: DRAFT_YEAR - hsGrad + 1,
         domesticPro: false,
         briefMLB: current.level === 'MLB',
-        recordScope: current.level === 'MLB' ? 'MLB 짧은 콜업 표본' : '마지막 ' + current.level + ' 시즌',
+        recordScope: current.level === 'MLB' ? __i18n_k("draftroom.biography.proExperience.recordScope.6a6bdf93") : __i18n_k("draftroom.biography.proExperience.recordScope.4494a8aa", { level: current.level }),
       }
     : null;
   return {
     proExperience,
-    education: returning ? '해외 프로 경력' : withCollege ? '대학 졸업' : PATHWAY_INFO[pathway].education,
+    education: returning ? __i18n_k("draftroom.biography.makeBiography.education.a9b9dd23") : withCollege ? __i18n_k("draftroom.biography.makeBiography.education.a589337f") : PATHWAY_INFO[pathway].education,
     entryCategory: returning ? 'overseas-return' : PATHWAY_INFO[pathway].entry,
     collegeYear: PATHWAY_INFO[pathway]?.collegeYear ?? null,
     quotaEligible: !!PATHWAY_INFO[pathway]?.quota,
@@ -249,14 +250,14 @@ function makeBiography(r, region, pathway) {
     schoolTier: current.tier,
     history,
     pathText: history.map((h) => h.name).join(' → '),
-    qualification: returning ? '해외 경력 후 국내 프로 첫 지원' : PATHWAY_INFO[pathway].qualification,
+    qualification: returning ? __i18n_k("draftroom.biography.makeBiography.qualification.ca422ce1") : PATHWAY_INFO[pathway].qualification,
     regionalEligible: high,
     regionalRegion: high ? hs.region : null,
     regionalReason: high
       ? hs.kind === 'hs-club'
-        ? '고교 연령 클럽도 고졸 지원자로 허용하는 게임용 규칙입니다.'
-        : '현재 고교 졸업 예정자로서 소속 지역 기준으로 판정합니다.'
-      : '과거 고교와 출생 지역에 관계없이 현재 지원 구분상 지역 1차 지명에서 제외합니다.',
+        ? __i18n_k("draftroom.biography.makeBiography.regionalReason.1a5e715c")
+        : __i18n_k("draftroom.biography.makeBiography.regionalReason.bdfdf932")
+      : __i18n_k("draftroom.biography.makeBiography.regionalReason.96426f32"),
   };
 }
 function eligible(p, team) {

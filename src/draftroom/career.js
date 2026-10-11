@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index.js';
 /* Five-year draft-class careers. Pure deterministic transitions; no live roster dependency. */
 // Ported from KBO-Draft-Room df4faad src/core/career.js. See docs/UPSTREAM.md.
 import DraftData from './prospects.js';
@@ -213,10 +214,10 @@ function standings(seed, year, records) {
     });
     return winner;
   }
-  let winner = play(table[3], table[4], 2, '와일드카드', 1);
-  winner = play(table[2], winner, 3, '준플레이오프');
-  winner = play(table[1], winner, 3, '플레이오프');
-  winner = play(table[0], winner, 4, '한국시리즈');
+  let winner = play(table[3], table[4], 2, __i18n_k("draftroom.career.standings.winner.cbea62e5"), 1);
+  winner = play(table[2], winner, 3, __i18n_k("draftroom.career.standings.42e1bde5"));
+  winner = play(table[1], winner, 3, __i18n_k("draftroom.career.standings.4651993c"));
+  winner = play(table[0], winner, 4, __i18n_k("draftroom.career.standings.3c8e7785"));
   return { table, champion: winner.teamId, series };
 }
 function awards(year, records, league) {
@@ -242,20 +243,20 @@ function awards(year, records, league) {
     P = T.awards.pitcher;
   best(
     'hitter',
-    '드래프트 동기 올해의 타자',
+    __i18n_k("draftroom.career.awards.45f0ed0b"),
     (s) => s.pa >= H.minPA,
     (s) => s.pa * H.perPA + (s.ops - H.opsPivot) * H.perOps + s.hr * H.perHR,
   );
   best(
     'pitcher',
-    '드래프트 동기 올해의 투수',
+    __i18n_k("draftroom.career.awards.61a0d86e"),
     (s) => s.outs >= P.minOuts,
     (s) => s.outs * P.perOut + (P.eraPivot - s.era) * P.perEra + s.k * P.perK,
   );
   for (const x of records.filter((x) => x.teamId === league.champion && x.stats.games > 0))
     out.push({
       id: year + '-champion-' + x.playerId,
-      title: '한국시리즈 우승 멤버',
+      title: __i18n_k("draftroom.career.awards.title.bd1a9753"),
       scope: 'team',
       year,
       playerId: x.playerId,
@@ -315,7 +316,7 @@ function serviceStep(career, byId, seed, yearIndex, orders) {
     s.performance = 0;
     if (s.scoutReady <= R.afterService.maxGrade && rng(seed + '-retire-service-' + s.playerId)() < R.afterService.chance) {
       s.status = 'retired';
-      events.push({ id: `${year}-retire-${s.playerId}`, type: 'retire', year, fromTeamId: s.currentTeamId, toTeamId: null, playerIds: [s.playerId], reason: '전역 후 팀에 복귀하지 않고 은퇴했다.' });
+      events.push({ id: `${year}-retire-${s.playerId}`, type: 'retire', year, fromTeamId: s.currentTeamId, toTeamId: null, playerIds: [s.playerId], reason: __i18n_k("draftroom.career.serviceStep.reason.daec7456") });
       s.currentTeamId = null;
       continue;
     }
@@ -334,7 +335,7 @@ function serviceStep(career, byId, seed, yearIndex, orders) {
     if (order === 'sangmu') {
       if (!social && r() < o.sangmu) type = 'sangmu';
       else if (o.must) type = army;
-      else note = social ? '사회복무요원 판정이라 상무에 지원할 수 없었다.' : '상무에 지원했지만 합격하지 못했다.';
+      else note = social ? __i18n_k("draftroom.career.serviceStep.eaf0de87") : __i18n_k("draftroom.career.serviceStep.6f85d00a");
     } else if (order === 'army') type = army;
     else if (order === 'auto') {
       const held = !o.must && s.scoutReady >= Sv.holdForGames && gamesSoon(yearIndex).some((e) => ageIn(p, e.year - D.bio.ENTRY_YEAR) <= e.ageLimit);
@@ -360,7 +361,7 @@ function serviceStep(career, byId, seed, yearIndex, orders) {
       fromTeamId: s.currentTeamId,
       toTeamId: null,
       playerIds: [o.playerId],
-      reason: `${M.SERVICE_LABELS[type]} 입대${o.must ? ' (입대 기한)' : ''}.`,
+      reason: __i18n_k("draftroom.career.serviceStep.reason.eb323143", { value: M.SERVICE_LABELS[type], value2: o.must ? __i18n_k("draftroom.career.serviceStep.reason.03c6cd2a") : '' }),
     });
   }
   return events;
@@ -405,18 +406,18 @@ function offseason(seed, yearIndex, career, records, byId) {
     s.currentTeamId = null;
   };
   // Released a year ago and still unsigned.
-  for (const s of states) if (s.status === 'released') retire(s, '새 팀을 찾지 못하고 은퇴했다.');
+  for (const s of states) if (s.status === 'released') retire(s, __i18n_k("draftroom.career.offseason.57ebc7b3"));
   // Choosing to stop.
   for (const s of states) {
     if (!canPlay(s)) continue;
     const r = rng(seed + '-retire-' + year + '-' + s.playerId);
     const reason =
       s.noGameStreak >= Rt.stalled.seasons && s.age >= Rt.stalled.minAge && s.scoutReady < Rt.stalled.maxGrade && r() < Rt.stalled.chance
-        ? '1군 기회가 오지 않아 스스로 유니폼을 벗었다.'
+        ? __i18n_k("draftroom.career.offseason.reason.da0c7a43")
         : s.rehabStreak >= 2 && r() < Rt.rehab
-          ? '거듭된 재활 끝에 은퇴를 결정했다.'
+          ? __i18n_k("draftroom.career.offseason.reason.b394e610")
           : s.age >= Rt.veteran.minAge && s.scoutReady < Rt.veteran.maxGrade && r() < Rt.veteran.chance
-            ? '기량이 떨어지면서 은퇴를 택했다.'
+            ? __i18n_k("draftroom.career.offseason.reason.4422cccd")
             : null;
     if (reason) retire(s, reason);
   }
@@ -446,14 +447,14 @@ function offseason(seed, yearIndex, career, records, byId) {
         fromTeamId: from,
         toTeamId: null,
         playerIds: [p.id],
-        reason: '2년 연속 1군 기록이 없고 공개 기량이 40에 못 미쳐 방출됐다.',
+        reason: __i18n_k("draftroom.career.offseason.reason.ca386fe4"),
       });
       counts[from]--;
       touched.add(p.id);
       // Another club may take a chance on him.
       if (s.age <= Cl.maxAge && r() < clamp((s.scoutReady - Cl.minGrade) * Cl.perGrade, 0, Cl.max)) {
         const to = TEAMS.filter((t) => t.id !== from).sort((a, b) => counts[a.id] - counts[b.id] || a.id.localeCompare(b.id))[0].id;
-        events.push({ id: year + '-claim-' + p.id, type: 'claim', year, fromTeamId: from, toTeamId: to, playerIds: [p.id], reason: '방출 뒤 입단 테스트를 거쳐 새 팀과 계약했다.' });
+        events.push({ id: year + '-claim-' + p.id, type: 'claim', year, fromTeamId: from, toTeamId: to, playerIds: [p.id], reason: __i18n_k("draftroom.career.offseason.reason.e774896b") });
         counts[to]++;
         s.currentTeamId = to;
       } else {
@@ -511,7 +512,7 @@ function offseason(seed, yearIndex, career, records, byId) {
         fromTeamId: from,
         toTeamId: to,
         playerIds: [a.playerId, b.playerId],
-        reason: '서로 필요한 포지션을 보완하고 공개 평가 가치가 비슷한 자원을 교환했습니다.',
+        reason: __i18n_k("draftroom.career.offseason.reason.a15ecf63"),
       });
       a.currentTeamId = to;
       b.currentTeamId = from;
@@ -566,12 +567,12 @@ function planStep(career, byId, seed, yearIndex, plans, userTeamId) {
     if (userTeamId && s.currentTeamId === userTeamId) {
       const plan = plans[s.playerId];
       if (!plan) continue;
-      if (canPlay(s) && plan.role && plan.role !== s.role) move(s, plan.role, '구단 결정으로 포지션을 바꿨다.');
+      if (canPlay(s) && plan.role && plan.role !== s.role) move(s, plan.role, __i18n_k("draftroom.career.planStep.8453522b"));
       if (plan.focus) s.focus = plan.focus;
       if (!canPlay(s)) continue;
       if (plan.twoWay === false && s.twoWay) {
         s.twoWay = false;
-        events.push({ id: `${year}-two-way-${s.playerId}`, type: 'position', year: when, preseason: !yearIndex, fromTeamId: s.currentTeamId, toTeamId: null, playerIds: [s.playerId], from: s.role, to: s.role, reason: '투타 겸업을 접고 한쪽에 전념하기로 했다.' });
+        events.push({ id: `${year}-two-way-${s.playerId}`, type: 'position', year: when, preseason: !yearIndex, fromTeamId: s.currentTeamId, toTeamId: null, playerIds: [s.playerId], from: s.role, to: s.role, reason: __i18n_k("draftroom.career.planStep.reason.28ab1411") });
       }
       if (plan.twoWay === true && p.twoWay) s.twoWay = true;
       continue;
@@ -581,19 +582,19 @@ function planStep(career, byId, seed, yearIndex, plans, userTeamId) {
       C = P.cpu;
     if (s.twoWay && yearIndex >= W.dropFromYear && Math.abs(s.scoutReady - s.other.scoutReady) >= W.dropGap) {
       s.twoWay = false;
-      if (s.other.scoutReady > s.scoutReady) move(s, s.other.role, '투타 겸업을 접고 더 나은 쪽을 택했다.');
-      else events.push({ id: `${year}-two-way-${s.playerId}`, type: 'position', year: when, preseason: !yearIndex, fromTeamId: s.currentTeamId, toTeamId: null, playerIds: [s.playerId], from: s.role, to: s.role, reason: '투타 겸업을 접고 한쪽에 전념하기로 했다.' });
+      if (s.other.scoutReady > s.scoutReady) move(s, s.other.role, __i18n_k("draftroom.career.planStep.0b451598"));
+      else events.push({ id: `${year}-two-way-${s.playerId}`, type: 'position', year: when, preseason: !yearIndex, fromTeamId: s.currentTeamId, toTeamId: null, playerIds: [s.playerId], from: s.role, to: s.role, reason: __i18n_k("draftroom.career.planStep.reason.28ab1411") });
     } else if (!s.twoWay && ageIn(p, yearIndex) <= C.switchSide.maxAge && s.other.scoutReady >= s.scoutReady + C.switchSide.margin && r() < C.switchSide.chance)
-      move(s, s.other.role, pitcherRole(s.role) ? '마운드보다 타석에서 가능성을 보고 타자로 전향했다.' : '강한 어깨를 살려 투수로 전향했다.');
-    else if (s.role === 'SP' && s.publicTools.stamina < C.starterToRelief.maxStamina && r() < C.starterToRelief.chance) move(s, 'RP', '긴 이닝을 버티지 못해 불펜으로 옮겼다.');
-    else if (s.role === 'C' && s.publicTools.defense < C.catcherToInfield.maxDefense && r() < C.catcherToInfield.chance) move(s, 'IF', '포수 수비 부담을 덜고 타격을 살리려 내야로 옮겼다.');
+      move(s, s.other.role, pitcherRole(s.role) ? __i18n_k("draftroom.career.planStep.222aad37") : __i18n_k("draftroom.career.planStep.ea7c1dae"));
+    else if (s.role === 'SP' && s.publicTools.stamina < C.starterToRelief.maxStamina && r() < C.starterToRelief.chance) move(s, 'RP', __i18n_k("draftroom.career.planStep.b2231f32"));
+    else if (s.role === 'C' && s.publicTools.defense < C.catcherToInfield.maxDefense && r() < C.catcherToInfield.chance) move(s, 'IF', __i18n_k("draftroom.career.planStep.74806469"));
   }
   return events;
 }
 
 const OUT_OF_BASEBALL = {
-  released: ['방출 · 무소속', '무소속이라 이 해의 기록이 없습니다.'],
-  retired: ['은퇴', '은퇴해 기록이 없습니다.'],
+  released: [__i18n_k("draftroom.career.oUT_OF_BASEBALL.released.30e8c252"), __i18n_k("draftroom.career.oUT_OF_BASEBALL.released.7a69088f")],
+  retired: [__i18n_k("draftroom.career.oUT_OF_BASEBALL.retired.5b170d3c"), __i18n_k("draftroom.career.oUT_OF_BASEBALL.retired.da4616fd")],
 };
 
 /**
@@ -602,7 +603,7 @@ const OUT_OF_BASEBALL = {
  */
 function advance(career, picks, byId, seed, orders = {}, plans = {}, userTeamId = null) {
   const yearIndex = career.years.length;
-  if (yearIndex >= SEASONS) throw Error(SEASONS + '시즌이 모두 끝났습니다.');
+  if (yearIndex >= SEASONS) throw Error(__i18n_k("draftroom.career.advance.8a07f431", { sEASONS: SEASONS }));
   const year = D.bio.ENTRY_YEAR + yearIndex,
     clubPlans = S.plans(seed, TEAMS),
     rankings = {};
@@ -644,14 +645,14 @@ function advance(career, picks, byId, seed, orders = {}, plans = {}, userTeamId 
         stats: M.emptyStats(viewOf(p, state)),
         futures: M.emptyStats(viewOf(p, state)),
         growth: 0,
-        growthLabel: '프로 기록 없음',
-        developmentNote: '이전 기록만 남아 있습니다.',
+        growthLabel: __i18n_k("draftroom.career.records.growthLabel.bde80af7"),
+        developmentNote: __i18n_k("draftroom.career.records.developmentNote.221c7783"),
         note,
         limited: false,
         contribution: 0,
         war: 0,
         planScore: null,
-        target: '경력 보존',
+        target: __i18n_k("draftroom.career.records.target.b5d37597"),
         scoutReady: state.scoutReady,
         scoutFV: state.scoutFV,
       };
@@ -709,7 +710,7 @@ function advance(career, picks, byId, seed, orders = {}, plans = {}, userTeamId 
     honors = awards(year, records, league);
   for (const e of international)
     for (const id of e.playerIds)
-      honors.push({ id: `${year}-national-${id}`, title: `${e.name} ${e.result ?? '국가대표'}`, scope: 'national', year, playerId: id, teamId: career.players[id].currentTeamId });
+      honors.push({ id: `${year}-national-${id}`, title: __i18n_k("draftroom.career.advance.title.4013b6ab", { name: e.name, value: e.result ?? __i18n_k("draftroom.career.advance.title.3243618b") }), scope: 'national', year, playerId: id, teamId: career.players[id].currentTeamId });
   const events = offseason(seed, yearIndex, career, records, byId);
   const row = { year, records, league, awards: honors, events, international, preseason };
   career.years.push(row);

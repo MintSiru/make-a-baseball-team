@@ -1,3 +1,4 @@
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* The club at a glance (V0.7.7), always in the sidebar: standing, the next game, money and who is out. */
 import { projectedPayroll } from '../league/expansion';
 import type { LeagueState } from '../league/state';
@@ -19,60 +20,56 @@ export function ClubSummary({ league, onTab }: { league: LeagueState; onTab: (ta
   // 1.4.0: our postseason in a phrase while it is on and after it.
   const post = league.phase === 'postseason' ? bracketView(league)?.ours : null;
   return (
-    <section class="club-summary" aria-label="우리 구단 요약">
+    <section class="club-summary" aria-label={__i18n_t("ui.clubSummary.clubSummary.b2be4c3a")}>
       <dl>
         <div>
-          <dt>{inFirstTeam ? `${league.year} 순위` : '1군 진입'}</dt>
+          <dt>{__i18n_display(inFirstTeam ? __i18n_k("ui.clubSummary.clubSummary.1c6906ad", { year: league.year }) : __i18n_k("ui.clubSummary.clubSummary.48bea069"))}</dt>
           <dd>
-            {row ? (
+            {__i18n_display(row ? (
               <>
-                <strong>{row.rank}위</strong> {row.w}-{row.l}-{row.t} <span class="muted">{rates.fmt3(row.pct)}</span>
+                <strong>{__i18n_t("ui.clubSummary.clubSummary.b372d067", { rank: row.rank })}</strong> {__i18n_display(row.w)}-{__i18n_display(row.l)}-{__i18n_display(row.t)} <span class="muted">{__i18n_display(rates.fmt3(row.pct))}</span>
               </>
             ) : (
-              `${u.firstTeamYear}년`
-            )}
+              __i18n_k("ui.clubSummary.clubSummary.57787c68", { firstTeamYear: u.firstTeamYear })
+            ))}
           </dd>
         </div>
-        {post && (
+        {__i18n_display(post && (
           <div>
-            <dt>포스트시즌</dt>
+            <dt>{__i18n_t("ui.clubSummary.clubSummary.a0f7a345")}</dt>
             <dd>
-              <strong>{post}</strong>
+              <strong>{__i18n_display(post)}</strong>
             </dd>
           </div>
-        )}
-        {next && (
+        ))}
+        {__i18n_display(next && (
           <div>
-            <dt>다음 경기</dt>
+            <dt>{__i18n_t("ui.clubSummary.clubSummary.3b6ea03a")}</dt>
             <dd>
-              {next.home === me ? 'vs' : '@'} {shortName(league, next.home === me ? next.away : next.home)} <span class="muted">{next.date.slice(5).replace('-', '/')}</span>
+              {__i18n_display(next.home === me ? 'vs' : '@')} {__i18n_display(shortName(league, next.home === me ? next.away : next.home))} <span class="muted">{__i18n_display(next.date.slice(5).replace('-', '/'))}</span>
             </dd>
           </div>
-        )}
+        ))}
         <div>
-          <dt>연봉 / 예산</dt>
+          <dt>{__i18n_t("ui.clubSummary.clubSummary.64ff6df4")}</dt>
           <dd class={payroll > u.payrollBudget ? 'minus' : ''}>
-            {moneyShort(payroll)} <span class="muted">/ {moneyShort(u.payrollBudget)}</span>
+            {__i18n_display(moneyShort(payroll))} <span class="muted">/ {__i18n_display(moneyShort(u.payrollBudget))}</span>
           </dd>
         </div>
         <div>
-          <dt>구단 자금</dt>
-          <dd>{moneyShort(u.fund)}</dd>
+          <dt>{__i18n_t("ui.clubSummary.clubSummary.4f7776dd")}</dt>
+          <dd>{__i18n_display(moneyShort(u.fund))}</dd>
         </div>
         <div>
-          <dt>부상 · 결장 · 군</dt>
+          <dt>{__i18n_t("ui.clubSummary.clubSummary.5fc96861")}</dt>
           <dd>
-            <button type="button" class="link" onClick={() => onTab('club')} title={[...hurt, ...knocks].map(([id, i]) => `${league.players[id]!.name} ${i.part ?? ''}`).join(', ')}>
-              {hurt.length}명 · {knocks.length}명 · {soldiers}명
-            </button>
+            <button type="button" class="link" onClick={() => onTab('club')} title={__i18n_displayText([...hurt, ...knocks].map(([id, i]) => `${league.players[id]!.name} ${i.part ?? ''}`).join(', '))}>{__i18n_t("ui.clubSummary.clubSummary.e15d2e0c", { length: hurt.length, length2: knocks.length, soldiers: soldiers })}</button>
           </dd>
         </div>
       </dl>
-      {league.pending && (
-        <button type="button" class="primary wide" onClick={() => onTab('decision')}>
-          결정하러 가기
-        </button>
-      )}
+      {__i18n_display(league.pending && (
+        <button type="button" class="primary wide" onClick={() => onTab('decision')}>{__i18n_t("ui.clubSummary.clubSummary.bc195740")}</button>
+      ))}
     </section>
   );
 }

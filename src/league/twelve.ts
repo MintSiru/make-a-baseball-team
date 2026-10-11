@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Twelve clubs (V0.9): the league format once the twelfth club (rival.ts) reaches the first team.
 
    One league of twelve keeps the 144 games: 14 against the club's natural rival (the user's club and the
@@ -12,7 +13,7 @@ import { ageIn, currentValue, futureValue, isPitcher, keepValue } from './player
 import type { StandingRow } from './standings';
 import { firstTeamIds, type GmStyle, type LeagueSide, type LeagueState, type SeasonSummary } from './state';
 
-export const LEAGUE_NAMES: Record<LeagueSide, string> = { dream: '드림리그', magic: '매직리그' };
+export const LEAGUE_NAMES: Record<LeagueSide, string> = { dream: __i18n_k("league.twelve.lEAGUE_NAMES.dream.6378be04"), magic: __i18n_k("league.twelve.lEAGUE_NAMES.magic.a2ce6db6") };
 
 /** Neighbours among the ten existing clubs (잠실, 낙동강, 영호남, 경인, and the two left over). Game assumption. */
 export const NATURAL_RIVALS: [TeamId, TeamId][] = [
@@ -137,10 +138,10 @@ export const isRivalry = (s: LeagueState, home: TeamId, away: TeamId) => {
 // ── The twelfth club's front office ──────────────────────────────────────────────────────────────
 
 export const GM_STYLES: Record<GmStyle, { label: string; note: string }> = {
-  balanced: { label: '균형형', note: '다른 구단과 같은 기준으로 선수를 고름' },
-  develop: { label: '육성형', note: '어리고 잠재력 큰 선수를 먼저 뽑고, FA에는 소극적' },
-  winNow: { label: '윈나우', note: '당장 쓸 선수를 먼저 데려오고, FA에 큰돈을 씀' },
-  moneyball: { label: '머니볼', note: '연봉 대비 가치와 선구안·제구를 보고, 나이 든 FA는 피함' },
+  balanced: { label: __i18n_k("league.twelve.balanced.label.81c84478"), note: __i18n_k("league.twelve.balanced.note.29775570") },
+  develop: { label: __i18n_k("league.twelve.develop.label.82ee1a8f"), note: __i18n_k("league.twelve.develop.note.13acad2d") },
+  winNow: { label: __i18n_k("league.twelve.winNow.label.3d044558"), note: __i18n_k("league.twelve.winNow.note.18758f61") },
+  moneyball: { label: __i18n_k("league.twelve.moneyball.label.bcbd244f"), note: __i18n_k("league.twelve.moneyball.note.3d8464d5") },
 };
 
 /** The front-office style of a club: only the twelfth club has one of its own. */

@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Fans and attendance (V0.6, RULES.md §13). Every club has a fan base (`popularity`: how many would
    come to an ordinary home game at the league's average price in 2025, before the ballpark fills) and
    a mood (`interest`, −0.6 to +0.8) that follows results, stars, home-grown players and marketing.
@@ -53,7 +54,7 @@ export function initialClubState(s: LeagueState, teamId: TeamId): ClubState {
   const u = s.user?.teamId === teamId ? s.user : null;
   const sponsor =
     teamId === 'kiwoom'
-      ? { name: '키움증권', annual: 1_100_000, until: startYear() + 2 }
+      ? { name: __i18n_k("league.fans.sponsor.name.44ede046"), annual: 1_100_000, until: startYear() + 2 }
       : u && team.parent.type === 'namingRights'
         ? { name: u.settings.parentName, annual: Math.round((PARENT.naming.base * (0.8 + (cityById(u.settings.cityId)?.market ?? 50) / 250)) / 1000) * 1000, until: u.firstTeamYear + 4 }
         : undefined;

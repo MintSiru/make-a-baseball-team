@@ -1,3 +1,4 @@
+import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* The help tab (V0.15): the game's manual — how a year goes, the screens, the words and rules a general
    manager meets, what each decision is about, and common questions. Rule numbers come from the rule book
    in code (rules/kbo2026.ts), so the help cannot drift from what the game does. */
@@ -9,86 +10,86 @@ import { GROWTH_LABELS, GROWTH_NOTES, GROWTH_ORDER } from '../league/traits';
 import { ALL_STAR, COMBINE } from '../league/tuning';
 
 const K = KBO_2026;
-const eok = (manwon: number) => `${Math.round(manwon / 1000) / 10}억`;
-const usd = (n: number) => `${n / 10_000}만 달러`;
+const eok = (manwon: number) => __i18n_k("ui.manual.eok.db0fc332", { value: Math.round(manwon / 1000) / 10 });
+const usd = (n: number) => __i18n_k("ui.manual.usd.f2e37495", { value: n / 10_000 });
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 const capNow = K.salaryCap.years.find((y) => y.year === K.season)!.cap;
 
 const SCREENS: [string, string][] = [
-  ['결정할 일', '겨울 결정과 시즌 중 결정(국가대표 차출 같은 일)이 기다릴 때만 맨 앞에 생깁니다. 끝내야 날짜가 흐릅니다.'],
-  ['우리 구단', '개요, 선수단(1군·퓨처스·잔류군 배치와 등록), 라인업 카드, 해외 연수, 소식(기사·연표·업적·알림), 구단 운영(모기업·재정·티켓·스태프·구장·시설).'],
-  ['이적시장', '트레이드, 선수 찾기, 방출·웨이버·자유계약, 외국인 교체, 이적 소식.'],
-  ['경기', '경기 결과, 기록지와 문자중계(처음부터 다시 보기).'],
-  ['순위 · 기록', '정규시즌 순위와 포스트시즌, 개인 기록 순위.'],
-  ['구단', '다른 구단의 선수단과 라인업.'],
-  ['역대', '시상, 기록실, 명예의 전당, 시즌별 결과.'],
-  ['드래프트 후보', '올가을 신인 드래프트 후보와 스카우팅 리포트.'],
-  ['설정', '화면(밝기·글자 크기·능력치 색), 게임(난이도·튜토리얼), 구단 이름, 저장, AI 기사, 정보.'],
+  [__i18n_k("ui.manual.sCREENS.2d179fd7"), __i18n_k("ui.manual.sCREENS.0e544d5f")],
+  [__i18n_k("ui.manual.sCREENS.8cc09c32"), __i18n_k("ui.manual.sCREENS.90602da1")],
+  [__i18n_k("ui.manual.sCREENS.e11828a8"), __i18n_k("ui.manual.sCREENS.a13b4985")],
+  [__i18n_k("ui.manual.sCREENS.e0cee61a"), __i18n_k("ui.manual.sCREENS.fcf2f2ae")],
+  [__i18n_k("ui.manual.sCREENS.c9763872"), __i18n_k("ui.manual.sCREENS.1cb61110")],
+  [__i18n_k("ui.manual.sCREENS.58756112"), __i18n_k("ui.manual.sCREENS.4a49be5b")],
+  [__i18n_k("ui.manual.sCREENS.1ab3847c"), __i18n_k("ui.manual.sCREENS.678ac80a")],
+  [__i18n_k("ui.manual.sCREENS.0db7daf2"), __i18n_k("ui.manual.sCREENS.322c1d2e")],
+  [__i18n_k("ui.manual.sCREENS.c14a567e"), __i18n_k("ui.manual.sCREENS.0cae1744")],
 ];
 
 const GLOSSARY: [string, string][] = [
-  ['현재 · 미래 등급', '20~80 스카우팅 척도입니다. 50이 1군 평균, 60이면 주전급, 70 이상은 리그 정상급입니다. "미래"는 스카우트가 보는 성장 한계이고, 스카우트가 좋을수록 정확합니다.'],
-  ['WAR', '대체 선수(쉽게 구할 수 있는 선수)보다 팀에 몇 승을 더 벌어 줬는지입니다.'],
-  ['wRC+', '타격 생산력입니다. 100이 리그 평균이고, 120이면 평균보다 20% 낫습니다.'],
-  ['OPS', '출루율 + 장타율. 타자를 한 숫자로 볼 때 씁니다.'],
-  ['FIP', '수비와 상관없는 삼진·볼넷·홈런만으로 본 투수 지표입니다. 평균자책점처럼 읽습니다.'],
-  ['QS', '선발 투수가 6이닝 이상 3자책점 이하로 막은 경기입니다.'],
-  ['등록일수', `1군에 등록된 날입니다. ${K.freeAgency.daysPerSeason}일이 한 시즌으로 쳐지고, 고졸 ${K.freeAgency.seasonsHighSchool}시즌·대졸 ${K.freeAgency.seasonsCollege}시즌을 채우면 FA가 됩니다.`],
-  ['소속선수 · 1군 엔트리', `구단마다 소속선수는 ${K.league.rosterLimit}명까지, 1군은 ${K.league.firstTeam.registered}명 등록에 ${K.league.firstTeam.active}명이 경기에 나섭니다.`],
-  ['육성선수', `소속선수 정원 밖의 선수입니다. ${Number(K.development.registerFrom.slice(0, 2))}월 ${Number(K.development.registerFrom.slice(3))}일부터 정식선수로 등록해 1군에 올릴 수 있습니다.`],
-  ['퓨처스 · 잔류군', '퓨처스는 2군 리그입니다. 잔류군(3군)은 경기 대신 훈련·재활을 하는 곳입니다. 어린 선수는 뛴 만큼 자랍니다.'],
-  ['FA 등급과 보상', `FA는 연봉 순위로 A·B·C등급이 됩니다. A등급을 데려가면 보호선수 ${K.freeAgency.compensation.A.protected}명 밖 한 명 + 직전 연봉 ${pct(K.freeAgency.compensation.A.withPlayer)}(돈만이면 ${pct(K.freeAgency.compensation.A.cashOnly)}), B등급은 ${K.freeAgency.compensation.B.protected}명 밖 한 명 + ${pct(K.freeAgency.compensation.B.withPlayer)}(돈만이면 ${pct(K.freeAgency.compensation.B.cashOnly)}), C등급은 ${pct(K.freeAgency.compensation.C.cashOnly)}만 보상합니다.`],
-  ['경쟁균형세', `연봉 상위 ${K.salaryCap.topPlayers}명 총액의 상한입니다(${K.season}년 ${eok(capNow)}). 넘으면 초과분의 ${K.salaryCap.levies.map(pct).join('·')}를 내고(연속 횟수에 따라), ${K.salaryCap.pickDropFrom}년 연속이면 1라운드 지명이 ${K.salaryCap.pickDrop}순위 밀립니다.`],
-  ['외국인 선수', `${K.foreign.regular}명 + 아시아쿼터 ${K.foreign.asiaQuota}명입니다. 새 외국인은 ${usd(K.foreign.newContractCapUSD)}까지, 세 명 합계는 ${usd(K.foreign.clubTotalCapUSD)}(재계약 연차만큼 늘어남)까지 쓸 수 있고, 시즌 중 ${K.foreign.replacementsPerSeason}번 교체합니다.`],
-  ['포스팅', `${K.posting.seasons}시즌을 채운 선수를 메이저리그에 보내는 제도입니다. 구단마다 한 겨울에 ${K.posting.perClubPerWinter}명이고, 계약하면 이적료를 받습니다.`],
-  ['2차 드래프트', `2년마다 열립니다. 구단마다 ${K.secondaryDraft.protected}명을 보호하고, 나머지에서 ${K.secondaryDraft.rounds}라운드까지 지명하며 양도금을 냅니다.`],
-  ['특별지명 · 신생구단 혜택', `새 구단은 기존 구단마다 보호선수 ${EXPANSION_DEFAULTS.specialDraft.protected}명 밖에서 한 명씩(선수당 ${eok(EXPANSION_DEFAULTS.specialDraft.feePerPlayer)}) 데려가고, FA ${EXPANSION_DEFAULTS.freeAgentSigns}명을 보상선수 없이 영입합니다. 1군 첫 ${EXPANSION_DEFAULTS.benefitSeasons}시즌은 외국인 +${EXPANSION_DEFAULTS.extraForeignPlayers}명, 1군 등록 +${EXPANSION_DEFAULTS.extraFirstTeamSpots}명입니다.`],
-  ['병역', '상무·현역·사회복무 가운데 하나로 군대에 갑니다. 아시안게임 금메달이나 올림픽 메달을 따면 면제되고, 큰 수술을 받은 선수는 보충역 판정을 받기도 합니다.'],
-  ['모기업 · 신뢰도', '모기업은 해마다 목표(성적·관중·재정)를 주고 평가합니다. 평가가 예산과 신뢰도를 움직이고, 개막 때 그해 지원금을 확정해 먼저 줍니다.'],
-  ['명명권 · 시즌권', '명명권 구단은 스폰서 이름을 달고 후원금을 받습니다. 시즌권은 비시즌에 할인율을 정해 미리 팔고, 개막 때 돈이 들어옵니다.'],
-  ['성장 타입', `초조숙·조숙·보통·만성·초만성. 언제 본격적으로 크고, 언제 성장이 멈추고, 언제 기량이 꺾이는지가 다릅니다. 전성기는 대체로 27~32세입니다. ${GROWTH_ORDER.map((g) => `${GROWTH_LABELS[g]}: ${GROWTH_NOTES[g]}`).join(' ')} 어느 타입이든 다 크면 비슷한 수준에 이르고, 시기만 다릅니다.`],
-  ['숨은 특성', '능력치처럼 숫자로 보이지 않는 선수의 면입니다. 천재성(배우는 속도), 성실성(성장, 늦은 노쇠), 멘탈(포스트시즌), 리더십(더그아웃), 충성심(FA 때 원소속 구단), 논란성(사생활 사건), 부상 빈도. 성격(8가지)에 따라 기울지만 사람마다 다릅니다.'],
-  ['코치 · 스카우트 평가', '선수 화면의 코치 평가·스카우트 평가 탭에 우리 구단의 판단이 나옵니다. 우리 선수는 코치진(감독·코치·육성 총괄·트레이닝 파트)이, 다른 구단 선수와 아마추어는 스카우트 팀이 봅니다. 담당 스태프 평가가 높을수록, 오래 지켜볼수록 정확해지고 "확신"이 올라갑니다. 틀릴 수 있습니다.'],
-  ['외국인 선수 유형', '투수는 구위형·제구형·변화구형·이닝이터, 타자는 거포형·교타형·선구안형·호타준족·수비형·유틸리티(여러 포지션). 유형에 맞는 능력이 높고 다른 능력이 조금 낮습니다.'],
-  ['올스타전', `드림(SSG·롯데·삼성·두산·KT)과 나눔(LG·NC·KIA·키움·한화) 올스타가 맞붙습니다. 새 구단은 수가 적은 쪽으로 갑니다. 구단마다 포지션별 후보를 내고, 팬 투표 70%와 선수단 투표 30%로 포지션마다 베스트12를 뽑은 뒤 감독 추천으로 ${ALL_STAR.squad}명을 채웁니다. 기록 → 올스타에서 중간 집계를 보고, 한 시즌 한 번 팬 투표 독려 캠페인을 할 수 있습니다. 올스타전 기록은 시즌 기록에 들어가지 않습니다.`],
-  ['외국인 장기 근속 규정', '설정 → 게임에서 켜는 가상 규정입니다(기본은 끔). KBO 1군에서 5시즌 또는 8시즌 이상 뛴 외국인 선수는 외국인 엔트리를 차지하지 않고 외국인 샐러리캡에서도 빠집니다. 모든 구단에 똑같이 적용됩니다.'],
-  ['포스트시즌 운영', '정규시즌이 끝나면 "포스트시즌 시작"으로 대진을 짜고, "다음 경기"로 한 경기씩 볼 수 있습니다. 순위 탭 맨 위의 대진표에 라운드 진행(끝남·진행 중·대기), 시리즈마다 시드와 승수, 경기별 결과(칸을 누르면 기록지), 다음 라운드에서 기다리는 구단과 우승팀이 나옵니다. 우리 경기 전에 선발 투수를 직접 정하거나 총력전(선발을 일찍 내리고 쉬는 선발·연투한 불펜까지 대기)을 걸 수 있습니다. 총력전은 다음 경기 마운드를 지치게 할 수 있습니다.'],
-  ['단장 브리핑', '우리 구단 → 개요 맨 위에 지금 가장 급한 일 최대 3가지가 나옵니다: 주전의 긴 부상, 리그 평균보다 가장 약한 자리, 비어 있는 외국인 자리, 예산 초과, 모기업 목표와 순위, 7월 트레이드 마감, 1군에서 써 볼 만한 퓨처스 선수. 항목마다 본 사실, 안에서 키우기·밖에서 데려오기 같은 선택지와 그 비용, 그 일을 하는 화면으로 가는 버튼이 있습니다. 공개 등급과 성적만으로 고르므로 숨은 능력은 알려 주지 않습니다.'],
-  ['스카우트 추천 이유', '결정 화면에서 "스카우트 추천으로 채우기"를 누르면 아래에 추천 기준(예: 보유 가치 순 12명), 고른 대상, 다르게 고를 때의 비용이 나옵니다. 추천을 그대로 따를 필요는 없습니다.'],
-  ['시작 방식', '창단할 때 1군 진입 시기(퓨처스 1년 뒤 2028년 / 바로 2027년)와 튜토리얼 안내를 따로 고릅니다. "추천 조건으로 바로 시작"은 대기업 모기업·기존 구장·퓨처스 1년·튜토리얼·보통 난이도로 곧바로 창단합니다. "1군 데뷔 전 결정은 스카우트 추천대로 처리"를 켜면 데뷔 전까지 결정 화면이 멈추지 않고 넘어갑니다(설정 탭에서 끄고 켬). 홈구장·12구단·난이도·해임·시드는 고급 설정에 있습니다.'],
-  ['진행 보호 · 복구', '자동 저장은 몇 분마다, 그리고 다른 게임을 시작하기 전에 백업으로 3개까지 남습니다. 화면에 문제가 생기거나 자동 저장이 열리지 않으면 복구 화면에서 다른 화면으로 가거나, 백업으로 되돌리거나, 진행 파일을 불러오거나, 새 게임을 시작할 수 있습니다. 시작 화면에서도 진행 파일 불러오기와 백업 되돌리기를 할 수 있습니다. 긴 게임은 가끔 진행 파일로 저장해 두세요.'],
-  ['포스트시즌 기록', '포스트시즌 경기 기록은 정규시즌 기록·통산·시상과 따로 쌓입니다. 선수 화면 → 기록 → 포스트시즌에서 해마다의 기록과 그해 구단의 결과(우승·준우승·탈락 라운드), 포스트시즌 통산을 보고, 기록 → 포스트시즌에서 최근 포스트시즌과 역대 포스트시즌 순위를 봅니다.'],
-  ['선수 화면', '위에는 나이·종합 등급·최근 시즌 기록만 보이고, 나머지는 능력치·기록·평가·정보·부상 가운데 고른 것만 나옵니다. 마지막으로 고른 부분은 다음 선수를 열 때도 그대로입니다.'],
-  ['선수 출신 지도자 · 프런트', `은퇴한 선수가 감독·코치·퓨처스 감독·스카우트 팀장·전력분석 팀장으로 돌아옵니다. 통산 WAR·MVP·골든글러브·타이틀·명예의 전당·영구결번이 많을수록(명성) 자주 돌아오고, 구단은 자기 팀 레전드를 반깁니다 — 우리 구단 레전드가 쉬고 있으면 스태프 결정 때 자리마다 후보로 나옵니다. 지도자 능력은 이름값이 아니라 성실성·멘탈(감독은 리더십)을 따르고, 이름값만큼 연봉을 더 받습니다. 감독은 현역 때처럼 운영합니다(도루왕은 작전 야구, 선발 투수는 선발을 길게). 레전드를 친정 감독으로 데려오면 팬들이 반기고, 계약 중에 내보내면 실망합니다. 우리 구단의 선수 출신 감독·코치에게는 원포인트 레슨, 옛 동료와의 재회, 친정팀과의 첫 맞대결, 감독의 현역 기록을 넘는 제자, 레전드 감독의 연승·연패에 대한 팬 반응, 판정 항의 퇴장 같은 일이 생깁니다. 은퇴 선수의 선수 화면에 지금 맡은 자리가 나옵니다.`],
-  ['외국인 선수 협상', '새 외국인은 희망 보장액, 원소속 구단 이적료(총액 상한에 포함, 구단 자금에서 지급), 다른 곳의 제안을 보고 보장액과 옵션을 제안합니다. 선수는 받아들이거나 역제안하거나 협상을 끝내고, 최대 3차까지 이어지며 그 사이 다른 리그로 가는 선수도 있습니다. 재계약은 요구액보다 깎아 제안하거나 2년 계약을 걸 수 있고, 구단에 대한 애정이 큰 선수일수록 깎인 금액도 받아들입니다.'],
-  ['드래프트 컴바인', `가상 행사입니다. 해마다 ${Number(COMBINE.date.slice(0, 2))}월 ${Number(COMBINE.date.slice(3))}일 공개 순위 ${COMBINE.invited}위 안 후보 대부분이 구속·회전수·제구, 달리기·타구 속도·송구·선구를 측정하고, 모든 구단의 공개 평가가 측정 결과를 따라 고쳐집니다. 그 뒤 드래프트 전까지 우리 구단은 ${COMBINE.workouts}명까지 개인 워크아웃(한 명 ${COMBINE.workoutCost}만 원)으로 불러 우리 스카우트가 그 선수의 능력과 숨은 특성을 훨씬 정확하게 보게 할 수 있습니다.`],
-  ['시나리오', '창단 화면에서 고르는 목표가 있는 게임입니다: 서울의 왕(서울의 네 번째 구단으로 2035년까지 LG·두산·키움보다 높은 1군 통산 승률), 재기(한빛그룹, 지원은 넉넉하지만 인내심 없는 구단주와 시즌 중 지시, 1군 5시즌 안에 우승), 섬그늘에 야구하러 가면(울릉 시민구단, 어려움, 2035년까지 해임되지 않기 — 숙련자용), 돌격대의 귀환(전주 쌍방울 레이더스, 2035년까지 우승 3회), 판타지 드래프트(2027년 겨울 리그 전체를 다시 지명, 2028~2030 세 시즌의 순위·가을야구로 점수와 등급), 백 투 더 패스트(같은 게임을 2016년에 시작 — 규정과 돈의 크기는 같고 리그의 과거와 국제대회가 십 년 앞당겨짐, 목표 없음), 살려야 한다(폭주한 AI가 창단부터 5년 동안 운영한 뒤 2030년 겨울에 넘겨받아 3시즌 안에 우승 — 그동안은 지켜보기만 함), 불경기(우리 구단 예산만 크게 줄어든 채 1군 5시즌 안에 우승), 불인기 종목(리그 전체 관중과 모기업 지원이 줄어든 채 같은 목표), 강철야구(목동의 강철 파이터즈, 첫 선수단은 은퇴 선수와 언드래프티로만 — 특별지명 없음, 같은 목표). 시나리오마다 일부 조건이 고정되고, 목표를 이루거나 놓치면 알림이 오며, 그 뒤로도 구단을 계속 운영할 수 있습니다. 우리 구단 → 개요 맨 위에 진행 상황이 나옵니다.'],
-  ['진행 중 멈춤', '"1주"·"한 달"·"정규시즌 끝까지"로 진행할 때 주전이 3주 넘게 빠지는 부상, 트레이드 마감 1주 전, 1군 데뷔전 직후, 가을야구 진출·탈락 확정 때 멈추고 알림을 띄웁니다. 설정 → 게임에서 하나씩 끌 수 있고, 멈추든 아니든 경기 결과는 같습니다.'],
-  ['결과 가리기', '설정 → 화면 → 경기에서 켜면 경기 탭에서 아직 보지 않은 우리 경기의 점수를 가리고, 열면 문자중계가 1회부터 흘러갑니다(그동안 기록지·기사는 잠김). 끝까지 보거나 "결과 바로 보기"를 누르면 보입니다. 순위표와 뉴스에는 결과가 그대로 나옵니다.'],
-  ['구단의 계획 (트레이드)', '다른 구단은 공통 가치(공개 등급·나이·계약·연봉) 위에 자기 계획으로 판단합니다. 상위권은 우승 도전(당장 쓸 선수를 높이, 지명권을 낮게), 하위권에 주축이 늙었거나 가을야구에서 멀어진 구단은 리빌딩(젊은 선수·지명권·현금을 높이, 30세 이상을 낮게), 나머지는 균형입니다. 부족한 자리를 채우는 선수는 더 높이 보고, 마지막 포수·선발투수를 내주거나 샐러리캡을 넘기는 제안은 거절합니다. 트레이드 화면에 상대의 계획과 판단 이유가 나오고, 7월 말에는 우승 도전 구단이 리빌딩 구단에서 즉시 전력을 사 오기도 합니다.'],
-  ['치명적인 부상', '큰 수술이 필요한 부상은 드물게 선수 생명을 끝냅니다. 나이가 많을수록, 전에 큰 수술을 받은 적이 있을수록 잦고, 그런 선수는 그 시즌이 끝나면 은퇴합니다(설득할 수 없음).'],
-  ['FA 미아', 'FA 시장에서 아무 구단과도 계약하지 못한 선수는 이제 바로 은퇴하지 않고 자유계약선수 명단에 남습니다. 시장이 끝난 뒤부터 다음 시즌이 끝날 때까지 이적시장 → 방출·자유계약에서 협상 없이 요구 연봉으로 계약할 수 있습니다.'],
-  ['창단 조건의 위험', '창단 화면 아래 "이 조합에서 조심할 점"에 별점 밖의 구체적인 위험이 나옵니다: 외국인 몫으로 남겨 둘 예산, 시장 규모와 관중 수입, 작은 구장, 모기업 유형별 목표와 예산의 흔들림, 바로 1군의 첫 시즌, 해임 조건, 어려움 난이도의 차이.'],
-  ['구종 · 구사율', '투수는 직구와 변화구 1~4개를 던집니다. 불펜의 3분의 1쯤은 직구와 변화구 하나뿐인 투피치 투수입니다. 변화구 비율은 투수마다 다르고(힘으로 붙는 투수는 직구 위주, 변화구형은 절반 이상), 주무기는 유형을 따릅니다(커브볼러의 커브, 포크볼 불펜의 포크볼).'],
+  [__i18n_k("ui.manual.gLOSSARY.28c6418c"), __i18n_k("ui.manual.gLOSSARY.fa8ce475")],
+  ['WAR', __i18n_k("ui.manual.gLOSSARY.9faec22e")],
+  ['wRC+', __i18n_k("ui.manual.gLOSSARY.ba2a3993")],
+  ['OPS', __i18n_k("ui.manual.gLOSSARY.25338277")],
+  ['FIP', __i18n_k("ui.manual.gLOSSARY.05546b18")],
+  ['QS', __i18n_k("ui.manual.gLOSSARY.9603d846")],
+  [__i18n_k("ui.manual.gLOSSARY.d10ef256"), __i18n_k("ui.manual.gLOSSARY.bea0fd90", { daysPerSeason: K.freeAgency.daysPerSeason, seasonsHighSchool: K.freeAgency.seasonsHighSchool, seasonsCollege: K.freeAgency.seasonsCollege })],
+  [__i18n_k("ui.manual.gLOSSARY.6e374b87"), __i18n_k("ui.manual.gLOSSARY.b2a6ec7c", { rosterLimit: K.league.rosterLimit, registered: K.league.firstTeam.registered, active: K.league.firstTeam.active })],
+  [__i18n_k("ui.manual.gLOSSARY.cf7b6b60"), __i18n_k("ui.manual.gLOSSARY.516fa8e9", { number: Number(K.development.registerFrom.slice(0, 2)), number2: Number(K.development.registerFrom.slice(3)) })],
+  [__i18n_k("ui.manual.gLOSSARY.c26bc9f8"), __i18n_k("ui.manual.gLOSSARY.85b1428d")],
+  [__i18n_k("ui.manual.gLOSSARY.23312f7a"), __i18n_k("ui.manual.gLOSSARY.b9f2913b", { protected: K.freeAgency.compensation.A.protected, pct: pct(K.freeAgency.compensation.A.withPlayer), pct2: pct(K.freeAgency.compensation.A.cashOnly), protected2: K.freeAgency.compensation.B.protected, pct3: pct(K.freeAgency.compensation.B.withPlayer), pct4: pct(K.freeAgency.compensation.B.cashOnly), pct5: pct(K.freeAgency.compensation.C.cashOnly) })],
+  [__i18n_k("ui.manual.gLOSSARY.0fc4f291"), __i18n_k("ui.manual.gLOSSARY.c5a480d5", { topPlayers: K.salaryCap.topPlayers, season: K.season, eok: eok(capNow), value: K.salaryCap.levies.map(pct).join('·'), pickDropFrom: K.salaryCap.pickDropFrom, pickDrop: K.salaryCap.pickDrop })],
+  [__i18n_k("ui.manual.gLOSSARY.353853ad"), __i18n_k("ui.manual.gLOSSARY.637e98ce", { regular: K.foreign.regular, asiaQuota: K.foreign.asiaQuota, usd: usd(K.foreign.newContractCapUSD), usd2: usd(K.foreign.clubTotalCapUSD), replacementsPerSeason: K.foreign.replacementsPerSeason })],
+  [__i18n_k("ui.manual.gLOSSARY.6734925e"), __i18n_k("ui.manual.gLOSSARY.8d92a7f4", { seasons: K.posting.seasons, perClubPerWinter: K.posting.perClubPerWinter })],
+  [__i18n_k("ui.manual.gLOSSARY.7021a262"), __i18n_k("ui.manual.gLOSSARY.3720f353", { protected: K.secondaryDraft.protected, rounds: K.secondaryDraft.rounds })],
+  [__i18n_k("ui.manual.gLOSSARY.ec00e5fd"), __i18n_k("ui.manual.gLOSSARY.20aad329", { protected: EXPANSION_DEFAULTS.specialDraft.protected, eok: eok(EXPANSION_DEFAULTS.specialDraft.feePerPlayer), freeAgentSigns: EXPANSION_DEFAULTS.freeAgentSigns, benefitSeasons: EXPANSION_DEFAULTS.benefitSeasons, extraForeignPlayers: EXPANSION_DEFAULTS.extraForeignPlayers, extraFirstTeamSpots: EXPANSION_DEFAULTS.extraFirstTeamSpots })],
+  [__i18n_k("ui.manual.gLOSSARY.82af035c"), __i18n_k("ui.manual.gLOSSARY.5fe68170")],
+  [__i18n_k("ui.manual.gLOSSARY.4343db9f"), __i18n_k("ui.manual.gLOSSARY.dc821aaa")],
+  [__i18n_k("ui.manual.gLOSSARY.0466bf9b"), __i18n_k("ui.manual.gLOSSARY.358bfad5")],
+  [__i18n_k("ui.manual.gLOSSARY.8e3405be"), __i18n_k("ui.manual.gLOSSARY.cbad014e", { value: GROWTH_ORDER.map((g) => `${GROWTH_LABELS[g]}: ${GROWTH_NOTES[g]}`).join(' ') })],
+  [__i18n_k("ui.manual.gLOSSARY.81aac2e1"), __i18n_k("ui.manual.gLOSSARY.ccabdbba")],
+  [__i18n_k("ui.manual.gLOSSARY.2a9a4091"), __i18n_k("ui.manual.gLOSSARY.c008c9dd")],
+  [__i18n_k("ui.manual.gLOSSARY.3feee32d"), __i18n_k("ui.manual.gLOSSARY.0cef9af9")],
+  [__i18n_k("ui.manual.gLOSSARY.0f0b295e"), __i18n_k("ui.manual.gLOSSARY.24f1069a", { squad: ALL_STAR.squad })],
+  [__i18n_k("ui.manual.gLOSSARY.cad96f9c"), __i18n_k("ui.manual.gLOSSARY.cf6dd78f")],
+  [__i18n_k("ui.manual.gLOSSARY.754d4e11"), __i18n_k("ui.manual.gLOSSARY.78d0d9fa")],
+  [__i18n_k("ui.manual.gLOSSARY.e1cca07a"), __i18n_k("ui.manual.gLOSSARY.a4fa2704")],
+  [__i18n_k("ui.manual.gLOSSARY.e2e5d4ea"), __i18n_k("ui.manual.gLOSSARY.5be9c39f")],
+  [__i18n_k("ui.manual.gLOSSARY.65049d47"), __i18n_k("ui.manual.gLOSSARY.de9cee61")],
+  [__i18n_k("ui.manual.gLOSSARY.b28f9d34"), __i18n_k("ui.manual.gLOSSARY.4cda42ad")],
+  [__i18n_k("ui.manual.gLOSSARY.4a4f8664"), __i18n_k("ui.manual.gLOSSARY.9be1be15")],
+  [__i18n_k("ui.manual.gLOSSARY.69cdff8d"), __i18n_k("ui.manual.gLOSSARY.403bde37")],
+  [__i18n_k("ui.manual.gLOSSARY.aaf72f83"), __i18n_k("ui.manual.gLOSSARY.0d419809")],
+  [__i18n_k("ui.manual.gLOSSARY.0cb39bfb"), __i18n_k("ui.manual.gLOSSARY.0f27881e")],
+  [__i18n_k("ui.manual.gLOSSARY.80d11806"), __i18n_k("ui.manual.gLOSSARY.0907383f", { number: Number(COMBINE.date.slice(0, 2)), number2: Number(COMBINE.date.slice(3)), invited: COMBINE.invited, workouts: COMBINE.workouts, workoutCost: COMBINE.workoutCost })],
+  [__i18n_k("ui.manual.gLOSSARY.4ca5847f"), __i18n_k("ui.manual.gLOSSARY.f3ab8c09")],
+  [__i18n_k("ui.manual.gLOSSARY.93ef873b"), __i18n_k("ui.manual.gLOSSARY.8eb2515f")],
+  [__i18n_k("ui.manual.gLOSSARY.76e8e61d"), __i18n_k("ui.manual.gLOSSARY.ac98c0d6")],
+  [__i18n_k("ui.manual.gLOSSARY.ba4e88f4"), __i18n_k("ui.manual.gLOSSARY.274ac523")],
+  [__i18n_k("ui.manual.gLOSSARY.54a544ab"), __i18n_k("ui.manual.gLOSSARY.bb29cbc2")],
+  [__i18n_k("ui.manual.gLOSSARY.efd6260e"), __i18n_k("ui.manual.gLOSSARY.ca87286d")],
+  [__i18n_k("ui.manual.gLOSSARY.0d653027"), __i18n_k("ui.manual.gLOSSARY.9c78929a")],
+  [__i18n_k("ui.manual.gLOSSARY.5672f8d9"), __i18n_k("ui.manual.gLOSSARY.ebd7f0a7")],
 ];
 
 const YEAR: [string, string][] = [
-  ['3월', '개막. 시범경기 뒤 정규시즌이 시작됩니다.'],
-  ['4~9월', '정규시즌 144경기. 1군 등록·말소, 부상, 트레이드(7월 31일 마감), 외국인 교체(8월 15일까지).'],
-  ['6~7월', `올스타 투표(${ALL_STAR.dates.open.replace('-', '/')}~${ALL_STAR.dates.close.replace('-', '/')}, 매주 중간 집계), ${ALL_STAR.dates.game.replace('-', '/')} 올스타전과 전날 홈런 레이스.`],
-  ['8월 말', '드래프트 컴바인: 상위 후보의 측정 결과가 나옵니다. 그 뒤 개인 워크아웃을 할 수 있습니다.'],
-  ['9월', '신인 드래프트 후보가 확정됩니다.'],
-  ['10월', '포스트시즌.'],
-  ['11~2월', '겨울 결정: 국가대표·성장·은퇴·병역 → 포스팅 → FA → 연봉 → 신인 계약 → 2차 드래프트(격년) → 정원 정리 → 방출선수 → 외국인 → 스프링캠프.'],
+  [__i18n_k("ui.manual.yEAR.3b07592a"), __i18n_k("ui.manual.yEAR.65079277")],
+  [__i18n_k("ui.manual.yEAR.b60dbd37"), __i18n_k("ui.manual.yEAR.4c2b8c9a")],
+  [__i18n_k("ui.manual.yEAR.720f23a6"), __i18n_k("ui.manual.yEAR.0bd4ef97", { value: ALL_STAR.dates.open.replace('-', '/'), value2: ALL_STAR.dates.close.replace('-', '/'), value3: ALL_STAR.dates.game.replace('-', '/') })],
+  [__i18n_k("ui.manual.yEAR.bd910247"), __i18n_k("ui.manual.yEAR.aba5ee3b")],
+  [__i18n_k("ui.manual.yEAR.7dc56a38"), __i18n_k("ui.manual.yEAR.1d4df7dd")],
+  [__i18n_k("ui.manual.yEAR.bd81c062"), __i18n_k("ui.manual.yEAR.3f2e11a7")],
+  [__i18n_k("ui.manual.yEAR.6a817b50"), __i18n_k("ui.manual.yEAR.ae637c3d")],
 ];
 
 const FAQ: [string, string][] = [
-  ['진행은 어디에 저장되나요?', '조작할 때마다 이 브라우저에 자동으로 저장됩니다(압축해서). 다른 기기로 옮기거나 따로 보관하려면 설정 → 저장의 "진행 파일 저장"으로 파일을 받으세요.'],
-  ['아이폰에서 진행이 사라졌어요.', 'Safari는 한동안 방문하지 않은 사이트의 저장소를 지울 수 있습니다. 공유 버튼 → "홈 화면에 추가"로 열면 지워지지 않고, 진행 파일을 가끔 받아 두면 안전합니다.'],
-  ['난이도는 무엇을 바꾸나요?', `${DIFFICULTY_LABEL.easy}: ${DIFFICULTY_NOTE.easy} ${DIFFICULTY_LABEL.hard}: ${DIFFICULTY_NOTE.hard} 게임 중 설정 탭에서 바꿀 수 있습니다.`],
-  ['결정이 어려우면요?', '결정 화면의 "스카우트 추천으로 채우기"로 추천안을 채운 뒤 고쳐서 확정하세요. 결정마다 "이 결정은?"을 펼치면 요점이 나옵니다.'],
-  ['AI 기사 키는 안전한가요?', '키는 기본적으로 이 탭에만 있고, "기억하기"를 켤 때만 이 브라우저에 남습니다. 진행 파일에는 절대 들어가지 않고, 게임은 공개 정보(경기 결과·기록·이름)만 보냅니다.'],
-  ['실제 구단과 선수인가요?', `${DISCLAIMER} 설정 → 구단 이름에서 가상 이름으로 바꿀 수 있습니다.`],
+  [__i18n_k("ui.manual.fAQ.1546e46d"), __i18n_k("ui.manual.fAQ.d13c2950")],
+  [__i18n_k("ui.manual.fAQ.627a4d2a"), __i18n_k("ui.manual.fAQ.26eba32f")],
+  [__i18n_k("ui.manual.fAQ.f5e3c9ee"), __i18n_k("ui.manual.fAQ.29eede56", { easy: DIFFICULTY_LABEL.easy, easy2: DIFFICULTY_NOTE.easy, hard: DIFFICULTY_LABEL.hard, hard2: DIFFICULTY_NOTE.hard })],
+  [__i18n_k("ui.manual.fAQ.4b1874cd"), __i18n_k("ui.manual.fAQ.d6a9743a")],
+  [__i18n_k("ui.manual.fAQ.8ca40144"), __i18n_k("ui.manual.fAQ.8b8271fb")],
+  [__i18n_k("ui.manual.fAQ.216a77cd"), __i18n_k("ui.manual.fAQ.e492cd39", { dISCLAIMER: DISCLAIMER })],
 ];
 
 export function Manual() {
@@ -96,68 +97,68 @@ export function Manual() {
     <section class="settings-page manual" aria-labelledby="manual-title">
       <div class="page-head">
         <div>
-          <h2 id="manual-title">도움말</h2>
-          <p class="muted">2026년 여름, KBO 11번째 구단의 초대 단장이 됩니다. 창단 트라이아웃 → 첫 드래프트 → 퓨처스리그 → 1군 진입 → 가을야구 → 왕조까지, 선수단·계약·육성·예산을 결정하고 경기는 AI 감독이 치릅니다.</p>
+          <h2 id="manual-title">{__i18n_t("ui.manual.manual.e2654ac5")}</h2>
+          <p class="muted">{__i18n_t("ui.manual.manual.b2c95d12")}</p>
         </div>
       </div>
 
       <section class="settings-block" aria-labelledby="manual-year">
-        <h2 id="manual-year">한 해의 흐름</h2>
+        <h2 id="manual-year">{__i18n_t("ui.manual.manual.a1ec70e8")}</h2>
         <dl class="manual-list">
-          {YEAR.map(([k, v]) => (
+          {__i18n_display(YEAR.map(([k, v]) => (
             <div key={k}>
-              <dt>{k}</dt>
-              <dd>{v}</dd>
+              <dt>{__i18n_display(k)}</dt>
+              <dd>{__i18n_display(v)}</dd>
             </div>
-          ))}
+          )))}
         </dl>
       </section>
 
       <section class="settings-block" aria-labelledby="manual-screens">
-        <h2 id="manual-screens">화면</h2>
+        <h2 id="manual-screens">{__i18n_t("ui.manual.manual.43c786f1")}</h2>
         <dl class="manual-list">
-          {SCREENS.map(([k, v]) => (
+          {__i18n_display(SCREENS.map(([k, v]) => (
             <div key={k}>
-              <dt>{k}</dt>
-              <dd>{v}</dd>
+              <dt>{__i18n_display(k)}</dt>
+              <dd>{__i18n_display(v)}</dd>
             </div>
-          ))}
+          )))}
         </dl>
       </section>
 
       <section class="settings-block" aria-labelledby="manual-words">
-        <h2 id="manual-words">용어와 제도</h2>
-        <p class="muted small">제도는 현실 KBO 규정을 따르고, 현실에 선례가 없는 부분만 게임이 정했습니다.</p>
+        <h2 id="manual-words">{__i18n_t("ui.manual.manual.e17dd9c5")}</h2>
+        <p class="muted small">{__i18n_t("ui.manual.manual.7888bd43")}</p>
         <dl class="manual-list">
-          {GLOSSARY.map(([k, v]) => (
+          {__i18n_display(GLOSSARY.map(([k, v]) => (
             <div key={k}>
-              <dt>{k}</dt>
-              <dd>{v}</dd>
+              <dt>{__i18n_display(k)}</dt>
+              <dd>{__i18n_display(v)}</dd>
             </div>
-          ))}
+          )))}
         </dl>
       </section>
 
       <section class="settings-block" aria-labelledby="manual-decisions">
-        <h2 id="manual-decisions">결정 안내</h2>
-        {decisionTips().map(([kind, tip]) => (
+        <h2 id="manual-decisions">{__i18n_t("ui.manual.manual.63caaf3a")}</h2>
+        {__i18n_display(decisionTips().map(([kind, tip]) => (
           <details key={kind} class="help">
-            <summary>{tip.title}</summary>
-            {tip.body.map((line) => (
-              <p key={line}>{line}</p>
-            ))}
+            <summary>{__i18n_display(tip.title)}</summary>
+            {__i18n_display(tip.body.map((line) => (
+              <p key={line}>{__i18n_display(line)}</p>
+            )))}
           </details>
-        ))}
+        )))}
       </section>
 
       <section class="settings-block" aria-labelledby="manual-faq">
-        <h2 id="manual-faq">자주 묻는 질문</h2>
-        {FAQ.map(([q, a]) => (
+        <h2 id="manual-faq">{__i18n_t("ui.manual.manual.ae2ce921")}</h2>
+        {__i18n_display(FAQ.map(([q, a]) => (
           <details key={q} class="help">
-            <summary>{q}</summary>
-            <p>{a}</p>
+            <summary>{__i18n_display(q)}</summary>
+            <p>{__i18n_display(a)}</p>
           </details>
-        ))}
+        )))}
       </section>
     </section>
   );

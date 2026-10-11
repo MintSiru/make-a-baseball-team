@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The general manager's briefing (1.5.0, from the 1.4 review): the few things that matter most right now, each with
    what was seen, why it matters, what could be done about it at what cost, and a button to the screen that does
    it. Everything comes from what the club can see — scouting grades, the numbers, injuries, the books, the owner's
@@ -40,12 +41,12 @@ export interface BriefItem {
   weight: number;
 }
 
-export const SPOT_LABEL: Record<Spot, string> = { C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수', SP: '선발투수', RP: '불펜투수' };
+export const SPOT_LABEL: Record<Spot, string> = { C: __i18n_k("league.briefing.sPOT_LABEL.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("league.briefing.sPOT_LABEL.sS.3e24c7f1"), LF: __i18n_k("league.briefing.sPOT_LABEL.lF.73836db2"), CF: __i18n_k("league.briefing.sPOT_LABEL.cF.56780b2a"), RF: __i18n_k("league.briefing.sPOT_LABEL.rF.a28a0ef8"), SP: __i18n_k("league.briefing.sPOT_LABEL.sP.cd036b1a"), RP: __i18n_k("league.briefing.sPOT_LABEL.rP.ac3cc00a") };
 const FIELD: Exclude<FieldPos, 'DH'>[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
 const FLOOR = 25;
 const PER = 3;
 
-const won = (n: number) => (Math.abs(n) >= 10_000 ? `${(n / 10_000).toFixed(1).replace(/\.0$/, '')}억` : `${Math.round(n).toLocaleString('ko-KR')}만`);
+const won = (n: number) => (Math.abs(n) >= 10_000 ? __i18n_k("league.briefing.won.db0fc332", { value: (n / 10_000).toFixed(1).replace(/\.0$/, '') }) : __i18n_k("league.briefing.won.cd1481f0", { value: Math.round(n).toLocaleString('ko-KR') }));
 const fits = (p: Player, spot: Spot) => (spot === 'SP' || spot === 'RP' ? isPitcher(p) && p.role === spot : !isPitcher(p) && p.position === spot);
 const playing = (p: Player) => p.status === 'active';
 const hurt = (s: LeagueState, id: PlayerId, date: string) => {
@@ -100,15 +101,15 @@ export function briefing(s: LeagueState): BriefItem[] {
       items.push({
         id: `injury-${worst.p.id}`,
         tone: 'warn',
-        title: `주전 ${worst.p.name} ${worst.days}일 결장`,
+        title: __i18n_k("league.briefing.briefing.title.bde73e70", { name: worst.p.name, days: worst.days }),
         facts: [
-          `${SPOT_LABEL[spot] ?? '야수'} ${worst.p.name}(등급 ${worst.p.scouting.current}) · ${s.injuries[worst.p.id]!.part ?? '부상'} · ${s.injuries[worst.p.id]!.until.slice(5).replace('-', '/')} 복귀 예정`,
-          next?.who ? `지금 그 자리 다음 선수: ${next.who.name}(등급 ${next.who.scouting.current})` : '그 자리를 맡을 선수가 마땅치 않습니다.',
-          ...(out.length > 1 ? [`다른 주전 ${out.length - 1}명도 1주 넘게 빠져 있습니다.`] : []),
+          __i18n_k("league.briefing.briefing.facts.f7a70a51", { value: SPOT_LABEL[spot] ?? __i18n_k("league.briefing.briefing.facts.9dac0c64"), name: worst.p.name, current: worst.p.scouting.current, value2: s.injuries[worst.p.id]!.part ?? __i18n_k("league.briefing.briefing.facts.501fb802"), value3: s.injuries[worst.p.id]!.until.slice(5).replace('-', '/') }),
+          next?.who ? __i18n_k("league.briefing.briefing.facts.32874697", { name: next.who.name, current: next.who.scouting.current }) : __i18n_k("league.briefing.briefing.facts.5bf839f2"),
+          ...(out.length > 1 ? [__i18n_k("league.briefing.briefing.facts.2429e968", { value: out.length - 1 })] : []),
         ],
         options: [
-          { label: '대체 선수 정하기', note: '퓨처스에서 올리거나 감독에게 맡김', go: { tab: 'club', view: 'squad' } },
-          ...(spot in SPOT_LABEL ? [{ label: `${SPOT_LABEL[spot]} 찾기`, note: '트레이드·자유계약 — 연봉과 유망주가 듦', go: { tab: 'market' as const, view: 'search' as const, spot } }] : []),
+          { label: __i18n_k("league.briefing.options.label.6896e07b"), note: __i18n_k("league.briefing.options.note.7d89c8c6"), go: { tab: 'club', view: 'squad' } },
+          ...(spot in SPOT_LABEL ? [{ label: __i18n_k("league.briefing.options.label.4d8946b8", { value: SPOT_LABEL[spot] }), note: __i18n_k("league.briefing.options.note.c23a1586"), go: { tab: 'market' as const, view: 'search' as const, spot } }] : []),
         ],
         weight: 55 + Math.min(30, worst.days / 3) + Math.max(0, worst.p.scouting.current - (next?.who?.scouting.current ?? 20)),
       });
@@ -139,19 +140,19 @@ export function briefing(s: LeagueState): BriefItem[] {
       items.push({
         id: `weak-${spot}`,
         tone: 'info',
-        title: `가장 큰 약점: ${label}`,
+        title: __i18n_k("league.briefing.briefing.title.bf9d4d56", { label: label }),
         facts: [
           pitching
-            ? `우리 ${label} 상위 5명 평균 등급 ${worst.ours} / 리그 평균 ${avg}`
+            ? __i18n_k("league.briefing.briefing.facts.c9a23e96", { label: label, ours: worst.ours, avg: avg })
             : worst.who
-              ? `우리 ${label} ${worst.who.name}(등급 ${worst.ours}${lineOf(s, worst.who) ? `, ${lineOf(s, worst.who)}` : ''}) / 리그 주전 평균 ${avg}`
-              : `우리 팀에 ${label}로 뛸 선수가 없습니다 (리그 주전 평균 ${avg})`,
-          prospect ? `안에서 키우기: ${prospect.name}(만 ${ageIn(prospect, s.year)}세, 현재 ${prospect.scouting.current} · 미래 ${prospect.scouting.futureValue}) — 시간이 듦` : '안에서 키울 만한 유망주가 보이지 않습니다.',
-          `밖에서 찾기: 다른 구단에 리그 평균보다 나은 ${label} ${others}명${best ? `, 자유계약 ${best.name}(등급 ${best.scouting.current}, 연 ${won(poolAsk(s, best))})` : ''}`,
+              ? __i18n_k("league.briefing.briefing.facts.ceab4fb3", { label: label, name: worst.who.name, ours: worst.ours, value: lineOf(s, worst.who) ? `, ${lineOf(s, worst.who)}` : '', avg: avg })
+              : __i18n_k("league.briefing.briefing.facts.cd2ca467", { label: label, avg: avg }),
+          prospect ? __i18n_k("league.briefing.briefing.facts.1b9b8dac", { name: prospect.name, ageIn: ageIn(prospect, s.year), current: prospect.scouting.current, futureValue: prospect.scouting.futureValue }) : __i18n_k("league.briefing.briefing.facts.e7071735"),
+          __i18n_k("league.briefing.briefing.facts.afe64a9e", { label: label, others: others, value: best ? __i18n_k("league.briefing.briefing.facts.00fafe48", { name: best.name, current: best.scouting.current, won: won(poolAsk(s, best)) }) : '' }),
         ],
         options: [
-          { label: `${label} 찾기`, note: s.phase === 'regular' && date > `${s.year}-${KBO_2026.trade.deadline}` ? '트레이드는 마감 — 자유계약만' : '트레이드는 선수·지명권, 자유계약은 연봉', go: { tab: 'market', view: 'search', spot } },
-          ...(prospect ? [{ label: `${prospect.name} 보기`, note: '출전 기회를 주면 빨리 큼', go: { tab: 'player' as const, id: prospect.id } }] : []),
+          { label: __i18n_k("league.briefing.options.label.4fdc1049", { label: label }), note: s.phase === 'regular' && date > `${s.year}-${KBO_2026.trade.deadline}` ? __i18n_k("league.briefing.options.note.c9708ec9") : __i18n_k("league.briefing.options.note.ca7714ff"), go: { tab: 'market', view: 'search', spot } },
+          ...(prospect ? [{ label: __i18n_k("league.briefing.options.label.16fdf68b", { name: prospect.name }), note: __i18n_k("league.briefing.options.note.aa02397a"), go: { tab: 'player' as const, id: prospect.id } }] : []),
         ],
         weight: (worst.league - worst.ours) * 3,
       });
@@ -168,9 +169,9 @@ export function briefing(s: LeagueState): BriefItem[] {
       items.push({
         id: 'foreign-open',
         tone: 'warn',
-        title: `외국인 자리 ${open}개가 비어 있습니다`,
-        facts: [`외국인 ${used}명 / ${slots.regular + slots.asia}명 · 올해 교체 ${changes}번 남음`, '빈자리는 다른 구단 대비 큰 손해입니다.'],
-        options: [{ label: '외국인 영입·교체', note: '신규는 100만 달러 상한 · 구단 자금', go: { tab: 'market', view: 'foreign' } }],
+        title: __i18n_k("league.briefing.briefing.title.8692d011", { open: open }),
+        facts: [__i18n_k("league.briefing.briefing.facts.14cf69ed", { used: used, value: slots.regular + slots.asia, changes: changes }), __i18n_k("league.briefing.briefing.facts.184404f9")],
+        options: [{ label: __i18n_k("league.briefing.options.label.a00f6ed1"), note: __i18n_k("league.briefing.options.note.ac50115a"), go: { tab: 'market', view: 'foreign' } }],
         weight: 70,
       });
   }
@@ -182,11 +183,11 @@ export function briefing(s: LeagueState): BriefItem[] {
     items.push({
       id: 'payroll-over',
       tone: 'warn',
-      title: `${payYear}년 연봉이 예산을 ${won(payroll - u.payrollBudget)} 넘었습니다`,
-      facts: [`연봉 ${won(payroll)} / 예산 ${won(u.payrollBudget)}`, '넘은 만큼 모기업 평가가 나빠지고 구단 자금에서 메워야 합니다.'],
+      title: __i18n_k("league.briefing.briefing.title.d47ba9cf", { payYear: payYear, won: won(payroll - u.payrollBudget) }),
+      facts: [__i18n_k("league.briefing.briefing.facts.3390601a", { won: won(payroll), won2: won(u.payrollBudget) }), __i18n_k("league.briefing.briefing.facts.5dd2fb46")],
       options: [
-        { label: '방출·자유계약', note: '남은 연봉은 그대로 냄', go: { tab: 'market', view: 'release' } },
-        { label: '트레이드', note: '연봉을 받아 줄 구단은 선수·현금을 원함', go: { tab: 'market', view: 'trade' } },
+        { label: __i18n_k("league.briefing.options.label.e1df1ebf"), note: __i18n_k("league.briefing.options.note.3e669a26"), go: { tab: 'market', view: 'release' } },
+        { label: __i18n_k("league.briefing.options.label.428749ee"), note: __i18n_k("league.briefing.options.note.4f6740e9"), go: { tab: 'market', view: 'trade' } },
       ],
       weight: 45 + Math.min(30, ((payroll - u.payrollBudget) / Math.max(1, u.payrollBudget)) * 200),
     });
@@ -194,9 +195,9 @@ export function briefing(s: LeagueState): BriefItem[] {
     items.push({
       id: 'fund-negative',
       tone: 'warn',
-      title: '구단 자금이 바닥났습니다',
-      facts: [`구단 자금 ${won(u.fund)}`, '계약금·영입비를 낼 수 없고 모기업의 신뢰가 떨어집니다.'],
-      options: [{ label: '구단 운영 보기', note: '티켓·마케팅·지출을 조정', go: { tab: 'club', view: 'office' } }],
+      title: __i18n_k("league.briefing.briefing.title.f461f238"),
+      facts: [__i18n_k("league.briefing.briefing.facts.2c61708c", { won: won(u.fund) }), __i18n_k("league.briefing.briefing.facts.c6ea5aa8")],
+      options: [{ label: __i18n_k("league.briefing.options.label.d22c5d41"), note: __i18n_k("league.briefing.options.note.2160336b"), go: { tab: 'club', view: 'office' } }],
       weight: 80,
     });
 
@@ -208,11 +209,11 @@ export function briefing(s: LeagueState): BriefItem[] {
       items.push({
         id: 'goal-rank',
         tone: 'warn',
-        title: `모기업 목표 ${u.goals.rank}위 — 지금 ${row.rank}위`,
-        facts: [`${row.games}경기 ${row.w}승 ${row.l}패${row.gb ? ` · 1위와 ${row.gb}경기 차` : ''}`, '시즌 뒤 평가가 다음 해 예산과 단장 신뢰를 움직입니다.'],
+        title: __i18n_k("league.briefing.briefing.title.dde38b1e", { rank: u.goals.rank, rank2: row.rank }),
+        facts: [__i18n_k("league.briefing.briefing.facts.3aa05999", { games: row.games, w: row.w, l: row.l, value: row.gb ? __i18n_k("league.briefing.briefing.facts.847855e7", { gb: row.gb }) : '' }), __i18n_k("league.briefing.briefing.facts.a2a513ee")],
         options: [
-          { label: '라인업 점검', note: '타순·수비·로테이션', go: { tab: 'club', view: 'lineup' } },
-          { label: '보강 찾기', go: { tab: 'market', view: 'search' } },
+          { label: __i18n_k("league.briefing.options.label.c09d904f"), note: __i18n_k("league.briefing.options.note.842b3700"), go: { tab: 'club', view: 'lineup' } },
+          { label: __i18n_k("league.briefing.options.label.9bde8db7"), go: { tab: 'market', view: 'search' } },
         ],
         weight: 30 + behind * 6,
       });
@@ -228,12 +229,12 @@ export function briefing(s: LeagueState): BriefItem[] {
       items.push({
         id: 'deadline',
         tone: 'info',
-        title: `트레이드 마감 ${left}일 전 — ${chase ? '가을야구 경쟁 중' : '가을야구가 멀어짐'}`,
+        title: __i18n_k("league.briefing.briefing.title.4f548af6", { left: left, value: chase ? __i18n_k("league.briefing.briefing.title.a48b92e9") : __i18n_k("league.briefing.briefing.title.9c6fa70b") }),
         facts: [
-          `${row.rank}위 · 5위 ${fifth.short}와 ${Math.abs(Math.round((fifth.pct - row.pct) * row.games))}승 차 안팎`,
-          chase ? '부족한 자리를 지금 메우면 남은 두 달이 달라질 수 있습니다.' : '나이 든 선수를 유망주나 지명권으로 바꿔 내년을 준비할 때입니다.',
+          __i18n_k("league.briefing.briefing.facts.5683c8af", { rank: row.rank, short: fifth.short, value: Math.abs(Math.round((fifth.pct - row.pct) * row.games)) }),
+          chase ? __i18n_k("league.briefing.briefing.facts.c3c1814c") : __i18n_k("league.briefing.briefing.facts.87a94619"),
         ],
-        options: [{ label: '트레이드', note: chase ? '유망주·지명권을 내줌' : '베테랑을 내주고 미래를 받음', go: { tab: 'market', view: 'trade' } }],
+        options: [{ label: __i18n_k("league.briefing.options.label.428749ee"), note: chase ? __i18n_k("league.briefing.options.note.d104c488") : __i18n_k("league.briefing.options.note.808f5c4f"), go: { tab: 'market', view: 'trade' } }],
         weight: 45,
       });
   }
@@ -253,14 +254,14 @@ export function briefing(s: LeagueState): BriefItem[] {
       items.push({
         id: `ready-${best.p.id}`,
         tone: 'good',
-        title: `퓨처스의 ${best.p.name}, 1군에서 써 볼 만합니다`,
+        title: __i18n_k("league.briefing.briefing.title.5a14bb9a", { name: best.p.name }),
         facts: [
-          `${SPOT_LABEL[best.spot]} · 등급 ${best.p.scouting.current}${best.starter ? ` — 1군 ${best.starter.name}(${best.starter.scouting.current})보다 높음` : ''}`,
-          '1군 등록일수가 쌓이면 FA가 빨라지고 연봉 협상에서 더 받습니다.',
+          __i18n_k("league.briefing.briefing.facts.0ee2aced", { value: SPOT_LABEL[best.spot], current: best.p.scouting.current, value2: best.starter ? __i18n_k("league.briefing.briefing.facts.65ad8bad", { name: best.starter.name, current: best.starter.scouting.current }) : '' }),
+          __i18n_k("league.briefing.briefing.facts.a6ba250b"),
         ],
         options: [
-          { label: '선수단에서 올리기', go: { tab: 'club', view: 'squad' } },
-          { label: `${best.p.name} 보기`, go: { tab: 'player', id: best.p.id } },
+          { label: __i18n_k("league.briefing.options.label.7e9a1852"), go: { tab: 'club', view: 'squad' } },
+          { label: __i18n_k("league.briefing.options.label.16fdf68b", { name: best.p.name }), go: { tab: 'player', id: best.p.id } },
         ],
         weight: 30 + best.over * 2,
       });

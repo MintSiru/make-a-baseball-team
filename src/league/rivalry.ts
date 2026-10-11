@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The rivalry (V0.9): the user's club against the twelfth club. Their games draw bigger crowds (fans.ts), every
    one of them gets an article (news.ts), the season series moves both fan bases, and a player who crosses from
    one to the other stirs the fans. */
@@ -53,15 +54,13 @@ export function closeRivalry(s: LeagueState, year: number) {
   const me = short(s, u.teamId),
     them = short(s, tw.teamId);
   const total = allTime(s);
-  const verdict = r.w > r.l ? `${me}의 우세` : r.w < r.l ? `${them}의 우세` : '팽팽한 균형';
+  const verdict = r.w > r.l ? __i18n_k("league.rivalry.closeRivalry.verdict.3896cfcd", { me: me }) : r.w < r.l ? __i18n_k("league.rivalry.closeRivalry.verdict.d817524d", { them: them }) : __i18n_k("league.rivalry.closeRivalry.verdict.e157d122");
   addNews(s, {
     date: `${year}-10-31`,
     kind: 'season',
-    title: `${year} 라이벌전 ${me} ${r.w}승 ${r.l}패${r.t ? ` ${r.t}무` : ''} · ${verdict}`,
+    title: __i18n_k("league.rivalry.closeRivalry.title.84e8fae8", { year: year, me: me, w: r.w, l: r.l, value: r.t ? __i18n_k("league.rivalry.closeRivalry.title.136ac74d", { value: r.t }) : '', verdict: verdict }),
     body:
-      `${me}와 ${them}의 ${year} 시즌 맞대결은 ${r.w}승 ${r.l}패${r.t ? ` ${r.t}무` : ''}로 끝났다. ` +
-      `통산 ${total.seasons}시즌 ${total.w}승 ${total.l}패${total.t ? ` ${total.t}무` : ''}. ` +
-      (k > 0 ? '라이벌을 꺾은 팬들의 열기가 겨울까지 이어진다.' : k < 0 ? '라이벌에 밀린 팬들의 아쉬움이 크다.' : ''),
+      __i18n_k("league.rivalry.closeRivalry.body.e9aa4a94", { value: __i18n_k("league.rivalry.closeRivalry.body.8cc8a5fe", { me: me, them: them, year: year, w: r.w, l: r.l, value: r.t ? __i18n_k("league.rivalry.closeRivalry.body.136ac74d", { value: r.t }) : '' }), value2: __i18n_k("league.rivalry.closeRivalry.body.bf3d0ab0", { seasons: total.seasons, w: total.w, l: total.l, value: total.t ? __i18n_k("league.rivalry.closeRivalry.body.136ac74d", { value: total.t }) : '' }), value3: (k > 0 ? __i18n_k("league.rivalry.closeRivalry.body.d5099eb4") : k < 0 ? __i18n_k("league.rivalry.closeRivalry.body.01569cf7") : '') }),
     quotes: [],
     facts: { year, wins: r.w, losses: r.l, ties: r.t, allTimeWins: total.w, allTimeLosses: total.l },
     players: [],
@@ -106,11 +105,11 @@ export function crossing(
   addNews(s, {
     date,
     kind: 'move',
-    title: leaving ? `${p.name}, 라이벌 ${short(s, to)} 유니폼… ${short(s, from)} 팬들 술렁` : `라이벌의 간판 ${p.name}, ${short(s, to)}로`,
+    title: leaving ? __i18n_k("league.rivalry.crossing.title.da3ad73e", { name: p.name, short: short(s, to), short2: short(s, from) }) : __i18n_k("league.rivalry.crossing.title.ac32eb0d", { name: p.name, short: short(s, to) }),
     body: leaving
-      ? `${short(s, from)}에서 뛰던 ${p.name}이(가) ${how}로 라이벌 ${short(s, to)}에 간다. 팬 커뮤니티에는 아쉬움과 서운함이 섞인 글이 이어졌다.`
-      : `${short(s, from)}의 ${p.name}이(가) ${how}로 ${short(s, to)}에 온다. 라이벌 팬들은 충격에 빠졌고, ${short(s, to)} 팬들은 반기는 분위기다.`,
-    quotes: [{ who: '팬', role: 'fan', text: leaving ? '하필이면 거기냐…' : '이제 우리 선수다, 환영한다!' }],
+      ? __i18n_k("league.rivalry.crossing.body.98e7e1a2", { short: short(s, from), name: p.name, how: how, short2: short(s, to) })
+      : __i18n_k("league.rivalry.crossing.body.e78b1d11", { short: short(s, from), name: p.name, how: how, short2: short(s, to), short3: short(s, to) }),
+    quotes: [{ who: __i18n_k("league.rivalry.quotes.who.724cc77d"), role: 'fan', text: leaving ? __i18n_k("league.rivalry.quotes.text.cf35737e") : __i18n_k("league.rivalry.quotes.text.efbf1392") }],
     facts: { player: p.name, from: short(s, from), to: short(s, to), how },
     players: [p.id],
     mine: true,
@@ -120,8 +119,8 @@ export function crossing(
       id: `rival-cross-${p.id}-${date}`,
       date,
       kind: 'season',
-      title: `${p.name} 라이벌 이적`,
-      lines: [`${p.name}이(가) ${how}로 ${short(s, to)}에 갔습니다. 팬들의 관심이 조금 떨어졌습니다.`],
+      title: __i18n_k("league.rivalry.crossing.title.fd8f34df", { name: p.name }),
+      lines: [__i18n_k("league.rivalry.crossing.lines.aa5d9c16", { name: p.name, how: how, short: short(s, to) })],
       tone: 'bad',
       players: [p.id],
     });

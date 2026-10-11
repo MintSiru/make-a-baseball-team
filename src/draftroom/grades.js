@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index.js';
 /* 20–80 scouting scale.
    Hidden ability (`trueTools`, `potentialTools`) is continuous; everything shown to the
    player is rounded to five-point grades and includes observer error. */
@@ -8,17 +9,17 @@ const { TUNING } = DraftTuning;
 const V = TUNING.generation.velocity;
 const clamp = (n, a = 20, b = 80) => Math.max(a, Math.min(b, n));
 const grade = (n) => clamp(Math.round(n / 5) * 5);
-const ROLES = { SP: '선발투수', RP: '불펜투수', C: '포수', IF: '내야수', OF: '외야수' };
+const ROLES = { SP: __i18n_k("draftroom.grades.rOLES.sP.cd036b1a"), RP: __i18n_k("draftroom.grades.rOLES.rP.ac3cc00a"), C: __i18n_k("draftroom.grades.rOLES.c.5f31470d"), IF: __i18n_k("draftroom.grades.rOLES.iF.d7fc242c"), OF: __i18n_k("draftroom.grades.rOLES.oF.7435120b") };
 const LABELS = {
-  stuff: '구위',
-  command: '커맨드',
-  breaking: '변화구',
-  stamina: '체력',
-  contact: '컨택',
-  power: '장타력',
-  speed: '주력',
-  defense: '수비',
-  eye: '선구안',
+  stuff: __i18n_k("draftroom.grades.lABELS.stuff.6ff2c5c1"),
+  command: __i18n_k("draftroom.grades.lABELS.command.2eadb10f"),
+  breaking: __i18n_k("draftroom.grades.lABELS.breaking.32352c71"),
+  stamina: __i18n_k("draftroom.grades.lABELS.stamina.a45ea58e"),
+  contact: __i18n_k("draftroom.grades.lABELS.contact.5edb7838"),
+  power: __i18n_k("draftroom.grades.lABELS.power.09e67eec"),
+  speed: __i18n_k("draftroom.grades.lABELS.speed.4038619b"),
+  defense: __i18n_k("draftroom.grades.lABELS.defense.ed9be858"),
+  eye: __i18n_k("draftroom.grades.lABELS.eye.ac886d4a"),
 };
 const WEIGHTS = {
   SP: { stuff: 0.3, command: 0.25, breaking: 0.25, stamina: 0.2 },
@@ -126,9 +127,9 @@ function make(role, type, bio, band, r) {
   );
   const pickTags = [];
   if (ready >= 45) pickTags.push('즉전감');
-  if (floorGrade >= 40 && uncertainty !== '높음') pickTags.push('플로어');
+  if (floorGrade >= 40 && uncertainty !== '높음') pickTags.push(__i18n_k("draftroom.grades.make.f5f120bd"));
   if (ceilingGrade >= 55 && ceilingGrade - ready >= 10) pickTags.push('실링');
-  if (!pickTags.length) pickTags.push(scoutCeiling - ready >= 10 ? '육성형' : '역할형');
+  if (!pickTags.length) pickTags.push(scoutCeiling - ready >= 10 ? __i18n_k("draftroom.grades.make.82ee1a8f") : __i18n_k("draftroom.grades.make.2cd83703"));
   return {
     velocity,
     ready,

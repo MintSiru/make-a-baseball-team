@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:browser": "node tests/browser/smoke.mjs",
+    "i18n:check": "node scripts/i18n-check.mjs",
     "port:draftroom": "python3 scripts/port-draftroom.py",
     "golden:write": "tsx scripts/write-league-golden.ts",
     "calibrate": "tsx scripts/calibrate.ts",
@@ -18,6 +19,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
+    "@formatjs/icu-messageformat-parser": "^2.11.4",
+    "intl-messageformat": "^10.7.18",
     "preact": "^10.29.8"
   },
   "devDependencies": {

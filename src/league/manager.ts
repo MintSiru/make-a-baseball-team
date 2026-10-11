@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The AI manager of every club. Decisions use public scouting grades and this season's results only;
    the engine input it builds carries true ability, because the engine plays the actual players. */
 import { ruleYear } from './era';
@@ -375,7 +376,7 @@ function postPlanFor(s: LeagueState, x: SquadSpec, ids: PlayerId[]) {
   return { chosen, allOut: !!plan.allOut };
 }
 
-export const PEN_ROLE_LABELS: Record<BullpenRole, string> = { CL: '마무리', SU: '셋업맨', HL: '필승조', MU: '추격조', LR: '롱릴리프', LO: '원 포인트' };
+export const PEN_ROLE_LABELS: Record<BullpenRole, string> = { CL: __i18n_k("league.manager.pEN_ROLE_LABELS.cL.ed8464a3"), SU: __i18n_k("league.manager.pEN_ROLE_LABELS.sU.9d5322e3"), HL: __i18n_k("league.manager.pEN_ROLE_LABELS.hL.39429c7a"), MU: __i18n_k("league.manager.pEN_ROLE_LABELS.mU.138d4fd4"), LR: __i18n_k("league.manager.pEN_ROLE_LABELS.lR.e7ef4fdb"), LO: '원 포인트' };
 export const PEN_ROLES: BullpenRole[] = ['CL', 'SU', 'HL', 'MU', 'LR', 'LO'];
 
 /**

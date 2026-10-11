@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../../i18n/index';
 /* OpenAI (GPT) through its REST Chat Completions API with a strict JSON schema response format,
    called from the browser with the player's own key. */
 import { bodyOf, failure, retryAfterOf } from '../errors';
@@ -26,7 +27,7 @@ export const openaiModel: StoryModel = {
         }),
       });
     } catch {
-      return { ok: false, error: 'network', message: '연결하지 못했습니다.' };
+      return { ok: false, error: 'network', message: __i18n_k("story.providers.openai.generate.message.8128cbeb") };
     }
     if (!res.ok) {
       // A 429 is either too many requests for now or an account with no credit left (insufficient_quota).
@@ -37,9 +38,9 @@ export const openaiModel: StoryModel = {
     }
     const data = (await res.json()) as { choices?: { message?: { content?: string | null; refusal?: string | null } }[]; usage?: { prompt_tokens?: number; completion_tokens?: number } };
     const msg = data.choices?.[0]?.message;
-    if (msg?.refusal) return { ok: false, error: 'refusal', message: '모델이 이 기사를 쓰지 않기로 했습니다.' };
+    if (msg?.refusal) return { ok: false, error: 'refusal', message: __i18n_k("story.providers.openai.generate.message.02cad08b") };
     const story = parseStory(msg?.content ?? '');
-    if (!story) return { ok: false, error: 'invalid', message: '모델 응답을 읽지 못했습니다.' };
+    if (!story) return { ok: false, error: 'invalid', message: __i18n_k("story.providers.openai.generate.message.650c067c") };
     return { ok: true, text: story, usage: { input: data.usage?.prompt_tokens ?? 0, output: data.usage?.completion_tokens ?? 0 } };
   },
   async listModels(key, fetchImpl = fetch) {

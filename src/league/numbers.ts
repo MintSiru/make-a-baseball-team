@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Uniform numbers (V0.5.1). Every registered player wears a number from 0 to 99 that nobody else at
    his club wears; development players (육성선수) wear three-digit numbers, as in the league. A player
    who changes clubs, or becomes a registered player, gets a new one (his old number if it is free).
@@ -57,12 +58,12 @@ function teamNumbers(s: LeagueState, teamId: TeamId) {
 export function checkNumber(s: LeagueState, id: string, n: number): string | null {
   const p = s.players[id];
   const u = s.user;
-  if (!p || !u || p.teamId !== u.teamId) return '우리 구단 선수만 등번호를 바꿀 수 있습니다.';
-  if (!Number.isInteger(n)) return '등번호는 정수입니다.';
-  if (!fits(p, n)) return isDevelopment(p) ? '육성선수는 100~199번을 답니다.' : '정식선수는 0~99번을 답니다.';
+  if (!p || !u || p.teamId !== u.teamId) return __i18n_k("league.numbers.checkNumber.5dc63468");
+  if (!Number.isInteger(n)) return __i18n_k("league.numbers.checkNumber.911c30e8");
+  if (!fits(p, n)) return isDevelopment(p) ? __i18n_k("league.numbers.checkNumber.1bc101b8") : __i18n_k("league.numbers.checkNumber.5354693d");
   const team = s.teams.find((t) => t.id === u.teamId)!;
   const retired = team.retiredNumbers?.find((x) => x.number === n);
-  if (retired) return `${n}번은 ${retired.name}의 영구결번입니다.`;
+  if (retired) return __i18n_k("league.numbers.checkNumber.dbe113cd", { n: n, name: retired.name });
   return null;
 }
 
@@ -104,7 +105,7 @@ export function maybeRetireNumber(s: LeagueState, p: Player, teamId: TeamId, yea
   if (!team || team.retiredNumbers?.some((x) => x.number === p.number)) return;
   (team.retiredNumbers ??= []).push({ number: p.number, playerId: p.id, name: p.name, year });
   if (teamId === s.user?.teamId) {
-    unlock(s, 'retiredNumber', year, `${p.number}번 ${p.name}`);
-    milestone(s, year, `${p.name}의 ${p.number}번 영구결번`);
+    unlock(s, 'retiredNumber', year, __i18n_k("league.numbers.maybeRetireNumber.05c2328c", { number: p.number, name: p.name }));
+    milestone(s, year, __i18n_k("league.numbers.maybeRetireNumber.8985f06c", { name: p.name, number: p.number }));
   }
 }

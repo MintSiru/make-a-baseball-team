@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Awards and honours (V0.7). After every season:
    - titles (타이틀): batting average, home runs, RBIs, runs, hits, steals, on-base and slugging (qualified
      hitters: 3.1 PA per team game), wins, ERA (1 inning per team game), strikeouts, saves, holds and
@@ -61,21 +62,21 @@ export function computeAwards(s: LeagueState, year: number, table: StandingRow[]
     const top = best(xs, key, low);
     if (top && (low || key(top) > 0)) titles.push({ label, id: top.p.id, value: show(top) });
   };
-  title('타율', qBat, (r) => avg(b(r)), (r) => f3(avg(b(r))));
-  title('홈런', hitters, (r) => b(r).hr, (r) => `${b(r).hr}개`);
-  title('타점', hitters, (r) => b(r).rbi, (r) => `${b(r).rbi}`);
-  title('득점', hitters, (r) => b(r).r, (r) => `${b(r).r}`);
-  title('안타', hitters, (r) => b(r).h, (r) => `${b(r).h}개`);
-  title('도루', hitters, (r) => b(r).sb, (r) => `${b(r).sb}개`);
-  title('출루율', qBat, (r) => obp(b(r)), (r) => f3(obp(b(r))));
-  title('장타율', qBat, (r) => slg(b(r)), (r) => f3(slg(b(r))));
-  title('다승', pitchers, (r) => q(r).w, (r) => `${q(r).w}승`);
-  title('평균자책점', qPit, (r) => era(q(r)), (r) => era(q(r)).toFixed(2), true);
-  title('탈삼진', pitchers, (r) => q(r).k, (r) => `${q(r).k}개`);
-  title('세이브', pitchers, (r) => q(r).sv, (r) => `${q(r).sv}개`);
-  title('홀드', pitchers, (r) => q(r).hld, (r) => `${q(r).hld}개`);
+  title(__i18n_k("league.awards.computeAwards.1eb19e0a"), qBat, (r) => avg(b(r)), (r) => f3(avg(b(r))));
+  title(__i18n_k("league.awards.computeAwards.9162d3a3"), hitters, (r) => b(r).hr, (r) => __i18n_k("league.awards.computeAwards.4d0c1e37", { hr: b(r).hr }));
+  title(__i18n_k("league.awards.computeAwards.fed1c588"), hitters, (r) => b(r).rbi, (r) => `${b(r).rbi}`);
+  title(__i18n_k("league.awards.computeAwards.4b4a98b9"), hitters, (r) => b(r).r, (r) => `${b(r).r}`);
+  title('안타', hitters, (r) => b(r).h, (r) => __i18n_k("league.awards.computeAwards.13404308", { h: b(r).h }));
+  title(__i18n_k("league.awards.computeAwards.91e54831"), hitters, (r) => b(r).sb, (r) => __i18n_k("league.awards.computeAwards.36fd46ee", { sb: b(r).sb }));
+  title(__i18n_k("league.awards.computeAwards.bb6ef1b2"), qBat, (r) => obp(b(r)), (r) => f3(obp(b(r))));
+  title(__i18n_k("league.awards.computeAwards.7e66b88d"), qBat, (r) => slg(b(r)), (r) => f3(slg(b(r))));
+  title(__i18n_k("league.awards.computeAwards.a6eedf9a"), pitchers, (r) => q(r).w, (r) => __i18n_k("league.awards.computeAwards.305ee214", { w: q(r).w }));
+  title(__i18n_k("league.awards.computeAwards.f0f9146b"), qPit, (r) => era(q(r)), (r) => era(q(r)).toFixed(2), true);
+  title(__i18n_k("league.awards.computeAwards.3e23c769"), pitchers, (r) => q(r).k, (r) => __i18n_k("league.awards.computeAwards.3375a4db", { value: q(r).k }));
+  title('세이브', pitchers, (r) => q(r).sv, (r) => __i18n_k("league.awards.computeAwards.6a1d27de", { sv: q(r).sv }));
+  title(__i18n_k("league.awards.computeAwards.9329045a"), pitchers, (r) => q(r).hld, (r) => __i18n_k("league.awards.computeAwards.555e5500", { hld: q(r).hld }));
   const decided = pitchers.filter((r) => q(r).w + q(r).l >= 10);
-  title('승률', decided, (r) => q(r).w / (q(r).w + q(r).l), (r) => f3(q(r).w / (q(r).w + q(r).l)));
+  title(__i18n_k("league.awards.computeAwards.82cc030f"), decided, (r) => q(r).w / (q(r).w + q(r).l), (r) => f3(q(r).w / (q(r).w + q(r).l)));
 
   // MVP: WAR, a little more for a first-place or champion club and for titles won.
   const first = table.find((r) => r.rank === 1)?.teamId;
@@ -95,7 +96,7 @@ export function computeAwards(s: LeagueState, year: number, table: StandingRow[]
   const goldenGloves: SeasonAwards['goldenGloves'] = [];
   const pitcherGG = best(pitchers, (r) => r.c.war);
   if (pitcherGG) goldenGloves.push({ pos: '투수', id: pitcherGG.p.id });
-  const LABEL: Record<string, string> = { C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', DH: '지명타자' };
+  const LABEL: Record<string, string> = { C: __i18n_k("league.awards.lABEL.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("league.awards.lABEL.sS.3e24c7f1"), DH: __i18n_k("league.awards.lABEL.dH.8eba4676") };
   for (const pos of ['C', '1B', '2B', '3B', 'SS'] as FieldPos[]) {
     const top = best(hitters.filter((r) => posGames(r, pos) >= 60), (r) => r.c.war);
     if (top) goldenGloves.push({ pos: LABEL[pos]!, id: top.p.id });
@@ -104,7 +105,7 @@ export function computeAwards(s: LeagueState, year: number, table: StandingRow[]
     .filter((r) => posGames(r, 'LF') + posGames(r, 'CF') + posGames(r, 'RF') >= 60)
     .sort((a, b2) => b2.c.war - a.c.war)
     .slice(0, 3);
-  for (const r of outfield) goldenGloves.push({ pos: '외야수', id: r.p.id });
+  for (const r of outfield) goldenGloves.push({ pos: __i18n_k("league.awards.computeAwards.pos.7435120b"), id: r.p.id });
   const dh = best(hitters.filter((r) => posGames(r, 'DH') >= 60), (r) => r.c.war);
   if (dh) goldenGloves.push({ pos: LABEL.DH!, id: dh.p.id });
 
@@ -119,8 +120,8 @@ export function awardHonours(s: LeagueState, year: number, a: SeasonAwards) {
   };
   give(a.mvp, 'MVP');
   give(a.rookie, '신인왕');
-  for (const g of a.goldenGloves) give(g.id, `골든글러브 (${g.pos})`);
-  for (const t of a.titles) give(t.id, `${t.label} 1위 (${t.value})`);
+  for (const g of a.goldenGloves) give(g.id, __i18n_k("league.awards.awardHonours.0d9ed90e", { pos: g.pos }));
+  for (const t of a.titles) give(t.id, __i18n_k("league.awards.awardHonours.c6a60592", { label: t.label, value: t.value }));
 }
 
 // ── Hall of fame ──────────────────────────────────────────────────────────────────────────────────
@@ -146,12 +147,12 @@ export function hallOfFameCheck(s: LeagueState, p: Player, year: number) {
   if (s.hallOfFame?.some((h) => h.id === p.id)) return;
   const bat = major.reduce((a, c) => ({ h: a.h + (c.bat?.h ?? 0), hr: a.hr + (c.bat?.hr ?? 0) }), { h: 0, hr: 0 });
   const pit = major.reduce((a, c) => ({ w: a.w + (c.pit?.w ?? 0), sv: a.sv + (c.pit?.sv ?? 0), outs: a.outs + (c.pit?.outs ?? 0) }), { w: 0, sv: 0, outs: 0 });
-  const line = isPitcher(p) ? `${pit.w}승 ${pit.sv}세이브 ${ip(pit.outs)}이닝` : `${bat.h}안타 ${bat.hr}홈런`;
+  const line = isPitcher(p) ? __i18n_k("league.awards.hallOfFameCheck.line.06b1f0af", { w: pit.w, sv: pit.sv, ip: ip(pit.outs) }) : __i18n_k("league.awards.hallOfFameCheck.line.0d295302", { h: bat.h, hr: bat.hr });
   const entry = { id: p.id, name: p.name, year, war, seasons: major.length, teams: [...new Set(major.map((c) => c.teamId))], line };
   (s.hallOfFame ??= []).push(entry);
   hallAlert(s, p, entry);
   if (s.user && major.filter((c) => c.teamId === s.user!.teamId).length >= 3) {
     unlock(s, 'hallOfFame', year, p.name);
-    milestone(s, year, `${p.name} 명예의 전당 헌액`);
+    milestone(s, year, __i18n_k("league.awards.hallOfFameCheck.e49320c0", { name: p.name }));
   }
 }

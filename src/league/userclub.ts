@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The user's club every year (V0.4): the owner's yearly money, military service, its own free agents,
    rookie bonuses (Draft Room's negotiation), development signings and spring-camp plans.
 
@@ -105,7 +106,7 @@ export type SalaryChoice = 'ask' | 'merit' | 'freeze' | 'extension';
 const money = (n: number) => {
   const eok = Math.floor(n / 10000),
     rest = n % 10000;
-  return eok ? (rest ? `${eok}억 ${rest.toLocaleString('ko-KR')}만` : `${eok}억`) : `${rest.toLocaleString('ko-KR')}만`;
+  return eok ? (rest ? __i18n_k("league.userclub.money.a0e34170", { eok: eok, value: rest.toLocaleString('ko-KR') }) : __i18n_k("league.userclub.money.0b019595", { eok: eok })) : __i18n_k("league.userclub.money.cd1481f0", { value: rest.toLocaleString('ko-KR') });
 };
 const note = (u: UserClub, year: number, text: string) => (u.log ??= []).push({ year, text });
 const nextSeason = (s: LeagueState) => (s.offseason ? s.offseason.year + 1 : s.year + 1);
@@ -120,16 +121,16 @@ function openNewStadium(s: LeagueState) {
   const next = s.offseason.year + 1;
   if (!plan.opens || plan.opens !== next || !plan.seats) return;
   const team = s.teams.find((t) => t.id === u.teamId)!;
-  const name = u.newStadiumName?.trim() || `${cityById(u.settings.cityId)?.name ?? ''} 신구장`;
+  const name = u.newStadiumName?.trim() || __i18n_k("league.userclub.openNewStadium.name.d7422702", { value: cityById(u.settings.cityId)?.name ?? '' });
   team.stadium = { ...team.stadium, name, capacity: plan.seats, size: u.settings.stadium === 'dome' ? 'dome' : plan.seats >= 20_000 ? 'large' : 'medium' };
-  note(u, s.offseason.year, `${name} 개장 (${plan.seats.toLocaleString('ko-KR')}석), ${next} 시즌부터 홈구장`);
+  note(u, s.offseason.year, __i18n_k("league.userclub.openNewStadium.15d1bc7d", { name: name, value: plan.seats.toLocaleString('ko-KR'), next: next }));
 }
 
 export const STADIUM_NAME_MAX = 20;
 export function checkStadiumName(name: string): string | null {
   const n = name.trim();
-  if (n.length < 2) return '구장 이름은 두 글자 이상이어야 합니다.';
-  if (n.length > STADIUM_NAME_MAX) return `구장 이름은 ${STADIUM_NAME_MAX}자까지입니다.`;
+  if (n.length < 2) return __i18n_k("league.userclub.checkStadiumName.6cd606b4");
+  if (n.length > STADIUM_NAME_MAX) return __i18n_k("league.userclub.checkStadiumName.535992f8", { sTADIUM_NAME_MAX: STADIUM_NAME_MAX });
   return null;
 }
 
@@ -145,7 +146,7 @@ export function renameStadium(s: LeagueState, name: string, which: 'current' | '
     return;
   }
   const team = s.teams.find((t) => t.id === u.teamId)!;
-  note(u, s.year, `홈구장 이름 변경: ${team.stadium.name} → ${n}`);
+  note(u, s.year, __i18n_k("league.userclub.renameStadium.2b9c3f59", { name: team.stadium.name, n: n }));
   team.stadium = { ...team.stadium, name: n };
 }
 
@@ -161,7 +162,7 @@ function payForeignOptions(s: LeagueState) {
     if (war < (isPitcher(p) ? O.foreign.keepWarPitcher : O.foreign.keepWarHitter)) continue;
     const amount = Math.round(opt * MANWON_PER_USD);
     u.fund -= amount;
-    u.ledger.push({ year, label: `외국인 옵션 · ${p.name} (${usd(opt)})`, amount: -amount });
+    u.ledger.push({ year, label: __i18n_k("league.userclub.payForeignOptions.label.cc99a4b8", { name: p.name, usd: usd(opt) }), amount: -amount });
   }
 }
 
@@ -184,7 +185,7 @@ export function yearlyGrant(s: LeagueState) {
   if (sponsorDue(s, year)) u.sponsorPending = true;
   const ev = evaluate(s, year);
   if (ev) {
-    note(u, year, `모기업 평가: ${ev.lines.map((l) => `${l.label} ${l.ok ? '달성' : '미달'}`).join(' · ')} → 내년 예산 ${ev.change >= 0 ? '+' : ''}${Math.round(ev.change * 100)}%, 신뢰도 ${Math.round(ev.trust)}`);
+    note(u, year, __i18n_k("league.userclub.yearlyGrant.7289a114", { value: ev.lines.map((l) => __i18n_k("league.userclub.yearlyGrant.38e6b031", { label: l.label, value: l.ok ? __i18n_k("league.userclub.yearlyGrant.f3b8c1b4") : __i18n_k("league.userclub.yearlyGrant.a72490af") })).join(' · '), value2: ev.change >= 0 ? '+' : '', value3: Math.round(ev.change * 100), value4: Math.round(ev.trust) }));
     ownerAlert(s, year, ev);
   }
   // A scenario's goal is judged after the owner's verdict (1.6.0).
@@ -274,7 +275,7 @@ export function sponsorDecision(s: LeagueState, year: number): Decision | null {
   const u = s.user!;
   if (!u.sponsorPending) return null;
   const sp = clubState(s, u.teamId).sponsor;
-  const ended = sp && sp.until === year && (sp.missed ?? 0) > 0 ? `${iga(sp.name)} 목표(${goalText(sp.goal)})를 채우지 못한 것을 이유로 계약을 해지했습니다.` : undefined;
+  const ended = sp && sp.until === year && (sp.missed ?? 0) > 0 ? __i18n_k("league.userclub.sponsorDecision.ended.d2e593bb", { name: iga(sp.name), goalText: goalText(sp.goal) }) : undefined;
   return { kind: 'sponsor', offers: sponsorOffers(s, year), ...(ended ? { ended } : {}) };
 }
 
@@ -315,135 +316,135 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
   switch (input.kind) {
     case 'military': {
       const dd = d as Extract<Decision, { kind: 'military' }>;
-      if (Object.keys(input.orders).some((id) => !dd.candidates.includes(id))) return '명단에 없는 선수입니다.';
+      if (Object.keys(input.orders).some((id) => !dd.candidates.includes(id))) return __i18n_k("league.userclub.checkAnnual.98ce3a2b");
       const missing = dd.forced.filter((id) => !input.orders[id]);
-      if (missing.length) return `${missing.map((id) => s.players[id]!.name).join(', ')}: 만 28세 이상이라 올해 입대해야 합니다.`;
+      if (missing.length) return __i18n_k("league.userclub.checkAnnual.5323f9ae", { value: missing.map((id) => s.players[id]!.name).join(', ') });
       const social = dd.social ?? [];
       const wrong = Object.entries(input.orders).filter(([id, o]) => social.includes(id) !== (o === 'social'));
-      if (wrong.length) return `${wrong.map(([id]) => s.players[id]!.name).join(', ')}: 4급 판정 선수는 사회복무요원으로만, 다른 선수는 상무·현역으로만 입대합니다.`;
+      if (wrong.length) return __i18n_k("league.userclub.checkAnnual.6092f8bd", { value: wrong.map(([id]) => s.players[id]!.name).join(', ') });
       return null;
     }
     case 'rookieBonus': {
       const dd = d as Extract<Decision, { kind: 'rookieBonus' }>;
       const ids = dd.picks.map((x) => x.id);
-      if (Object.keys(input.offers).some((id) => !ids.includes(id))) return '명단에 없는 선수입니다.';
-      if (Object.values(input.offers).some((x) => !Number.isFinite(x) || x < 0)) return '금액이 올바르지 않습니다.';
+      if (Object.keys(input.offers).some((id) => !ids.includes(id))) return __i18n_k("league.userclub.checkAnnual.98ce3a2b");
+      if (Object.values(input.offers).some((x) => !Number.isFinite(x) || x < 0)) return __i18n_k("league.userclub.checkAnnual.f8e21e1a");
       const total = Object.values(input.offers).reduce((a, b) => a + b, 0);
       // V0.16: up to the slot a pick can always be paid, into the red if need be (the owner tops up an empty fund
       // after the season, at a cost in trust); only more than that needs the money.
       const slots = dd.picks.reduce((a, pk) => a + Math.min(input.offers[pk.id] ?? 0, pk.slot), 0);
-      if (total > 0 && total > Math.max(0, u.fund) + slots) return `구단 자금이 부족합니다 (제시 합계 ${Math.round(total / 1000) / 10}억, 슬롯 금액을 넘는 몫은 자금 안에서).`;
+      if (total > 0 && total > Math.max(0, u.fund) + slots) return __i18n_k("league.userclub.checkAnnual.610ce349", { value: Math.round(total / 1000) / 10 });
       return null;
     }
     case 'development': {
       const dd = d as Extract<Decision, { kind: 'development' }>;
-      if (input.ids.some((id) => !dd.candidates.includes(id))) return '명단에 없는 선수입니다.';
-      if (input.ids.length > dd.max) return `육성선수는 ${dd.max}명까지 더 계약할 수 있습니다.`;
+      if (input.ids.some((id) => !dd.candidates.includes(id))) return __i18n_k("league.userclub.checkAnnual.98ce3a2b");
+      if (input.ids.length > dd.max) return __i18n_k("league.userclub.checkAnnual.94d9c8a2", { max: dd.max });
       return null;
     }
     case 'posting': {
       const dd = d as Extract<Decision, { kind: 'posting' }>;
-      if (input.id && !dd.candidates.includes(input.id)) return '포스팅할 수 없는 선수입니다.';
+      if (input.id && !dd.candidates.includes(input.id)) return __i18n_k("league.userclub.checkAnnual.d13f7582");
       return null;
     }
     case 'retire': {
       const dd = d as Extract<Decision, { kind: 'retire' }>;
-      if (input.ids.some((id) => !dd.rows.some((r) => r.id === id))) return '명단에 없는 선수입니다.';
+      if (input.ids.some((id) => !dd.rows.some((r) => r.id === id))) return __i18n_k("league.userclub.checkAnnual.98ce3a2b");
       return null;
     }
     case 'national': {
       const dd = d as Extract<Decision, { kind: 'national' }>;
-      if (input.ids.some((id) => !dd.rows.some((r) => r.id === id))) return '명단에 없는 선수입니다.';
+      if (input.ids.some((id) => !dd.rows.some((r) => r.id === id))) return __i18n_k("league.userclub.checkAnnual.98ce3a2b");
       return null;
     }
     case 'scandal':
-      return ['release', 'extra', 'none'].includes(input.answer) ? null : '대응을 고르세요.';
+      return ['release', 'extra', 'none'].includes(input.answer) ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
     case 'dispute':
-      return ['settle', 'fight'].includes(input.answer) ? null : '대응을 고르세요.';
+      return ['settle', 'fight'].includes(input.answer) ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
     case 'meddle':
-      return ['obey', 'refuse'].includes(input.answer) ? null : '대응을 고르세요.';
+      return ['obey', 'refuse'].includes(input.answer) ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
     case 'returnee': {
       const dd = d as Extract<Decision, { kind: 'returnee' }>;
-      if (input.ids.some((id) => !dd.rows.some((r) => r.id === id))) return '명단에 없는 선수입니다.';
+      if (input.ids.some((id) => !dd.rows.some((r) => r.id === id))) return __i18n_k("league.userclub.checkAnnual.98ce3a2b");
       const cost = dd.rows.filter((r) => input.ids.includes(r.id)).reduce((a, r) => a + r.annual, 0);
-      if (cost > 0 && projectedPayroll(s, u.teamId, next) + cost > u.payrollBudget) return '연봉 예산을 넘습니다.';
+      if (cost > 0 && projectedPayroll(s, u.teamId, next) + cost > u.payrollBudget) return __i18n_k("league.userclub.checkAnnual.84d90a10");
       return null;
     }
     case 'sponsor': {
       const dd = d as Extract<Decision, { kind: 'sponsor' }>;
-      return dd.offers[input.index] ? null : '제안을 고르세요.';
+      return dd.offers[input.index] ? null : __i18n_k("league.userclub.checkAnnual.c92ccea7");
     }
     case 'staff': {
       const dd = d as Extract<Decision, { kind: 'staff' }>;
       let buyouts = 0;
       for (const [role, id] of Object.entries(input.hires)) {
         const row = dd.rows.find((r) => r.role === role);
-        if (!row?.candidates.some((c) => c.id === id)) return '후보 명단에 없는 사람입니다.';
+        if (!row?.candidates.some((c) => c.id === id)) return __i18n_k("league.userclub.checkAnnual.909122bd");
         buyouts += row.buyout;
       }
-      if (buyouts > 0 && buyouts > u.fund) return `잔여 연봉(위약금) ${Math.round(buyouts / 10000)}억을 낼 자금이 없습니다.`;
+      if (buyouts > 0 && buyouts > u.fund) return __i18n_k("league.userclub.checkAnnual.7f00cd30", { value: Math.round(buyouts / 10000) });
       return null;
     }
     case 'faRound': {
       const m = s.offseason?.fa;
-      if (!m || m.closed) return 'FA 시장이 열려 있지 않습니다.';
+      if (!m || m.closed) return __i18n_k("league.userclub.checkAnnual.8d3bfa05");
       return checkRound(s, m, input, next);
     }
     case 'faOptions': {
       const dd = d as Extract<Decision, { kind: 'faOptions' }>;
-      if (input.keep.some((id) => !dd.rows.some((r) => r.id === id))) return '구단 옵션이 없는 선수입니다.';
+      if (input.keep.some((id) => !dd.rows.some((r) => r.id === id))) return __i18n_k("league.userclub.checkAnnual.15c2ac81");
       const cost = dd.rows.filter((r) => input.keep.includes(r.id)).reduce((a, r) => a + r.annual, 0);
-      if (cost > 0 && payrollWithout(s, u.teamId, next, dd.rows.map((r) => r.id)) + cost > u.payrollBudget) return '연봉 예산을 넘습니다.';
+      if (cost > 0 && payrollWithout(s, u.teamId, next, dd.rows.map((r) => r.id)) + cost > u.payrollBudget) return __i18n_k("league.userclub.checkAnnual.84d90a10");
       return null;
     }
     case 'secondProtect': {
       const dd = d as Extract<Decision, { kind: 'secondProtect' }>;
-      if (input.ids.some((id) => !dd.candidates.includes(id))) return '보호할 수 없는 선수입니다.';
-      if (input.ids.length > dd.protect) return `보호선수는 ${dd.protect}명까지입니다.`;
+      if (input.ids.some((id) => !dd.candidates.includes(id))) return __i18n_k("league.userclub.checkAnnual.ac069ce3");
+      if (input.ids.length > dd.protect) return __i18n_k("league.userclub.checkAnnual.a472dff3", { protect: dd.protect });
       return null;
     }
     case 'secondPick': {
       const dd = d as Extract<Decision, { kind: 'secondPick' }>;
-      if (input.id && !dd.candidates.includes(input.id)) return '지명할 수 없는 선수입니다.';
-      if (input.id && dd.fee > u.fund) return '구단 자금이 부족합니다.';
+      if (input.id && !dd.candidates.includes(input.id)) return __i18n_k("league.userclub.checkAnnual.64427f12");
+      if (input.id && dd.fee > u.fund) return __i18n_k("league.userclub.checkAnnual.2ffbf119");
       return null;
     }
     case 'foreignRenew': {
       const dd = d as Extract<Decision, { kind: 'foreignRenew' }>;
-      if (input.keep.some((id) => !dd.rows.some((r) => r.id === id && !r.leaving))) return '재계약할 수 없는 선수입니다.';
-      for (const [id, o] of Object.entries(input.offers ?? {})) if (!(o.amount > 0) || ![1, 2].includes(o.years)) return `${s.players[id]?.name ?? ''}: 제안이 잘못됐습니다.`;
+      if (input.keep.some((id) => !dd.rows.some((r) => r.id === id && !r.leaving))) return __i18n_k("league.userclub.checkAnnual.afdef777");
+      for (const [id, o] of Object.entries(input.offers ?? {})) if (!(o.amount > 0) || ![1, 2].includes(o.years)) return __i18n_k("league.userclub.checkAnnual.c822f571", { value: s.players[id]?.name ?? '' });
       const cost = input.keep.reduce((a, id) => a + Math.round((input.offers?.[id]?.amount ?? dd.rows.find((r) => r.id === id)!.ask) * MANWON_PER_USD * 0.85), 0);
-      if (cost > 0 && payrollWithout(s, u.teamId, next, dd.rows.map((r) => r.id)) + cost > u.payrollBudget) return '연봉 예산을 넘습니다.';
+      if (cost > 0 && payrollWithout(s, u.teamId, next, dd.rows.map((r) => r.id)) + cost > u.payrollBudget) return __i18n_k("league.userclub.checkAnnual.84d90a10");
       return null;
     }
     case 'salaries': {
       const dd = d as Extract<Decision, { kind: 'salaries' }>;
       for (const [id, c] of Object.entries(input.choices)) {
         const row = dd.rows.find((x) => x.id === id);
-        if (!row) return '연봉 협상 명단에 없는 선수입니다.';
-        if (c === 'extension' && !row.extension) return `${s.players[id]!.name}: 다년계약을 제안할 수 없는 선수입니다.`;
+        if (!row) return __i18n_k("league.userclub.checkAnnual.7dbfa2d5");
+        if (c === 'extension' && !row.extension) return __i18n_k("league.userclub.checkAnnual.52e59465", { name: s.players[id]!.name });
       }
       return null;
     }
     case 'faProtect': {
       const dd = d as Extract<Decision, { kind: 'faProtect' }>;
-      if (input.ids.some((id) => !dd.candidates.includes(id))) return '보호할 수 없는 선수입니다.';
-      if (input.ids.length > dd.protect) return `보호선수는 ${dd.protect}명까지입니다.`;
+      if (input.ids.some((id) => !dd.candidates.includes(id))) return __i18n_k("league.userclub.checkAnnual.ac069ce3");
+      if (input.ids.length > dd.protect) return __i18n_k("league.userclub.checkAnnual.a472dff3", { protect: dd.protect });
       return null;
     }
     case 'faCompensation': {
       const dd = d as Extract<Decision, { kind: 'faCompensation' }>;
-      if (input.player && !dd.list.includes(input.player)) return '보상선수로 고를 수 없는 선수입니다.';
+      if (input.player && !dd.list.includes(input.player)) return __i18n_k("league.userclub.checkAnnual.caf6e348");
       return null;
     }
     case 'camp': {
       const dd = d as Extract<Decision, { kind: 'camp' }>;
       for (const [id, plan] of Object.entries(input.plans)) {
         const p = s.players[id];
-        if (!p || !dd.players.includes(id)) return '우리 선수가 아닙니다.';
-        if (plan.focus && !focusOptions(p).includes(plan.focus)) return `${p.name}: 고를 수 없는 훈련 방향입니다.`;
-        if (plan.role && (!isPitcher(p) || !['SP', 'RP'].includes(plan.role))) return `${p.name}: 투수만 보직을 바꿀 수 있습니다.`;
-        if (plan.position && (isPitcher(p) || !POSITION_ROLE[plan.position])) return `${p.name}: 야수만 포지션을 바꿀 수 있습니다.`;
+        if (!p || !dd.players.includes(id)) return __i18n_k("league.userclub.checkAnnual.60e00321");
+        if (plan.focus && !focusOptions(p).includes(plan.focus)) return __i18n_k("league.userclub.checkAnnual.d8807b55", { name: p.name });
+        if (plan.role && (!isPitcher(p) || !['SP', 'RP'].includes(plan.role))) return __i18n_k("league.userclub.checkAnnual.60a85eae", { name: p.name });
+        if (plan.position && (isPitcher(p) || !POSITION_ROLE[plan.position])) return __i18n_k("league.userclub.checkAnnual.de99ed3b", { name: p.name });
       }
       return null;
     }
@@ -462,17 +463,17 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
         const forced = (d as Extract<Decision, { kind: 'military' }>).forced.includes(id);
         if (order === 'social') {
           enlistAs(s, p, next, 'social');
-          note(u, year, `${p.name} 사회복무요원 소집 (${next + 1}년 9월 소집해제)`);
+          note(u, year, __i18n_k("league.userclub.resolveAnnual.5893a680", { name: p.name, value: next + 1 }));
         } else if (order === 'army') {
           enlistAs(s, p, next, 'army');
-          note(u, year, `${p.name} 현역 입대 (${next + 1}년 6월 전역)`);
+          note(u, year, __i18n_k("league.userclub.resolveAnnual.5e5ea4a0", { name: p.name, value: next + 1 }));
         } else if (rng(`${s.seed}|sangmu|${year}|${id}`)() < sangmuChance(p, next)) {
           enlistAs(s, p, next, 'sangmu');
-          note(u, year, `${p.name} 상무 합격 (${next + 1}년 6월 전역, 퓨처스리그 상무에서 뜀)`);
+          note(u, year, __i18n_k("league.userclub.resolveAnnual.91129d87", { name: p.name, value: next + 1 }));
         } else if (forced) {
           enlistAs(s, p, next, 'army');
-          note(u, year, `${p.name} 상무 불합격, 현역 입대`);
-        } else note(u, year, `${p.name} 상무 불합격, 한 해 더 뛴다`);
+          note(u, year, __i18n_k("league.userclub.resolveAnnual.c2744553", { name: p.name }));
+        } else note(u, year, __i18n_k("league.userclub.resolveAnnual.214af07f", { name: p.name }));
       }
       return null;
     }
@@ -494,9 +495,9 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           const amount = dd.final ? pick.ask : offer;
           p.contract!.signingBonus = amount;
           u.fund -= amount;
-          u.ledger.push({ year, label: `신인 계약금 · ${p.name}`, amount: -amount });
+          u.ledger.push({ year, label: __i18n_k("league.userclub.resolveAnnual.label.b640149f", { name: p.name }), amount: -amount });
         } else if (!counters.some((c) => c.id === p.id)) {
-          note(u, year, `${p.origin.overallPick}순위 ${p.name} 계약 거부 (${p.amateur.intent === 'college' ? '대학 진학' : p.amateur.intent === 'abroad' ? '해외 진출' : '독립리그행'})`);
+          note(u, year, __i18n_k("league.userclub.resolveAnnual.709cbf07", { overallPick: p.origin.overallPick, name: p.name, value: p.amateur.intent === 'college' ? __i18n_k("league.userclub.resolveAnnual.2e03a59b") : p.amateur.intent === 'abroad' ? __i18n_k("league.userclub.resolveAnnual.c02cebf4") : __i18n_k("league.userclub.resolveAnnual.0d7dd114") }));
           // One who goes abroad may come back years later through the draft (returnees.ts); the others leave the game.
           if (p.amateur.intent === 'abroad') goAbroad(s, p, year);
           else {
@@ -543,20 +544,20 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
         if (hire) {
           if (row.buyout) {
             u.fund -= row.buyout;
-            u.ledger.push({ year, label: `${STAFF_LABELS[row.role]} ${row.current.name} 계약 해지 (잔여 연봉)`, amount: -row.buyout });
+            u.ledger.push({ year, label: __i18n_k("league.userclub.resolveAnnual.label.2903e874", { value: STAFF_LABELS[row.role], name: row.current.name }), amount: -row.buyout });
             legendFired(s, u.teamId, row.current, `${year}-11-20`);
           }
           // A former player may meanwhile have gone to another club (1.4.0): then the club hires the post's next best.
           const gone = !!hire.playerId && employedAlumni(s).has(hire.playerId);
           const chosen = gone ? { ...hire, playerId: undefined, club: undefined, fame: undefined } : hire;
           club.staff![row.role] = { ...chosen, id: `st-${u.teamId}-${row.role}-${year}`, until: year + (row.role === 'manager' ? 3 : 2) };
-          note(u, year, `${STAFF_LABELS[row.role]} ${hire.name} 선임 (등급 ${hire.rating}, 연 ${money(hire.salary)})`);
+          note(u, year, __i18n_k("league.userclub.resolveAnnual.4b2b440d", { value: STAFF_LABELS[row.role], name: hire.name, rating: hire.rating, money: money(hire.salary) }));
           alumnusHired(s, u.teamId, club.staff![row.role]!, `${year}-11-20`);
         } else if (row.expiring) {
           const m = club.staff![row.role]!;
           m.until = year + 2;
           m.salary = Math.round((m.salary * 1.05) / 1000) * 1000;
-          note(u, year, `${STAFF_LABELS[row.role]} ${m.name} 재계약 (2년, 연 ${money(m.salary)})`);
+          note(u, year, __i18n_k("league.userclub.resolveAnnual.15d746b1", { value: STAFF_LABELS[row.role], name: m.name, money: money(m.salary) }));
         }
       }
       // The same winter step: our players who want to retire come next.
@@ -592,11 +593,11 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
       const o = s.offseason!;
       for (const row of dd.rows) {
         const p = s.players[row.id]!;
-        if (!input.ids.includes(row.id)) note(u, year, `${p.name} 은퇴 (${ageIn(p, next)}세)`);
+        if (!input.ids.includes(row.id)) note(u, year, __i18n_k("league.userclub.resolveAnnual.db1e3e89", { name: p.name, ageIn: ageIn(p, next) }));
         else if (rng(`${s.seed}|persuade|${year}|${row.id}`)() < row.chance) {
           (o.stay ??= []).push(row.id);
-          note(u, year, `${p.name} 설득 성공: 은퇴를 미루고 한 시즌 더 뛴다`);
-        } else note(u, year, `${p.name} 설득 실패: 뜻대로 은퇴`);
+          note(u, year, __i18n_k("league.userclub.resolveAnnual.478cd424", { name: p.name }));
+        } else note(u, year, __i18n_k("league.userclub.resolveAnnual.590ed0a6", { name: p.name }));
       }
       return null;
     }
@@ -605,7 +606,7 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
       for (const id of dd.candidates) {
         const name = s.players[id]!.name;
         if (id === input.id) note(u, year, postingNote(s, post(s, id, next), name));
-        else note(u, year, `${name}의 포스팅 요청을 받아들이지 않았습니다`);
+        else note(u, year, __i18n_k("league.userclub.resolveAnnual.eb03e1bd", { name: name }));
       }
       return null;
     }
@@ -615,9 +616,9 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
         const p = s.players[row.id]!;
         if (input.ids.includes(row.id)) {
           signReturnee(s, p, u.teamId, row, next);
-          note(u, year, `${p.name} ${row.abroad}년 만에 복귀 (${row.years}년, 연 ${money(row.annual)})`);
+          note(u, year, __i18n_k("league.userclub.resolveAnnual.52e7d2b7", { name: p.name, abroad: row.abroad, years: row.years, money: money(row.annual) }));
         } else {
-          note(u, year, `${p.name}의 보류권을 풀어 줌`);
+          note(u, year, __i18n_k("league.userclub.resolveAnnual.4611d034", { name: p.name }));
           releaseReturnee(s, p, row, next);
         }
       }
@@ -644,12 +645,12 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
         if (yes) {
           p.contract = foreignContract(u.teamId, next, splitContract(offer.amount, rng(`${s.seed}|foreign-renew|${year}|${row.id}`)), !!p.origin.asiaQuota, p.origin.asiaQuota ? asiaCapFor(p, u.teamId, next) : undefined);
           if (offer.years === 2) p.contract.salaries.push({ season: next + 1, amount: p.contract.salaries[0]!.amount });
-          note(u, year, `외국인 ${p.name} 재계약 (${usd(offer.amount)}${offer.years === 2 ? ', 2년' : ''})`);
+          note(u, year, __i18n_k("league.userclub.resolveAnnual.a10572f6", { name: p.name, usd: usd(offer.amount), value: offer.years === 2 ? __i18n_k("league.userclub.resolveAnnual.d554ee3d") : '' }));
         } else if (input.keep.includes(row.id)) {
-          note(u, year, `외국인 ${p.name} 재계약 협상 결렬 (제안 ${usd(offer.amount)}${offer.years === 2 ? ', 2년' : ''}, 요구 ${usd(row.ask)})`);
+          note(u, year, __i18n_k("league.userclub.resolveAnnual.723a0593", { name: p.name, usd: usd(offer.amount), value: offer.years === 2 ? __i18n_k("league.userclub.resolveAnnual.d554ee3d") : '', usd2: usd(row.ask) }));
           if (!toForeignPool(s, p, year)) leaveLeague(s, p, 'overseas');
         } else {
-          note(u, year, `외국인 ${p.name} ${row.leaving ? '해외 진출로 이별' : '재계약 안 함'}`);
+          note(u, year, __i18n_k("league.userclub.resolveAnnual.0b220cd8", { name: p.name, value: row.leaving ? __i18n_k("league.userclub.resolveAnnual.46795cbd") : __i18n_k("league.userclub.resolveAnnual.b0045732") }));
           // Not re-signed: other clubs may sign him (the market of KBO-experienced foreigners).
           if (row.leaving || !toForeignPool(s, p, year)) leaveLeague(s, p, 'overseas');
         }
@@ -671,10 +672,10 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
       if (input.player) {
         const p = s.players[input.player]!;
         movePlayer(s, p, u.teamId);
-        note(u, year, `FA ${fa} 보상선수로 ${p.name} 영입`);
+        note(u, year, __i18n_k("league.userclub.resolveAnnual.ce389c09", { fa: fa, name: p.name }));
       }
       u.fund += amount;
-      u.ledger.push({ year, label: `FA ${fa} 보상금 (${item.grade}등급${input.player ? ', 보상선수 포함' : ''})`, amount });
+      u.ledger.push({ year, label: __i18n_k("league.userclub.resolveAnnual.label.69f4a3bb", { fa: fa, grade: item.grade, value: input.player ? __i18n_k("league.userclub.resolveAnnual.label.d1cdc38b") : '' }), amount });
       return null;
     }
     case 'camp': {
@@ -683,12 +684,12 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
         if (plan.focus) p.plan = { ...p.plan, focus: plan.focus };
         if (plan.role && plan.role !== p.role) {
           p.role = plan.role;
-          note(u, next, `${p.name} ${plan.role === 'SP' ? '선발' : '불펜'}으로 보직 변경`);
+          note(u, next, __i18n_k("league.userclub.resolveAnnual.c04ce522", { name: p.name, value: plan.role === 'SP' ? __i18n_k("league.userclub.resolveAnnual.a88271df") : __i18n_k("league.userclub.resolveAnnual.5b8607a3") }));
         }
         if (plan.position && plan.position !== p.position) {
           // A position he already lists needs no season to adapt; his old spot stays one he can play (V0.11).
           const known = (p.alt ?? []).includes(plan.position);
-          note(u, next, `${p.name} 포지션 변경 ${p.position ?? ''} → ${plan.position}${known ? '' : ' (한 시즌 적응)'}`);
+          note(u, next, __i18n_k("league.userclub.resolveAnnual.4801645e", { name: p.name, value: p.position ?? '', position: plan.position, value2: known ? '' : __i18n_k("league.userclub.resolveAnnual.7dfcc605") }));
           changePosition(p, plan.position);
           p.role = POSITION_ROLE[plan.position];
           p.plan = { focus: p.plan?.focus ?? 'balanced', ...(known ? {} : { adaptingIn: next }) };
@@ -879,10 +880,10 @@ function settleSalaries(s: LeagueState, d: Extract<Decision, { kind: 'salaries' 
     if (choice === 'extension' && row.extension) {
       if (r() < T.extension.accept + easier) {
         p.contract = { teamId: u.teamId, kind: 'multiYear', signedIn: year, signingBonus: 0, salaries: Array.from({ length: row.extension.years }, (_, i) => ({ season: next + i, amount: row.extension!.annual })) };
-        note(u, year, `${p.name} 비FA 다년계약 ${row.extension.years}년 연 ${Math.round(row.extension.annual / 1000) / 10}억`);
+        note(u, year, __i18n_k("league.userclub.settleSalaries.0e9e90de", { name: p.name, years: row.extension.years, value: Math.round(row.extension.annual / 1000) / 10 }));
         continue;
       }
-      note(u, year, `${p.name} 다년계약 제안 거절, 고과대로 계약`);
+      note(u, year, __i18n_k("league.userclub.settleSalaries.20d4d62f", { name: p.name }));
       setSalary(p, next, row.merit);
       continue;
     }
@@ -901,11 +902,11 @@ function settleSalaries(s: LeagueState, d: Extract<Decision, { kind: 'salaries' 
       const playerWins = (row.ask - row.merit) / Math.max(1, row.merit) <= T.arbitrationWithin && offer < row.merit;
       const amount = playerWins ? row.ask : offer;
       setSalary(p, next, amount);
-      note(u, year, `${p.name} 연봉 중재 신청 → ${playerWins ? '선수' : '구단'} 승 (${money(amount)})`);
+      note(u, year, __i18n_k("league.userclub.settleSalaries.bf05ad03", { name: p.name, value: playerWins ? __i18n_k("league.userclub.settleSalaries.c37450d6") : __i18n_k("league.userclub.settleSalaries.58756112"), money: money(amount) }));
       continue;
     }
     setSalary(p, next, offer);
-    if (row.ask >= 10000) note(u, year, `${p.name} 진통 끝에 ${money(offer)}에 도장 (요구 ${money(row.ask)})`);
+    if (row.ask >= 10000) note(u, year, __i18n_k("league.userclub.settleSalaries.e7c156c0", { name: p.name, money: money(offer), money2: money(row.ask) }));
   }
 }
 export { focusOptions, POSITION_ROLE };

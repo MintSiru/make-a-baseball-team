@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The owner's side (V0.6, RULES.md §13, ROADMAP 난이도 설계). Each type of owner behaves differently:
 
    - 대기업 계열: the largest support, the highest expectations and the shortest patience; the group's
@@ -25,7 +26,7 @@ import { firstTeamIds, type Evaluation, type LeagueState, type Mayor, type Seaso
 import { PARENT, DIFFICULTY } from './tuning';
 import { scenarioOf } from './scenarios';
 
-const money = (n: number) => `${Math.round(n / 10000)}억`;
+const money = (n: number) => __i18n_k("league.parent.money.db0fc332", { value: Math.round(n / 10000) });
 
 /** Support the owner approves in its first year (만 원), before difficulty. */
 export const baseSupport = (type: ParentCompanyType) => PARENT.support[type];
@@ -65,9 +66,9 @@ export function evaluate(s: LeagueState, year: number): Evaluation | null {
   const type = u.settings.parentType;
   const W = PARENT.weights[type];
   const lines = [
-    { label: '성적', ok: rank <= g.rank, text: `${rank}위 (목표 ${g.rank}위 이내)`, w: W.rank },
-    { label: '관중', ok: avg >= g.fans, text: `경기당 ${avg.toLocaleString('ko-KR')}명 (목표 ${g.fans.toLocaleString('ko-KR')}명)`, w: W.fans },
-    { label: '재정', ok: result >= g.result, text: `운영 결과 ${money(result)} (허용 ${money(g.result)})`, w: W.money },
+    { label: __i18n_k("league.parent.lines.label.d3bb3576"), ok: rank <= g.rank, text: __i18n_k("league.parent.lines.text.25169757", { rank: rank, rank2: g.rank }), w: W.rank },
+    { label: __i18n_k("league.parent.lines.label.f3384bbb"), ok: avg >= g.fans, text: __i18n_k("league.parent.lines.text.a51b3959", { value: avg.toLocaleString('ko-KR'), value2: g.fans.toLocaleString('ko-KR') }), w: W.fans },
+    { label: __i18n_k("league.parent.lines.label.9cc23f63"), ok: result >= g.result, text: __i18n_k("league.parent.lines.text.a05c7867", { money: money(result), money2: money(g.result) }), w: W.money },
   ];
   const score = Math.round(lines.reduce((a, l) => a + (l.ok ? l.w : -l.w), 0) * 100) / 100;
   const champion = s.history.find((h) => h.year === year)?.champion === u.teamId;
@@ -101,17 +102,17 @@ export function ownerEvents(s: LeagueState, year: number): number {
   if (type === 'conglomerate') {
     const x = r();
     if (x < PARENT.groupSwing.chance) {
-      note(s, year, '그룹 실적 호조로 내년 지원금이 10% 늘었습니다');
+      note(s, year, __i18n_k("league.parent.ownerEvents.d2719782"));
       return 1 + PARENT.groupSwing.size;
     }
     if (x < PARENT.groupSwing.chance * 2) {
-      note(s, year, '그룹 실적 부진으로 내년 지원금이 10% 줄었습니다');
+      note(s, year, __i18n_k("league.parent.ownerEvents.aa9d6548"));
       return 1 - PARENT.groupSwing.size;
     }
   }
   if (type === 'midsize' && report && report.operating >= 0) {
     applyBudgetChange(s, PARENT.midsizeReward);
-    note(s, year, '흑자 운영에 모기업이 지원을 늘리기로 했습니다');
+    note(s, year, __i18n_k("league.parent.ownerEvents.1d3751a0"));
   }
   if (type === 'citizen') {
     let factor = 1;
@@ -132,8 +133,8 @@ export function ownerEvents(s: LeagueState, year: number): number {
     const verdict = full >= 0.75 ? 0.05 : full < 0.45 ? -0.05 : 0;
     if (verdict) {
       applyBudgetChange(s, verdict);
-      note(s, year, `시의회 예산 심의: 관중 ${verdict > 0 ? '호조로 증액' : '부진으로 삭감'}`);
-    } else note(s, year, '시의회 예산 심의: 원안 통과');
+      note(s, year, __i18n_k("league.parent.ownerEvents.21cb7363", { value: verdict > 0 ? __i18n_k("league.parent.ownerEvents.da25c8e2") : __i18n_k("league.parent.ownerEvents.72f337c9") }));
+    } else note(s, year, __i18n_k("league.parent.ownerEvents.9d57acb4"));
     return factor;
   }
   return 1;
@@ -141,9 +142,9 @@ export function ownerEvents(s: LeagueState, year: number): number {
 
 // ── Citizen club: the mayor and the council (V0.7.7) ─────────────────────────────────────────────────
 
-const SURNAMES = ['김', '이', '박', '최', '정', '강', '조', '윤', '장', '임', '한', '오', '서', '신', '권'];
-const GIVEN = ['영수', '민호', '정훈', '성진', '현철', '지영', '수연', '동욱', '재형', '상민', '경호', '은정', '태식', '미경', '준석'];
-export const STANCE_LABEL: Record<Mayor['stance'], string> = { friendly: '우호적', neutral: '중립', hostile: '적대적' };
+const SURNAMES = [__i18n_k("league.parent.sURNAMES.4fdd784c"), __i18n_k("league.parent.sURNAMES.6c0cd2af"), __i18n_k("league.parent.sURNAMES.779c9c57"), __i18n_k("league.parent.sURNAMES.c596d452"), __i18n_k("league.parent.sURNAMES.402574f6"), __i18n_k("league.parent.sURNAMES.89ee0696"), __i18n_k("league.parent.sURNAMES.7977ad75"), __i18n_k("league.parent.sURNAMES.56bf74eb"), __i18n_k("league.parent.sURNAMES.b2414937"), __i18n_k("league.parent.sURNAMES.3127bf62"), __i18n_k("league.parent.sURNAMES.eddea29a"), __i18n_k("league.parent.sURNAMES.4a3ea882"), __i18n_k("league.parent.sURNAMES.19701515"), __i18n_k("league.parent.sURNAMES.e306bbaa"), __i18n_k("league.parent.sURNAMES.7c8118ea")];
+const GIVEN = [__i18n_k("league.parent.gIVEN.00a5915f"), __i18n_k("league.parent.gIVEN.4e1c633a"), __i18n_k("league.parent.gIVEN.9fff797d"), __i18n_k("league.parent.gIVEN.11984fee"), __i18n_k("league.parent.gIVEN.b36c7ae5"), __i18n_k("league.parent.gIVEN.e61bd158"), __i18n_k("league.parent.gIVEN.c5c01295"), __i18n_k("league.parent.gIVEN.30b7c600"), __i18n_k("league.parent.gIVEN.39e917a5"), __i18n_k("league.parent.gIVEN.6ed912d9"), __i18n_k("league.parent.gIVEN.6620a3f0"), __i18n_k("league.parent.gIVEN.6b586415"), __i18n_k("league.parent.gIVEN.f3d4653a"), __i18n_k("league.parent.gIVEN.7b641f22"), __i18n_k("league.parent.gIVEN.4422339e")];
+export const STANCE_LABEL: Record<Mayor['stance'], string> = { friendly: __i18n_k("league.parent.sTANCE_LABEL.friendly.fa192807"), neutral: __i18n_k("league.parent.sTANCE_LABEL.neutral.6640f095"), hostile: __i18n_k("league.parent.sTANCE_LABEL.hostile.ecb08d24") };
 
 /**
  * The mayor elected in June of `year`. The first one (2026) founded the club and is usually friendly; later
@@ -189,7 +190,7 @@ function deficitEvents(s: LeagueState, year: number): number {
   if (!big && !lasting) return 1;
   const r = rng(`${s.seed}|council|${year}`);
   if (r() >= C.stance[u.mayor!.stance].eventChance) {
-    note(s, year, '적자가 컸지만 시의회가 이번에는 넘어갔습니다');
+    note(s, year, __i18n_k("league.parent.deficitEvents.451e1db0"));
     return 1;
   }
   const hard = big && lasting ? 1.5 : 1;
@@ -200,20 +201,20 @@ function deficitEvents(s: LeagueState, year: number): number {
   if (ev.support) factor = 1 - ev.support * hard;
   if (ev.trust) u.trust = Math.max(0, (u.trust ?? PARENT.startTrust) - ev.trust * hard * DIFFICULTY.trustLoss[u.settings.difficulty]);
   if (ev.fans) c.popularity = Math.round(c.popularity * (1 - ev.fans * hard));
-  const why = big && lasting ? `큰 적자가 ${deficitYears(s, year)}년째 이어져` : big ? `올해 적자(${money(deficitOf(s, year))})가 지원 한도를 넘어` : `적자가 ${deficitYears(s, year)}년째 이어져`;
+  const why = big && lasting ? __i18n_k("league.parent.deficitEvents.why.9a33feec", { deficitYears: deficitYears(s, year) }) : big ? __i18n_k("league.parent.deficitEvents.why.bd57c972", { money: money(deficitOf(s, year)) }) : __i18n_k("league.parent.deficitEvents.why.fbbcfb61", { deficitYears: deficitYears(s, year) });
   note(s, year, `${ev.title}: ${why}`);
-  addAlert(s, { id: `council-${year}`, date: `${year}-12-10`, kind: 'owner', title: ev.title, lines: [`${why} ${ev.text}`, `시장 ${u.mayor!.name} (${STANCE_LABEL[u.mayor!.stance]})`], tone: 'bad' });
+  addAlert(s, { id: `council-${year}`, date: `${year}-12-10`, kind: 'owner', title: ev.title, lines: [`${why} ${ev.text}`, __i18n_k("league.parent.deficitEvents.lines.7f4b4563", { name: u.mayor!.name, value: STANCE_LABEL[u.mayor!.stance] })], tone: 'bad' });
   return factor;
 }
 
 function mayorAlert(s: LeagueState, year: number, now: Mayor, before: Mayor) {
   const same = now.name === before.name;
   const lines = [
-    same ? `${now.name} 시장이 다시 당선됐습니다 (${now.until}년까지).` : `새 시장 ${now.name} (${now.since}~${now.until}년).`,
-    `구단에 ${STANCE_LABEL[now.stance]}: ${now.stance === 'friendly' ? '지원을 아끼지 않습니다 (지원 한도 +15%)' : now.stance === 'hostile' ? '구단 지원을 줄이려 합니다 (지원 한도 −15%, 적자에 더 엄격)' : '지원은 예전 그대로입니다'}.`,
+    same ? __i18n_k("league.parent.mayorAlert.lines.820d1e36", { name: now.name, until: now.until }) : __i18n_k("league.parent.mayorAlert.lines.71bc10c9", { name: now.name, since: now.since, until: now.until }),
+    __i18n_k("league.parent.mayorAlert.lines.6968b3d4", { value: STANCE_LABEL[now.stance], value2: now.stance === 'friendly' ? __i18n_k("league.parent.mayorAlert.lines.4b0dfc3c") : now.stance === 'hostile' ? __i18n_k("league.parent.mayorAlert.lines.bd82b307") : __i18n_k("league.parent.mayorAlert.lines.7817c49b") }),
   ];
-  note(s, year, `${year} 지방선거: ${lines[0]} 성향 ${STANCE_LABEL[now.stance]}`);
-  addAlert(s, { id: `mayor-${year}`, date: `${year}-12-05`, kind: 'owner', title: same ? `${now.name} 시장 재선` : `새 시장 ${now.name} 취임`, lines, tone: now.stance === 'friendly' ? 'good' : now.stance === 'hostile' ? 'bad' : undefined });
+  note(s, year, __i18n_k("league.parent.mayorAlert.f85ae871", { year: year, value: lines[0], value2: STANCE_LABEL[now.stance] }));
+  addAlert(s, { id: `mayor-${year}`, date: `${year}-12-05`, kind: 'owner', title: same ? __i18n_k("league.parent.mayorAlert.title.2006085f", { name: now.name }) : __i18n_k("league.parent.mayorAlert.title.d2f505a7", { name: now.name }), lines, tone: now.stance === 'friendly' ? 'good' : now.stance === 'hostile' ? 'bad' : undefined });
 }
 
 /** Next year's support and payroll budget from the base, difficulty, the owner's scale and this winter's events. */
@@ -230,7 +231,7 @@ export const sponsorDue = (s: LeagueState, year: number) => {
 // ── Naming sponsor ────────────────────────────────────────────────────────────────────────────────
 
 // Fictional names only (V0.16: two real companies had slipped in).
-const SPONSORS = ['한빛증권', '한누리생명', '새솔은행', '누리통신', '다온캐피탈', '한결제약', '새벽투자', '온누리게임즈', '태평양물산', '청운건설'];
+const SPONSORS = [__i18n_k("league.parent.sPONSORS.17c6aa0f"), __i18n_k("league.parent.sPONSORS.4aa353d5"), __i18n_k("league.parent.sPONSORS.32fb5255"), __i18n_k("league.parent.sPONSORS.f7be3f40"), __i18n_k("league.parent.sPONSORS.fa4eeb4a"), __i18n_k("league.parent.sPONSORS.0b1d9816"), __i18n_k("league.parent.sPONSORS.15684b29"), __i18n_k("league.parent.sPONSORS.e4157b76"), __i18n_k("league.parent.sPONSORS.7f46e42d"), __i18n_k("league.parent.sPONSORS.ff0e7cae")];
 
 /** Offers when a naming deal ends: the current sponsor's renewal and two newcomers, each with its own fee,
     goal and patience (V0.7.7): the more a sponsor pays, the more it wants and the sooner it walks out. */
@@ -269,7 +270,7 @@ export function sponsorOffers(s: LeagueState, year: number): SponsorOffer[] {
 }
 
 export const goalText = (g: SponsorGoal | undefined) =>
-  !g || g.kind === 'none' ? '조건 없음' : g.kind === 'fans' ? `경기당 관중 ${g.fans.toLocaleString('ko-KR')}명` : g.rank <= 5 ? `가을야구 (${g.rank}위 이내)` : `${g.rank}위 이내`;
+  !g || g.kind === 'none' ? __i18n_k("league.parent.goalText.9820aee8") : g.kind === 'fans' ? __i18n_k("league.parent.goalText.2a3bf0a7", { value: g.fans.toLocaleString('ko-KR') }) : g.rank <= 5 ? __i18n_k("league.parent.goalText.3c946d8a", { rank: g.rank }) : __i18n_k("league.parent.goalText.b916d5ce", { rank: g.rank });
 
 function goalMet(s: LeagueState, g: SponsorGoal, year: number): boolean {
   const u = s.user!;
@@ -298,11 +299,11 @@ export function sponsorReview(s: LeagueState, year: number) {
   const chance = (sp.risk ?? 0) * (sp.missed >= 2 ? PARENT.naming.missedTwice : 1);
   if (r() < chance) {
     sp.until = year;
-    note(s, year, `${eunneun(sp.name)} 목표(${goalText(sp.goal)}) 미달을 이유로 명명권 계약을 해지했습니다`);
-    addAlert(s, { id: `sponsor-out-${year}`, date: `${year}-11-15`, kind: 'owner', title: `${sp.name} 명명권 계약 해지`, lines: [`목표 ${goalText(sp.goal)}을 ${sp.missed}년 연속 채우지 못해 스폰서가 계약을 끝냈습니다.`, '이번 겨울에 새 스폰서를 구해야 합니다.'], tone: 'bad' });
+    note(s, year, __i18n_k("league.parent.sponsorReview.22cf4e6f", { name: eunneun(sp.name), goalText: goalText(sp.goal) }));
+    addAlert(s, { id: `sponsor-out-${year}`, date: `${year}-11-15`, kind: 'owner', title: __i18n_k("league.parent.sponsorReview.title.9b1321ba", { name: sp.name }), lines: [__i18n_k("league.parent.sponsorReview.lines.51296435", { goalText: goalText(sp.goal), missed: sp.missed }), __i18n_k("league.parent.sponsorReview.lines.dde81898")], tone: 'bad' });
   } else {
-    note(s, year, `${sp.name}: 목표(${goalText(sp.goal)}) 미달, 계약은 유지 (${sp.missed}년 연속)`);
-    addAlert(s, { id: `sponsor-warn-${year}`, date: `${year}-11-15`, kind: 'owner', title: `${sp.name}, 목표 미달에 불만`, lines: [`목표 ${goalText(sp.goal)}을 채우지 못했습니다 (${sp.missed}년 연속). 계약은 이어가지만, 또 못 채우면 해지할 수 있습니다.`], tone: 'bad' });
+    note(s, year, __i18n_k("league.parent.sponsorReview.d7ce5cf5", { name: sp.name, goalText: goalText(sp.goal), missed: sp.missed }));
+    addAlert(s, { id: `sponsor-warn-${year}`, date: `${year}-11-15`, kind: 'owner', title: __i18n_k("league.parent.sponsorReview.title.4b5ff793", { name: sp.name }), lines: [__i18n_k("league.parent.sponsorReview.lines.e3f9700d", { goalText: goalText(sp.goal), missed: sp.missed })], tone: 'bad' });
   }
 }
 
@@ -313,12 +314,12 @@ export function signSponsor(s: LeagueState, offer: SponsorOffer, year: number) {
   const team = s.teams.find((t) => t.id === u.teamId)!;
   const renamed = offer.name !== (c.sponsor?.name ?? u.settings.parentName);
   c.sponsor = { name: offer.name, annual: offer.annual, until: year + offer.years, ...(offer.goal ? { goal: offer.goal, risk: offer.risk ?? 0, from: year + 1, missed: 0 } : {}) };
-  team.parent = { ...team.parent, name: `${offer.name} (명명권)` };
+  team.parent = { ...team.parent, name: __i18n_k("league.parent.signSponsor.name.18b08fe8", { name: offer.name }) };
   if (renamed) {
     const nickname = team.name.split(' ').slice(1).join(' ') || team.name;
     const short = offer.name.slice(0, 2);
     team.name = `${short} ${nickname}`;
     team.short = short;
-    note(s, year, `새 명명권 스폰서 ${offer.name}: 구단명이 ${ro(team.name)} 바뀝니다 (연 ${money(offer.annual)}, ${offer.years}년)`);
-  } else note(s, year, `${wagwa(offer.name)} 명명권 재계약 (연 ${money(offer.annual)}, ${offer.years}년)`);
+    note(s, year, __i18n_k("league.parent.signSponsor.352a0ed9", { name: offer.name, name2: ro(team.name), money: money(offer.annual), years: offer.years }));
+  } else note(s, year, __i18n_k("league.parent.signSponsor.89bb0b43", { name: wagwa(offer.name), money: money(offer.annual), years: offer.years }));
 }

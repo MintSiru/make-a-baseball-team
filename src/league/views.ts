@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Read-only views of the league for the screens. Everything here is public: scouting grades, results
    and contracts, never hidden ability. */
 import { alumnusJob } from './alumni';
@@ -23,10 +24,10 @@ import { traitReport, type TraitReport } from './reports';
 const LEADER = 68;
 
 export const teamOf = (s: LeagueState, id: TeamId | null) => s.teams.find((t) => t.id === id);
-export const shortName = (s: LeagueState, id: TeamId | null) => (id === SANGMU ? '상무' : id === 'dream' ? '드림' : id === 'nanum' ? '나눔' : (teamOf(s, id)?.short ?? '-'));
+export const shortName = (s: LeagueState, id: TeamId | null) => (id === SANGMU ? __i18n_k("league.views.shortName.d2a2ca0f") : id === 'dream' ? __i18n_k("league.views.shortName.c2c3ed38") : id === 'nanum' ? __i18n_k("league.views.shortName.ca6f7a21") : (teamOf(s, id)?.short ?? '-'));
 
 export const positionLabel = (p: Pick<Player, 'role' | 'position'>) =>
-  p.position ? ({ C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' } as const)[p.position] : ROLE_LABELS[p.role];
+  p.position ? ({ C: __i18n_k("league.views.positionLabel.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("league.views.positionLabel.sS.3e24c7f1"), LF: __i18n_k("league.views.positionLabel.lF.73836db2"), CF: __i18n_k("league.views.positionLabel.cF.56780b2a"), RF: __i18n_k("league.views.positionLabel.rF.a28a0ef8") } as const)[p.position] : ROLE_LABELS[p.role];
 
 const fmt3 = (x: number) => x.toFixed(3).replace(/^0/, '');
 
@@ -64,21 +65,21 @@ export function leaders(s: LeagueState) {
   const rc = rateContext(totals.bat, totals.pit);
   return {
     batting: [
-      { title: '타율', rows: top(qualifiedBat, (x) => avg(x.line.bat), (x) => fmt3(avg(x.line.bat))) },
-      { title: '홈런', rows: top(bats, (x) => x.line.bat.hr, (x) => String(x.line.bat.hr)) },
-      { title: '타점', rows: top(bats, (x) => x.line.bat.rbi, (x) => String(x.line.bat.rbi)) },
+      { title: __i18n_k("league.views.batting.title.1eb19e0a"), rows: top(qualifiedBat, (x) => avg(x.line.bat), (x) => fmt3(avg(x.line.bat))) },
+      { title: __i18n_k("league.views.batting.title.9162d3a3"), rows: top(bats, (x) => x.line.bat.hr, (x) => String(x.line.bat.hr)) },
+      { title: __i18n_k("league.views.batting.title.fed1c588"), rows: top(bats, (x) => x.line.bat.rbi, (x) => String(x.line.bat.rbi)) },
       { title: 'OPS', rows: top(qualifiedBat, (x) => ops(x.line.bat), (x) => fmt3(ops(x.line.bat))) },
       { title: 'wRC+', rows: top(qualifiedBat, (x) => wrcPlus(x.line.bat, rc), (x) => String(wrcPlus(x.line.bat, rc))) },
-      { title: '도루', rows: top(bats, (x) => x.line.bat.sb, (x) => String(x.line.bat.sb)) },
+      { title: __i18n_k("league.views.batting.title.91e54831"), rows: top(bats, (x) => x.line.bat.sb, (x) => String(x.line.bat.sb)) },
     ],
     pitching: [
-      { title: '평균자책점', rows: top(qualifiedPit, (x) => era(x.line.pit), (x) => era(x.line.pit).toFixed(2), true) },
+      { title: __i18n_k("league.views.pitching.title.f0f9146b"), rows: top(qualifiedPit, (x) => era(x.line.pit), (x) => era(x.line.pit).toFixed(2), true) },
       { title: 'WHIP', rows: top(qualifiedPit, (x) => whip(x.line.pit), (x) => whip(x.line.pit).toFixed(2), true) },
       { title: 'FIP', rows: top(qualifiedPit, (x) => fip(x.line.pit, rc), (x) => fip(x.line.pit, rc).toFixed(2), true) },
-      { title: '승리', rows: top(pits, (x) => x.line.pit.w, (x) => String(x.line.pit.w)) },
+      { title: __i18n_k("league.views.pitching.title.90e5e4d2"), rows: top(pits, (x) => x.line.pit.w, (x) => String(x.line.pit.w)) },
       { title: '세이브', rows: top(pits, (x) => x.line.pit.sv, (x) => String(x.line.pit.sv)) },
-      { title: '홀드', rows: top(pits, (x) => x.line.pit.hld, (x) => String(x.line.pit.hld)) },
-      { title: '탈삼진', rows: top(pits, (x) => x.line.pit.k, (x) => String(x.line.pit.k)) },
+      { title: __i18n_k("league.views.pitching.title.9329045a"), rows: top(pits, (x) => x.line.pit.hld, (x) => String(x.line.pit.hld)) },
+      { title: __i18n_k("league.views.pitching.title.3e23c769"), rows: top(pits, (x) => x.line.pit.k, (x) => String(x.line.pit.k)) },
     ],
     qualifying: { pa: Math.ceil(teamGames * 3.1), innings: teamGames },
   };
@@ -86,12 +87,12 @@ export function leaders(s: LeagueState) {
 
 export function batLine(b: BatTotals | null) {
   if (!b || !b.pa) return '';
-  return `${b.g}경기 타율 ${fmt3(avg(b))} ${b.hr}홈런 ${b.rbi}타점 OPS ${fmt3(ops(b))}`;
+  return __i18n_k("league.views.batLine.a6e3db17", { g: b.g, fmt3: fmt3(avg(b)), hr: b.hr, rbi: b.rbi, fmt32: fmt3(ops(b)) });
 }
 export function pitLine(p: PitTotals | null) {
   if (!p || !p.g) return '';
-  const extra = p.sv ? ` ${p.sv}세이브` : p.hld ? ` ${p.hld}홀드` : '';
-  return `${p.g}경기 ${p.w}승 ${p.l}패${extra} ${ip(p.outs)}이닝 평균자책점 ${era(p).toFixed(2)}`;
+  const extra = p.sv ? __i18n_k("league.views.pitLine.extra.addf22ee", { sv: p.sv }) : p.hld ? __i18n_k("league.views.pitLine.extra.dcf052c7", { hld: p.hld }) : '';
+  return __i18n_k("league.views.pitLine.3998d0ad", { g: p.g, w: p.w, l: p.l, extra: extra, ip: ip(p.outs), value: era(p).toFixed(2) });
 }
 
 function statsFor(s: LeagueState, id: PlayerId, group: RosterGroup): { bat: BatTotals | null; pit: PitTotals | null; futures: boolean } {
@@ -107,7 +108,7 @@ function futuresLine(s: LeagueState, id: PlayerId) {
   if (!f) return '';
   const p = s.players[id]!;
   const text = isPitcher(p) ? pitLine(f.pit) : batLine(f.bat);
-  return text ? `퓨처스 ${text}` : '';
+  return text ? __i18n_k("league.views.futuresLine.b1dac68a", { text: text }) : '';
 }
 
 export type RosterGroup = 'active' | 'futures' | 'third' | 'military';
@@ -123,7 +124,7 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
     const p = s.players[id]!;
     const line = s.lines[id];
     const penRole = group === 'active' && isPitcher(p) && !rotation.has(id) ? pen[id] ?? 'MU' : null;
-    const usage = group === 'active' && isPitcher(p) ? (rotation.has(id) ? '선발' : PEN_ROLE_LABELS[penRole!]) : null;
+    const usage = group === 'active' && isPitcher(p) ? (rotation.has(id) ? __i18n_k("league.views.row.usage.a88271df") : PEN_ROLE_LABELS[penRole!]) : null;
     return {
       id,
       group,
@@ -143,7 +144,7 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
       platoon: u?.platoon?.[id] ?? null,
       role: p.role,
       age: ageIn(p, s.year),
-      hand: `${p.throws}투${p.bats}타`,
+      hand: __i18n_k("league.views.row.hand.0fdaea08", { throws: p.throws, bats: p.bats }),
       grade: p.scouting.current,
       future: p.scouting.futureValue,
       line: group === 'military' || group === 'active' ? (isPitcher(p) ? pitLine(line?.pit ?? null) : batLine(line?.bat ?? null)) : futuresLine(s, id) || (isPitcher(p) ? pitLine(line?.pit ?? null) : batLine(line?.bat ?? null)),
@@ -234,19 +235,19 @@ function careerHighs(rows: CareerRow[], pitcher: boolean) {
     ? [
         best('승', (r) => r.pit?.w ?? null, (x) => x, n),
         best('세이브', (r) => r.pit?.sv ?? null, (x) => x, n),
-        best('홀드', (r) => r.pit?.hld ?? null, (x) => x, n),
-        best('탈삼진', (r) => r.pit?.k ?? null, (x) => x, n),
-        best('이닝', (r) => r.pit?.outs ?? null, (x) => x, ip),
-        best('ERA (규정이닝)', (r) => (r.pit && !r.current && r.pit.outs >= QUALIFY.outs ? r.pit : null), (x) => era(x), (x) => era(x).toFixed(2), true),
+        best(__i18n_k("league.views.careerHighs.out.9329045a"), (r) => r.pit?.hld ?? null, (x) => x, n),
+        best(__i18n_k("league.views.careerHighs.out.3e23c769"), (r) => r.pit?.k ?? null, (x) => x, n),
+        best(__i18n_k("league.views.careerHighs.out.639a1f2f"), (r) => r.pit?.outs ?? null, (x) => x, ip),
+        best(__i18n_k("league.views.careerHighs.out.d705f9e8"), (r) => (r.pit && !r.current && r.pit.outs >= QUALIFY.outs ? r.pit : null), (x) => era(x), (x) => era(x).toFixed(2), true),
         best('WAR', (r) => (r.current ? null : r.war), (x) => x, (x) => x.toFixed(1)),
       ]
     : [
         best('안타', (r) => r.bat?.h ?? null, (x) => x, n),
-        best('홈런', (r) => r.bat?.hr ?? null, (x) => x, n),
-        best('타점', (r) => r.bat?.rbi ?? null, (x) => x, n),
-        best('도루', (r) => r.bat?.sb ?? null, (x) => x, n),
-        best('타율 (규정타석)', (r) => (r.bat && !r.current && r.bat.pa >= QUALIFY.pa ? r.bat : null), (x) => avg(x), (x) => fmt3(avg(x))),
-        best('OPS (규정타석)', (r) => (r.bat && !r.current && r.bat.pa >= QUALIFY.pa ? r.bat : null), (x) => ops(x), (x) => fmt3(ops(x))),
+        best(__i18n_k("league.views.careerHighs.out.9162d3a3"), (r) => r.bat?.hr ?? null, (x) => x, n),
+        best(__i18n_k("league.views.careerHighs.out.fed1c588"), (r) => r.bat?.rbi ?? null, (x) => x, n),
+        best(__i18n_k("league.views.careerHighs.out.91e54831"), (r) => r.bat?.sb ?? null, (x) => x, n),
+        best(__i18n_k("league.views.careerHighs.out.61a9dad7"), (r) => (r.bat && !r.current && r.bat.pa >= QUALIFY.pa ? r.bat : null), (x) => avg(x), (x) => fmt3(avg(x))),
+        best(__i18n_k("league.views.careerHighs.out.76eee4c3"), (r) => (r.bat && !r.current && r.bat.pa >= QUALIFY.pa ? r.bat : null), (x) => ops(x), (x) => fmt3(ops(x))),
         best('WAR', (r) => (r.current ? null : r.war), (x) => x, (x) => x.toFixed(1)),
       ];
   return out.filter((x): x is NonNullable<typeof x> => !!x);
@@ -266,7 +267,7 @@ function sumSplits(list: (Splits | undefined)[]): Splits | null {
 export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
   const p = s.players[id];
   if (!p) return null;
-  const status = p.status === 'military' ? `군 복무 중 (${p.service.route === 'sangmu' ? '상무' : p.service.route === 'social' ? '사회복무' : '현역'}, ${p.service.returnsOn} 전역)` : s.injuries[id] ? `${s.injuries[id]!.dtd ? '결장' : '부상'} (${injuryNote(s.injuries[id])})` : p.status === 'retired' ? (alumnusJob(s, id) ? `은퇴 · 현재 ${alumnusJob(s, id)}` : '은퇴') : p.status === 'overseas' ? '해외 이적' : p.status === 'freeAgent' ? '자유계약 (새 구단을 찾는 중)' : '';
+  const status = p.status === 'military' ? __i18n_k("league.views.playerCard.status.78371556", { value: p.service.route === 'sangmu' ? __i18n_k("league.views.playerCard.status.d2a2ca0f") : p.service.route === 'social' ? __i18n_k("league.views.playerCard.status.f695b002") : __i18n_k("league.views.playerCard.status.519e09aa"), returnsOn: p.service.returnsOn }) : s.injuries[id] ? __i18n_k("league.views.playerCard.status.a3f7a2cf", { value: s.injuries[id]!.dtd ? __i18n_k("league.views.playerCard.status.7d657386") : __i18n_k("league.views.playerCard.status.501fb802"), injuryNote: injuryNote(s.injuries[id]) }) : p.status === 'retired' ? (alumnusJob(s, id) ? __i18n_k("league.views.playerCard.status.cfce3615", { alumnusJob: alumnusJob(s, id) }) : __i18n_k("league.views.playerCard.status.5b170d3c")) : p.status === 'overseas' ? __i18n_k("league.views.playerCard.status.fff34f4d") : p.status === 'freeAgent' ? __i18n_k("league.views.playerCard.status.d6b19ba5") : '';
   const career = careerView(s, p);
   const pitcher = isPitcher(p);
   const major = career.filter((r) => !r.futures);
@@ -351,7 +352,7 @@ export function seasonStats(s: LeagueState) {
 
 // ── Box scores (V0.7) ─────────────────────────────────────────────────────────────────────────────
 
-const POS_KO: Record<string, string> = { C: '포', '1B': '1', '2B': '2', '3B': '3', SS: '유', LF: '좌', CF: '중', RF: '우', DH: '지' };
+const POS_KO: Record<string, string> = { C: __i18n_k("league.views.pOS_KO.c.c6113c0f"), '1B': '1', '2B': '2', '3B': '3', SS: __i18n_k("league.views.pOS_KO.sS.71c706d6"), LF: '좌', CF: __i18n_k("league.views.pOS_KO.cF.43e88c0b"), RF: '우', DH: __i18n_k("league.views.pOS_KO.dH.0cb41994") };
 
 export function boxView(s: LeagueState, id: string) {
   const b = s.boxes?.[id];
@@ -361,13 +362,13 @@ export function boxView(s: LeagueState, id: string) {
     const teamId = i === 0 ? b.away : b.home;
     return {
       teamId,
-      name: teamOf(s, teamId)?.name ?? (teamId === 'dream' ? '드림 올스타' : teamId === 'nanum' ? '나눔 올스타' : teamId),
+      name: teamOf(s, teamId)?.name ?? (teamId === 'dream' ? __i18n_k("league.views.side.name.58e7ade7") : teamId === 'nanum' ? __i18n_k("league.views.side.name.6f46ad29") : teamId),
       short: shortName(s, teamId),
       color: teamOf(s, teamId)?.color ?? (teamId === 'dream' ? '#2563eb' : teamId === 'nanum' ? '#dc2626' : '#888'),
       line: b.line[i],
       rhe: b.rhe[i],
       bat: b.bat[i].map(([pid, pos, ab, r, h, rbi, hr, bb, k, d, t, sb], order) => ({ id: pid, order: order + 1, name: name(pid), pos: POS_KO[pos] ?? pos, ab, r, h, rbi, hr, bb, k, d, t, sb })),
-      pit: b.pit[i].map(([pid, outs, h, r, er, bb, k, hr, pitches, dec]) => ({ id: pid, name: name(pid), ip: ip(outs), h, r, er, bb, k, hr, pitches, dec: ({ W: '승', L: '패', S: '세', H: '홀' } as Record<string, string>)[dec] ?? '' })),
+      pit: b.pit[i].map(([pid, outs, h, r, er, bb, k, hr, pitches, dec]) => ({ id: pid, name: name(pid), ip: ip(outs), h, r, er, bb, k, hr, pitches, dec: ({ W: '승', L: '패', S: __i18n_k("league.views.dec.s.c5e4d00d"), H: __i18n_k("league.views.dec.h.10a4423a") } as Record<string, string>)[dec] ?? '' })),
     };
   };
   const log = s.pbp?.[id];
@@ -382,7 +383,7 @@ export function gameList(s: LeagueState) {
   const row = (b: (typeof boxes)[number]) => {
     const mine = u && (b.home === u || b.away === u);
     const us = b.home === u ? 1 : 0;
-    const result = mine ? (b.rhe[us][0] > b.rhe[1 - us]![0] ? '승' : b.rhe[us][0] < b.rhe[1 - us]![0] ? '패' : '무') : '';
+    const result = mine ? (b.rhe[us][0] > b.rhe[1 - us]![0] ? '승' : b.rhe[us][0] < b.rhe[1 - us]![0] ? '패' : __i18n_k("league.views.row.result.56c5af5b")) : '';
     return { id: b.id, date: b.date, away: shortName(s, b.away), home: shortName(s, b.home), as: b.rhe[0][0], hs: b.rhe[1][0], att: b.att, result, pbp: !!s.pbp?.[b.id], post: /-(wildcard|semipo|po|ks)-/.test(b.id) };
   };
   return {
@@ -404,8 +405,8 @@ const armGrades = (p: Player) => ({
 /** "옆구리 근육 손상 · 5/20 복귀" (an old save's injury has no name). */
 export function injuryNote(i: LeagueState['injuries'][string] | undefined): string {
   if (!i) return '';
-  const back = `${Number(i.until.slice(5, 7))}/${Number(i.until.slice(8, 10))} 복귀${i.dtd ? '' : ' 예정'}`;
-  return [i.part, i.surgery ? '수술' : '', back].filter(Boolean).join(' · ');
+  const back = __i18n_k("league.views.injuryNote.back.3b02c2ad", { number: Number(i.until.slice(5, 7)), number2: Number(i.until.slice(8, 10)), value: i.dtd ? '' : __i18n_k("league.views.injuryNote.back.3830a42c") });
+  return [i.part, i.surgery ? __i18n_k("league.views.injuryNote.98a2b68d") : '', back].filter(Boolean).join(' · ');
 }
 
 export function lineupView(s: LeagueState, teamId: TeamId, vs: 'L' | 'R') {
@@ -504,27 +505,27 @@ export function recordRoom(s: LeagueState) {
   const n = (v: number) => String(v);
   return {
     season: [
-      season('홈런', (c) => c.bat?.hr ?? null, (v) => `${v}개`),
-      season('타점', (c) => c.bat?.rbi ?? null, n),
-      season('안타', (c) => c.bat?.h ?? null, (v) => `${v}개`),
-      season('도루', (c) => c.bat?.sb ?? null, (v) => `${v}개`),
-      season('타율 (규정타석)', (c) => (c.bat && c.bat.pa >= 446 ? avg(c.bat) : null), fmt3),
-      season('승', (c) => c.pit?.w ?? null, (v) => `${v}승`),
-      season('탈삼진', (c) => c.pit?.k ?? null, (v) => `${v}개`),
-      season('평균자책점 (규정이닝)', (c) => (c.pit && c.pit.outs >= 432 ? era(c.pit) : null), (v) => v.toFixed(2), true),
-      season('세이브', (c) => c.pit?.sv ?? null, (v) => `${v}개`),
-      season('홀드', (c) => c.pit?.hld ?? null, (v) => `${v}개`),
+      season(__i18n_k("league.views.recordRoom.season.9162d3a3"), (c) => c.bat?.hr ?? null, (v) => __i18n_k("league.views.recordRoom.season.6bef80d8", { v: v })),
+      season(__i18n_k("league.views.recordRoom.season.fed1c588"), (c) => c.bat?.rbi ?? null, n),
+      season('안타', (c) => c.bat?.h ?? null, (v) => __i18n_k("league.views.recordRoom.season.6bef80d8", { v: v })),
+      season(__i18n_k("league.views.recordRoom.season.91e54831"), (c) => c.bat?.sb ?? null, (v) => __i18n_k("league.views.recordRoom.season.6bef80d8", { v: v })),
+      season(__i18n_k("league.views.recordRoom.season.61a9dad7"), (c) => (c.bat && c.bat.pa >= 446 ? avg(c.bat) : null), fmt3),
+      season('승', (c) => c.pit?.w ?? null, (v) => __i18n_k("league.views.recordRoom.season.00775c28", { v: v })),
+      season(__i18n_k("league.views.recordRoom.season.3e23c769"), (c) => c.pit?.k ?? null, (v) => __i18n_k("league.views.recordRoom.season.6bef80d8", { v: v })),
+      season(__i18n_k("league.views.recordRoom.season.9e0e4373"), (c) => (c.pit && c.pit.outs >= 432 ? era(c.pit) : null), (v) => v.toFixed(2), true),
+      season('세이브', (c) => c.pit?.sv ?? null, (v) => __i18n_k("league.views.recordRoom.season.6bef80d8", { v: v })),
+      season(__i18n_k("league.views.recordRoom.season.9329045a"), (c) => c.pit?.hld ?? null, (v) => __i18n_k("league.views.recordRoom.season.6bef80d8", { v: v })),
       season('WAR', (c) => c.war, (v) => v.toFixed(1)),
     ],
     career: [
-      career('홈런', (t) => t.bat.hr, (v) => `${v}개`),
-      career('안타', (t) => t.bat.h, (v) => `${v}개`),
-      career('타점', (t) => t.bat.rbi, n),
-      career('도루', (t) => t.bat.sb, (v) => `${v}개`),
-      career('승', (t) => t.pit.w, (v) => `${v}승`),
-      career('탈삼진', (t) => t.pit.k, (v) => `${v}개`),
-      career('세이브', (t) => t.pit.sv, (v) => `${v}개`),
-      career('홀드', (t) => t.pit.hld, (v) => `${v}개`),
+      career(__i18n_k("league.views.recordRoom.career.9162d3a3"), (t) => t.bat.hr, (v) => __i18n_k("league.views.recordRoom.career.6bef80d8", { v: v })),
+      career('안타', (t) => t.bat.h, (v) => __i18n_k("league.views.recordRoom.career.6bef80d8", { v: v })),
+      career(__i18n_k("league.views.recordRoom.career.fed1c588"), (t) => t.bat.rbi, n),
+      career(__i18n_k("league.views.recordRoom.career.91e54831"), (t) => t.bat.sb, (v) => __i18n_k("league.views.recordRoom.career.6bef80d8", { v: v })),
+      career('승', (t) => t.pit.w, (v) => __i18n_k("league.views.recordRoom.career.00775c28", { v: v })),
+      career(__i18n_k("league.views.recordRoom.career.3e23c769"), (t) => t.pit.k, (v) => __i18n_k("league.views.recordRoom.career.6bef80d8", { v: v })),
+      career('세이브', (t) => t.pit.sv, (v) => __i18n_k("league.views.recordRoom.career.6bef80d8", { v: v })),
+      career(__i18n_k("league.views.recordRoom.career.9329045a"), (t) => t.pit.hld, (v) => __i18n_k("league.views.recordRoom.career.6bef80d8", { v: v })),
       career('WAR', (t) => Math.round(t.war * 10) / 10, (v) => v.toFixed(1)),
     ],
   };
@@ -571,13 +572,13 @@ export function clubhouse(s: LeagueState, teamId: TeamId) {
   const makers = roster.filter((p) => p.personality === '밝은 분위기 메이커').length;
   const hurt = Object.entries(s.injuries).filter(([id, i]) => !i.dtd && s.players[id]?.teamId === teamId).length;
   const score = (w + l ? (w / (w + l) - 0.5) * 2 : 0) + leaders * 0.08 + makers * 0.05 - hurt * 0.03 + (lastRes === 'W' ? 0.03 : lastRes === 'L' ? -0.03 : 0) * Math.min(streak, 6);
-  const label = score >= 0.5 ? '최고조' : score >= 0.2 ? '좋음' : score > -0.2 ? '무난' : score > -0.5 ? '가라앉음' : '침체';
+  const label = score >= 0.5 ? __i18n_k("league.views.clubhouse.label.a5d2fc54") : score >= 0.2 ? __i18n_k("league.views.clubhouse.label.5cd0d95b") : score > -0.2 ? __i18n_k("league.views.clubhouse.label.681592dc") : score > -0.5 ? __i18n_k("league.views.clubhouse.label.d6a40ea2") : __i18n_k("league.views.clubhouse.label.fef32446");
   const notes = [
-    games.length ? `최근 10경기 ${w}승 ${l}패` : '아직 경기가 없음',
-    streak >= 3 && lastRes !== 'T' ? `${streak}연${lastRes === 'W' ? '승' : '패'} 중` : '',
-    leaders ? `고참 리더 ${leaders}명` : '고참 리더 없음',
-    makers ? `분위기 메이커 ${makers}명` : '',
-    hurt ? `부상자 ${hurt}명` : '',
+    games.length ? __i18n_k("league.views.clubhouse.notes.0444399b", { w: w, l: l }) : __i18n_k("league.views.clubhouse.notes.74496d87"),
+    streak >= 3 && lastRes !== 'T' ? __i18n_k("league.views.clubhouse.notes.6cd747c6", { streak: streak, value: lastRes === 'W' ? '승' : '패' }) : '',
+    leaders ? __i18n_k("league.views.clubhouse.notes.9daf8a74", { leaders: leaders }) : __i18n_k("league.views.clubhouse.notes.acbbe47c"),
+    makers ? __i18n_k("league.views.clubhouse.notes.0ca3f9fb", { makers: makers }) : '',
+    hurt ? __i18n_k("league.views.clubhouse.notes.8b617938", { hurt: hurt }) : '',
   ].filter(Boolean);
   return { label, score, notes, form: res };
 }
@@ -596,9 +597,9 @@ export function statLine(s: LeagueState, p: Player): { year: number; text: strin
   const year = nowUsed ? s.year : rec?.year;
   if (year == null) return null;
   if (isPitcher(p) && pit?.outs) {
-    const pen = pit.sv + pit.hld >= 5 ? ` · ${pit.sv}세 ${pit.hld}홀` : ` · ${pit.w}승 ${pit.l}패`;
-    return { year, text: `ERA ${era(pit).toFixed(2)} · ${ip(pit.outs)}이닝${pen}`, war: rec?.war ?? null };
+    const pen = pit.sv + pit.hld >= 5 ? __i18n_k("league.views.statLine.pen.d10097ff", { sv: pit.sv, hld: pit.hld }) : __i18n_k("league.views.statLine.pen.4d31cd6a", { w: pit.w, l: pit.l });
+    return { year, text: __i18n_k("league.views.statLine.text.d666ca12", { value: era(pit).toFixed(2), ip: ip(pit.outs), pen: pen }), war: rec?.war ?? null };
   }
-  if (bat?.pa) return { year, text: `${fmt3(avg(bat))} · ${bat.hr}홈런 · OPS ${fmt3(ops(bat))}`, war: rec?.war ?? null };
+  if (bat?.pa) return { year, text: __i18n_k("league.views.statLine.text.ff11568e", { fmt3: fmt3(avg(bat)), hr: bat.hr, fmt32: fmt3(ops(bat)) }), war: rec?.war ?? null };
   return null;
 }

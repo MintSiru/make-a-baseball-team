@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The national team (V0.7, reworked in V0.12; events in international.ts). A squad is named for every event: the
    best players by grade within the event's limits, at most three from one club for the Asian Games. An in-season
    squad is named about two months ahead and leaves its clubs between the dates; a November squad is named and
@@ -21,8 +22,8 @@ import type { Decision, LeagueState, NationalEntry } from './state';
 import { NATIONAL as N } from './tuning';
 
 const short = (s: LeagueState, id: string | null | undefined) => s.teams.find((t) => t.id === id)?.short ?? '';
-const POS: Record<string, string> = { C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' };
-const posOf = (p: Player) => (p.position ? POS[p.position]! : p.role === 'SP' ? '선발투수' : '불펜투수');
+const POS: Record<string, string> = { C: __i18n_k("league.national.pOS.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("league.national.pOS.sS.3e24c7f1"), LF: __i18n_k("league.national.pOS.lF.73836db2"), CF: __i18n_k("league.national.pOS.cF.56780b2a"), RF: __i18n_k("league.national.pOS.rF.a28a0ef8") };
+const posOf = (p: Player) => (p.position ? POS[p.position]! : p.role === 'SP' ? __i18n_k("league.national.posOf.cd036b1a") : __i18n_k("league.national.posOf.ac3cc00a"));
 const ageAt = (p: Player, year: number) => year - Number(p.birthday.slice(0, 4));
 const pending = (p: Player) => p.service.military === 'pending' || p.service.military === 'serving';
 
@@ -226,12 +227,12 @@ export function resolveNational(s: LeagueState, d: Extract<Decision, { kind: 'na
       id: `excuse-${e.id}-${row.id}`,
       date: newsDate(s, e),
       kind: 'move',
-      title: ok ? `${short(s, u.teamId)} ${p.name}, ${e.name} 대표팀 제외` : `${short(s, u.teamId)}의 ${p.name} 제외 요청, 받아들여지지 않아`,
+      title: ok ? __i18n_k("league.national.resolveNational.title.1f45794c", { short: short(s, u.teamId), name: p.name, name2: e.name }) : __i18n_k("league.national.resolveNational.title.7e587388", { short: short(s, u.teamId), name: p.name }),
       body: ok
-        ? `${short(s, u.teamId)}이 ${row.injured ? '부상을 이유로' : '컨디션 관리를 이유로'} ${p.name}의 대표팀 제외를 요청했고, 대표팀이 받아들였다. ${row.injured ? '' : '팬들 사이에서는 아쉽다는 목소리가 나온다.'}${row.exemption && !row.injured ? ` 병역 특례 기회를 놓친 ${p.name} 본인도 아쉬움을 감추지 못했다.` : ''}`
-        : `${short(s, u.teamId)}이 ${p.name}의 대표팀 제외를 요청했지만 대표팀은 "선수 몸 상태에 문제가 없다"며 받아들이지 않았다. ${iga(p.name)} 예정대로 대표팀에 합류한다.`,
+        ? __i18n_k("league.national.resolveNational.body.1b443c11", { short: short(s, u.teamId), value: row.injured ? __i18n_k("league.national.resolveNational.body.ca63cdf1") : __i18n_k("league.national.resolveNational.body.b433754a"), name: p.name, value2: row.injured ? '' : __i18n_k("league.national.resolveNational.body.2d721fcf"), value3: row.exemption && !row.injured ? __i18n_k("league.national.resolveNational.body.2fd1d289", { name: p.name }) : '' })
+        : __i18n_k("league.national.resolveNational.body.9516dfd2", { short: short(s, u.teamId), name: p.name, name2: iga(p.name) }),
       quotes: [],
-      facts: { 선수: p.name, 대회: e.name, 결과: ok ? '제외' : '합류' },
+      facts: { 선수: p.name, 대회: e.name, 결과: ok ? __i18n_k("league.national.facts.message.a0c196ee") : __i18n_k("league.national.facts.message.01aff88d") },
       players: [p.id],
       mine: true,
     });
@@ -256,12 +257,12 @@ function pickAlert(s: LeagueState, e: InternationalEvent, entry: NationalEntry, 
     id: `intl-pick-${e.id}`,
     date,
     kind: 'national',
-    title: `국가대표 선발 · ${e.year} ${e.name}`,
+    title: __i18n_k("league.national.pickAlert.title.4bb7c369", { year: e.year, name: e.name }),
     lines: [
-      `대표팀 ${entry.squad.length}명 가운데 우리 선수 ${ours.length}명이 뽑혔습니다.`,
-      ...ours.map((p) => `${p.name} (${posOf(p)}${pending(p) ? ', 미필' : ''})`),
-      ...(exempt.length ? [`${e.kind === 'asianGames' ? '금메달' : '메달'}을 따면 미필 ${exempt.length}명이 병역 특례를 받습니다.`] : []),
-      timing(e) === 'season' ? `대회 기간(${e.dates.from.slice(5)}~${e.dates.to.slice(5)})에는 팀을 떠납니다.` : timing(e) === 'spring' ? '개막 전 3월에 열려 리그 경기는 빠지지 않지만, 다쳐서 돌아오는 선수가 가끔 있습니다.' : '시즌이 끝난 11월에 열립니다.',
+      __i18n_k("league.national.pickAlert.lines.ab84a82e", { length: entry.squad.length, length2: ours.length }),
+      ...ours.map((p) => __i18n_k("league.national.pickAlert.lines.8df31f5a", { name: p.name, posOf: posOf(p), value: pending(p) ? __i18n_k("league.national.pickAlert.lines.22e04b25") : '' })),
+      ...(exempt.length ? [__i18n_k("league.national.pickAlert.lines.9753ff03", { value: e.kind === 'asianGames' ? '금메달' : __i18n_k("league.national.pickAlert.lines.9705e8f9"), length: exempt.length })] : []),
+      timing(e) === 'season' ? __i18n_k("league.national.pickAlert.lines.73e23b67", { value: e.dates.from.slice(5), value2: e.dates.to.slice(5) }) : timing(e) === 'spring' ? __i18n_k("league.national.pickAlert.lines.d9d36dda") : __i18n_k("league.national.pickAlert.lines.29a7c705"),
     ],
     tone: 'good',
     players: ours.map((p) => p.id),
@@ -281,10 +282,10 @@ function resultAlert(s: LeagueState, e: InternationalEvent, entry: NationalEntry
     kind: 'national',
     title: `${e.year} ${e.name} ${text}`,
     lines: [
-      `대표팀 성적: ${text}`,
-      ...(ours.length ? [`우리 선수: ${ours.map((p) => p.name).join(', ')}`] : []),
-      ...(exempt.length ? [`병역 특례(예술체육요원): ${exempt.map((p) => p.name).join(', ')}`] : []),
-      ...(ourHurt.length ? [`다쳐서 돌아온 우리 선수: ${ourHurt.map((p) => `${p.name} (${s.injuries[p.id]?.part ?? '부상'})`).join(', ')}`] : []),
+      __i18n_k("league.national.resultAlert.lines.8d5c0301", { text: text }),
+      ...(ours.length ? [__i18n_k("league.national.resultAlert.lines.63d96aae", { value: ours.map((p) => p.name).join(', ') })] : []),
+      ...(exempt.length ? [__i18n_k("league.national.resultAlert.lines.a9d2b901", { value: exempt.map((p) => p.name).join(', ') })] : []),
+      ...(ourHurt.length ? [__i18n_k("league.national.resultAlert.lines.a4a43953", { value: ourHurt.map((p) => __i18n_k("league.national.resultAlert.lines.93a16219", { name: p.name, value: s.injuries[p.id]?.part ?? __i18n_k("league.national.resultAlert.lines.501fb802") })).join(', ') })] : []),
     ],
     tone: entry.finish === 'champion' || entry.medal ? 'good' : ours.length && (entry.finish === 'first' || entry.finish === 'second') ? 'bad' : undefined,
     players: ours.map((p) => p.id),

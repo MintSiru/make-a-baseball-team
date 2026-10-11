@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* League-side player helpers: ages, the values clubs judge players by (public scouting only), yearly
    draft pools, and foreign players. */
 import { generateDraftPool, isPitcherRole, overall, rng, toGrade, type DraftProspect, type Role, type Tools } from '../draftroom';
@@ -89,18 +90,18 @@ export function foreignTypeOf(p: Player): string {
   const best = (devs: [string, number][]) => devs.sort((a, b) => b[1] - a[1])[0]![0];
   if (isPitcherRole(p.role))
     return best([
-      ['구위형', (t.stuff ?? 0) - F.pitcher.stuff],
-      ['제구형', (t.command ?? 0) - F.pitcher.command],
-      ['변화구형', (t.breaking ?? 0) - F.pitcher.breaking],
-      ...(p.role === 'SP' ? ([['이닝이터', (t.stamina ?? 0) - F.pitcher.stamina - 2]] as [string, number][]) : []),
+      [__i18n_k("league.players.foreignTypeOf.1d5e776c"), (t.stuff ?? 0) - F.pitcher.stuff],
+      [__i18n_k("league.players.foreignTypeOf.00299346"), (t.command ?? 0) - F.pitcher.command],
+      [__i18n_k("league.players.foreignTypeOf.fb64a2ea"), (t.breaking ?? 0) - F.pitcher.breaking],
+      ...(p.role === 'SP' ? ([[__i18n_k("league.players.foreignTypeOf.52c36099"), (t.stamina ?? 0) - F.pitcher.stamina - 2]] as [string, number][]) : []),
     ]);
   const spot = F.hitterPositions.find((x) => x.pos === p.position) ?? F.hitterPositions[0]!;
   return best([
-    ['거포형', (t.power ?? 0) - F.hitter.power - spot.power],
-    ['교타형', (t.contact ?? 0) - F.hitter.contact - spot.contact],
-    ['선구안형', (t.eye ?? 0) - F.hitter.eye],
-    ['호타준족', (t.speed ?? 0) - spot.speed - 1],
-    ['수비형', (t.defense ?? 0) - spot.defense],
+    [__i18n_k("league.players.foreignTypeOf.9921c020"), (t.power ?? 0) - F.hitter.power - spot.power],
+    [__i18n_k("league.players.foreignTypeOf.29d3479d"), (t.contact ?? 0) - F.hitter.contact - spot.contact],
+    [__i18n_k("league.players.foreignTypeOf.d3747fd4"), (t.eye ?? 0) - F.hitter.eye],
+    [__i18n_k("league.players.foreignTypeOf.e4d28238"), (t.speed ?? 0) - spot.speed - 1],
+    [__i18n_k("league.players.foreignTypeOf.93758abe"), (t.defense ?? 0) - spot.defense],
     ['유틸리티', (p.alt?.length ?? 0) >= 2 ? 1 : -99],
   ]);
 }
@@ -184,8 +185,8 @@ export function makeForeign(seed: string, id: string, season: number, spec: Fore
     personality,
     velocity: spec.kind === 'pitcher' ? Math.round(146 + ((tools.stuff ?? 55) - 55) * 0.4 + normal(r) * 1.5) : null,
     twoWay: false,
-    origin: { kind: 'foreign', pathway: '외국인', entryCategory: 'foreign', nationality, asiaQuota: spec.asiaQuota, background: { level: bg.level, text, ask } },
-    education: { qualification: `${level} 출신`, school: level, schoolTier: '', region: nationality, pathText: `${nationality} · ${text}`, history: [] },
+    origin: { kind: 'foreign', pathway: __i18n_k("league.players.origin.pathway.5bd804b7"), entryCategory: 'foreign', nationality, asiaQuota: spec.asiaQuota, background: { level: bg.level, text, ask } },
+    education: { qualification: __i18n_k("league.players.education.qualification.8c9f6c12", { level: level }), school: level, schoolTier: '', region: nationality, pathText: `${nationality} · ${text}`, history: [] },
     amateur: { record: { kind: spec.kind, games: 0 }, awards: [], draftRank: 0 },
     status: 'active',
     teamId: null,

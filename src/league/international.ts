@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* National-team events (V0.7, reworked in V0.12). The Asian Games and the Olympics decide military exemptions
    (예술체육요원: Asian Games gold, an Olympic medal); the World Baseball Classic (March, before the season), the
    WBSC Premier12 and the Asia Professional Baseball Championship (APBC, under-24s; both in November) are for
@@ -85,23 +86,23 @@ const ag = { limit: HANGZHOU_RULE, perClub: 3 };
 
 const REAL: InternationalEvent[] = [
   // The 2014 Incheon Games and the 2030s Games in the Gulf are held in the autumn break or after the season.
-  ev(2014, 'asianGames', '인천 아시안게임', 'champion', '2014-09-22', '2014-09-28', { limit: null }),
-  ev(2015, 'premier12', 'WBSC 프리미어12', 'champion', '2015-11-08', '2015-11-21'),
-  ev(2017, 'wbc', '월드 베이스볼 클래식', 'first', '2017-03-06', '2017-03-09'),
-  ev(2017, 'apbc', '아시아 프로야구 챔피언십', 'runnerUp', '2017-11-16', '2017-11-19'),
-  ev(2018, 'asianGames', '자카르타·팔렘방 아시안게임', 'champion', '2018-08-18', '2018-09-01', { limit: null }),
-  ev(2019, 'premier12', 'WBSC 프리미어12', 'runnerUp', '2019-11-06', '2019-11-17'),
-  ev(2021, 'olympics', '도쿄 올림픽', 'fourth', '2021-07-19', '2021-08-07'),
-  ev(2023, 'wbc', '월드 베이스볼 클래식', 'first', '2023-03-09', '2023-03-13'),
-  ev(2023, 'asianGames', '항저우 아시안게임', 'champion', '2023-09-23', '2023-10-07', ag),
-  ev(2023, 'apbc', '아시아 프로야구 챔피언십', 'runnerUp', '2023-11-16', '2023-11-19'),
-  ev(2024, 'premier12', 'WBSC 프리미어12', 'first', '2024-11-13', '2024-11-24'),
-  ev(2026, 'wbc', '월드 베이스볼 클래식', null, '2026-03-05', '2026-03-17'),
-  ev(2026, 'asianGames', '아이치·나고야 아시안게임', null, '2026-09-14', '2026-09-27', ag),
-  ev(2027, 'premier12', 'WBSC 프리미어12', null, '2027-11-08', '2027-11-21'),
-  ev(2028, 'olympics', 'LA 올림픽', null, '2028-07-06', '2028-07-30'),
-  ev(2030, 'asianGames', '도하 아시안게임', null, '2030-11-30', '2030-12-15', ag),
-  ev(2034, 'asianGames', '리야드 아시안게임', null, '2034-11-29', '2034-12-14', ag),
+  ev(2014, 'asianGames', __i18n_k("league.international.rEAL.7eb8c564"), 'champion', '2014-09-22', '2014-09-28', { limit: null }),
+  ev(2015, 'premier12', __i18n_k("league.international.rEAL.6a739d86"), 'champion', '2015-11-08', '2015-11-21'),
+  ev(2017, 'wbc', __i18n_k("league.international.rEAL.ff9f9db9"), 'first', '2017-03-06', '2017-03-09'),
+  ev(2017, 'apbc', __i18n_k("league.international.rEAL.4aa44d77"), 'runnerUp', '2017-11-16', '2017-11-19'),
+  ev(2018, 'asianGames', __i18n_k("league.international.rEAL.89b5fbb1"), 'champion', '2018-08-18', '2018-09-01', { limit: null }),
+  ev(2019, 'premier12', __i18n_k("league.international.rEAL.6a739d86"), 'runnerUp', '2019-11-06', '2019-11-17'),
+  ev(2021, 'olympics', __i18n_k("league.international.rEAL.fd4c5ef9"), 'fourth', '2021-07-19', '2021-08-07'),
+  ev(2023, 'wbc', __i18n_k("league.international.rEAL.ff9f9db9"), 'first', '2023-03-09', '2023-03-13'),
+  ev(2023, 'asianGames', __i18n_k("league.international.rEAL.461d6f73"), 'champion', '2023-09-23', '2023-10-07', ag),
+  ev(2023, 'apbc', __i18n_k("league.international.rEAL.4aa44d77"), 'runnerUp', '2023-11-16', '2023-11-19'),
+  ev(2024, 'premier12', __i18n_k("league.international.rEAL.6a739d86"), 'first', '2024-11-13', '2024-11-24'),
+  ev(2026, 'wbc', __i18n_k("league.international.rEAL.ff9f9db9"), null, '2026-03-05', '2026-03-17'),
+  ev(2026, 'asianGames', __i18n_k("league.international.rEAL.20e54bb7"), null, '2026-09-14', '2026-09-27', ag),
+  ev(2027, 'premier12', __i18n_k("league.international.rEAL.6a739d86"), null, '2027-11-08', '2027-11-21'),
+  ev(2028, 'olympics', __i18n_k("league.international.rEAL.35d1f7c9"), null, '2028-07-06', '2028-07-30'),
+  ev(2030, 'asianGames', __i18n_k("league.international.rEAL.e4a5c0c5"), null, '2030-11-30', '2030-12-15', ag),
+  ev(2034, 'asianGames', __i18n_k("league.international.rEAL.be7c34cb"), null, '2034-11-29', '2034-12-14', ag),
 ];
 
 /**
@@ -111,11 +112,11 @@ const REAL: InternationalEvent[] = [
  */
 function later(until: number): InternationalEvent[] {
   const out: InternationalEvent[] = [];
-  for (let y = 2032; y <= until; y += 4) out.push(ev(y, 'olympics', y === 2032 ? '브리즈번 올림픽' : `${y} 하계 올림픽`, null, `${y}-07-24`, `${y}-08-09`));
-  for (let y = 2038; y <= until; y += 4) out.push(ev(y, 'asianGames', `${y} 아시안게임`, null, `${y}-09-15`, `${y}-09-29`, ag));
-  for (let y = 2029; y <= until; y += 4) out.push(ev(y, 'wbc', '월드 베이스볼 클래식', null, `${y}-03-06`, `${y}-03-18`));
-  for (let y = 2031; y <= until; y += 4) out.push(ev(y, 'premier12', 'WBSC 프리미어12', null, `${y}-11-08`, `${y}-11-21`));
-  for (let y = 2029; y <= until; y += 4) out.push(ev(y, 'apbc', '아시아 프로야구 챔피언십', null, `${y}-11-16`, `${y}-11-19`));
+  for (let y = 2032; y <= until; y += 4) out.push(ev(y, 'olympics', y === 2032 ? __i18n_k("league.international.later.c61d255d") : __i18n_k("league.international.later.3c53648a", { y: y }), null, `${y}-07-24`, `${y}-08-09`));
+  for (let y = 2038; y <= until; y += 4) out.push(ev(y, 'asianGames', __i18n_k("league.international.later.54977156", { y: y }), null, `${y}-09-15`, `${y}-09-29`, ag));
+  for (let y = 2029; y <= until; y += 4) out.push(ev(y, 'wbc', __i18n_k("league.international.later.ff9f9db9"), null, `${y}-03-06`, `${y}-03-18`));
+  for (let y = 2031; y <= until; y += 4) out.push(ev(y, 'premier12', __i18n_k("league.international.later.6a739d86"), null, `${y}-11-08`, `${y}-11-21`));
+  for (let y = 2029; y <= until; y += 4) out.push(ev(y, 'apbc', __i18n_k("league.international.later.4aa44d77"), null, `${y}-11-16`, `${y}-11-19`));
   return out;
 }
 
@@ -142,14 +143,14 @@ export function finishText(e: Pick<InternationalEvent, 'kind'>, f: Finish): stri
     case 'champion':
       return medals ? '금메달' : '우승';
     case 'runnerUp':
-      return medals ? '은메달' : '준우승';
+      return medals ? __i18n_k("league.international.finishText.4761b4b6") : __i18n_k("league.international.finishText.3660fdbb");
     case 'third':
-      return medals ? '동메달' : e.kind === 'wbc' ? '4강' : '3위';
+      return medals ? __i18n_k("league.international.finishText.dd08cf55") : e.kind === 'wbc' ? __i18n_k("league.international.finishText.82c2c27f") : __i18n_k("league.international.finishText.7948ecf9");
     case 'fourth':
-      return '4위';
+      return __i18n_k("league.international.finishText.49a435d8");
     case 'second':
-      return e.kind === 'wbc' ? '8강 탈락' : '슈퍼라운드 진출 실패';
+      return e.kind === 'wbc' ? __i18n_k("league.international.finishText.75126c25") : __i18n_k("league.international.finishText.0bbb1f57");
     case 'first':
-      return '1라운드 탈락';
+      return __i18n_k("league.international.finishText.4a0cc3ff");
   }
 }

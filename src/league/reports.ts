@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* What the club knows of a player's hidden side (1.1.0, from the 1.0 feedback): its coaches' read of its own players and
    its scouts' read of everyone else's, amateurs included. Each covers the growth type, injury proneness and the six
    traits of traits.ts, with how sure the staff are.
@@ -41,13 +42,13 @@ export interface TraitReport {
 }
 
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
-const LEVELS = ['매우 낮음', '낮음', '보통', '높음', '매우 높음'];
+const LEVELS = [__i18n_k("league.reports.lEVELS.2db4b267"), '낮음', '보통', '높음', __i18n_k("league.reports.lEVELS.79138429")];
 const levelOf = (v: number) => (v >= 80 ? 5 : v >= 62 ? 4 : v >= 38 ? 3 : v >= 20 ? 2 : 1);
 
 /** Injury proneness on the same 1–99 scale (Draft Room draws 0.05–0.16; surgeries add, up to 0.2). */
 const injuryScale = (risk: number) => clamp(((risk - 0.05) / 0.12) * 100, 1, 99);
-const INJURY_TEXT = ['강철 체력', '튼튼한 편', '보통', '잔부상이 잦은 편', '부상이 잦음'];
-const CONTROVERSY_TEXT = ['걱정 없음', '모범적', '보통', '구설수 조심', '사생활 관리 필요'];
+const INJURY_TEXT = [__i18n_k("league.reports.iNJURY_TEXT.1db38f03"), __i18n_k("league.reports.iNJURY_TEXT.58150fdf"), '보통', __i18n_k("league.reports.iNJURY_TEXT.d4458811"), __i18n_k("league.reports.iNJURY_TEXT.52c0c240")];
+const CONTROVERSY_TEXT = [__i18n_k("league.reports.cONTROVERSY_TEXT.608872ad"), __i18n_k("league.reports.cONTROVERSY_TEXT.b910f76d"), '보통', __i18n_k("league.reports.cONTROVERSY_TEXT.f0db19bc"), __i18n_k("league.reports.cONTROVERSY_TEXT.73eb039b")];
 const controversyLevel = (v: number) => (v >= 58 ? 5 : v >= 44 ? 4 : v >= 26 ? 3 : v >= 14 ? 2 : 1);
 
 /** Which of our staff read which trait. */
@@ -63,14 +64,14 @@ const READER: Record<ReadKey, (p: Player, year: number) => StaffRole> = {
 };
 
 const ROLE_TITLE: Record<StaffRole, string> = {
-  manager: '감독',
-  hitting: '타격코치',
-  pitching: '투수코치',
-  fielding: '수비코치',
-  farm: '육성 총괄',
-  scouting: '스카우트 팀장',
-  medical: '트레이닝 파트장',
-  analytics: '전력분석 팀장',
+  manager: __i18n_k("league.reports.rOLE_TITLE.manager.daec431c"),
+  hitting: __i18n_k("league.reports.rOLE_TITLE.hitting.8a5c9a74"),
+  pitching: __i18n_k("league.reports.rOLE_TITLE.pitching.0b977195"),
+  fielding: __i18n_k("league.reports.rOLE_TITLE.fielding.699fd8bb"),
+  farm: __i18n_k("league.reports.rOLE_TITLE.farm.3eb6b31d"),
+  scouting: __i18n_k("league.reports.rOLE_TITLE.scouting.5added0a"),
+  medical: __i18n_k("league.reports.rOLE_TITLE.medical.13b601f9"),
+  analytics: __i18n_k("league.reports.rOLE_TITLE.analytics.b8d925c1"),
 };
 
 /** Seasons the club has had him (any level), or the seasons a pro has been in the league. */
@@ -114,13 +115,13 @@ export function traitReport(s: LeagueState, p: Player): TraitReport | null {
   {
     const { a, e } = read('growth');
     const i = clamp(Math.round(GROWTH_ORDER.indexOf(t.growth) + e * 2.4), 0, 4);
-    reads.push({ key: 'growth', label: '성장 타입', text: a < 0.15 ? null : GROWTH_LABELS[GROWTH_ORDER[i]!], level: a < 0.15 ? null : i + 1, sure: sureOf(a) });
+    reads.push({ key: 'growth', label: __i18n_k("league.reports.traitReport.label.8e3405be"), text: a < 0.15 ? null : GROWTH_LABELS[GROWTH_ORDER[i]!], level: a < 0.15 ? null : i + 1, sure: sureOf(a) });
   }
   {
     const { a, e } = read('injury');
     const v = clamp(injuryScale(p.hidden.injuryRisk) + e * 45, 1, 99);
     const level = levelOf(v);
-    reads.push({ key: 'injury', label: '부상 빈도', text: INJURY_TEXT[level - 1]!, level, sure: sureOf(a) });
+    reads.push({ key: 'injury', label: __i18n_k("league.reports.traitReport.label.ceba074c"), text: INJURY_TEXT[level - 1]!, level, sure: sureOf(a) });
   }
   for (const key of ['genius', 'work', 'mental', 'leadership', 'loyalty', 'controversy'] as TraitKey[]) {
     const { a, e } = read(key);
@@ -150,32 +151,32 @@ function notesOf(reads: TraitRead[]): string[] {
   const out: string[] = [];
   const hi = (k: ReadKey, n = 5) => (at(k)?.level ?? 0) >= n;
   const lo = (k: ReadKey, n = 1) => (at(k)?.level ?? 3) <= n;
-  if (hi('genius')) out.push('천재형: 배우는 속도가 남다릅니다.');
-  if (hi('work')) out.push('연습벌레: 성장이 빠르고 노쇠가 늦습니다.');
-  else if (lo('work')) out.push('훈련 태도에 아쉬움이 있습니다.');
-  if (hi('mental', 4)) out.push('큰 경기에 강합니다.');
-  else if (lo('mental', 2)) out.push('큰 경기에서 흔들리는 편입니다.');
-  if (hi('leadership', 4)) out.push('더그아웃의 리더감입니다.');
-  if (hi('loyalty', 5)) out.push('구단에 대한 애정이 큽니다.');
-  else if (lo('loyalty')) out.push('조건과 기회를 따라 움직일 타입입니다.');
-  if (hi('controversy', 4)) out.push('사생활에서 구설수가 생길 수 있습니다.');
-  if (hi('injury', 4)) out.push('몸 관리에 신경 써야 합니다.');
+  if (hi('genius')) out.push(__i18n_k("league.reports.notesOf.956c8b6e"));
+  if (hi('work')) out.push(__i18n_k("league.reports.notesOf.b9a30c82"));
+  else if (lo('work')) out.push(__i18n_k("league.reports.notesOf.bd86332a"));
+  if (hi('mental', 4)) out.push(__i18n_k("league.reports.notesOf.e3de045c"));
+  else if (lo('mental', 2)) out.push(__i18n_k("league.reports.notesOf.131e8fc3"));
+  if (hi('leadership', 4)) out.push(__i18n_k("league.reports.notesOf.f2b13074"));
+  if (hi('loyalty', 5)) out.push(__i18n_k("league.reports.notesOf.15837057"));
+  else if (lo('loyalty')) out.push(__i18n_k("league.reports.notesOf.78db4b26"));
+  if (hi('controversy', 4)) out.push(__i18n_k("league.reports.notesOf.ecb6db2a"));
+  if (hi('injury', 4)) out.push(__i18n_k("league.reports.notesOf.5ae4d266"));
   return out;
 }
 
 /** The personality's label and two traits the staff are surest of, in words. */
 function characterOf(personality: string, reads: TraitRead[]): string {
   const WORDS: Partial<Record<ReadKey, [string, string]>> = {
-    work: ['연습벌레', '훈련에 소홀함'],
-    mental: ['강심장', '긴장을 많이 함'],
-    leadership: ['리더형', '조용한 편'],
-    loyalty: ['의리파', '실리파'],
-    genius: ['천재형', '느리게 배움'],
+    work: [__i18n_k("league.reports.wORDS.work.542bf364"), __i18n_k("league.reports.wORDS.work.4f9b4f0c")],
+    mental: [__i18n_k("league.reports.wORDS.mental.71ba4484"), __i18n_k("league.reports.wORDS.mental.ab7848ba")],
+    leadership: [__i18n_k("league.reports.wORDS.leadership.3ff3f43a"), __i18n_k("league.reports.wORDS.leadership.20534e4e")],
+    loyalty: [__i18n_k("league.reports.wORDS.loyalty.1ac710f5"), __i18n_k("league.reports.wORDS.loyalty.b8b60a9a")],
+    genius: [__i18n_k("league.reports.wORDS.genius.5eee1e68"), __i18n_k("league.reports.wORDS.genius.3eda2649")],
   };
   const picks = reads
     .filter((r) => WORDS[r.key] && r.level != null && r.level !== 3 && r.sure !== '낮음' && (r.level >= 4 || r.level <= 2))
     .sort((a, b) => Math.abs(b.level! - 3) - Math.abs(a.level! - 3))
     .slice(0, 2)
     .map((r) => WORDS[r.key]![r.level! >= 4 ? 0 : 1]);
-  return [personality || '파악 중', ...picks].join(' · ');
+  return [personality || __i18n_k("league.reports.characterOf.6667d8b8"), ...picks].join(' · ');
 }

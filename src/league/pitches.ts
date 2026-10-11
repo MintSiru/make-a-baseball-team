@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Pitch repertoire and velocity (V0.5.1). A pitcher's 변화구 tool stays the single number the engine
    reads; the repertoire splits it into pitches whose weighted grades average back to it (best pitch
    60%, second 30%, the rest 10%; a two-pitch pitcher's one breaking ball is the tool itself), so a report can say
@@ -19,13 +20,13 @@ import { PITCH_MIX as M } from './tuning';
 export type PitchType = 'SL' | 'SW' | 'CB' | 'CH' | 'FO' | 'CT' | 'SI';
 
 export const PITCH_LABELS: Record<PitchType, string> = {
-  SL: '슬라이더',
-  SW: '스위퍼',
-  CB: '커브',
-  CH: '체인지업',
-  FO: '포크볼',
-  CT: '커터',
-  SI: '투심',
+  SL: __i18n_k("league.pitches.pITCH_LABELS.sL.18bc88bf"),
+  SW: __i18n_k("league.pitches.pITCH_LABELS.sW.6b7ff52a"),
+  CB: __i18n_k("league.pitches.pITCH_LABELS.cB.2ab848c1"),
+  CH: __i18n_k("league.pitches.pITCH_LABELS.cH.49e1dacd"),
+  FO: __i18n_k("league.pitches.pITCH_LABELS.fO.a8a41ff9"),
+  CT: __i18n_k("league.pitches.pITCH_LABELS.cT.d348e61c"),
+  SI: __i18n_k("league.pitches.pITCH_LABELS.sI.c2a8d278"),
 };
 
 /** Same-side platoon advantage by best pitch: >1 a wider split, <1 a pitcher who handles both sides. */

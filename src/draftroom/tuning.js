@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index.js';
 /* Balance knobs for seasons, careers and evaluations, in one place.
    These are fictional tuning values, not an empirical KBO model.
 
@@ -201,7 +202,7 @@ const TUNING = {
     plan: { base: 28, perProgress: 43, played: 8, regular: 8, min: 10, max: 100 },
     expectedGrowth: { min: 0.65, share: 0.2, projectShare: 0.13, projectGap: 20, projectYears: 2 },
     progress: { nearCeiling: 2, max: 1.3 },
-    growthLabels: [[3, '뚜렷한 성장'], [1.4, '꾸준한 발전'], [0.3, '기술 발전'], [0, '완성도 유지']],
+    growthLabels: [[3, __i18n_k("draftroom.tuning.scores.growthLabels.cd736e69")], [1.4, __i18n_k("draftroom.tuning.scores.growthLabels.1268ef45")], [0.3, __i18n_k("draftroom.tuning.scores.growthLabels.3b27044d")], [0, __i18n_k("draftroom.tuning.scores.growthLabels.69a2d3ad")]],
   },
 
   firstYear: {
@@ -262,9 +263,9 @@ const TUNING = {
   // National-team events in the ten seasons. Medals give the 예술체육요원 exemption.
   // A class supplies at most `max` players (the rest of the roster comes from other classes).
   international: [
-    { year: 2028, name: 'LA 올림픽', ageLimit: null, minGrade: 57, max: 3, results: [[0.1, '금메달'], [0.2, '은메달'], [0.42, '동메달']], exempt: ['금메달', '은메달', '동메달'] },
-    { year: 2030, name: '도하 아시안게임', ageLimit: 25, minGrade: 50, max: 6, wildcard: { maxAge: 29, minGrade: 57, count: 1 }, results: [[0.78, '금메달'], [0.9, '은메달'], [1, '동메달']], exempt: ['금메달'] },
-    { year: 2034, name: '리야드 아시안게임', ageLimit: 25, minGrade: 50, max: 6, wildcard: { maxAge: 29, minGrade: 57, count: 1 }, results: [[0.78, '금메달'], [0.9, '은메달'], [1, '동메달']], exempt: ['금메달'] },
+    { year: 2028, name: __i18n_k("draftroom.tuning.international.name.35d1f7c9"), ageLimit: null, minGrade: 57, max: 3, results: [[0.1, '금메달'], [0.2, __i18n_k("draftroom.tuning.international.results.4761b4b6")], [0.42, __i18n_k("draftroom.tuning.international.results.dd08cf55")]], exempt: ['금메달', __i18n_k("draftroom.tuning.international.exempt.4761b4b6"), __i18n_k("draftroom.tuning.international.exempt.dd08cf55")] },
+    { year: 2030, name: __i18n_k("draftroom.tuning.international.name.e4a5c0c5"), ageLimit: 25, minGrade: 50, max: 6, wildcard: { maxAge: 29, minGrade: 57, count: 1 }, results: [[0.78, '금메달'], [0.9, __i18n_k("draftroom.tuning.international.results.4761b4b6")], [1, __i18n_k("draftroom.tuning.international.results.dd08cf55")]], exempt: ['금메달'] },
+    { year: 2034, name: __i18n_k("draftroom.tuning.international.name.be7c34cb"), ageLimit: 25, minGrade: 50, max: 6, wildcard: { maxAge: 29, minGrade: 57, count: 1 }, results: [[0.78, '금메달'], [0.9, __i18n_k("draftroom.tuning.international.results.4761b4b6")], [1, __i18n_k("draftroom.tuning.international.results.dd08cf55")]], exempt: ['금메달'] },
   ],
 
   retirement: {

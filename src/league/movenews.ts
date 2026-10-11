@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Transaction news (V0.7.2): trades, releases and waivers, unattached signings, foreign replacements,
    postings, free-agent contracts and the second draft become articles, with each player's public record
    as fact lines for an optional language model. Written only in a game with the player's club (the
@@ -39,50 +40,50 @@ const innings = (outs: number) => `${Math.floor(outs / 3)}${outs % 3 ? ` ${outs 
 const won = (manwon: number) => {
   const eok = Math.floor(manwon / 10000),
     rest = manwon % 10000;
-  return `${eok ? `${eok}억${rest ? ' ' : ''}` : ''}${rest || !eok ? `${rest.toLocaleString('ko-KR')}만` : ''} 원`;
+  return __i18n_k("league.movenews.won.39a51a17", { value: eok ? __i18n_k("league.movenews.won.af42578f", { eok: eok, value: rest ? ' ' : '' }) : '', value2: rest || !eok ? __i18n_k("league.movenews.won.cd1481f0", { value: rest.toLocaleString('ko-KR') }) : '' });
 };
-const POS: Record<string, string> = { C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' };
+const POS: Record<string, string> = { C: __i18n_k("league.movenews.pOS.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("league.movenews.pOS.sS.3e24c7f1"), LF: __i18n_k("league.movenews.pOS.lF.73836db2"), CF: __i18n_k("league.movenews.pOS.cF.56780b2a"), RF: __i18n_k("league.movenews.pOS.rF.a28a0ef8") };
 const posOf = (p: Player) => (p.position ? POS[p.position]! : ROLE_LABELS[p.role]);
 
-const batLine = (b: BatTotals) => `${b.g}경기 타율 ${f3(avg(b))} 홈런 ${b.hr}개 ${b.rbi}타점 도루 ${b.sb}개 OPS ${f3(obp(b) + slg(b))}`;
-const pitLine = (q: PitTotals) => `${q.g}경기 ${q.w}승 ${q.l}패${q.sv ? ` ${q.sv}세이브` : ''}${q.hld ? ` ${q.hld}홀드` : ''} ${innings(q.outs)}이닝 평균자책점 ${era(q).toFixed(2)} 삼진 ${q.k}개`;
+const batLine = (b: BatTotals) => __i18n_k("league.movenews.batLine.10efcb20", { g: b.g, f3: f3(avg(b)), hr: b.hr, rbi: b.rbi, sb: b.sb, f32: f3(obp(b) + slg(b)) });
+const pitLine = (q: PitTotals) => __i18n_k("league.movenews.pitLine.77140cde", { g: q.g, w: q.w, l: q.l, value: q.sv ? __i18n_k("league.movenews.pitLine.addf22ee", { sv: q.sv }) : '', value2: q.hld ? __i18n_k("league.movenews.pitLine.dcf052c7", { hld: q.hld }) : '', innings: innings(q.outs), value3: era(q).toFixed(2), value4: q.k });
 const lineOf = (p: Player, c: { bat: BatTotals | null; pit: PitTotals | null }) => (isPitcher(p) ? (c.pit?.outs ? pitLine(c.pit) : null) : c.bat?.pa ? batLine(c.bat) : null);
 
 /** A short record for the article body: this season so far, else his last first-team season. */
 function recent(s: LeagueState, p: Player): string | null {
   const now = s.phase === 'regular' ? s.lines[p.id] : undefined;
   const cur = now ? lineOf(p, now) : null;
-  if (cur) return `올 시즌 ${cur}`;
+  if (cur) return __i18n_k("league.movenews.recent.f16774cc", { cur: cur });
   const last = p.career.filter((c) => !c.level).at(-1);
   const prev = last ? lineOf(p, last) : null;
-  return prev ? `${last!.year} 시즌 ${prev}` : null;
+  return prev ? __i18n_k("league.movenews.recent.68b5c538", { year: last!.year, prev: prev }) : null;
 }
 
 /** A player's public facts: who he is, this season, his last first-team season, his career, pay and honours. */
 function playerFacts(s: LeagueState, p: Player, season: number): string[] {
   const out: string[] = [];
   const bg = p.origin.background;
-  out.push(`${p.name}: ${ageIn(p, season)}세 ${posOf(p)}, ${p.throws}투${p.bats}타, ${isForeign(p) ? `${p.proSince}년 입단${bg ? `, 경력 ${bg.text}` : ''}` : `${p.proSince}년 데뷔`}`);
+  out.push(__i18n_k("league.movenews.playerFacts.b1c1eb6b", { name: p.name, ageIn: ageIn(p, season), posOf: posOf(p), throws: p.throws, bats: p.bats, value: isForeign(p) ? __i18n_k("league.movenews.playerFacts.3b4f377d", { proSince: p.proSince, value: bg ? __i18n_k("league.movenews.playerFacts.a0a41a84", { text: bg.text }) : '' }) : __i18n_k("league.movenews.playerFacts.73ecbc1f", { proSince: p.proSince }) }));
   const now = s.phase === 'regular' ? s.lines[p.id] : undefined;
   const cur = now ? lineOf(p, now) : null;
-  if (cur) out.push(`${p.name} 올 시즌 1군 ${cur}`);
+  if (cur) out.push(__i18n_k("league.movenews.playerFacts.7dbb8460", { name: p.name, cur: cur }));
   const majors = p.career.filter((c) => !c.level);
   const last = majors.at(-1);
   const lastLine = last ? lineOf(p, last) : null;
-  if (last && lastLine) out.push(`${p.name} ${last.year} 시즌 1군 (${short(s, last.teamId)}) ${lastLine}, WAR ${last.war.toFixed(1)}`);
+  if (last && lastLine) out.push(__i18n_k("league.movenews.playerFacts.dbf633df", { name: p.name, year: last.year, short: short(s, last.teamId), lastLine: lastLine, value: last.war.toFixed(1) }));
   if (majors.length > 1) {
     const tot = { bat: majors.reduce((a, c) => (c.bat ? addInto(a, c.bat) : a), emptyBat()), pit: majors.reduce((a, c) => (c.pit ? addInto(a, c.pit) : a), emptyPit()) };
     const total = lineOf(p, tot);
-    if (total) out.push(`${p.name} 1군 통산 ${majors.length}시즌 ${total}`);
+    if (total) out.push(__i18n_k("league.movenews.playerFacts.0004b697", { name: p.name, length: majors.length, total: total }));
   }
   if (!majors.length && !cur) {
     const fut = p.career.filter((c) => c.level === 'futures').at(-1);
     const futLine = fut ? lineOf(p, fut) : null;
-    out.push(futLine ? `${p.name} 1군 기록 없음, ${fut!.year} 퓨처스 ${futLine}` : `${p.name} 1군 기록 없음`);
+    out.push(futLine ? __i18n_k("league.movenews.playerFacts.ad46ecc5", { name: p.name, year: fut!.year, futLine: futLine }) : __i18n_k("league.movenews.playerFacts.b3832c33", { name: p.name }));
   }
   const pay = salaryIn(p, season);
-  if (pay && !isForeign(p)) out.push(`${p.name} ${season}년 연봉 ${won(pay)}`);
-  for (const h of (p.honors ?? []).slice(-3)) out.push(`${p.name} 수상: ${h}`);
+  if (pay && !isForeign(p)) out.push(__i18n_k("league.movenews.playerFacts.7dfae5e2", { name: p.name, season: season, won: won(pay) }));
+  for (const h of (p.honors ?? []).slice(-3)) out.push(__i18n_k("league.movenews.playerFacts.c6d66467", { name: p.name, h: h }));
   return out;
 }
 
@@ -90,36 +91,36 @@ const clubFacts = (s: LeagueState, ids: TeamId[], date: string) =>
   s.phase === 'regular'
     ? ids.map((id) => {
         const r = recordThrough(s, id, date);
-        return `${short(s, id)} 현재 ${r.w}승 ${r.l}패 ${r.t}무`;
+        return __i18n_k("league.movenews.clubFacts.53f33d02", { short: short(s, id), w: r.w, l: r.l, value: r.t });
       })
     : [];
 
 const said = (x: Player, text: string): Quote => ({ who: x.name, role: 'player', text });
-const managerOf = (s: LeagueState, teamId: TeamId) => `${s.clubs?.[teamId]?.staff?.manager?.name ?? ''} 감독`.trim();
+const managerOf = (s: LeagueState, teamId: TeamId) => __i18n_k("league.movenews.managerOf.c6d3b5b1", { value: s.clubs?.[teamId]?.staff?.manager?.name ?? '' }).trim();
 const fans = (lines: string[], key: string): Quote[] => {
   const a = Math.floor(hashUnit(`${key}-f0`) * lines.length);
   const b = (a + 1 + Math.floor(hashUnit(`${key}-f1`) * (lines.length - 1))) % lines.length;
-  return [a, b].map((i) => ({ who: '팬', role: 'fan' as const, text: lines[i]! }));
+  return [a, b].map((i) => ({ who: __i18n_k("league.movenews.fans.who.724cc77d"), role: 'fan' as const, text: lines[i]! }));
 };
 
 const MANAGER = {
-  trade: ['필요한 자리를 채웠다. 바로 쓸 생각이다.', '좋은 선수를 보내는 건 아쉽지만 팀에 필요한 선택이었다.', '새로 온 선수가 분위기를 바꿔 주길 기대한다.'],
-  release: ['함께 가지 못하게 돼 아쉽다. 어디서든 잘되길 바란다.', '팀 사정상 어쩔 수 없는 결정이었다.', '그동안 고생 많았다. 기회를 더 주지 못해 미안하다.'],
-  signing: ['경험 있는 선수다. 빈자리를 메워 줄 것이다.', '몸 상태를 보고 바로 기용하겠다.'],
-  foreign: ['남은 시즌 반등의 열쇠가 될 선수다.', '적응만 빨리 하면 충분히 통할 것이다.', '떠난 선수도 고생 많았다. 새 선수에게 기대가 크다.'],
+  trade: [__i18n_k("league.movenews.mANAGER.trade.0845cfc8"), __i18n_k("league.movenews.mANAGER.trade.1cbf14cd"), __i18n_k("league.movenews.mANAGER.trade.184b53ca")],
+  release: [__i18n_k("league.movenews.mANAGER.release.c5ae9f6b"), __i18n_k("league.movenews.mANAGER.release.b35650c3"), __i18n_k("league.movenews.mANAGER.release.b8488a56")],
+  signing: [__i18n_k("league.movenews.mANAGER.signing.f5cfc796"), __i18n_k("league.movenews.mANAGER.signing.e33123ca")],
+  foreign: [__i18n_k("league.movenews.mANAGER.foreign.5aa8039f"), __i18n_k("league.movenews.mANAGER.foreign.0725543f"), __i18n_k("league.movenews.mANAGER.foreign.c0f28a59")],
 };
-const ARRIVAL = ['새 유니폼이 아직 어색하지만 빨리 적응하겠습니다.', '불러 주신 만큼 보답하겠습니다.', '전 팀 팬들께 감사드립니다. 여기서도 제 야구를 하겠습니다.'];
-const STAY = ['남게 돼 기쁩니다. 계속 이 유니폼을 입고 뛰겠습니다.', '구단에서 믿어 주셔서 감사합니다. 보답하겠습니다.'];
-const HOME = ['다시 돌아와서 기쁩니다. 떠날 때 약속한 대로 팀에 힘이 되겠습니다.', '메이저리그에서 배운 걸 후배들과 나누고 싶습니다.', '팬들이 기다려 주셔서 돌아올 수 있었습니다.'];
-const MLB = ['어릴 때부터 꿈꾸던 무대입니다. 응원해 주신 팬들께 감사드립니다.', '보내 주신 구단에 감사드립니다. 가서 부끄럽지 않게 뛰겠습니다.'];
+const ARRIVAL = [__i18n_k("league.movenews.aRRIVAL.04ac12e4"), __i18n_k("league.movenews.aRRIVAL.c9e5ad99"), __i18n_k("league.movenews.aRRIVAL.345d9ee4")];
+const STAY = [__i18n_k("league.movenews.sTAY.9c03fe1f"), __i18n_k("league.movenews.sTAY.59767d1d")];
+const HOME = [__i18n_k("league.movenews.hOME.fc8e9162"), __i18n_k("league.movenews.hOME.4bffa8a0"), __i18n_k("league.movenews.hOME.0df6cd46")];
+const MLB = [__i18n_k("league.movenews.mLB.3155855f"), __i18n_k("league.movenews.mLB.37f6a18b")];
 const FANS = {
-  trade: ['이 트레이드 누가 이긴 거냐', '보낸 선수 잘되길 바란다', '일단 결과로 말하자', '단장 결단 좋다'],
-  release: ['그동안 고마웠다', '다른 팀 가서 잘됐으면', '아쉽지만 이해한다'],
-  signing: ['환영합니다!', '이번 영입 기대된다', '빈자리 잘 메워 줘'],
-  foreign: ['이번엔 제발 터져라', '떠난 선수도 수고 많았다', '영상 보니 기대된다'],
-  leaving: ['가서 꼭 성공해라', '떠나는 건 아쉽지만 축하한다', '잘 가라, 고마웠다'],
-  stay: ['남아 줘서 고맙다', '역시 우리 선수', '계속 같이 가자'],
-  home: ['돌아온 걸 환영한다!', '다시 이 유니폼 입은 모습 보니 눈물 난다', '마지막은 여기서 불태우자'],
+  trade: [__i18n_k("league.movenews.fANS.trade.4aaf915b"), __i18n_k("league.movenews.fANS.trade.4a03cef0"), __i18n_k("league.movenews.fANS.trade.baec33e0"), __i18n_k("league.movenews.fANS.trade.294c17f4")],
+  release: [__i18n_k("league.movenews.fANS.release.210891eb"), __i18n_k("league.movenews.fANS.release.f3d64097"), __i18n_k("league.movenews.fANS.release.98a8881a")],
+  signing: [__i18n_k("league.movenews.fANS.signing.6655582c"), __i18n_k("league.movenews.fANS.signing.216514bf"), __i18n_k("league.movenews.fANS.signing.4f88a104")],
+  foreign: [__i18n_k("league.movenews.fANS.foreign.47176c83"), __i18n_k("league.movenews.fANS.foreign.010f0252"), __i18n_k("league.movenews.fANS.foreign.32c6683e")],
+  leaving: [__i18n_k("league.movenews.fANS.leaving.7a55a5cf"), __i18n_k("league.movenews.fANS.leaving.63e7c2be"), __i18n_k("league.movenews.fANS.leaving.31f2f81b")],
+  stay: [__i18n_k("league.movenews.fANS.stay.8e5cd693"), __i18n_k("league.movenews.fANS.stay.d0550b49"), __i18n_k("league.movenews.fANS.stay.55e4ffdd")],
+  home: [__i18n_k("league.movenews.fANS.home.026e2b8e"), __i18n_k("league.movenews.fANS.home.f06c4909"), __i18n_k("league.movenews.fANS.home.cc4a80bf")],
 };
 
 /** Writes the article for a move (see the header for which ones). */
@@ -138,7 +139,7 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
       const everyone = [...m.fromA, ...m.fromB].map(p).filter((x): x is Player => !!x);
       const about = everyone.map((x) => {
         const r = recent(s, x);
-        return `${eunneun(x.name)} ${ageIn(x, season)}세 ${posOf(x)}${r ? `로 ${r}` : '다'}.`;
+        return __i18n_k("league.movenews.moveNews.about.dfd559e3", { name: eunneun(x.name), ageIn: ageIn(x, season), posOf: posOf(x), value: r ? __i18n_k("league.movenews.moveNews.about.f7542594", { r: r }) : __i18n_k("league.movenews.moveNews.about.c94aacfd") });
       });
       // Seen from the user's club when it is part of the deal, else from the first club.
       const home = m.b === u ? m.b : m.a;
@@ -146,17 +147,17 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
       // Cash and draft picks (V0.7.8) go with the players on each side.
       const draft = s.year + 1;
       const and = (xs: string[]) => xs.filter(Boolean).reduce((a, x) => (a ? `${wagwa(a)} ${x}` : x), '');
-      const extra = (money: number, picks: number[] = []) => [money > 0 ? `현금 ${Math.round(money / 1000) / 10}억` : '', ...picks.map((r) => `${draft} 신인 ${r}라운드 지명권`)];
+      const extra = (money: number, picks: number[] = []) => [money > 0 ? __i18n_k("league.movenews.moveNews.extra.58195e3f", { value: Math.round(money / 1000) / 10 }) : '', ...picks.map((r) => __i18n_k("league.movenews.moveNews.extra.160cfca6", { draft: draft, r: r }))];
       const sideA = and([m.fromA.length ? names(m.fromA) : '', ...extra(Math.max(0, m.cash ?? 0), m.picksA)]);
       const sideB = and([m.fromB.length ? names(m.fromB) : '', ...extra(Math.max(0, -(m.cash ?? 0)), m.picksB)]);
-      const shape = m.fromA.length && m.fromB.length ? `${m.fromA.length}대${m.fromB.length} ` : '';
+      const shape = m.fromA.length && m.fromB.length ? __i18n_k("league.movenews.moveNews.shape.758c3ee1", { length: m.fromA.length, length2: m.fromB.length }) : '';
       addNews(s, {
         ...base,
         id,
-        title: `${A}–${B}, ${sideA}↔${sideB} 트레이드`,
-        body: `${iga(A)} ${B}에 ${eulreul(sideA)} 내주고 ${eulreul(sideB)} 받는 ${shape}트레이드를 했다.\n${about.join(' ')}`,
+        title: __i18n_k("league.movenews.moveNews.title.3a3b06ed", { a: A, b: B, sideA: sideA, sideB: sideB }),
+        body: __i18n_k("league.movenews.moveNews.body.8aa2d67d", { a: iga(A), b: B, sideA: eulreul(sideA), sideB: eulreul(sideB), shape: shape, value: about.join(' ') }),
         quotes: [{ who: managerOf(s, home), role: 'manager', text: pick(MANAGER.trade, id) }, ...(arriving ? [said(arriving, pick(ARRIVAL, `${id}-a`))] : []), ...(mine ? fans(FANS.trade, id) : [])],
-        facts: { type: '트레이드', date, clubA: A, clubB: B, [`${A} 보냄`]: sideA, [`${B} 보냄`]: sideB },
+        facts: { type: __i18n_k("league.movenews.facts.type.428749ee"), date, clubA: A, clubB: B, [__i18n_k("league.movenews.moveNews.facts.85647161", { a: A })]: sideA, [__i18n_k("league.movenews.moveNews.facts.bd3cc4f9", { b: B })]: sideB },
         detail: [...everyone.flatMap((x) => playerFacts(s, x, season)), ...clubFacts(s, [m.a, m.b], date)],
         players: everyone.map((x) => x.id),
         mine,
@@ -172,16 +173,14 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
       addNews(s, {
         ...base,
         id,
-        title: m.waiver && !isForeign(x) ? `${club}, ${x.name} 웨이버 공시` : `${club}, ${x.name} 방출`,
-        body: `${iga(club)} ${ageIn(x, season)}세 ${posOf(x)} ${eulreul(x.name)} ${
-          isForeign(x)
-            ? '방출했다. 다른 구단이 새로 계약할 수 있고, 방출 뒤 재입단은 신규 계약으로 본다.'
+        title: m.waiver && !isForeign(x) ? __i18n_k("league.movenews.moveNews.title.1de39ecc", { club: club, name: x.name }) : __i18n_k("league.movenews.moveNews.title.4abcfa12", { club: club, name: x.name }),
+        body: __i18n_k("league.movenews.moveNews.body.07df8b6d", { club: iga(club), ageIn: ageIn(x, season), posOf: posOf(x), name: eulreul(x.name), value: isForeign(x)
+            ? __i18n_k("league.movenews.moveNews.body.5655575c")
             : m.waiver
-              ? '웨이버 공시했다. 일주일 안에 데려가는 구단이 없으면 자유계약선수가 된다.'
-              : '방출했다. 자유계약선수로 새 팀을 찾는다.'
-        }${r ? ` ${r}.` : ''}${m.owed ? ` 남은 연봉 ${won(m.owed)}은 ${iga(club)} 부담한다.` : ''}`,
+              ? __i18n_k("league.movenews.moveNews.body.c7192411")
+              : __i18n_k("league.movenews.moveNews.body.70449be5"), value2: r ? ` ${r}.` : '', value3: m.owed ? __i18n_k("league.movenews.moveNews.body.37b5ddcf", { won: won(m.owed), club: iga(club) }) : '' }),
         quotes: [{ who: managerOf(s, m.teamId), role: 'manager', text: pick(MANAGER.release, id) }, ...fans(FANS.release, id)],
-        facts: { type: m.waiver && !isForeign(x) ? '웨이버 공시' : '방출', date, club, player: x.name, ...(m.owed ? { owed: won(m.owed) } : {}) },
+        facts: { type: m.waiver && !isForeign(x) ? __i18n_k("league.movenews.facts.type.29e07476") : __i18n_k("league.movenews.facts.type.e16b5dd5"), date, club, player: x.name, ...(m.owed ? { owed: won(m.owed) } : {}) },
         detail: [...playerFacts(s, x, season), ...clubFacts(s, [m.teamId], date)],
         players: [x.id],
         mine: true,
@@ -197,10 +196,10 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
       addNews(s, {
         ...base,
         id,
-        title: `${club}, 웨이버로 ${x.name} 영입`,
-        body: `${iga(club)} ${from}에서 웨이버 공시된 ${eulreul(x.name)} 데려갔다. 남은 계약도 함께 넘겨받는다.${r ? ` ${x.name}의 기록은 ${r}.` : ''}`,
+        title: __i18n_k("league.movenews.moveNews.title.bf84b148", { club: club, name: x.name }),
+        body: __i18n_k("league.movenews.moveNews.body.e68b1c4a", { club: iga(club), from: from, name: eulreul(x.name), value: r ? __i18n_k("league.movenews.moveNews.body.0bc32b32", { name: x.name, r: r }) : '' }),
         quotes: [said(x, pick(ARRIVAL, id))],
-        facts: { type: '웨이버 영입', date, club, from, player: x.name },
+        facts: { type: __i18n_k("league.movenews.facts.type.f49fc0c2"), date, club, from, player: x.name },
         detail: [...playerFacts(s, x, season), ...clubFacts(s, [m.teamId], date)],
         players: [x.id],
         mine: true,
@@ -216,10 +215,10 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
       addNews(s, {
         ...base,
         id,
-        title: `${club}, 자유계약선수 ${x.name} 영입`,
-        body: `${iga(club)} 자유계약선수 ${ageIn(x, season)}세 ${posOf(x)} ${eulreul(x.name)} 영입했다. 연봉은 ${won(m.salary)}.${r ? ` ${x.name}의 기록은 ${r}.` : ''}`,
+        title: __i18n_k("league.movenews.moveNews.title.ce89613e", { club: club, name: x.name }),
+        body: __i18n_k("league.movenews.moveNews.body.c032c789", { club: iga(club), ageIn: ageIn(x, season), posOf: posOf(x), name: eulreul(x.name), won: won(m.salary), value: r ? __i18n_k("league.movenews.moveNews.body.0bc32b32", { name: x.name, r: r }) : '' }),
         quotes: [{ who: managerOf(s, m.teamId), role: 'manager', text: pick(MANAGER.signing, id) }, ...fans(FANS.signing, id)],
-        facts: { type: '자유계약선수 영입', date, club, player: x.name, salary: won(m.salary) },
+        facts: { type: __i18n_k("league.movenews.facts.type.47ddc1fc"), date, club, player: x.name, salary: won(m.salary) },
         detail: [...playerFacts(s, x, season), ...clubFacts(s, [m.teamId], date)],
         players: [x.id],
         mine: true,
@@ -237,10 +236,10 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
       addNews(s, {
         ...base,
         id,
-        title: `${club}, 외국인 교체… ${m.out.name} 떠나고 ${x.name} 합류`,
-        body: `${iga(club)} 외국인 선수 ${eulreul(m.out.name)} 내보내고 ${eulreul(x.name)} 영입했다. ${eunneun(x.name)} ${ageIn(x, season)}세 ${posOf(x)}다.${bg ? ` 경력은 ${bg.text}.` : ''} 남은 시즌 몸값은 ${usd(m.price)}.${r ? ` ${m.out.name}의 기록은 ${r}.` : ''}`,
+        title: __i18n_k("league.movenews.moveNews.title.1148392f", { club: club, name: m.out.name, name2: x.name }),
+        body: __i18n_k("league.movenews.moveNews.body.eaca8c2d", { club: iga(club), name: eulreul(m.out.name), name2: eulreul(x.name), name3: eunneun(x.name), ageIn: ageIn(x, season), posOf: posOf(x), value: bg ? __i18n_k("league.movenews.moveNews.body.1acd0595", { text: bg.text }) : '', usd: usd(m.price), value2: r ? __i18n_k("league.movenews.moveNews.body.0bc32b32", { name: m.out.name, r: r }) : '' }),
         quotes: [{ who: managerOf(s, m.teamId), role: 'manager', text: pick(MANAGER.foreign, id) }, ...(mine ? fans(FANS.foreign, id) : [])],
-        facts: { type: '외국인 교체', date, club, out: m.out.name, in: x.name, price: usd(m.price) },
+        facts: { type: __i18n_k("league.movenews.facts.type.c49c1d92"), date, club, out: m.out.name, in: x.name, price: usd(m.price) },
         detail: [...playerFacts(s, m.out, season), ...playerFacts(s, x, season), ...clubFacts(s, [m.teamId], date)],
         players: [x.id, ...(s.players[m.out.id] ? [m.out.id] : [])],
         mine,
@@ -258,12 +257,12 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
       addNews(s, {
         ...base,
         id,
-        title: d ? `${x.name}, 메이저리그 ${d.years}년 ${usd(d.total)} 계약` : `${x.name}, 메이저리그 계약 불발… ${club} 잔류`,
+        title: d ? __i18n_k("league.movenews.moveNews.title.415f7ac3", { name: x.name, years: d.years, usd: usd(d.total) }) : __i18n_k("league.movenews.moveNews.title.09a1152c", { name: x.name, club: club }),
         body: d
-          ? `${club} ${iga(x.name)} 포스팅을 거쳐 메이저리그 구단과 ${d.years}년 ${usd(d.total)}에 계약했다. ${eunneun(club)} 이적료 ${usd(d.fee)}를 받는다.${r ? ` ${x.name}의 마지막 기록은 ${r}.` : ''}`
-          : `${club} ${iga(x.name)} 포스팅으로 메이저리그 문을 두드렸지만 계약한 구단이 없었다. ${eunneun(x.name)} ${club}에 남는다.`,
-        quotes: [said(x, d ? pick(MLB, id) : '아쉽지만 여기서 더 성장해서 다시 도전하겠습니다.'), ...(mine && d ? fans(FANS.leaving, id) : [])],
-        facts: { type: '포스팅', date, club, player: x.name, ...(d ? { years: d.years, total: usd(d.total), fee: usd(d.fee) } : { result: '계약 불발' }) },
+          ? __i18n_k("league.movenews.moveNews.body.c6e0374e", { club: club, name: iga(x.name), years: d.years, usd: usd(d.total), club2: eunneun(club), usd2: usd(d.fee), value: r ? __i18n_k("league.movenews.moveNews.body.85330a1d", { name: x.name, r: r }) : '' })
+          : __i18n_k("league.movenews.moveNews.body.b661cdba", { club: club, name: iga(x.name), name2: eunneun(x.name), club2: club }),
+        quotes: [said(x, d ? pick(MLB, id) : __i18n_k("league.movenews.moveNews.quotes.17c3607e")), ...(mine && d ? fans(FANS.leaving, id) : [])],
+        facts: { type: __i18n_k("league.movenews.facts.type.6734925e"), date, club, player: x.name, ...(d ? { years: d.years, total: usd(d.total), fee: usd(d.fee) } : { result: __i18n_k("league.movenews.facts.result.98fac7f9") }) },
         detail: playerFacts(s, x, season),
         players: [x.id],
         mine,
@@ -281,17 +280,17 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
       const bonus = m.bonus ?? 0,
         options = m.options ?? 0;
       const total = bonus + m.annual * m.years + options + (m.extra ? m.annual * m.extra.years : 0);
-      const len = m.extra ? `${m.years}+${m.extra.years}년` : `${m.years}년`;
-      const terms = bonus || options ? `${len} 총액 ${won(total)}` : `${len}, 연 ${won(m.annual)}`;
-      const parts = [bonus ? `계약금 ${won(bonus)}` : '', `연봉 ${won(m.annual)}`, options ? `옵션 ${won(options)}` : ''].filter(Boolean).join(', ');
-      const option = m.extra ? (m.extra.holder === 'club' ? ` ${m.years}년 뒤에는 구단이 ${m.extra.years}년 연장 여부를 정한다.` : ` ${m.years}년 뒤 선수가 계약을 끝낼 수 있는 옵트아웃 조항이 들어갔다.`) : '';
+      const len = m.extra ? __i18n_k("league.movenews.moveNews.len.1538dc1f", { years: m.years, years2: m.extra.years }) : __i18n_k("league.movenews.moveNews.len.044a2535", { years: m.years });
+      const terms = bonus || options ? __i18n_k("league.movenews.moveNews.terms.e9388db1", { len: len, won: won(total) }) : __i18n_k("league.movenews.moveNews.terms.5253a19f", { len: len, won: won(m.annual) });
+      const parts = [bonus ? __i18n_k("league.movenews.moveNews.parts.2c68d3e0", { won: won(bonus) }) : '', __i18n_k("league.movenews.moveNews.parts.ffaecbf6", { won: won(m.annual) }), options ? __i18n_k("league.movenews.moveNews.parts.1d8c1f09", { won: won(options) }) : ''].filter(Boolean).join(', ');
+      const option = m.extra ? (m.extra.holder === 'club' ? __i18n_k("league.movenews.moveNews.option.5fa83554", { years: m.years, years2: m.extra.years }) : __i18n_k("league.movenews.moveNews.option.6afda4c9", { years: m.years })) : '';
       addNews(s, {
         ...base,
         id,
-        title: stay ? `${to}, FA ${x.name} 잔류… ${terms}` : `FA ${x.name}, ${ro(to)} 이적… ${terms}`,
-        body: `${m.grade}등급 FA ${iga(x.name)} ${stay ? `원소속 ${to}에 남는다` : `${eulreul(from)} 떠나 ${wagwa(to)} 계약했다`}. 조건은 ${terms}${bonus || options ? ` (${parts})` : ''}.${option}${r ? ` ${x.name}의 기록은 ${r}.` : ''}${!stay ? ` ${eunneun(from)} 보상을 받는다.` : ''}`,
+        title: stay ? __i18n_k("league.movenews.moveNews.title.c4fb97e2", { to: to, name: x.name, terms: terms }) : __i18n_k("league.movenews.moveNews.title.d45d16f9", { name: x.name, to: ro(to), terms: terms }),
+        body: __i18n_k("league.movenews.moveNews.body.b0de8e91", { grade: m.grade, name: iga(x.name), value: stay ? __i18n_k("league.movenews.moveNews.body.6756de1b", { to: to }) : __i18n_k("league.movenews.moveNews.body.de7f3f81", { from: eulreul(from), to: wagwa(to) }), terms: terms, value2: bonus || options ? ` (${parts})` : '', option: option, value3: r ? __i18n_k("league.movenews.moveNews.body.0bc32b32", { name: x.name, r: r }) : '', value4: !stay ? __i18n_k("league.movenews.moveNews.body.ac5d7b33", { from: eunneun(from) }) : '' }),
         quotes: [said(x, pick(stay ? STAY : ARRIVAL, id)), ...(mine ? fans(stay ? FANS.stay : m.from === u ? FANS.leaving : FANS.signing, id) : [])],
-        facts: { type: 'FA 계약', date, player: x.name, grade: m.grade, from, to, years: m.years, annual: won(m.annual), ...(bonus ? { bonus: won(bonus) } : {}), ...(options ? { options: won(options) } : {}), ...(m.extra ? { option: `${m.extra.years}년 ${m.extra.holder === 'club' ? '구단' : '선수'} 옵션` } : {}), total: won(total) },
+        facts: { type: __i18n_k("league.movenews.facts.type.b30dac4a"), date, player: x.name, grade: m.grade, from, to, years: m.years, annual: won(m.annual), ...(bonus ? { bonus: won(bonus) } : {}), ...(options ? { options: won(options) } : {}), ...(m.extra ? { option: __i18n_k("league.movenews.facts.option.ef136004", { years: m.extra.years, value: m.extra.holder === 'club' ? __i18n_k("league.movenews.facts.option.58756112") : __i18n_k("league.movenews.facts.option.c37450d6") }) } : {}), total: won(total) },
         detail: playerFacts(s, x, season),
         players: [x.id],
         mine,
@@ -305,15 +304,15 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
       const club = short(s, m.teamId);
       const id = `mv-home-${date}-${m.id}`;
       const posted = x.service.postedIn;
-      const terms = `${m.years}년, 연 ${won(m.annual)}`;
+      const terms = __i18n_k("league.movenews.moveNews.terms.eecf3803", { years: m.years, won: won(m.annual) });
       const r = recent(s, x);
       addNews(s, {
         ...base,
         id,
-        title: `${x.name}, ${m.abroad}년 만에 ${club} 복귀… ${terms}`,
-        body: `메이저리그에서 뛰던 ${iga(x.name)} ${m.abroad}년 만에 KBO로 돌아와 ${wagwa(club)} 계약했다. 조건은 ${terms}.${posted !== undefined ? ` ${posted}년 겨울 포스팅으로 미국에 건너갔다.` : ''}${m.own ? ` 포스팅한 구단이 보류권을 갖고 있어 ${club}에 돌아왔다.` : ` 원소속 구단이 보류권을 풀어 ${ro(club)} 갔다.`}${r ? ` 떠나기 전 기록은 ${r}.` : ''}`,
+        title: __i18n_k("league.movenews.moveNews.title.3d83607a", { name: x.name, abroad: m.abroad, club: club, terms: terms }),
+        body: __i18n_k("league.movenews.moveNews.body.898f8b68", { name: iga(x.name), abroad: m.abroad, club: wagwa(club), terms: terms, value: posted !== undefined ? __i18n_k("league.movenews.moveNews.body.d0cf0dda", { posted: posted }) : '', value2: m.own ? __i18n_k("league.movenews.moveNews.body.e152bb11", { club: club }) : __i18n_k("league.movenews.moveNews.body.eef964a6", { club: ro(club) }), value3: r ? __i18n_k("league.movenews.moveNews.body.1da4805b", { r: r }) : '' }),
         quotes: [said(x, pick(HOME, id)), ...(mine ? fans(FANS.home, id) : [])],
-        facts: { type: '해외 복귀', date, club, player: x.name, abroad: m.abroad, years: m.years, annual: won(m.annual), ...(posted !== undefined ? { posted } : {}) },
+        facts: { type: __i18n_k("league.movenews.facts.type.49a5efe3"), date, club, player: x.name, abroad: m.abroad, years: m.years, annual: won(m.annual), ...(posted !== undefined ? { posted } : {}) },
         detail: playerFacts(s, x, season),
         players: [x.id],
         mine,
@@ -329,10 +328,10 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
       addNews(s, {
         ...base,
         id,
-        title: m.teamId === u ? `${club}, 2차 드래프트 ${m.round}라운드 ${x.name} 지명` : `${x.name}, 2차 드래프트로 ${ro(club)} 이적`,
-        body: `${iga(club)} 2차 드래프트 ${m.round}라운드에서 ${from} ${eulreul(x.name)} 지명했다. ${eunneun(x.name)} ${ageIn(x, season)}세 ${posOf(x)}다.${r ? ` 기록은 ${r}.` : ''}`,
+        title: m.teamId === u ? __i18n_k("league.movenews.moveNews.title.b52dbe46", { club: club, round: m.round, name: x.name }) : __i18n_k("league.movenews.moveNews.title.7bd27361", { name: x.name, club: ro(club) }),
+        body: __i18n_k("league.movenews.moveNews.body.26591a58", { club: iga(club), round: m.round, from: from, name: eulreul(x.name), name2: eunneun(x.name), ageIn: ageIn(x, season), posOf: posOf(x), value: r ? __i18n_k("league.movenews.moveNews.body.4fcd47ae", { r: r }) : '' }),
         quotes: [said(x, pick(ARRIVAL, id))],
-        facts: { type: '2차 드래프트', date, club, from, player: x.name, round: m.round },
+        facts: { type: __i18n_k("league.movenews.facts.type.7021a262"), date, club, from, player: x.name, round: m.round },
         detail: playerFacts(s, x, season),
         players: [x.id],
         mine: true,

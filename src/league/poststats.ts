@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Postseason records (1.4.0, from the 1.3 feedback): each player's line for every postseason he played in, how far
    his club went that year, his postseason totals, and the record room's postseason boards (this postseason's
    leaders and the all-time ones). Postseason games never count toward the season's totals or awards. */
@@ -7,7 +8,7 @@ import { avg, era, ip, ops } from './stats';
 import { shortName } from './views';
 
 const ORDER: SeriesResult['round'][] = ['wildcard', 'semipo', 'po', 'ks'];
-const ROUND: Record<SeriesResult['round'], string> = { wildcard: '와일드카드', semipo: '준PO', po: 'PO', ks: '한국시리즈' };
+const ROUND: Record<SeriesResult['round'], string> = { wildcard: __i18n_k("league.poststats.rOUND.wildcard.cbea62e5"), semipo: __i18n_k("league.poststats.rOUND.semipo.641f8233"), po: 'PO', ks: __i18n_k("league.poststats.rOUND.ks.3c8e7785") };
 
 /** The series of a year: the history's, or this year's being played. */
 export function seriesOf(s: LeagueState, year: number): SeriesResult[] {
@@ -18,11 +19,11 @@ export function seriesOf(s: LeagueState, year: number): SeriesResult[] {
 export function postResult(s: LeagueState, year: number, teamId: TeamId): string {
   const live = year === s.year && s.bracket?.year === year && !s.bracket.done;
   const mine = seriesOf(s, year).filter((x) => x.high === teamId || x.low === teamId);
-  if (!mine.length) return live ? '진행 중' : '-';
+  if (!mine.length) return live ? __i18n_k("league.poststats.postResult.7890cafc") : '-';
   const last = mine.reduce((a, x) => (ORDER.indexOf(x.round) > ORDER.indexOf(a.round) ? x : a));
-  if (last.winner !== teamId) return last.round === 'ks' ? '준우승' : `${ROUND[last.round]} 탈락`;
+  if (last.winner !== teamId) return last.round === 'ks' ? __i18n_k("league.poststats.postResult.3660fdbb") : __i18n_k("league.poststats.postResult.80e2ba84", { value: ROUND[last.round] });
   if (last.round === 'ks') return '우승';
-  return live ? '진행 중' : `${ROUND[last.round]} 통과`;
+  return live ? __i18n_k("league.poststats.postResult.7890cafc") : __i18n_k("league.poststats.postResult.c9479131", { value: ROUND[last.round] });
 }
 
 export interface PostRow {
@@ -79,15 +80,15 @@ function boards(s: LeagueState, lines: { p: Player; teamId: TeamId; bat: BatTota
   const count = (v: number) => `${v}`;
   return [
     board('안타', (t) => t.bat.h, count),
-    board('홈런', (t) => t.bat.hr, count),
-    board('타점', (t) => t.bat.rbi, count),
-    board(`타율 (${minPa}타석 이상)`, (t) => (t.bat.pa >= minPa ? avg(t.bat) : null), (v) => v.toFixed(3).replace(/^0/, '')),
-    board(`OPS (${minPa}타석 이상)`, (t) => (t.bat.pa >= minPa ? ops(t.bat) : null), (v) => v.toFixed(3).replace(/^0/, '')),
+    board(__i18n_k("league.poststats.boards.9162d3a3"), (t) => t.bat.hr, count),
+    board(__i18n_k("league.poststats.boards.fed1c588"), (t) => t.bat.rbi, count),
+    board(__i18n_k("league.poststats.boards.5f589bdc", { minPa: minPa }), (t) => (t.bat.pa >= minPa ? avg(t.bat) : null), (v) => v.toFixed(3).replace(/^0/, '')),
+    board(__i18n_k("league.poststats.boards.f18c1e6a", { minPa: minPa }), (t) => (t.bat.pa >= minPa ? ops(t.bat) : null), (v) => v.toFixed(3).replace(/^0/, '')),
     board('승', (t) => t.pit.w, count),
     board('세이브', (t) => t.pit.sv, count),
-    board('탈삼진', (t) => t.pit.k, count),
-    board('이닝', (t) => t.pit.outs, ip),
-    board(`평균자책점 (${Math.round(minOuts / 3)}이닝 이상)`, (t) => (t.pit.outs >= minOuts ? era(t.pit) : null), (v) => v.toFixed(2), true),
+    board(__i18n_k("league.poststats.boards.3e23c769"), (t) => t.pit.k, count),
+    board(__i18n_k("league.poststats.boards.639a1f2f"), (t) => t.pit.outs, ip),
+    board(__i18n_k("league.poststats.boards.600ac049", { value: Math.round(minOuts / 3) }), (t) => (t.pit.outs >= minOuts ? era(t.pit) : null), (v) => v.toFixed(2), true),
   ];
 }
 

@@ -1,3 +1,4 @@
+import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 import { useMemo, useState } from 'preact/hooks';
 import type { Role } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
@@ -8,12 +9,12 @@ import { useSort } from './sort';
 type RoleFilter = 'all' | Role;
 
 const ROLE_FILTERS: { id: RoleFilter; label: string }[] = [
-  { id: 'all', label: '전체' },
-  { id: 'SP', label: '선발' },
-  { id: 'RP', label: '불펜' },
-  { id: 'C', label: '포수' },
-  { id: 'IF', label: '내야' },
-  { id: 'OF', label: '외야' },
+  { id: 'all', label: __i18n_k("ui.draftBoard.rOLE_FILTERS.label.934dd25e") },
+  { id: 'SP', label: __i18n_k("ui.draftBoard.rOLE_FILTERS.label.a88271df") },
+  { id: 'RP', label: __i18n_k("ui.draftBoard.rOLE_FILTERS.label.5b8607a3") },
+  { id: 'C', label: __i18n_k("ui.draftBoard.rOLE_FILTERS.label.5f31470d") },
+  { id: 'IF', label: __i18n_k("ui.draftBoard.rOLE_FILTERS.label.0c733fda") },
+  { id: 'OF', label: __i18n_k("ui.draftBoard.rOLE_FILTERS.label.aa487065") },
 ];
 
 
@@ -47,56 +48,54 @@ export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect, ou
   return (
     <section class="board" aria-labelledby="board-title">
       <div class="board-head">
-        <h2 id="board-title">{draftYear + 1} 신인 드래프트 후보</h2>
-        <p class="muted">
-          {rows.length}명{ourView && ' · 우리 평가는 우리 스카우트 팀장이 본 미래 등급입니다 (팀장 등급이 높을수록 정확)'}
-        </p>
+        <h2 id="board-title">{__i18n_t("ui.draftBoard.draftBoard.5fc24b91", { value: draftYear + 1 })}</h2>
+        <p class="muted">{__i18n_t("ui.draftBoard.draftBoard.2a2a21d8", { length: rows.length, value: ourView && __i18n_k("ui.draftBoard.draftBoard.371d7382") })}</p>
       </div>
       <div class="controls">
-        <div class="segmented" role="group" aria-label="포지션">
-          {ROLE_FILTERS.map((f) => (
+        <div class="segmented" role="group" aria-label={__i18n_t("ui.draftBoard.draftBoard.81922a91")}>
+          {__i18n_display(ROLE_FILTERS.map((f) => (
             <button key={f.id} type="button" aria-pressed={role === f.id} onClick={() => setRole(f.id)}>
-              {f.label}
+              {__i18n_display(f.label)}
             </button>
-          ))}
+          )))}
         </div>
       </div>
-      <div class="table-wrap" tabIndex={0} aria-label="후보 목록 (가로로 스크롤할 수 있습니다)">
+      <div class="table-wrap" tabIndex={0} aria-label={__i18n_t("ui.draftBoard.draftBoard.c628b5f2")}>
         <table class="record-table">
           <thead>
             <tr>
-              {th('rank', '순위', true)}
-              {th('name', '이름')}
-              {th('role', '포지션')}
-              {th('path', '구분')}
-              {th('school', '소속')}
-              {th('age', '나이', true)}
-              {th('current', '현재', true)}
-              {th('future', '미래', true)}
-              {th('velocity', '구속', true)}
-              {ourView && th('ours', '우리 평가', true)}
+              {__i18n_display(th('rank', __i18n_k("ui.draftBoard.draftBoard.d15876f1"), true))}
+              {__i18n_display(th('name', __i18n_k("ui.draftBoard.draftBoard.9aa18e50")))}
+              {__i18n_display(th('role', __i18n_k("ui.draftBoard.draftBoard.81922a91")))}
+              {__i18n_display(th('path', __i18n_k("ui.draftBoard.draftBoard.af2feed6")))}
+              {__i18n_display(th('school', __i18n_k("ui.draftBoard.draftBoard.5d24a2fc")))}
+              {__i18n_display(th('age', __i18n_k("ui.draftBoard.draftBoard.6c620e5c"), true))}
+              {__i18n_display(th('current', __i18n_k("ui.draftBoard.draftBoard.001e4be2"), true))}
+              {__i18n_display(th('future', __i18n_k("ui.draftBoard.draftBoard.6e0caec5"), true))}
+              {__i18n_display(th('velocity', __i18n_k("ui.draftBoard.draftBoard.b8c2e079"), true))}
+              {__i18n_display(ourView && th('ours', __i18n_k("ui.draftBoard.draftBoard.03c90563"), true))}
             </tr>
           </thead>
           <tbody>
-            {rows.map((p) => (
+            {__i18n_display(rows.map((p) => (
               <tr key={p.id} class="player-row" aria-selected={p.id === selectedId}>
-                <td class="num">{p.amateur.draftRank}</td>
+                <td class="num">{__i18n_display(p.amateur.draftRank)}</td>
                 <td>
                   <button type="button" class="link" onClick={() => onSelect(p.id)} aria-current={p.id === selectedId ? 'true' : undefined}>
-                    {p.name}
+                    {__i18n_display(p.name)}
                   </button>
-                  {p.twoWay && <span class="tag">이도류</span>}
+                  {__i18n_display(p.twoWay && <span class="tag">{__i18n_t("ui.draftBoard.draftBoard.62cb0192")}</span>)}
                 </td>
-                <td>{roleLabel(p.role)}</td>
-                <td>{p.origin.pathway}</td>
-                <td>{p.education.school}</td>
-                <td class="num">{ageOf(p)}</td>
-                <td class={`num ${gradeClass(p.scouting.current)}`}>{p.scouting.current}</td>
-                <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{p.scouting.futureValue}</td>
-                <td class="num">{p.velocity ?? '-'}</td>
-                {ourView && <td class="num strong">{ourView(p) ?? '-'}</td>}
+                <td>{__i18n_display(roleLabel(p.role))}</td>
+                <td>{__i18n_display(p.origin.pathway)}</td>
+                <td>{__i18n_display(p.education.school)}</td>
+                <td class="num">{__i18n_display(ageOf(p))}</td>
+                <td class={`num ${gradeClass(p.scouting.current)}`}>{__i18n_display(p.scouting.current)}</td>
+                <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{__i18n_display(p.scouting.futureValue)}</td>
+                <td class="num">{__i18n_display(p.velocity ?? '-')}</td>
+                {__i18n_display(ourView && <td class="num strong">{__i18n_display(ourView(p) ?? '-')}</td>)}
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>

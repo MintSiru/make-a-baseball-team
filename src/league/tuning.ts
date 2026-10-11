@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* League balance numbers (this game's own; Draft Room's stay in src/draftroom/tuning.js).
    Targets are the 2025 KBO league averages in docs/CALIBRATION.md; scripts/calibrate.ts measures them.
    The intercepts sit below the real rates because first-team players average about 55, not 50. Changing a number changes
@@ -455,11 +456,11 @@ export const PARENT = {
     lastingShare: 0.5,
     lastingYears: 3,
     events: [
-      { title: '시의회 예산 삭감', text: '시의회가 내년 구단 예산을 깎았습니다.', budget: 0.08 },
-      { title: '행정사무감사', text: '시의회 감사에서 구단 운영이 도마에 올랐습니다. 모기업(시) 신뢰도가 떨어집니다.', trust: 12 },
-      { title: '운영비 지원 동결', text: '시가 내년 운영비 지원을 줄이기로 했습니다.', support: 0.12 },
-      { title: '대표이사 교체 압박', text: '시와 시의회가 구단 경영진 교체를 요구합니다. 단장 신뢰도도 흔들립니다.', trust: 8, budget: 0.04 },
-      { title: '혈세 논란', text: '"세금 먹는 하마" 여론이 일어 팬심도 식었습니다.', fans: 0.04, trust: 5 },
+      { title: __i18n_k("league.tuning.events.title.e592dc74"), text: __i18n_k("league.tuning.events.text.7a975105"), budget: 0.08 },
+      { title: __i18n_k("league.tuning.events.title.c7b6f51d"), text: __i18n_k("league.tuning.events.text.f90e8279"), trust: 12 },
+      { title: __i18n_k("league.tuning.events.title.93088d9e"), text: __i18n_k("league.tuning.events.text.29b6f7b7"), support: 0.12 },
+      { title: __i18n_k("league.tuning.events.title.679b54e3"), text: __i18n_k("league.tuning.events.text.eb0e4539"), trust: 8, budget: 0.04 },
+      { title: __i18n_k("league.tuning.events.title.da3f2012"), text: __i18n_k("league.tuning.events.text.0c56b3ba"), fans: 0.04, trust: 5 },
     ] as { title: string; text: string; budget?: number; support?: number; trust?: number; fans?: number }[],
   },
   naming: {
@@ -636,8 +637,8 @@ export const NATIONAL = {
   springInjury: {
     chance: 0.03,
     days: [14, 35] as [number, number],
-    pitcher: ['팔꿈치 염증', '어깨 뭉침', '옆구리 근육 손상'],
-    hitter: ['햄스트링 손상', '옆구리 근육 손상', '손가락 인대 손상'],
+    pitcher: [__i18n_k("league.tuning.springInjury.pitcher.46268499"), __i18n_k("league.tuning.springInjury.pitcher.f085c67c"), __i18n_k("league.tuning.springInjury.pitcher.e2737af2")],
+    hitter: [__i18n_k("league.tuning.springInjury.hitter.ce39cc2a"), __i18n_k("league.tuning.springInjury.hitter.e2737af2"), __i18n_k("league.tuning.springInjury.hitter.799175ac")],
   },
   excuse: { healthy: 0.4, fans: 0.01, grudge: 4, exemptionGrudge: 12 },
 };

@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Fact lines for articles (V0.7.1): what happened in a game, a month or a season, written as short
    public statements a language model can build a longer story from — starters' lines, the line score,
    the big bats, every scoring play in order with the outs and runners, late pitching changes, and the
@@ -11,12 +12,12 @@ import type { LeagueState } from './state';
 
 const short = (s: LeagueState, id: TeamId) => s.teams.find((t) => t.id === id)?.short ?? id;
 const ip = (outs: number) => `${Math.floor(outs / 3)}${outs % 3 ? ` ${outs % 3}/3` : ''}`;
-const DEC: Record<string, string> = { W: '승리투수', L: '패전투수', S: '세이브', H: '홀드' };
+const DEC: Record<string, string> = { W: __i18n_k("league.gamedetail.dEC.w.c3dced7f"), L: __i18n_k("league.gamedetail.dEC.l.2c36ac4f"), S: '세이브', H: __i18n_k("league.gamedetail.dEC.h.9329045a") };
 
-const OUTS = ['무사', '1사', '2사'];
+const OUTS = [__i18n_k("league.gamedetail.oUTS.94b68ac8"), __i18n_k("league.gamedetail.oUTS.fe872114"), __i18n_k("league.gamedetail.oUTS.e8ecb314")];
 const basesText = (b: [boolean, boolean, boolean]) => {
   const on = b.map((x, i) => (x ? `${i + 1}` : '')).filter(Boolean);
-  return on.length === 0 ? '주자 없음' : on.length === 3 ? '만루' : `${on.join('·')}루`;
+  return on.length === 0 ? __i18n_k("league.gamedetail.basesText.47e356eb") : on.length === 3 ? __i18n_k("league.gamedetail.basesText.5caa3550") : __i18n_k("league.gamedetail.basesText.f8ddeccd", { value: on.join('·') });
 };
 
 /** A club's record through `date` (wins, losses, ties). */
@@ -40,16 +41,16 @@ export function gameDetail(s: LeagueState, box: StoredBox, log?: PlayEvent[] | n
   const clubs = [short(s, box.away), short(s, box.home)] as const;
   const home = s.teams.find((t) => t.id === box.home);
   const out: string[] = [];
-  out.push(`${box.date} ${home?.stadium.name ?? ''}, 원정 ${clubs[0]} ${box.rhe[0][0]} : ${box.rhe[1][0]} 홈 ${clubs[1]}${box.innings > 9 ? ` (연장 ${box.innings}회)` : ''}${box.att ? `, 관중 ${box.att.toLocaleString('ko-KR')}명` : ''}`);
-  out.push(`이닝별 득점 ${clubs[0]}: ${box.line[0].join(' ')} / ${clubs[1]}: ${box.line[1].join(' ')}`);
-  out.push(`안타 ${clubs[0]} ${box.rhe[0][1]}개, ${clubs[1]} ${box.rhe[1][1]}개. 실책 ${clubs[0]} ${box.rhe[0][2]}개, ${clubs[1]} ${box.rhe[1][2]}개`);
+  out.push(__i18n_k("league.gamedetail.gameDetail.4e13dcfd", { date: box.date, value: home?.stadium.name ?? '', value2: clubs[0], value3: box.rhe[0][0], value4: box.rhe[1][0], value5: clubs[1], value6: box.innings > 9 ? __i18n_k("league.gamedetail.gameDetail.b0900d9e", { innings: box.innings }) : '', value7: box.att ? __i18n_k("league.gamedetail.gameDetail.8d16dbe5", { value: box.att.toLocaleString('ko-KR') }) : '' }));
+  out.push(__i18n_k("league.gamedetail.gameDetail.f55f5df1", { value: clubs[0], value2: box.line[0].join(' '), value3: clubs[1], value4: box.line[1].join(' ') }));
+  out.push(__i18n_k("league.gamedetail.gameDetail.fa511798", { value: clubs[0], value2: box.rhe[0][1], value3: clubs[1], value4: box.rhe[1][1], value5: clubs[0], value6: box.rhe[0][2], value7: clubs[1], value8: box.rhe[1][2] }));
   for (const i of [0, 1] as const) {
     const [sp, ...pen] = box.pit[i];
-    if (sp) out.push(`${clubs[i]} 선발 ${name(sp[0])}: ${ip(sp[1])}이닝 ${sp[2]}피안타 ${sp[3]}실점(${sp[4]}자책) 볼넷·사구 ${sp[5]}개 삼진 ${sp[6]}개 투구 수 ${sp[8]}개${sp[9] ? ` (${DEC[sp[9]]})` : ''}`);
-    for (const r of pen.filter((x) => x[9] || x[3] > 0 || x[1] >= 6)) out.push(`${clubs[i]} 구원 ${name(r[0])}: ${ip(r[1])}이닝 ${r[3]}실점 삼진 ${r[6]}개${r[9] ? ` (${DEC[r[9]]})` : ''}`);
+    if (sp) out.push(__i18n_k("league.gamedetail.gameDetail.de5344df", { value: clubs[i], name: name(sp[0]), ip: ip(sp[1]), value2: sp[2], value3: sp[3], value4: sp[4], value5: sp[5], value6: sp[6], value7: sp[8], value8: sp[9] ? ` (${DEC[sp[9]]})` : '' }));
+    for (const r of pen.filter((x) => x[9] || x[3] > 0 || x[1] >= 6)) out.push(__i18n_k("league.gamedetail.gameDetail.297d63af", { value: clubs[i], name: name(r[0]), ip: ip(r[1]), value2: r[3], value3: r[6], value4: r[9] ? ` (${DEC[r[9]]})` : '' }));
     for (const b of box.bat[i].filter((x) => x[4] >= 2 || x[6] > 0 || x[5] >= 2 || x[11] > 0)) {
-      const extra = [b[9] ? `2루타 ${b[9]}개` : '', b[10] ? `3루타 ${b[10]}개` : '', b[6] ? `홈런 ${b[6]}개` : '', b[11] ? `도루 ${b[11]}개` : ''].filter(Boolean).join(', ');
-      out.push(`${clubs[i]} ${name(b[0])}: ${b[2]}타수 ${b[4]}안타 ${b[5]}타점 ${b[3]}득점${extra ? ` (${extra})` : ''}`);
+      const extra = [b[9] ? __i18n_k("league.gamedetail.gameDetail.extra.1402b002", { value: b[9] }) : '', b[10] ? __i18n_k("league.gamedetail.gameDetail.extra.f13dab8d", { value: b[10] }) : '', b[6] ? __i18n_k("league.gamedetail.gameDetail.extra.b7f57be3", { value: b[6] }) : '', b[11] ? __i18n_k("league.gamedetail.gameDetail.extra.0f6c81e4", { value: b[11] }) : ''].filter(Boolean).join(', ');
+      out.push(__i18n_k("league.gamedetail.gameDetail.cbe430d4", { value: clubs[i], name: name(b[0]), value2: b[2], value3: b[4], value4: b[5], value5: b[3], value6: extra ? ` (${extra})` : '' }));
     }
   }
   if (log?.length) {
@@ -68,14 +69,14 @@ export function gameDetail(s: LeagueState, box: StoredBox, log?: PlayEvent[] | n
         if (e.i >= 7) out.push(`${h} ${playText(e, `${box.id}-${n}`, name)}`);
         return;
       }
-      if (e.runs > 0) out.push(`${h} ${OUTS[outs] ?? '2사'} ${basesText(bases)}, ${playText(e, `${box.id}-${n}`, name)} → ${clubs[0]} ${e.score[0]} : ${e.score[1]} ${clubs[1]}`);
+      if (e.runs > 0) out.push(__i18n_k("league.gamedetail.gameDetail.478e76e4", { h: h, value: OUTS[outs] ?? __i18n_k("league.gamedetail.gameDetail.e8ecb314"), basesText: basesText(bases), playText: playText(e, `${box.id}-${n}`, name), value2: clubs[0], value3: e.score[0], value4: e.score[1], value5: clubs[1] }));
       outs = e.outs;
       bases = e.bases;
     });
   }
   for (const i of [0, 1] as const) {
     const r = recordThrough(s, i ? box.home : box.away, box.date);
-    out.push(`${clubs[i]} 시즌 성적 ${r.w}승 ${r.l}패 ${r.t}무 (이 경기 포함)`);
+    out.push(__i18n_k("league.gamedetail.gameDetail.19c370ba", { value: clubs[i], w: r.w, l: r.l, value2: r.t }));
   }
   return out;
 }
@@ -89,7 +90,7 @@ export function monthDetail(s: LeagueState, teamId: TeamId, year: number, month:
     const home = g.home === teamId;
     const mine = home ? g.hs : g.as,
       theirs = home ? g.as : g.hs;
-    out.push(`${g.date.slice(5)} ${home ? '홈' : '원정'} ${short(s, home ? g.away : g.home)}전 ${mine}-${theirs} ${mine > theirs ? '승' : mine < theirs ? '패' : '무'}`);
+    out.push(__i18n_k("league.gamedetail.monthDetail.98aa655c", { value: g.date.slice(5), value2: home ? __i18n_k("league.gamedetail.monthDetail.13a46f96") : __i18n_k("league.gamedetail.monthDetail.ef6b033f"), short: short(s, home ? g.away : g.home), mine: mine, theirs: theirs, value3: mine > theirs ? '승' : mine < theirs ? '패' : __i18n_k("league.gamedetail.monthDetail.56c5af5b") }));
   }
   // The month's best from the kept box scores.
   const bat = new Map<string, { ab: number; h: number; hr: number; rbi: number }>();
@@ -118,13 +119,13 @@ export function monthDetail(s: LeagueState, teamId: TeamId, year: number, month:
   }
   const name = (id: string) => s.players[id]?.name ?? '?';
   const hitters = [...bat.entries()].filter(([, x]) => x.ab >= 30).sort((a, b) => b[1].h / b[1].ab - a[1].h / a[1].ab).slice(0, 3);
-  for (const [id, x] of hitters) out.push(`${me} ${month}월 타자 ${name(id)}: ${x.ab}타수 ${x.h}안타 (타율 ${(x.h / x.ab).toFixed(3).replace(/^0/, '')}) 홈런 ${x.hr}개 ${x.rbi}타점`);
+  for (const [id, x] of hitters) out.push(__i18n_k("league.gamedetail.monthDetail.86a1b206", { me: me, month: month, name: name(id), ab: x.ab, h: x.h, value: (x.h / x.ab).toFixed(3).replace(/^0/, ''), hr: x.hr, rbi: x.rbi }));
   const arms = [...pit.entries()].filter(([, x]) => x.outs >= 30).sort((a, b) => a[1].er / a[1].outs - b[1].er / b[1].outs).slice(0, 2);
-  for (const [id, x] of arms) out.push(`${me} ${month}월 투수 ${name(id)}: ${ip(x.outs)}이닝 평균자책점 ${((27 * x.er) / x.outs).toFixed(2)} 삼진 ${x.k}개 ${x.w}승${x.sv ? ` ${x.sv}세이브` : ''}`);
+  for (const [id, x] of arms) out.push(__i18n_k("league.gamedetail.monthDetail.72928296", { me: me, month: month, name: name(id), ip: ip(x.outs), value: ((27 * x.er) / x.outs).toFixed(2), value2: x.k, w: x.w, value3: x.sv ? __i18n_k("league.gamedetail.monthDetail.addf22ee", { sv: x.sv }) : '' }));
   const last = games.at(-1);
   if (last) {
     const r = recordThrough(s, teamId, last.date);
-    out.push(`${me} ${month}월 말 시즌 성적 ${r.w}승 ${r.l}패 ${r.t}무`);
+    out.push(__i18n_k("league.gamedetail.monthDetail.da519988", { me: me, month: month, w: r.w, l: r.l, value: r.t }));
   }
   return out;
 }
@@ -136,36 +137,36 @@ export function seasonDetail(s: LeagueState, teamId: TeamId, year: number): stri
   const out: string[] = [];
   if (!h) return out;
   const row = h.table.find((r) => r.teamId === teamId);
-  if (row) out.push(`${me} ${year} 정규시즌 ${row.rank}위, ${row.w}승 ${row.l}패 ${row.t}무 (승률 ${row.pct.toFixed(3).replace(/^0/, '')}), 득점 ${row.rs} 실점 ${row.ra}`);
+  if (row) out.push(__i18n_k("league.gamedetail.seasonDetail.d794e72e", { me: me, year: year, rank: row.rank, w: row.w, l: row.l, value: row.t, value2: row.pct.toFixed(3).replace(/^0/, ''), rs: row.rs, ra: row.ra }));
   const top = h.table[0];
-  if (top && top.teamId !== teamId) out.push(`정규시즌 1위 ${short(s, top.teamId)} (${top.w}승 ${top.l}패)`);
+  if (top && top.teamId !== teamId) out.push(__i18n_k("league.gamedetail.seasonDetail.a462a9ca", { short: short(s, top.teamId), w: top.w, l: top.l }));
   for (const x of h.series.filter((x) => x.high === teamId || x.low === teamId)) {
-    const round = { wildcard: '와일드카드', semipo: '준플레이오프', po: '플레이오프', ks: '한국시리즈' }[x.round];
+    const round = { wildcard: __i18n_k("league.gamedetail.round.wildcard.cbea62e5"), semipo: __i18n_k("league.gamedetail.round.semipo.42e1bde5"), po: __i18n_k("league.gamedetail.round.po.4651993c"), ks: __i18n_k("league.gamedetail.round.ks.3c8e7785") }[x.round];
     const opp = x.high === teamId ? x.low : x.high;
     const [mine, theirs] = x.high === teamId ? [x.highWins, x.lowWins] : [x.lowWins, x.highWins];
-    out.push(`${round} ${short(s, opp)} 상대 ${mine}승 ${theirs}패, ${x.winner === teamId ? '통과' : '탈락'}`);
+    out.push(__i18n_k("league.gamedetail.seasonDetail.f0727363", { round: round, short: short(s, opp), mine: mine, theirs: theirs, value: x.winner === teamId ? __i18n_k("league.gamedetail.seasonDetail.66409b62") : __i18n_k("league.gamedetail.seasonDetail.bbd3d203") }));
   }
-  if (h.champion) out.push(`${year} 한국시리즈 우승 ${short(s, h.champion)}`);
+  if (h.champion) out.push(__i18n_k("league.gamedetail.seasonDetail.4a910612", { year: year, short: short(s, h.champion) }));
   const recs = Object.values(s.players)
     .map((p) => ({ p, c: p.career.find((c) => c.year === year && !c.level && c.teamId === teamId) }))
     .filter((x): x is { p: (typeof x)['p']; c: NonNullable<(typeof x)['c']> } => !!x.c);
   for (const { p, c } of recs.filter((x) => x.c.bat && x.c.bat.pa >= 300).sort((a, b) => b.c.war - a.c.war).slice(0, 3)) {
     const b = c.bat!;
-    out.push(`${me} 타자 ${p.name}: 타율 ${(b.ab ? b.h / b.ab : 0).toFixed(3).replace(/^0/, '')} 홈런 ${b.hr}개 ${b.rbi}타점 도루 ${b.sb}개 WAR ${c.war.toFixed(1)}`);
+    out.push(__i18n_k("league.gamedetail.seasonDetail.a6b15ef0", { me: me, name: p.name, value: (b.ab ? b.h / b.ab : 0).toFixed(3).replace(/^0/, ''), hr: b.hr, rbi: b.rbi, sb: b.sb, value2: c.war.toFixed(1) }));
   }
   for (const { p, c } of recs.filter((x) => x.c.pit && x.c.pit.outs >= 150).sort((a, b) => b.c.war - a.c.war).slice(0, 3)) {
     const q = c.pit!;
-    out.push(`${me} 투수 ${p.name}: ${q.w}승 ${q.l}패 ${q.sv}세이브 ${q.hld}홀드 ${ip(q.outs)}이닝 평균자책점 ${((27 * q.er) / Math.max(1, q.outs)).toFixed(2)} 삼진 ${q.k}개 WAR ${c.war.toFixed(1)}`);
+    out.push(__i18n_k("league.gamedetail.seasonDetail.8d17b56d", { me: me, name: p.name, w: q.w, l: q.l, sv: q.sv, hld: q.hld, ip: ip(q.outs), value: ((27 * q.er) / Math.max(1, q.outs)).toFixed(2), value2: q.k, value3: c.war.toFixed(1) }));
   }
   const a = h.awards;
   if (a) {
     const ours = (id: string | null) => !!id && recs.some((x) => x.p.id === id);
     if (ours(a.mvp)) out.push(`MVP ${s.players[a.mvp!]!.name}`);
-    if (ours(a.rookie)) out.push(`신인왕 ${s.players[a.rookie!]!.name}`);
-    for (const g of a.goldenGloves.filter((g) => ours(g.id))) out.push(`골든글러브 ${g.pos} ${s.players[g.id]!.name}`);
-    for (const t of a.titles.filter((t) => ours(t.id))) out.push(`${t.label} 1위 ${s.players[t.id]!.name} (${t.value})`);
+    if (ours(a.rookie)) out.push(__i18n_k("league.gamedetail.seasonDetail.0e7cc42d", { name: s.players[a.rookie!]!.name }));
+    for (const g of a.goldenGloves.filter((g) => ours(g.id))) out.push(__i18n_k("league.gamedetail.seasonDetail.933ff1b2", { pos: g.pos, name: s.players[g.id]!.name }));
+    for (const t of a.titles.filter((t) => ours(t.id))) out.push(__i18n_k("league.gamedetail.seasonDetail.44754ad4", { label: t.label, name: s.players[t.id]!.name, value: t.value }));
   }
   const report = s.clubs?.[teamId]?.reports.find((r) => r.year === year);
-  if (report?.homeGames) out.push(`홈 관중 ${report.fans.toLocaleString('ko-KR')}명, 경기당 ${Math.round(report.fans / report.homeGames).toLocaleString('ko-KR')}명, 매진 ${report.sellouts ?? 0}번`);
+  if (report?.homeGames) out.push(__i18n_k("league.gamedetail.seasonDetail.cca20f95", { value: report.fans.toLocaleString('ko-KR'), value2: Math.round(report.fans / report.homeGames).toLocaleString('ko-KR'), value3: report.sellouts ?? 0 }));
   return out;
 }

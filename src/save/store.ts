@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Where saves live: IndexedDB in the browser (localStorage's ~5MB is too small for decades of league
    history), memory as a fallback and for tests. Stores the serialized save (gzip-packed in IndexedDB since V0.14) and validates on read. */
 import { gunzipText, packText } from './compress';
@@ -138,7 +139,7 @@ export interface Backup {
   problem: string | null;
 }
 
-const PHASE_LABEL: Record<string, string> = { regularSeason: '정규시즌', postseason: '포스트시즌', offseason: '오프시즌' };
+const PHASE_LABEL: Record<string, string> = { regularSeason: __i18n_k("save.store.pHASE_LABEL.regularSeason.b4070ed2"), postseason: __i18n_k("save.store.pHASE_LABEL.postseason.a0f7a345"), offseason: __i18n_k("save.store.pHASE_LABEL.offseason.1d568cfb") };
 
 /** The backups there are, newest first, each opened and checked. */
 export async function backupsOf(st: SaveStore): Promise<Backup[]> {

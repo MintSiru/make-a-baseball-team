@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Injuries (V0.7.7): what goes wrong, for how long, and what it leaves behind.
 
    Two kinds. A knock (타박상, 뭉침, 몸살) keeps a player out of the lineup for a few days while he stays
@@ -31,20 +32,20 @@ export interface InjuryType {
 
 /** Injuries that take a pitcher off the first team (a week or longer). */
 const PITCHER: InjuryType[] = [
-  { part: '팔꿈치 염증', weight: 12, days: [10, 28] },
-  { part: '어깨 염증', weight: 10, days: [14, 35] },
-  { part: '옆구리 근육 손상', weight: 8, days: [21, 42] },
-  { part: '허리 통증', weight: 7, days: [7, 21] },
-  { part: '손가락 물집·손톱 손상', weight: 4, days: [7, 14] },
-  { part: '햄스트링 손상', weight: 4, days: [14, 28] },
-  { part: '광배근 손상', weight: 3, days: [28, 56] },
-  { part: '팔꿈치 인대 손상 (재활)', weight: 4, days: [42, 90] },
-  { part: '회전근개 손상 (재활)', weight: 3, days: [42, 90] },
-  { part: '타구에 맞은 타박상', weight: 3, days: [7, 14] },
-  { part: '타구에 맞아 골절', weight: 1, days: [42, 70] },
-  { part: '팔꿈치 뼛조각 제거 수술', weight: 2.5, days: [60, 100], surgery: 'minor' },
+  { part: __i18n_k("league.injuries.pITCHER.part.46268499"), weight: 12, days: [10, 28] },
+  { part: __i18n_k("league.injuries.pITCHER.part.14559fd0"), weight: 10, days: [14, 35] },
+  { part: __i18n_k("league.injuries.pITCHER.part.e2737af2"), weight: 8, days: [21, 42] },
+  { part: __i18n_k("league.injuries.pITCHER.part.228bf02d"), weight: 7, days: [7, 21] },
+  { part: __i18n_k("league.injuries.pITCHER.part.40a92d0b"), weight: 4, days: [7, 14] },
+  { part: __i18n_k("league.injuries.pITCHER.part.ce39cc2a"), weight: 4, days: [14, 28] },
+  { part: __i18n_k("league.injuries.pITCHER.part.1998b3e8"), weight: 3, days: [28, 56] },
+  { part: __i18n_k("league.injuries.pITCHER.part.91de82cb"), weight: 4, days: [42, 90] },
+  { part: __i18n_k("league.injuries.pITCHER.part.9d8788c2"), weight: 3, days: [42, 90] },
+  { part: __i18n_k("league.injuries.pITCHER.part.882a4d74"), weight: 3, days: [7, 14] },
+  { part: __i18n_k("league.injuries.pITCHER.part.57b10a76"), weight: 1, days: [42, 70] },
+  { part: __i18n_k("league.injuries.pITCHER.part.2bb9bb0f"), weight: 2.5, days: [60, 100], surgery: 'minor' },
   {
-    part: '팔꿈치 인대 재건술 (토미존)',
+    part: __i18n_k("league.injuries.pITCHER.part.4f896082"),
     weight: 2.5,
     days: [365, 480],
     surgery: 'major',
@@ -54,7 +55,7 @@ const PITCHER: InjuryType[] = [
     ],
   },
   {
-    part: '어깨 관절와순 수술',
+    part: __i18n_k("league.injuries.pITCHER.part.a6b34efe"),
     weight: 0.8,
     days: [330, 450],
     surgery: 'major',
@@ -64,30 +65,30 @@ const PITCHER: InjuryType[] = [
       ['stamina', -4, 0],
     ],
   },
-  { part: '흉곽출구증후군 수술', weight: 0.3, days: [120, 180], surgery: 'minor' },
+  { part: __i18n_k("league.injuries.pITCHER.part.61965cbe"), weight: 0.3, days: [120, 180], surgery: 'minor' },
 ];
 
 /** Injuries that take a position player off the first team. */
 const HITTER: InjuryType[] = [
-  { part: '옆구리 근육 손상', weight: 12, days: [21, 42] },
-  { part: '허리 통증', weight: 12, days: [7, 21] },
-  { part: '햄스트링 손상', weight: 12, days: [14, 35] },
-  { part: '등 근육 손상', weight: 4, days: [14, 28] },
-  { part: '고관절·사타구니 통증', weight: 5, days: [10, 28] },
-  { part: '허벅지 근육 손상', weight: 4, days: [14, 28] },
-  { part: '종아리 근육 손상', weight: 5, days: [14, 28] },
-  { part: '손목 염좌', weight: 6, days: [10, 28] },
-  { part: '손가락 인대 손상', weight: 4, days: [14, 35] },
-  { part: '사구에 맞아 손 골절', weight: 6, days: [35, 60] },
-  { part: '발목 염좌', weight: 6, days: [10, 28] },
-  { part: '파울 타구에 맞아 발 골절', weight: 4, days: [35, 70] },
-  { part: '무릎 염좌', weight: 5, days: [7, 21] },
-  { part: '어깨 염증', weight: 3, days: [14, 28] },
-  { part: '뇌진탕', weight: 2, days: [7, 14] },
-  { part: '유구골 골절 수술', weight: 2, days: [35, 56], surgery: 'minor' },
-  { part: '반월상 연골 수술', weight: 1.5, days: [60, 100], surgery: 'minor' },
+  { part: __i18n_k("league.injuries.hITTER.part.e2737af2"), weight: 12, days: [21, 42] },
+  { part: __i18n_k("league.injuries.hITTER.part.228bf02d"), weight: 12, days: [7, 21] },
+  { part: __i18n_k("league.injuries.hITTER.part.ce39cc2a"), weight: 12, days: [14, 35] },
+  { part: __i18n_k("league.injuries.hITTER.part.b00eb0fd"), weight: 4, days: [14, 28] },
+  { part: __i18n_k("league.injuries.hITTER.part.898d1897"), weight: 5, days: [10, 28] },
+  { part: __i18n_k("league.injuries.hITTER.part.ed73dfc1"), weight: 4, days: [14, 28] },
+  { part: __i18n_k("league.injuries.hITTER.part.1c9b60e1"), weight: 5, days: [14, 28] },
+  { part: __i18n_k("league.injuries.hITTER.part.1356c6c5"), weight: 6, days: [10, 28] },
+  { part: __i18n_k("league.injuries.hITTER.part.799175ac"), weight: 4, days: [14, 35] },
+  { part: __i18n_k("league.injuries.hITTER.part.37984ac2"), weight: 6, days: [35, 60] },
+  { part: __i18n_k("league.injuries.hITTER.part.a210761e"), weight: 6, days: [10, 28] },
+  { part: __i18n_k("league.injuries.hITTER.part.c1604205"), weight: 4, days: [35, 70] },
+  { part: __i18n_k("league.injuries.hITTER.part.5593309a"), weight: 5, days: [7, 21] },
+  { part: __i18n_k("league.injuries.hITTER.part.14559fd0"), weight: 3, days: [14, 28] },
+  { part: __i18n_k("league.injuries.hITTER.part.0a9fbc13"), weight: 2, days: [7, 14] },
+  { part: __i18n_k("league.injuries.hITTER.part.48f655da"), weight: 2, days: [35, 56], surgery: 'minor' },
+  { part: __i18n_k("league.injuries.hITTER.part.a7a7ad43"), weight: 1.5, days: [60, 100], surgery: 'minor' },
   {
-    part: '전방십자인대 재건술',
+    part: __i18n_k("league.injuries.hITTER.part.3cdd9942"),
     weight: 0.8,
     days: [240, 330],
     surgery: 'major',
@@ -97,7 +98,7 @@ const HITTER: InjuryType[] = [
     ],
   },
   {
-    part: '어깨 탈구 수술',
+    part: __i18n_k("league.injuries.hITTER.part.6f19c629"),
     weight: 0.8,
     days: [150, 210],
     surgery: 'major',
@@ -107,7 +108,7 @@ const HITTER: InjuryType[] = [
     ],
   },
   {
-    part: '아킬레스건 봉합술',
+    part: __i18n_k("league.injuries.hITTER.part.26b50d6e"),
     weight: 0.4,
     days: [180, 270],
     surgery: 'major',
@@ -117,7 +118,7 @@ const HITTER: InjuryType[] = [
     ],
   },
   {
-    part: '허리 디스크 수술',
+    part: __i18n_k("league.injuries.hITTER.part.5a945952"),
     weight: 0.6,
     days: [90, 150],
     surgery: 'major',
@@ -127,8 +128,8 @@ const HITTER: InjuryType[] = [
 
 /** Knocks: out of the lineup for a few days, still registered. */
 const KNOCKS = {
-  pitcher: ['손가락 물집', '어깨 뭉침', '팔꿈치 뻐근함', '허리 뻐근함', '몸살'],
-  hitter: ['사구 타박상', '파울 타구 타박상', '손가락 통증', '허리 뻐근함', '가벼운 발목 염좌', '햄스트링 뭉침', '몸살', '장염', '담 증세'],
+  pitcher: [__i18n_k("league.injuries.kNOCKS.pitcher.e95306e8"), __i18n_k("league.injuries.kNOCKS.pitcher.f085c67c"), __i18n_k("league.injuries.kNOCKS.pitcher.13fa3e99"), __i18n_k("league.injuries.kNOCKS.pitcher.b4caf185"), __i18n_k("league.injuries.kNOCKS.pitcher.61c31c42")],
+  hitter: [__i18n_k("league.injuries.kNOCKS.hitter.c70d523c"), __i18n_k("league.injuries.kNOCKS.hitter.7b713d10"), __i18n_k("league.injuries.kNOCKS.hitter.5e03c265"), __i18n_k("league.injuries.kNOCKS.hitter.b4caf185"), __i18n_k("league.injuries.kNOCKS.hitter.769e348f"), __i18n_k("league.injuries.kNOCKS.hitter.d78a8c1d"), __i18n_k("league.injuries.kNOCKS.hitter.61c31c42"), __i18n_k("league.injuries.kNOCKS.hitter.c411e47d"), __i18n_k("league.injuries.kNOCKS.hitter.d942d31b")],
 };
 
 export const INJURY_TYPES = { pitcher: PITCHER, hitter: HITTER };
@@ -240,34 +241,34 @@ function careerThreat(s: LeagueState, p: Player, t: InjuryType, date: string, r:
     id: `career-over-${p.id}-${date}`,
     date,
     kind: 'injury',
-    title: `${team?.short ?? ''} ${p.name}, ${ro(t.part)} 선수 생명 위기… 시즌 뒤 은퇴`,
-    body: `${age}세의 ${iga(p.name)} ${t.part} 진단을 받았다. 의료진은 다시 예전 기량을 되찾기 어렵다고 봤고, 선수 본인도 시즌이 끝나면 유니폼을 벗겠다는 뜻을 밝혔다.`,
+    title: __i18n_k("league.injuries.careerThreat.title.9b30e9bc", { value: team?.short ?? '', name: p.name, part: ro(t.part) }),
+    body: __i18n_k("league.injuries.careerThreat.body.7ec81958", { age: age, name: iga(p.name), part: t.part }),
     quotes: [],
     facts: { 선수: p.name, 부상: t.part, 나이: age },
     players: [p.id],
     mine: ours,
   });
-  if (ours) addAlert(s, { id: `career-over-${p.id}-${date}`, date, kind: 'retire', title: `${p.name} 은퇴 예정 (${t.part})`, lines: ['선수 생활을 이어 가기 어려운 부상입니다. 이번 시즌이 끝나면 은퇴합니다(설득할 수 없음).'], tone: 'bad', players: [p.id] });
+  if (ours) addAlert(s, { id: `career-over-${p.id}-${date}`, date, kind: 'retire', title: __i18n_k("league.injuries.careerThreat.title.2b49c586", { name: p.name, part: t.part }), lines: [__i18n_k("league.injuries.careerThreat.lines.0b341f4d")], tone: 'bad', players: [p.id] });
 }
 
-const ROLE: Record<string, string> = { SP: '선발투수', RP: '불펜투수', C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' };
-const weeks = (days: number) => (days >= 60 ? `${Math.round(days / 30)}개월` : `${Math.max(3, Math.round(days / 7))}주`);
+const ROLE: Record<string, string> = { SP: __i18n_k("league.injuries.rOLE.sP.cd036b1a"), RP: __i18n_k("league.injuries.rOLE.rP.ac3cc00a"), C: __i18n_k("league.injuries.rOLE.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("league.injuries.rOLE.sS.3e24c7f1"), LF: __i18n_k("league.injuries.rOLE.lF.73836db2"), CF: __i18n_k("league.injuries.rOLE.cF.56780b2a"), RF: __i18n_k("league.injuries.rOLE.rF.a28a0ef8") };
+const weeks = (days: number) => (days >= 60 ? __i18n_k("league.injuries.weeks.5d62daea", { value: Math.round(days / 30) }) : __i18n_k("league.injuries.weeks.0fe6e2b8", { value: Math.max(3, Math.round(days / 7)) }));
 
 /** Our player is out three weeks or longer: an article, and a pop-up for an operation that costs a season. */
 function injuryNews(s: LeagueState, p: Player, t: InjuryType, days: number, date: string, level: 'first' | 'futures') {
   const team = s.teams.find((x) => x.id === p.teamId)!;
   const who = `${ROLE[isPitcher(p) ? p.role : (p.position ?? '')] ?? ''} ${p.name}`.trim();
   const back = addDays(date, days);
-  const when = back.slice(0, 4) === date.slice(0, 4) ? `${Number(back.slice(5, 7))}월` : `${back.slice(0, 4)}년 ${Number(back.slice(5, 7))}월`;
-  const surgery = t.surgery === 'major' ? ' 수술대에 오른다' : t.surgery ? ' 수술을 받는다' : '';
+  const when = back.slice(0, 4) === date.slice(0, 4) ? __i18n_k("league.injuries.injuryNews.when.9e0b4844", { number: Number(back.slice(5, 7)) }) : __i18n_k("league.injuries.injuryNews.when.e32a273e", { value: back.slice(0, 4), number: Number(back.slice(5, 7)) });
+  const surgery = t.surgery === 'major' ? __i18n_k("league.injuries.injuryNews.surgery.4bbc928f") : t.surgery ? __i18n_k("league.injuries.injuryNews.surgery.78c1501e") : '';
   addNews(s, {
     id: `injury-${p.id}-${date}`,
     date,
     kind: 'injury',
-    title: `${team.short} ${p.name}, ${surgery ? `${t.part}…${surgery.trim()}` : `${ro(t.part)} 이탈`}`,
-    body: `${team.name} ${iga(who)} ${level === 'futures' ? '퓨처스 경기에서 ' : ''}${t.part} 진단을 받았다. 복귀까지 ${weeks(days)}가량 걸릴 전망으로, ${when}쯤 돌아올 것으로 보인다.${t.surgery === 'major' ? ' 긴 재활이 필요한 큰 수술이다.' : ''}`,
+    title: __i18n_k("league.injuries.injuryNews.title.c991627b", { short: team.short, name: p.name, value: surgery ? `${t.part}…${surgery.trim()}` : __i18n_k("league.injuries.injuryNews.title.3e93d178", { part: ro(t.part) }) }),
+    body: __i18n_k("league.injuries.injuryNews.body.35f45b23", { name: team.name, who: iga(who), value: level === 'futures' ? __i18n_k("league.injuries.injuryNews.body.2a84aeb4") : '', part: t.part, weeks: weeks(days), when: when, value2: t.surgery === 'major' ? __i18n_k("league.injuries.injuryNews.body.131a4941") : '' }),
     quotes: [],
-    facts: { 선수: p.name, 구단: team.name, 부상: t.part, '예상 기간': `${days}일`, '복귀 예정': back, ...(t.surgery ? { 수술: t.surgery === 'major' ? '큰 수술' : '수술' } : {}) },
+    facts: { 선수: p.name, 구단: team.name, 부상: t.part, '예상 기간': __i18n_k("league.injuries.injuryNews.facts.e1aa3431", { days: days }), '복귀 예정': back, ...(t.surgery ? { 수술: t.surgery === 'major' ? __i18n_k("league.injuries.facts.message.471cda0c") : __i18n_k("league.injuries.facts.message.98a2b68d") } : {}) },
     players: [p.id],
     mine: true,
   });
@@ -277,7 +278,7 @@ function injuryNews(s: LeagueState, p: Player, t: InjuryType, days: number, date
       date,
       kind: 'injury',
       title: `${p.name} ${t.part}`,
-      lines: [`${who} · 복귀까지 약 ${weeks(days)} (${back} 예정)`, ...(p.service.military === 'pending' ? ['군 미필: 다음 병역판정에서 4급(사회복무요원) 이하가 나올 수 있습니다.'] : [])],
+      lines: [__i18n_k("league.injuries.injuryNews.lines.35d87295", { who: who, weeks: weeks(days), back: back }), ...(p.service.military === 'pending' ? [__i18n_k("league.injuries.injuryNews.lines.56d0d4ab")] : [])],
       tone: 'bad',
       players: [p.id],
     });

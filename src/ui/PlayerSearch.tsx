@@ -1,3 +1,4 @@
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* Player search (0.10.1): every player in the league in one list, filtered by position (main or one he can
    handle), club, age and grades, with this season's (or last season's) numbers. A player of another club goes
    straight into a trade proposal; an unattached one can be signed. */
@@ -16,20 +17,20 @@ import { positionKey, useSort } from './sort';
 
 export type PosFilter = 'all' | 'SP' | 'RP' | 'P' | 'C' | '1B' | '2B' | '3B' | 'SS' | 'LF' | 'CF' | 'RF' | 'IF' | 'OF';
 const POS_FILTERS: [PosFilter, string][] = [
-  ['all', '전체'],
-  ['P', '투수 전체'],
-  ['SP', '선발투수'],
-  ['RP', '불펜투수'],
-  ['C', '포수'],
+  ['all', __i18n_k("ui.playerSearch.pOS_FILTERS.934dd25e")],
+  ['P', __i18n_k("ui.playerSearch.pOS_FILTERS.6491cbc9")],
+  ['SP', __i18n_k("ui.playerSearch.pOS_FILTERS.cd036b1a")],
+  ['RP', __i18n_k("ui.playerSearch.pOS_FILTERS.ac3cc00a")],
+  ['C', __i18n_k("ui.playerSearch.pOS_FILTERS.5f31470d")],
   ['1B', '1루수'],
   ['2B', '2루수'],
   ['3B', '3루수'],
-  ['SS', '유격수'],
-  ['LF', '좌익수'],
-  ['CF', '중견수'],
-  ['RF', '우익수'],
-  ['IF', '내야수'],
-  ['OF', '외야수'],
+  ['SS', __i18n_k("ui.playerSearch.pOS_FILTERS.3e24c7f1")],
+  ['LF', __i18n_k("ui.playerSearch.pOS_FILTERS.73836db2")],
+  ['CF', __i18n_k("ui.playerSearch.pOS_FILTERS.56780b2a")],
+  ['RF', __i18n_k("ui.playerSearch.pOS_FILTERS.a28a0ef8")],
+  ['IF', __i18n_k("ui.playerSearch.pOS_FILTERS.d7fc242c")],
+  ['OF', __i18n_k("ui.playerSearch.pOS_FILTERS.7435120b")],
 ];
 const INFIELD = ['1B', '2B', '3B', 'SS'];
 const OUTFIELD = ['LF', 'CF', 'RF'];
@@ -117,13 +118,13 @@ export function PlayerSearch({
   const shown = sorted.slice(0, LIMIT);
   const number = (value: number, set: (n: number) => void, options: number[], label: string, none: string) => (
     <label>
-      {label}
-      <select value={value} aria-label={label} onChange={(e) => set(Number((e.currentTarget as HTMLSelectElement).value))}>
-        {options.map((n) => (
+      {__i18n_display(label)}
+      <select value={value} aria-label={__i18n_displayText(label)} onChange={(e) => set(Number((e.currentTarget as HTMLSelectElement).value))}>
+        {__i18n_display(options.map((n) => (
           <option key={n} value={n}>
-            {n === 0 || n === 99 ? none : n}
+            {__i18n_display(n === 0 || n === 99 ? none : n)}
           </option>
-        ))}
+        )))}
       </select>
     </label>
   );
@@ -133,33 +134,33 @@ export function PlayerSearch({
       <div class="search-filters">
         <label>
           이름
-          <input value={name} aria-label="이름" placeholder="이름 일부" onInput={(e) => setName((e.currentTarget as HTMLInputElement).value)} />
+          <input value={name} aria-label={__i18n_t("ui.playerSearch.playerSearch.9aa18e50")} placeholder={__i18n_t("ui.playerSearch.playerSearch.5ef18109")} onInput={(e) => setName((e.currentTarget as HTMLInputElement).value)} />
         </label>
         <label>
           포지션
-          <select value={pos} aria-label="포지션" onChange={(e) => setPos((e.currentTarget as HTMLSelectElement).value as PosFilter)}>
-            {POS_FILTERS.map(([k, label]) => (
+          <select value={pos} aria-label={__i18n_t("ui.playerSearch.playerSearch.81922a91")} onChange={(e) => setPos((e.currentTarget as HTMLSelectElement).value as PosFilter)}>
+            {__i18n_display(POS_FILTERS.map(([k, label]) => (
               <option key={k} value={k}>
-                {label}
+                {__i18n_display(label)}
               </option>
-            ))}
+            )))}
           </select>
         </label>
         <label>
           구단
-          <select value={club} aria-label="구단" onChange={(e) => setClub((e.currentTarget as HTMLSelectElement).value)}>
-            <option value="others">다른 구단 전체</option>
-            {clubs.map((t) => (
+          <select value={club} aria-label={__i18n_t("ui.playerSearch.playerSearch.58756112")} onChange={(e) => setClub((e.currentTarget as HTMLSelectElement).value)}>
+            <option value="others">{__i18n_t("ui.playerSearch.playerSearch.7d90768e")}</option>
+            {__i18n_display(clubs.map((t) => (
               <option key={t.id} value={t.id}>
-                {t.id === u.teamId ? `${t.short} (우리)` : t.short}
+                {__i18n_display(t.id === u.teamId ? __i18n_k("ui.playerSearch.playerSearch.24b5856a", { short: t.short }) : t.short)}
               </option>
-            ))}
-            <option value="pool">자유계약 선수</option>
+            )))}
+            <option value="pool">{__i18n_t("ui.playerSearch.playerSearch.450c3bcf")}</option>
           </select>
         </label>
-        {number(maxAge, setMaxAge, [99, 23, 25, 27, 30, 33, 35], '나이 (이하)', '제한 없음')}
-        {number(minNow, setMinNow, [0, 40, 45, 50, 55, 60, 65], '현재 (이상)', '제한 없음')}
-        {number(minFuture, setMinFuture, [0, 45, 50, 55, 60, 65, 70], '미래 (이상)', '제한 없음')}
+        {__i18n_display(number(maxAge, setMaxAge, [99, 23, 25, 27, 30, 33, 35], __i18n_k("ui.playerSearch.playerSearch.f1bdb117"), __i18n_k("ui.playerSearch.playerSearch.4efeea41")))}
+        {__i18n_display(number(minNow, setMinNow, [0, 40, 45, 50, 55, 60, 65], __i18n_k("ui.playerSearch.playerSearch.bf60247a"), __i18n_k("ui.playerSearch.playerSearch.4efeea41")))}
+        {__i18n_display(number(minFuture, setMinFuture, [0, 45, 50, 55, 60, 65, 70], __i18n_k("ui.playerSearch.playerSearch.2cd3d327"), __i18n_k("ui.playerSearch.playerSearch.4efeea41")))}
         <label class="check">
           <input type="checkbox" checked={also} onChange={(e) => setAlso((e.currentTarget as HTMLInputElement).checked)} /> 그 포지션도 볼 수 있는 선수 포함
         </label>
@@ -167,31 +168,28 @@ export function PlayerSearch({
           <input type="checkbox" checked={tradable} onChange={(e) => setTradable((e.currentTarget as HTMLInputElement).checked)} /> 트레이드할 수 있는 선수만
         </label>
       </div>
-      <p class="muted small">
-        {rows.length}명{rows.length > LIMIT ? ` (위에서 ${LIMIT}명만 표시 — 조건을 좁혀 보세요)` : ''}. 이름을 누르면 선수 정보, 오른쪽 버튼으로 바로 트레이드 제안이나 계약을 합니다. 성적은 올 시즌(뛰었다면) 또는 지난
-        1군 시즌, WAR는 지난 시즌입니다.
-      </p>
-      {shown.length ? (
+      <p class="muted small">{__i18n_t("ui.playerSearch.playerSearch.ea96807c", { length: rows.length, value: rows.length > LIMIT ? __i18n_k("ui.playerSearch.playerSearch.d2f41e03", { lIMIT: LIMIT }) : '' })}</p>
+      {__i18n_display(shown.length ? (
         <div class="table-wrap" tabIndex={0}>
           <table class="record-table search-table">
             <thead>
               <tr>
-                <th aria-label="관리" />
-                {th('name', '이름')}
-                {th('club', '구단')}
-                {th('pos', '포지션')}
-                {th('age', '나이', true)}
-                {th('current', '현재', true)}
-                {th('future', '미래', true)}
-                <th>성적</th>
-                {th('war', 'WAR', true)}
-                {th('pay', '연봉', true)}
-                <th class="num">계약</th>
-                {th('value', '가치', true)}
+                <th aria-label={__i18n_t("ui.playerSearch.playerSearch.c29fba5a")} />
+                {__i18n_display(th('name', __i18n_k("ui.playerSearch.playerSearch.9aa18e50")))}
+                {__i18n_display(th('club', __i18n_k("ui.playerSearch.playerSearch.58756112")))}
+                {__i18n_display(th('pos', __i18n_k("ui.playerSearch.playerSearch.81922a91")))}
+                {__i18n_display(th('age', __i18n_k("ui.playerSearch.playerSearch.6c620e5c"), true))}
+                {__i18n_display(th('current', __i18n_k("ui.playerSearch.playerSearch.001e4be2"), true))}
+                {__i18n_display(th('future', __i18n_k("ui.playerSearch.playerSearch.6e0caec5"), true))}
+                <th>{__i18n_t("ui.playerSearch.playerSearch.d3bb3576")}</th>
+                {__i18n_display(th('war', 'WAR', true))}
+                {__i18n_display(th('pay', __i18n_k("ui.playerSearch.playerSearch.cbf383ec"), true))}
+                <th class="num">{__i18n_t("ui.playerSearch.playerSearch.b4116369")}</th>
+                {__i18n_display(th('value', __i18n_k("ui.playerSearch.playerSearch.1970ef0e"), true))}
               </tr>
             </thead>
             <tbody>
-              {shown.map((p) => {
+              {__i18n_display(shown.map((p) => {
                 const line = statLine(league, p);
                 const extra = !isPitcher(p) ? secondaryPositions(league, p) : [];
                 const pool = !p.teamId;
@@ -200,52 +198,48 @@ export function PlayerSearch({
                 return (
                   <tr key={p.id} class="player-row">
                     <td>
-                      {pool ? (
-                        <button type="button" disabled={!!signProblem} title={signProblem ?? ''} onClick={() => onAct({ kind: 'signPool', id: p.id })}>
-                          계약
-                        </button>
+                      {__i18n_display(pool ? (
+                        <button type="button" disabled={!!signProblem} title={__i18n_displayText(signProblem ?? '')} onClick={() => onAct({ kind: 'signPool', id: p.id })}>{__i18n_t("ui.playerSearch.playerSearch.b4116369")}</button>
                       ) : mine ? null : (
-                        <button type="button" disabled={!canTrade(p)} title={canTrade(p) ? '' : '외국인·육성선수·올해 신인은 트레이드할 수 없습니다.'} onClick={() => onTrade(p.teamId!, p.id)}>
-                          트레이드
-                        </button>
-                      )}
+                        <button type="button" disabled={!canTrade(p)} title={__i18n_displayText(canTrade(p) ? '' : __i18n_k("ui.playerSearch.playerSearch.629e3590"))} onClick={() => onTrade(p.teamId!, p.id)}>{__i18n_t("ui.playerSearch.playerSearch.428749ee")}</button>
+                      ))}
                     </td>
                     <td>
                       <button type="button" class="link" onClick={() => onPlayer(p.id)}>
-                        {p.name}
+                        {__i18n_display(p.name)}
                       </button>
-                      {p.contract?.kind === 'development' && <span class="tag">육성</span>}
-                      {isForeign(p) && <span class="tag">외국인</span>}
+                      {__i18n_display(p.contract?.kind === 'development' && <span class="tag">{__i18n_t("ui.playerSearch.playerSearch.818f3b79")}</span>)}
+                      {__i18n_display(isForeign(p) && <span class="tag">{__i18n_t("ui.playerSearch.playerSearch.5bd804b7")}</span>)}
                     </td>
-                    <td>{pool ? '자유계약' : shortName(league, p.teamId!)}</td>
+                    <td>{__i18n_display(pool ? __i18n_k("ui.playerSearch.playerSearch.50b7405a") : shortName(league, p.teamId!))}</td>
                     <td>
-                      {positionLabel(p)}
-                      {extra.length > 0 && (
+                      {__i18n_display(positionLabel(p))}
+                      {__i18n_display(extra.length > 0 && (
                         <span class="muted small">
-                          {' '}
-                          +{extra.slice(0, 3).map((x) => POSITION_SHORT[x]).join('·')}
-                          {extra.length > 3 ? ' 등' : ''}
+                          {__i18n_display(' ')}
+                          +{__i18n_display(extra.slice(0, 3).map((x) => POSITION_SHORT[x]).join('·'))}
+                          {__i18n_display(extra.length > 3 ? __i18n_k("ui.playerSearch.playerSearch.e69b7fff") : '')}
                         </span>
-                      )}
+                      ))}
                     </td>
-                    <td class="num">{ageIn(p, season)}</td>
-                    <td class={`num ${gradeClass(p.scouting.current)}`}>{p.scouting.current}</td>
-                    <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{p.scouting.futureValue}</td>
-                    <td class="small nowrap">{line ? `${line.year === league.year && league.phase === 'regular' ? '' : `${line.year} `}${line.text}` : '-'}</td>
-                    <td class="num">{lastWar(p)?.toFixed(1) ?? '-'}</td>
-                    <td class="num">{pool ? `${moneyShort(poolAsk(league, p))}*` : moneyShort(pay(p))}</td>
-                    <td class="num">{pool ? '-' : yearsLeft(p) > 1 ? `${yearsLeft(p)}년` : p.contract?.kind === 'development' ? '육성' : '1년'}</td>
-                    <td class="num">{tradeValue(league, p).toFixed(1)}</td>
+                    <td class="num">{__i18n_display(ageIn(p, season))}</td>
+                    <td class={`num ${gradeClass(p.scouting.current)}`}>{__i18n_display(p.scouting.current)}</td>
+                    <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{__i18n_display(p.scouting.futureValue)}</td>
+                    <td class="small nowrap">{__i18n_display(line ? `${line.year === league.year && league.phase === 'regular' ? '' : `${line.year} `}${line.text}` : '-')}</td>
+                    <td class="num">{__i18n_display(lastWar(p)?.toFixed(1) ?? '-')}</td>
+                    <td class="num">{__i18n_display(pool ? `${moneyShort(poolAsk(league, p))}*` : moneyShort(pay(p)))}</td>
+                    <td class="num">{__i18n_display(pool ? '-' : yearsLeft(p) > 1 ? __i18n_k("ui.playerSearch.playerSearch.67e19f21", { yearsLeft: yearsLeft(p) }) : p.contract?.kind === 'development' ? __i18n_k("ui.playerSearch.playerSearch.818f3b79") : __i18n_k("ui.playerSearch.playerSearch.495b63c7"))}</td>
+                    <td class="num">{__i18n_display(tradeValue(league, p).toFixed(1))}</td>
                   </tr>
                 );
-              })}
+              }))}
             </tbody>
           </table>
         </div>
       ) : (
-        <p class="empty">조건에 맞는 선수가 없습니다.</p>
-      )}
-      {club === 'pool' && <p class="muted small">* 자유계약 선수는 요구 연봉</p>}
+        <p class="empty">{__i18n_t("ui.playerSearch.playerSearch.5ffbf057")}</p>
+      ))}
+      {__i18n_display(club === 'pool' && <p class="muted small">{__i18n_t("ui.playerSearch.playerSearch.8ba0d9f5")}</p>)}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index.js';
 /* Signing bonuses, club budgets and draft refusals. Amounts are in 백만 원 (100 = 1억).
 
    The user makes one offer per pick; the player signs, counters or walks away. CPU clubs offer the
@@ -11,7 +12,7 @@ const D = DraftData;
 const { TUNING } = DraftTuning;
 const K = TUNING.contracts;
 const { rng, clamp } = D;
-const INTENT_LABELS = { college: '진학 희망', abroad: '해외 구단 관심' };
+const INTENT_LABELS = { college: __i18n_k("draftroom.contracts.iNTENT_LABELS.college.ae5aa8c0"), abroad: __i18n_k("draftroom.contracts.iNTENT_LABELS.abroad.7acd1eb3") };
 
 const roundTo = (n) => Math.max(K.step, Math.round(n / K.step) * K.step);
 /** Slot value for a pick: `round` (0 = regional) and its position in the round (0-based). */
@@ -71,14 +72,14 @@ function refusalPath(p, catalog, seed) {
   if (p.intent === 'abroad') {
     const clubs = catalog.filter((x) => x.kind === 'overseas-pro' && ['A', 'AA'].includes(x.level));
     const c = clubs[Math.floor(r() * clubs.length)];
-    return c ? `${c.name}(${c.level})와 계약하고 미국으로 건너갔다.` : '해외 구단과 계약했다.';
+    return c ? __i18n_k("draftroom.contracts.refusalPath.f702eae5", { name: c.name, level: c.level }) : __i18n_k("draftroom.contracts.refusalPath.49418d17");
   }
   if (p.pathway === '고졸' || p.pathway === '야구 유학') {
     const colleges = catalog.filter((x) => x.kind === 'college' && x.region === p.highSchoolRegion);
     const list = colleges.length ? colleges : catalog.filter((x) => x.kind === 'college');
-    return `${list[Math.floor(r() * list.length)].name}에 진학해 4년 뒤를 노린다.`;
+    return __i18n_k("draftroom.contracts.refusalPath.0082bad9", { name: list[Math.floor(r() * list.length)].name });
   }
-  return '독립리그에서 뛰며 다음 기회를 기다린다.';
+  return __i18n_k("draftroom.contracts.refusalPath.9fe35b62");
 }
 
 /** Growth boost for a club's signings from the budget it did not spend. */

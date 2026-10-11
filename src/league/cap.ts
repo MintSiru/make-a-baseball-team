@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The competitive balance tax (경쟁균형세, RULES.md §3): each club's top-40 pay after the season is
    measured against the cap. Over it: 30% of the excess the first season, 50% the second in a row,
    100% from the third plus the next draft's first-round pick nine places later. From 2027 there is a
@@ -53,10 +54,10 @@ export function settleCap(s: LeagueState, year: number) {
     const u = s.user;
     if (u && teamId === u.teamId && levy > 0) {
       u.fund -= levy;
-      u.ledger.push({ year, label: over > 0 ? `경쟁균형세 (상한 초과 ${streak}년째)` : '샐러리캡 하한 미달분', amount: -levy });
+      u.ledger.push({ year, label: over > 0 ? __i18n_k("league.cap.settleCap.label.ef53c030", { streak: streak }) : __i18n_k("league.cap.settleCap.label.bc31f2ef"), amount: -levy });
       (u.log ??= []).push({
         year,
-        text: over > 0 ? `상위 40명 연봉이 상한을 넘어 경쟁균형세를 냈습니다${streak >= C.pickDropFrom ? ' (다음 드래프트 1라운드 9순위 하락)' : ''}` : '상위 40명 연봉이 하한에 못 미쳐 부족분을 냈습니다',
+        text: over > 0 ? __i18n_k("league.cap.settleCap.text.5233d51f", { value: streak >= C.pickDropFrom ? __i18n_k("league.cap.settleCap.text.284072e6") : '' }) : __i18n_k("league.cap.settleCap.text.980ebad7"),
       });
     }
   }

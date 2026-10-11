@@ -1,3 +1,4 @@
+import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 import { startYear } from '../league/era';
 import { useState } from 'preact/hooks';
 import { nationalView, retiredNumbersView } from '../league/legacy';
@@ -11,29 +12,29 @@ export function History({ league, onPlayer }: { league: LeagueState; onPlayer: (
   const [view, setView] = useState<View>('seasons');
   return (
     <section aria-labelledby="history-title">
-      <h2 id="history-title">역대</h2>
-      <div class="segmented" role="group" aria-label="역대">
-        {(
+      <h2 id="history-title">{__i18n_t("ui.history.history.1ab3847c")}</h2>
+      <div class="segmented" role="group" aria-label={__i18n_t("ui.history.history.1ab3847c")}>
+        {__i18n_display((
           [
-            ['seasons', '시즌'],
-            ['awards', '시상'],
-            ['records', '기록실'],
-            ['hall', '명예의 전당'],
-            ['retired', '영구결번'],
-            ['national', '국가대표'],
+            ['seasons', __i18n_k("ui.history.history.b3000412")],
+            ['awards', __i18n_k("ui.history.history.d95a37a4")],
+            ['records', __i18n_k("ui.history.history.24f4444a")],
+            ['hall', __i18n_k("ui.history.history.6999864f")],
+            ['retired', __i18n_k("ui.history.history.adad27c2")],
+            ['national', __i18n_k("ui.history.history.3243618b")],
           ] as [View, string][]
         ).map(([id, label]) => (
           <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>
-            {label}
+            {__i18n_display(label)}
           </button>
-        ))}
+        )))}
       </div>
-      {view === 'seasons' && <Seasons league={league} />}
-      {view === 'awards' && <Awards league={league} onPlayer={onPlayer} />}
-      {view === 'records' && <Records league={league} onPlayer={onPlayer} />}
-      {view === 'hall' && <Hall league={league} onPlayer={onPlayer} />}
-      {view === 'retired' && <Retired league={league} onPlayer={onPlayer} />}
-      {view === 'national' && <National league={league} onPlayer={onPlayer} />}
+      {__i18n_display(view === 'seasons' && <Seasons league={league} />)}
+      {__i18n_display(view === 'awards' && <Awards league={league} onPlayer={onPlayer} />)}
+      {__i18n_display(view === 'records' && <Records league={league} onPlayer={onPlayer} />)}
+      {__i18n_display(view === 'hall' && <Hall league={league} onPlayer={onPlayer} />)}
+      {__i18n_display(view === 'retired' && <Retired league={league} onPlayer={onPlayer} />)}
+      {__i18n_display(view === 'national' && <National league={league} onPlayer={onPlayer} />)}
     </section>
   );
 }
@@ -42,9 +43,9 @@ const Who = ({ x, onPlayer }: { x: { id: string; name: string; team: string } | 
   x ? (
     <>
       <button type="button" class="link" onClick={() => onPlayer(x.id)}>
-        {x.name}
+        {__i18n_display(x.name)}
       </button>
-      <span class="muted small"> {x.team}</span>
+      <span class="muted small"> {__i18n_display(x.team)}</span>
     </>
   ) : (
     <span class="muted">-</span>
@@ -52,35 +53,35 @@ const Who = ({ x, onPlayer }: { x: { id: string; name: string; team: string } | 
 
 function Awards({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
   const years = awardsView(league);
-  if (!years.length) return <p class="muted">시상 기록이 없습니다.</p>;
+  if (!years.length) return <p class="muted">{__i18n_t("ui.history.awards.17c0863a")}</p>;
   return (
     <>
-      <p class="muted">MVP는 WAR에 소속팀 성적과 타이틀을, 골든글러브는 포지션별(60경기 이상) WAR을 봅니다. 신인왕은 KBO 규정(데뷔 5년 이내, 이전 60타석·30이닝 미만)을 따릅니다.</p>
-      {years.map((y) => (
+      <p class="muted">{__i18n_t("ui.history.awards.b17ac715")}</p>
+      {__i18n_display(years.map((y) => (
         <section key={y.year} class="award-year">
-          <h3>{y.year}</h3>
+          <h3>{__i18n_display(y.year)}</h3>
           <p>
-            <span class="tag">MVP</span> <Who x={y.mvp} onPlayer={onPlayer} /> · <span class="tag">신인왕</span> <Who x={y.rookie} onPlayer={onPlayer} />
+            <span class="tag">MVP</span> <Who x={y.mvp} onPlayer={onPlayer} /> · <span class="tag">{__i18n_t("ui.history.awards.9ecfbb08")}</span> <Who x={y.rookie} onPlayer={onPlayer} />
           </p>
           <p class="small">
-            <strong>골든글러브</strong>{' '}
-            {y.gg.map((g, i) => (
+            <strong>{__i18n_t("ui.history.awards.f2b151c4")}</strong>{__i18n_display(' ')}
+            {__i18n_display(y.gg.map((g, i) => (
               <span key={i}>
-                {g.pos} <Who x={g} onPlayer={onPlayer} />
-                {i < y.gg.length - 1 ? ' · ' : ''}
+                {__i18n_display(g.pos)} <Who x={g} onPlayer={onPlayer} />
+                {__i18n_display(i < y.gg.length - 1 ? ' · ' : '')}
               </span>
-            ))}
+            )))}
           </p>
           <p class="small">
-            <strong>타이틀</strong>{' '}
-            {y.titles.map((t, i) => (
+            <strong>{__i18n_t("ui.history.awards.9557702b")}</strong>{__i18n_display(' ')}
+            {__i18n_display(y.titles.map((t, i) => (
               <span key={i}>
-                {t.label} <Who x={t} onPlayer={onPlayer} /> ({t.value}){i < y.titles.length - 1 ? ' · ' : ''}
+                {__i18n_display(t.label)} <Who x={t} onPlayer={onPlayer} /> ({__i18n_display(t.value)}){__i18n_display(i < y.titles.length - 1 ? ' · ' : '')}
               </span>
-            ))}
+            )))}
           </p>
         </section>
-      ))}
+      )))}
     </>
   );
 }
@@ -89,35 +90,35 @@ function Records({ league, onPlayer }: { league: LeagueState; onPlayer: (id: str
   const r = recordRoom(league);
   const block = (title: string, groups: typeof r.season) => (
     <>
-      <h3>{title}</h3>
+      <h3>{__i18n_display(title)}</h3>
       <div class="leader-grid">
-        {groups.map((g) => (
+        {__i18n_display(groups.map((g) => (
           <div key={g.label} class="leader-card">
-            <h4>{g.label}</h4>
+            <h4>{__i18n_display(g.label)}</h4>
             <ol class="plain">
-              {g.rows.map((x) => (
+              {__i18n_display(g.rows.map((x) => (
                 <li key={x.id + (x.year ?? '')}>
                   <button type="button" class="link" onClick={() => onPlayer(x.id)}>
-                    {x.name}
-                  </button>{' '}
+                    {__i18n_display(x.name)}
+                  </button>{__i18n_display(' ')}
                   <span class="muted small">
-                    {x.team}
-                    {x.year ? ` ${x.year}` : ''}
-                  </span>{' '}
-                  <strong>{x.value}</strong>
+                    {__i18n_display(x.team)}
+                    {__i18n_display(x.year ? ` ${x.year}` : '')}
+                  </span>{__i18n_display(' ')}
+                  <strong>{__i18n_display(x.value)}</strong>
                 </li>
-              ))}
+              )))}
             </ol>
           </div>
-        ))}
+        )))}
       </div>
     </>
   );
   return (
     <>
-      <p class="muted">게임 속 리그 기록입니다 (2015년부터의 가상 역사 포함).</p>
-      {block('한 시즌 최고', r.season)}
-      {block('통산', r.career)}
+      <p class="muted">{__i18n_t("ui.history.records.f9fd8941")}</p>
+      {__i18n_display(block(__i18n_k("ui.history.records.816d3b96"), r.season))}
+      {__i18n_display(block(__i18n_k("ui.history.records.fc7fa3d0"), r.career))}
     </>
   );
 }
@@ -126,41 +127,41 @@ function Hall({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string
   const hall = [...(league.hallOfFame ?? [])].reverse();
   return (
     <>
-      <p class="muted">은퇴한 선수 가운데 통산 WAR 65 이상, 또는 WAR 55 이상에 MVP·골든글러브·신인왕을 다섯 번 넘게 받은 선수가 오릅니다 (게임 속 제도).</p>
-      {hall.length ? (
+      <p class="muted">{__i18n_t("ui.history.hall.7aeaf1ba")}</p>
+      {__i18n_display(hall.length ? (
         <div class="table-wrap">
           <table class="record-table">
             <thead>
               <tr>
-                <th class="num">헌액</th>
-                <th>선수</th>
-                <th>구단</th>
-                <th class="num">시즌</th>
+                <th class="num">{__i18n_t("ui.history.hall.90a76354")}</th>
+                <th>{__i18n_t("ui.history.hall.c37450d6")}</th>
+                <th>{__i18n_t("ui.history.hall.58756112")}</th>
+                <th class="num">{__i18n_t("ui.history.hall.b3000412")}</th>
                 <th class="num">WAR</th>
-                <th>통산</th>
+                <th>{__i18n_t("ui.history.hall.fc7fa3d0")}</th>
               </tr>
             </thead>
             <tbody>
-              {hall.map((h) => (
+              {__i18n_display(hall.map((h) => (
                 <tr key={h.id}>
-                  <td class="num">{h.year}</td>
+                  <td class="num">{__i18n_display(h.year)}</td>
                   <td>
                     <button type="button" class="link" onClick={() => onPlayer(h.id)}>
-                      {h.name}
+                      {__i18n_display(h.name)}
                     </button>
                   </td>
-                  <td>{h.teams.map((t) => shortName(league, t)).join(' · ')}</td>
-                  <td class="num">{h.seasons}</td>
-                  <td class="num strong">{h.war.toFixed(1)}</td>
-                  <td>{h.line}</td>
+                  <td>{__i18n_display(h.teams.map((t) => shortName(league, t)).join(' · '))}</td>
+                  <td class="num">{__i18n_display(h.seasons)}</td>
+                  <td class="num strong">{__i18n_display(h.war.toFixed(1))}</td>
+                  <td>{__i18n_display(h.line)}</td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>
       ) : (
-        <p class="muted">아직 헌액된 선수가 없습니다.</p>
-      )}
+        <p class="muted">{__i18n_t("ui.history.hall.92967a7b")}</p>
+      ))}
     </>
   );
 }
@@ -169,41 +170,41 @@ function Seasons({ league }: { league: LeagueState }) {
   const seasons = [...league.history].reverse();
   return (
     <>
-      <p class="muted">{startYear() - 1}년까지의 기록은 게임이 만든 가상 역사입니다.</p>
+      <p class="muted">{__i18n_t("ui.history.seasons.9ad603d6", { value: startYear() - 1 })}</p>
       <div class="table-wrap" tabIndex={0}>
         <table class="record-table">
           <thead>
             <tr>
-              <th class="num">시즌</th>
-              <th>우승</th>
-              <th>정규시즌 1위</th>
-              <th class="num">1위 승률</th>
-              <th>퓨처스 1위</th>
-              <th class="num">리그 타율</th>
-              <th class="num">리그 OPS</th>
-              <th class="num">리그 평균자책점</th>
+              <th class="num">{__i18n_t("ui.history.seasons.b3000412")}</th>
+              <th>{__i18n_t("ui.history.seasons.894badc3")}</th>
+              <th>{__i18n_t("ui.history.seasons.cef6f7cf")}</th>
+              <th class="num">{__i18n_t("ui.history.seasons.85205cf0")}</th>
+              <th>{__i18n_t("ui.history.seasons.daa5f097")}</th>
+              <th class="num">{__i18n_t("ui.history.seasons.32f51659")}</th>
+              <th class="num">{__i18n_t("ui.history.seasons.e6c1adda")}</th>
+              <th class="num">{__i18n_t("ui.history.seasons.8d32d243")}</th>
             </tr>
           </thead>
           <tbody>
-            {seasons.map((h) => {
+            {__i18n_display(seasons.map((h) => {
               const b = h.totals.bat;
               return (
                 <tr key={h.year}>
-                  <td class="num">{h.year}</td>
-                  <td class="strong">{h.champion ? teamOf(league, h.champion)?.name : '-'}</td>
-                  <td>{shortName(league, h.table[0]!.teamId)}</td>
-                  <td class="num">{h.table[0]!.pct.toFixed(3)}</td>
-                  <td>{h.futures?.[0] ? shortName(league, h.futures[0].teamId) : '-'}</td>
-                  <td class="num">{(b.h / b.ab).toFixed(3)}</td>
-                  <td class="num">{(obp(b) + slg(b)).toFixed(3)}</td>
-                  <td class="num">{era(h.totals.pit).toFixed(2)}</td>
+                  <td class="num">{__i18n_display(h.year)}</td>
+                  <td class="strong">{__i18n_display(h.champion ? teamOf(league, h.champion)?.name : '-')}</td>
+                  <td>{__i18n_display(shortName(league, h.table[0]!.teamId))}</td>
+                  <td class="num">{__i18n_display(h.table[0]!.pct.toFixed(3))}</td>
+                  <td>{__i18n_display(h.futures?.[0] ? shortName(league, h.futures[0].teamId) : '-')}</td>
+                  <td class="num">{__i18n_display((b.h / b.ab).toFixed(3))}</td>
+                  <td class="num">{__i18n_display((obp(b) + slg(b)).toFixed(3))}</td>
+                  <td class="num">{__i18n_display(era(h.totals.pit).toFixed(2))}</td>
                 </tr>
               );
-            })}
+            }))}
           </tbody>
         </table>
       </div>
-      {seasons.find((h) => h.futures) && <FuturesTable league={league} />}
+      {__i18n_display(seasons.find((h) => h.futures) && <FuturesTable league={league} />)}
     </>
   );
 }
@@ -213,30 +214,30 @@ function FuturesTable({ league }: { league: LeagueState }) {
   const h = [...league.history].reverse().find((x) => x.futures)!;
   return (
     <>
-      <h3>{h.year} 퓨처스리그</h3>
+      <h3>{__i18n_t("ui.history.futuresTable.b5dc6dec", { year: h.year })}</h3>
       <div class="table-wrap" tabIndex={0}>
         <table class="record-table">
           <thead>
             <tr>
-              <th class="num">순위</th>
-              <th>팀</th>
-              <th class="num">승</th>
-              <th class="num">패</th>
-              <th class="num">무</th>
-              <th class="num">승률</th>
+              <th class="num">{__i18n_t("ui.history.futuresTable.d15876f1")}</th>
+              <th>{__i18n_t("ui.history.futuresTable.90583011")}</th>
+              <th class="num">{__i18n_t("ui.history.futuresTable.3b1908b7")}</th>
+              <th class="num">{__i18n_t("ui.history.futuresTable.36260e2c")}</th>
+              <th class="num">{__i18n_t("ui.history.futuresTable.56c5af5b")}</th>
+              <th class="num">{__i18n_t("ui.history.futuresTable.82cc030f")}</th>
             </tr>
           </thead>
           <tbody>
-            {h.futures!.map((r) => (
+            {__i18n_display(h.futures!.map((r) => (
               <tr key={r.teamId}>
-                <td class="num">{r.rank}</td>
-                <td>{shortName(league, r.teamId)}</td>
-                <td class="num">{r.w}</td>
-                <td class="num">{r.l}</td>
-                <td class="num">{r.t}</td>
-                <td class="num">{r.pct.toFixed(3)}</td>
+                <td class="num">{__i18n_display(r.rank)}</td>
+                <td>{__i18n_display(shortName(league, r.teamId))}</td>
+                <td class="num">{__i18n_display(r.w)}</td>
+                <td class="num">{__i18n_display(r.l)}</td>
+                <td class="num">{__i18n_display(r.t)}</td>
+                <td class="num">{__i18n_display(r.pct.toFixed(3))}</td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>
@@ -247,53 +248,47 @@ function FuturesTable({ league }: { league: LeagueState }) {
 /** Retired numbers (1.0.1): each club's, ours first, with the player's story and his numbers with the club. */
 function Retired({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
   const list = retiredNumbersView(league);
-  if (!list.length) return <p class="muted">아직 영구결번이 없습니다. 한 구단에서 오래(10시즌 이상) 크게 활약한 선수가 은퇴하면 그 구단이 등번호를 영구결번합니다.</p>;
+  if (!list.length) return <p class="muted">{__i18n_t("ui.history.retired.b42d5d44")}</p>;
   return (
     <div class="retired-grid">
-      {list.map((r) => (
+      {__i18n_display(list.map((r) => (
         <article key={`${r.teamId}-${r.number}`} class={`card retired-card${r.teamId === league.user?.teamId ? ' mine' : ''}`}>
           <p class="retired-number" aria-hidden="true">
-            {r.number}
+            {__i18n_display(r.number)}
           </p>
           <h3>
             <button type="button" class="link" onClick={() => onPlayer(r.id)}>
-              {r.name}
-            </button>{' '}
+              {__i18n_display(r.name)}
+            </button>{__i18n_display(' ')}
             <span class="muted small">
-              {r.team} · {r.position}
+              {__i18n_display(r.team)} · {__i18n_display(r.position)}
             </span>
           </h3>
           <ul class="plain small retired-story">
-            {r.story.map((line, i) => (
-              <li key={i}>{line}</li>
-            ))}
+            {__i18n_display(r.story.map((line, i) => (
+              <li key={i}>{__i18n_display(line)}</li>
+            )))}
           </ul>
           <dl class="facts small">
-            {r.bat && !r.pitcher && (
+            {__i18n_display(r.bat && !r.pitcher && (
               <div>
-                <dt>구단 통산 (타격)</dt>
-                <dd>
-                  {r.bat.g}경기 타율 {avg(r.bat).toFixed(3).replace(/^0/, '')} {r.bat.h}안타 {r.bat.hr}홈런 {r.bat.rbi}타점 {r.bat.sb}도루 · OPS {ops(r.bat).toFixed(3).replace(/^0/, '')}
-                </dd>
+                <dt>{__i18n_t("ui.history.retired.5363b622")}</dt>
+                <dd>{__i18n_t("ui.history.retired.b941b09e", { g: r.bat.g, value: avg(r.bat).toFixed(3).replace(/^0/, ''), h: r.bat.h, hr: r.bat.hr, rbi: r.bat.rbi, sb: r.bat.sb, value2: ops(r.bat).toFixed(3).replace(/^0/, '') })}</dd>
               </div>
-            )}
-            {r.pit && r.pitcher && (
+            ))}
+            {__i18n_display(r.pit && r.pitcher && (
               <div>
-                <dt>구단 통산 (투구)</dt>
-                <dd>
-                  {r.pit.g}경기 {r.pit.w}승 {r.pit.l}패 {r.pit.sv}세이브 {r.pit.hld}홀드 · {ip(r.pit.outs)}이닝 평균자책점 {era(r.pit).toFixed(2)} 탈삼진 {r.pit.k}
-                </dd>
+                <dt>{__i18n_t("ui.history.retired.8386b1a9")}</dt>
+                <dd>{__i18n_t("ui.history.retired.be61ed76", { g: r.pit.g, w: r.pit.w, l: r.pit.l, sv: r.pit.sv, hld: r.pit.hld, ip: ip(r.pit.outs), value: era(r.pit).toFixed(2), value2: r.pit.k })}</dd>
               </div>
-            )}
+            ))}
             <div>
               <dt>WAR</dt>
-              <dd>
-                구단 {r.war.toFixed(1)} · 통산 {r.careerWar.toFixed(1)}
-              </dd>
+              <dd>{__i18n_t("ui.history.retired.9e3da76a", { value: r.war.toFixed(1), value2: r.careerWar.toFixed(1) })}</dd>
             </div>
           </dl>
         </article>
-      ))}
+      )))}
     </div>
   );
 }
@@ -301,54 +296,48 @@ function Retired({ league, onPlayer }: { league: LeagueState; onPlayer: (id: str
 /** The national team (1.0.1): every finished tournament, the result, where the squad came from, ours. */
 function National({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
   const v = nationalView(league);
-  if (!v.rows.length) return <p class="muted">아직 끝난 국제대회가 없습니다.</p>;
+  if (!v.rows.length) return <p class="muted">{__i18n_t("ui.history.national.f3f55aff")}</p>;
   return (
     <>
-      <p class="muted">
-        대회 {v.rows.length}번 · 우승(금메달) {v.wins}번 · 입상 {v.podiums}번 · 병역 특례 {v.exemptions}번
-      </p>
+      <p class="muted">{__i18n_t("ui.history.national.a9d8690a", { length: v.rows.length, wins: v.wins, podiums: v.podiums, exemptions: v.exemptions })}</p>
       <div class="table-wrap" tabIndex={0}>
         <table class="record-table">
-          <caption class="sr-only">국가대표 역대 성적</caption>
+          <caption class="sr-only">{__i18n_t("ui.history.national.419bb35b")}</caption>
           <thead>
             <tr>
-              <th scope="col" class="num">
-                연도
-              </th>
-              <th scope="col">대회</th>
-              <th scope="col">성적</th>
-              <th scope="col" class="num">
-                엔트리
-              </th>
-              <th scope="col">구단별</th>
-              <th scope="col">우리 선수</th>
+              <th scope="col" class="num">{__i18n_t("ui.history.national.d5bc99dd")}</th>
+              <th scope="col">{__i18n_t("ui.history.national.042b946b")}</th>
+              <th scope="col">{__i18n_t("ui.history.national.d3bb3576")}</th>
+              <th scope="col" class="num">{__i18n_t("ui.history.national.175e75de")}</th>
+              <th scope="col">{__i18n_t("ui.history.national.3cb4e46d")}</th>
+              <th scope="col">{__i18n_t("ui.history.national.0298c997")}</th>
             </tr>
           </thead>
           <tbody>
-            {v.rows.map((r) => (
+            {__i18n_display(v.rows.map((r) => (
               <tr key={r.id}>
-                <td class="num">{r.year}</td>
-                <td>{r.name}</td>
+                <td class="num">{__i18n_display(r.year)}</td>
+                <td>{__i18n_display(r.name)}</td>
                 <td class={r.result === '우승' || r.result === '금메달' ? 'strong' : ''}>
-                  {r.result}
-                  {r.medal && <span class="tag">병역 특례</span>}
+                  {__i18n_display(r.result)}
+                  {__i18n_display(r.medal && <span class="tag">{__i18n_t("ui.history.national.de7fcbc3")}</span>)}
                 </td>
-                <td class="num">{r.squad}</td>
-                <td class="small">{r.clubs.map((c) => `${c.team} ${c.n}`).join(' · ')}</td>
+                <td class="num">{__i18n_display(r.squad)}</td>
+                <td class="small">{__i18n_display(r.clubs.map((c) => `${c.team} ${c.n}`).join(' · '))}</td>
                 <td class="small">
-                  {r.ours.length
+                  {__i18n_display(r.ours.length
                     ? r.ours.map((x, i) => (
                         <span key={x.id}>
-                          {i > 0 && ', '}
+                          {__i18n_display(i > 0 && ', ')}
                           <button type="button" class="link" onClick={() => onPlayer(x.id)}>
-                            {x.name}
+                            {__i18n_display(x.name)}
                           </button>
                         </span>
                       ))
-                    : '-'}
+                    : '-')}
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>

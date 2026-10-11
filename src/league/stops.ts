@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Stops at the moments that matter (1.6.0, from the 1.4 review): a run of days ("1주", "한 달", "정규시즌 끝까지")
    ends early when one of our regulars is out for three weeks or more, a week before the trade deadline, after our
    first first-team game, and when our place in the postseason is settled either way. Each is a setting (all on by
@@ -11,10 +12,10 @@ import { standings } from './standings';
 export type StopKind = 'injury' | 'deadline' | 'debut' | 'race';
 export const STOP_KINDS: StopKind[] = ['injury', 'deadline', 'debut', 'race'];
 export const STOP_LABEL: Record<StopKind, string> = {
-  injury: '주전이 3주 넘게 빠지는 부상',
-  deadline: '트레이드 마감 1주 전',
-  debut: '1군 첫 경기 직후',
-  race: '가을야구 진출·탈락이 확정될 때',
+  injury: __i18n_k("league.stops.sTOP_LABEL.injury.8609c770"),
+  deadline: __i18n_k("league.stops.sTOP_LABEL.deadline.9b2951ae"),
+  debut: __i18n_k("league.stops.sTOP_LABEL.debut.d6f96edd"),
+  race: __i18n_k("league.stops.sTOP_LABEL.race.41b44b9f"),
 };
 /** Out this long or more stops the run. */
 const LONG = 21;
@@ -76,25 +77,25 @@ export function watchStops(s: LeagueState): () => boolean {
         hurt.add(id);
         const p = s.players[id];
         if (inj.dtd || inj.days < LONG || p?.teamId !== u.teamId || !regular(s, p)) continue;
-        addAlert(s, { id: `stop-injury-${id}-${last}`, date: last, kind: 'injury', title: `${p.name} 이탈 (${inj.part ?? '부상'})`, lines: [`복귀까지 약 ${Math.round(inj.days / 7)}주 (${inj.until} 예정). 라인업과 대체 선수를 살펴보세요.`], tone: 'bad', players: [id] });
+        addAlert(s, { id: `stop-injury-${id}-${last}`, date: last, kind: 'injury', title: __i18n_k("league.stops.watchStops.title.1f9adc78", { name: p.name, value: inj.part ?? __i18n_k("league.stops.watchStops.title.501fb802") }), lines: [__i18n_k("league.stops.watchStops.lines.cf8199a2", { value: Math.round(inj.days / 7), until: inj.until })], tone: 'bad', players: [id] });
         return true;
       }
     }
     if (on.has('deadline') && first && coming) {
       const week = deadlineWeek(s.year);
       if (last < week && coming >= week) {
-        addAlert(s, { id: `stop-deadline-${s.year}`, date: last, kind: 'season', title: '트레이드 마감 1주 전', lines: [`7월 31일이 지나면 한국시리즈가 끝날 때까지 트레이드를 할 수 없습니다. 지금 순위와 선수단을 보고 보강할지, 미래를 볼지 정하세요.`] });
+        addAlert(s, { id: `stop-deadline-${s.year}`, date: last, kind: 'season', title: __i18n_k("league.stops.watchStops.title.9b2951ae"), lines: [__i18n_k("league.stops.watchStops.lines.0a521729")] });
         return true;
       }
     }
     if (debutDue && played() > 0) {
-      addAlert(s, { id: `stop-debut-${s.year}`, date: last, kind: 'achievement', title: '1군 데뷔전', lines: ['우리 구단의 첫 1군 경기가 끝났습니다. 경기 탭에서 기록을 볼 수 있습니다.'], tone: 'good' });
+      addAlert(s, { id: `stop-debut-${s.year}`, date: last, kind: 'achievement', title: __i18n_k("league.stops.watchStops.title.fa9df9f2"), lines: [__i18n_k("league.stops.watchStops.lines.998b94c9")], tone: 'good' });
       return true;
     }
     if (on.has('race') && !race) {
       const now = raceState(s);
       if (now) {
-        addAlert(s, { id: `stop-race-${s.year}`, date: last, kind: 'season', title: now === 'in' ? '가을야구 확정' : '가을야구 탈락 확정', lines: [now === 'in' ? '남은 경기에 상관없이 포스트시즌에 나갑니다. 순위 싸움과 투수 운용을 정하세요.' : '남은 경기에서 이겨도 5위 안에 들 수 없습니다. 유망주에게 기회를 줄 때입니다.'], tone: now === 'in' ? 'good' : 'bad' });
+        addAlert(s, { id: `stop-race-${s.year}`, date: last, kind: 'season', title: now === 'in' ? __i18n_k("league.stops.watchStops.title.2436b1e6") : __i18n_k("league.stops.watchStops.title.7344d498"), lines: [now === 'in' ? __i18n_k("league.stops.watchStops.lines.886f62d0") : __i18n_k("league.stops.watchStops.lines.13c627fd")], tone: now === 'in' ? 'good' : 'bad' });
         return true;
       }
     }

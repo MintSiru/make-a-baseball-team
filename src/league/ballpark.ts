@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Ballpark projects (V0.6, RULES.md §13). In the winter the user's club can
    - expand its ballpark (+3,000 seats, up to 25,000; the club's share 150억, ready next season),
    - move the fences (in: more home runs, out: fewer; 15억, next season),
@@ -30,39 +31,39 @@ export function projectOptions(s: LeagueState): ProjectOption[] {
   const planned = u.settings.stadium !== 'existing' && (u.projects ?? []).every((p) => p.kind !== 'newPark') && team.stadium.capacity < 15_000;
   const cap = team.stadium.capacity;
   const park = team.stadium.park ?? parkFactor(team.id);
-  const common = (cost: number) => (busy ? '진행 중인 공사가 있습니다.' : s.phase !== 'offseason' ? '공사는 비시즌에만 시작할 수 있습니다.' : cost > u.fund ? '구단 자금이 부족합니다.' : null);
+  const common = (cost: number) => (busy ? __i18n_k("league.ballpark.projectOptions.common.a68f7d40") : s.phase !== 'offseason' ? __i18n_k("league.ballpark.projectOptions.common.df97ea07") : cost > u.fund ? __i18n_k("league.ballpark.projectOptions.common.2ffbf119") : null);
   return [
     {
       kind: 'expand',
-      label: `증축 (+${B.expandSeats.toLocaleString('ko-KR')}석)`,
+      label: __i18n_k("league.ballpark.projectOptions.label.5d3212d6", { value: B.expandSeats.toLocaleString('ko-KR') }),
       cost: B.expandCost,
       opens: next,
-      note: `${cap.toLocaleString('ko-KR')}석 → ${(cap + B.expandSeats).toLocaleString('ko-KR')}석`,
-      blocked: cap + B.expandSeats > B.maxSeats ? `${B.maxSeats.toLocaleString('ko-KR')}석보다 크게 늘릴 수 없습니다.` : common(B.expandCost),
+      note: __i18n_k("league.ballpark.projectOptions.note.163bcfa3", { value: cap.toLocaleString('ko-KR'), value2: (cap + B.expandSeats).toLocaleString('ko-KR') }),
+      blocked: cap + B.expandSeats > B.maxSeats ? __i18n_k("league.ballpark.projectOptions.blocked.b238d74e", { value: B.maxSeats.toLocaleString('ko-KR') }) : common(B.expandCost),
     },
     {
       kind: 'fencesIn',
-      label: '펜스 당기기',
+      label: __i18n_k("league.ballpark.projectOptions.label.657e34d5"),
       cost: B.fencesCost,
       opens: next,
-      note: `홈런이 늘어나는 구장 (구장 계수 ${park.toFixed(2)} → ${(park + B.fencesStep).toFixed(2)})`,
-      blocked: park + B.fencesStep > B.parkMax ? '더 당길 수 없습니다.' : common(B.fencesCost),
+      note: __i18n_k("league.ballpark.projectOptions.note.4c8b1cfd", { value: park.toFixed(2), value2: (park + B.fencesStep).toFixed(2) }),
+      blocked: park + B.fencesStep > B.parkMax ? __i18n_k("league.ballpark.projectOptions.blocked.e90ea2e6") : common(B.fencesCost),
     },
     {
       kind: 'fencesOut',
-      label: '펜스 밀기',
+      label: __i18n_k("league.ballpark.projectOptions.label.439824a8"),
       cost: B.fencesCost,
       opens: next,
-      note: `홈런이 줄어드는 구장 (구장 계수 ${park.toFixed(2)} → ${(park - B.fencesStep).toFixed(2)})`,
-      blocked: park - B.fencesStep < B.parkMin ? '더 밀 수 없습니다.' : common(B.fencesCost),
+      note: __i18n_k("league.ballpark.projectOptions.note.fda72cc0", { value: park.toFixed(2), value2: (park - B.fencesStep).toFixed(2) }),
+      blocked: park - B.fencesStep < B.parkMin ? __i18n_k("league.ballpark.projectOptions.blocked.e3128968") : common(B.fencesCost),
     },
     {
       kind: 'newPark',
-      label: `신구장 건설 (${B.newSeats.toLocaleString('ko-KR')}석)`,
+      label: __i18n_k("league.ballpark.projectOptions.label.b3041d23", { value: B.newSeats.toLocaleString('ko-KR') }),
       cost: B.newCost,
       opens: next + B.newYears - 1,
-      note: `지자체와 함께 짓고 구단이 25년 사용료를 미리 냅니다. ${next + B.newYears - 1}년 개장`,
-      blocked: planned ? '이미 신구장 계획이 있습니다.' : cap >= B.newSeats ? '지금 구장이 더 큽니다.' : (u.projects ?? []).some((p) => p.kind === 'newPark' && p.opens >= next) ? '신구장을 짓고 있습니다.' : common(B.newCost),
+      note: __i18n_k("league.ballpark.projectOptions.note.e1639571", { value: next + B.newYears - 1 }),
+      blocked: planned ? __i18n_k("league.ballpark.projectOptions.blocked.a335d518") : cap >= B.newSeats ? __i18n_k("league.ballpark.projectOptions.blocked.2b425661") : (u.projects ?? []).some((p) => p.kind === 'newPark' && p.opens >= next) ? __i18n_k("league.ballpark.projectOptions.blocked.908d3d51") : common(B.newCost),
     },
   ];
 }
@@ -76,7 +77,7 @@ export function startProject(s: LeagueState, kind: ProjectKind) {
   if (o.blocked) throw new Error(o.blocked);
   const year = s.offseason?.year ?? s.year;
   u.fund -= o.cost;
-  u.ledger.push({ year, label: `구장 공사 · ${o.label}`, amount: -o.cost, capital: true });
+  u.ledger.push({ year, label: __i18n_k("league.ballpark.startProject.label.a30190fe", { label: o.label }), amount: -o.cost, capital: true });
   const team = s.teams.find((t) => t.id === u.teamId)!;
   const park = team.stadium.park ?? parkFactor(team.id);
   const project: StadiumProject =
@@ -86,7 +87,7 @@ export function startProject(s: LeagueState, kind: ProjectKind) {
         ? { kind: 'newPark', label: o.label, opens: o.opens, cost: o.cost, seats: B.newSeats }
         : { kind: 'fences', label: o.label, opens: o.opens, cost: o.cost, park: Math.round((park + (kind === 'fencesIn' ? B.fencesStep : -B.fencesStep)) * 100) / 100 };
   (u.projects ??= []).push(project);
-  (u.log ??= []).push({ year, text: `${o.label} 시작 (${Math.round(o.cost / 10000)}억, ${o.opens}년 시즌부터)` });
+  (u.log ??= []).push({ year, text: __i18n_k("league.ballpark.startProject.text.08543e62", { label: o.label, value: Math.round(o.cost / 10000), opens: o.opens }) });
 }
 
 /** Projects that finish before `season` change the ballpark. */
@@ -98,11 +99,11 @@ export function openProjects(s: LeagueState, season: number) {
     if (p.opens !== season) continue;
     if (p.kind === 'fences') team.stadium = { ...team.stadium, park: p.park };
     else if (p.seats) {
-      const name = p.kind === 'newPark' ? u.newStadiumName?.trim() || `${team.region} 신구장` : team.stadium.name;
+      const name = p.kind === 'newPark' ? u.newStadiumName?.trim() || __i18n_k("league.ballpark.openProjects.name.577eaf4f", { region: team.region }) : team.stadium.name;
       team.stadium = { ...team.stadium, name, capacity: p.seats, size: p.seats >= 20_000 ? 'large' : 'medium', ...(p.kind === 'newPark' ? { ownership: 'longTermOperation' as const, park: undefined } : {}) };
       // A new or bigger ballpark brings people in for a while.
       clubState(s, u.teamId).interest += p.kind === 'newPark' ? B.newParkBuzz : B.expandBuzz;
     }
-    (u.log ??= []).push({ year: season - 1, text: `${p.label} 완료: ${season} 시즌부터 적용` });
+    (u.log ??= []).push({ year: season - 1, text: __i18n_k("league.ballpark.openProjects.text.5377a7a2", { label: p.label, season: season }) });
   }
 }

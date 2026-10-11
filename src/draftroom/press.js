@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index.js';
 /* Fictional media and fans. Inputs are allowlisted public projections, never hidden ability or future results. */
 // Ported from KBO-Draft-Room df4faad src/core/press.js. See docs/UPSTREAM.md.
 import DraftWriter from './writer.js';
@@ -9,8 +10,8 @@ const D = DraftData,
   R = DraftRules,
   K = D.ko;
 const OUTLETS = [
-  { id: 'diamond', name: '다이아몬드 데일리', style: '현재 기량과 당장 필요한 자리', ready: 0.68 },
-  { id: 'future', name: '퓨처 베이스볼', style: '미래 가치와 재능의 폭', ready: 0.25 },
+  { id: 'diamond', name: __i18n_k("draftroom.press.oUTLETS.name.ade052a3"), style: __i18n_k("draftroom.press.oUTLETS.style.137b0f85"), ready: 0.68 },
+  { id: 'future', name: __i18n_k("draftroom.press.oUTLETS.name.2b099404"), style: __i18n_k("draftroom.press.oUTLETS.style.da0f8aeb"), ready: 0.25 },
 ];
 function forecast(players, teams, local, seed) {
   return OUTLETS.map((outlet) => {
@@ -72,7 +73,7 @@ function news(players, teams, selection, prior, forecasts, seed) {
     // National pick number: the regional round is not part of the order.
     nationalPick = selection.overall - prior.filter((s) => s.round === 0).length,
     value = selection.round === 1 && p.rank <= nationalPick - 5;
-  const label = selection.round === 0 ? '지역 1차' : '전국 1라운드',
+  const label = selection.round === 0 ? __i18n_k("draftroom.press.news.label.e8a3b15a") : __i18n_k("draftroom.press.news.label.06780eed"),
     r = D.rng(seed + '-news-' + selection.overall),
     role = D.ROLES[p.role];
   // Wording draws from its own stream; `r` below only moves fan mood.
@@ -103,40 +104,40 @@ function news(players, teams, selection, prior, forecasts, seed) {
     label,
     ...written,
     delta,
-    reason: `${label} 반응 · ${matched.length ? '예측 일치' : '예측과 다른 선택'} · ${fit >= 60 ? '보강 연계' : '재능 우선'}${reach ? ' · 이른 선택에 대한 우려' : ''}`,
+    reason: __i18n_k("draftroom.press.news.reason.9220ef0e", { label: label, value: matched.length ? __i18n_k("draftroom.press.news.reason.f7029001") : __i18n_k("draftroom.press.news.reason.94a21c21"), value2: fit >= 60 ? __i18n_k("draftroom.press.news.reason.5abacea2") : __i18n_k("draftroom.press.news.reason.1cfdb8d4"), value3: reach ? __i18n_k("draftroom.press.news.reason.6df005ff") : '' }),
   };
 }
 const GM_CHOICES = [
   {
     id: 'immediate',
-    title: '1군 경쟁을 약속합니다',
+    title: __i18n_k("draftroom.press.gM_CHOICES.title.852ae143"),
     answer:
-      '첫해부터 경쟁에 나설 자원을 뽑았습니다. 신인 두 명 이상에게 1군 경험이 생기는지 지켜봐 주십시오.',
-    promise: '첫해 1군 경험 2명 이상',
-    risk: '현재 기량이 높아도 출전은 보장되지 않습니다.',
+      __i18n_k("draftroom.press.gM_CHOICES.answer.6f43934c"),
+    promise: __i18n_k("draftroom.press.gM_CHOICES.promise.4a7ac133"),
+    risk: __i18n_k("draftroom.press.gM_CHOICES.risk.48018579"),
   },
   {
     id: 'development',
-    title: '육성 과정을 약속합니다',
+    title: __i18n_k("draftroom.press.gM_CHOICES.title.736e4132"),
     answer:
-      '첫해 숫자만으로 서두르지 않겠습니다. 신인 다수가 각자의 육성 과제를 이행하도록 준비하겠습니다.',
-    promise: '신인의 60% 이상이 계획 이행 70점 이상',
-    risk: '1군 미데뷔는 실패가 아니지만 실제 발전은 필요합니다.',
+      __i18n_k("draftroom.press.gM_CHOICES.answer.1b0aa82e"),
+    promise: __i18n_k("draftroom.press.gM_CHOICES.promise.5f7bce7d"),
+    risk: __i18n_k("draftroom.press.gM_CHOICES.risk.5f13a627"),
   },
   {
     id: 'needs',
-    title: '보강과 활용을 약속합니다',
+    title: __i18n_k("draftroom.press.gM_CHOICES.title.ff43ddc3"),
     answer:
-      '세 가지 우선 보강 자리를 채우고, 그 자리의 신인 두 명 이상이 첫해 계획을 이행하도록 돕겠습니다.',
-    promise: '3개 보강 포지션 확보 + 해당 신인 2명 이상 계획 이행 70점',
-    risk: '지명한 자리의 수만큼 실제 육성 이행도 살펴봅니다.',
+      __i18n_k("draftroom.press.gM_CHOICES.answer.f0d338d9"),
+    promise: __i18n_k("draftroom.press.gM_CHOICES.promise.5b324d14"),
+    risk: __i18n_k("draftroom.press.gM_CHOICES.risk.4fc826a3"),
   },
   {
     id: 'core5',
-    title: '5년 안에 주전 셋을 약속합니다',
-    answer: '첫해 성적으로 평가받을 생각은 없습니다. 5년 안에 이번 신인 중 세 명을 주전으로 만들겠습니다.',
-    promise: '5시즌 안에 이번 지명 선수 3명 이상 우리 팀 주전 경험',
-    risk: '첫해 평가에는 반영되지 않고, 5년 차가 끝난 뒤 팬들이 평가합니다.',
+    title: __i18n_k("draftroom.press.gM_CHOICES.title.4159bced"),
+    answer: __i18n_k("draftroom.press.gM_CHOICES.answer.ee2a54d0"),
+    promise: __i18n_k("draftroom.press.gM_CHOICES.promise.03b5f11f"),
+    risk: __i18n_k("draftroom.press.gM_CHOICES.risk.2de6b69d"),
   },
 ];
 function gmOptions(players, team) {
@@ -166,12 +167,12 @@ function gmOptions(players, team) {
               : -2,
     reaction:
       c.id === 'immediate'
-        ? `공개 현재 기량상 1군 경쟁 후보는 ${ready}명입니다. 기대와 부담이 함께 커집니다.`
+        ? __i18n_k("draftroom.press.gmOptions.reaction.9bbf7c93", { ready: ready })
         : c.id === 'development'
-          ? `퓨처스 육성 우선 후보는 ${development}명입니다. 기다림을 설명하되 발전을 보여야 합니다.`
+          ? __i18n_k("draftroom.press.gmOptions.reaction.2853cf6d", { development: development })
           : c.id === 'core5'
-            ? `주전감으로 꼽히는 신인은 ${prospects}명입니다. 5년 뒤 성적표가 나옵니다.`
-          : `우선 보강 포지션 ${covered}/3개를 확보했습니다. 활용 계획도 함께 평가합니다.`,
+            ? __i18n_k("draftroom.press.gmOptions.reaction.24b7839d", { prospects: prospects })
+          : __i18n_k("draftroom.press.gmOptions.reaction.42cff18f", { covered: covered }),
   }));
 }
 function accountability(choice, players, season, team) {
@@ -184,20 +185,20 @@ function accountability(choice, players, season, team) {
   ).length;
   let bonus = 0,
     detail = '';
-  if (choice === 'core5') return { bonus: 0, detail: '5년 차 시즌이 끝난 뒤 평가합니다', status: '평가 대기' };
+  if (choice === 'core5') return { bonus: 0, detail: __i18n_k("draftroom.press.accountability.detail.be0cadb2"), status: __i18n_k("draftroom.press.accountability.status.f80ebdaf") };
   if (choice === 'immediate') {
     bonus = major >= 2 ? 4 : major === 1 ? 0 : -4;
-    detail = `1군 경험 ${major}/2명`;
+    detail = __i18n_k("draftroom.press.accountability.c3ebeb2e", { major: major });
   }
   if (choice === 'development') {
     bonus = good >= target ? 3 : good === target - 1 ? 0 : -3;
-    detail = `계획 이행 70점 이상 ${good}/${target}명`;
+    detail = __i18n_k("draftroom.press.accountability.6fafc4ec", { good: good, target: target });
   }
   if (choice === 'needs') {
     bonus = covered === 3 && useful >= 2 ? 4 : covered >= 2 && useful >= 1 ? 0 : -3;
-    detail = `보강 ${covered}/3개 · 해당 선수 계획 이행 ${useful}/2명`;
+    detail = __i18n_k("draftroom.press.accountability.035699cc", { covered: covered, useful: useful });
   }
-  return { bonus, detail, status: bonus > 0 ? '약속 이행' : bonus < 0 ? '약속 미달' : '부분 이행' };
+  return { bonus, detail, status: bonus > 0 ? __i18n_k("draftroom.press.accountability.status.c0b79311") : bonus < 0 ? __i18n_k("draftroom.press.accountability.status.fbe9680a") : __i18n_k("draftroom.press.accountability.status.3422d235") };
 }
 /**
  * The press conference's first two questions. `first`: our first signed pick (public projection) or null;
@@ -209,40 +210,40 @@ function gmQuestions({ first, firstLabel, refused, spentShare, boost, team }) {
     const f = R.fit(first, team);
     out.push({
       id: 'first',
-      question: `${firstLabel} ${first.name}${K.particle(first.name, '을/를')} 먼저 뽑은 이유는 무엇입니까?`,
+      question: __i18n_k("draftroom.press.gmQuestions.question.ffd699cd", { firstLabel: firstLabel, name: first.name, value: K.particle(first.name, __i18n_k("draftroom.press.gmQuestions.question.c57d3d52")) }),
       options: [
-        { id: 'now', title: '바로 쓸 선수입니다', answer: '캠프부터 1군에서 경쟁시킵니다. 올해 1군에서 보실 겁니다.', delta: first.ready >= 45 ? 2 : -1, pledge: `첫해 ${first.name} 1군 출전` },
-        { id: 'project', title: '길게 보고 키웁니다', answer: '당장보다 3–4년 뒤가 기대되는 선수입니다. 그때 주전으로 세우겠습니다.', delta: first.scoutCeiling >= 55 ? 2 : 0, pledge: `4시즌 안에 ${first.name} 주전` },
-        { id: 'fit', title: '가장 필요한 자리였습니다', answer: '우리 팀에 제일 급한 포지션을 채웠습니다.', delta: f >= 80 ? 3 : -2, pledge: null },
+        { id: 'now', title: __i18n_k("draftroom.press.options.title.128688ba"), answer: __i18n_k("draftroom.press.options.answer.71d94b8a"), delta: first.ready >= 45 ? 2 : -1, pledge: __i18n_k("draftroom.press.options.pledge.6e117eff", { name: first.name }) },
+        { id: 'project', title: __i18n_k("draftroom.press.options.title.3f45edfa"), answer: __i18n_k("draftroom.press.options.answer.91c81b5a"), delta: first.scoutCeiling >= 55 ? 2 : 0, pledge: __i18n_k("draftroom.press.options.pledge.526677f8", { name: first.name }) },
+        { id: 'fit', title: __i18n_k("draftroom.press.options.title.dc2db6ff"), answer: __i18n_k("draftroom.press.options.answer.585179ef"), delta: f >= 80 ? 3 : -2, pledge: null },
       ],
     });
   }
   if (refused.length)
     out.push({
       id: 'issue',
-      question: `${refused.join(', ')} 선수가 계약을 거부했습니다. 협상에 문제는 없었습니까?`,
+      question: __i18n_k("draftroom.press.gmQuestions.question.a7006970", { value: refused.join(', ') }),
       options: [
-        { id: 'apologize', title: '제 책임입니다', answer: '협상을 매끄럽게 풀지 못했습니다. 팬들께 죄송합니다.', delta: 1, pledge: null },
-        { id: 'respect', title: '선수 선택을 존중합니다', answer: '선수가 더 나은 길이라고 판단했다면 존중해야 합니다.', delta: -1, pledge: null },
-        { id: 'principle', title: '원칙을 지켰습니다', answer: '한 선수에게 예산을 몰아줄 수는 없었습니다. 남은 돈은 육성에 씁니다.', delta: boost >= 0.05 ? 1 : -2, pledge: null },
+        { id: 'apologize', title: __i18n_k("draftroom.press.options.title.81162fa8"), answer: __i18n_k("draftroom.press.options.answer.e18fb342"), delta: 1, pledge: null },
+        { id: 'respect', title: __i18n_k("draftroom.press.options.title.41479935"), answer: __i18n_k("draftroom.press.options.answer.ec0cc003"), delta: -1, pledge: null },
+        { id: 'principle', title: __i18n_k("draftroom.press.options.title.7455c818"), answer: __i18n_k("draftroom.press.options.answer.1b48a25e"), delta: boost >= 0.05 ? 1 : -2, pledge: null },
       ],
     });
   else if (spentShare >= 0.95)
     out.push({
       id: 'issue',
-      question: '계약금으로 예산을 거의 다 썼습니다. 지나친 지출 아닙니까?',
+      question: __i18n_k("draftroom.press.gmQuestions.question.e77f6715"),
       options: [
-        { id: 'worth', title: '그만한 선수들입니다', answer: '몇 년 뒤 성적으로 증명하겠습니다.', delta: 1, pledge: null },
-        { id: 'sorry', title: '부담이 큰 건 맞습니다', answer: '다음 해에는 더 신중하게 쓰겠습니다.', delta: 0, pledge: null },
+        { id: 'worth', title: __i18n_k("draftroom.press.options.title.401963f6"), answer: __i18n_k("draftroom.press.options.answer.867abb4d"), delta: 1, pledge: null },
+        { id: 'sorry', title: __i18n_k("draftroom.press.options.title.8598773d"), answer: __i18n_k("draftroom.press.options.answer.a4b1fbac"), delta: 0, pledge: null },
       ],
     });
   else
     out.push({
       id: 'issue',
-      question: '남은 예산은 어디에 쓰십니까?',
+      question: __i18n_k("draftroom.press.gmQuestions.question.46fe8134"),
       options: [
-        { id: 'develop', title: '신인 육성에 씁니다', answer: '코치와 훈련 시설에 투자해 신인들이 빨리 크도록 돕겠습니다.', delta: 2, pledge: null },
-        { id: 'save', title: '아껴 두겠습니다', answer: '구단 살림도 생각해야 합니다.', delta: -1, pledge: null },
+        { id: 'develop', title: __i18n_k("draftroom.press.options.title.c6e7ae80"), answer: __i18n_k("draftroom.press.options.answer.f04620cc"), delta: 2, pledge: null },
+        { id: 'save', title: __i18n_k("draftroom.press.options.title.7443de5d"), answer: __i18n_k("draftroom.press.options.answer.0f37e30c"), delta: -1, pledge: null },
       ],
     });
   return out;

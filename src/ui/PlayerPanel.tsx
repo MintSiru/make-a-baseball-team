@@ -1,3 +1,4 @@
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, rich as __i18n_rich, t as __i18n_t } from '../i18n/index';
 /* A league player's page (V0.5.1 layout; in parts since 1.4.0): who he is and his latest season at a glance on top,
    then one part at a time — scouting grades as bars with positions or pitches, records, the staff's read, his
    background and injuries. Everything shown is public: grades are scouting reports, velocity is the radar gun. */
@@ -23,7 +24,7 @@ import type { TraitReport } from '../league/reports';
 import { kboSeasons } from '../league/foreigncap';
 import { postRows, postTotals, type PostRow } from '../league/poststats';
 
-const POSITION_NAMES: Record<string, string> = { C: '포수', '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: '유격수', LF: '좌익수', CF: '중견수', RF: '우익수' };
+const POSITION_NAMES: Record<string, string> = { C: __i18n_k("ui.playerPanel.pOSITION_NAMES.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("ui.playerPanel.pOSITION_NAMES.sS.3e24c7f1"), LF: __i18n_k("ui.playerPanel.pOSITION_NAMES.lF.73836db2"), CF: __i18n_k("ui.playerPanel.pOSITION_NAMES.cF.56780b2a"), RF: __i18n_k("ui.playerPanel.pOSITION_NAMES.rF.a28a0ef8") };
 
 /** Our coaches' read of our player, our scouts' of anyone else (1.1.0): hidden traits, as sure as the staff are. */
 export function TraitReportBox({ report }: { report: TraitReport }) {
@@ -34,34 +35,31 @@ export function TraitReportBox({ report }: { report: TraitReport }) {
   };
   return (
     <section class="pitch-box trait-report">
-      <h3>{report.by === 'coach' ? '코치 평가' : '스카우트 평가'}</h3>
-      <p class="small">
-        성격 <strong>{report.character}</strong>
-        <span class="muted"> · {report.staff}</span>
-      </p>
+      <h3>{__i18n_display(report.by === 'coach' ? __i18n_k("ui.playerPanel.traitReportBox.299d0a35") : __i18n_k("ui.playerPanel.traitReportBox.33ee644c"))}</h3>
+      <p class="small">{__i18n_rich("ui.playerPanel.traitReportBox.31899641", { value: <strong>{__i18n_display(report.character)}</strong>, value2: <span class="muted"> · {__i18n_display(report.staff)}</span> })}</p>
       <dl class="facts">
-        {report.reads.map((r) => (
+        {__i18n_display(report.reads.map((r) => (
           <div key={r.key}>
-            <dt>{r.label}</dt>
+            <dt>{__i18n_display(r.label)}</dt>
             <dd>
-              <span class={tone(r)}>{r.text ?? '파악 못 함'}</span>
-              <span class="muted small"> · 확신 {r.sure}</span>
+              <span class={tone(r)}>{__i18n_display(r.text ?? __i18n_k("ui.playerPanel.traitReportBox.da8abd91"))}</span>
+              <span class="muted small">{__i18n_t("ui.playerPanel.traitReportBox.50484aa3", { sure: r.sure })}</span>
             </dd>
           </div>
-        ))}
+        )))}
       </dl>
-      {report.growthNote && <p class="muted small">{report.growthNote}</p>}
-      {report.notes.length > 0 && (
+      {__i18n_display(report.growthNote && <p class="muted small">{__i18n_display(report.growthNote)}</p>)}
+      {__i18n_display(report.notes.length > 0 && (
         <ul class="plain small">
-          {report.notes.map((n) => (
-            <li key={n}>{n}</li>
-          ))}
+          {__i18n_display(report.notes.map((n) => (
+            <li key={n}>{__i18n_display(n)}</li>
+          )))}
         </ul>
-      )}
+      ))}
       <p class="muted small">
-        {report.by === 'coach'
-          ? '코치진이 함께 지내며 본 판단입니다. 함께한 시즌이 길수록, 코치진 평가가 높을수록 정확해집니다.'
-          : '스카우트 팀의 판단이라 틀릴 수 있습니다. 프로에서 뛴 시즌이 쌓일수록, 스카우트 팀장 평가가 높을수록 정확해집니다.'}
+        {__i18n_display(report.by === 'coach'
+          ? __i18n_k("ui.playerPanel.traitReportBox.bc614e88")
+          : __i18n_k("ui.playerPanel.traitReportBox.4cfba58a"))}
       </p>
     </section>
   );
@@ -73,17 +71,17 @@ export function TraitReportBox({ report }: { report: TraitReport }) {
 type Part = 'ability' | 'records' | 'report' | 'profile' | 'injuries';
 type RecordView = 'seasons' | 'post' | 'highs' | 'splits';
 const PARTS: { key: Part; label: string }[] = [
-  { key: 'ability', label: '능력치' },
-  { key: 'records', label: '기록' },
-  { key: 'report', label: '평가' },
-  { key: 'profile', label: '정보' },
-  { key: 'injuries', label: '부상' },
+  { key: 'ability', label: __i18n_k("ui.playerPanel.pARTS.label.9e9117d0") },
+  { key: 'records', label: __i18n_k("ui.playerPanel.pARTS.label.d84b6f4b") },
+  { key: 'report', label: __i18n_k("ui.playerPanel.pARTS.label.0ca35448") },
+  { key: 'profile', label: __i18n_k("ui.playerPanel.pARTS.label.032e3f1f") },
+  { key: 'injuries', label: __i18n_k("ui.playerPanel.pARTS.label.501fb802") },
 ];
 const RECORD_VIEWS: { key: RecordView; label: string }[] = [
-  { key: 'seasons', label: '정규시즌' },
-  { key: 'post', label: '포스트시즌' },
-  { key: 'highs', label: '커리어 하이' },
-  { key: 'splits', label: '좌우 기록' },
+  { key: 'seasons', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.b4070ed2") },
+  { key: 'post', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.a0f7a345") },
+  { key: 'highs', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.dc5975f8") },
+  { key: 'splits', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.1df210e9") },
 ];
 let lastPart: Part = 'ability';
 let lastRecords: RecordView = 'seasons';
@@ -98,48 +96,48 @@ function SplitTable({ title, splits, pitcher }: { title: string; splits: Splits 
   if (!splits) return null;
   const rows: [string, Split][] = pitcher
     ? [
-        ['좌타자 상대', splits.L],
-        ['우타자 상대', splits.R],
+        [__i18n_k("ui.playerPanel.splitTable.rows.85efe664"), splits.L],
+        [__i18n_k("ui.playerPanel.splitTable.rows.9f7370d0"), splits.R],
       ]
     : [
-        ['좌투수 상대', splits.L],
-        ['우투수 상대', splits.R],
+        [__i18n_k("ui.playerPanel.splitTable.rows.78f330a6"), splits.L],
+        [__i18n_k("ui.playerPanel.splitTable.rows.43502365"), splits.R],
       ];
   return (
     <>
-      <h4>{title}</h4>
+      <h4>{__i18n_display(title)}</h4>
       <div class="table-wrap" tabIndex={0}>
         <table class="record-table career">
           <thead>
             <tr>
-              <th>구분</th>
-              <th class="num">{pitcher ? '상대 타석' : '타석'}</th>
-              <th class="num">{pitcher ? '피안타율' : '타율'}</th>
-              <th class="num">출루율</th>
-              <th class="num">장타율</th>
+              <th>{__i18n_t("ui.playerPanel.splitTable.af2feed6")}</th>
+              <th class="num">{__i18n_display(pitcher ? __i18n_k("ui.playerPanel.splitTable.19d72883") : __i18n_k("ui.playerPanel.splitTable.0a3d002c"))}</th>
+              <th class="num">{__i18n_display(pitcher ? __i18n_k("ui.playerPanel.splitTable.265381ba") : __i18n_k("ui.playerPanel.splitTable.1eb19e0a"))}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.splitTable.bb6ef1b2")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.splitTable.7e66b88d")}</th>
               <th class="num">OPS</th>
-              <th class="num">홈런</th>
-              <th class="num">볼넷</th>
-              <th class="num">삼진</th>
+              <th class="num">{__i18n_t("ui.playerPanel.splitTable.9162d3a3")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.splitTable.21e0537f")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.splitTable.3f349ed1")}</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map(([label, x]) => {
+            {__i18n_display(rows.map(([label, x]) => {
               const r = splitRates(x);
               return (
                 <tr key={label}>
-                  <th scope="row">{label}</th>
-                  <td class="num">{x.pa}</td>
-                  <td class="num">{x.ab ? rates.fmt3(r.avg) : '-'}</td>
-                  <td class="num">{x.pa ? rates.fmt3(r.obp) : '-'}</td>
-                  <td class="num">{x.ab ? rates.fmt3(r.slg) : '-'}</td>
-                  <td class="num strong">{x.pa ? rates.fmt3(r.obp + r.slg) : '-'}</td>
-                  <td class="num">{x.hr}</td>
-                  <td class="num">{x.bb}</td>
-                  <td class="num">{x.k}</td>
+                  <th scope="row">{__i18n_display(label)}</th>
+                  <td class="num">{__i18n_display(x.pa)}</td>
+                  <td class="num">{__i18n_display(x.ab ? rates.fmt3(r.avg) : '-')}</td>
+                  <td class="num">{__i18n_display(x.pa ? rates.fmt3(r.obp) : '-')}</td>
+                  <td class="num">{__i18n_display(x.ab ? rates.fmt3(r.slg) : '-')}</td>
+                  <td class="num strong">{__i18n_display(x.pa ? rates.fmt3(r.obp + r.slg) : '-')}</td>
+                  <td class="num">{__i18n_display(x.hr)}</td>
+                  <td class="num">{__i18n_display(x.bb)}</td>
+                  <td class="num">{__i18n_display(x.k)}</td>
                 </tr>
               );
-            })}
+            }))}
           </tbody>
         </table>
       </div>
@@ -149,7 +147,7 @@ function SplitTable({ title, splits, pitcher }: { title: string; splits: Splits 
 
 function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: PlayerCard; pitcher: boolean }) {
   const rows = card.career;
-  if (!rows.length) return <p class="muted">기록이 없습니다.</p>;
+  if (!rows.length) return <p class="muted">{__i18n_t("ui.playerPanel.seasonTable.626ced4e")}</p>;
   const t = card.totals;
   if (pitcher)
     return (
@@ -157,16 +155,16 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
         <table class="record-table career">
           <thead>
             <tr>
-              <th class="num">연도</th>
-              <th>구단</th>
-              <th class="num">경기</th>
-              <th class="num">승</th>
-              <th class="num">패</th>
-              <th class="num">세</th>
-              <th class="num">홀</th>
-              <th class="num">이닝</th>
-              <th class="num">삼진</th>
-              <th class="num">볼넷</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.d5bc99dd")}</th>
+              <th>{__i18n_t("ui.playerPanel.seasonTable.58756112")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.e0cee61a")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.3b1908b7")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.36260e2c")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.c5e4d00d")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.10a4423a")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.639a1f2f")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.3f349ed1")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.21e0537f")}</th>
               <th class="num">ERA</th>
               <th class="num">WHIP</th>
               <th class="num">FIP</th>
@@ -175,52 +173,52 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => {
+            {__i18n_display(rows.map((r) => {
               const rc = rateContextFor(league, r.year);
               return (
                 <tr key={r.year + r.team + r.futures} class={r.futures ? 'futures-row' : undefined}>
-                  <td class="num">{r.year}</td>
+                  <td class="num">{__i18n_display(r.year)}</td>
                   <td>
-                    {r.team}
-                    {r.futures && <span class="tag">퓨처스</span>}
+                    {__i18n_display(r.team)}
+                    {__i18n_display(r.futures && <span class="tag">{__i18n_t("ui.playerPanel.seasonTable.e6607847")}</span>)}
                   </td>
-                  <td class="num">{r.pit?.g ?? 0}</td>
-                  <td class="num">{r.pit?.w ?? 0}</td>
-                  <td class="num">{r.pit?.l ?? 0}</td>
-                  <td class="num">{r.pit?.sv ?? 0}</td>
-                  <td class="num">{r.pit?.hld ?? 0}</td>
-                  <td class="num">{rates.ip(r.pit?.outs ?? 0)}</td>
-                  <td class="num">{r.pit?.k ?? 0}</td>
-                  <td class="num">{r.pit?.bb ?? 0}</td>
-                  <td class="num strong">{r.pit?.outs ? rates.era(r.pit).toFixed(2) : '-'}</td>
-                  <td class="num">{r.pit?.outs ? rates.whip(r.pit).toFixed(2) : '-'}</td>
-                  <td class="num">{r.pit?.outs && rc ? rates.fip(r.pit, rc).toFixed(2) : '-'}</td>
-                  <td class="num">{r.pit?.outs ? rates.per9(r.pit.k, r.pit.outs).toFixed(1) : '-'}</td>
-                  <td class="num">{r.current || r.futures ? '-' : r.war.toFixed(1)}</td>
+                  <td class="num">{__i18n_display(r.pit?.g ?? 0)}</td>
+                  <td class="num">{__i18n_display(r.pit?.w ?? 0)}</td>
+                  <td class="num">{__i18n_display(r.pit?.l ?? 0)}</td>
+                  <td class="num">{__i18n_display(r.pit?.sv ?? 0)}</td>
+                  <td class="num">{__i18n_display(r.pit?.hld ?? 0)}</td>
+                  <td class="num">{__i18n_display(rates.ip(r.pit?.outs ?? 0))}</td>
+                  <td class="num">{__i18n_display(r.pit?.k ?? 0)}</td>
+                  <td class="num">{__i18n_display(r.pit?.bb ?? 0)}</td>
+                  <td class="num strong">{__i18n_display(r.pit?.outs ? rates.era(r.pit).toFixed(2) : '-')}</td>
+                  <td class="num">{__i18n_display(r.pit?.outs ? rates.whip(r.pit).toFixed(2) : '-')}</td>
+                  <td class="num">{__i18n_display(r.pit?.outs && rc ? rates.fip(r.pit, rc).toFixed(2) : '-')}</td>
+                  <td class="num">{__i18n_display(r.pit?.outs ? rates.per9(r.pit.k, r.pit.outs).toFixed(1) : '-')}</td>
+                  <td class="num">{__i18n_display(r.current || r.futures ? '-' : r.war.toFixed(1))}</td>
                 </tr>
               );
-            })}
+            }))}
           </tbody>
-          {t.pit && (
+          {__i18n_display(t.pit && (
             <tfoot>
               <tr>
-                <th colSpan={2}>1군 통산 ({t.seasons}시즌)</th>
-                <td class="num">{t.pit.g}</td>
-                <td class="num">{t.pit.w}</td>
-                <td class="num">{t.pit.l}</td>
-                <td class="num">{t.pit.sv}</td>
-                <td class="num">{t.pit.hld}</td>
-                <td class="num">{rates.ip(t.pit.outs)}</td>
-                <td class="num">{t.pit.k}</td>
-                <td class="num">{t.pit.bb}</td>
-                <td class="num strong">{t.pit.outs ? rates.era(t.pit).toFixed(2) : '-'}</td>
-                <td class="num">{t.pit.outs ? rates.whip(t.pit).toFixed(2) : '-'}</td>
+                <th colSpan={2}>{__i18n_t("ui.playerPanel.seasonTable.55972bcf", { seasons: t.seasons })}</th>
+                <td class="num">{__i18n_display(t.pit.g)}</td>
+                <td class="num">{__i18n_display(t.pit.w)}</td>
+                <td class="num">{__i18n_display(t.pit.l)}</td>
+                <td class="num">{__i18n_display(t.pit.sv)}</td>
+                <td class="num">{__i18n_display(t.pit.hld)}</td>
+                <td class="num">{__i18n_display(rates.ip(t.pit.outs))}</td>
+                <td class="num">{__i18n_display(t.pit.k)}</td>
+                <td class="num">{__i18n_display(t.pit.bb)}</td>
+                <td class="num strong">{__i18n_display(t.pit.outs ? rates.era(t.pit).toFixed(2) : '-')}</td>
+                <td class="num">{__i18n_display(t.pit.outs ? rates.whip(t.pit).toFixed(2) : '-')}</td>
                 <td class="num">-</td>
-                <td class="num">{t.pit.outs ? rates.per9(t.pit.k, t.pit.outs).toFixed(1) : '-'}</td>
-                <td class="num">{t.war.toFixed(1)}</td>
+                <td class="num">{__i18n_display(t.pit.outs ? rates.per9(t.pit.k, t.pit.outs).toFixed(1) : '-')}</td>
+                <td class="num">{__i18n_display(t.war.toFixed(1))}</td>
               </tr>
             </tfoot>
-          )}
+          ))}
         </table>
       </div>
     );
@@ -229,67 +227,67 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
       <table class="record-table career">
         <thead>
           <tr>
-            <th class="num">연도</th>
-            <th>구단</th>
-            <th class="num">경기</th>
-            <th class="num">타석</th>
-            <th class="num">안타</th>
-            <th class="num">타율</th>
-            <th class="num">출루율</th>
-            <th class="num">장타율</th>
-            <th class="num">홈런</th>
-            <th class="num">타점</th>
-            <th class="num">도루</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.d5bc99dd")}</th>
+            <th>{__i18n_t("ui.playerPanel.seasonTable.58756112")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.e0cee61a")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.0a3d002c")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.1822db88")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.1eb19e0a")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.bb6ef1b2")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.7e66b88d")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.9162d3a3")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.fed1c588")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.91e54831")}</th>
             <th class="num">OPS</th>
             <th class="num">wRC+</th>
             <th class="num">WAR</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => {
+          {__i18n_display(rows.map((r) => {
             const rc = rateContextFor(league, r.year);
             return (
               <tr key={r.year + r.team + r.futures} class={r.futures ? 'futures-row' : undefined}>
-                <td class="num">{r.year}</td>
+                <td class="num">{__i18n_display(r.year)}</td>
                 <td>
-                  {r.team}
-                  {r.futures && <span class="tag">퓨처스</span>}
+                  {__i18n_display(r.team)}
+                  {__i18n_display(r.futures && <span class="tag">{__i18n_t("ui.playerPanel.seasonTable.e6607847")}</span>)}
                 </td>
-                <td class="num">{r.bat?.g ?? 0}</td>
-                <td class="num">{r.bat?.pa ?? 0}</td>
-                <td class="num">{r.bat?.h ?? 0}</td>
-                <td class="num">{r.bat?.ab ? rates.fmt3(rates.avg(r.bat)) : '-'}</td>
-                <td class="num">{r.bat?.pa ? rates.fmt3(rates.obp(r.bat)) : '-'}</td>
-                <td class="num">{r.bat?.ab ? rates.fmt3(rates.slg(r.bat)) : '-'}</td>
-                <td class="num">{r.bat?.hr ?? 0}</td>
-                <td class="num">{r.bat?.rbi ?? 0}</td>
-                <td class="num">{r.bat?.sb ?? 0}</td>
-                <td class="num strong">{r.bat?.pa ? rates.fmt3(rates.ops(r.bat)) : '-'}</td>
-                <td class="num">{r.bat?.pa && rc && !r.futures ? rates.wrcPlus(r.bat, rc) : '-'}</td>
-                <td class="num">{r.current || r.futures ? '-' : r.war.toFixed(1)}</td>
+                <td class="num">{__i18n_display(r.bat?.g ?? 0)}</td>
+                <td class="num">{__i18n_display(r.bat?.pa ?? 0)}</td>
+                <td class="num">{__i18n_display(r.bat?.h ?? 0)}</td>
+                <td class="num">{__i18n_display(r.bat?.ab ? rates.fmt3(rates.avg(r.bat)) : '-')}</td>
+                <td class="num">{__i18n_display(r.bat?.pa ? rates.fmt3(rates.obp(r.bat)) : '-')}</td>
+                <td class="num">{__i18n_display(r.bat?.ab ? rates.fmt3(rates.slg(r.bat)) : '-')}</td>
+                <td class="num">{__i18n_display(r.bat?.hr ?? 0)}</td>
+                <td class="num">{__i18n_display(r.bat?.rbi ?? 0)}</td>
+                <td class="num">{__i18n_display(r.bat?.sb ?? 0)}</td>
+                <td class="num strong">{__i18n_display(r.bat?.pa ? rates.fmt3(rates.ops(r.bat)) : '-')}</td>
+                <td class="num">{__i18n_display(r.bat?.pa && rc && !r.futures ? rates.wrcPlus(r.bat, rc) : '-')}</td>
+                <td class="num">{__i18n_display(r.current || r.futures ? '-' : r.war.toFixed(1))}</td>
               </tr>
             );
-          })}
+          }))}
         </tbody>
-        {t.bat && (
+        {__i18n_display(t.bat && (
           <tfoot>
             <tr>
-              <th colSpan={2}>1군 통산 ({t.seasons}시즌)</th>
-              <td class="num">{t.bat.g}</td>
-              <td class="num">{t.bat.pa}</td>
-              <td class="num">{t.bat.h}</td>
-              <td class="num">{t.bat.ab ? rates.fmt3(rates.avg(t.bat)) : '-'}</td>
-              <td class="num">{t.bat.pa ? rates.fmt3(rates.obp(t.bat)) : '-'}</td>
-              <td class="num">{t.bat.ab ? rates.fmt3(rates.slg(t.bat)) : '-'}</td>
-              <td class="num">{t.bat.hr}</td>
-              <td class="num">{t.bat.rbi}</td>
-              <td class="num">{t.bat.sb}</td>
-              <td class="num strong">{t.bat.pa ? rates.fmt3(rates.ops(t.bat)) : '-'}</td>
+              <th colSpan={2}>{__i18n_t("ui.playerPanel.seasonTable.55972bcf", { seasons: t.seasons })}</th>
+              <td class="num">{__i18n_display(t.bat.g)}</td>
+              <td class="num">{__i18n_display(t.bat.pa)}</td>
+              <td class="num">{__i18n_display(t.bat.h)}</td>
+              <td class="num">{__i18n_display(t.bat.ab ? rates.fmt3(rates.avg(t.bat)) : '-')}</td>
+              <td class="num">{__i18n_display(t.bat.pa ? rates.fmt3(rates.obp(t.bat)) : '-')}</td>
+              <td class="num">{__i18n_display(t.bat.ab ? rates.fmt3(rates.slg(t.bat)) : '-')}</td>
+              <td class="num">{__i18n_display(t.bat.hr)}</td>
+              <td class="num">{__i18n_display(t.bat.rbi)}</td>
+              <td class="num">{__i18n_display(t.bat.sb)}</td>
+              <td class="num strong">{__i18n_display(t.bat.pa ? rates.fmt3(rates.ops(t.bat)) : '-')}</td>
               <td class="num">-</td>
-              <td class="num">{t.war.toFixed(1)}</td>
+              <td class="num">{__i18n_display(t.war.toFixed(1))}</td>
             </tr>
           </tfoot>
-        )}
+        ))}
       </table>
     </div>
   );
@@ -338,325 +336,302 @@ export function PlayerPanel({
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div class="dialog profile" role="dialog" aria-modal="true" aria-labelledby="player-name" ref={box}>
-        <button type="button" class="close" onClick={onClose} aria-label="닫기">
-          닫기
-        </button>
+        <button type="button" class="close" onClick={onClose} aria-label={__i18n_t("ui.playerPanel.playerPanel.94b7dba1")}>{__i18n_t("ui.playerPanel.playerPanel.94b7dba1")}</button>
         <div class="profile-head">
-          {wearing != null && <span class="profile-number">{wearing}</span>}
+          {__i18n_display(wearing != null && <span class="profile-number">{__i18n_display(wearing)}</span>)}
           <div>
             <p class="muted">
-              {card.team} · {positionLabel(p)} · {handedness(p)}
-              {foreign ? ` · ${p.origin.asiaQuota ? '아시아쿼터' : '외국인'} (${p.origin.nationality}) · ${p.archetype}${league.foreignVeteran && kboSeasons(p, league.year) >= league.foreignVeteran ? ' · 외국인 엔트리 제외' : ''}` : ''}
+              {__i18n_display(card.team)} · {__i18n_display(positionLabel(p))} · {__i18n_display(handedness(p))}
+              {__i18n_display(foreign ? __i18n_k("ui.playerPanel.playerPanel.151173f4", { value: p.origin.asiaQuota ? __i18n_k("ui.playerPanel.playerPanel.c66942ff") : __i18n_k("ui.playerPanel.playerPanel.5bd804b7"), nationality: p.origin.nationality, archetype: p.archetype, value2: league.foreignVeteran && kboSeasons(p, league.year) >= league.foreignVeteran ? __i18n_k("ui.playerPanel.playerPanel.1cb18f2a") : '' }) : '')}
             </p>
             <h2 id="player-name" tabIndex={-1} ref={heading}>
-              {p.name}
-              {p.contract?.kind === 'development' && <span class="tag">육성</span>}
+              {__i18n_display(p.name)}
+              {__i18n_display(p.contract?.kind === 'development' && <span class="tag">{__i18n_t("ui.playerPanel.playerPanel.818f3b79")}</span>)}
             </h2>
           </div>
         </div>
         <SummaryStrip card={card} pitcher={pitcher} titles={postSum.titles} />
-        {card.status && <p class="notice">{card.status}</p>}
-        {league.suspended?.[p.id] && (
+        {__i18n_display(card.status && <p class="notice">{__i18n_display(card.status)}</p>)}
+        {__i18n_display(league.suspended?.[p.id] && (
           <p class="notice warn">
-            {league.suspended[p.id]!.reason}:{' '}
-            {league.suspended[p.id]!.games ? `출장정지 ${league.suspended[p.id]!.games}경기 남음` : ''}
-            {league.suspended[p.id]!.until ? `${league.suspended[p.id]!.games ? ' · ' : ''}${league.suspended[p.id]!.until}까지 실격` : ''}
+            {__i18n_display(league.suspended[p.id]!.reason)}:{__i18n_display(' ')}
+            {__i18n_display(league.suspended[p.id]!.games ? __i18n_k("ui.playerPanel.playerPanel.a91fae73", { games: league.suspended[p.id]!.games }) : '')}
+            {__i18n_display(league.suspended[p.id]!.until ? __i18n_k("ui.playerPanel.playerPanel.165116da", { value: league.suspended[p.id]!.games ? ' · ' : '', until: league.suspended[p.id]!.until }) : '')}
           </p>
-        )}
-        {onInterview && ours && (
+        ))}
+        {__i18n_display(onInterview && ours && (
           <p>
-            <button type="button" onClick={() => onInterview(p.id)}>
-              인터뷰 요청
-            </button>{' '}
-            <span class="muted small">우리 구단 → 소식 → 뉴스에 실립니다.</span>
+            <button type="button" onClick={() => onInterview(p.id)}>{__i18n_t("ui.playerPanel.playerPanel.7290c766")}</button>{__i18n_display(' ')}
+            <span class="muted small">{__i18n_t("ui.playerPanel.playerPanel.a1086678")}</span>
           </p>
-        )}
+        ))}
 
-        <div class="segmented profile-tabs profile-parts" role="tablist" aria-label="선수 정보">
-          {PARTS.filter((x) => x.key !== 'report' || card.report).map((x) => (
+        <div class="segmented profile-tabs profile-parts" role="tablist" aria-label={__i18n_t("ui.playerPanel.playerPanel.243cf4c2")}>
+          {__i18n_display(PARTS.filter((x) => x.key !== 'report' || card.report).map((x) => (
             <button key={x.key} type="button" role="tab" aria-selected={shown === x.key} aria-pressed={shown === x.key} onClick={() => setPart(x.key)}>
-              {x.key === 'report' && card.report ? (card.report.by === 'coach' ? '코치 평가' : '스카우트 평가') : x.label}
-              {x.key === 'injuries' && card.injuries.length > 0 && <span class="count">{card.injuries.length}</span>}
+              {__i18n_display(x.key === 'report' && card.report ? (card.report.by === 'coach' ? __i18n_k("ui.playerPanel.playerPanel.299d0a35") : __i18n_k("ui.playerPanel.playerPanel.33ee644c")) : x.label)}
+              {__i18n_display(x.key === 'injuries' && card.injuries.length > 0 && <span class="count">{__i18n_display(card.injuries.length)}</span>)}
             </button>
-          ))}
+          )))}
         </div>
 
-        {shown === 'ability' && (
-          <div class="profile-part" role="tabpanel" aria-label="능력치">
+        {__i18n_display(shown === 'ability' && (
+          <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.9e9117d0")}>
             <section>
-              <h3>스카우팅 등급</h3>
+              <h3>{__i18n_t("ui.playerPanel.playerPanel.7b001924")}</h3>
               <div class="gradebars">
-                {toolKeysFor(p.role).map((k) => (
-                  <GradeBar key={k} label={TOOL_LABELS[k]} now={s.tools[k]} future={s.futureTools[k]} />
-                ))}
-                <GradeBar label="종합" now={s.current} future={s.futureValue} />
+                {__i18n_display(toolKeysFor(p.role).map((k) => (
+                  <GradeBar key={k} label={__i18n_displayText(TOOL_LABELS[k])} now={s.tools[k]} future={s.futureTools[k]} />
+                )))}
+                <GradeBar label={__i18n_t("ui.playerPanel.playerPanel.f7c86d76")} now={s.current} future={s.futureValue} />
               </div>
-              <p class="muted small">막대는 현재 등급, 눈금은 스카우트가 보는 미래 등급입니다 (20~80).</p>
-              {s.moved && (
-                <p class={`small ${s.moved.to > s.moved.from ? 'plus' : 'minus'}`}>
-                  {s.moved.to > s.moved.from ? '▲' : '▼'} 시즌 중 스카우트 평가 {s.moved.from} → {s.moved.to} ({s.moved.date.slice(5).replace('-', '/')})
-                </p>
-              )}
-            </section>
-            {!pitcher && card.positions.length > 0 && (
-              <section class="pitch-box">
-                <h3>포지션 적성</h3>
-                <div class="gradebars">
-                  {card.positions.map((x) => (
-                    <GradeBar key={x.pos} label={`${POSITION_NAMES[x.pos]}${x.main ? ' (주)' : x.listed ? ' (부)' : ''}`} now={x.grade} note={x.games ? `1군 ${x.games}경기 선발` : undefined} />
-                  ))}
-                </div>
-                <p class="muted small">
-                  주 포지션과 부포지션(최대 3개)만 제대로 소화합니다. 부포지션에서는 포지션 차이의 절반만 빠지고, 그 밖의 포지션은 손해가 훨씬 큽니다. 새 포지션에서 한 시즌 1군 40경기를 뛰면 부포지션이
-                  되고, 통산 30경기를 넘기면 손해가 절반으로 줄어듭니다.
-                </p>
-              </section>
-            )}
-            {pitcher && (
-              <section class="pitch-box">
-                <h3>구속 · 구종</h3>
-                {card.velocity && (
-                  <p class="velocity">
-                    <span>
-                      최고 <strong>{card.velocity.top}</strong>km/h
-                    </span>
-                    <span>
-                      평균 <strong>{card.velocity.average}</strong>km/h
-                    </span>
-                  </p>
-                )}
-                <div class="gradebars">
-                  <GradeBar label="직구" now={s.tools.stuff} note={`구사율 ${Math.round((1 - card.pitches.reduce((a, x) => a + x.usage, 0)) * 100)}%`} />
-                  {card.pitches.map((x) => (
-                    <GradeBar key={x.type} label={x.label} now={x.grade} note={`구사율 ${Math.round(x.usage * 100)}%`} />
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
-        )}
-
-        {shown === 'records' && (
-          <div class="profile-part" role="tabpanel" aria-label="기록">
-            <div class="segmented record-views" role="group" aria-label="기록 보기">
-              {RECORD_VIEWS.map((x) => (
-                <button key={x.key} type="button" aria-pressed={records === x.key} onClick={() => setRecords(x.key)}>
-                  {x.label}
-                  {x.key === 'post' && post.length > 0 && <span class="count">{post.length}</span>}
-                </button>
+              <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.40f3273a")}</p>
+              {__i18n_display(s.moved && (
+                <p class={`small ${s.moved.to > s.moved.from ? 'plus' : 'minus'}`}>{__i18n_t("ui.playerPanel.playerPanel.e3838a42", { value: s.moved.to > s.moved.from ? '▲' : '▼', from: s.moved.from, to: s.moved.to, value2: s.moved.date.slice(5).replace('-', '/') })}</p>
               ))}
+            </section>
+            {__i18n_display(!pitcher && card.positions.length > 0 && (
+              <section class="pitch-box">
+                <h3>{__i18n_t("ui.playerPanel.playerPanel.e44b2ec6")}</h3>
+                <div class="gradebars">
+                  {__i18n_display(card.positions.map((x) => (
+                    <GradeBar key={x.pos} label={__i18n_displayText(__i18n_k("ui.playerPanel.playerPanel.b5f18a27", { value: POSITION_NAMES[x.pos], value2: x.main ? __i18n_k("ui.playerPanel.playerPanel.cc99d74f") : x.listed ? __i18n_k("ui.playerPanel.playerPanel.f2215ed8") : '' }))} now={x.grade} note={x.games ? __i18n_k("ui.playerPanel.playerPanel.42050c40", { games: x.games }) : undefined} />
+                  )))}
+                </div>
+                <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.92af1732")}</p>
+              </section>
+            ))}
+            {__i18n_display(pitcher && (
+              <section class="pitch-box">
+                <h3>{__i18n_t("ui.playerPanel.playerPanel.79ffa7f7")}</h3>
+                {__i18n_display(card.velocity && (
+                  <p class="velocity">
+                    <span>{__i18n_rich("ui.playerPanel.playerPanel.dfeb642b", { value: <strong>{__i18n_display(card.velocity.top)}</strong> })}</span>
+                    <span>{__i18n_rich("ui.playerPanel.playerPanel.f35cd13f", { value: <strong>{__i18n_display(card.velocity.average)}</strong> })}</span>
+                  </p>
+                ))}
+                <div class="gradebars">
+                  <GradeBar label={__i18n_t("ui.playerPanel.playerPanel.b17dbbc7")} now={s.tools.stuff} note={__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round((1 - card.pitches.reduce((a, x) => a + x.usage, 0)) * 100) })} />
+                  {__i18n_display(card.pitches.map((x) => (
+                    <GradeBar key={x.type} label={__i18n_displayText(x.label)} now={x.grade} note={__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round(x.usage * 100) })} />
+                  )))}
+                </div>
+              </section>
+            ))}
+          </div>
+        ))}
+
+        {__i18n_display(shown === 'records' && (
+          <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.d84b6f4b")}>
+            <div class="segmented record-views" role="group" aria-label={__i18n_t("ui.playerPanel.playerPanel.493c08af")}>
+              {__i18n_display(RECORD_VIEWS.map((x) => (
+                <button key={x.key} type="button" aria-pressed={records === x.key} onClick={() => setRecords(x.key)}>
+                  {__i18n_display(x.label)}
+                  {__i18n_display(x.key === 'post' && post.length > 0 && <span class="count">{__i18n_display(post.length)}</span>)}
+                </button>
+              )))}
             </div>
-            {records === 'seasons' && (
+            {__i18n_display(records === 'seasons' && (
               <>
                 <SeasonTable league={league} card={card} pitcher={pitcher} />
-                <p class="muted small">WAR·FIP·wRC+는 게임 내 추정치입니다 (구장 보정 없음). 올해 WAR은 시즌이 끝나면 계산됩니다. 퓨처스 기록은 통산에 넣지 않습니다.</p>
+                <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.7e2cbab5")}</p>
               </>
-            )}
-            {records === 'post' && (
+            ))}
+            {__i18n_display(records === 'post' && (
               <>
                 <PostTable rows={post} totals={postSum} pitcher={pitcher} />
-                <p class="muted small">포스트시즌 기록은 정규시즌 기록·통산과 따로 셉니다. 1.4.0 이전 버전에서 치른 포스트시즌은 기록이 남아 있지 않습니다.</p>
+                <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.fcf42cd6")}</p>
               </>
-            )}
-            {records === 'highs' &&
+            ))}
+            {__i18n_display(records === 'highs' &&
               (card.highs.length ? (
                 <dl class="highs">
-                  {card.highs.map((h) => (
+                  {__i18n_display(card.highs.map((h) => (
                     <div key={h.label}>
-                      <dt>{h.label}</dt>
+                      <dt>{__i18n_display(h.label)}</dt>
                       <dd>
-                        <strong>{h.value}</strong> <span class="muted">({h.year})</span>
+                        <strong>{__i18n_display(h.value)}</strong> <span class="muted">({__i18n_display(h.year)})</span>
                       </dd>
                     </div>
-                  ))}
+                  )))}
                 </dl>
               ) : (
-                <p class="muted">1군 기록이 없습니다.</p>
-              ))}
-            {records === 'splits' &&
+                <p class="muted">{__i18n_t("ui.playerPanel.playerPanel.3055338b")}</p>
+              )))}
+            {__i18n_display(records === 'splits' &&
               (card.splits.season || card.splits.career ? (
                 <>
-                  <SplitTable title={`${league.year} 시즌`} splits={card.splits.season} pitcher={pitcher} />
-                  <SplitTable title="1군 통산" splits={card.splits.career} pitcher={pitcher} />
-                  <p class="muted small">좌우 기록은 0.5.1 이후 치른 1군 경기부터 쌓입니다. 양타자는 투수 반대편 타석으로 셉니다.</p>
+                  <SplitTable title={__i18n_displayText(__i18n_k("ui.playerPanel.playerPanel.de766445", { year: league.year }))} splits={card.splits.season} pitcher={pitcher} />
+                  <SplitTable title={__i18n_t("ui.playerPanel.playerPanel.7f3e9e67")} splits={card.splits.career} pitcher={pitcher} />
+                  <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.3fbaa6d0")}</p>
                 </>
               ) : (
-                <p class="muted">좌우 기록이 없습니다 (0.5.1 이후 1군 경기부터 기록).</p>
-              ))}
+                <p class="muted">{__i18n_t("ui.playerPanel.playerPanel.f5cd3591")}</p>
+              )))}
           </div>
-        )}
+        ))}
 
-        {shown === 'report' && card.report && (
-          <div class="profile-part" role="tabpanel" aria-label="평가">
+        {__i18n_display(shown === 'report' && card.report && (
+          <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.0ca35448")}>
             <TraitReportBox report={card.report} />
           </div>
-        )}
+        ))}
 
-        {shown === 'profile' && (
-          <div class="profile-part" role="tabpanel" aria-label="정보">
-            {onAct && ours && <NumberField key={`${p.id}-${wearing ?? ''}`} league={league} id={p.id} current={wearing} onAct={onAct} />}
-            {onAct && ours && (p.life?.suspicion?.signs ?? 0) > 0 && (
+        {__i18n_display(shown === 'profile' && (
+          <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.032e3f1f")}>
+            {__i18n_display(onAct && ours && <NumberField key={`${p.id}-${wearing ?? ''}`} league={league} id={p.id} current={wearing} onAct={onAct} />)}
+            {__i18n_display(onAct && ours && (p.life?.suspicion?.signs ?? 0) > 0 && (
               <p class="inline-form">
-                <span class="small">최근 기사로 금지약물 의혹이 나왔습니다.</span>
-                <button type="button" disabled={!!checkInspect(league, p.id)} title={checkInspect(league, p.id) ?? ''} onClick={() => onAct({ kind: 'inspect', id: p.id })}>
-                  구단 자체 검사 ({SCANDAL.doping.inspectCost}만 원)
-                </button>
-                <span class="muted small">사실이면 KBO 검사 전에 막고, 아니면 선수가 서운해합니다.</span>
+                <span class="small">{__i18n_t("ui.playerPanel.playerPanel.35b81cd9")}</span>
+                <button type="button" disabled={!!checkInspect(league, p.id)} title={__i18n_displayText(checkInspect(league, p.id) ?? '')} onClick={() => onAct({ kind: 'inspect', id: p.id })}>{__i18n_t("ui.playerPanel.playerPanel.c7b1ead1", { inspectCost: SCANDAL.doping.inspectCost })}</button>
+                <span class="muted small">{__i18n_t("ui.playerPanel.playerPanel.02a8cc00")}</span>
               </p>
-            )}
+            ))}
             <dl class="facts profile-facts">
               <div>
-                <dt>나이</dt>
+                <dt>{__i18n_t("ui.playerPanel.playerPanel.6c620e5c")}</dt>
+                <dd>{__i18n_t("ui.playerPanel.playerPanel.77f716cf", { age: card.age, value: p.birthday.slice(0, 4) })}</dd>
+              </div>
+              <div>
+                <dt>{__i18n_t("ui.playerPanel.playerPanel.98633e27")}</dt>
+                <dd>{__i18n_display(p.birthplace)}</dd>
+              </div>
+              <div>
+                <dt>{__i18n_t("ui.playerPanel.playerPanel.691a855d")}</dt>
                 <dd>
-                  만 {card.age}세 ({p.birthday.slice(0, 4)}년생)
+                  {__i18n_display(p.height)}cm · {__i18n_display(p.weight)}kg
                 </dd>
               </div>
               <div>
-                <dt>출생</dt>
-                <dd>{p.birthplace}</dd>
-              </div>
-              <div>
-                <dt>체격</dt>
+                <dt>{__i18n_display(p.contract?.usd ? __i18n_k("ui.playerPanel.playerPanel.b4116369") : __i18n_k("ui.playerPanel.playerPanel.cbf383ec"))}</dt>
                 <dd>
-                  {p.height}cm · {p.weight}kg
+                  {__i18n_display(p.contract?.usd
+                    ? __i18n_k("ui.playerPanel.playerPanel.de99127a", { usd: usd(usdTotal(p.contract)), usd2: usd(p.contract.usd.bonus), usd3: usd(p.contract.usd.salary), usd4: usd(p.contract.usd.options) })
+                    : money(card.salary))}
                 </dd>
               </div>
               <div>
-                <dt>{p.contract?.usd ? '계약' : '연봉'}</dt>
+                <dt>{__i18n_t("ui.playerPanel.playerPanel.81af228b")}</dt>
                 <dd>
-                  {p.contract?.usd
-                    ? `총액 ${usd(usdTotal(p.contract))} (계약금 ${usd(p.contract.usd.bonus)} · 연봉 ${usd(p.contract.usd.salary)} · 옵션 ${usd(p.contract.usd.options)})`
-                    : money(card.salary)}
-                </dd>
-              </div>
-              <div>
-                <dt>입단</dt>
-                <dd>
-                  {p.origin.overallPick
-                    ? `${p.origin.draftYear} 드래프트 전체 ${p.origin.overallPick}순위`
+                  {__i18n_display(p.origin.overallPick
+                    ? __i18n_k("ui.playerPanel.playerPanel.083f725c", { draftYear: p.origin.draftYear, overallPick: p.origin.overallPick })
                     : foreign
-                      ? `${p.proSince}년`
+                      ? __i18n_k("ui.playerPanel.playerPanel.117bde8b", { proSince: p.proSince })
                       : p.origin.draftYear
-                        ? `${p.origin.draftYear} 육성선수`
-                        : '-'}
+                        ? __i18n_k("ui.playerPanel.playerPanel.04a68f8e", { draftYear: p.origin.draftYear })
+                        : '-')}
                 </dd>
               </div>
               <div>
-                <dt>병역</dt>
+                <dt>{__i18n_t("ui.playerPanel.playerPanel.82af035c")}</dt>
                 <dd>
-                  {militaryLabel[p.service.military]}
-                  {serviceNote(p) && <span class="muted small"> · {serviceNote(p)}</span>}
+                  {__i18n_display(militaryLabel[p.service.military])}
+                  {__i18n_display(serviceNote(p) && <span class="muted small"> · {__i18n_display(serviceNote(p))}</span>)}
                 </dd>
               </div>
               <div>
-                <dt>FA 등록 시즌</dt>
-                <dd>{foreign ? '-' : `${p.service.creditedSeasons}시즌`}</dd>
+                <dt>{__i18n_t("ui.playerPanel.playerPanel.2d4db98d")}</dt>
+                <dd>{__i18n_display(foreign ? '-' : __i18n_k("ui.playerPanel.playerPanel.58030cf8", { creditedSeasons: p.service.creditedSeasons }))}</dd>
               </div>
               <div>
-                <dt>통산 WAR</dt>
-                <dd>{card.totals.seasons ? card.totals.war.toFixed(1) : '-'}</dd>
+                <dt>{__i18n_t("ui.playerPanel.playerPanel.750fc29b")}</dt>
+                <dd>{__i18n_display(card.totals.seasons ? card.totals.war.toFixed(1) : '-')}</dd>
               </div>
-              {p.teamId && (
+              {__i18n_display(p.teamId && (
                 <div>
-                  <dt>팬 호감도</dt>
+                  <dt>{__i18n_t("ui.playerPanel.playerPanel.2179c84f")}</dt>
                   <dd>
-                    {fanAffinity(league, p)}
-                    <span class="muted small"> / 100{hometownOf(league, p) ? ' · 연고지 출신' : ''}</span>
+                    {__i18n_display(fanAffinity(league, p))}
+                    <span class="muted small"> / 100{__i18n_display(hometownOf(league, p) ? __i18n_k("ui.playerPanel.playerPanel.f028614f") : '')}</span>
                   </dd>
                 </div>
-              )}
-              {form && (
+              ))}
+              {__i18n_display(form && (
                 <div>
-                  <dt>컨디션</dt>
-                  <dd class={form.delta > 0 ? 'plus' : 'minus'}>
-                    {form.delta > 0 ? '좋음' : '나쁨'} ({form.why}, {form.until.slice(5).replace('-', '/')}까지)
-                  </dd>
+                  <dt>{__i18n_t("ui.playerPanel.playerPanel.15dfe118")}</dt>
+                  <dd class={form.delta > 0 ? 'plus' : 'minus'}>{__i18n_t("ui.playerPanel.playerPanel.e36fe9dd", { value: form.delta > 0 ? __i18n_k("ui.playerPanel.playerPanel.5cd0d95b") : __i18n_k("ui.playerPanel.playerPanel.c89bafa8"), why: form.why, value2: form.until.slice(5).replace('-', '/') })}</dd>
                 </div>
-              )}
-              {ours && (
+              ))}
+              {__i18n_display(ours && (
                 <div>
-                  <dt>가족</dt>
+                  <dt>{__i18n_t("ui.playerPanel.playerPanel.0fc79d30")}</dt>
                   <dd>
-                    {p.life?.married ? `${p.life.married}년 결혼` : isMarried(league, p) ? '기혼' : '미혼'}
-                    {p.life?.kids ? ` · 자녀 ${p.life.kids}명` : ''}
+                    {__i18n_display(p.life?.married ? __i18n_k("ui.playerPanel.playerPanel.bf7cd261", { married: p.life.married }) : isMarried(league, p) ? __i18n_k("ui.playerPanel.playerPanel.75f8dbf0") : __i18n_k("ui.playerPanel.playerPanel.703337ca"))}
+                    {__i18n_display(p.life?.kids ? __i18n_k("ui.playerPanel.playerPanel.65a71a08", { kids: p.life.kids }) : '')}
                   </dd>
                 </div>
-              )}
+              ))}
             </dl>
-            <p class="muted small">{p.education.pathText}</p>
-            {!!p.honors?.length && (
+            <p class="muted small">{__i18n_display(p.education.pathText)}</p>
+            {__i18n_display(!!p.honors?.length && (
               <>
-                <h3>수상 · 타이틀</h3>
+                <h3>{__i18n_t("ui.playerPanel.playerPanel.34f8ad9e")}</h3>
                 <div class="honors">
-                  {[...p.honors].reverse().map((h) => (
+                  {__i18n_display([...p.honors].reverse().map((h) => (
                     <span key={h} class="tag">
-                      {h}
+                      {__i18n_display(h)}
                     </span>
-                  ))}
+                  )))}
                 </div>
               </>
-            )}
-            {(trips.length > 0 || (p.life?.events?.length ?? 0) > 0) && (
+            ))}
+            {__i18n_display((trips.length > 0 || (p.life?.events?.length ?? 0) > 0) && (
               <>
-                <h3>최근 일</h3>
+                <h3>{__i18n_t("ui.playerPanel.playerPanel.41861931")}</h3>
                 <ul class="plain small life-list">
-                  {trips.map((t) => (
-                    <li key={`${t.season}-${t.site}`}>
-                      {t.from.slice(0, 7)} 해외 연수 · {SITES[t.site].name}: {t.result ? t.result.text + (t.result.injury ? ` (${t.result.injury})` : '') : `${t.until}까지`}
-                    </li>
-                  ))}
-                  {(p.life?.events ?? [])
+                  {__i18n_display(trips.map((t) => (
+                    <li key={`${t.season}-${t.site}`}>{__i18n_t("ui.playerPanel.playerPanel.f236eafb", { value: t.from.slice(0, 7), name: SITES[t.site].name, value2: t.result ? t.result.text + (t.result.injury ? ` (${t.result.injury})` : '') : __i18n_k("ui.playerPanel.playerPanel.7ffd4715", { until: t.until }) })}</li>
+                  )))}
+                  {__i18n_display((p.life?.events ?? [])
                     .slice(-5)
                     .reverse()
                     .map((e, i) => (
                       <li key={i} class={e.tone === 'good' ? 'plus' : e.tone === 'bad' ? 'minus' : ''}>
-                        {e.date} {e.text}
+                        {__i18n_display(e.date)} {__i18n_display(e.text)}
                       </li>
-                    ))}
+                    )))}
                 </ul>
               </>
-            )}
+            ))}
           </div>
-        )}
+        ))}
 
-        {shown === 'injuries' && (
-          <div class="profile-part" role="tabpanel" aria-label="부상">
-            {card.injuries.length ? (
+        {__i18n_display(shown === 'injuries' && (
+          <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.501fb802")}>
+            {__i18n_display(card.injuries.length ? (
               <>
-                <p class="muted">
-                  통산 {card.injuries.length}회, {hurtDays}일
-                </p>
+                <p class="muted">{__i18n_t("ui.playerPanel.playerPanel.75a95895", { length: card.injuries.length, hurtDays: hurtDays })}</p>
                 <div class="table-wrap" tabIndex={0}>
                   <table class="record-table">
                     <thead>
                       <tr>
-                        <th>날짜</th>
-                        <th>부위</th>
-                        <th class="num">기간</th>
-                        <th>구분</th>
+                        <th>{__i18n_t("ui.playerPanel.playerPanel.5caa75a8")}</th>
+                        <th>{__i18n_t("ui.playerPanel.playerPanel.615225e4")}</th>
+                        <th class="num">{__i18n_t("ui.playerPanel.playerPanel.2622331e")}</th>
+                        <th>{__i18n_t("ui.playerPanel.playerPanel.af2feed6")}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {card.injuries.map((x) => (
+                      {__i18n_display(card.injuries.map((x) => (
                         <tr key={x.date + x.part}>
-                          <td>{x.date}</td>
-                          <td>{x.part}</td>
-                          <td class="num">{x.days}일</td>
+                          <td>{__i18n_display(x.date)}</td>
+                          <td>{__i18n_display(x.part)}</td>
+                          <td class="num">{__i18n_t("ui.playerPanel.playerPanel.e1aa3431", { days: x.days })}</td>
                           <td>
-                            {x.futures ? '퓨처스' : '1군 부상자 명단'}
-                            {x.surgery && <span class={`tag${x.surgery === 'major' ? ' warn' : ''}`}>{x.surgery === 'major' ? '큰 수술' : '수술'}</span>}
+                            {__i18n_display(x.futures ? __i18n_k("ui.playerPanel.playerPanel.e6607847") : __i18n_k("ui.playerPanel.playerPanel.30eac4dc"))}
+                            {__i18n_display(x.surgery && <span class={`tag${x.surgery === 'major' ? ' warn' : ''}`}>{__i18n_display(x.surgery === 'major' ? __i18n_k("ui.playerPanel.playerPanel.471cda0c") : __i18n_k("ui.playerPanel.playerPanel.98a2b68d"))}</span>)}
                           </td>
                         </tr>
-                      ))}
+                      )))}
                     </tbody>
                   </table>
                 </div>
               </>
             ) : (
-              <p class="muted">부상 기록이 없습니다.</p>
-            )}
+              <p class="muted">{__i18n_t("ui.playerPanel.playerPanel.e966961f")}</p>
+            ))}
           </div>
-        )}
+        ))}
       </div>
     </div>
   );
@@ -667,42 +642,39 @@ function SummaryStrip({ card, pitcher, titles }: { card: PlayerCard; pitcher: bo
   const s = card.player.scouting;
   const last = [...card.career].reverse().find((r) => !r.futures && (pitcher ? r.pit?.g : r.bat?.g));
   const line = !last
-    ? '1군 기록 없음'
+    ? __i18n_k("ui.playerPanel.summaryStrip.line.12ca5e35")
     : pitcher
-      ? `${last.year} ${last.pit!.g}경기 ${last.pit!.w}승 ${last.pit!.l}패${last.pit!.sv ? ` ${last.pit!.sv}세` : ''}${last.pit!.hld ? ` ${last.pit!.hld}홀` : ''} · ERA ${last.pit!.outs ? rates.era(last.pit!).toFixed(2) : '-'} · ${rates.ip(last.pit!.outs)}이닝`
-      : `${last.year} ${last.bat!.g}경기 타율 ${last.bat!.ab ? rates.fmt3(rates.avg(last.bat!)) : '-'} · ${last.bat!.hr}홈런 · OPS ${last.bat!.pa ? rates.fmt3(rates.ops(last.bat!)) : '-'}`;
+      ? __i18n_k("ui.playerPanel.summaryStrip.line.4a6df1ba", { year: last.year, g: last.pit!.g, w: last.pit!.w, l: last.pit!.l, value: last.pit!.sv ? __i18n_k("ui.playerPanel.summaryStrip.line.3abfd8a4", { sv: last.pit!.sv }) : '', value2: last.pit!.hld ? __i18n_k("ui.playerPanel.summaryStrip.line.714b2700", { hld: last.pit!.hld }) : '', value3: last.pit!.outs ? rates.era(last.pit!).toFixed(2) : '-', value4: rates.ip(last.pit!.outs) })
+      : __i18n_k("ui.playerPanel.summaryStrip.line.99ee272d", { year: last.year, g: last.bat!.g, value: last.bat!.ab ? rates.fmt3(rates.avg(last.bat!)) : '-', hr: last.bat!.hr, value2: last.bat!.pa ? rates.fmt3(rates.ops(last.bat!)) : '-' });
   return (
     <dl class="summary-strip">
       <div>
-        <dt>나이</dt>
-        <dd>만 {card.age}세</dd>
+        <dt>{__i18n_t("ui.playerPanel.summaryStrip.6c620e5c")}</dt>
+        <dd>{__i18n_t("ui.playerPanel.summaryStrip.1001e7e6", { age: card.age })}</dd>
       </div>
       <div>
-        <dt>종합</dt>
+        <dt>{__i18n_t("ui.playerPanel.summaryStrip.f7c86d76")}</dt>
         <dd>
-          <strong>{s.current}</strong> <span class="muted small">미래 {s.futureValue}</span>
+          <strong>{__i18n_display(s.current)}</strong> <span class="muted small">{__i18n_t("ui.playerPanel.summaryStrip.92982abd", { futureValue: s.futureValue })}</span>
         </dd>
       </div>
       <div class="wide">
-        <dt>{last?.current ? '올 시즌' : '최근 시즌'}</dt>
-        <dd>{line}</dd>
+        <dt>{__i18n_display(last?.current ? __i18n_k("ui.playerPanel.summaryStrip.3ab6c6f3") : __i18n_k("ui.playerPanel.summaryStrip.3cb1090e"))}</dt>
+        <dd>{__i18n_display(line)}</dd>
       </div>
-      {card.totals.seasons > 0 && (
+      {__i18n_display(card.totals.seasons > 0 && (
         <div>
-          <dt>1군 통산</dt>
-          <dd>
-            {card.totals.seasons}시즌 · WAR {card.totals.war.toFixed(1)}
-            {titles ? ` · 우승 ${titles}회` : ''}
-          </dd>
+          <dt>{__i18n_t("ui.playerPanel.summaryStrip.7f3e9e67")}</dt>
+          <dd>{__i18n_t("ui.playerPanel.summaryStrip.a14624b0", { seasons: card.totals.seasons, value: card.totals.war.toFixed(1), value2: titles ? __i18n_k("ui.playerPanel.summaryStrip.77ae974d", { titles: titles }) : '' })}</dd>
         </div>
-      )}
+      ))}
     </dl>
   );
 }
 
 /** His postseasons (1.4.0), one row a year with how far his club went, and the totals. */
 function PostTable({ rows, totals, pitcher }: { rows: PostRow[]; totals: ReturnType<typeof postTotals>; pitcher: boolean }) {
-  if (!rows.length) return <p class="muted">포스트시즌 기록이 없습니다.</p>;
+  if (!rows.length) return <p class="muted">{__i18n_t("ui.playerPanel.postTable.2a9c2f14")}</p>;
   const t = totals;
   if (pitcher)
     return (
@@ -710,59 +682,57 @@ function PostTable({ rows, totals, pitcher }: { rows: PostRow[]; totals: ReturnT
         <table class="record-table career">
           <thead>
             <tr>
-              <th class="num">연도</th>
-              <th>구단</th>
-              <th>결과</th>
-              <th class="num">경기</th>
-              <th class="num">승</th>
-              <th class="num">패</th>
-              <th class="num">세</th>
-              <th class="num">홀</th>
-              <th class="num">이닝</th>
-              <th class="num">삼진</th>
-              <th class="num">볼넷</th>
+              <th class="num">{__i18n_t("ui.playerPanel.postTable.d5bc99dd")}</th>
+              <th>{__i18n_t("ui.playerPanel.postTable.58756112")}</th>
+              <th>{__i18n_t("ui.playerPanel.postTable.71d855ac")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.postTable.e0cee61a")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.postTable.3b1908b7")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.postTable.36260e2c")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.postTable.c5e4d00d")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.postTable.10a4423a")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.postTable.639a1f2f")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.postTable.3f349ed1")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.postTable.21e0537f")}</th>
               <th class="num">ERA</th>
               <th class="num">WHIP</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {__i18n_display(rows.map((r) => (
               <tr key={r.year + r.team}>
-                <td class="num">{r.year}</td>
-                <td>{r.team}</td>
-                <td>{r.result === '우승' ? <strong>우승</strong> : r.result}</td>
-                <td class="num">{r.pit?.g ?? 0}</td>
-                <td class="num">{r.pit?.w ?? 0}</td>
-                <td class="num">{r.pit?.l ?? 0}</td>
-                <td class="num">{r.pit?.sv ?? 0}</td>
-                <td class="num">{r.pit?.hld ?? 0}</td>
-                <td class="num">{rates.ip(r.pit?.outs ?? 0)}</td>
-                <td class="num">{r.pit?.k ?? 0}</td>
-                <td class="num">{r.pit?.bb ?? 0}</td>
-                <td class="num strong">{r.pit?.outs ? rates.era(r.pit).toFixed(2) : '-'}</td>
-                <td class="num">{r.pit?.outs ? rates.whip(r.pit).toFixed(2) : '-'}</td>
+                <td class="num">{__i18n_display(r.year)}</td>
+                <td>{__i18n_display(r.team)}</td>
+                <td>{__i18n_display(r.result === '우승' ? <strong>{__i18n_t("ui.playerPanel.postTable.894badc3")}</strong> : r.result)}</td>
+                <td class="num">{__i18n_display(r.pit?.g ?? 0)}</td>
+                <td class="num">{__i18n_display(r.pit?.w ?? 0)}</td>
+                <td class="num">{__i18n_display(r.pit?.l ?? 0)}</td>
+                <td class="num">{__i18n_display(r.pit?.sv ?? 0)}</td>
+                <td class="num">{__i18n_display(r.pit?.hld ?? 0)}</td>
+                <td class="num">{__i18n_display(rates.ip(r.pit?.outs ?? 0))}</td>
+                <td class="num">{__i18n_display(r.pit?.k ?? 0)}</td>
+                <td class="num">{__i18n_display(r.pit?.bb ?? 0)}</td>
+                <td class="num strong">{__i18n_display(r.pit?.outs ? rates.era(r.pit).toFixed(2) : '-')}</td>
+                <td class="num">{__i18n_display(r.pit?.outs ? rates.whip(r.pit).toFixed(2) : '-')}</td>
               </tr>
-            ))}
+            )))}
           </tbody>
-          {t.pit && (
+          {__i18n_display(t.pit && (
             <tfoot>
               <tr>
-                <th colSpan={3}>
-                  포스트시즌 통산 ({t.years}회{t.titles ? ` · 우승 ${t.titles}회` : ''})
-                </th>
-                <td class="num">{t.pit.g}</td>
-                <td class="num">{t.pit.w}</td>
-                <td class="num">{t.pit.l}</td>
-                <td class="num">{t.pit.sv}</td>
-                <td class="num">{t.pit.hld}</td>
-                <td class="num">{rates.ip(t.pit.outs)}</td>
-                <td class="num">{t.pit.k}</td>
-                <td class="num">{t.pit.bb}</td>
-                <td class="num strong">{t.pit.outs ? rates.era(t.pit).toFixed(2) : '-'}</td>
-                <td class="num">{t.pit.outs ? rates.whip(t.pit).toFixed(2) : '-'}</td>
+                <th colSpan={3}>{__i18n_t("ui.playerPanel.postTable.26da3deb", { years: t.years, value: t.titles ? __i18n_k("ui.playerPanel.postTable.77ae974d", { titles: t.titles }) : '' })}</th>
+                <td class="num">{__i18n_display(t.pit.g)}</td>
+                <td class="num">{__i18n_display(t.pit.w)}</td>
+                <td class="num">{__i18n_display(t.pit.l)}</td>
+                <td class="num">{__i18n_display(t.pit.sv)}</td>
+                <td class="num">{__i18n_display(t.pit.hld)}</td>
+                <td class="num">{__i18n_display(rates.ip(t.pit.outs))}</td>
+                <td class="num">{__i18n_display(t.pit.k)}</td>
+                <td class="num">{__i18n_display(t.pit.bb)}</td>
+                <td class="num strong">{__i18n_display(t.pit.outs ? rates.era(t.pit).toFixed(2) : '-')}</td>
+                <td class="num">{__i18n_display(t.pit.outs ? rates.whip(t.pit).toFixed(2) : '-')}</td>
               </tr>
             </tfoot>
-          )}
+          ))}
         </table>
       </div>
     );
@@ -771,59 +741,57 @@ function PostTable({ rows, totals, pitcher }: { rows: PostRow[]; totals: ReturnT
       <table class="record-table career">
         <thead>
           <tr>
-            <th class="num">연도</th>
-            <th>구단</th>
-            <th>결과</th>
-            <th class="num">경기</th>
-            <th class="num">타석</th>
-            <th class="num">안타</th>
-            <th class="num">타율</th>
-            <th class="num">출루율</th>
-            <th class="num">장타율</th>
-            <th class="num">홈런</th>
-            <th class="num">타점</th>
-            <th class="num">도루</th>
+            <th class="num">{__i18n_t("ui.playerPanel.postTable.d5bc99dd")}</th>
+            <th>{__i18n_t("ui.playerPanel.postTable.58756112")}</th>
+            <th>{__i18n_t("ui.playerPanel.postTable.71d855ac")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.postTable.e0cee61a")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.postTable.0a3d002c")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.postTable.1822db88")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.postTable.1eb19e0a")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.postTable.bb6ef1b2")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.postTable.7e66b88d")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.postTable.9162d3a3")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.postTable.fed1c588")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.postTable.91e54831")}</th>
             <th class="num">OPS</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
+          {__i18n_display(rows.map((r) => (
             <tr key={r.year + r.team}>
-              <td class="num">{r.year}</td>
-              <td>{r.team}</td>
-              <td>{r.result === '우승' ? <strong>우승</strong> : r.result}</td>
-              <td class="num">{r.bat?.g ?? 0}</td>
-              <td class="num">{r.bat?.pa ?? 0}</td>
-              <td class="num">{r.bat?.h ?? 0}</td>
-              <td class="num">{r.bat?.ab ? rates.fmt3(rates.avg(r.bat)) : '-'}</td>
-              <td class="num">{r.bat?.pa ? rates.fmt3(rates.obp(r.bat)) : '-'}</td>
-              <td class="num">{r.bat?.ab ? rates.fmt3(rates.slg(r.bat)) : '-'}</td>
-              <td class="num">{r.bat?.hr ?? 0}</td>
-              <td class="num">{r.bat?.rbi ?? 0}</td>
-              <td class="num">{r.bat?.sb ?? 0}</td>
-              <td class="num strong">{r.bat?.pa ? rates.fmt3(rates.ops(r.bat)) : '-'}</td>
+              <td class="num">{__i18n_display(r.year)}</td>
+              <td>{__i18n_display(r.team)}</td>
+              <td>{__i18n_display(r.result === '우승' ? <strong>{__i18n_t("ui.playerPanel.postTable.894badc3")}</strong> : r.result)}</td>
+              <td class="num">{__i18n_display(r.bat?.g ?? 0)}</td>
+              <td class="num">{__i18n_display(r.bat?.pa ?? 0)}</td>
+              <td class="num">{__i18n_display(r.bat?.h ?? 0)}</td>
+              <td class="num">{__i18n_display(r.bat?.ab ? rates.fmt3(rates.avg(r.bat)) : '-')}</td>
+              <td class="num">{__i18n_display(r.bat?.pa ? rates.fmt3(rates.obp(r.bat)) : '-')}</td>
+              <td class="num">{__i18n_display(r.bat?.ab ? rates.fmt3(rates.slg(r.bat)) : '-')}</td>
+              <td class="num">{__i18n_display(r.bat?.hr ?? 0)}</td>
+              <td class="num">{__i18n_display(r.bat?.rbi ?? 0)}</td>
+              <td class="num">{__i18n_display(r.bat?.sb ?? 0)}</td>
+              <td class="num strong">{__i18n_display(r.bat?.pa ? rates.fmt3(rates.ops(r.bat)) : '-')}</td>
             </tr>
-          ))}
+          )))}
         </tbody>
-        {t.bat && (
+        {__i18n_display(t.bat && (
           <tfoot>
             <tr>
-              <th colSpan={3}>
-                포스트시즌 통산 ({t.years}회{t.titles ? ` · 우승 ${t.titles}회` : ''})
-              </th>
-              <td class="num">{t.bat.g}</td>
-              <td class="num">{t.bat.pa}</td>
-              <td class="num">{t.bat.h}</td>
-              <td class="num">{t.bat.ab ? rates.fmt3(rates.avg(t.bat)) : '-'}</td>
-              <td class="num">{t.bat.pa ? rates.fmt3(rates.obp(t.bat)) : '-'}</td>
-              <td class="num">{t.bat.ab ? rates.fmt3(rates.slg(t.bat)) : '-'}</td>
-              <td class="num">{t.bat.hr}</td>
-              <td class="num">{t.bat.rbi}</td>
-              <td class="num">{t.bat.sb}</td>
-              <td class="num strong">{t.bat.pa ? rates.fmt3(rates.ops(t.bat)) : '-'}</td>
+              <th colSpan={3}>{__i18n_t("ui.playerPanel.postTable.26da3deb", { years: t.years, value: t.titles ? __i18n_k("ui.playerPanel.postTable.77ae974d", { titles: t.titles }) : '' })}</th>
+              <td class="num">{__i18n_display(t.bat.g)}</td>
+              <td class="num">{__i18n_display(t.bat.pa)}</td>
+              <td class="num">{__i18n_display(t.bat.h)}</td>
+              <td class="num">{__i18n_display(t.bat.ab ? rates.fmt3(rates.avg(t.bat)) : '-')}</td>
+              <td class="num">{__i18n_display(t.bat.pa ? rates.fmt3(rates.obp(t.bat)) : '-')}</td>
+              <td class="num">{__i18n_display(t.bat.ab ? rates.fmt3(rates.slg(t.bat)) : '-')}</td>
+              <td class="num">{__i18n_display(t.bat.hr)}</td>
+              <td class="num">{__i18n_display(t.bat.rbi)}</td>
+              <td class="num">{__i18n_display(t.bat.sb)}</td>
+              <td class="num strong">{__i18n_display(t.bat.pa ? rates.fmt3(rates.ops(t.bat)) : '-')}</td>
             </tr>
           </tfoot>
-        )}
+        ))}
       </table>
     </div>
   );
@@ -834,18 +802,18 @@ function NumberField({ league, id, current, onAct }: { league: LeagueState; id: 
   // A new player or number remounts the field (keyed by both), so what is typed is never reset under the user.
   const [text, setText] = useState(current != null ? String(current) : '');
   const n = Number(text);
-  const problem = text.trim() === '' ? '번호를 넣으세요.' : checkNumber(league, id, n);
+  const problem = text.trim() === '' ? __i18n_k("ui.playerPanel.numberField.problem.f35daaf6") : checkNumber(league, id, n);
   const holder = !problem ? numberHolder(league, league.user!.teamId, n, id) : undefined;
   return (
     <p class="inline-form number-form">
       <label>
         등번호
-        <input type="number" inputMode="numeric" min={0} max={199} value={text} aria-label="등번호" onInput={(e) => setText((e.currentTarget as HTMLInputElement).value)} />
+        <input type="number" inputMode="numeric" min={0} max={199} value={text} aria-label={__i18n_t("ui.playerPanel.numberField.7fab4c51")} onInput={(e) => setText((e.currentTarget as HTMLInputElement).value)} />
       </label>
       <button type="button" disabled={!!problem || n === current} onClick={() => onAct({ kind: 'number', id, number: n })}>
-        {holder ? `${wagwa(holder.name)} 맞바꾸기` : '바꾸기'}
+        {__i18n_display(holder ? __i18n_k("ui.playerPanel.numberField.0e4ceea3", { name: wagwa(holder.name) }) : __i18n_k("ui.playerPanel.numberField.75b73b7f"))}
       </button>
-      {problem && text.trim() !== '' && <span class="muted small">{problem}</span>}
+      {__i18n_display(problem && text.trim() !== '' && <span class="muted small">{__i18n_display(problem)}</span>)}
     </p>
   );
 }

@@ -1,3 +1,4 @@
+import { display as __i18n_display, k as __i18n_k, rich as __i18n_rich, t as __i18n_t } from '../i18n/index';
 /* The twelfth club in the screens (V0.9): the setting (new game and the front office), the founding form, and
    the rivalry at a glance. */
 import { cityById } from '../club/cities';
@@ -9,9 +10,9 @@ import type { GmStyle, LeagueFormat, LeagueState, ManagerStyle, RivalSettings, T
 import { GM_STYLES, LEAGUE_NAMES, seasonSeries } from '../league/twelve';
 
 const MODES: [TwelveSetting['mode'], string, string][] = [
-  ['off', '없음', '11구단 체제로 계속합니다.'],
-  ['year', '연도 지정', '정한 해 겨울에 12번째 구단이 창단합니다.'],
-  ['event', '창단 제안 이벤트', '1군 3년 차 겨울부터 해마다 KBO 이사회가 12구단 창단을 논의할 수 있고, 반대표를 던질 수도 있습니다.'],
+  ['off', __i18n_k("ui.twelve.mODES.d58fa73a"), __i18n_k("ui.twelve.mODES.4c6c6e01")],
+  ['year', __i18n_k("ui.twelve.mODES.353cea95"), __i18n_k("ui.twelve.mODES.5bbed0e3")],
+  ['event', __i18n_k("ui.twelve.mODES.5f44e5ea"), __i18n_k("ui.twelve.mODES.5423d96f")],
 ];
 
 /** The twelfth-club setting: off, a founding winter, or the board's offer. `from`: the earliest founding winter. */
@@ -20,29 +21,27 @@ export function TwelveSettingField({ value, from, onChange }: { value: TwelveSet
   const year = value.year ?? from + 2;
   return (
     <div class="twelve-setting">
-      <div class="segmented" role="group" aria-label="12구단 창단">
-        {MODES.map(([mode, label]) => (
+      <div class="segmented" role="group" aria-label={__i18n_t("ui.twelve.twelveSettingField.427e4250")}>
+        {__i18n_display(MODES.map(([mode, label]) => (
           <button key={mode} type="button" aria-pressed={value.mode === mode} onClick={() => onChange(mode === 'year' ? { mode, year } : { mode })}>
-            {label}
+            {__i18n_display(label)}
           </button>
-        ))}
+        )))}
       </div>
-      {value.mode === 'year' && (
+      {__i18n_display(value.mode === 'year' && (
         <label class="inline-field">
           창단 연도
           <select value={year} onChange={(e) => onChange({ mode: 'year', year: Number((e.currentTarget as HTMLSelectElement).value) })}>
-            {years.map((y) => (
-              <option key={y} value={y}>
-                {y}년 겨울 창단 → {y + 1} 퓨처스 → {y + 2} 1군
-              </option>
-            ))}
+            {__i18n_display(years.map((y) => (
+              <option key={y} value={y}>{__i18n_t("ui.twelve.twelveSettingField.f3cd0a96", { y: y, value: y + 1, value2: y + 2 })}</option>
+            )))}
           </select>
         </label>
-      )}
+      ))}
       <p class="muted small">
-        {MODES.find((m) => m[0] === value.mode)![2]}{' '}
-        {value.mode !== 'off' &&
-          '창단 때 라이벌 구단의 이름·연고지·모기업·운영 성향·감독 스타일과 리그 방식(단일 리그 또는 드림·매직 양대 리그)을 직접 정하고, 1군 진입 직전 겨울 특별지명에서 우리 구단도 보호선수 20명 밖의 1명을 내줍니다.'}
+        {__i18n_display(MODES.find((m) => m[0] === value.mode)![2])}{__i18n_display(' ')}
+        {__i18n_display(value.mode !== 'off' &&
+          __i18n_k("ui.twelve.twelveSettingField.6a38406e"))}
       </p>
     </div>
   );
@@ -70,70 +69,68 @@ export function RivalForm({ league, value, onChange }: { league: LeagueState; va
       <label class="wide">
         연고지
         <select value={value.cityId} onChange={(e) => set('cityId', (e.currentTarget as HTMLSelectElement).value)}>
-          {rivalCities(league).map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name} · 시장 {c.market} · {c.stadium.name} {c.stadium.seats.toLocaleString('ko-KR')}석
-            </option>
-          ))}
+          {__i18n_display(rivalCities(league).map((c) => (
+            <option key={c.id} value={c.id}>{__i18n_t("ui.twelve.rivalForm.80f89e99", { name: c.name, market: c.market, name2: c.stadium.name, value: c.stadium.seats.toLocaleString('ko-KR') })}</option>
+          )))}
         </select>
       </label>
-      {city && <p class="muted small">{city.competition}. 1군 진입 전까지 지자체가 구장을 1만 2천 석 이상으로 고칩니다 (게임 가정).</p>}
+      {__i18n_display(city && <p class="muted small">{__i18n_t("ui.twelve.rivalForm.d3e22d94", { competition: city.competition })}</p>)}
       <div class="fields">
         <label>
           모기업 형태
           <select value={value.parentType} onChange={(e) => set('parentType', (e.currentTarget as HTMLSelectElement).value as ParentCompanyType)}>
-            {(Object.keys(PARENT_COMPANY_TYPES) as ParentCompanyType[]).map((t) => (
+            {__i18n_display((Object.keys(PARENT_COMPANY_TYPES) as ParentCompanyType[]).map((t) => (
               <option key={t} value={t}>
-                {PARENT_COMPANY_TYPES[t].label}
+                {__i18n_display(PARENT_COMPANY_TYPES[t].label)}
               </option>
-            ))}
+            )))}
           </select>
         </label>
         <label>
-          {value.parentType === 'citizen' ? '운영 주체' : value.parentType === 'namingRights' ? '메인 스폰서' : '모기업'} 이름
+          {__i18n_display(value.parentType === 'citizen' ? __i18n_k("ui.twelve.rivalForm.607afb0c") : value.parentType === 'namingRights' ? __i18n_k("ui.twelve.rivalForm.47ed7893") : __i18n_k("ui.twelve.rivalForm.cf76b767"))} 이름
           <input value={value.parentName} maxLength={20} onInput={(e) => set('parentName', (e.currentTarget as HTMLInputElement).value)} />
         </label>
       </div>
       <fieldset class="choice-set">
-        <legend>단장 성향</legend>
+        <legend>{__i18n_t("ui.twelve.rivalForm.f6c378d3")}</legend>
         <div class="choice-grid">
-          {(Object.keys(GM_STYLES) as GmStyle[]).map((g) => (
+          {__i18n_display((Object.keys(GM_STYLES) as GmStyle[]).map((g) => (
             <button key={g} type="button" class="choice" aria-pressed={value.gm === g} onClick={() => set('gm', g)}>
-              <strong>{GM_STYLES[g].label}</strong>
-              <span class="muted">{GM_STYLES[g].note}</span>
+              <strong>{__i18n_display(GM_STYLES[g].label)}</strong>
+              <span class="muted">{__i18n_display(GM_STYLES[g].note)}</span>
             </button>
-          ))}
+          )))}
         </div>
       </fieldset>
       <fieldset class="choice-set">
-        <legend>감독 스타일</legend>
+        <legend>{__i18n_t("ui.twelve.rivalForm.dc4bfb44")}</legend>
         <div class="choice-grid">
-          {(Object.keys(MANAGER_STYLES) as ManagerStyle[]).map((m) => (
+          {__i18n_display((Object.keys(MANAGER_STYLES) as ManagerStyle[]).map((m) => (
             <button key={m} type="button" class="choice" aria-pressed={value.manager === m} onClick={() => set('manager', m)}>
-              <strong>{MANAGER_STYLES[m].label}</strong>
-              <span class="muted">{MANAGER_STYLES[m].note}</span>
+              <strong>{__i18n_display(MANAGER_STYLES[m].label)}</strong>
+              <span class="muted">{__i18n_display(MANAGER_STYLES[m].note)}</span>
             </button>
-          ))}
+          )))}
         </div>
       </fieldset>
       <fieldset class="choice-set">
-        <legend>12구단 리그 방식</legend>
+        <legend>{__i18n_t("ui.twelve.rivalForm.cce80683")}</legend>
         <div class="choice-grid">
-          {(
+          {__i18n_display((
             [
-              ['single', '단일 리그', '12개 구단이 한 리그. 144경기(라이벌 14경기, 나머지 13경기), 지금처럼 5위까지 포스트시즌'],
+              ['single', __i18n_k("ui.twelve.rivalForm.94667733"), __i18n_k("ui.twelve.rivalForm.3ab39516")],
               [
                 'two',
-                '양대 리그 (드림·매직)',
-                '1999~2000년처럼 6개 구단씩 두 리그. 같은 리그 14경기, 다른 리그 12~13경기. 각 리그 1위가 다른 리그 2위와 플레이오프, 3위가 다른 리그 2위보다 승률이 높으면 준플레이오프',
+                __i18n_k("ui.twelve.rivalForm.a2308b8c"),
+                __i18n_k("ui.twelve.rivalForm.110c161b"),
               ],
             ] as [LeagueFormat, string, string][]
           ).map(([f, label, note]) => (
             <button key={f} type="button" class="choice" aria-pressed={value.format === f} onClick={() => set('format', f)}>
-              <strong>{label}</strong>
-              <span class="muted">{note}</span>
+              <strong>{__i18n_display(label)}</strong>
+              <span class="muted">{__i18n_display(note)}</span>
             </button>
-          ))}
+          )))}
         </div>
       </fieldset>
     </div>
@@ -151,27 +148,15 @@ export function RivalryBox({ league }: { league: LeagueState }) {
   const side = tw.leagues && league.user ? tw.leagues[league.user.teamId] : undefined;
   return (
     <div class="rivalry-box">
-      <p>
-        <span class="swatch" style={{ background: team.color }} aria-hidden="true" /> <strong>{team.name}</strong> · {team.region} · {team.parent.name} · 단장 {GM_STYLES[tw.gm].label} · 감독{' '}
-        {MANAGER_STYLES[tw.manager].label}
-      </p>
-      <p class="muted">
-        {tw.founded}년 창단 · {tw.firstTeam}년 1군 진입 · {tw.format === 'two' ? `양대 리그${side ? ` (우리: ${LEAGUE_NAMES[side]})` : ''}` : '단일 리그'}
-      </p>
-      {played && (
-        <p>
-          올 시즌 맞대결{' '}
-          <strong>
-            {now.w}승 {now.l}패{now.t ? ` ${now.t}무` : ''}
-          </strong>
-        </p>
-      )}
-      {total.seasons > 0 && (
-        <p>
-          통산 {total.seasons}시즌 {total.w}승 {total.l}패{total.t ? ` ${total.t}무` : ''}
-        </p>
-      )}
-      {tw.picks && tw.picks.length > 0 && <p class="muted small">특별지명: {tw.picks.map((x) => `${league.teams.find((t) => t.id === x.from)?.short ?? x.from} ${x.name}`).join(', ')}</p>}
+      <p>{__i18n_rich("ui.twelve.rivalryBox.8f237969", { value: <span class="swatch" style={{ background: team.color }} aria-hidden="true" />, value2: <strong>{__i18n_display(team.name)}</strong>, region: team.region, name: team.parent.name, label: GM_STYLES[tw.gm].label, value3: ' ', label2: MANAGER_STYLES[tw.manager].label })}</p>
+      <p class="muted">{__i18n_t("ui.twelve.rivalryBox.dff71c74", { founded: tw.founded, firstTeam: tw.firstTeam, value: tw.format === 'two' ? __i18n_k("ui.twelve.rivalryBox.8e1ac6e9", { value: side ? __i18n_k("ui.twelve.rivalryBox.5aac59f8", { value: LEAGUE_NAMES[side] }) : '' }) : __i18n_k("ui.twelve.rivalryBox.94667733") })}</p>
+      {__i18n_display(played && (
+        <p>{__i18n_rich("ui.twelve.rivalryBox.b9749b8e", { value: ' ', value2: <strong>{__i18n_t("ui.twelve.rivalryBox.eae1f95b", { w: now.w, l: now.l, value: now.t ? __i18n_k("ui.twelve.rivalryBox.136ac74d", { value: now.t }) : '' })}</strong> })}</p>
+      ))}
+      {__i18n_display(total.seasons > 0 && (
+        <p>{__i18n_t("ui.twelve.rivalryBox.3094639b", { seasons: total.seasons, w: total.w, l: total.l, value: total.t ? __i18n_k("ui.twelve.rivalryBox.136ac74d", { value: total.t }) : '' })}</p>
+      ))}
+      {__i18n_display(tw.picks && tw.picks.length > 0 && <p class="muted small">{__i18n_t("ui.twelve.rivalryBox.282e66d3", { value: tw.picks.map((x) => `${league.teams.find((t) => t.id === x.from)?.short ?? x.from} ${x.name}`).join(', ') })}</p>)}
     </div>
   );
 }

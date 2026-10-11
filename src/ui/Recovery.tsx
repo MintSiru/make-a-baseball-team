@@ -1,3 +1,4 @@
+import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* Getting a game back (1.4.1, from the 1.4 review). When a screen breaks or the autosave cannot be opened, the player
    is never left on a blank page: go to another screen, restore one of the autosaves kept behind (a few minutes
    apart), open a save file, or start a new game — the autosave is kept as a backup either way. Each choice reloads the
@@ -36,14 +37,14 @@ export function Recovery({ error, onBack, title }: { error?: unknown; onBack?: (
       reload();
     } catch (e) {
       autosaveHold.on = false;
-      setMsg(`되돌리지 못했습니다: ${e instanceof Error ? e.message : String(e)}`);
+      setMsg(__i18n_k("ui.recovery.recovery.restore.2b370cb6", { value: e instanceof Error ? e.message : String(e) }));
     }
   };
   const open = async (file: File | undefined) => {
     if (!file) return;
     try {
       const save = parseSave(await readSaveFile(file));
-      if (!save.snapshot) throw new SaveError('damaged', '진행 파일에 리그 상태가 없습니다.');
+      if (!save.snapshot) throw new SaveError('damaged', __i18n_k("ui.recovery.recovery.open.8f84f785"));
       autosaveHold.on = true;
       const st = await openStore();
       await st.copy(AUTO_SLOT, UNDO_SLOT);
@@ -51,11 +52,11 @@ export function Recovery({ error, onBack, title }: { error?: unknown; onBack?: (
       reload();
     } catch (e) {
       autosaveHold.on = false;
-      setMsg(e instanceof SaveError ? e.message : '진행 파일을 읽지 못했습니다.');
+      setMsg(e instanceof SaveError ? e.message : __i18n_k("ui.recovery.recovery.open.e2604b5b"));
     }
   };
   const fresh = () => {
-    if (!window.confirm('새 게임을 시작할까요? 지금 자동 저장은 백업으로 남아 이 화면에서 다시 되돌릴 수 있습니다.')) return;
+    if (!window.confirm(__i18n_k("ui.recovery.recovery.fresh.fe978faf"))) return;
     autosaveHold.on = true;
     try {
       sessionStorage.setItem(FRESH_KEY, '1');
@@ -65,76 +66,64 @@ export function Recovery({ error, onBack, title }: { error?: unknown; onBack?: (
     reload();
   };
   const copy = () => {
-    const text = `KBO 신구단 ${RELEASE}\n${navigator.userAgent}\n${describe(error)}`;
+    const text = __i18n_k("ui.recovery.copy.text.dd5d5e7e", { rELEASE: RELEASE, userAgent: navigator.userAgent, describe: describe(error) });
     void navigator.clipboard?.writeText(text).then(
-      () => setMsg('오류 내용을 복사했습니다.'),
-      () => setMsg('복사하지 못했습니다. 아래 내용을 직접 복사하세요.'),
+      () => setMsg(__i18n_k("ui.recovery.recovery.copy.65e25303")),
+      () => setMsg(__i18n_k("ui.recovery.recovery.copy.8f610775")),
     );
   };
 
   return (
     <section class="recovery" aria-labelledby="recovery-title">
-      <h2 id="recovery-title">{title ?? (error ? '이 화면을 여는 중에 문제가 생겼습니다' : '이전 진행으로 되돌리기')}</h2>
-      {error !== undefined && (
-        <p>
-          게임은 멈추지 않았습니다. 다른 화면으로 가거나, 몇 분 전 자동 저장으로 되돌리거나, 진행 파일을 불러올 수 있습니다. 같은 일이 되풀이되면 오류 내용을 복사해 알려 주세요.
-        </p>
-      )}
-      {msg && (
+      <h2 id="recovery-title">{__i18n_display(title ?? (error ? __i18n_k("ui.recovery.recovery.5364a19b") : __i18n_k("ui.recovery.recovery.c817428e")))}</h2>
+      {__i18n_display(error !== undefined && (
+        <p>{__i18n_t("ui.recovery.recovery.a7d54d31")}</p>
+      ))}
+      {__i18n_display(msg && (
         <p class="notice" role="status">
-          {msg}
+          {__i18n_display(msg)}
         </p>
-      )}
+      ))}
       <div class="row-actions">
-        {onBack && (
-          <button type="button" class="primary" onClick={onBack}>
-            다른 화면으로
-          </button>
-        )}
+        {__i18n_display(onBack && (
+          <button type="button" class="primary" onClick={onBack}>{__i18n_t("ui.recovery.recovery.7397b570")}</button>
+        ))}
         <label class="file-button">
           진행 파일 불러오기
           <input type="file" accept=".json,.gz,application/json" onChange={(e) => void open((e.currentTarget as HTMLInputElement).files?.[0])} />
         </label>
-        <button type="button" onClick={fresh}>
-          새 게임 시작
-        </button>
-        {error !== undefined && (
-          <button type="button" onClick={copy}>
-            오류 내용 복사
-          </button>
-        )}
+        <button type="button" onClick={fresh}>{__i18n_t("ui.recovery.recovery.9f84140c")}</button>
+        {__i18n_display(error !== undefined && (
+          <button type="button" onClick={copy}>{__i18n_t("ui.recovery.recovery.6d93b064")}</button>
+        ))}
       </div>
-      <h3>자동 저장 백업</h3>
-      {backups === null ? (
-        <p class="muted">백업을 찾는 중</p>
+      <h3>{__i18n_t("ui.recovery.recovery.3065f99d")}</h3>
+      {__i18n_display(backups === null ? (
+        <p class="muted">{__i18n_t("ui.recovery.recovery.c44aa196")}</p>
       ) : backups.length === 0 ? (
-        <p class="muted">아직 백업이 없습니다. 자동 저장은 몇 분마다, 그리고 다른 게임을 시작하기 전에 백업으로 남습니다.</p>
+        <p class="muted">{__i18n_t("ui.recovery.recovery.2aca0b6a")}</p>
       ) : (
         <ul class="plain backup-list">
-          {backups.map((b) => (
+          {__i18n_display(backups.map((b) => (
             <li key={b.slot}>
               <span>
-                <strong>{b.problem ? '열 수 없음' : `${b.at}${b.club ? ` · ${b.club}` : ' · 관전'}`}</strong>{' '}
-                <span class="muted small">
-                  {when(b.savedAt)} 저장{b.slot === UNDO_SLOT ? ' · 되돌리기 전 상태' : b.slot.startsWith('backup-') ? ' · 버전 업데이트 전' : ''}
-                </span>
-                {b.problem && <span class="muted small"> · {b.problem}</span>}
+                <strong>{__i18n_display(b.problem ? __i18n_k("ui.recovery.recovery.8654097e") : __i18n_k("ui.recovery.recovery.34e28011", { at: b.at, value: b.club ? ` · ${b.club}` : __i18n_k("ui.recovery.recovery.49faefb4") }))}</strong>{__i18n_display(' ')}
+                <span class="muted small">{__i18n_t("ui.recovery.recovery.f4ee1272", { when: when(b.savedAt), value: b.slot === UNDO_SLOT ? __i18n_k("ui.recovery.recovery.860ee3a3") : b.slot.startsWith('backup-') ? __i18n_k("ui.recovery.recovery.eeb7cc5b") : '' })}</span>
+                {__i18n_display(b.problem && <span class="muted small"> · {__i18n_display(b.problem)}</span>)}
               </span>
-              {!b.problem && (
-                <button type="button" onClick={() => void restore(b.slot)}>
-                  이 시점으로 되돌리기
-                </button>
-              )}
+              {__i18n_display(!b.problem && (
+                <button type="button" onClick={() => void restore(b.slot)}>{__i18n_t("ui.recovery.recovery.61313a35")}</button>
+              ))}
             </li>
-          ))}
+          )))}
         </ul>
-      )}
-      {error !== undefined && (
+      ))}
+      {__i18n_display(error !== undefined && (
         <details>
-          <summary>오류 내용</summary>
-          <pre class="error-text" tabIndex={0}>{describe(error)}</pre>
+          <summary>{__i18n_t("ui.recovery.recovery.eb0b429b")}</summary>
+          <pre class="error-text" tabIndex={0}>{__i18n_display(describe(error))}</pre>
         </details>
-      )}
+      ))}
     </section>
   );
 }

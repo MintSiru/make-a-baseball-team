@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The story writer (V0.7): one entry point for every provider. It sends only the article's public facts
    and template draft, checks that every number in the result is one the facts or draft already had,
    and otherwise keeps the template (the fallback is always there). */
@@ -41,9 +42,9 @@ export async function rewrite(item: NewsItem, settings: RewriteSettings, fetchIm
     if (sec <= RETRY.maxWaitSec) {
       await wait(sec * 1000);
       out = await call();
-      if (!out.ok) out = { ...out, message: `${out.message} (한 번 더 시도함)` };
+      if (!out.ok) out = { ...out, message: __i18n_k("story.writer.rewrite.message.84365f24", { message: out.message }) };
     }
   }
-  if (out.ok && !numbersCheck(out.text, item)) return { ok: false, error: 'invalid', message: '기사에 사실에 없는 숫자가 있어 원래 기사를 유지합니다.' };
+  if (out.ok && !numbersCheck(out.text, item)) return { ok: false, error: 'invalid', message: __i18n_k("story.writer.rewrite.message.c5218b15") };
   return out;
 }

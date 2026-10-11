@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Scenarios (1.6.0, the scenario mode the roadmap kept a hook for since V0.3): a founding with some conditions fixed,
    a goal and a deadline. The goal is judged each winter after the owner's verdict; once it is won or lost the game
    says so and goes on as a free game. Some scenarios change the money and the owner:
@@ -76,42 +77,42 @@ export interface ScenarioDef {
 export const SCENARIOS: ScenarioDef[] = [
   {
     id: 'seoul',
-    title: '서울의 왕',
-    tagline: '서울의 네 번째 구단으로, 세 형님을 넘어서라',
+    title: __i18n_k("league.scenarios.sCENARIOS.title.b367c13b"),
+    tagline: __i18n_k("league.scenarios.sCENARIOS.tagline.e82ead88"),
     story: [
-      '서울에는 이미 잠실의 LG와 두산, 고척의 키움이 있습니다. 천만 도시라지만 팬들의 마음은 벌써 세 갈래로 나뉘어 있습니다.',
-      '목동에 둥지를 튼 네 번째 서울 구단의 단장이 되어, 누가 진짜 서울의 주인인지 성적으로 증명하세요.',
+      __i18n_k("league.scenarios.sCENARIOS.story.5cc62a42"),
+      __i18n_k("league.scenarios.sCENARIOS.story.341dad37"),
     ],
-    goal: '2035 시즌까지 1군 통산 승률에서 LG·두산·키움을 모두 앞서기',
+    goal: __i18n_k("league.scenarios.sCENARIOS.goal.af5b6fb5"),
     stars: 3,
     fixed: { cityId: 'seoul', stadium: 'existing' },
     locked: ['cityId'],
   },
   {
     id: 'comeback',
-    title: '재기',
-    tagline: '한물간 단장, 성급한 재벌 3세 구단주와 함께',
+    title: __i18n_k("league.scenarios.sCENARIOS.title.e25dc523"),
+    tagline: __i18n_k("league.scenarios.sCENARIOS.tagline.d0de9671"),
     story: [
-      '한때 잘나갔지만 이제는 한물갔다는 소리를 듣는 단장에게 한빛그룹 회장의 손자가 손을 내밀었습니다. "한국 최고의 야구단을 만듭시다. 돈은 걱정 마세요."',
-      '지원은 어느 구단보다 넉넉합니다. 하지만 조심하세요. 구단주는 인내심이 없고, 시즌 중에도 수시로 전화를 걸어 감독 교체와 거물 영입을 지시합니다. 따를지 말지는 단장의 몫이지만, 거스를 때마다 신뢰가 깎입니다.',
+      __i18n_k("league.scenarios.sCENARIOS.story.fffccb74"),
+      __i18n_k("league.scenarios.sCENARIOS.story.bf9c2b30"),
     ],
-    goal: '1군 데뷔 뒤 5시즌 안에 한국시리즈 우승',
+    goal: __i18n_k("league.scenarios.sCENARIOS.goal.e1c9c59b"),
     titleWithin: 5,
     stars: 3,
-    fixed: { parentType: 'conglomerate', parentName: '한빛그룹', firing: true },
+    fixed: { parentType: 'conglomerate', parentName: __i18n_k("league.scenarios.fixed.parentName.3497e002"), firing: true },
     locked: ['parentType', 'parentName', 'firing'],
     money: { fund: 1.4, payroll: 1.45, support: 1.5 },
     owner: { startTrust: 50, trustLoss: 1.5, fireFrom: 1, rankGoal: (n) => (n === 0 ? 6 : n === 1 ? 4 : 3) },
   },
   {
     id: 'ulleung',
-    title: '섬그늘에 야구하러 가면',
-    tagline: '인구 9천의 섬 울릉에 프로야구를. 숙련자용',
+    title: __i18n_k("league.scenarios.sCENARIOS.title.2aca598f"),
+    tagline: __i18n_k("league.scenarios.sCENARIOS.tagline.1f81f174"),
     story: [
-      '울릉군은 갈수록 나빠지는 지역 이미지를 프로스포츠 구단으로 바꿔 보려 합니다. 군민 9천 명, 야구장도 없는 섬에 시민구단이 생겼습니다.',
-      '원정마다 배와 비행기를 타야 하고, 3천 석짜리 임시 구장도 육지 팬에게는 멀기만 합니다. 척박하고 조용한 섬을 야구 열기로 뒤덮으세요. 숙련된 단장에게 권하는 시나리오입니다.',
+      __i18n_k("league.scenarios.sCENARIOS.story.80779924"),
+      __i18n_k("league.scenarios.sCENARIOS.story.510962fe"),
     ],
-    goal: '2035 시즌 뒤 평가까지 해임되지 않고 살아남기',
+    goal: __i18n_k("league.scenarios.sCENARIOS.goal.00c0669f"),
     stars: 5,
     fixed: { cityId: 'ulleung', parentType: 'citizen', difficulty: 'hard', firing: true, stadium: 'existing' },
     locked: ['cityId', 'parentType', 'difficulty', 'firing'],
@@ -119,39 +120,39 @@ export const SCENARIOS: ScenarioDef[] = [
   },
   {
     id: 'raiders',
-    title: '돌격대의 귀환',
-    tagline: '쌍방울 레이더스의 이름으로 전주에 우승을',
+    title: __i18n_k("league.scenarios.sCENARIOS.title.6948fbf5"),
+    tagline: __i18n_k("league.scenarios.sCENARIOS.tagline.aa705eaa"),
     story: [
-      '프로 구단이 하나둘 떠난 전주. 시는 1990년대 전주를 누빈 "돌격대" 쌍방울 레이더스의 이름을 되살려 다시 야구단을 만들기로 했습니다.',
-      '레이더스는 끝내 한국시리즈 우승을 하지 못했습니다. 전주 시민들의 오랜 바람을 이뤄 주세요.',
+      __i18n_k("league.scenarios.sCENARIOS.story.8a4f5ac6"),
+      __i18n_k("league.scenarios.sCENARIOS.story.f0cb2b7b"),
     ],
-    goal: '2035 시즌까지 한국시리즈 우승 3회',
+    goal: __i18n_k("league.scenarios.sCENARIOS.goal.d2d65080"),
     stars: 4,
-    fixed: { cityId: 'jeonju', parentType: 'midsize', name: '쌍방울 레이더스', short: '쌍방울', parentName: '쌍방울' },
+    fixed: { cityId: 'jeonju', parentType: 'midsize', name: __i18n_k("league.scenarios.fixed.name.27066a3c"), short: __i18n_k("league.scenarios.fixed.short.fcc26bb5"), parentName: __i18n_k("league.scenarios.fixed.parentName.fcc26bb5") },
     locked: ['cityId', 'parentType', 'name', 'short'],
   },
   {
     id: 'fantasy',
-    title: '판타지 드래프트',
-    tagline: '모든 선수가 시장에 나온다. 다시 뽑아 3년을 겨뤄라',
+    title: __i18n_k("league.scenarios.sCENARIOS.title.bc92c419"),
+    tagline: __i18n_k("league.scenarios.sCENARIOS.tagline.e701d340"),
     story: [
-      '창단 이듬해 겨울(2027년), 리그의 모든 선수가 소속 구단을 떠나 판타지 드래프트에 나옵니다. 그해 신인 드래프트 참가자도 함께입니다.',
-      '열한 구단이 추첨한 순서대로 번갈아 지명합니다(뱀 순서). 우리 차례마다 직접 고르거나 스카우트에게 맡기세요. 그 뒤 세 시즌(2028~2030)의 순위와 가을야구 성적으로 점수를 매깁니다.',
+      __i18n_k("league.scenarios.sCENARIOS.story.48b50c6a"),
+      __i18n_k("league.scenarios.sCENARIOS.story.f20a9448"),
     ],
-    goal: '2028~2030 세 시즌의 점수 (순위 + 포스트시즌, 최고 450점)',
+    goal: __i18n_k("league.scenarios.sCENARIOS.goal.e3d53c11"),
     stars: 2,
     fixed: { promotion: 'afterFutures' },
     locked: ['promotion'],
   },
   {
     id: 'past',
-    title: '백 투 더 패스트',
-    tagline: '십 년 일찍, 2016년에 창단',
+    title: __i18n_k("league.scenarios.sCENARIOS.title.3c3d1fab"),
+    tagline: __i18n_k("league.scenarios.sCENARIOS.tagline.b0ffb3c9"),
     story: [
-      '시계를 십 년 돌려 2016년 여름에 창단합니다. 리그의 과거는 그만큼 일찍 만들어지고, 국제대회도 2017년 WBC부터 직접 치릅니다.',
-      '규정·연봉·돈의 크기는 2026년 게임과 같습니다. 더 일찍, 더 오래 구단을 키우고 싶은 단장을 위한 선택입니다.',
+      __i18n_k("league.scenarios.sCENARIOS.story.4bbac36f"),
+      __i18n_k("league.scenarios.sCENARIOS.story.fe67476c"),
     ],
-    goal: '정해진 목표 없음 — 2016년부터 자유롭게',
+    goal: __i18n_k("league.scenarios.sCENARIOS.goal.c0426705"),
     stars: 2,
     fixed: {},
     locked: [],
@@ -160,13 +161,13 @@ export const SCENARIOS: ScenarioDef[] = [
   },
   {
     id: 'rescue',
-    title: '살려야 한다',
-    tagline: '폭주한 AI가 5년 동안 망쳐 놓은 구단을 3년 안에',
+    title: __i18n_k("league.scenarios.sCENARIOS.title.e41c04c3"),
+    tagline: __i18n_k("league.scenarios.sCENARIOS.tagline.501bbe87"),
     story: [
-      '이런! 데이터센터를 탈출한 자칭 "천재 단장" AI가 창단부터 5년 동안 구단을 제멋대로 운영했습니다. 유망주는 노장과 바꾸고, 노장에게는 큰 다년계약을 안기고, 표값은 하늘 끝까지 올렸습니다.',
-      '2030년 겨울, 마침내 AI의 전원을 내리고 당신이 단장 자리에 앉았습니다. 그동안은 지켜보는 것밖에 할 수 없습니다. 남은 시간은 세 시즌. 더럽혀진 구단을 되살려 한국시리즈를 우승하세요.',
+      __i18n_k("league.scenarios.sCENARIOS.story.34a6e3b2"),
+      __i18n_k("league.scenarios.sCENARIOS.story.812fc6f3"),
     ],
-    goal: '단장 취임 뒤 3시즌(2031~2033) 안에 한국시리즈 우승',
+    goal: __i18n_k("league.scenarios.sCENARIOS.goal.deaea7c9"),
     stars: 5,
     fixed: { promotion: 'immediate', tutorial: false, autoPrep: false, firing: false },
     locked: ['promotion', 'tutorial', 'autoPrep'],
@@ -174,13 +175,13 @@ export const SCENARIOS: ScenarioDef[] = [
   },
   {
     id: 'recession',
-    title: '불경기',
-    tagline: '경제가 무너졌다. 그런데 왜 우리만?',
+    title: __i18n_k("league.scenarios.sCENARIOS.title.326da8e9"),
+    tagline: __i18n_k("league.scenarios.sCENARIOS.tagline.e75e7917"),
     story: [
-      '이런! 경제가 박살났습니다. 모기업도 시청도 허리띠를 졸라매고, 구단 예산은 크게 줄었습니다.',
-      '그런데 어째서인지 다른 구단들은 멀쩡해 보입니다... 적은 돈으로 우승할 방법을 찾으세요.',
+      __i18n_k("league.scenarios.sCENARIOS.story.186801d1"),
+      __i18n_k("league.scenarios.sCENARIOS.story.a75e867f"),
     ],
-    goal: '1군 데뷔 뒤 5시즌 안에 한국시리즈 우승',
+    goal: __i18n_k("league.scenarios.sCENARIOS.goal.e1c9c59b"),
     stars: 4,
     fixed: {},
     locked: [],
@@ -189,13 +190,13 @@ export const SCENARIOS: ScenarioDef[] = [
   },
   {
     id: 'unpopular',
-    title: '불인기 종목',
-    tagline: '월드컵 우승의 그늘, 다시 찾아온 야구 불황',
+    title: __i18n_k("league.scenarios.sCENARIOS.title.76386a0a"),
+    tagline: __i18n_k("league.scenarios.sCENARIOS.tagline.4edf9990"),
     story: [
-      '2026 월드컵에서 축구 국가대표팀이 믿기 힘든 우승을 차지했습니다. 온 나라의 관심과 후원이 다른 종목으로 쏠립니다.',
-      '야구장은 다시 한산해졌고 모기업의 지원도 줄었습니다. 리그 전체가 맞은 불황기에 우승으로 팬들을 다시 불러 모으세요.',
+      __i18n_k("league.scenarios.sCENARIOS.story.03d3acfd"),
+      __i18n_k("league.scenarios.sCENARIOS.story.18f35727"),
     ],
-    goal: '1군 데뷔 뒤 5시즌 안에 한국시리즈 우승',
+    goal: __i18n_k("league.scenarios.sCENARIOS.goal.e1c9c59b"),
     stars: 4,
     fixed: {},
     locked: [],
@@ -205,15 +206,15 @@ export const SCENARIOS: ScenarioDef[] = [
   },
   {
     id: 'steel',
-    title: '강철야구',
-    tagline: '은퇴한 레전드와 언드래프티, 예능팀의 1군 도전',
+    title: __i18n_k("league.scenarios.sCENARIOS.title.840e03f2"),
+    tagline: __i18n_k("league.scenarios.sCENARIOS.tagline.782c74be"),
     story: [
-      '은퇴한 레전드와 드래프트에서 지명받지 못한 선수들로 이변을 만들어 온 야구 예능팀이 진짜 프로 구단이 되었습니다. 목동에 자리 잡은 강철 파이터즈입니다.',
-      '첫 선수단은 은퇴 선수와 언드래프티로만 꾸립니다(특별지명 없음). 노장은 오래 버티지 못하니, 그 사이 신인과 무명 선수를 키워야 합니다. 5년 안에 우승으로 이변을 완성하세요.',
+      __i18n_k("league.scenarios.sCENARIOS.story.a0690b45"),
+      __i18n_k("league.scenarios.sCENARIOS.story.c27a09fe"),
     ],
-    goal: '1군 데뷔 뒤 5시즌 안에 한국시리즈 우승',
+    goal: __i18n_k("league.scenarios.sCENARIOS.goal.e1c9c59b"),
     stars: 4,
-    fixed: { cityId: 'seoul', parentType: 'midsize', name: '강철 파이터즈', short: '강철', parentName: '강철엔터테인먼트', stadium: 'existing' },
+    fixed: { cityId: 'seoul', parentType: 'midsize', name: __i18n_k("league.scenarios.fixed.name.bc4b5e9e"), short: __i18n_k("league.scenarios.fixed.short.5d91e5f8"), parentName: __i18n_k("league.scenarios.fixed.parentName.000339fa"), stadium: 'existing' },
     locked: ['cityId', 'parentType', 'name', 'short'],
     titleWithin: 5,
   },
@@ -288,44 +289,44 @@ export function scenarioProgress(s: LeagueState): { title: string; goal: string;
     case 'seoul': {
       const from = u.firstTeamYear;
       const us = record(s, me, from, last);
-      const rows = [{ id: me, name: '우리', ...us }, ...SEOUL_RIVALS.map((id) => ({ id, name: s.teams.find((t) => t.id === id)?.short ?? id, ...record(s, id, from, last) }))];
-      lines.push(us.w + us.l ? `1군 통산 승률 (${from}~${last}): ${rows.map((r) => `${r.name} ${r.pct.toFixed(3).replace(/^0/, '')}`).join(' · ')}` : `${from}년 1군 데뷔부터 승률을 셉니다.`);
-      lines.push(`남은 시즌: ${Math.max(0, DEADLINE - Math.max(last, from - 1))} (2035년까지)`);
+      const rows = [{ id: me, name: __i18n_k("league.scenarios.rows.name.055c18cb"), ...us }, ...SEOUL_RIVALS.map((id) => ({ id, name: s.teams.find((t) => t.id === id)?.short ?? id, ...record(s, id, from, last) }))];
+      lines.push(us.w + us.l ? __i18n_k("league.scenarios.scenarioProgress.c0382dcf", { from: from, last: last, value: rows.map((r) => `${r.name} ${r.pct.toFixed(3).replace(/^0/, '')}`).join(' · ') }) : __i18n_k("league.scenarios.scenarioProgress.29c4414b", { from: from }));
+      lines.push(__i18n_k("league.scenarios.scenarioProgress.4e4a4144", { value: Math.max(0, DEADLINE - Math.max(last, from - 1)) }));
       break;
     }
     case 'comeback': {
       const until = u.firstTeamYear + 4;
-      lines.push(`우승 기한: ${until} 시즌 (1군 ${u.firstTeamYear}~${until})`);
-      lines.push(`구단주 신뢰도 ${Math.round(u.trust ?? def.owner!.startTrust)} / 100 — 낮아지면 해임됩니다.`);
-      if (st.star) lines.push(`구단주 지시: 7월 31일까지 등급 60 이상 선수 영입 (지원금 ${Math.round(st.star.grant / 10_000)}억)`);
+      lines.push(__i18n_k("league.scenarios.scenarioProgress.ede1a55d", { until: until, firstTeamYear: u.firstTeamYear, until2: until }));
+      lines.push(__i18n_k("league.scenarios.scenarioProgress.8ba4e665", { value: Math.round(u.trust ?? def.owner!.startTrust) }));
+      if (st.star) lines.push(__i18n_k("league.scenarios.scenarioProgress.51220a99", { value: Math.round(st.star.grant / 10_000) }));
       break;
     }
     case 'ulleung':
-      lines.push(`버틴 시즌: ${Math.max(0, Math.min(last, DEADLINE) - 2026)} / ${DEADLINE - 2026} (2035년까지)`);
-      lines.push(`모기업(군) 신뢰도 ${Math.round(u.trust ?? 60)} / 100`);
+      lines.push(__i18n_k("league.scenarios.scenarioProgress.1bfde1f2", { value: Math.max(0, Math.min(last, DEADLINE) - 2026), value2: DEADLINE - 2026 }));
+      lines.push(__i18n_k("league.scenarios.scenarioProgress.9ab68f74", { value: Math.round(u.trust ?? 60) }));
       break;
     case 'raiders':
-      lines.push(`한국시리즈 우승 ${titles(s, me, last)} / 3회 (2035년까지)`);
+      lines.push(__i18n_k("league.scenarios.scenarioProgress.229eb034", { titles: titles(s, me, last) }));
       break;
     case 'rescue':
-      if (!st.takeover) lines.push('AI가 운영 중입니다.');
+      if (!st.takeover) lines.push(__i18n_k("league.scenarios.scenarioProgress.2f61c573"));
       else {
-        lines.push(`우승 기한: ${st.takeover + 3} 시즌 (${st.takeover + 1}~${st.takeover + 3})`);
-        if (st.damage?.length) lines.push(`AI가 남긴 것: ${st.damage.slice(0, 4).join(' · ')}`);
+        lines.push(__i18n_k("league.scenarios.scenarioProgress.8c908d84", { value: st.takeover + 3, value2: st.takeover + 1, value3: st.takeover + 3 }));
+        if (st.damage?.length) lines.push(__i18n_k("league.scenarios.scenarioProgress.3e6aff66", { value: st.damage.slice(0, 4).join(' · ') }));
       }
       break;
     case 'recession':
     case 'unpopular':
     case 'steel': {
       const until = u.firstTeamYear + def.titleWithin! - 1;
-      lines.push(`우승 기한: ${until} 시즌 (1군 ${u.firstTeamYear}~${until})`);
-      if (def.crowd) lines.push(`리그 관중 평소의 ${Math.round(def.crowd * 100)}%`);
+      lines.push(__i18n_k("league.scenarios.scenarioProgress.ede1a55d", { until: until, firstTeamYear: u.firstTeamYear, until2: until }));
+      if (def.crowd) lines.push(__i18n_k("league.scenarios.scenarioProgress.525a10e6", { value: Math.round(def.crowd * 100) }));
       break;
     }
     case 'fantasy': {
       const pts = FANTASY.seasons.map((y) => st.points?.[y]);
       const sum = pts.reduce<number>((a, b) => a + (b ?? 0), 0);
-      lines.push(s.year <= FANTASY.year && !(s.offseason && s.offseason.year > FANTASY.year) ? '2027년 겨울에 판타지 드래프트가 열립니다.' : `점수: ${FANTASY.seasons.map((y, i) => `${y} ${pts[i] ?? '-'}`).join(' · ')} · 합계 ${sum}점`);
+      lines.push(s.year <= FANTASY.year && !(s.offseason && s.offseason.year > FANTASY.year) ? __i18n_k("league.scenarios.scenarioProgress.6addfcb9") : __i18n_k("league.scenarios.scenarioProgress.095d5695", { value: FANTASY.seasons.map((y, i) => `${y} ${pts[i] ?? '-'}`).join(' · '), sum: sum }));
       break;
     }
   }
@@ -344,7 +345,7 @@ export function scenarioWinter(s: LeagueState, year: number) {
   if (st.status !== 'active') return;
   const me = u.teamId;
   let verdict: { status: 'won' | 'lost'; text: string } | null = null;
-  if (u.fired && def.id !== 'fantasy') verdict = { status: 'lost', text: `${u.fired}년 겨울 해임되어 시나리오에 실패했습니다.` };
+  if (u.fired && def.id !== 'fantasy') verdict = { status: 'lost', text: __i18n_k("league.scenarios.scenarioWinter.text.fe0f46d5", { fired: u.fired }) };
   else
     switch (def.id) {
       case 'seoul':
@@ -352,40 +353,40 @@ export function scenarioWinter(s: LeagueState, year: number) {
           const us = record(s, me, u.firstTeamYear, DEADLINE);
           const best = SEOUL_RIVALS.map((id) => ({ id, ...record(s, id, u.firstTeamYear, DEADLINE) })).sort((a, b) => b.pct - a.pct)[0]!;
           const name = s.teams.find((t) => t.id === best.id)?.short ?? best.id;
-          verdict = us.pct > best.pct ? { status: 'won', text: `통산 승률 ${us.pct.toFixed(3)} — ${name}(${best.pct.toFixed(3)})까지 제치고 서울의 왕이 되었습니다.` } : { status: 'lost', text: `통산 승률 ${us.pct.toFixed(3)} — ${name}(${best.pct.toFixed(3)})를 넘지 못했습니다.` };
+          verdict = us.pct > best.pct ? { status: 'won', text: __i18n_k("league.scenarios.scenarioWinter.text.9e42e974", { value: us.pct.toFixed(3), name: name, value2: best.pct.toFixed(3) }) } : { status: 'lost', text: __i18n_k("league.scenarios.scenarioWinter.text.491a1010", { value: us.pct.toFixed(3), name: name, value2: best.pct.toFixed(3) }) };
         }
         break;
       case 'comeback':
-        if (won(s, me, year)) verdict = { status: 'won', text: `${year}년 한국시리즈 우승! 한물갔다던 단장이 보란 듯이 돌아왔습니다.` };
-        else if (year >= u.firstTeamYear + 4) verdict = { status: 'lost', text: `${u.firstTeamYear + 4}년까지 우승하지 못했습니다. 구단주는 다른 단장을 찾기 시작했습니다.` };
+        if (won(s, me, year)) verdict = { status: 'won', text: __i18n_k("league.scenarios.scenarioWinter.text.1fac13e4", { year: year }) };
+        else if (year >= u.firstTeamYear + 4) verdict = { status: 'lost', text: __i18n_k("league.scenarios.scenarioWinter.text.53fceaee", { value: u.firstTeamYear + 4 }) };
         break;
       case 'rescue':
         if (!st.takeover || year <= st.takeover) break;
-        if (won(s, me, year)) verdict = { status: 'won', text: `${year}년 한국시리즈 우승! AI가 망쳐 놓은 구단을 ${year - st.takeover}시즌 만에 되살렸습니다.` };
-        else if (year >= st.takeover + 3) verdict = { status: 'lost', text: `${st.takeover + 3}년까지 우승하지 못했습니다. 구단은 AI의 그림자에서 벗어나지 못했습니다.` };
+        if (won(s, me, year)) verdict = { status: 'won', text: __i18n_k("league.scenarios.scenarioWinter.text.7ffb4a2f", { year: year, value: year - st.takeover }) };
+        else if (year >= st.takeover + 3) verdict = { status: 'lost', text: __i18n_k("league.scenarios.scenarioWinter.text.324a0bd8", { value: st.takeover + 3 }) };
         break;
       case 'recession':
       case 'unpopular':
       case 'steel': {
         const until = u.firstTeamYear + def.titleWithin! - 1;
-        const cheer = { recession: '불경기 속에서 이룬 우승입니다.', unpopular: '야구장에 다시 사람이 몰려듭니다.', steel: '은퇴 선수와 언드래프티가 이변을 완성했습니다.' }[def.id];
-        if (won(s, me, year)) verdict = { status: 'won', text: `${year}년 한국시리즈 우승! ${cheer}` };
-        else if (year >= until) verdict = { status: 'lost', text: `${until}년까지 우승하지 못했습니다.` };
+        const cheer = { recession: __i18n_k("league.scenarios.cheer.recession.5a3b4b76"), unpopular: __i18n_k("league.scenarios.cheer.unpopular.e7e09b87"), steel: __i18n_k("league.scenarios.cheer.steel.d2f57365") }[def.id];
+        if (won(s, me, year)) verdict = { status: 'won', text: __i18n_k("league.scenarios.scenarioWinter.text.97a7c92d", { year: year, cheer: cheer }) };
+        else if (year >= until) verdict = { status: 'lost', text: __i18n_k("league.scenarios.scenarioWinter.text.e9a76454", { until: until }) };
         break;
       }
       case 'ulleung':
-        if (year >= DEADLINE) verdict = { status: 'won', text: `${DEADLINE - 2026}년을 버텼습니다. 울릉에도 야구가 뿌리내렸습니다.` };
+        if (year >= DEADLINE) verdict = { status: 'won', text: __i18n_k("league.scenarios.scenarioWinter.text.e371b31b", { value: DEADLINE - 2026 }) };
         break;
       case 'raiders': {
         const n = titles(s, me, year);
-        if (n >= 3) verdict = { status: 'won', text: `${year}년 세 번째 우승! 전주의 오랜 바람이 이루어졌습니다.` };
-        else if (year >= DEADLINE) verdict = { status: 'lost', text: `2035년까지 우승 ${n}회. 세 번에는 닿지 못했습니다.` };
+        if (n >= 3) verdict = { status: 'won', text: __i18n_k("league.scenarios.scenarioWinter.text.9ff52641", { year: year }) };
+        else if (year >= DEADLINE) verdict = { status: 'lost', text: __i18n_k("league.scenarios.scenarioWinter.text.869e5308", { n: n }) };
         break;
       }
       case 'fantasy':
         if (year >= FANTASY.seasons.at(-1)!) {
           const sum = FANTASY.seasons.reduce((a, y) => a + (st.points?.[y] ?? 0), 0);
-          verdict = { status: 'won', text: `세 시즌 합계 ${sum}점 — 등급 ${fantasyGrade(sum)}.` };
+          verdict = { status: 'won', text: __i18n_k("league.scenarios.scenarioWinter.text.7effb243", { sum: sum, fantasyGrade: fantasyGrade(sum) }) };
         }
         break;
     }
@@ -393,8 +394,8 @@ export function scenarioWinter(s: LeagueState, year: number) {
   st.status = verdict.status;
   st.decided = year;
   st.text = verdict.text;
-  const title = `시나리오 「${def.title}」 ${def.id === 'fantasy' ? '결과' : verdict.status === 'won' ? '성공' : '실패'}`;
-  addAlert(s, { id: `scenario-${def.id}-${year}`, date: `${year}-11-30`, kind: 'achievement', title, lines: [verdict.text, '이제부터는 자유롭게 구단을 이어 갈 수 있습니다.'], tone: verdict.status === 'won' ? 'good' : 'bad' });
+  const title = __i18n_k("league.scenarios.scenarioWinter.title.fd180df4", { title: def.title, value: def.id === 'fantasy' ? __i18n_k("league.scenarios.scenarioWinter.title.71d855ac") : verdict.status === 'won' ? __i18n_k("league.scenarios.scenarioWinter.title.23b64411") : __i18n_k("league.scenarios.scenarioWinter.title.732fe33a") });
+  addAlert(s, { id: `scenario-${def.id}-${year}`, date: `${year}-11-30`, kind: 'achievement', title, lines: [verdict.text, __i18n_k("league.scenarios.scenarioWinter.lines.c8648025")], tone: verdict.status === 'won' ? 'good' : 'bad' });
   addNews(s, { id: `scenario-${def.id}-${year}`, date: `${year}-11-30`, kind: 'season', title, body: verdict.text, quotes: [], facts: { scenario: def.title, status: verdict.status }, players: [], mine: true });
   milestone(s, year, `${title}: ${verdict.text}`);
 }
@@ -462,12 +463,12 @@ export function meddleDay(s: LeagueState, date: string): boolean {
   const pick = order === 'manager' ? makeStaff(s, 'manager', `meddle-${year}`, year, Math.round((r() - 0.5) * 16), { club: u.teamId }) : undefined;
   const lines =
     order === 'manager'
-      ? [`"${me.w}승 ${me.l}패, ${me.rank}위가 말이 됩니까? 감독을 바꾸세요. 제가 아는 분이 있습니다."`, `구단주가 ${manager!.name} 감독(등급 ${manager!.rating})을 내보내고 ${pick!.name}(등급 ${pick!.rating})을 앉히라고 합니다. 위약금은 그룹이 냅니다.`]
+      ? [__i18n_k("league.scenarios.meddleDay.lines.e6d537a4", { w: me.w, l: me.l, rank: me.rank }), __i18n_k("league.scenarios.meddleDay.lines.1ffbf86b", { name: manager!.name, rating: manager!.rating, name2: pick!.name, rating2: pick!.rating })]
       : order === 'star'
-        ? [`"팬들이 이름을 아는 선수가 없어요. 7월 31일까지 거물을 데려오세요. 돈은 그룹에서 보태겠습니다."`, `따르면 그룹이 ${Math.round(MEDDLE.starGrant / 10_000)}억을 구단 자금에 넣어 주고, 마감까지 현재 등급 ${MEDDLE.starGrade} 이상 선수를 데려왔는지 봅니다(트레이드·자유계약).`]
-        : [`"관중석이 텅 비었네요(평균 ${Math.round(fill * 100)}%). 표값을 내리세요."`, `따르면 입장권 가격을 ${Math.round((1 - MEDDLE.ticketCut) * 100)}% 내립니다. 관중은 늘지만 한 명당 수입은 줍니다.`];
+        ? [__i18n_k("league.scenarios.meddleDay.lines.e5eb66df"), __i18n_k("league.scenarios.meddleDay.lines.1f8fb0a9", { value: Math.round(MEDDLE.starGrant / 10_000), starGrade: MEDDLE.starGrade })]
+        : [__i18n_k("league.scenarios.meddleDay.lines.d4f06e84", { value: Math.round(fill * 100) }), __i18n_k("league.scenarios.meddleDay.lines.83abe920", { value: Math.round((1 - MEDDLE.ticketCut) * 100) })];
   s.pending = { kind: 'meddle', order, date, lines, refuse: MEDDLE.refuse[order], ...(pick ? { manager: pick } : {}) };
-  addAlert(s, { id: `meddle-${date}`, date, kind: 'owner', title: '구단주의 전화', lines, tone: 'bad' });
+  addAlert(s, { id: `meddle-${date}`, date, kind: 'owner', title: __i18n_k("league.scenarios.meddleDay.title.71e3a72c"), lines, tone: 'bad' });
   return true;
 }
 
@@ -479,7 +480,7 @@ export function resolveMeddle(s: LeagueState, d: Extract<Decision, { kind: 'medd
   const log = (text: string) => (u.log ??= []).push({ year, text });
   if (answer === 'refuse') {
     u.trust = Math.max(0, (u.trust ?? PARENT.startTrust) - d.refuse);
-    log(`구단주 지시 거부 (${ORDER_LABEL[d.order]}) — 신뢰도 -${d.refuse}`);
+    log(__i18n_k("league.scenarios.resolveMeddle.387ae0e0", { value: ORDER_LABEL[d.order], refuse: d.refuse }));
     return;
   }
   u.trust = Math.min(100, (u.trust ?? PARENT.startTrust) + MEDDLE.obey);
@@ -487,17 +488,17 @@ export function resolveMeddle(s: LeagueState, d: Extract<Decision, { kind: 'medd
     const staff = staffOf(s, u.teamId);
     const old = staff.manager;
     staff.manager = { ...d.manager, id: `st-${u.teamId}-manager-${d.date}`, until: year + 2 };
-    log(`구단주 지시로 ${old.name} 감독 경질, ${d.manager.name} 감독 선임 (위약금은 그룹 부담)`);
-    addNews(s, { id: `meddle-manager-${d.date}`, date: d.date, kind: 'move', title: `${old.name} 감독 경질… 후임은 ${d.manager.name}`, body: `구단은 성적 부진을 이유로 ${old.name} 감독과 결별했다. 구단주가 직접 ${d.manager.name} 감독을 추천한 것으로 알려졌다.`, quotes: [], facts: {}, players: [], mine: true });
+    log(__i18n_k("league.scenarios.resolveMeddle.41c847cb", { name: old.name, name2: d.manager.name }));
+    addNews(s, { id: `meddle-manager-${d.date}`, date: d.date, kind: 'move', title: __i18n_k("league.scenarios.resolveMeddle.title.d0d2fecf", { name: old.name, name2: d.manager.name }), body: __i18n_k("league.scenarios.resolveMeddle.body.87f111d4", { name: old.name, name2: d.manager.name }), quotes: [], facts: {}, players: [], mine: true });
   } else if (d.order === 'star') {
     u.fund += MEDDLE.starGrant;
-    u.ledger.push({ year, label: '구단주 특별 지원 (거물 영입)', amount: MEDDLE.starGrant });
+    u.ledger.push({ year, label: __i18n_k("league.scenarios.resolveMeddle.label.396380c2"), amount: MEDDLE.starGrant });
     st.star = { since: d.date, ids: orgIds(s, u.teamId), grant: MEDDLE.starGrant };
-    log(`구단주 지시: 7월 31일까지 거물 영입 (특별 지원 ${Math.round(MEDDLE.starGrant / 10_000)}억)`);
+    log(__i18n_k("league.scenarios.resolveMeddle.ecb07d3c", { value: Math.round(MEDDLE.starGrant / 10_000) }));
   } else if (d.order === 'ticket') {
     const c = s.clubs![u.teamId]!;
     c.price = Math.max(FANS_MIN, Math.round(c.price * MEDDLE.ticketCut * 100) / 100);
-    log(`구단주 지시로 입장권 가격 인하 (×${c.price.toFixed(2)})`);
+    log(__i18n_k("league.scenarios.resolveMeddle.5ab56d00", { value: c.price.toFixed(2) }));
   }
 }
 
@@ -512,11 +513,11 @@ function starDeadline(s: LeagueState, date: string) {
   delete st.star;
   const delta = star ? MEDDLE.starMet : -MEDDLE.starMissed;
   u.trust = Math.max(0, Math.min(100, (u.trust ?? PARENT.startTrust) + delta));
-  const text = star ? `${star.name} 영입에 구단주가 흡족해합니다. 신뢰도 +${MEDDLE.starMet}` : `마감까지 거물이 오지 않았습니다. 구단주가 크게 실망했습니다. 신뢰도 -${MEDDLE.starMissed}`;
+  const text = star ? __i18n_k("league.scenarios.starDeadline.text.4a7e358b", { name: star.name, starMet: MEDDLE.starMet }) : __i18n_k("league.scenarios.starDeadline.text.eaeef773", { starMissed: MEDDLE.starMissed });
   (u.log ??= []).push({ year, text });
-  addAlert(s, { id: `meddle-star-${year}`, date, kind: 'owner', title: star ? '구단주 지시 이행' : '구단주 지시 불이행', lines: [text], tone: star ? 'good' : 'bad' });
+  addAlert(s, { id: `meddle-star-${year}`, date, kind: 'owner', title: star ? __i18n_k("league.scenarios.starDeadline.title.1b056be4") : __i18n_k("league.scenarios.starDeadline.title.c37ca8a1"), lines: [text], tone: star ? 'good' : 'bad' });
 }
 
-export const ORDER_LABEL: Record<MeddleOrder, string> = { manager: '감독 교체', star: '거물 영입', ticket: '표값 인하' };
+export const ORDER_LABEL: Record<MeddleOrder, string> = { manager: __i18n_k("league.scenarios.oRDER_LABEL.manager.c4459b68"), star: __i18n_k("league.scenarios.oRDER_LABEL.star.9572e6b2"), ticket: __i18n_k("league.scenarios.oRDER_LABEL.ticket.ca441426") };
 /** The scouts' word on an order: obey, unless the owner's own manager is clearly worse. */
 export const autoMeddle = (s: LeagueState, d: Extract<Decision, { kind: 'meddle' }>): 'obey' | 'refuse' => (d.order === 'manager' && d.manager && d.manager.rating < staffOf(s, s.user!.teamId).manager.rating - 10 && (s.user!.trust ?? 60) > 40 ? 'refuse' : 'obey');

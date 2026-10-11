@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The dark side (V0.12; user's club only, like life.ts). Now and then one of our players drives drunk, gets into a
    fight, is caught doping, or is found fixing games. The KBO's penalties are the real ones (RULES.md §9, S73–S75):
    drunk driving 70 games with a suspended licence and a year's ban with a revoked one (five years the second time,
@@ -123,13 +124,13 @@ export function scandalDay(s: LeagueState, date: string): boolean {
 // ── Doping and its warning signs ─────────────────────────────────────────────────────────────────
 
 const SIGNS: Record<'body' | 'trainer' | 'numbers' | 'supplement', (p: Player) => [string, string]> = {
-  body: (p: Player) => [`${p.name}, 몰라보게 달라진 몸`, `${iga(p.name)} 몇 주 사이 체중이 7kg 가까이 늘었다. 본인은 "웨이트 트레이닝 덕분"이라고 했다.`],
-  trainer: (p: Player) => [`${p.name}의 개인 트레이너 둘러싼 소문`, `${iga(p.name)} 비시즌부터 함께한 해외 개인 트레이너를 두고 업계에서 좋지 않은 소문이 돈다. 구단은 "확인된 바 없다"는 입장이다.`],
+  body: (p: Player) => [__i18n_k("league.scandals.sIGNS.body.3c5e1502", { name: p.name }), __i18n_k("league.scandals.sIGNS.body.b3c63475", { name: iga(p.name) })],
+  trainer: (p: Player) => [__i18n_k("league.scandals.sIGNS.trainer.f97f7aed", { name: p.name }), __i18n_k("league.scandals.sIGNS.trainer.3b1e355e", { name: iga(p.name) })],
   numbers: (p: Player) =>
     isPitcher(p)
-      ? [`${p.name}, 갑자기 빨라진 공`, `${p.name}의 직구 구속이 한 달 사이 4km/h 가까이 올랐다. 전력분석팀도 이유를 정확히 짚지 못한다.`]
-      : [`${p.name}, 갑자기 늘어난 비거리`, `${p.name}의 타구 속도와 비거리가 최근 눈에 띄게 늘었다. 전력분석팀도 이유를 정확히 짚지 못한다.`],
-  supplement: (p: Player) => [`트레이닝 파트 보고: ${p.name}의 보충제`, `구단 트레이닝 파트가 ${p.name}의 보충제 가운데 성분을 확인할 수 없는 제품이 있다고 보고했다.`],
+      ? [__i18n_k("league.scandals.sIGNS.numbers.acf9d4fb", { name: p.name }), __i18n_k("league.scandals.sIGNS.numbers.312387e8", { name: p.name })]
+      : [__i18n_k("league.scandals.sIGNS.numbers.d7c98d66", { name: p.name }), __i18n_k("league.scandals.sIGNS.numbers.53b37b78", { name: p.name })],
+  supplement: (p: Player) => [__i18n_k("league.scandals.sIGNS.supplement.621b0d2b", { name: p.name }), __i18n_k("league.scandals.sIGNS.supplement.2c3e5417", { name: p.name })],
 };
 /** Signs of a real user, in order; a clean player under a rumour shows the first two at most. */
 const REAL_SIGNS: (keyof typeof SIGNS)[] = ['body', 'trainer', 'numbers', 'supplement'];
@@ -182,9 +183,9 @@ function stopDoping(p: Player) {
 export function checkInspect(s: LeagueState, id: PlayerId): string | null {
   const u = s.user;
   const p = s.players[id];
-  if (!u || !p || p.teamId !== u.teamId) return '우리 선수만 검사할 수 있습니다.';
-  if (u.fund < S.doping.inspectCost) return '구단 자금이 부족합니다.';
-  if (p.life?.inspected === s.year) return '올해 이미 검사했습니다.';
+  if (!u || !p || p.teamId !== u.teamId) return __i18n_k("league.scandals.checkInspect.3b1be98c");
+  if (u.fund < S.doping.inspectCost) return __i18n_k("league.scandals.checkInspect.2ffbf119");
+  if (p.life?.inspected === s.year) return __i18n_k("league.scandals.checkInspect.215d2598");
   return null;
 }
 
@@ -195,23 +196,23 @@ export function inspect(s: LeagueState, id: PlayerId) {
   const p = s.players[id]!;
   const date = s.phase === 'regular' ? (s.schedule[s.next]?.date ?? `${s.year}-10-01`) : `${s.year}-12-15`;
   u.fund -= S.doping.inspectCost;
-  u.ledger.push({ year: s.year, label: `${p.name} 구단 자체 도핑 검사`, amount: -S.doping.inspectCost });
+  u.ledger.push({ year: s.year, label: __i18n_k("league.scandals.inspect.label.688d712a", { name: p.name }), amount: -S.doping.inspectCost });
   const life = (p.life ??= {});
   life.inspected = s.year;
   const caught = !!life.suspicion?.real;
   if (caught) stopDoping(p);
   else delete life.suspicion;
   life.fans = Math.max(-30, (life.fans ?? 0) - (caught ? S.doping.caughtGrudge : S.doping.cleanGrudge));
-  (life.events ??= []).push({ date, text: caught ? '구단 자체 검사에서 금지약물 의심 성분, 면담 뒤 중단' : '구단 자체 검사, 이상 없음', tone: caught ? 'bad' : undefined });
-  (u.log ??= []).push({ year: s.year, text: `${p.name} 구단 자체 도핑 검사: ${caught ? '의심 성분 확인, 선수 면담 뒤 복용 중단' : '이상 없음'}` });
+  (life.events ??= []).push({ date, text: caught ? __i18n_k("league.scandals.inspect.text.18a3ec1c") : __i18n_k("league.scandals.inspect.text.fe9c91e2"), tone: caught ? 'bad' : undefined });
+  (u.log ??= []).push({ year: s.year, text: __i18n_k("league.scandals.inspect.text.7fa58d25", { name: p.name, value: caught ? __i18n_k("league.scandals.inspect.text.f1932326") : __i18n_k("league.scandals.inspect.text.787a86b7") }) });
   addAlert(s, {
     id: `inspect-${p.id}-${s.year}`,
     date,
     kind: 'scandal',
-    title: caught ? `${p.name}, 구단 자체 검사에서 의심 성분` : `${p.name}, 구단 자체 검사 이상 없음`,
+    title: caught ? __i18n_k("league.scandals.inspect.title.9cc678a4", { name: p.name }) : __i18n_k("league.scandals.inspect.title.3465c656", { name: p.name }),
     lines: caught
-      ? ['트레이닝 파트가 확인을 마쳤고, 선수가 복용을 멈추기로 했습니다. KBO 검사에 걸리기 전에 막았습니다.', '선수는 구단의 판단을 받아들였지만 마음이 편치는 않습니다.']
-      : ['아무것도 나오지 않았습니다. 의심을 받은 선수가 서운해합니다.'],
+      ? [__i18n_k("league.scandals.inspect.lines.30b56f4f"), __i18n_k("league.scandals.inspect.lines.0fb50f70")]
+      : [__i18n_k("league.scandals.inspect.lines.78090110")],
     tone: caught ? 'good' : undefined,
     players: [p.id],
   });
@@ -219,28 +220,28 @@ export function inspect(s: LeagueState, id: PlayerId) {
 
 // ── The incident, the penalty, the club's answer ─────────────────────────────────────────────────
 
-const LABEL: Record<Offense, string> = { dui: '음주운전', doping: '금지약물 복용', assault: '폭행', fixing: '승부조작' };
+const LABEL: Record<Offense, string> = { dui: __i18n_k("league.scandals.lABEL.dui.9c13f6aa"), doping: __i18n_k("league.scandals.lABEL.doping.a6e4dc21"), assault: __i18n_k("league.scandals.lABEL.assault.efa1416c"), fixing: __i18n_k("league.scandals.lABEL.fixing.0e7e07ce") };
 
 /** The KBO's penalty for this offense and his record. */
 function penalty(p: Player, offense: Offense, r: () => number, hid: boolean): { text: string; games?: number; years?: number; life?: boolean } {
   const n = (p.life?.offenses?.[offense] ?? 0) + 1;
   switch (offense) {
     case 'dui': {
-      if (n >= 3) return { text: '음주운전 3회, 영구 실격', life: true };
-      if (n === 2) return { text: '음주운전 2회, 5년 실격', years: 5 };
+      if (n >= 3) return { text: __i18n_k("league.scandals.penalty.text.1897ee5c"), life: true };
+      if (n === 2) return { text: __i18n_k("league.scandals.penalty.text.2c245b7f"), years: 5 };
       const revoked = r() < S.dui.revoked;
       const extra = hid ? S.dui.hidingGames : 0;
-      return revoked ? { text: `면허 취소, 1년 실격${hid ? ' (신고하지 않아 10경기 추가)' : ''}`, years: 1, games: extra || undefined } : { text: `면허 정지, ${S.dui.games + extra}경기 출장정지${hid ? ' (신고하지 않아 10경기 추가)' : ''}`, games: S.dui.games + extra };
+      return revoked ? { text: __i18n_k("league.scandals.penalty.text.548064bd", { value: hid ? __i18n_k("league.scandals.penalty.text.95fa35e4") : '' }), years: 1, games: extra || undefined } : { text: __i18n_k("league.scandals.penalty.text.38afb355", { value: S.dui.games + extra, value2: hid ? __i18n_k("league.scandals.penalty.text.95fa35e4") : '' }), games: S.dui.games + extra };
     }
     case 'doping':
-      if (n >= 3) return { text: '금지약물 3회 적발, 영구 실격', life: true };
-      return n === 2 ? { text: '금지약물 2회 적발, 144경기 출장정지', games: 144 } : { text: '금지약물 1회 적발, 72경기 출장정지', games: 72 };
+      if (n >= 3) return { text: __i18n_k("league.scandals.penalty.text.aa11e865"), life: true };
+      return n === 2 ? { text: __i18n_k("league.scandals.penalty.text.81984ab3"), games: 144 } : { text: __i18n_k("league.scandals.penalty.text.c8c522fb"), games: 72 };
     case 'assault': {
       const bad = r() < S.assault.bad;
-      return { text: `폭행, ${bad ? S.assault.badGames : S.assault.games}경기 출장정지`, games: bad ? S.assault.badGames : S.assault.games };
+      return { text: __i18n_k("league.scandals.penalty.text.17b086a4", { value: bad ? S.assault.badGames : S.assault.games }), games: bad ? S.assault.badGames : S.assault.games };
     }
     case 'fixing':
-      return { text: '승부조작, 영구 실격', life: true };
+      return { text: __i18n_k("league.scandals.penalty.text.22b60d7f"), life: true };
   }
 }
 
@@ -258,8 +259,8 @@ function incident(s: LeagueState, p: Player, offense: Offense, date: string, r: 
     date,
     kind: 'move',
     title: `${short(s)} ${p.name}, ${LABEL[offense]}… ${pen.text}`,
-    body: `${short(s)} ${iga(p.name)} ${LABEL[offense]}${offense === 'dui' && hid ? ' 사실을 숨겼다가 뒤늦게 드러났다' : '으로 물의를 빚었다'}. KBO 상벌위원회는 ${pen.text} 처분을 내렸다.${pen.life ? ' 앞으로 KBO 리그에 어떤 형태로도 돌아올 수 없다.' : ''}`,
-    quotes: [{ who: '팬', role: 'fan', text: offense === 'fixing' ? '야구를 모욕했다' : '실망이다' }],
+    body: __i18n_k("league.scandals.incident.body.49591e7c", { short: short(s), name: iga(p.name), value: LABEL[offense], value2: offense === 'dui' && hid ? __i18n_k("league.scandals.incident.body.c41bcb51") : __i18n_k("league.scandals.incident.body.8f337d30"), text: pen.text, value3: pen.life ? __i18n_k("league.scandals.incident.body.9ffde087") : '' }),
+    quotes: [{ who: __i18n_k("league.scandals.quotes.who.724cc77d"), role: 'fan', text: offense === 'fixing' ? __i18n_k("league.scandals.quotes.text.81459ace") : __i18n_k("league.scandals.quotes.text.48bd277f") }],
     facts: { 선수: p.name, 사유: LABEL[offense], 징계: pen.text },
     players: [p.id],
     mine: true,
@@ -269,7 +270,7 @@ function incident(s: LeagueState, p: Player, offense: Offense, date: string, r: 
     date,
     kind: 'scandal',
     title: `${p.name} ${LABEL[offense]} · ${pen.text}`,
-    lines: [`KBO 상벌위원회 결정: ${pen.text}.`, pen.life ? '선수는 리그를 떠납니다.' : '구단의 대응을 정해야 합니다.', '팬들의 실망이 큽니다.'],
+    lines: [__i18n_k("league.scandals.incident.lines.fb415c17", { text: pen.text }), pen.life ? __i18n_k("league.scandals.incident.lines.71803273") : __i18n_k("league.scandals.incident.lines.ec5cbb3e"), __i18n_k("league.scandals.incident.lines.db7a1f47")],
     tone: 'bad',
     players: [p.id],
   });
@@ -278,7 +279,7 @@ function incident(s: LeagueState, p: Player, offense: Offense, date: string, r: 
     delete s.suspended?.[p.id];
     return false;
   }
-  (s.suspended ??= {})[p.id] = { reason: `${LABEL[offense]} 징계`, since: date, ...(pen.games ? { games: pen.games } : {}), ...(pen.years ? { until: addDays(date, 365 * pen.years) } : {}) };
+  (s.suspended ??= {})[p.id] = { reason: __i18n_k("league.scandals.incident.reason.df64fc10", { value: LABEL[offense] }), since: date, ...(pen.games ? { games: pen.games } : {}), ...(pen.years ? { until: addDays(date, 365 * pen.years) } : {}) };
   s.pending = { kind: 'scandal', id: p.id, offense, penalty: pen.text };
   return true;
 }
@@ -291,18 +292,18 @@ export function resolveScandal(s: LeagueState, d: Extract<Decision, { kind: 'sca
   const answer = chosen === 'release' && !release(d.id) ? 'extra' : chosen;
   const club = clubState(s, u.teamId);
   club.interest += S.answer[answer];
-  const text = answer === 'release' ? '방출' : answer === 'extra' ? `구단 자체 징계 (${S.extraGames}경기 추가 출장정지, 벌금)` : 'KBO 징계만 따름';
+  const text = answer === 'release' ? __i18n_k("league.scandals.resolveScandal.text.e16b5dd5") : answer === 'extra' ? __i18n_k("league.scandals.resolveScandal.text.8108135a", { extraGames: S.extraGames }) : __i18n_k("league.scandals.resolveScandal.text.a5cf5786");
   if (answer === 'extra') {
     const x = s.suspended?.[d.id];
     if (x) x.games = (x.games ?? 0) + S.extraGames;
   }
-  (u.log ??= []).push({ year: s.year, text: `${p.name} ${LABEL[d.offense as Offense]}: 구단 대응 — ${text}` });
+  (u.log ??= []).push({ year: s.year, text: __i18n_k("league.scandals.resolveScandal.text.16670818", { name: p.name, value: LABEL[d.offense as Offense], text: text }) });
   addNews(s, {
     id: `answer-${p.id}-${s.year}-${d.offense}`,
     date: s.phase === 'regular' ? (s.schedule[s.next]?.date ?? `${s.year}-10-01`) : `${s.year}-12-01`,
     kind: 'move',
-    title: `${short(s)}, ${p.name}에 대해 ${answer === 'release' ? '방출 결정' : answer === 'extra' ? '자체 징계' : '추가 조치 없어'}`,
-    body: answer === 'none' ? `${eunneun(short(s))} KBO 징계 외에 따로 조치하지 않기로 했다. 팬들 사이에서 비판이 나온다.` : `${iga(short(s))} ${p.name}에게 ${text} 조치를 내렸다.`,
+    title: __i18n_k("league.scandals.resolveScandal.title.f3725815", { short: short(s), name: p.name, value: answer === 'release' ? __i18n_k("league.scandals.resolveScandal.title.991ef114") : answer === 'extra' ? __i18n_k("league.scandals.resolveScandal.title.15c7ad7c") : __i18n_k("league.scandals.resolveScandal.title.3fb9d596") }),
+    body: answer === 'none' ? __i18n_k("league.scandals.resolveScandal.body.b97ed44f", { short: eunneun(short(s)) }) : __i18n_k("league.scandals.resolveScandal.body.7e2cc384", { short: iga(short(s)), name: p.name, text: text }),
     quotes: [],
     facts: { 선수: p.name, 대응: text },
     players: [p.id],

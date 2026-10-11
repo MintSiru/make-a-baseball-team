@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* The free-agent negotiation (V0.8, RULES.md §4 and §9). From the day after the list is published every club
    may talk to every free agent (no exclusive window since 2016). An offer has a signing bonus, the same salary
    each guaranteed season, incentives, perhaps a period option ("2+1", an opt-out) and, from the user's club,
@@ -187,7 +188,7 @@ export function marketValue(p: Player, next: number) {
 
 // ── Clubs as he sees them ────────────────────────────────────────────────────────────────────────
 
-const SPOT_LABEL: Record<FaSpot, string> = { SP: '선발진', RP: '불펜', C: '포수', IF: '내야', OF: '외야' };
+const SPOT_LABEL: Record<FaSpot, string> = { SP: __i18n_k("league.fa.sPOT_LABEL.sP.c787908f"), RP: __i18n_k("league.fa.sPOT_LABEL.rP.5b8607a3"), C: __i18n_k("league.fa.sPOT_LABEL.c.5f31470d"), IF: __i18n_k("league.fa.sPOT_LABEL.iF.0c733fda"), OF: __i18n_k("league.fa.sPOT_LABEL.oF.aa487065") };
 export const spotLabel = (s: FaSpot) => SPOT_LABEL[s];
 
 const spotOf = (p: Player): FaSpot =>
@@ -278,7 +279,7 @@ export function fitOf(s: LeagueState, t: FaTalk, teamId: TeamId, o: FaOffer, nex
         const years = o.years + (o.extra?.holder === 'player' ? o.extra.years : 0);
         if (years < d.min) {
           k -= D.yearShort * (d.min - years);
-          wants.push(`${d.min}년 이상 보장을 원합니다.`);
+          wants.push(__i18n_k("league.fa.fitOf.b5b67806", { min: d.min }));
         }
         break;
       }
@@ -286,28 +287,28 @@ export function fitOf(s: LeagueState, t: FaTalk, teamId: TeamId, o: FaOffer, nex
         const share = o.bonus / Math.max(1, guaranteed(o));
         if (share + 0.005 < d.share) {
           k -= D.bonusShort * (d.share - share);
-          wants.push(`계약금을 보장액의 ${Math.round(d.share * 100)}% 이상 원합니다.`);
+          wants.push(__i18n_k("league.fa.fitOf.20e6fcdf", { value: Math.round(d.share * 100) }));
         }
         break;
       }
       case 'starter':
-        if (wouldStart(s, teamId, p)) good.push('주전 자리가 있다고 봅니다.');
+        if (wouldStart(s, teamId, p)) good.push(__i18n_k("league.fa.fitOf.5f5a2690"));
         else if (promised('starter')) {
           k -= D.starter * doubt * 3;
-          good.push('주전 보장 약속을 받았습니다.');
+          good.push(__i18n_k("league.fa.fitOf.3d5768bb"));
         } else {
           k -= D.starter;
-          wants.push('주전 자리를 보장받고 싶어 합니다.');
+          wants.push(__i18n_k("league.fa.fitOf.514627f3"));
         }
         break;
       case 'reinforce':
-        if (strongAt(s, teamId, d.spot, next)) good.push(`${SPOT_LABEL[d.spot]}이 탄탄하다고 봅니다.`);
+        if (strongAt(s, teamId, d.spot, next)) good.push(__i18n_k("league.fa.fitOf.9721a6ce", { value: SPOT_LABEL[d.spot] }));
         else if (promised('reinforce')) {
           k -= D.reinforce * doubt * 3;
-          good.push(`${SPOT_LABEL[d.spot]} 보강 약속을 받았습니다.`);
+          good.push(__i18n_k("league.fa.fitOf.6641ecba", { value: SPOT_LABEL[d.spot] }));
         } else {
           k -= D.reinforce;
-          wants.push(`${SPOT_LABEL[d.spot]} 보강 계획을 듣고 싶어 합니다.`);
+          wants.push(__i18n_k("league.fa.fitOf.e033352d", { value: SPOT_LABEL[d.spot] }));
         }
         break;
       case 'contender': {
@@ -315,24 +316,24 @@ export function fitOf(s: LeagueState, t: FaTalk, teamId: TeamId, o: FaOffer, nex
         const clubs = clubsOf(s, next).length;
         if (rank <= 3) {
           k += D.contender.top;
-          good.push('우승을 노리는 팀이라 끌립니다.');
+          good.push(__i18n_k("league.fa.fitOf.ae6842e6"));
         } else if (rank > clubs - 3) {
           k += D.contender.low;
-          wants.push('우승을 다툴 팀에서 뛰고 싶어 합니다.');
+          wants.push(__i18n_k("league.fa.fitOf.8a670afe"));
         }
         break;
       }
       case 'hometown':
         if (hometownClub(s, teamId, d.region, p.birthplace)) {
           k += D.hometown;
-          good.push('고향 팀이라 마음이 갑니다.');
+          good.push(__i18n_k("league.fa.fitOf.6107d8d8"));
         }
         break;
       case 'optOut':
         if (o.extra?.holder !== 'player') {
           k -= D.optOut;
-          wants.push('옵트아웃(선수 옵션) 조항을 원합니다.');
-        } else good.push('옵트아웃 조항이 마음에 듭니다.');
+          wants.push(__i18n_k("league.fa.fitOf.c74e0e40"));
+        } else good.push(__i18n_k("league.fa.fitOf.3c8880c5"));
         break;
     }
   }
@@ -371,7 +372,7 @@ export function reaction(s: LeagueState, m: FaMarket, t: FaTalk, o: FaOffer, nex
   const u = offerValue(o) * fit.k;
   const ratio = u / t.floor;
   const band = ratio >= FA.overwhelm ? 'great' : ratio >= 1 ? 'ok' : ratio >= 0.9 ? 'short' : 'far';
-  const label = { great: '매우 만족', ok: '받아들일 만함', short: '조금 부족', far: '거리가 멂' }[band];
+  const label = { great: __i18n_k("league.fa.label.great.4559b432"), ok: __i18n_k("league.fa.label.ok.f4469b6f"), short: __i18n_k("league.fa.label.short.ee34a92c"), far: __i18n_k("league.fa.label.far.2287f09b") }[band];
   const others = Object.entries(t.offers).filter(([id]) => id !== me);
   const best = others.reduce((a, [id, x]) => Math.max(a, utility(s, t, id, x, next)), 0);
   const behind = t.decideOn !== undefined && best > u ? best / u - 1 : undefined;
@@ -576,10 +577,10 @@ function giftAlert(s: LeagueState, m: FaMarket, next: number) {
     id: `fa-gift-${next}`,
     date: faDate(m, 0),
     kind: 'owner',
-    title: `모기업이 ${p.name} 영입을 지원합니다`,
+    title: __i18n_k("league.fa.giftAlert.title.ed00d79b", { name: p.name }),
     lines: [
-      `${u.settings.parentName} 회장이 ${eulreul(p.name)} 꼭 데려오라며 계약 비용을 따로 대기로 했습니다.`,
-      `보장액 ${eok(g.total)}(시장가 +20%)까지는 계약금과 연봉을 모기업이 부담합니다 (구단 자금·연봉 예산 밖). FA 시장에서 직접 협상하세요. 끝내 제안하지 않으면 사양한 것으로 봅니다.`,
+      __i18n_k("league.fa.giftAlert.lines.6b53b0cb", { parentName: u.settings.parentName, name: eulreul(p.name) }),
+      __i18n_k("league.fa.giftAlert.lines.8ca5d7d5", { eok: eok(g.total) }),
     ],
     tone: 'good',
     players: [p.id],
@@ -598,14 +599,14 @@ export function faDate(m: Pick<FaMarket, 'year'>, day: number) {
 export function eok(n: number) {
   const e = Math.floor(n / 10000),
     rest = Math.round(n % 10000);
-  return e ? (rest ? `${e}억 ${rest.toLocaleString('ko-KR')}만` : `${e}억`) : `${rest.toLocaleString('ko-KR')}만`;
+  return e ? (rest ? __i18n_k("league.fa.eok.a1ab0842", { e: e, value: rest.toLocaleString('ko-KR') }) : __i18n_k("league.fa.eok.c50a1aa4", { e: e })) : __i18n_k("league.fa.eok.cd1481f0", { value: rest.toLocaleString('ko-KR') });
 }
 
 /** "4+1년 총액 60억 (계약금 30억 · 연봉 7억 · 옵션 2억)". */
 export function termsText(o: FaOffer) {
-  const len = o.extra ? `${o.years}+${o.extra.years}년` : `${o.years}년`;
-  const parts = [o.bonus ? `계약금 ${eok(o.bonus)}` : '', `연봉 ${eok(o.annual)}`, o.options ? `옵션 ${eok(o.options)}` : ''].filter(Boolean);
-  return `${len} 총액 ${eok(offerTotal(o))} (${parts.join(' · ')})`;
+  const len = o.extra ? __i18n_k("league.fa.termsText.len.1538dc1f", { years: o.years, years2: o.extra.years }) : __i18n_k("league.fa.termsText.len.044a2535", { years: o.years });
+  const parts = [o.bonus ? __i18n_k("league.fa.termsText.parts.b27ba50d", { eok: eok(o.bonus) }) : '', __i18n_k("league.fa.termsText.parts.f4f14ab0", { eok: eok(o.annual) }), o.options ? __i18n_k("league.fa.termsText.parts.cdca7fab", { eok: eok(o.options) }) : ''].filter(Boolean);
+  return __i18n_k("league.fa.termsText.45bec87f", { len: len, eok: eok(offerTotal(o)), value: parts.join(' · ') });
 }
 
 // ── A round ──────────────────────────────────────────────────────────────────────────────────────
@@ -759,13 +760,13 @@ function raiseUserOffers(s: LeagueState, m: FaMarket, day: number, next: number)
     if (g <= now + 500) {
       if (t.said !== 'ceiling') {
         t.said = 'ceiling';
-        t.notes.push({ day, text: `${name}: 상한(${eok(mine.ceiling)})이나 연봉 예산에 닿아 제안을 더 올리지 못했습니다.`, tone: 'bad' });
+        t.notes.push({ day, text: __i18n_k("league.fa.raiseUserOffers.text.4f520c36", { name: name, eok: eok(mine.ceiling) }), tone: 'bad' });
       }
       continue;
     }
     t.offers[me] = { ...scaleOffer(mine, g, next), day };
-    const capped = g < need ? ` 상한(${eok(mine.ceiling)})이나 예산에 닿아 더는 못 올립니다.` : ` (상한 ${eok(mine.ceiling)})`;
-    t.notes.push({ day, text: `${name}에게 제안을 보장 ${eok(now)} → ${eok(guaranteed(t.offers[me]!))}로 올렸습니다.${capped}`, tone: g < need ? undefined : 'good' });
+    const capped = g < need ? __i18n_k("league.fa.raiseUserOffers.capped.c4c7c458", { eok: eok(mine.ceiling) }) : __i18n_k("league.fa.raiseUserOffers.capped.ce19aa62", { eok: eok(mine.ceiling) });
+    t.notes.push({ day, text: __i18n_k("league.fa.raiseUserOffers.text.6f67f00f", { name: name, eok: eok(now), eok2: eok(guaranteed(t.offers[me]!)), capped: capped }), tone: g < need ? undefined : 'good' });
     if (t.notes.length > 12) t.notes.splice(0, t.notes.length - 12);
     delete t.said;
   }
@@ -781,33 +782,33 @@ function tell(s: LeagueState, m: FaMarket, t: FaTalk, day: number, next: number)
     const own = t.from === me;
     key = `signed-${t.signed.teamId}`;
     if (t.signed.teamId === me) {
-      text = `${iga(p.name)} 우리 제안을 받아들였습니다: ${termsText(t.signed.offer)}.`;
+      text = __i18n_k("league.fa.tell.f05bfcbc", { name: iga(p.name), termsText: termsText(t.signed.offer) });
       tone = 'good';
     } else {
-      text = `${iga(p.name)} ${wagwa(short(s, t.signed.teamId))} 계약했습니다 (${termsText(t.signed.offer)}).`;
+      text = __i18n_k("league.fa.tell.98b5006d", { name: iga(p.name), short: wagwa(short(s, t.signed.teamId)), termsText: termsText(t.signed.offer) });
       tone = own || t.courted ? 'bad' : undefined;
     }
   } else if (t.gone) {
     key = 'gone';
-    text = `${iga(p.name)} 새 팀을 찾지 못하고 은퇴합니다.`;
+    text = __i18n_k("league.fa.tell.4116c10b", { name: iga(p.name) });
   } else {
     const mine = t.offers[me];
     if (!mine) {
       const n = Object.keys(t.offers).length;
       key = `none-${n}`;
-      text = n ? `${iga(p.name)} ${n}개 구단의 제안을 받았습니다. 우리는 아직 제안하지 않았습니다.` : `${p.name}에게는 아직 제안이 없습니다.`;
+      text = n ? __i18n_k("league.fa.tell.bd73c0e4", { name: iga(p.name), n: n }) : __i18n_k("league.fa.tell.9fb49507", { name: p.name });
     } else {
       const x = reaction(s, m, t, mine, next);
       if (t.decideOn !== undefined) {
         key = `think-${x.behind !== undefined ? 'behind' : 'lead'}-${t.decideOn}`;
         text =
           x.behind !== undefined
-            ? `${iga(p.name)} 고민 중인데, 다른 구단 조건이 더 낫다고 합니다 (가치로 약 ${Math.max(1, Math.round(x.behind * 100))}% 차이). ${faDate(m, t.decideOn).slice(5).replace('-', '/')}까지 결정합니다.`
-            : `${iga(p.name)} 우리 제안을 가장 좋게 보고 있습니다. ${faDate(m, t.decideOn).slice(5).replace('-', '/')}까지 고민하겠다고 합니다.`;
+            ? __i18n_k("league.fa.tell.52441049", { name: iga(p.name), value: Math.max(1, Math.round(x.behind * 100)), value2: faDate(m, t.decideOn).slice(5).replace('-', '/') })
+            : __i18n_k("league.fa.tell.9ed3c3df", { name: iga(p.name), value: faDate(m, t.decideOn).slice(5).replace('-', '/') });
         tone = x.behind !== undefined ? 'bad' : 'good';
       } else {
         key = `short-${x.band}-${x.fit.wants.join('|')}`;
-        text = `${p.name}: 우리 제안은 "${x.label}". ${x.fit.wants.join(' ') || '금액을 더 원합니다.'}`;
+        text = __i18n_k("league.fa.tell.839456cf", { name: p.name, label: x.label, value: x.fit.wants.join(' ') || __i18n_k("league.fa.tell.a30dfae1") });
         tone = x.band === 'far' ? 'bad' : undefined;
       }
     }
@@ -858,26 +859,26 @@ function signTalk(s: LeagueState, m: FaMarket, t: FaTalk, teamId: TeamId, o: FaO
       const annual = o.annual + Math.round(o.bonus / o.years);
       (u.parentGifts ??= []).push({ id: p.id, name: p.name, annual, from: next, to: next + o.years - 1 });
       u.payrollBudget += annual;
-      (u.log ??= []).push({ year, text: `모기업 지원으로 FA ${p.name} 영입 (${termsText(o)}, 모기업 부담)` });
+      (u.log ??= []).push({ year, text: __i18n_k("league.fa.signTalk.text.273dec18", { name: p.name, termsText: termsText(o) }) });
     } else if (o.prepaid && o.bonus) {
       u.fund -= o.bonus;
-      u.ledger.push({ year, label: `FA 계약금 일시불 · ${p.name}`, amount: -o.bonus });
+      u.ledger.push({ year, label: __i18n_k("league.fa.signTalk.label.7d3d0d9c", { name: p.name }), amount: -o.bonus });
     }
-    if (!gift) (u.log ??= []).push({ year, text: `FA ${p.name} ${from === me ? '재계약' : `영입 (${short(s, from)}에서)`} · ${termsText(o)}` });
-  } else if (u && from === me) (u.log ??= []).push({ year, text: `FA ${p.name} ${ro(short(s, teamId))} 이적 (${termsText(o)})` });
+    if (!gift) (u.log ??= []).push({ year, text: __i18n_k("league.fa.signTalk.text.e82ccbcc", { name: p.name, value: from === me ? __i18n_k("league.fa.signTalk.text.994331cf") : __i18n_k("league.fa.signTalk.text.cbe9195d", { short: short(s, from) }), termsText: termsText(o) }) });
+  } else if (u && from === me) (u.log ??= []).push({ year, text: __i18n_k("league.fa.signTalk.text.c617190d", { name: p.name, short: ro(short(s, teamId)), termsText: termsText(o) }) });
   m.news.push({
     day,
-    text: teamId === from ? `${short(s, teamId)}, ${t.grade}등급 ${p.name} 잔류 · ${termsText(o)}` : `${t.grade}등급 ${p.name} ${short(s, from)} → ${short(s, teamId)} · ${termsText(o)}`,
+    text: teamId === from ? __i18n_k("league.fa.signTalk.text.5e0e721b", { short: short(s, teamId), grade: t.grade, name: p.name, termsText: termsText(o) }) : __i18n_k("league.fa.signTalk.text.85534c18", { grade: t.grade, name: p.name, short: short(s, from), short2: short(s, teamId), termsText: termsText(o) }),
     ...(teamId === me || from === me ? { mine: true } : {}),
   });
   moveNews(s, { type: 'fa', from, to: teamId, id: p.id, years: o.years, annual: o.annual, bonus: o.bonus, options: o.options, extra: o.extra, grade: t.grade }, date);
-  crossing(s, p, from, teamId, 'FA 계약', date);
-  if (from === me && teamId !== me) farewell(s, p, from, `FA 이적(${short(s, teamId)})`, date);
+  crossing(s, p, from, teamId, __i18n_k("league.fa.signTalk.b30dac4a"), date);
+  if (from === me && teamId !== me) farewell(s, p, from, __i18n_k("league.fa.signTalk.1046ffcb", { short: short(s, teamId) }), date);
   if (teamId === from) return;
   // Compensation to the club he left (none after a declined option, none for the user's founding signings).
   if (t.free || (teamId === me && m.userFree) || teamId === m.newClub) return;
   if (t.grade === 'C') {
-    moneyFor(s, teamId, from, compensationCash('C', salary).cashOnly, `FA ${p.name} 보상금 (C등급)`, year);
+    moneyFor(s, teamId, from, compensationCash('C', salary).cashOnly, __i18n_k("league.fa.signTalk.a1be4423", { name: p.name }), year);
     return;
   }
   const item: FaQueueItem = { kind: 'protect', fa: p.id, grade: t.grade, from, to: teamId, salary };
@@ -899,8 +900,8 @@ function closeUnsigned(s: LeagueState, m: FaMarket, t: FaTalk, day: number, next
     return;
   }
   t.gone = true;
-  if (me && t.from === me) (s.user!.log ??= []).push({ year: m.year, text: `FA ${p.name} 미계약 — 자유계약선수로` });
-  m.news.push({ day, text: `${p.name} 미계약 — 자유계약선수로 남아`, ...(t.from === me ? { mine: true } : {}) });
+  if (me && t.from === me) (s.user!.log ??= []).push({ year: m.year, text: __i18n_k("league.fa.closeUnsigned.text.0971c548", { name: p.name }) });
+  m.news.push({ day, text: __i18n_k("league.fa.closeUnsigned.text.83bc90ee", { name: p.name }), ...(t.from === me ? { mine: true } : {}) });
   removeFromRoster(s, p);
   p.teamId = null;
   p.contract = null;
@@ -919,8 +920,8 @@ export function closeMarket(s: LeagueState, m: FaMarket, next: number) {
     if (t && !t.courted) {
       // Never talking to the owner's free agent is turning down the present.
       u.trust = Math.max(0, (u.trust ?? 60) - 3);
-      (u.log ??= []).push({ year: m.year, text: `모기업이 지원하려던 FA ${p?.name ?? ''} 영입을 사양했습니다 (신뢰도 −3)` });
-    } else if (p && t?.signed?.teamId !== u.teamId) (u.log ??= []).push({ year: m.year, text: `모기업이 지원한 FA ${p.name} 영입 실패 (${p.teamId ? '다른 구단 선택' : '미계약'})` });
+      (u.log ??= []).push({ year: m.year, text: __i18n_k("league.fa.closeMarket.text.63001418", { value: p?.name ?? '' }) });
+    } else if (p && t?.signed?.teamId !== u.teamId) (u.log ??= []).push({ year: m.year, text: __i18n_k("league.fa.closeMarket.text.ecdc7a4f", { name: p.name, value: p.teamId ? __i18n_k("league.fa.closeMarket.text.f10244df") : __i18n_k("league.fa.closeMarket.text.7e6bf393") }) });
   }
   const lines: string[] = [];
   let good = false,
@@ -933,16 +934,16 @@ export function closeMarket(s: LeagueState, m: FaMarket, next: number) {
     const terms = t.signed ? termsText(t.signed.offer) : '';
     if (t.from !== u.teamId && t.courted) {
       if (to === u.teamId) {
-        lines.push(`영입 성공: ${p.name} (${short(s, t.from)}에서, ${terms})`);
+        lines.push(__i18n_k("league.fa.closeMarket.41a4ae61", { name: p.name, short: short(s, t.from), terms: terms }));
         good = true;
       } else {
-        lines.push(`영입 실패: ${p.name} → ${to ? `${short(s, to)} (${terms})` : '미계약 (자유계약선수 명단)'}`);
+        lines.push(__i18n_k("league.fa.closeMarket.af60f9c9", { name: p.name, value: to ? `${short(s, to)} (${terms})` : __i18n_k("league.fa.closeMarket.f22fcccd") }));
         bad = true;
       }
     } else if (t.from === u.teamId) {
-      if (to === u.teamId) lines.push(`잔류: ${p.name} (${terms})`);
+      if (to === u.teamId) lines.push(__i18n_k("league.fa.closeMarket.ea5c02b4", { name: p.name, terms: terms }));
       else {
-        lines.push(`이적: ${p.name} → ${to ? `${short(s, to)} (${terms})` : '미계약 (자유계약선수 명단)'}`);
+        lines.push(__i18n_k("league.fa.closeMarket.9107d814", { name: p.name, value: to ? `${short(s, to)} (${terms})` : __i18n_k("league.fa.closeMarket.f22fcccd") }));
         bad = true;
       }
     }
@@ -952,9 +953,9 @@ export function closeMarket(s: LeagueState, m: FaMarket, next: number) {
     .filter((t) => t.signed && t.signed.teamId !== t.from && t.signed.teamId !== u.teamId && t.from !== u.teamId)
     .sort((a, b) => offerTotal(b.signed!.offer) - offerTotal(a.signed!.offer))
     .slice(0, 3);
-  if (big.length) lines.push(`리그 대형 이적: ${big.map((t) => `${s.players[t.id]?.name ?? ''} ${short(s, t.from)}→${short(s, t.signed!.teamId)} (${eok(offerTotal(t.signed!.offer))})`).join(', ')}`);
+  if (big.length) lines.push(__i18n_k("league.fa.closeMarket.3deb8ccf", { value: big.map((t) => `${s.players[t.id]?.name ?? ''} ${short(s, t.from)}→${short(s, t.signed!.teamId)} (${eok(offerTotal(t.signed!.offer))})`).join(', ') }));
   if (!lines.length) return;
-  addAlert(s, { id: `fa-${m.year}`, date: faDate(m, FA.rounds.at(-1)!), kind: 'fa', title: `${m.year} FA 시장 결과`, lines, tone: good ? 'good' : bad ? 'bad' : undefined, players: m.order });
+  addAlert(s, { id: `fa-${m.year}`, date: faDate(m, FA.rounds.at(-1)!), kind: 'fa', title: __i18n_k("league.fa.closeMarket.title.65c7d8d7", { year: m.year }), lines, tone: good ? 'good' : bad ? 'bad' : undefined, players: m.order });
 }
 
 // ── The user's round ─────────────────────────────────────────────────────────────────────────────
@@ -1036,27 +1037,27 @@ export function checkRound(s: LeagueState, m: FaMarket, input: RoundInput, next:
   for (const [id, o] of Object.entries(input.offers)) {
     const t = m.talks[id];
     const name = s.players[id]?.name ?? id;
-    if (!t) return 'FA 명단에 없는 선수입니다.';
-    if (!isOpen(t)) return `${name}: 이미 거취가 정해졌습니다.`;
+    if (!t) return __i18n_k("league.fa.checkRound.39a599fa");
+    if (!isOpen(t)) return __i18n_k("league.fa.checkRound.08db9b93", { name: name });
     if (!o) continue;
-    if (!Number.isInteger(o.years) || o.years < 1 || o.years > 6) return `${name}: 보장 기간은 1~6년입니다.`;
-    if (![o.bonus, o.annual, o.options].every((x) => Number.isFinite(x) && x >= 0)) return `${name}: 금액이 올바르지 않습니다.`;
-    if (o.annual < minimumSalaryFor(next)) return `${name}: 연봉이 최저연봉보다 적습니다.`;
-    if (o.options > guaranteed(o)) return `${name}: 옵션은 보장액을 넘을 수 없습니다.`;
-    if (o.extra && (!Number.isInteger(o.extra.years) || o.extra.years < 1 || o.extra.years > 2 || !['club', 'player'].includes(o.extra.holder))) return `${name}: 기간 옵션은 1~2년입니다.`;
-    if (o.promises?.some((x) => !t.demands.some((d) => d.kind === x))) return `${name}: 요구하지 않은 약속입니다.`;
-    if (m.gift?.id === id && guaranteed(o) > m.gift.total) return `${name}: 모기업 지원 한도(보장 ${eok(m.gift.total)})를 넘습니다.`;
-    if (o.ceiling !== undefined && (!Number.isFinite(o.ceiling) || o.ceiling < guaranteed(o))) return `${name}: 자동 증액 상한이 지금 보장액보다 낮습니다.`;
+    if (!Number.isInteger(o.years) || o.years < 1 || o.years > 6) return __i18n_k("league.fa.checkRound.81dfd03b", { name: name });
+    if (![o.bonus, o.annual, o.options].every((x) => Number.isFinite(x) && x >= 0)) return __i18n_k("league.fa.checkRound.6212800e", { name: name });
+    if (o.annual < minimumSalaryFor(next)) return __i18n_k("league.fa.checkRound.9e2cebf9", { name: name });
+    if (o.options > guaranteed(o)) return __i18n_k("league.fa.checkRound.789893cb", { name: name });
+    if (o.extra && (!Number.isInteger(o.extra.years) || o.extra.years < 1 || o.extra.years > 2 || !['club', 'player'].includes(o.extra.holder))) return __i18n_k("league.fa.checkRound.6bdbb415", { name: name });
+    if (o.promises?.some((x) => !t.demands.some((d) => d.kind === x))) return __i18n_k("league.fa.checkRound.c23d79fa", { name: name });
+    if (m.gift?.id === id && guaranteed(o) > m.gift.total) return __i18n_k("league.fa.checkRound.543bd63d", { name: name, eok: eok(m.gift.total) });
+    if (o.ceiling !== undefined && (!Number.isFinite(o.ceiling) || o.ceiling < guaranteed(o))) return __i18n_k("league.fa.checkRound.499acba4", { name: name });
   }
   const offers = offersAfter(s, m, input);
   const me = u.teamId;
   const outsideOffers = Object.keys(offers).filter((id) => m.talks[id]!.from !== me).length;
   const room = m.userLimit - (m.signedOut[me] ?? 0);
-  if (outsideOffers > room) return `다른 구단 FA는 올겨울 ${m.userLimit}명까지 영입할 수 있습니다 (남은 자리 ${Math.max(0, room)}명).`;
+  if (outsideOffers > room) return __i18n_k("league.fa.checkRound.db8686c6", { userLimit: m.userLimit, value: Math.max(0, room) });
   const c = openCommitments(s, m, offers);
   if (c.budget > 0 && payrollBeforeOffers(s, m, next) + c.budget > u.payrollBudget)
-    return `제안을 모두 합치면 ${next} 연봉 예산을 ${eok(payrollBeforeOffers(s, m, next) + c.budget - u.payrollBudget)} 넘습니다 (계약금은 계약 기간에 나눠 들어가며, 구단 자금 일시불로 돌릴 수 있습니다).`;
-  if (c.fund > 0 && c.fund > u.fund) return `일시불 계약금 합계 ${eok(c.fund)}가 구단 자금 ${eok(Math.max(0, u.fund))}보다 많습니다.`;
+    return __i18n_k("league.fa.checkRound.c11b3b7a", { next: next, eok: eok(payrollBeforeOffers(s, m, next) + c.budget - u.payrollBudget) });
+  if (c.fund > 0 && c.fund > u.fund) return __i18n_k("league.fa.checkRound.0fb348ae", { eok: eok(c.fund), eok2: eok(Math.max(0, u.fund)) });
   return null;
 }
 
@@ -1122,7 +1123,7 @@ export function payIncentives(s: LeagueState, year: number) {
     fa.paid.push({ season: year, amount });
     if (u && p.teamId === u.teamId) {
       u.fund -= amount;
-      u.ledger.push({ year, label: `FA 옵션 · ${p.name} (${fa.incentive === 'games' ? `${n}경기` : fa.incentive === 'innings' ? `${n}이닝` : `${n}경기 등판`})`, amount: -amount });
+      u.ledger.push({ year, label: __i18n_k("league.fa.payIncentives.label.f71f60ba", { name: p.name, value: fa.incentive === 'games' ? __i18n_k("league.fa.payIncentives.label.ee19b92b", { n: n }) : fa.incentive === 'innings' ? __i18n_k("league.fa.payIncentives.label.61ad0074", { n: n }) : __i18n_k("league.fa.payIncentives.label.26ea5f59", { n: n }) }), amount: -amount });
     }
   }
 }
@@ -1154,10 +1155,10 @@ export function settleClubOptions(s: LeagueState, keep: PlayerId[], ids: PlayerI
     const p = s.players[id]!;
     const x = p.contract!.fa!.extra!;
     if (keep.includes(id)) {
-      (u.log ??= []).push({ year: next - 1, text: `${p.name} 구단 옵션 실행 (${x.years}년, 연 ${eok(x.annual)})` });
+      (u.log ??= []).push({ year: next - 1, text: __i18n_k("league.fa.settleClubOptions.text.e324b51a", { name: p.name, years: x.years, eok: eok(x.annual) }) });
       takeUpOption(s, p, next);
     } else {
-      (u.log ??= []).push({ year: next - 1, text: `${p.name} 구단 옵션 포기, FA 시장으로 (보상 없음)` });
+      (u.log ??= []).push({ year: next - 1, text: __i18n_k("league.fa.settleClubOptions.text.73bad423", { name: p.name }) });
       dropOption(s, p, next);
     }
   }
@@ -1177,7 +1178,7 @@ export function settlePeriodOptions(s: LeagueState, next: number) {
       const leave = worth > x.annual * 1.1 && ageIn(p, next) <= 35;
       if (leave) dropOption(s, p, next);
       else takeUpOption(s, p, next);
-      if (me && p.teamId === me) (s.user!.log ??= []).push({ year: next - 1, text: leave ? `${p.name} 옵트아웃, FA 시장으로 (보상 없음)` : `${p.name} 선수 옵션 실행 (${x.years}년 더)` });
+      if (me && p.teamId === me) (s.user!.log ??= []).push({ year: next - 1, text: leave ? __i18n_k("league.fa.settlePeriodOptions.text.0c4aa210", { name: p.name }) : __i18n_k("league.fa.settlePeriodOptions.text.ef81981a", { name: p.name, years: x.years }) });
     } else if (p.teamId !== me) {
       if (keepValue(p, next) >= 45 && worth >= x.annual * 0.8) takeUpOption(s, p, next);
       else dropOption(s, p, next);
@@ -1190,15 +1191,15 @@ function judge(s: LeagueState, p: Player, kind: FaPromise, kept: boolean, year: 
   const u = s.user!;
   p.contract!.fa!.kept = { ...(p.contract!.fa!.kept ?? {}), [kind]: kept };
   (u.promises ??= []).push({ year, id: p.id, name: p.name, kind, kept });
-  const what = kind === 'starter' ? '주전 보장' : `${SPOT_LABEL[p.contract!.fa!.spot ?? 'SP']} 보강`;
-  (u.log ??= []).push({ year, text: `FA ${p.name}에게 한 ${what} 약속을 ${kept ? '지켰습니다' : `지키지 못했습니다 (${why})`}` });
+  const what = kind === 'starter' ? __i18n_k("league.fa.judge.what.b2db18ee") : __i18n_k("league.fa.judge.what.fa44ccd8", { value: SPOT_LABEL[p.contract!.fa!.spot ?? 'SP'] });
+  (u.log ??= []).push({ year, text: __i18n_k("league.fa.judge.text.7fd91005", { name: p.name, what: what, value: kept ? __i18n_k("league.fa.judge.text.f6cd632b") : __i18n_k("league.fa.judge.text.ea51b7cc", { why: why }) }) });
   if (!kept) {
     addAlert(s, {
       id: `fa-promise-${year}-${p.id}-${kind}`,
       date: kind === 'starter' ? `${year}-10-05` : `${year + 1}-02-01`,
       kind: 'fa',
-      title: `${p.name}에게 한 약속을 어겼습니다`,
-      lines: [`FA 계약 때 약속한 ${what}을 지키지 못했습니다 (${why}).`, `앞으로 ${FA.promise.winters}년 동안 FA 선수들이 우리 구단의 제안과 약속을 덜 믿습니다.`],
+      title: __i18n_k("league.fa.judge.title.868d502b", { name: p.name }),
+      lines: [__i18n_k("league.fa.judge.lines.05a4a916", { what: what, why: why }), __i18n_k("league.fa.judge.lines.b17cf3e1", { winters: FA.promise.winters })],
       tone: 'bad',
       players: [p.id],
     });
@@ -1219,7 +1220,7 @@ export function judgeStarterPromises(s: LeagueState, year: number) {
     const hurt = (p.injuries ?? []).filter((x) => x.date.startsWith(String(year))).reduce((a, x) => a + x.days, 0) >= 60;
     if (hurt) continue;
     const kept = isPitcher(p) ? (p.role === 'SP' ? (rec?.pit?.gs ?? 0) >= P.starterStarts : (rec?.pit?.g ?? 0) >= P.reliefGames) : (rec?.bat?.g ?? 0) >= P.starterGames;
-    judge(s, p, 'starter', kept, year, isPitcher(p) ? `${p.role === 'SP' ? `선발 ${rec?.pit?.gs ?? 0}경기` : `${rec?.pit?.g ?? 0}경기 등판`}` : `${rec?.bat?.g ?? 0}경기 출전`);
+    judge(s, p, 'starter', kept, year, isPitcher(p) ? __i18n_k("league.fa.judgeStarterPromises.75ced707", { value: p.role === 'SP' ? __i18n_k("league.fa.judgeStarterPromises.c8bd0af6", { value: rec?.pit?.gs ?? 0 }) : __i18n_k("league.fa.judgeStarterPromises.1e758ebb", { value: rec?.pit?.g ?? 0 }) }) : __i18n_k("league.fa.judgeStarterPromises.d57412f0", { value: rec?.bat?.g ?? 0 }));
   }
 }
 
@@ -1233,7 +1234,7 @@ export function judgeReinforcePromises(s: LeagueState, m: FaMarket | undefined, 
     if (!fa?.promises?.includes('reinforce') || fa.kept?.reinforce !== undefined || p.contract!.signedIn !== next - 1 || !fa.spot) continue;
     const before = new Set(m?.baseline?.[fa.spot] ?? []);
     const added = orgPlayers(s, u.teamId).filter((x) => x.id !== p.id && spotOf(x) === fa.spot && !before.has(x.id) && currentValue(x) >= FA.promise.reinforceValue);
-    judge(s, p, 'reinforce', added.length > 0, next - 1, added.length ? '' : `새로 온 ${SPOT_LABEL[fa.spot]} 전력 없음`);
+    judge(s, p, 'reinforce', added.length > 0, next - 1, added.length ? '' : __i18n_k("league.fa.judgeReinforcePromises.d955d2ad", { value: SPOT_LABEL[fa.spot] }));
   }
 }
 

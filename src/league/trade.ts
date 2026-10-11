@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Moving players during the year (V0.5, RULES.md §5–6): trades until July 31 and after the season,
    releases through seven-day waivers, unattached players anyone can sign, and replacing foreign
    players during the season (twice a year, until August 15).
@@ -57,9 +58,9 @@ export function tradeValue(s: LeagueState, p: Player): number {
 
 /** Trades are open during the season until July 31 and again once the season is over. */
 export function tradeWindow(s: LeagueState): string | null {
-  if (s.pending) return '먼저 결정할 일을 끝내세요.';
-  if (s.phase === 'regular' && today(s) > `${s.year}-${KBO_2026.trade.deadline}`) return '7월 31일 트레이드 마감이 지났습니다. 한국시리즈가 끝나면 다시 열립니다.';
-  if (s.phase === 'offseason') return '오프시즌 진행 중에는 트레이드할 수 없습니다.';
+  if (s.pending) return __i18n_k("league.trade.tradeWindow.1418c0c2");
+  if (s.phase === 'regular' && today(s) > `${s.year}-${KBO_2026.trade.deadline}`) return __i18n_k("league.trade.tradeWindow.4889c48d");
+  if (s.phase === 'offseason') return __i18n_k("league.trade.tradeWindow.0769abc5");
   return null;
 }
 
@@ -109,45 +110,45 @@ export function pickValue(s: LeagueState, teamId: TeamId, round: number): number
 
 export const cashValue = (manwon: number) => (manwon / 10000) * TRADES.cash.perEok;
 
-const pickText = (year: number, rounds: number[]) => rounds.map((r) => `${year + 1} 신인 ${r}라운드 지명권`).join('·');
-const eok = (manwon: number) => `${Math.round(manwon / 1000) / 10}억`;
+const pickText = (year: number, rounds: number[]) => rounds.map((r) => __i18n_k("league.trade.pickText.8744d1db", { value: year + 1, r: r })).join('·');
+const eok = (manwon: number) => __i18n_k("league.trade.eok.db0fc332", { value: Math.round(manwon / 1000) / 10 });
 
 export function checkTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get: PlayerId[], extras: TradeExtras = {}): TradeCheck {
   const u = s.user;
   const no = (problem: string): TradeCheck => ({ problem, margin: 0, accepted: false });
-  if (!u) return no('구단이 없습니다.');
+  if (!u) return no(__i18n_k("league.trade.checkTrade.272add95"));
   const closed = tradeWindow(s);
   if (closed) return no(closed);
-  if (teamId === u.teamId || !s.rosters[teamId]) return no('상대 구단을 고르세요.');
+  if (teamId === u.teamId || !s.rosters[teamId]) return no(__i18n_k("league.trade.checkTrade.70fee747"));
   const cashOut = extras.cashOut ?? 0,
     cashIn = extras.cashIn ?? 0,
     picksOut = extras.picksOut ?? [],
     picksIn = extras.picksIn ?? [];
-  if (!give.length && !get.length) return no('트레이드에는 선수가 한 명 이상 있어야 합니다.');
-  if (!give.length && !cashOut && !picksOut.length) return no('우리가 줄 선수·현금·지명권을 고르세요.');
-  if (!get.length && !cashIn && !picksIn.length) return no('받을 선수·현금·지명권을 고르세요.');
-  if (cashOut && cashIn) return no('현금은 한쪽만 줄 수 있습니다.');
-  for (const c of [cashOut, cashIn]) if (c < 0 || c > TRADES.cash.max || c % TRADES.cash.step) return no(`현금은 ${eok(TRADES.cash.step)} 단위로 ${eok(TRADES.cash.max)}까지입니다.`);
-  if (cashOut > u.fund) return no(`구단 자금(${eok(u.fund)})보다 많은 현금은 줄 수 없습니다.`);
+  if (!give.length && !get.length) return no(__i18n_k("league.trade.checkTrade.e0a8f3af"));
+  if (!give.length && !cashOut && !picksOut.length) return no(__i18n_k("league.trade.checkTrade.2d432783"));
+  if (!get.length && !cashIn && !picksIn.length) return no(__i18n_k("league.trade.checkTrade.2e1f2028"));
+  if (cashOut && cashIn) return no(__i18n_k("league.trade.checkTrade.da9e360c"));
+  for (const c of [cashOut, cashIn]) if (c < 0 || c > TRADES.cash.max || c % TRADES.cash.step) return no(__i18n_k("league.trade.checkTrade.4dd15c6d", { eok: eok(TRADES.cash.step), eok2: eok(TRADES.cash.max) }));
+  if (cashOut > u.fund) return no(__i18n_k("league.trade.checkTrade.90bd24fb", { eok: eok(u.fund) }));
   const ownPicks = tradablePicks(s, u.teamId),
     theirPicks = tradablePicks(s, teamId);
   const perClub = TRADES.picks.perClub;
   const used = (club: TeamId) => (s.pickTrades ?? []).filter((x) => x.year === tradeDraftYear(s) && x.from === club).length;
-  if (picksOut.some((r) => !ownPicks.includes(r)) || used(u.teamId) + picksOut.length > perClub) return no(`우리 지명권은 이번 드래프트 것만, 한 해 ${perClub}장까지 넘길 수 있습니다.`);
-  if (picksIn.some((r) => !theirPicks.includes(r)) || used(teamId) + picksIn.length > perClub) return no(`상대 구단이 넘길 수 있는 지명권이 아닙니다 (한 해 ${perClub}장까지).`);
+  if (picksOut.some((r) => !ownPicks.includes(r)) || used(u.teamId) + picksOut.length > perClub) return no(__i18n_k("league.trade.checkTrade.ba6d6bf8", { perClub: perClub }));
+  if (picksIn.some((r) => !theirPicks.includes(r)) || used(teamId) + picksIn.length > perClub) return no(__i18n_k("league.trade.checkTrade.d271ac8b", { perClub: perClub }));
   const gives = give.map((id) => s.players[id]);
   const gets = get.map((id) => s.players[id]);
-  if (gives.some((p) => !p || p.teamId !== u.teamId || p.status !== 'active')) return no('우리 선수만 보낼 수 있습니다.');
-  if (gets.some((p) => !p || p.teamId !== teamId || p.status !== 'active')) return no('상대 구단 선수만 받을 수 있습니다.');
-  if ([...gives, ...gets].some((p) => isForeign(p!))) return no('외국인 선수는 트레이드할 수 없습니다 (게임 규칙).');
-  if ([...gives, ...gets].some((p) => p!.proSince > s.year)) return no('올해 지명한 신인은 계약 첫해가 시작되기 전에는 트레이드할 수 없습니다 (게임 규칙).');
-  if ([...gives, ...gets].some((p) => p!.origin.pickVia && p!.proSince >= s.year)) return no('넘겨받은 지명권으로 뽑은 선수는 입단 첫해에 트레이드할 수 없습니다 (KBO 규정).');
+  if (gives.some((p) => !p || p.teamId !== u.teamId || p.status !== 'active')) return no(__i18n_k("league.trade.checkTrade.fc6590eb"));
+  if (gets.some((p) => !p || p.teamId !== teamId || p.status !== 'active')) return no(__i18n_k("league.trade.checkTrade.0020a88c"));
+  if ([...gives, ...gets].some((p) => isForeign(p!))) return no(__i18n_k("league.trade.checkTrade.04e6af4f"));
+  if ([...gives, ...gets].some((p) => p!.proSince > s.year)) return no(__i18n_k("league.trade.checkTrade.c34af80a"));
+  if ([...gives, ...gets].some((p) => p!.origin.pickVia && p!.proSince >= s.year)) return no(__i18n_k("league.trade.checkTrade.0aad4b2f"));
   const devCount = (xs: typeof gives) => xs.filter((p) => p!.contract?.kind === 'development').length;
   const limit = rosterLimit(s.phase === 'regular' ? s.year : s.year + 1);
   const mine = registeredIds(s, u.teamId).length - (give.length - devCount(gives)) + (get.length - devCount(gets));
   const theirs = registeredIds(s, teamId).length - (get.length - devCount(gets)) + (give.length - devCount(gives));
-  if (mine > limit) return no(`받으면 우리 소속선수가 ${limit}명을 넘습니다.`);
-  if (theirs > limit) return no(`상대 구단 소속선수가 ${limit}명을 넘게 됩니다.`);
+  if (mine > limit) return no(__i18n_k("league.trade.checkTrade.9366b66d", { limit: limit }));
+  if (theirs > limit) return no(__i18n_k("league.trade.checkTrade.8d3f3e84", { limit: limit }));
   // 1.6.0: the other club weighs what it gets by its plan (strategy.ts), and keeps its guards.
   const plan = clubStrategy(s, teamId);
   const reasons = planReasons(s, teamId, plan, gives as Player[], picksOut.length, cashOut);
@@ -168,12 +169,12 @@ function settleExtras(s: LeagueState, a: TeamId, b: TeamId, cash: number, picksA
   if (!cash || !u || (a !== u.teamId && b !== u.teamId)) return;
   const paid = a === u.teamId ? cash : -cash;
   u.fund -= paid;
-  u.ledger.push({ year: s.year, label: `트레이드 현금 (${shortOf(s, a === u.teamId ? b : a)})`, amount: -paid });
+  u.ledger.push({ year: s.year, label: __i18n_k("league.trade.settleExtras.label.9cdddca7", { shortOf: shortOf(s, a === u.teamId ? b : a) }), amount: -paid });
 }
 
 /** Cash and picks as a line: "현금 3억 + 2027 신인 3라운드 지명권". */
 export function extrasText(s: LeagueState, cash: number, picks: number[]) {
-  return [cash > 0 ? `현금 ${eok(cash)}` : '', picks.length ? pickText(tradeDraftYear(s), picks) : ''].filter(Boolean).join(' + ');
+  return [cash > 0 ? __i18n_k("league.trade.extrasText.51455c09", { eok: eok(cash) }) : '', picks.length ? pickText(tradeDraftYear(s), picks) : ''].filter(Boolean).join(' + ');
 }
 
 export function makeTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get: PlayerId[], extras: TradeExtras = {}) {
@@ -181,7 +182,7 @@ export function makeTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get:
   if (c.problem) throw new Error(c.problem);
   const u = s.user!;
   if (!c.accepted) {
-    (u.log ??= []).push({ year: s.year, text: `${shortOf(s, teamId)}에 트레이드 제안 → 거절` });
+    (u.log ??= []).push({ year: s.year, text: __i18n_k("league.trade.makeTrade.text.7e960f8d", { shortOf: shortOf(s, teamId) }) });
     return false;
   }
   for (const id of give) movePlayer(s, s.players[id]!, teamId);
@@ -189,15 +190,15 @@ export function makeTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get:
   const cash = (extras.cashOut ?? 0) - (extras.cashIn ?? 0);
   settleExtras(s, u.teamId, teamId, cash, extras.picksOut ?? [], extras.picksIn ?? []);
   const side = (ids: PlayerId[], money: number, picks: number[]) => [ids.map((id) => s.players[id]!.name).join('·'), extrasText(s, money, picks)].filter(Boolean).join(' + ');
-  const text = `트레이드: ${shortOf(s, u.teamId)} ${side(give, Math.max(0, cash), extras.picksOut ?? [])} ↔ ${shortOf(s, teamId)} ${side(get, Math.max(0, -cash), extras.picksIn ?? [])}`;
+  const text = __i18n_k("league.trade.makeTrade.text.9842018b", { shortOf: shortOf(s, u.teamId), side: side(give, Math.max(0, cash), extras.picksOut ?? []), shortOf2: shortOf(s, teamId), side2: side(get, Math.max(0, -cash), extras.picksIn ?? []) });
   (u.log ??= []).push({ year: s.year, text });
   logTransaction(s, text);
   moveNews(s, { type: 'trade', a: u.teamId, b: teamId, fromA: give, fromB: get, cash, picksA: extras.picksOut ?? [], picksB: extras.picksIn ?? [] });
   // A trade with the twelfth club stirs both fan bases (V0.9).
-  for (const id of give) crossing(s, s.players[id]!, u.teamId, teamId, '트레이드');
+  for (const id of give) crossing(s, s.players[id]!, u.teamId, teamId, __i18n_k("league.trade.makeTrade.428749ee"));
   // Fans see a favourite go (V0.10).
-  for (const id of give) farewell(s, s.players[id]!, u.teamId, '트레이드');
-  for (const id of get) crossing(s, s.players[id]!, teamId, u.teamId, '트레이드');
+  for (const id of give) farewell(s, s.players[id]!, u.teamId, __i18n_k("league.trade.makeTrade.428749ee"));
+  for (const id of get) crossing(s, s.players[id]!, teamId, u.teamId, __i18n_k("league.trade.makeTrade.428749ee"));
   return true;
 }
 
@@ -208,7 +209,7 @@ export function applyPickTrades(s: LeagueState, year: number, slots: DraftSlot[]
   const out = slots.map((x) => ({ ...x }));
   for (const t of trades) {
     const slot = out.find((x) => x.teamId === t.from && !x.via && x.label === `${t.round}R`);
-    if (slot) Object.assign(slot, { teamId: t.to, via: t.from, label: `${t.round}R (${shortOf(s, t.from)} 지명권)` });
+    if (slot) Object.assign(slot, { teamId: t.to, via: t.from, label: __i18n_k("league.trade.applyPickTrades.label.f6078995", { round: t.round, shortOf: shortOf(s, t.from) }) });
   }
   return out;
 }
@@ -248,7 +249,7 @@ export function aiDeadlineDeals(s: LeagueState, r: () => number) {
     if (!young || planGuard(s, target.b, seller, [target.p], [young.p]) || planGuard(s, a, plan, [young.p], [target.p])) continue;
     movePlayer(s, young.p, target.b);
     movePlayer(s, target.p, a);
-    logTransaction(s, `트레이드: ${shortOf(s, a)} ${young.p.name} ↔ ${shortOf(s, target.b)} ${target.p.name} (마감 직전)`);
+    logTransaction(s, __i18n_k("league.trade.aiDeadlineDeals.90e644f3", { shortOf: shortOf(s, a), name: young.p.name, shortOf2: shortOf(s, target.b), name2: target.p.name }));
     moveNews(s, { type: 'trade', a, b: target.b, fromA: [young.p.id], fromB: [target.p.id], cash: 0, picksA: [], picksB: [] });
     made++;
   }
@@ -301,7 +302,7 @@ export function aiTrades(s: LeagueState, r: () => number) {
     movePlayer(s, fromB.p, a);
     settleExtras(s, a, b, cash, picksA, picksB);
     const side = (name: string, money: number, picks: number[]) => [name, extrasText(s, money, picks)].filter(Boolean).join(' + ');
-    logTransaction(s, `트레이드: ${shortOf(s, a)} ${side(fromA.name, Math.max(0, cash), picksA)} ↔ ${shortOf(s, b)} ${side(fromB.p.name, Math.max(0, -cash), picksB)}`);
+    logTransaction(s, __i18n_k("league.trade.aiTrades.9842018b", { shortOf: shortOf(s, a), side: side(fromA.name, Math.max(0, cash), picksA), shortOf2: shortOf(s, b), side2: side(fromB.p.name, Math.max(0, -cash), picksB) }));
     moveNews(s, { type: 'trade', a, b, fromA: [fromA.id], fromB: [fromB.p.id], cash, picksA, picksB });
   }
 }
@@ -323,9 +324,9 @@ export function releaseCost(s: LeagueState, p: Player) {
 export function canRelease(s: LeagueState, id: PlayerId): string | null {
   const u = s.user;
   const p = s.players[id];
-  if (!u || !p || p.teamId !== u.teamId || p.status !== 'active') return '우리 선수가 아닙니다.';
-  if (s.pending || s.phase === 'offseason') return '지금은 방출할 수 없습니다.';
-  if (s.phase === 'regular' && s.rosters[u.teamId]!.active.includes(id) && s.rosters[u.teamId]!.active.length <= 26) return '1군 최소 인원 때문에 먼저 다른 선수를 올리세요.';
+  if (!u || !p || p.teamId !== u.teamId || p.status !== 'active') return __i18n_k("league.trade.canRelease.60e00321");
+  if (s.pending || s.phase === 'offseason') return __i18n_k("league.trade.canRelease.d220cb44");
+  if (s.phase === 'regular' && s.rosters[u.teamId]!.active.includes(id) && s.rosters[u.teamId]!.active.length <= 26) return __i18n_k("league.trade.canRelease.ca05e46e");
   return null;
 }
 
@@ -337,20 +338,20 @@ export function releasePlayer(s: LeagueState, id: PlayerId) {
   const p = s.players[id]!;
   const cost = releaseCost(s, p);
   const owed = [...(cost.now ? [{ season: s.year, amount: cost.now }] : []), ...cost.later];
-  for (const x of owed) (u.deadMoney ??= []).push({ season: x.season, amount: x.amount, label: `${p.name} 잔여 연봉`, id });
+  for (const x of owed) (u.deadMoney ??= []).push({ season: x.season, amount: x.amount, label: __i18n_k("league.trade.releasePlayer.label.9f76e5f8", { name: p.name }), id });
   removeFromRoster(s, p);
   p.teamId = null;
   if (s.phase === 'regular') {
     (s.waivers ??= []).push({ id, from: u.teamId, until: addDays(today(s), KBO_2026.waiver.days) });
-    (u.log ??= []).push({ year: s.year, text: `${p.name} 웨이버 공시 (${addDays(today(s), KBO_2026.waiver.days)}까지)` });
-    logTransaction(s, `웨이버 공시: ${shortOf(s, u.teamId)} ${p.name}`);
+    (u.log ??= []).push({ year: s.year, text: __i18n_k("league.trade.releasePlayer.text.3ced2e91", { name: p.name, addDays: addDays(today(s), KBO_2026.waiver.days) }) });
+    logTransaction(s, __i18n_k("league.trade.releasePlayer.aa556b10", { shortOf: shortOf(s, u.teamId), name: p.name }));
   } else {
     p.contract = null;
     (s.pool ??= []).push(id);
-    (u.log ??= []).push({ year: s.year, text: `${p.name} 방출 (자유계약선수)` });
+    (u.log ??= []).push({ year: s.year, text: __i18n_k("league.trade.releasePlayer.text.7fb23134", { name: p.name }) });
   }
   moveNews(s, { type: 'release', teamId: u.teamId, id, waiver: s.phase === 'regular', owed: owed.reduce((a, x) => a + x.amount, 0) });
-  farewell(s, p, u.teamId, '방출');
+  farewell(s, p, u.teamId, __i18n_k("league.trade.releasePlayer.e16b5dd5"));
   if (isForeign(p)) leaveForeign(s, p, u.teamId);
 }
 
@@ -383,10 +384,10 @@ export function processWaivers(s: LeagueState, date: string) {
       s.rosters[claimer]!.futures.push(p.id);
       // The claiming club takes the contract: the releasing club no longer owes it (his own lines only — another
       // released player can share his name; saves before V0.16 have no id on the line).
-      if (s.user && w.from === s.user.teamId) s.user.deadMoney = (s.user.deadMoney ?? []).filter((x) => (x.id ? x.id !== p.id : x.label !== `${p.name} 잔여 연봉`));
-      logTransaction(s, `웨이버 영입: ${shortOf(s, claimer)} ${p.name} (${shortOf(s, w.from)}에서)`);
+      if (s.user && w.from === s.user.teamId) s.user.deadMoney = (s.user.deadMoney ?? []).filter((x) => (x.id ? x.id !== p.id : x.label !== __i18n_k("league.trade.processWaivers.9f76e5f8", { name: p.name })));
+      logTransaction(s, __i18n_k("league.trade.processWaivers.9638f882", { shortOf: shortOf(s, claimer), name: p.name, shortOf2: shortOf(s, w.from) }));
       moveNews(s, { type: 'claim', teamId: claimer, from: w.from, id: p.id }, date);
-      if (w.from === s.user?.teamId) (s.user.log ??= []).push({ year: s.year, text: `${p.name} 웨이버로 ${ro(shortOf(s, claimer))} 이적` });
+      if (w.from === s.user?.teamId) (s.user.log ??= []).push({ year: s.year, text: __i18n_k("league.trade.processWaivers.text.c28e2c38", { name: p.name, shortOf: ro(shortOf(s, claimer)) }) });
     } else {
       p.contract = null;
       (s.pool ??= []).push(p.id);
@@ -404,12 +405,12 @@ export function poolAsk(s: LeagueState, p: Player) {
 export function canSignFromPool(s: LeagueState, id: PlayerId): string | null {
   const u = s.user;
   const p = s.players[id];
-  if (!u || !p || !(s.pool ?? []).includes(id)) return '자유계약선수 명단에 없습니다.';
+  if (!u || !p || !(s.pool ?? []).includes(id)) return __i18n_k("league.trade.canSignFromPool.f2ba97ec");
   // 1.6.0: the free agents nobody signed (FA 미아) can be signed in the winter too, once the market is over.
   const winter = s.phase === 'offseason';
-  if (winter && !s.offseason?.faDone) return 'FA 시장이 끝난 뒤 계약할 수 있습니다.';
-  if ((s.pending && !winter) || s.pending?.kind === 'roster' || s.phase === 'postseason') return '지금은 계약할 수 없습니다.';
-  if (registeredIds(s, u.teamId).length >= rosterLimit(s.phase === 'regular' ? s.year : s.year + 1)) return '소속선수 한도가 찼습니다.';
+  if (winter && !s.offseason?.faDone) return __i18n_k("league.trade.canSignFromPool.e14818cd");
+  if ((s.pending && !winter) || s.pending?.kind === 'roster' || s.phase === 'postseason') return __i18n_k("league.trade.canSignFromPool.f547701d");
+  if (registeredIds(s, u.teamId).length >= rosterLimit(s.phase === 'regular' ? s.year : s.year + 1)) return __i18n_k("league.trade.canSignFromPool.c4dade95");
   return null;
 }
 
@@ -423,8 +424,8 @@ export function signFromPool(s: LeagueState, id: PlayerId) {
   p.contract = { teamId: u.teamId, kind: 'standard', signedIn: s.year, signingBonus: 0, salaries: [{ season, amount: poolAsk(s, p) }] };
   s.rosters[u.teamId]!.futures.push(id);
   s.pool = (s.pool ?? []).filter((x) => x !== id);
-  (u.log ??= []).push({ year: s.year, text: `자유계약선수 ${p.name} 영입` });
-  logTransaction(s, `자유계약선수 영입: ${shortOf(s, u.teamId)} ${p.name}`);
+  (u.log ??= []).push({ year: s.year, text: __i18n_k("league.trade.signFromPool.text.663461c2", { name: p.name }) });
+  logTransaction(s, __i18n_k("league.trade.signFromPool.31de607d", { shortOf: shortOf(s, u.teamId), name: p.name }));
   moveNews(s, { type: 'pool', teamId: u.teamId, id, salary: p.contract.salaries[0]!.amount });
 }
 
@@ -441,9 +442,9 @@ export function clearPool(s: LeagueState) {
 // ── Foreign players during the season ───────────────────────────────────────────────────────────
 
 export function foreignWindow(s: LeagueState, teamId: TeamId): string | null {
-  if (s.phase !== 'regular') return '외국인 교체는 정규시즌 중에만 할 수 있습니다.';
-  if (today(s) > `${s.year}-${KBO_2026.foreign.replacementDeadline}`) return '8월 15일 외국인 교체 마감이 지났습니다.';
-  if ((s.foreignChanges?.[teamId] ?? 0) >= KBO_2026.foreign.replacementsPerSeason) return `올해 외국인 교체 ${KBO_2026.foreign.replacementsPerSeason}번을 모두 썼습니다.`;
+  if (s.phase !== 'regular') return __i18n_k("league.trade.foreignWindow.8f1829b0");
+  if (today(s) > `${s.year}-${KBO_2026.foreign.replacementDeadline}`) return __i18n_k("league.trade.foreignWindow.0d58f649");
+  if ((s.foreignChanges?.[teamId] ?? 0) >= KBO_2026.foreign.replacementsPerSeason) return __i18n_k("league.trade.foreignWindow.1f6cbcf8", { replacementsPerSeason: KBO_2026.foreign.replacementsPerSeason });
   return null;
 }
 
@@ -479,10 +480,10 @@ export function canReplaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId,
   const closed = foreignWindow(s, teamId);
   if (closed) return closed;
   const old = s.players[out];
-  if (!old || old.teamId !== teamId || !isForeign(old)) return '내보낼 외국인 선수를 고르세요.';
+  if (!old || old.teamId !== teamId || !isForeign(old)) return __i18n_k("league.trade.canReplaceForeign.e3af4ea8");
   const cand = foreignMarket(s, teamId).find((p) => p.id === inId);
-  if (!cand) return '후보 명단에 없는 선수입니다.';
-  if (!!cand.origin.asiaQuota !== !!old.origin.asiaQuota) return '아시아쿼터는 아시아쿼터끼리, 외국인은 외국인끼리 바꿀 수 있습니다.';
+  if (!cand) return __i18n_k("league.trade.canReplaceForeign.668bfef3");
+  if (!!cand.origin.asiaQuota !== !!old.origin.asiaQuota) return __i18n_k("league.trade.canReplaceForeign.4d3ebfe2");
   return null;
 }
 
@@ -494,7 +495,7 @@ export function replaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, in
   const p = foreignMarket(s, teamId).find((x) => x.id === inId)!;
   if (s.user?.teamId === teamId) {
     const owed = Math.round(salaryIn(old, s.year) * seasonShareLeft(s));
-    if (owed) (s.user.deadMoney ??= []).push({ season: s.year, amount: owed, label: `${old.name} 잔여 연봉`, id: old.id });
+    if (owed) (s.user.deadMoney ??= []).push({ season: s.year, amount: owed, label: __i18n_k("league.trade.replaceForeign.label.9f76e5f8", { name: old.name }), id: old.id });
   }
   const wasActive = s.rosters[teamId]!.active.includes(out);
   const price = foreignPriceNow(s, p);
@@ -507,7 +508,7 @@ export function replaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, in
   chargeForeign(s, teamId, p);
   s.rosters[teamId]![wasActive ? 'active' : 'futures'].push(p.id);
   (s.foreignChanges ??= {})[teamId] = (s.foreignChanges[teamId] ?? 0) + 1;
-  const text = `외국인 교체: ${shortOf(s, teamId)} ${old.name} → ${p.name} (${p.origin.background!.text})`;
+  const text = __i18n_k("league.trade.replaceForeign.text.979c0f32", { shortOf: shortOf(s, teamId), name: old.name, name2: p.name, text: p.origin.background!.text });
   logTransaction(s, text);
   moveNews(s, { type: 'foreign', teamId, out: old, in: p.id, price });
   if (s.user?.teamId === teamId) (s.user.log ??= []).push({ year: s.year, text });
