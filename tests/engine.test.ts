@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { rng } from '../src/draftroom';
 import { simulateGame } from '../src/league/engine/game';
-import type { FieldPos, GameIn, GameOut, TeamBox, TeamIn } from '../src/league/engine/types';
+import type { FieldPos, GameIn, GameOut, PlayEvent, TeamBox, TeamIn } from '../src/league/engine/types';
 
 const POS: FieldPos[] = ['CF', 'SS', '2B', '1B', '3B', 'LF', 'RF', 'DH', 'C'];
 const team = (id: string, g: number): TeamIn => ({
@@ -80,5 +80,55 @@ describe('game engine', () => {
     let wins = 0;
     for (let i = 0; i < 300; i++) if (play(i, 62, 48).result === 'home') wins++;
     expect(wins / 300).toBeGreaterThan(0.75);
+  });
+});
+
+describe('the bench (1.7.0)', () => {
+  const withBench = (id: string): TeamIn => {
+    const t = team(id, 45);
+    t.bench = [
+      { id: `${id}-ph`, bats: 'L', contact: 70, power: 70, eye: 70, speed: 40, defense: 40, pos: 'DH', defenseAt: { '1B': 40, LF: 35, RF: 35 } },
+      { id: `${id}-pr`, bats: 'R', contact: 35, power: 30, eye: 35, speed: 80, defense: 50, pos: 'DH', defenseAt: { CF: 50, LF: 50, RF: 50 } },
+      { id: `${id}-glove`, bats: 'R', contact: 35, power: 30, eye: 35, speed: 50, defense: 75, pos: 'DH', defenseAt: { SS: 75, '2B': 72, '3B': 70 } },
+      { id: `${id}-c2`, bats: 'R', contact: 30, power: 30, eye: 30, speed: 30, defense: 55, pos: 'DH', defenseAt: { C: 55 } },
+    ];
+    for (const b of t.lineup) b.speed = 30;
+    return t;
+  };
+  it('pinch hitters, runners and late gloves come in, bat in the slot of the man they replace and keep the box straight', () => {
+    const seen = { PH: 0, PR: 0, DEF: 0 };
+    for (let i = 0; i < 120; i++) {
+      const out = simulateGame({ gameId: `b${i}`, home: withBench('H'), away: withBench('A'), maxInnings: 12, park: 1 }, rng(`bench-${i}`));
+      for (const [own, other] of [[out.home, out.away], [out.away, out.home]] as const) {
+        checkBox(out, own, other);
+        const ids = own.batting.map((b) => b.id);
+        expect(new Set(ids).size).toBe(ids.length);
+        for (const b of own.batting) if (b.sub) seen[b.sub]++;
+        // Nine starters, the rest came off the bench.
+        expect(own.batting.filter((b) => !b.sub)).toHaveLength(9);
+      }
+    }
+    expect(seen.PH).toBeGreaterThan(20);
+    expect(seen.PR).toBeGreaterThan(3);
+    expect(seen.DEF).toBeGreaterThan(3);
+  });
+  it('logs each change for the play-by-play, without changing the game', () => {
+    for (let i = 0; i < 30; i++) {
+      const g = () => ({ gameId: `b${i}`, home: withBench('H'), away: withBench('A'), maxInnings: 12, park: 1 });
+      const log: PlayEvent[] = [];
+      const out = simulateGame(g(), rng(`bench-${i}`), log);
+      expect(simulateGame(g(), rng(`bench-${i}`))).toEqual(out);
+      const subs = log.filter((e): e is Extract<PlayEvent, { k: 'sub' }> => e.k === 'sub');
+      const lines = [...out.home.batting, ...out.away.batting].filter((b) => b.sub);
+      expect(subs.map((e) => `${e.sub}:${e.in}`).sort()).toEqual(lines.map((b) => `${b.sub}:${b.id}`).sort());
+      for (const e of subs) expect(e.i).toBeGreaterThanOrEqual(7);
+    }
+  });
+  it('without a bench the game plays as before', () => {
+    const a = play(7);
+    const t = game(7);
+    t.home.bench = [];
+    t.away.bench = [];
+    expect(simulateGame(t, rng('engine-test-7'))).toEqual(a);
   });
 });

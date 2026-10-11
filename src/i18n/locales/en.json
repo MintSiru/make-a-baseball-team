@@ -6747,5 +6747,11 @@
   "ui.playerPanel.text.e52c8464": "Length",
   "ui.playerPanel.text.bcc042ee": "{years} yrs · {annual}/yr · {total} total",
   "ui.playerPanel.text.6ef251ee": "Offer",
-  "ui.playerPanel.text.9d415c3d": "Starts next season. Seasons before free agency are team-controlled and cheaper; the ones after are close to market value. If he says no, you can offer again a month later."
+  "ui.playerPanel.text.9d415c3d": "Starts next season. Seasons before free agency are team-controlled and cheaper; the ones after are close to market value. If he says no, you can offer again a month later.",
+  "league.views.text.4fe00bd7": "PH",
+  "league.views.text.ac615d38": "PR",
+  "league.views.text.46160651": "Def. sub",
+  "league.playtext.text.2c2b34d5": "Pinch hitter {name} bats for {out}",
+  "league.playtext.text.6a7dbf39": "Pinch runner {name} runs for {out}",
+  "league.playtext.text.6420ae1f": "Defensive replacement {name} takes over at {pos} for {out}"
 }

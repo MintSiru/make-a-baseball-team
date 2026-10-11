@@ -124,6 +124,10 @@ export function pitchFeed(s: LeagueState, id: string): PitchFrame[] | null {
       bases = [false, false, false];
     }
     const base = { play: n, half: h, inning: ev.i, top: ev.top };
+    if (ev.k === 'sub') {
+      frames.push({ ...base, batter: '', pitcher: frames.at(-1)?.pitcher ?? '', balls: 0, strikes: 0, outs, bases: [...bases], score: [...score], text: playText(ev, `${id}-${n}`, name), kind: 'change' });
+      return;
+    }
     if (ev.k === 'pitch') {
       frames.push({ ...base, batter: '', pitcher: name(ev.p), balls: 0, strikes: 0, outs, bases: [...bases], score: [...score], text: playText(ev, `${id}-${n}`, name), kind: 'change' });
       return;

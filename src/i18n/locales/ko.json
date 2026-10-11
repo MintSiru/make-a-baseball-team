@@ -6747,5 +6747,11 @@
   "ui.playerPanel.text.e52c8464": "계약 기간",
   "ui.playerPanel.text.bcc042ee": "{years}년 · 해마다 {annual} · 총액 {total}",
   "ui.playerPanel.text.6ef251ee": "제안",
-  "ui.playerPanel.text.9d415c3d": "다음 시즌부터. FA까지 남은 시즌은 구단 보유 기간이라 싸고, 그 뒤는 시장가에 가깝습니다. 거절하면 한 달 뒤 다시 제안할 수 있습니다."
+  "ui.playerPanel.text.9d415c3d": "다음 시즌부터. FA까지 남은 시즌은 구단 보유 기간이라 싸고, 그 뒤는 시장가에 가깝습니다. 거절하면 한 달 뒤 다시 제안할 수 있습니다.",
+  "league.views.text.4fe00bd7": "대타",
+  "league.views.text.ac615d38": "대주자",
+  "league.views.text.46160651": "대수비",
+  "league.playtext.text.2c2b34d5": "대타 {name} ({out} 대신)",
+  "league.playtext.text.6a7dbf39": "대주자 {name} ({out} 대신)",
+  "league.playtext.text.6420ae1f": "대수비 {name}, {pos} ({out} 대신)"
 }

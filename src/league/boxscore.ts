@@ -25,7 +25,8 @@ export interface StoredBox {
   pit: [PitRow[], PitRow[]];
 }
 
-const batRows = (b: TeamBox): BatRow[] => b.batting.map((l) => [l.id, l.pos, l.ab, l.r, l.h, l.rbi, l.hr, l.bb + l.hbp, l.k, l.d, l.t, l.sb]);
+/** 1.7.0: a substitute's position as "PH:SS" (how he came in, then where he played). */
+const batRows = (b: TeamBox): BatRow[] => b.batting.map((l) => [l.id, l.sub ? `${l.sub}:${l.pos}` : l.pos, l.ab, l.r, l.h, l.rbi, l.hr, l.bb + l.hbp, l.k, l.d, l.t, l.sb]);
 const pitRows = (b: TeamBox): PitRow[] =>
   b.pitching.map((l) => [l.id, l.outs, l.h, l.r, l.er, l.bb + l.hbp, l.k, l.hr, l.pitches, l.w ? 'W' : l.l ? 'L' : l.sv ? 'S' : l.hld ? 'H' : '']);
 

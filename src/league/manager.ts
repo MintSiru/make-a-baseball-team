@@ -6,7 +6,7 @@ import type { Player, PlayerId, TeamId } from '../model/types';
 import type { Position } from '../model/position';
 import { fitPenalty, positionGames } from './positions';
 import { offRoster, sidelined } from './injuries';
-import type { BatterIn, BullpenRole, FieldPos, Hand, PitcherIn, RelieverIn, TeamIn } from './engine/types';
+import type { BatterIn, BenchIn, BullpenRole, FieldPos, Hand, PitcherIn, RelieverIn, TeamIn } from './engine/types';
 import { hashUnit } from '../draftroom';
 import { ageIn, batValue, currentValue, isForeign, isPitcher, keepValue, starterValue } from './players';
 import { staffEdge, staffRating } from './staff';
@@ -328,6 +328,22 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
 
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 
+/** 1.7.0: today's bench — the hitters not starting who can play (a regular resting today among them), with what each
+    would field at every position. The engine sends them in late (engine/game.ts pinchHit, pinchRun, defensiveSub). */
+export function benchFor(s: LeagueState, ids: PlayerId[], lineup: BatterIn[]): BenchIn[] {
+  const starting = new Set(lineup.map((b) => b.id));
+  return ids
+    .map((id) => s.players[id]!)
+    .filter((p) => !isPitcher(p) && !starting.has(p.id) && available(s, p.id))
+    .map((p) => {
+      const games = positionGames(s, p);
+      const adapting = p.plan?.adaptingIn === s.year ? ADAPTING_PENALTY : 0;
+      const defenseAt: Partial<Record<FieldPos, number>> = {};
+      for (const pos of SLOTS) if (pos !== 'DH') defenseAt[pos] = t(p, 'defense') - fitPenalty(p, pos, games) - adapting;
+      return { id: p.id, bats: handOf(p.bats), contact: t(p, 'contact'), power: t(p, 'power'), eye: t(p, 'eye'), speed: t(p, 'speed'), defense: t(p, 'defense'), pos: 'DH' as FieldPos, defenseAt };
+    });
+}
+
 export function armIn(p: Player, pitchLimit: number): PitcherIn {
   return { id: p.id, throws: p.throws === '좌' ? 'L' : 'R', stuff: t(p, 'stuff'), command: t(p, 'command'), breaking: t(p, 'breaking'), stamina: t(p, 'stamina'), pitchLimit, platoon: platoonFactor(p) };
 }
@@ -477,7 +493,7 @@ export function managerLean(s: LeagueState, teamId: TeamId, base: Prefer = none)
 function withForm(s: LeagueState, date: string, team: TeamIn): TeamIn {
   const big = s.phase === 'postseason';
   const today = (p: Player) => formOf(p, date) + (big ? bigGameEdge(p) : 0);
-  for (const b of team.lineup) {
+  for (const b of [...team.lineup, ...(team.bench ?? [])]) {
     const f = today(s.players[b.id]!);
     if (!f) continue;
     b.contact += f;
@@ -519,11 +535,13 @@ export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away:
       ...(me.card ? { card: me.card[vs ?? 'R'], places: me.card.places?.[vs ?? 'R'], cardRest: me.card.rest } : {}),
     });
     if (lineup.length < 9) return null;
+    const bench = benchFor(s, me.ids, lineup);
     // All out: only today's starter and the starters who pitched in the last two days stay out of the bullpen.
     const exclude = new Set(me.allOut ? [me.sp.p.id, ...me.rotation.filter((p) => me.rest(p) <= 2).map((p) => p.id)] : [...me.rotation.map((p) => p.id), me.sp.p.id]);
     return withForm(s, date, {
       teamId: me.x.teamId,
       lineup,
+      bench,
       starter: armIn(me.sp.p, me.sp.limit),
       bullpen: bullpenFor(s, me.x.teamId, me.ids, date, exclude, me.prefer, me.allOut),
       fieldBonus: STAFF.fielding * staffEdge(staffRating(s, me.x.teamId, 'analytics')),

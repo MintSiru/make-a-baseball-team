@@ -359,6 +359,9 @@ export function seasonStats(s: LeagueState) {
 
 const POS_KO: Record<string, string> = { C: __i18n_k("league.views.pOS_KO.c.c6113c0f"), '1B': '1', '2B': '2', '3B': '3', SS: __i18n_k("league.views.pOS_KO.sS.71c706d6"), LF: '좌', CF: __i18n_k("league.views.pOS_KO.cF.43e88c0b"), RF: '우', DH: __i18n_k("league.views.pOS_KO.dH.0cb41994") };
 
+/** 1.7.0: how a substitute came in. */
+const SUB_KO: Record<string, string> = { PH: __i18n_k("league.views.text.4fe00bd7"), PR: __i18n_k("league.views.text.ac615d38"), DEF: __i18n_k("league.views.text.46160651") };
+
 export function boxView(s: LeagueState, id: string) {
   const b = s.boxes?.[id];
   if (!b) return null;
@@ -372,7 +375,16 @@ export function boxView(s: LeagueState, id: string) {
       color: teamOf(s, teamId)?.color ?? (teamId === 'dream' ? '#2563eb' : teamId === 'nanum' ? '#dc2626' : '#888'),
       line: b.line[i],
       rhe: b.rhe[i],
-      bat: b.bat[i].map(([pid, pos, ab, r, h, rbi, hr, bb, k, d, t, sb], order) => ({ id: pid, order: order + 1, name: name(pid), pos: POS_KO[pos] ?? pos, ab, r, h, rbi, hr, bb, k, d, t, sb })),
+      bat: (() => {
+        // 1.7.0: substitutes ("PH:SS") bat in the slot of the man before them.
+        let slot = 0;
+        return b.bat[i].map(([pid, pos, ab, r, h, rbi, hr, bb, k, d, t, sb]) => {
+          const [how, at] = pos.includes(':') ? (pos.split(':') as [string, string]) : [null, pos];
+          if (!how) slot++;
+          const posText = POS_KO[at] ?? at;
+          return { id: pid, order: how ? null : slot, name: name(pid), pos: how ? `${SUB_KO[how] ?? how}${at === 'DH' && how === 'PH' ? '' : ` → ${posText}`}` : posText, sub: !!how, ab, r, h, rbi, hr, bb, k, d, t, sb };
+        });
+      })(),
       pit: b.pit[i].map(([pid, outs, h, r, er, bb, k, hr, pitches, dec]) => ({ id: pid, name: name(pid), ip: ip(outs), h, r, er, bb, k, hr, pitches, dec: ({ W: '승', L: '패', S: __i18n_k("league.views.dec.s.c5e4d00d"), H: __i18n_k("league.views.dec.h.10a4423a") } as Record<string, string>)[dec] ?? '' })),
     };
   };

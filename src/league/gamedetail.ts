@@ -65,7 +65,7 @@ export function gameDetail(s: LeagueState, box: StoredBox, log?: PlayEvent[] | n
         outs = 0;
         bases = [false, false, false];
       }
-      if (e.k === 'pitch') {
+      if (e.k === 'pitch' || e.k === 'sub') {
         if (e.i >= 7) out.push(`${h} ${playText(e, `${box.id}-${n}`, name)}`);
         return;
       }

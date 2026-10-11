@@ -81,6 +81,12 @@ export const ENGINE = {
   },
   /** A small-ball manager: steal attempts (logit) and bunts (multiplier). */
   smallBall: { steal: 0.35, bunt: 1.6 },
+  /** 1.7.0: the bench late in a close game. A pinch hitter from the 7th with the score within `close`, when his
+      bat (contact, power and eye, with the platoon edge) beats the batter's by `phMargin`, `phMax` a game; a pinch
+      runner for a slow runner (speed under `prSlow`) on first or second from the `prInning` within `prClose` runs, if
+      someone on the bench runs `prMargin` faster, once a game; defensive replacements from the `defInning` with a lead
+      of one to `defLead` where a bench glove is `defMargin` better, `defMax` a game. */
+  subs: { fromInning: 7, close: 4, phMargin: 4, phMax: 3, platoon: 5, prInning: 7, prSlow: 50, prMargin: 12, prClose: 2, defInning: 7, defMargin: 6, defLead: 4, defMax: 2 },
   /** Manager style: starter pitch limit change. */
   /** 1.3.0: `allOut`, our postseason all-out plan (총력전), on top of the manager's own. */
   hook: { quickHook: -8, patient: 6, allOut: -15 },

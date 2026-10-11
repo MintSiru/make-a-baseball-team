@@ -43,7 +43,8 @@ describe('trades', () => {
     const scrub = byValue(ours).at(-1)!;
     expect(checkTrade(s, 'kia', [scrub.id], [star.id]).accepted).toBe(false);
     const ourBest = byValue(ours)[0]!;
-    const cheaper = byValue(theirs).find((p) => tradeValue(s, p) * 1.1 + 1 <= tradeValue(s, ourBest))!;
+    // Clearly in their favour, whatever the club's strategy weighs (a contender marks down a prospect).
+    const cheaper = byValue(theirs).find((p) => tradeValue(s, p) * 1.4 + 1 <= tradeValue(s, ourBest))!;
     const c = checkTrade(s, 'kia', [ourBest.id], [cheaper.id]);
     expect(c.problem).toBeNull();
     expect(c.accepted).toBe(true);

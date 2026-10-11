@@ -40,7 +40,7 @@ describe('box scores and play-by-play', () => {
       if (last?.k === 'pa') expect(last.score[0] + last.score[1]).toBeLessThanOrEqual(b.rhe[0][0] + b.rhe[1][0]);
     }
     const v = boxView(s, withLog[0]!.id)!;
-    expect(v.away.bat.length).toBe(9);
+    expect(v.away.bat.filter((b) => !b.sub)).toHaveLength(9);
     expect(v.plays!.length).toBeGreaterThan(50);
   });
   it('prunes other clubs to the last few days', () => {

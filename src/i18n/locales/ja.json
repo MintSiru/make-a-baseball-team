@@ -6747,5 +6747,11 @@
   "ui.playerPanel.text.e52c8464": "契約期間",
   "ui.playerPanel.text.bcc042ee": "{years}年・年俸{annual}・総額{total}",
   "ui.playerPanel.text.6ef251ee": "提示",
-  "ui.playerPanel.text.9d415c3d": "来季から。FAまでのシーズンは球団保有期間のため安く、その後は市場価格に近くなります。断られた場合は1か月後に再提示できます。"
+  "ui.playerPanel.text.9d415c3d": "来季から。FAまでのシーズンは球団保有期間のため安く、その後は市場価格に近くなります。断られた場合は1か月後に再提示できます。",
+  "league.views.text.4fe00bd7": "代打",
+  "league.views.text.ac615d38": "代走",
+  "league.views.text.46160651": "守備固め",
+  "league.playtext.text.2c2b34d5": "代打 {name}（{out}に代わって）",
+  "league.playtext.text.6a7dbf39": "代走 {name}（{out}に代わって）",
+  "league.playtext.text.6420ae1f": "守備固め {name}、{pos}へ（{out}に代わって）"
 }

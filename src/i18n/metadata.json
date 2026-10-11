@@ -65426,5 +65426,65 @@
     "line": 855,
     "params": {},
     "locations": []
+  },
+  "league.views.text.4fe00bd7": {
+    "source": "src/league/views.ts",
+    "line": 363,
+    "params": {},
+    "locations": []
+  },
+  "league.views.text.ac615d38": {
+    "source": "src/league/views.ts",
+    "line": 363,
+    "params": {},
+    "locations": []
+  },
+  "league.views.text.46160651": {
+    "source": "src/league/views.ts",
+    "line": 363,
+    "params": {},
+    "locations": []
+  },
+  "league.playtext.text.2c2b34d5": {
+    "source": "src/league/playtext.ts",
+    "line": 23,
+    "params": {
+      "name": {
+        "expression": "name"
+      },
+      "out": {
+        "expression": "out"
+      }
+    },
+    "locations": []
+  },
+  "league.playtext.text.6a7dbf39": {
+    "source": "src/league/playtext.ts",
+    "line": 24,
+    "params": {
+      "name": {
+        "expression": "name"
+      },
+      "out": {
+        "expression": "out"
+      }
+    },
+    "locations": []
+  },
+  "league.playtext.text.6420ae1f": {
+    "source": "src/league/playtext.ts",
+    "line": 25,
+    "params": {
+      "name": {
+        "expression": "name"
+      },
+      "pos": {
+        "expression": "POS[ev.pos] ?? ev.pos"
+      },
+      "out": {
+        "expression": "out"
+      }
+    },
+    "locations": []
   }
 }

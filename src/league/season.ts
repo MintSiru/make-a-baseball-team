@@ -178,11 +178,12 @@ export function record(s: LeagueState, box: TeamBox, date: string, lines: Record
     const line = lineOf(b.id, box.teamId);
     if (!line) continue;
     const bat = (line.bat ??= emptyBat());
-    const { id: _id, pos: _pos, split, ...counts } = b;
+    const { id: _id, pos: _pos, split, sub, ...counts } = b;
     addInto(bat, counts);
     if (split && lines === s.lines) addSplits(bat, split);
     if (lines === s.lines) (bat.posG ??= {})[b.pos] = (bat.posG[b.pos] ?? 0) + 1;
-    if (b.pa > 0) bat.g++;
+    // 1.7.0: a pinch runner or a late glove played in the game too.
+    if (b.pa > 0 || sub) bat.g++;
   }
   for (const p of box.pitching) {
     const line = lineOf(p.id, box.teamId);

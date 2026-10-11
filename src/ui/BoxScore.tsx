@@ -158,8 +158,8 @@ export function BoxScore({
                   </thead>
                   <tbody>
                     {__i18n_display(t.bat.map((b) => (
-                      <tr key={b.id}>
-                        <td class="num">{__i18n_display(b.order)}</td>
+                      <tr key={b.id} class={b.sub ? 'sub-row' : undefined}>
+                        <td class="num">{__i18n_display(b.order ?? '')}</td>
                         <td>
                           <Link pid={b.id} name={b.name} />
                           {__i18n_display(b.d + b.t > 0 && <span class="muted small"> {__i18n_display(b.d ? __i18n_k("ui.boxScore.boxScore.63657cf0", { value: b.d > 1 ? `×${b.d}` : '' }) : '')}{__i18n_display(b.t ? __i18n_k("ui.boxScore.boxScore.0ee51e47") : '')}</span>)}
