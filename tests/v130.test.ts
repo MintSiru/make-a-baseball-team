@@ -65,6 +65,10 @@ describe('the postseason, game day by game day', () => {
     const po = b.postseason.filter((x) => x.round === 'po');
     expect([ks.high, ks.low].sort()).toEqual(po.map((x) => x.winner).sort());
     expect(b.bracket!.done).toBe(true);
+    // 1.7.0: the two playoffs ran side by side under one id each game (the second's box replaced the first's).
+    const gameIds = b.postseason.flatMap((x) => x.games.map((g) => g.id));
+    expect(new Set(gameIds).size).toBe(gameIds.length);
+    for (const x of po) for (const g of x.games) expect(b.boxes![g.id]!.home === g.home && b.boxes![g.id]!.away === g.away).toBe(true);
   });
 });
 

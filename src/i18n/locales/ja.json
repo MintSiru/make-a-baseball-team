@@ -6547,5 +6547,14 @@
   "save.compress.text.4575e4a3": "このブラウザでは圧縮されたセーブファイルを開けません。",
   "ui.recovery.text.5e9f6b80": "不明なエラー",
   "league.playtext.playText.ebc0b8c7": "{who}: {what}",
-  "league.playtext.playText.7b8ebb4c": "{who}: {what} · {runs}点"
+  "league.playtext.playText.7b8ebb4c": "{who}: {what} · {runs}点",
+  "league.trade.text.e55cc372": "アジア枠に空きがありません。",
+  "league.trade.text.09801599": "外国人枠に空きがありません。",
+  "league.trade.text.c476cd4b": "外国人選手獲得：{shortOf} {name}（{text}）",
+  "league.movenews.text.43fdc18d": "{club}、空いた外国人枠に{name}を獲得",
+  "league.movenews.text.89ef46b1": "{club}は空いていた外国人選手枠に{name}を獲得した。{name2}は{ageIn}歳の{posOf}だ。{value}残りシーズンの年俸は{usd}。",
+  "league.movenews.text.35b3f284": "外国人選手獲得",
+  "ui.market.text.e32158d5": "空き枠に獲得",
+  "ui.market.text.03f13cab": "空き：外国人{regular}枠・アジア枠{asia}枠（放出なし）",
+  "ui.market.text.7994e59f": "獲得"
 }

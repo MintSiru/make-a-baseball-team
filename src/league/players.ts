@@ -37,7 +37,7 @@ export function keepValue(p: Player, year: number): number {
 export const pitchValue = (t: Tools, role: Role) => overall(t, role === 'SP' ? 'SP' : 'RP');
 export const starterValue = (t: Tools) => overall(t, 'SP') + ((t.stamina ?? 40) - 45) * 0.25;
 
-const DRAFT_ROOM_YEAR = 2026;
+export const DRAFT_ROOM_YEAR = 2026;
 
 function shiftDate<T extends string | null>(date: T, years: number): T {
   if (!date) return date;

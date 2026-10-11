@@ -40,7 +40,7 @@ import {
   standardSlots,
   type OffseasonStep,
 } from './offseason';
-import { ageIn, currentValue, isForeign, isPitcher, keepValue, makeForeign } from './players';
+import { ageIn, currentValue, DRAFT_ROOM_YEAR, isForeign, isPitcher, keepValue, makeForeign, shiftProspect } from './players';
 import { DIFFICULTY, FOREIGN_TALKS, OFFSEASON, PARENT } from './tuning';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './foreignpool';
 import { marchEvents, nextNationalDecision, novemberEvents } from './national';
@@ -219,7 +219,8 @@ function tryoutPool(s: LeagueState): Player[] {
   const pool = placeClass(
     generateDraftPool(seed)
       .players.filter((p) => ['독립구단', '해외독립 복귀', '마이너 복귀', '대졸'].includes(p.pathway) && p.age >= 21)
-      .map((p) => fromDraftProspect(p, y0, seed))
+      // 1.7.0: born as many years later as the tryout is after Draft Room's (a 2016 game had them ten years too young).
+      .map((p) => fromDraftProspect(shiftProspect(p, y0 - DRAFT_ROOM_YEAR), y0, seed))
       .map((p) => ({ ...p, id: `t${y0}-${p.origin.sourceId}` })),
     seed,
   )

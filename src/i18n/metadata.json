@@ -63803,5 +63803,108 @@
       }
     },
     "locations": []
+  },
+  "league.trade.text.e55cc372": {
+    "source": "src/league/trade.ts",
+    "line": 500,
+    "params": {},
+    "locations": []
+  },
+  "league.trade.text.09801599": {
+    "source": "src/league/trade.ts",
+    "line": 500,
+    "params": {},
+    "locations": []
+  },
+  "league.trade.text.c476cd4b": {
+    "source": "src/league/trade.ts",
+    "line": 534,
+    "params": {
+      "shortOf": {
+        "expression": "shortOf(s, teamId)"
+      },
+      "name": {
+        "expression": "p.name"
+      },
+      "text": {
+        "expression": "p.origin.background!.text"
+      }
+    },
+    "locations": []
+  },
+  "league.movenews.text.43fdc18d": {
+    "source": "src/league/movenews.ts",
+    "line": 240,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "x.name"
+      }
+    },
+    "locations": []
+  },
+  "league.movenews.text.89ef46b1": {
+    "source": "src/league/movenews.ts",
+    "line": 241,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      },
+      "name": {
+        "expression": "eulreul(x.name)",
+        "particle": "을/를"
+      },
+      "name2": {
+        "expression": "eunneun(x.name)",
+        "particle": "은/는"
+      },
+      "ageIn": {
+        "expression": "ageIn(x, season)"
+      },
+      "posOf": {
+        "expression": "posOf(x)"
+      },
+      "value": {
+        "expression": "bg ? __i18n_k(\"league.movenews.moveNews.body.1acd0595\", { text: bg.text }) : ''"
+      },
+      "usd": {
+        "expression": "usd(m.price)"
+      }
+    },
+    "locations": []
+  },
+  "league.movenews.text.35b3f284": {
+    "source": "src/league/movenews.ts",
+    "line": 243,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.e32158d5": {
+    "source": "src/ui/Market.tsx",
+    "line": 423,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.03f13cab": {
+    "source": "src/ui/Market.tsx",
+    "line": 424,
+    "params": {
+      "regular": {
+        "expression": "open.regular"
+      },
+      "asia": {
+        "expression": "open.asia"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.7994e59f": {
+    "source": "src/ui/Market.tsx",
+    "line": 446,
+    "params": {},
+    "locations": []
   }
 }

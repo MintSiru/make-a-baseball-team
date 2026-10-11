@@ -6548,5 +6548,14 @@ export const koSource = {
   "save.compress.text.4575e4a3": "이 브라우저는 압축된 진행 파일을 열 수 없습니다.",
   "ui.recovery.text.5e9f6b80": "알 수 없는 오류",
   "league.playtext.playText.ebc0b8c7": "{who}: {what}",
-  "league.playtext.playText.7b8ebb4c": "{who}: {what} · {runs}점"
+  "league.playtext.playText.7b8ebb4c": "{who}: {what} · {runs}점",
+  "league.trade.text.e55cc372": "아시아쿼터 자리가 비어 있지 않습니다.",
+  "league.trade.text.09801599": "비어 있는 외국인 자리가 없습니다.",
+  "league.trade.text.c476cd4b": "외국인 영입: {shortOf} {name} ({text})",
+  "league.movenews.text.43fdc18d": "{club}, 빈 외국인 자리에 {name} 영입",
+  "league.movenews.text.89ef46b1": "{club} 비어 있던 외국인 선수 자리에 {name} 영입했다. {name2} {ageIn}세 {posOf}다.{value} 남은 시즌 몸값은 {usd}.",
+  "league.movenews.text.35b3f284": "외국인 영입",
+  "ui.market.text.e32158d5": "빈 자리에 영입",
+  "ui.market.text.03f13cab": "외국인 {regular}자리 · 아시아쿼터 {asia}자리 비어 있음 (내보낼 선수 없음)",
+  "ui.market.text.7994e59f": "영입"
 } as const;

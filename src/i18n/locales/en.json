@@ -6547,5 +6547,14 @@
   "save.compress.text.4575e4a3": "This browser can't open compressed save files.",
   "ui.recovery.text.5e9f6b80": "Unknown error",
   "league.playtext.playText.ebc0b8c7": "{who}: {what}",
-  "league.playtext.playText.7b8ebb4c": "{who}: {what} · {runs, plural, one {# run} other {# runs}}"
+  "league.playtext.playText.7b8ebb4c": "{who}: {what} · {runs, plural, one {# run} other {# runs}}",
+  "league.trade.text.e55cc372": "The Asian Quota spot is not open.",
+  "league.trade.text.09801599": "There is no open foreign player spot.",
+  "league.trade.text.c476cd4b": "Foreign Player Signed: {shortOf} {name} ({text})",
+  "league.movenews.text.43fdc18d": "{club} Fill Open Foreign Spot With {name}",
+  "league.movenews.text.89ef46b1": "{club} signed {name} to fill an open foreign player spot. {name2} is a {ageIn}-year-old {posOf}.{value} His pay for the rest of the season is {usd}.",
+  "league.movenews.text.35b3f284": "Foreign Player Signing",
+  "ui.market.text.e32158d5": "Sign Into Open Spot",
+  "ui.market.text.03f13cab": "Open: {regular} foreign · {asia} Asian Quota (no release needed)",
+  "ui.market.text.7994e59f": "Sign"
 }

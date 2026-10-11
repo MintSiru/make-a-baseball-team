@@ -28,6 +28,10 @@ describe('백 투 더 패스트', () => {
     expect(foundingDate()).toBe('2016-07-01');
     expect(f.user!.firstTeamYear).toBe(2018);
     expect(f.pending?.kind).toBe('tryout');
+    // 1.7.0: the tryout's amateurs are as old in 2016 as they would be in 2026 (they were ten years younger).
+    const amateurs = (f.pending as { candidates: string[] }).candidates.map((id) => f.players[id]!).filter((p) => p.id.startsWith('t2016-'));
+    expect(amateurs.length).toBeGreaterThan(10);
+    for (const p of amateurs) expect(2017 - Number(p.birthday.slice(0, 4))).toBeGreaterThanOrEqual(21);
   }, 300_000);
 });
 
