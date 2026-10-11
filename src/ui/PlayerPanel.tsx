@@ -18,7 +18,7 @@ import { fanAffinity, hometownOf, isMarried } from '../league/life';
 import { SITES } from '../league/training';
 import { usd } from '../league/foreign';
 import { handedness, militaryLabel, money, toolKeysFor } from './format';
-import { GradeBar } from './grades';
+import { GradeBar, shownFuture, showsFutureDetail } from './grades';
 import { serviceNote } from '../league/military';
 import type { TraitReport } from '../league/reports';
 import { kboSeasons } from '../league/foreigncap';
@@ -381,12 +381,12 @@ export function PlayerPanel({
               <h3>{__i18n_t("ui.playerPanel.playerPanel.7b001924")}</h3>
               <div class="gradebars">
                 {__i18n_display(toolKeysFor(p.role).map((k) => (
-                  <GradeBar key={k} label={__i18n_displayText(TOOL_LABELS[k])} now={s.tools[k]} future={s.futureTools[k]} />
+                  <GradeBar key={k} label={__i18n_displayText(TOOL_LABELS[k])} now={s.tools[k]} future={showsFutureDetail(p) ? s.futureTools[k] : undefined} />
                 )))}
-                <GradeBar label={__i18n_t("ui.playerPanel.playerPanel.f7c86d76")} now={s.current} future={s.futureValue} />
+                <GradeBar label={__i18n_t("ui.playerPanel.playerPanel.f7c86d76")} now={s.current} future={shownFuture(p) ?? undefined} />
               </div>
               <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.40f3273a")}</p>
-              {__i18n_display(s.moved && (
+              {__i18n_display(s.moved && showsFutureDetail(p) && (
                 <p class={`small ${s.moved.to > s.moved.from ? 'plus' : 'minus'}`}>{__i18n_t("ui.playerPanel.playerPanel.e3838a42", { value: s.moved.to > s.moved.from ? '▲' : '▼', from: s.moved.from, to: s.moved.to, value2: s.moved.date.slice(5).replace('-', '/') })}</p>
               ))}
             </section>
@@ -655,7 +655,7 @@ function SummaryStrip({ card, pitcher, titles }: { card: PlayerCard; pitcher: bo
       <div>
         <dt>{__i18n_t("ui.playerPanel.summaryStrip.f7c86d76")}</dt>
         <dd>
-          <strong>{__i18n_display(s.current)}</strong> <span class="muted small">{__i18n_t("ui.playerPanel.summaryStrip.92982abd", { futureValue: s.futureValue })}</span>
+          <strong>{__i18n_display(s.current)}</strong> <span class="muted small">{__i18n_t("ui.playerPanel.summaryStrip.92982abd", { futureValue: shownFuture(card.player) ?? '-' })}</span>
         </dd>
       </div>
       <div class="wide">

@@ -9,7 +9,7 @@ import type { LeagueState } from '../league/state';
 import { positionLabel, shortName } from '../league/views';
 import type { PlayerId } from '../model/types';
 import { money } from './format';
-import { gradeClass } from './grades';
+import { gradeClass, shownFuture } from './grades';
 import { positionKey, useSort } from './sort';
 
 const KINDS: [string, string][] = [
@@ -38,7 +38,7 @@ export function FantasyBoard({ league, onPlayer, onPick }: { league: LeagueState
     age: { value: (x) => ageIn(x.p, next), first: 1 },
     from: { value: (x) => (x.from ? shortName(league, x.from) : '~'), first: 1 },
     current: { value: (x) => x.p.scouting.current },
-    future: { value: (x) => x.p.scouting.futureValue },
+    future: { value: (x) => shownFuture(x.p) ?? -1 },
     pay: { value: (x) => salaryIn(x.p, next) },
     years: { value: (x) => years(x.p.id) },
   });
@@ -106,7 +106,7 @@ export function FantasyBoard({ league, onPlayer, onPick }: { league: LeagueState
                 <td class="num">{__i18n_display(ageIn(x.p, next))}</td>
                 <td class="muted">{__i18n_display(x.from ? shortName(league, x.from) : x.p.origin.pathway)}</td>
                 <td class={`num ${gradeClass(x.p.scouting.current)}`}>{__i18n_display(x.p.scouting.current)}</td>
-                <td class={`num strong ${gradeClass(x.p.scouting.futureValue)}`}>{__i18n_display(x.p.scouting.futureValue)}</td>
+                <td class={`num strong ${gradeClass(shownFuture(x.p))}`}>{__i18n_display(shownFuture(x.p) ?? '-')}</td>
                 <td class="num">{__i18n_display(x.from ? money(salaryIn(x.p, next)) : __i18n_k("ui.fantasyDraft.fantasyBoard.e100568e"))}</td>
                 <td class="num">{__i18n_display(x.from ? __i18n_k("ui.fantasyDraft.fantasyBoard.044a2535", { years: years(x.p.id) }) : '-')}</td>
                 <td>

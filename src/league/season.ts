@@ -16,7 +16,6 @@ import { attendance, clubState, recordGate } from './fans';
 import { staffOf } from './staff';
 import { setGoals } from './parent';
 import { aiDeadlineDeals, aiForeignChanges, aiTrades, processWaivers } from './trade';
-import { scoutMonth } from './scouting';
 import { allStarDay } from './allstar';
 import { draftClass } from './players';
 import { applyCombine, combineDay } from './combine';
@@ -273,8 +272,6 @@ export function playDay(s: LeagueState): boolean {
   // The first game day of a month: last month's story.
   if (day > 0 && s.schedule[day - 1]!.date.slice(5, 7) !== date.slice(5, 7)) {
     monthNews(s, date);
-    // The scouts look again at the young players (V0.12).
-    scoutMonth(s, date);
   }
   while (s.next < s.schedule.length && s.schedule[s.next]!.date === date) {
     const g = s.schedule[s.next]!;

@@ -667,7 +667,6 @@ export const SCOUTING = {
     goodEra: 3.0,
     badEra: 6.0,
   },
-  month: { majorPA: 80, majorOuts: 60, minorPA: 100, minorOuts: 75, opsSd: 0.09, eraSd: 1.3, majorUp: 1.2, majorDown: 1.3, minorUp: 1.6, minorDown: 1.8, twoSteps: 2.2, twoStepsAge: 24 },
 };
 
 /** Fielding away from the main position (V0.11, positions.ts): extra grade points lost at a position he does not

@@ -26,7 +26,7 @@ import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, orgIds, orgP
 import { batterWar, leagueContext, pitcherWar } from './stats';
 import { maybeRetireNumber } from './numbers';
 import { balanceDepth, changePosition, learnPositions, positionMove } from './positions';
-import { driftPotential } from './scouting';
+import { driftPotential, futureBefore, winterReport } from './scouting';
 import { applyDemotionCuts, settleFinances } from './finance';
 import { awardHonours, computeAwards, hallOfFameCheck } from './awards';
 import { seasonMoments } from './milestones';
@@ -471,6 +471,7 @@ export function makePick(s: LeagueState, d: DraftState, p: Player) {
   const slot = d.slots[d.next]!;
   const overall = d.next + 1;
   p.origin.overallPick = overall;
+  p.origin.draftGrade = p.scouting.futureValue;
   if (slot.via) p.origin.pickVia = slot.via;
   d.pool = d.pool.filter((id) => id !== p.id);
   const clubs = new Set(d.slots.map((x) => x.teamId)).size;
@@ -777,6 +778,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         break;
       case 'develop': {
         const futuresLeague = !!s.history.find((h) => h.year === year)?.futures;
+        // 1.7.0: the future grade moves once a season, here; our young players' moves make one report.
+        const before = futureBefore(s);
         for (const p of Object.values(s.players)) {
           if (p.status === 'retired' || p.status === 'overseas' || p.status === 'amateur') continue;
           if (p.proSince > year) continue; // drafted this fall, first season still ahead
@@ -789,6 +792,7 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
           const to = p.teamId !== s.user?.teamId ? positionMove(p) : null;
           if (to) changePosition(p, to);
         }
+        winterReport(s, year, before);
         break;
       }
       case 'retire': {

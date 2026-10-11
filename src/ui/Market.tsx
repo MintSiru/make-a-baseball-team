@@ -33,7 +33,7 @@ import { positionLabel, shortName } from '../league/views';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { money } from './format';
 import { clubStrategy, MODE_LABEL, SPOT_LABEL } from '../league/strategy';
-import { gradeClass } from './grades';
+import { gradeClass, shownFuture } from './grades';
 import { positionKey, useSort } from './sort';
 import { Help } from './Help';
 import { PlayerSearch, type PosFilter } from './PlayerSearch';
@@ -125,7 +125,7 @@ function PickList({
       pos: { value: (p) => positionKey(positionLabel(p)), first: 1 },
       age: { value: (p) => ageIn(p, league.year), first: 1 },
       current: { value: (p) => p.scouting.current },
-      future: { value: (p) => p.scouting.futureValue },
+      future: { value: (p) => shownFuture(p) ?? -1 },
       extra: { value: (p) => extra?.sort(p) ?? 0 },
     },
     extra ? { key: 'extra', dir: -1 } : undefined,
@@ -163,7 +163,7 @@ function PickList({
               <td>{__i18n_display(positionLabel(p))}</td>
               <td class="num">{__i18n_display(ageIn(p, league.year))}</td>
               <td class={`num ${gradeClass(p.scouting.current)}`}>{__i18n_display(p.scouting.current)}</td>
-              <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{__i18n_display(p.scouting.futureValue)}</td>
+              <td class={`num strong ${gradeClass(shownFuture(p))}`}>{__i18n_display(shownFuture(p) ?? '-')}</td>
               {__i18n_display(extra && <td class="num">{__i18n_display(extra.value(p))}</td>)}
               {__i18n_display(action && <td>{__i18n_display(action(p))}</td>)}
             </tr>

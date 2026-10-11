@@ -38556,140 +38556,6 @@
       25076
     ]
   },
-  "league.scouting.scoutNews.stat.fd720153": {
-    "source": "src/league/scouting.ts",
-    "line": 127,
-    "params": {
-      "value": {
-        "expression": "era(line.pit).toFixed(2)"
-      },
-      "value2": {
-        "expression": "Math.floor(line.pit.outs / 3)"
-      }
-    },
-    "locations": [
-      6533
-    ]
-  },
-  "league.scouting.scoutNews.stat.732fc777": {
-    "source": "src/league/scouting.ts",
-    "line": 130,
-    "params": {
-      "value": {
-        "expression": "(obp(line.bat) + slg(line.bat)).toFixed(3).replace(/^0/, '')"
-      },
-      "pa": {
-        "expression": "line.bat.pa"
-      }
-    },
-    "locations": [
-      6641
-    ]
-  },
-  "league.scouting.scoutNews.title.3dc47b86": {
-    "source": "src/league/scouting.ts",
-    "line": 136,
-    "params": {},
-    "locations": [
-      6861
-    ]
-  },
-  "league.scouting.scoutNews.title.79282c4f": {
-    "source": "src/league/scouting.ts",
-    "line": 136,
-    "params": {},
-    "locations": [
-      6868
-    ]
-  },
-  "league.scouting.scoutNews.title.03773cc3": {
-    "source": "src/league/scouting.ts",
-    "line": 136,
-    "params": {
-      "name": {
-        "expression": "p.name"
-      },
-      "value": {
-        "expression": "up ? '상승' : '하락'"
-      },
-      "from": {
-        "expression": "from"
-      },
-      "to": {
-        "expression": "to"
-      }
-    },
-    "locations": [
-      6834
-    ]
-  },
-  "league.scouting.scoutNews.body.51439b09": {
-    "source": "src/league/scouting.ts",
-    "line": 137,
-    "params": {},
-    "locations": [
-      6918
-    ]
-  },
-  "league.scouting.scoutNews.body.ef2caeba": {
-    "source": "src/league/scouting.ts",
-    "line": 137,
-    "params": {},
-    "locations": [
-      6928
-    ]
-  },
-  "league.scouting.scoutNews.body.4a61d670": {
-    "source": "src/league/scouting.ts",
-    "line": 137,
-    "params": {},
-    "locations": [
-      6995
-    ]
-  },
-  "league.scouting.scoutNews.body.58a282f0": {
-    "source": "src/league/scouting.ts",
-    "line": 137,
-    "params": {},
-    "locations": [
-      7003
-    ]
-  },
-  "league.scouting.scoutNews.body.a4e33c33": {
-    "source": "src/league/scouting.ts",
-    "line": 137,
-    "params": {
-      "value": {
-        "expression": "minor ? '퓨처스리그' : '1군'"
-      },
-      "stat": {
-        "expression": "stat"
-      },
-      "name": {
-        "expression": "p.name"
-      },
-      "from": {
-        "expression": "from"
-      },
-      "to": {
-        "expression": "to"
-      },
-      "value2": {
-        "expression": "up ? '올렸다' : '낮췄다'"
-      }
-    },
-    "locations": [
-      6907
-    ]
-  },
-  "league.scouting.scoutNews.facts.93bec45d": {
-    "source": "src/league/scouting.ts",
-    "line": 139,
-    "params": {},
-    "locations": [
-      7054
-    ]
-  },
   "league.season.startSeason.8c583704": {
     "source": "src/league/season.ts",
     "line": 83,
@@ -63986,6 +63852,112 @@
   "ui.lineup.text.19052110": {
     "source": "src/ui/Lineup.tsx",
     "line": 391,
+    "params": {},
+    "locations": []
+  },
+  "league.scouting.text.fde7a7f7": {
+    "source": "src/league/scouting.ts",
+    "line": 84,
+    "params": {
+      "name": {
+        "expression": "x.p.name"
+      },
+      "from": {
+        "expression": "x.from"
+      },
+      "to": {
+        "expression": "x.to"
+      }
+    },
+    "locations": []
+  },
+  "league.scouting.text.fb251a9e": {
+    "source": "src/league/scouting.ts",
+    "line": 89,
+    "params": {
+      "year": {
+        "expression": "year"
+      },
+      "up": {
+        "expression": "up.length"
+      },
+      "down": {
+        "expression": "down.length"
+      }
+    },
+    "locations": []
+  },
+  "league.scouting.text.34340af3": {
+    "source": "src/league/scouting.ts",
+    "line": 91,
+    "params": {},
+    "locations": []
+  },
+  "league.scouting.text.b6c86823": {
+    "source": "src/league/scouting.ts",
+    "line": 92,
+    "params": {
+      "list": {
+        "expression": "list(up)"
+      }
+    },
+    "locations": []
+  },
+  "league.scouting.text.3ce0ee17": {
+    "source": "src/league/scouting.ts",
+    "line": 93,
+    "params": {
+      "list": {
+        "expression": "list(down)"
+      }
+    },
+    "locations": []
+  },
+  "league.scouting.text.c13573d9": {
+    "source": "src/league/scouting.ts",
+    "line": 98,
+    "params": {},
+    "locations": []
+  },
+  "league.scouting.text.5356f002": {
+    "source": "src/league/scouting.ts",
+    "line": 98,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.1931f458": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 133,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.b16957fc": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 144,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.93bec45d": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 148,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.9d43df65": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 151,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.e7b07862": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 154,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.8610dd24": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 157,
     "params": {},
     "locations": []
   }

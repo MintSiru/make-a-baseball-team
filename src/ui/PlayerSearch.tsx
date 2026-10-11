@@ -12,7 +12,7 @@ import { canSignFromPool, poolAsk, tradeValue } from '../league/trade';
 import { positionLabel, shortName, statLine } from '../league/views';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { moneyShort } from './format';
-import { gradeClass } from './grades';
+import { gradeClass, shownFuture } from './grades';
 import { positionKey, useSort } from './sort';
 
 export type PosFilter = 'all' | 'SP' | 'RP' | 'P' | 'C' | '1B' | '2B' | '3B' | 'SS' | 'LF' | 'CF' | 'RF' | 'IF' | 'OF';
@@ -90,7 +90,7 @@ export function PlayerSearch({
     return ids
       .map((id) => league.players[id])
       .filter((p): p is Player => !!p && p.status === 'active')
-      .filter((p) => (!q || p.name.includes(q)) && ageIn(p, season) <= maxAge && p.scouting.current >= minNow && p.scouting.futureValue >= minFuture && matchesPos(p))
+      .filter((p) => (!q || p.name.includes(q)) && ageIn(p, season) <= maxAge && p.scouting.current >= minNow && (shownFuture(p) ?? 0) >= minFuture && matchesPos(p))
       .filter((p) => !tradable || canTrade(p));
   }, [league, pos, also, club, maxAge, minNow, minFuture, name, tradable]);
 
@@ -108,7 +108,7 @@ export function PlayerSearch({
       pos: { value: (p) => positionKey(positionLabel(p)), first: 1 },
       age: { value: (p) => ageIn(p, season), first: 1 },
       current: { value: (p) => p.scouting.current },
-      future: { value: (p) => p.scouting.futureValue },
+      future: { value: (p) => shownFuture(p) ?? -1 },
       war: { value: (p) => lastWar(p) ?? -99 },
       pay: { value: (p) => pay(p) },
       value: { value: (p) => tradeValue(league, p) },
@@ -224,7 +224,7 @@ export function PlayerSearch({
                     </td>
                     <td class="num">{__i18n_display(ageIn(p, season))}</td>
                     <td class={`num ${gradeClass(p.scouting.current)}`}>{__i18n_display(p.scouting.current)}</td>
-                    <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{__i18n_display(p.scouting.futureValue)}</td>
+                    <td class={`num strong ${gradeClass(shownFuture(p))}`}>{__i18n_display(shownFuture(p) ?? '-')}</td>
                     <td class="small nowrap">{__i18n_display(line ? `${line.year === league.year && league.phase === 'regular' ? '' : `${line.year} `}${line.text}` : '-')}</td>
                     <td class="num">{__i18n_display(lastWar(p)?.toFixed(1) ?? '-')}</td>
                     <td class="num">{__i18n_display(pool ? `${moneyShort(poolAsk(league, p))}*` : moneyShort(pay(p)))}</td>

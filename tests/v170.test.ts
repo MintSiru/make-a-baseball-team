@@ -12,6 +12,8 @@ import { checkLineupCard } from '../src/league/entry';
 import { available, lineupFor } from '../src/league/manager';
 import { isPitcher } from '../src/league/players';
 import { parseSave } from '../src/save/format';
+import { futureBefore, winterReport } from '../src/league/scouting';
+import { ageIn } from '../src/league/players';
 
 export const loadSave = (v = '1.4.0') => parseSave(gunzipSync(readFileSync(new URL(`./fixtures/save-${v}.json.gz`, import.meta.url))).toString('utf8')).snapshot!.state as LeagueState;
 
@@ -79,5 +81,23 @@ describe('the lineup card fixes the order or the position alone', () => {
     u.lineup = card;
     const t = apply(s, { kind: 'lineupCard', card });
     expect(t.user!.lineup?.places?.R).toEqual([{ id: lead.id, pos: 'DH' }]);
+  });
+});
+
+describe('the future grade moves once a season', () => {
+  it('the winter report marks each move and tells ours in one story', () => {
+    const s = loadSave();
+    const u = s.user!;
+    const before = futureBefore(s);
+    const ours = [...before.keys()].map((id) => s.players[id]!).filter((p) => p.teamId === u.teamId);
+    expect(ours.length).toBeGreaterThan(2);
+    ours[0]!.scouting.futureValue += 10;
+    ours[1]!.scouting.futureValue -= 5;
+    winterReport(s, s.year, before);
+    expect(ours[0]!.scouting.moved).toEqual({ date: `${s.year}-12-01`, from: before.get(ours[0]!.id), to: before.get(ours[0]!.id)! + 10 });
+    const story = s.news!.find((n) => n.id === `scout-winter-${s.year}`)!;
+    expect(story.players).toEqual(expect.arrayContaining([ours[0]!.id, ours[1]!.id]));
+    expect(story.title).toContain('오름 1명');
+    expect(ageIn(ours[0]!, s.year)).toBeLessThanOrEqual(27);
   });
 });

@@ -147,6 +147,8 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
       hand: __i18n_k("league.views.row.hand.0fdaea08", { throws: p.throws, bats: p.bats }),
       grade: p.scouting.current,
       future: p.scouting.futureValue,
+      /** 1.7.0: the draft-day expectation (the display setting "draft day only"). */
+      draftGrade: p.origin.draftGrade ?? null,
       line: group === 'military' || group === 'active' ? (isPitcher(p) ? pitLine(line?.pit ?? null) : batLine(line?.bat ?? null)) : futuresLine(s, id) || (isPitcher(p) ? pitLine(line?.pit ?? null) : batLine(line?.bat ?? null)),
       /** This season's numbers: first team for the first team, futures (or 상무) below it. */
       stats: statsFor(s, id, group),

@@ -138,6 +138,8 @@ export interface PlayerOrigin {
   entryCategory: string;
   /** Draft pick in the league draft (overall), when drafted by a club. */
   overallPick?: number;
+  /** 1.7.0: the public future grade when he was drafted (the draft-day expectation). */
+  draftGrade?: number;
   /** Drafted with a pick another club traded away (V0.7.8): he cannot be traded in his first season. */
   pickVia?: string;
   /** Nationality for foreign players. */

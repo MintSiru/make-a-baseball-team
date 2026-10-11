@@ -130,7 +130,7 @@ export function DisplayOptions() {
       <p class="muted small">{__i18n_t("ui.displaySettings.displayOptions.2818931a")}</p>
 
       <label class="check">
-        <input type="checkbox" checked={p.tables} onChange={(e) => set({ ...p, tables: (e.currentTarget as HTMLInputElement).checked })} /> 선수 표의 현재·미래 능력치에도 색 입히기
+        <input type="checkbox" checked={p.tables} onChange={(e) => set({ ...p, tables: (e.currentTarget as HTMLInputElement).checked })} /> {__i18n_t("ui.displaySettings.text.1931f458")}
       </label>
 
       <h3>{__i18n_t("ui.displaySettings.displayOptions.c31907e6")}</h3>
@@ -141,9 +141,20 @@ export function DisplayOptions() {
 
       <h3>{__i18n_t("ui.displaySettings.displayOptions.e0cee61a")}</h3>
       <label class="check">
-        <input type="checkbox" checked={p.hideScores} onChange={(e) => set({ ...p, hideScores: (e.currentTarget as HTMLInputElement).checked })} /> 우리 경기 결과 가리기 — 경기 탭에서 점수를 숨기고, 열면 문자중계가 1회부터 흘러갑니다
+        <input type="checkbox" checked={p.hideScores} onChange={(e) => set({ ...p, hideScores: (e.currentTarget as HTMLInputElement).checked })} /> {__i18n_t("ui.displaySettings.text.b16957fc")}
       </label>
       <p class="muted small">{__i18n_t("ui.displaySettings.displayOptions.97c4de27")}</p>
+
+      <h3>{__i18n_t("ui.displaySettings.text.93bec45d")}</h3>
+      <div class="segmented" role="group" aria-label={__i18n_t("ui.displaySettings.text.93bec45d")}>
+        <button type="button" aria-pressed={p.futureView === 'season'} onClick={() => set({ ...p, futureView: 'season' })}>
+          {__i18n_t("ui.displaySettings.text.9d43df65")}
+        </button>
+        <button type="button" aria-pressed={p.futureView === 'draft'} onClick={() => set({ ...p, futureView: 'draft' })}>
+          {__i18n_t("ui.displaySettings.text.e7b07862")}
+        </button>
+      </div>
+      <p class="muted small">{__i18n_t("ui.displaySettings.text.8610dd24")}</p>
 
       <h3>{__i18n_t("ui.displaySettings.displayOptions.e29d147e")}</h3>
       <PopupSettings />
