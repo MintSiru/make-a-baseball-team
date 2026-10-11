@@ -25,6 +25,8 @@ import { clubhouse } from '../src/league/views';
 import { ageIn, makeForeign, veteranOnMarket } from '../src/league/players';
 import { ADAPT, adaptabilityOf, adaptDay, adaptPenalty, failChance } from '../src/league/adapt';
 import { traitReport } from '../src/league/reports';
+import { FREAK, FREAK_KEYS, freakDay } from '../src/league/freak';
+import { firstTeamIds } from '../src/league/state';
 
 export const loadSave = (v = '1.4.0') => parseSave(gunzipSync(readFileSync(new URL(`./fixtures/save-${v}.json.gz`, import.meta.url))).toString('utf8')).snapshot!.state as LeagueState;
 
@@ -305,5 +307,37 @@ describe('foreign players adapting, and old big-league names', () => {
     }
     // An ordinary signing is as before.
     expect(makeForeign('vet-test', 'x1', 2027, { kind: 'pitcher', asiaQuota: false })).toEqual(makeForeign('vet-test', 'x1', 2027, { kind: 'pitcher', asiaQuota: false, veteran: false }));
+  });
+});
+
+describe('freak injuries', () => {
+  it('rarely; off the field, on the list (a hangover only a game), in the papers and in his history', () => {
+    const s = loadSave();
+    const u = s.user!;
+    const dates = [...new Set(s.schedule.slice(s.next).map((g) => g.date))];
+    // At the real rate: a handful a season across the league.
+    const quiet = structuredClone(s);
+    for (const d of dates) freakDay(quiet, d);
+    const seen = (quiet.news ?? []).filter((n) => n.id.startsWith('freak-')).length;
+    expect(seen).toBeLessThan(dates.length * firstTeamIds(s).length * FREAK.perClubDay * 3 + 3);
+    // One for every club today.
+    const rate = FREAK.perClubDay;
+    FREAK.perClubDay = 1;
+    try {
+      freakDay(s, dates[0]!);
+    } finally {
+      FREAK.perClubDay = rate;
+    }
+    const items = (s.news ?? []).filter((n) => n.id.startsWith('freak-') && n.date === dates[0]);
+    expect(items).toHaveLength(firstTeamIds(s).length);
+    for (const n of items) {
+      const p = s.players[n.players![0]!]!;
+      const inj = s.injuries[p.id]!;
+      expect(inj.part).toBe(n.facts.part);
+      expect(!!inj.dtd).toBe(!inj.onList);
+      if (inj.onList) expect(p.injuries!.at(-1)!.date).toBe(dates[0]);
+      expect(n.mine).toBe(p.teamId === u.teamId);
+    }
+    expect(FREAK_KEYS).toEqual(expect.arrayContaining(['car', 'stairs', 'kid', 'sink', 'hangover']));
   });
 });

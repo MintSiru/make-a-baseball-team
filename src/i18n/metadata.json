@@ -65648,5 +65648,291 @@
     "line": 238,
     "params": {},
     "locations": []
+  },
+  "league.freak.text.d766c287": {
+    "source": "src/league/freak.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.freak.text.13bc372f": {
+    "source": "src/league/freak.ts",
+    "line": 36,
+    "params": {
+      "n": {
+        "expression": "Math.round(days / 7)"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.a6fd2c35": {
+    "source": "src/league/freak.ts",
+    "line": 43,
+    "params": {},
+    "locations": []
+  },
+  "league.freak.text.16f0eec5": {
+    "source": "src/league/freak.ts",
+    "line": 44,
+    "params": {
+      "club": {
+        "expression": "v.club"
+      },
+      "name": {
+        "expression": "v.name"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.ddade789": {
+    "source": "src/league/freak.ts",
+    "line": 45,
+    "params": {
+      "who": {
+        "expression": "iga(v.who)",
+        "particle": "이/가"
+      },
+      "weeks": {
+        "expression": "v.weeks"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.94f14dd9": {
+    "source": "src/league/freak.ts",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "league.freak.text.62496a57": {
+    "source": "src/league/freak.ts",
+    "line": 52,
+    "params": {
+      "club": {
+        "expression": "v.club"
+      },
+      "name": {
+        "expression": "v.name"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.ae72cfb9": {
+    "source": "src/league/freak.ts",
+    "line": 53,
+    "params": {
+      "who": {
+        "expression": "iga(v.who)",
+        "particle": "이/가"
+      },
+      "weeks": {
+        "expression": "v.weeks"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.a5fcf68a": {
+    "source": "src/league/freak.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "league.freak.text.6155c54a": {
+    "source": "src/league/freak.ts",
+    "line": 61,
+    "params": {
+      "club": {
+        "expression": "v.club"
+      },
+      "name": {
+        "expression": "v.name"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.94e53300": {
+    "source": "src/league/freak.ts",
+    "line": 62,
+    "params": {
+      "who": {
+        "expression": "iga(v.who)",
+        "particle": "이/가"
+      },
+      "weeks": {
+        "expression": "v.weeks"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.53dcab57": {
+    "source": "src/league/freak.ts",
+    "line": 68,
+    "params": {},
+    "locations": []
+  },
+  "league.freak.text.df971733": {
+    "source": "src/league/freak.ts",
+    "line": 69,
+    "params": {
+      "club": {
+        "expression": "v.club"
+      },
+      "name": {
+        "expression": "v.name"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.caacd214": {
+    "source": "src/league/freak.ts",
+    "line": 70,
+    "params": {
+      "who": {
+        "expression": "iga(v.who)",
+        "particle": "이/가"
+      },
+      "weeks": {
+        "expression": "v.weeks"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.1fc9663a": {
+    "source": "src/league/freak.ts",
+    "line": 78,
+    "params": {},
+    "locations": []
+  },
+  "league.freak.text.a8647c32": {
+    "source": "src/league/freak.ts",
+    "line": 79,
+    "params": {
+      "club": {
+        "expression": "v.club"
+      },
+      "name": {
+        "expression": "v.name"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.7a735399": {
+    "source": "src/league/freak.ts",
+    "line": 80,
+    "params": {
+      "who": {
+        "expression": "iga(v.who)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.052a2b56": {
+    "source": "src/league/freak.ts",
+    "line": 87,
+    "params": {},
+    "locations": []
+  },
+  "league.freak.text.358079af": {
+    "source": "src/league/freak.ts",
+    "line": 88,
+    "params": {
+      "club": {
+        "expression": "v.club"
+      },
+      "name": {
+        "expression": "v.name"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.b4a9451a": {
+    "source": "src/league/freak.ts",
+    "line": 89,
+    "params": {
+      "who": {
+        "expression": "iga(v.who)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.265cd268": {
+    "source": "src/league/freak.ts",
+    "line": 95,
+    "params": {},
+    "locations": []
+  },
+  "league.freak.text.af1ac3e6": {
+    "source": "src/league/freak.ts",
+    "line": 96,
+    "params": {
+      "club": {
+        "expression": "v.club"
+      },
+      "name": {
+        "expression": "v.name"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.9fc6d192": {
+    "source": "src/league/freak.ts",
+    "line": 97,
+    "params": {
+      "who": {
+        "expression": "iga(v.who)",
+        "particle": "이/가"
+      },
+      "weeks": {
+        "expression": "v.weeks"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.06733032": {
+    "source": "src/league/freak.ts",
+    "line": 103,
+    "params": {},
+    "locations": []
+  },
+  "league.freak.text.331e9366": {
+    "source": "src/league/freak.ts",
+    "line": 104,
+    "params": {
+      "club": {
+        "expression": "v.club"
+      },
+      "name": {
+        "expression": "v.name"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.bf54fa43": {
+    "source": "src/league/freak.ts",
+    "line": 105,
+    "params": {
+      "who": {
+        "expression": "iga(v.who)",
+        "particle": "이/가"
+      },
+      "weeks": {
+        "expression": "v.weeks"
+      }
+    },
+    "locations": []
+  },
+  "league.freak.text.ef406667": {
+    "source": "src/league/freak.ts",
+    "line": 110,
+    "params": {},
+    "locations": []
+  },
+  "league.freak.text.9dac0c64": {
+    "source": "src/league/freak.ts",
+    "line": 110,
+    "params": {},
+    "locations": []
   }
 }
