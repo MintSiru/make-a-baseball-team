@@ -616,12 +616,17 @@ try {
   await waitStatus(p2, '2026 정규시즌');
   check((await p2.locator('.standings tbody tr').count()) === 10, 'spectator league has ten clubs');
   await phone.close();
+} catch (e) {
+  // On CI, as an annotation too: the job log is not the only place the reason shows.
+  if (process.env.GITHUB_ACTIONS) console.log(`::error title=browser smoke::${String(e?.stack ?? e).slice(0, 4000).replace(/%/g, '%25').replace(/\r?\n/g, '%0A')}`);
+  throw e;
 } finally {
   await browser.close();
 }
 
 if (failures.length) {
   console.error(failures.join('\n'));
+  if (process.env.GITHUB_ACTIONS) for (const f of failures) console.log(`::error title=browser smoke::${f.slice(0, 4000).replace(/%/g, '%25').replace(/\r?\n/g, '%0A')}`);
   process.exit(1);
 }
 console.log(`browser smoke passed (${SIZES.length} screen sizes)`);
