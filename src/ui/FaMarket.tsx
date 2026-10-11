@@ -34,7 +34,7 @@ import { positionLabel, shortName, statLine } from '../league/views';
 import type { FaPromise, PlayerId } from '../model/types';
 import { salaryCapFor } from '../rules/kbo2026';
 import { money, moneyShort, parseEok } from './format';
-import { gradeClass } from './grades';
+import { gradeClass, shownFuture } from './grades';
 import { positionKey, useSort } from './sort';
 
 interface Props {
@@ -141,7 +141,7 @@ export function FaMarket({ league, onSubmit, onPlayer }: Props) {
     position: { value: (t) => positionKey(positionLabel(league.players[t.id]!)), first: 1 },
     age: { value: (t) => ageIn(league.players[t.id]!, next), first: 1 },
     current: { value: (t) => league.players[t.id]!.scouting.current },
-    future: { value: (t) => league.players[t.id]!.scouting.futureValue },
+    future: { value: (t) => shownFuture(league.players[t.id]!) ?? -1 },
     war: { value: (t) => lastWar(league, t.id) ?? -99 },
     grade: { value: (t) => (t.free ? 0 : (GRADE_ORDER[t.grade] ?? 0)), first: 1 },
     price: { value: (t) => offerTotal(t.price) },
@@ -238,7 +238,7 @@ export function FaMarket({ league, onSubmit, onPlayer }: Props) {
                       </td>
                       <td class="num">{__i18n_display(ageIn(p, next))}</td>
                       <td class={`num ${gradeClass(p.scouting.current)}`}>{__i18n_display(p.scouting.current)}</td>
-                      <td class={`num ${gradeClass(p.scouting.futureValue)}`}>{__i18n_display(p.scouting.futureValue)}</td>
+                      <td class={`num ${gradeClass(shownFuture(p))}`}>{__i18n_display(shownFuture(p) ?? '-')}</td>
                       <td class="small nowrap">{__i18n_display(line ? line.text : '-')}</td>
                       <td class="num">{__i18n_display(lastWar(league, t.id)?.toFixed(1) ?? '-')}</td>
                       <td>{__i18n_display(t.free ? __i18n_k("ui.faMarket.faMarket.4c0223d3") : t.grade)}</td>

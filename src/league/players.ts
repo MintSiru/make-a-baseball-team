@@ -1,16 +1,16 @@
 import { k as __i18n_k } from '../i18n/index';
 /* League-side player helpers: ages, the values clubs judge players by (public scouting only), yearly
    draft pools, and foreign players. */
-import { generateDraftPool, isPitcherRole, overall, rng, toGrade, type DraftProspect, type Role, type Tools } from '../draftroom';
+import { generateDraftPool, hashUnit, isPitcherRole, overall, rng, toGrade, type DraftProspect, type Role, type Tools } from '../draftroom';
 import { ageOn, fromDraftProspect, placeClass } from '../model/player';
 import { altPositions, type Position } from '../model/position';
-import { background, careerText, foreignAsk, foreignName, LEVEL_LABELS } from './foreign';
+import { background, careerText, foreignAsk, foreignName, LEVEL_LABELS, veteranCareer } from './foreign';
 import type { Player } from '../model/types';
 import { FOREIGN } from './tuning';
 import { rollPersonality, rollTraits } from './traits';
 
 export const ageIn = (p: Player, year: number) => ageOn(p.birthday, `${year}-04-01`);
-export const isPitcher = (p: Player) => isPitcherRole(p.role);
+export const isPitcher = (p: Pick<Player, 'role'>) => isPitcherRole(p.role);
 
 /** Hitting value from public tools (defense handled by position). */
 export const batValue = (t: Tools) => 0.3 * (t.contact ?? 30) + 0.3 * (t.power ?? 30) + 0.22 * (t.eye ?? 30) + 0.1 * (t.speed ?? 30) + 0.08 * (t.defense ?? 30);
@@ -37,7 +37,7 @@ export function keepValue(p: Player, year: number): number {
 export const pitchValue = (t: Tools, role: Role) => overall(t, role === 'SP' ? 'SP' : 'RP');
 export const starterValue = (t: Tools) => overall(t, 'SP') + ((t.stamina ?? 40) - 45) * 0.25;
 
-const DRAFT_ROOM_YEAR = 2026;
+export const DRAFT_ROOM_YEAR = 2026;
 
 function shiftDate<T extends string | null>(date: T, years: number): T {
   if (!date) return date;
@@ -106,27 +106,37 @@ export function foreignTypeOf(p: Player): string {
   ]);
 }
 
+/** 1.7.0: whether an old big-league name is on this market (keyed by the market), and whether he pitches. */
+export function veteranOnMarket(key: string): { kind: 'pitcher' | 'hitter' } | null {
+  if (hashUnit(`${key}|veteran`) >= FOREIGN.veteran.chance) return null;
+  return { kind: hashUnit(`${key}|veteran-kind`) < 0.65 ? 'pitcher' : 'hitter' };
+}
+
 /** Foreign types (1.1.0); anything else is a domestic player's Draft Room archetype. */
 export const FOREIGN_TYPES = new Set(Object.keys(FOREIGN.types.shift));
 
 export interface ForeignSpec {
   kind: 'pitcher' | 'hitter';
   asiaQuota: boolean;
+  /** 1.7.0: an old big-league name (never an Asia-quota player). */
+  veteran?: boolean;
 }
 
 /** A foreign player signing for `season`. Mature ability: potential equals current. */
 export function makeForeign(seed: string, id: string, season: number, spec: ForeignSpec): Player {
   const r = rng(`${seed}|foreign|${id}`);
-  const bg = background(spec.asiaQuota, r);
+  const veteran = !!spec.veteran && !spec.asiaQuota;
+  const bg0 = background(spec.asiaQuota, r);
+  const bg = veteran ? { ...bg0, level: 'mlb' as const, shift: 3, premium: 400_000, spread: FOREIGN.veteran.spread } : bg0;
   const nationality = bg.nationality;
   const name = foreignName(bg.pool, r);
-  const age = spec.asiaQuota ? 24 + Math.floor(r() * 7) : 26 + Math.floor(r() * 7);
+  const age = veteran ? 34 + Math.floor(r() * 5) : spec.asiaQuota ? 24 + Math.floor(r() * 7) : 26 + Math.floor(r() * 7);
   const birthday = `${season - age - 1}-${String(1 + Math.floor(r() * 12)).padStart(2, '0')}-${String(1 + Math.floor(r() * 28)).padStart(2, '0')}`;
   // Asia-quota signings are cheaper and a notch below; the background moves ability a little (and widens it for independent leagues).
   const F = FOREIGN;
   // Now and then a club lands a big-league regular in his prime (V0.11): the KBO's aces and MVP imports.
   const star = !spec.asiaQuota && r() < F.star.chance;
-  const q = (spec.asiaQuota ? F.asiaShift : 0) + bg.shift + normal(r) * bg.spread + (star ? F.star.shift : 0);
+  const q = (spec.asiaQuota ? F.asiaShift : 0) + bg.shift + normal(r) * bg.spread + (star ? F.star.shift : 0) + (veteran ? F.veteran.shift : 0);
   let role: Role, tools: Tools;
   let position: Position | null = null;
   // His type (1.1.0), on a stream of its own.
@@ -166,7 +176,7 @@ export function makeForeign(seed: string, id: string, season: number, spec: Fore
   const throwsLeft = !['2B', '3B', 'SS'].includes(position ?? '') && r() < 0.3,
     bats = throwsLeft ? (r() < 0.95 ? '좌' : '우') : r() < 0.3 ? '좌' : r() < 0.05 ? '양' : '우';
   const level = LEVEL_LABELS[bg.level];
-  const text = careerText(bg.level, spec.kind === 'pitcher', age, current, r);
+  const text = veteran ? veteranCareer(spec.kind === 'pitcher', age, r) : careerText(bg.level, spec.kind === 'pitcher', age, current, r);
   const ask = foreignAsk(current, spec.asiaQuota, bg.premium, r);
   const personality = rollPersonality(seed, id);
   return {
@@ -183,16 +193,16 @@ export function makeForeign(seed: string, id: string, season: number, spec: Fore
     alt: altPositions(position, graded, rng(`${seed}|alt|${id}`), type === '유틸리티' ? 2 : 0),
     archetype: type,
     personality,
-    velocity: spec.kind === 'pitcher' ? Math.round(146 + ((tools.stuff ?? 55) - 55) * 0.4 + normal(r) * 1.5) : null,
+    velocity: spec.kind === 'pitcher' ? Math.round(146 + ((tools.stuff ?? 55) - 55) * 0.4 + normal(r) * 1.5) - (veteran ? 2 : 0) : null,
     twoWay: false,
-    origin: { kind: 'foreign', pathway: __i18n_k("league.players.origin.pathway.5bd804b7"), entryCategory: 'foreign', nationality, asiaQuota: spec.asiaQuota, background: { level: bg.level, text, ask } },
+    origin: { kind: 'foreign', pathway: __i18n_k("league.players.origin.pathway.5bd804b7"), entryCategory: 'foreign', nationality, asiaQuota: spec.asiaQuota, background: { level: bg.level, text, ask, ...(veteran ? { veteran: true } : {}) } },
     education: { qualification: __i18n_k("league.players.education.qualification.8c9f6c12", { level: level }), school: level, schoolTier: '', region: nationality, pathText: `${nationality} · ${text}`, history: [] },
     amateur: { record: { kind: spec.kind, games: 0 }, awards: [], draftRank: 0 },
     status: 'active',
     teamId: null,
     contract: null,
     service: { creditedSeasons: 0, carriedDays: 0, military: 'exempt' },
-    hidden: { current: tools, potential: { ...tools }, growthCurve: 'normal', developmentRate: 1, observerBias: normal(r) * 2, injuryRisk: 0.08, traits: rollTraits(seed, id, personality) },
+    hidden: { current: tools, potential: { ...tools }, growthCurve: 'normal', developmentRate: 1, observerBias: normal(r) * 2, injuryRisk: veteran ? F.veteran.injuryRisk : 0.08, traits: rollTraits(seed, id, personality) },
     scouting: {
       season,
       tools: graded,

@@ -122,17 +122,23 @@ export function checkLineupCard(s: LeagueState, card: LineupCard): string | null
     if (!Array.isArray(list) || list.length !== 9) return __i18n_k("league.entry.checkLineupCard.164488b8");
     const ids = new Set<PlayerId>(),
       spots = new Set<FieldPos>();
-    for (const slot of list) {
+    // 1.7.0: a spot in the order may leave the position to the manager (pos null), and players may be fixed at a
+    // position only (places); either way a player and a position appear once, and nine players at most.
+    const places = card.places?.[list === card.R ? 'R' : 'L'] ?? [];
+    if (!Array.isArray(places)) return __i18n_k("league.entry.checkLineupCard.164488b8");
+    const placeSet = new Set<object>(places);
+    for (const slot of [...list, ...places]) {
       if (!slot) continue;
       const p = s.players[slot.id];
       if (!p || !ours(slot.id)) return __i18n_k("league.entry.checkLineupCard.2e480919", { hand: hand });
       if (isPitcher(p) && !p.twoWay) return __i18n_k("league.entry.checkLineupCard.d96bc9ae", { hand: hand, name: eunneun(p.name) });
-      if (!FIELD.includes(slot.pos)) return __i18n_k("league.entry.checkLineupCard.0c39291f", { hand: hand });
+      if (slot.pos === null ? placeSet.has(slot) : !FIELD.includes(slot.pos)) return __i18n_k("league.entry.checkLineupCard.0c39291f", { hand: hand });
       if (ids.has(slot.id)) return __i18n_k("league.entry.checkLineupCard.eee8e6bf", { hand: hand, name: iga(p.name) });
-      if (spots.has(slot.pos)) return __i18n_k("league.entry.checkLineupCard.af4d6dc9", { hand: hand, pos: slot.pos });
+      if (slot.pos && spots.has(slot.pos)) return __i18n_k("league.entry.checkLineupCard.af4d6dc9", { hand: hand, pos: slot.pos });
       ids.add(slot.id);
-      spots.add(slot.pos);
+      if (slot.pos) spots.add(slot.pos);
     }
+    if (ids.size > 9) return __i18n_k("league.entry.text.6240b64c", { hand });
   }
   if (card.rotation.length > 5) return __i18n_k("league.entry.checkLineupCard.133d2296");
   if (new Set(card.rotation).size !== card.rotation.length) return __i18n_k("league.entry.checkLineupCard.97c24fe3");
@@ -153,6 +159,7 @@ export function setLineupCard(s: LeagueState, card: LineupCard | null) {
   }
   const problem = checkLineupCard(s, card);
   if (problem) throw new Error(problem);
-  u.lineup = { R: card.R.map((x) => (x ? { id: x.id, pos: x.pos } : null)), L: card.L.map((x) => (x ? { id: x.id, pos: x.pos } : null)), rotation: [...card.rotation], rest: card.rest !== false };
+  const places = card.places && (card.places.R.length || card.places.L.length) ? { R: card.places.R.map((x) => ({ id: x.id, pos: x.pos })), L: card.places.L.map((x) => ({ id: x.id, pos: x.pos })) } : undefined;
+  u.lineup = { R: card.R.map((x) => (x ? { id: x.id, pos: x.pos ?? null } : null)), L: card.L.map((x) => (x ? { id: x.id, pos: x.pos ?? null } : null)), ...(places ? { places } : {}), rotation: [...card.rotation], rest: card.rest !== false };
 }
 

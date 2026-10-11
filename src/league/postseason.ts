@@ -61,7 +61,9 @@ function playSeriesGame(s: LeagueState, x: LiveSeries) {
   const i = x.i;
   const highHome = x.homes[Math.min(i, x.homes.length - 1)]!;
   const [home, away] = highHome ? [x.high, x.low] : [x.low, x.high];
-  const id = `${s.year}-${x.round}-${i + 1}`;
+  // 1.7.0: with two leagues, two series of a round run side by side; the higher seed tells their games apart (both
+  // were `${year}-po-1`…, so one series' box scores replaced the other's).
+  const id = s.bracket?.mode === 'two' && x.round !== 'ks' ? `${s.year}-${x.round}-${x.high}-${i + 1}` : `${s.year}-${x.round}-${i + 1}`;
   const date = x.date;
   const log: PlayEvent[] | undefined = isUserGame(s, home, away) ? [] : undefined;
   const out = playGame(s, home, away, id, date, null, log);

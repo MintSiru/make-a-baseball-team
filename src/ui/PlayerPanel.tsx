@@ -18,10 +18,13 @@ import { fanAffinity, hometownOf, isMarried } from '../league/life';
 import { SITES } from '../league/training';
 import { usd } from '../league/foreign';
 import { handedness, militaryLabel, money, toolKeysFor } from './format';
-import { GradeBar } from './grades';
+import { GradeBar, shownFuture, showsFutureDetail } from './grades';
+import { GradeChart } from './GradeChart';
+import { MlbTable } from './Mlb';
 import { serviceNote } from '../league/military';
 import type { TraitReport } from '../league/reports';
 import { kboSeasons } from '../league/foreigncap';
+import { extensionCooldown, extensionOptions, extensionProblem } from '../league/extensions';
 import { postRows, postTotals, type PostRow } from '../league/poststats';
 
 const POSITION_NAMES: Record<string, string> = { C: __i18n_k("ui.playerPanel.pOSITION_NAMES.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("ui.playerPanel.pOSITION_NAMES.sS.3e24c7f1"), LF: __i18n_k("ui.playerPanel.pOSITION_NAMES.lF.73836db2"), CF: __i18n_k("ui.playerPanel.pOSITION_NAMES.cF.56780b2a"), RF: __i18n_k("ui.playerPanel.pOSITION_NAMES.rF.a28a0ef8") };
@@ -69,7 +72,7 @@ export function TraitReportBox({ report }: { report: TraitReport }) {
    with the records split again into the regular season, the postseason, career highs and left/right. The part
    last opened stays open for the next player. */
 type Part = 'ability' | 'records' | 'report' | 'profile' | 'injuries';
-type RecordView = 'seasons' | 'post' | 'highs' | 'splits';
+type RecordView = 'seasons' | 'post' | 'highs' | 'splits' | 'mlb';
 const PARTS: { key: Part; label: string }[] = [
   { key: 'ability', label: __i18n_k("ui.playerPanel.pARTS.label.9e9117d0") },
   { key: 'records', label: __i18n_k("ui.playerPanel.pARTS.label.d84b6f4b") },
@@ -82,6 +85,7 @@ const RECORD_VIEWS: { key: RecordView; label: string }[] = [
   { key: 'post', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.a0f7a345") },
   { key: 'highs', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.dc5975f8") },
   { key: 'splits', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.1df210e9") },
+  { key: 'mlb', label: 'MLB' },
 ];
 let lastPart: Part = 'ability';
 let lastRecords: RecordView = 'seasons';
@@ -381,14 +385,18 @@ export function PlayerPanel({
               <h3>{__i18n_t("ui.playerPanel.playerPanel.7b001924")}</h3>
               <div class="gradebars">
                 {__i18n_display(toolKeysFor(p.role).map((k) => (
-                  <GradeBar key={k} label={__i18n_displayText(TOOL_LABELS[k])} now={s.tools[k]} future={s.futureTools[k]} />
+                  <GradeBar key={k} label={__i18n_displayText(TOOL_LABELS[k])} now={s.tools[k]} future={showsFutureDetail(p) ? s.futureTools[k] : undefined} />
                 )))}
-                <GradeBar label={__i18n_t("ui.playerPanel.playerPanel.f7c86d76")} now={s.current} future={s.futureValue} />
+                <GradeBar label={__i18n_t("ui.playerPanel.playerPanel.f7c86d76")} now={s.current} future={shownFuture(p) ?? undefined} />
               </div>
               <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.40f3273a")}</p>
-              {__i18n_display(s.moved && (
+              {__i18n_display(s.moved && showsFutureDetail(p) && (
                 <p class={`small ${s.moved.to > s.moved.from ? 'plus' : 'minus'}`}>{__i18n_t("ui.playerPanel.playerPanel.e3838a42", { value: s.moved.to > s.moved.from ? '▲' : '▼', from: s.moved.from, to: s.moved.to, value2: s.moved.date.slice(5).replace('-', '/') })}</p>
               ))}
+            </section>
+            <section>
+              <h3>{__i18n_t("ui.playerPanel.text.89a8bfe6")}</h3>
+              <GradeChart log={p.gradeLog ?? []} role={p.role} />
             </section>
             {__i18n_display(!pitcher && card.positions.length > 0 && (
               <section class="pitch-box">
@@ -424,14 +432,15 @@ export function PlayerPanel({
         {__i18n_display(shown === 'records' && (
           <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.d84b6f4b")}>
             <div class="segmented record-views" role="group" aria-label={__i18n_t("ui.playerPanel.playerPanel.493c08af")}>
-              {__i18n_display(RECORD_VIEWS.map((x) => (
+              {__i18n_display(RECORD_VIEWS.filter((x) => x.key !== 'mlb' || p.mlb).map((x) => (
                 <button key={x.key} type="button" aria-pressed={records === x.key} onClick={() => setRecords(x.key)}>
                   {__i18n_display(x.label)}
                   {__i18n_display(x.key === 'post' && post.length > 0 && <span class="count">{__i18n_display(post.length)}</span>)}
                 </button>
               )))}
             </div>
-            {__i18n_display(records === 'seasons' && (
+            {records === 'mlb' && p.mlb && <MlbTable p={p} />}
+            {__i18n_display((records === 'seasons' || (records === 'mlb' && !p.mlb)) && (
               <>
                 <SeasonTable league={league} card={card} pitcher={pitcher} />
                 <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.7e2cbab5")}</p>
@@ -480,6 +489,7 @@ export function PlayerPanel({
         {__i18n_display(shown === 'profile' && (
           <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.032e3f1f")}>
             {__i18n_display(onAct && ours && <NumberField key={`${p.id}-${wearing ?? ''}`} league={league} id={p.id} current={wearing} onAct={onAct} />)}
+            {onAct && ours && <ExtensionOffer league={league} id={p.id} onAct={onAct} />}
             {__i18n_display(onAct && ours && (p.life?.suspicion?.signs ?? 0) > 0 && (
               <p class="inline-form">
                 <span class="small">{__i18n_t("ui.playerPanel.playerPanel.35b81cd9")}</span>
@@ -655,7 +665,7 @@ function SummaryStrip({ card, pitcher, titles }: { card: PlayerCard; pitcher: bo
       <div>
         <dt>{__i18n_t("ui.playerPanel.summaryStrip.f7c86d76")}</dt>
         <dd>
-          <strong>{__i18n_display(s.current)}</strong> <span class="muted small">{__i18n_t("ui.playerPanel.summaryStrip.92982abd", { futureValue: s.futureValue })}</span>
+          <strong>{__i18n_display(s.current)}</strong> <span class="muted small">{__i18n_t("ui.playerPanel.summaryStrip.92982abd", { futureValue: shownFuture(card.player) ?? '-' })}</span>
         </dd>
       </div>
       <div class="wide">
@@ -815,5 +825,39 @@ function NumberField({ league, id, current, onAct }: { league: LeagueState; id: 
       </button>
       {__i18n_display(problem && text.trim() !== '' && <span class="muted small">{__i18n_display(problem)}</span>)}
     </p>
+  );
+}
+
+/** 1.7.0: a multi-year deal before free agency (extensions.ts), two to six years. */
+function ExtensionOffer({ league, id, onAct }: { league: LeagueState; id: string; onAct: (a: Action) => void }) {
+  const problem = extensionProblem(league, id);
+  const [years, setYears] = useState(4);
+  // Only a recent no is worth telling; otherwise he is not someone to offer one to.
+  if (problem && problem !== extensionCooldown(league, id)) return null;
+  const options = problem ? [] : extensionOptions(league, id);
+  const pick = options.find((x) => x.years === years) ?? options.at(-1);
+  return (
+    <div class="inline-form extension">
+      <span class="small">
+        <strong>{__i18n_t("ui.playerPanel.text.e03ccaea")}</strong>
+      </span>
+      {problem ? (
+        <span class="muted small">{problem}</span>
+      ) : (
+        <>
+          <select value={String(pick?.years ?? years)} onChange={(e) => setYears(Number((e.currentTarget as HTMLSelectElement).value))} aria-label={__i18n_t("ui.playerPanel.text.e52c8464")}>
+            {options.map((x) => (
+              <option key={x.years} value={String(x.years)}>
+                {__i18n_t("ui.playerPanel.text.bcc042ee", { years: x.years, annual: money(x.annual), total: money(x.total) })}
+              </option>
+            ))}
+          </select>
+          <button type="button" disabled={!pick} onClick={() => pick && onAct({ kind: 'extend', id, years: pick.years })}>
+            {__i18n_t("ui.playerPanel.text.6ef251ee")}
+          </button>
+          <span class="muted small">{__i18n_t("ui.playerPanel.text.9d415c3d")}</span>
+        </>
+      )}
+    </div>
   );
 }

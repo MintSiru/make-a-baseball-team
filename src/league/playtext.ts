@@ -14,7 +14,16 @@ const HOMERS = [__i18n_k("league.playtext.hOMERS.5498be10"), __i18n_k("league.pl
 const DPS = [__i18n_k("league.playtext.dPS.dc8c3604"), __i18n_k("league.playtext.dPS.e4b5cae2"), __i18n_k("league.playtext.dPS.9f27e453"), __i18n_k("league.playtext.dPS.9d1e3078")];
 const ERRORS = [__i18n_k("league.playtext.eRRORS.ae52eeb7"), __i18n_k("league.playtext.eRRORS.7ef67f01"), __i18n_k("league.playtext.eRRORS.af3ca0ff"), __i18n_k("league.playtext.eRRORS.5031d097"), __i18n_k("league.playtext.eRRORS.8265a992")];
 
+/** 1.7.0: where a defensive replacement goes (the alerts' position names). */
+const POS: Record<string, string> = { C: __i18n_k("league.alerts.pOS.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("league.alerts.pOS.sS.3e24c7f1"), LF: __i18n_k("league.alerts.pOS.lF.73836db2"), CF: __i18n_k("league.alerts.pOS.cF.56780b2a"), RF: __i18n_k("league.alerts.pOS.rF.a28a0ef8") };
+
 export function playText(ev: PlayEvent, key: string, name: (id: string) => string): string {
+  if (ev.k === 'sub') {
+    const v = { name: name(ev.in), out: name(ev.out) };
+    if (ev.sub === 'PH') return __i18n_k("league.playtext.text.2c2b34d5", v);
+    if (ev.sub === 'PR') return __i18n_k("league.playtext.text.6a7dbf39", v);
+    return __i18n_k("league.playtext.text.6420ae1f", { ...v, pos: POS[ev.pos] ?? ev.pos });
+  }
   if (ev.k === 'pitch') return __i18n_k("league.playtext.playText.43752078", { name: name(ev.out), name2: name(ev.p) });
   const who = name(ev.b);
   const what = (() => {

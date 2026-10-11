@@ -24,7 +24,7 @@ export type Move =
   | { type: 'claim'; teamId: TeamId; from: TeamId; id: PlayerId }
   | { type: 'pool'; teamId: TeamId; id: PlayerId; salary: number }
   /** `out` is passed whole: a foreign player with no first-team record leaves the player list. */
-  | { type: 'foreign'; teamId: TeamId; out: Player; in: PlayerId; price: number }
+  | { type: 'foreign'; teamId: TeamId; out: Player | null; in: PlayerId; price: number }
   | { type: 'posting'; teamId: TeamId; id: PlayerId; deal: { years: number; total: number; fee: number } | null }
   /** A free-agent deal: since V0.8 with its bonus, incentives and period option. */
   | { type: 'fa'; from: TeamId; to: TeamId; id: PlayerId; years: number; annual: number; grade: string; bonus?: number; options?: number; extra?: { years: number; holder: 'club' | 'player' } }
@@ -230,18 +230,35 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
       if (!x) return;
       const mine = m.teamId === u;
       const club = short(s, m.teamId);
-      const id = `mv-foreign-${date}-${m.out.id}`;
-      const r = recent(s, m.out);
       const bg = x.origin.background;
+      if (!m.out) {
+        // 1.7.0: into an open place, nobody let go.
+        const id = `mv-foreign-${date}-${x.id}`;
+        addNews(s, {
+          ...base,
+          id,
+          title: __i18n_k("league.movenews.text.43fdc18d", { club, name: x.name }),
+          body: __i18n_k("league.movenews.text.89ef46b1", { club: iga(club), name: eulreul(x.name), name2: eunneun(x.name), ageIn: ageIn(x, season), posOf: posOf(x), value: bg ? __i18n_k("league.movenews.moveNews.body.1acd0595", { text: bg.text }) : '', usd: usd(m.price) }),
+          quotes: [{ who: managerOf(s, m.teamId), role: 'manager', text: pick(MANAGER.foreign, id) }, ...(mine ? fans(FANS.foreign, id) : [])],
+          facts: { type: __i18n_k("league.movenews.text.35b3f284"), date, club, in: x.name, price: usd(m.price) },
+          detail: [...playerFacts(s, x, season), ...clubFacts(s, [m.teamId], date)],
+          players: [x.id],
+          mine,
+        });
+        return;
+      }
+      const out = m.out;
+      const id = `mv-foreign-${date}-${out.id}`;
+      const r = recent(s, out);
       addNews(s, {
         ...base,
         id,
-        title: __i18n_k("league.movenews.moveNews.title.1148392f", { club: club, name: m.out.name, name2: x.name }),
-        body: __i18n_k("league.movenews.moveNews.body.eaca8c2d", { club: iga(club), name: eulreul(m.out.name), name2: eulreul(x.name), name3: eunneun(x.name), ageIn: ageIn(x, season), posOf: posOf(x), value: bg ? __i18n_k("league.movenews.moveNews.body.1acd0595", { text: bg.text }) : '', usd: usd(m.price), value2: r ? __i18n_k("league.movenews.moveNews.body.0bc32b32", { name: m.out.name, r: r }) : '' }),
+        title: __i18n_k("league.movenews.moveNews.title.1148392f", { club: club, name: out.name, name2: x.name }),
+        body: __i18n_k("league.movenews.moveNews.body.eaca8c2d", { club: iga(club), name: eulreul(out.name), name2: eulreul(x.name), name3: eunneun(x.name), ageIn: ageIn(x, season), posOf: posOf(x), value: bg ? __i18n_k("league.movenews.moveNews.body.1acd0595", { text: bg.text }) : '', usd: usd(m.price), value2: r ? __i18n_k("league.movenews.moveNews.body.0bc32b32", { name: out.name, r: r }) : '' }),
         quotes: [{ who: managerOf(s, m.teamId), role: 'manager', text: pick(MANAGER.foreign, id) }, ...(mine ? fans(FANS.foreign, id) : [])],
-        facts: { type: __i18n_k("league.movenews.facts.type.c49c1d92"), date, club, out: m.out.name, in: x.name, price: usd(m.price) },
-        detail: [...playerFacts(s, m.out, season), ...playerFacts(s, x, season), ...clubFacts(s, [m.teamId], date)],
-        players: [x.id, ...(s.players[m.out.id] ? [m.out.id] : [])],
+        facts: { type: __i18n_k("league.movenews.facts.type.c49c1d92"), date, club, out: out.name, in: x.name, price: usd(m.price) },
+        detail: [...playerFacts(s, out, season), ...playerFacts(s, x, season), ...clubFacts(s, [m.teamId], date)],
+        players: [x.id, ...(s.players[out.id] ? [out.id] : [])],
         mine,
       });
       return;

@@ -11,12 +11,14 @@ import { k as __i18n_k } from '../i18n/index';
    read them better than scouts read anyone. Only the user's club reads; the AI clubs go by the public report. */
 import { hashUnit } from '../draftroom';
 import type { GrowthType, Player, TeamId } from '../model/types';
-import { ageIn, isPitcher } from './players';
+import { adaptabilityOf } from './adapt';
+import { kboSeasons } from './foreigncap';
+import { ageIn, isForeign, isPitcher } from './players';
 import type { LeagueState, StaffRole } from './state';
 import { GROWTH_LABELS, GROWTH_NOTES, GROWTH_ORDER, TRAIT_LABELS, traitsOf, type TraitKey } from './traits';
 import { COMBINE, DIFFICULTY } from './tuning';
 
-export type ReadKey = 'growth' | 'injury' | TraitKey;
+export type ReadKey = 'growth' | 'injury' | 'adapt' | TraitKey;
 
 export interface TraitRead {
   key: ReadKey;
@@ -61,6 +63,7 @@ const READER: Record<ReadKey, (p: Player, year: number) => StaffRole> = {
   loyalty: () => 'manager',
   controversy: () => 'manager',
   injury: () => 'medical',
+  adapt: () => 'manager',
 };
 
 const ROLE_TITLE: Record<StaffRole, string> = {
@@ -88,6 +91,8 @@ function accuracy(s: LeagueState, p: Player, key: ReadKey, teamId: TeamId, ours:
   // A pro's body shows in his injury record; a veteran's growth type is plain from his career.
   if (key === 'injury' && (p.injuries?.length ?? 0) > 0) a += 0.15;
   if (key === 'growth' && ageIn(p, s.year) >= 30) a = Math.max(a, 0.9);
+  // A foreigner who has had a KBO season has shown whether he settles.
+  if (key === 'adapt' && kboSeasons(p, s.year + (s.phase === 'regular' || s.phase === 'postseason' ? 1 : 0)) > 0) a = 0.95;
   // A prospect we brought in for a workout and an interview (1.3.0, combine.ts).
   if (!ours && Object.values(s.user?.workouts ?? {}).some((ids) => ids.includes(p.id))) a += COMBINE.workoutRead;
   return clamp(a, 0.05, 0.95);
@@ -130,6 +135,12 @@ export function traitReport(s: LeagueState, p: Player): TraitReport | null {
     const text = key === 'controversy' ? CONTROVERSY_TEXT[level - 1]! : LEVELS[level - 1]!;
     reads.push({ key, label: TRAIT_LABELS[key], text: a < 0.1 ? null : text, level: a < 0.1 ? null : level, sure: sureOf(a) });
   }
+  // 1.7.0: a foreigner's adaptability (adapt.ts).
+  if (isForeign(p)) {
+    const { a, e } = read('adapt');
+    const level = levelOf(clamp(adaptabilityOf(p) + e * 45, 1, 99));
+    reads.push({ key: 'adapt', label: __i18n_k("league.reports.text.951a6ab7"), text: a < 0.1 ? null : LEVELS[level - 1]!, level: a < 0.1 ? null : level, sure: sureOf(a) });
+  }
   const by = ours ? 'coach' : 'scout';
   const signer = ours ? staff.manager : staff.scouting;
   return {
@@ -160,6 +171,8 @@ function notesOf(reads: TraitRead[]): string[] {
   if (hi('loyalty', 5)) out.push(__i18n_k("league.reports.notesOf.15837057"));
   else if (lo('loyalty')) out.push(__i18n_k("league.reports.notesOf.78db4b26"));
   if (hi('controversy', 4)) out.push(__i18n_k("league.reports.notesOf.ecb6db2a"));
+  if (lo('adapt', 2)) out.push(__i18n_k("league.reports.text.9c55387f"));
+  else if (hi('adapt', 5)) out.push(__i18n_k("league.reports.text.468ae049"));
   if (hi('injury', 4)) out.push(__i18n_k("league.reports.notesOf.5ae4d266"));
   return out;
 }

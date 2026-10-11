@@ -1,4 +1,5 @@
 import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
+import { shownFuture, showsFutureDetail } from './grades';
 import { TOOL_LABELS } from '../draftroom';
 import type { PublicPlayer } from '../model/player';
 import type { CombineLine } from '../league/combine';
@@ -75,7 +76,7 @@ export function PlayerProfile({ player: p, age, combine, combineNote, report, wo
             <tr key={k}>
               <th scope="row">{__i18n_display(TOOL_LABELS[k])}</th>
               <td class="num">{__i18n_display(s.tools[k] ?? '-')}</td>
-              <td class="num">{__i18n_display(s.futureTools[k] ?? '-')}</td>
+              <td class="num">{__i18n_display((showsFutureDetail(p) ? s.futureTools[k] : undefined) ?? '-')}</td>
             </tr>
           )))}
         </tbody>
@@ -83,7 +84,7 @@ export function PlayerProfile({ player: p, age, combine, combineNote, report, wo
           <tr>
             <th scope="row">{__i18n_t("ui.playerProfile.playerProfile.f7c86d76")}</th>
             <td class="num">{__i18n_display(s.current)}</td>
-            <td class="num strong">{__i18n_display(s.futureValue)}</td>
+            <td class="num strong">{__i18n_display(shownFuture(p) ?? '-')}</td>
           </tr>
         </tfoot>
       </table>

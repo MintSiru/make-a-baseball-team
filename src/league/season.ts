@@ -2,6 +2,10 @@ import { k as __i18n_k } from '../i18n/index';
 /* The regular season, one game day at a time: registered days, games, injuries and roster moves. */
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
+import { draftWatchDay } from './draftlog';
+import { captainDay } from './captains';
+import { adaptDay } from './adapt';
+import { freakDay } from './freak';
 import { simulateGame } from './engine/game';
 import { emptySplit, type GameOut, type PlayEvent, type Splits, type TeamBox } from './engine/types';
 import { compactBox, isUserGame, keepBox } from './boxscore';
@@ -16,7 +20,6 @@ import { attendance, clubState, recordGate } from './fans';
 import { staffOf } from './staff';
 import { setGoals } from './parent';
 import { aiDeadlineDeals, aiForeignChanges, aiTrades, processWaivers } from './trade';
-import { scoutMonth } from './scouting';
 import { allStarDay } from './allstar';
 import { draftClass } from './players';
 import { applyCombine, combineDay } from './combine';
@@ -177,11 +180,13 @@ export function record(s: LeagueState, box: TeamBox, date: string, lines: Record
     const line = lineOf(b.id, box.teamId);
     if (!line) continue;
     const bat = (line.bat ??= emptyBat());
-    const { id: _id, pos: _pos, split, ...counts } = b;
+    const { id: _id, pos: _pos, split, sub, ...counts } = b;
     addInto(bat, counts);
     if (split && lines === s.lines) addSplits(bat, split);
-    if (lines === s.lines) (bat.posG ??= {})[b.pos] = (bat.posG[b.pos] ?? 0) + 1;
-    if (b.pa > 0) bat.g++;
+    // Games at a position are the starts there (1.7.0: a substitute's inning or two does not count).
+    if (lines === s.lines && !sub) (bat.posG ??= {})[b.pos] = (bat.posG[b.pos] ?? 0) + 1;
+    // 1.7.0: a pinch runner or a late glove played in the game too.
+    if (b.pa > 0 || sub) bat.g++;
   }
   for (const p of box.pitching) {
     const line = lineOf(p.id, box.teamId);
@@ -269,12 +274,16 @@ export function playDay(s: LeagueState): boolean {
   // The All-Star voting and game (1.2.0), the draft combine (1.3.0).
   allStarDay(s, date);
   combineDay(s, date, () => applyCombine(s.seed, s.year, draftClass(s.seed, s.year)));
+  // 1.7.0: the draft class in the papers (draftlog.ts).
+  draftWatchDay(s, date);
+  // 1.7.0: foreigners in their first season who fail to adapt (adapt.ts).
+  adaptDay(s, date);
+  // 1.7.0: now and then a silly injury off the field (freak.ts).
+  freakDay(s, date);
   const day = s.next;
   // The first game day of a month: last month's story.
   if (day > 0 && s.schedule[day - 1]!.date.slice(5, 7) !== date.slice(5, 7)) {
     monthNews(s, date);
-    // The scouts look again at the young players (V0.12).
-    scoutMonth(s, date);
   }
   while (s.next < s.schedule.length && s.schedule[s.next]!.date === date) {
     const g = s.schedule[s.next]!;
@@ -300,6 +309,8 @@ export function playDay(s: LeagueState): boolean {
     rollInjuries(s, out.home, date, r, (id, teamId) => lineOf(s, id, teamId));
     rollInjuries(s, out.away, date, r, (id, teamId) => lineOf(s, id, teamId));
   }
+  // 1.7.0: our captain's meeting in a slump and his moment of the month (captains.ts).
+  captainDay(s, date, day > 0 && s.schedule[day - 1]!.date.slice(5, 7) !== date.slice(5, 7));
   playFuturesDay(s, date);
   // Every ten game days the manager looks at the whole roster again; otherwise only injuries force moves.
   maintainRosters(s, date, day > 0 && Math.floor(s.next / (firstTeamIds(s).length / 2)) % 10 === 0);

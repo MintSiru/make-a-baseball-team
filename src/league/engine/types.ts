@@ -37,9 +37,16 @@ export interface RelieverIn extends PitcherIn {
   role: BullpenRole;
 }
 
+/** 1.7.0: a player on the bench, with what he would field at each position (after any out-of-position penalty). */
+export interface BenchIn extends BatterIn {
+  defenseAt: Partial<Record<FieldPos, number>>;
+}
+
 export interface TeamIn {
   teamId: string;
   lineup: BatterIn[]; // nine batters in batting order
+  /** 1.7.0: hitters on the bench for pinch hitting, pinch running and late defence. */
+  bench?: BenchIn[];
   starter: PitcherIn;
   bullpen: RelieverIn[]; // available arms, best first within each role
   /** Analytics: positioning adds to team fielding (z units). */
@@ -83,6 +90,8 @@ export const emptySplit = (): Split => ({ pa: 0, ab: 0, h: 0, tb: 0, hr: 0, bb: 
 export interface BattingLine {
   id: string;
   pos: FieldPos;
+  /** 1.7.0: how he came into the game (pinch hitter, pinch runner, defensive replacement); absent for a starter. */
+  sub?: 'PH' | 'PR' | 'DEF';
   split?: Splits;
   pa: number;
   ab: number;
@@ -159,4 +168,6 @@ export type PlayEvent =
       bases: [boolean, boolean, boolean];
       score: [number, number];
     }
-  | { k: 'pitch'; i: number; top: boolean; p: string; out: string };
+  | { k: 'pitch'; i: number; top: boolean; p: string; out: string }
+  /** 1.7.0: a pinch hitter, pinch runner or defensive replacement (in for out, at his position). */
+  | { k: 'sub'; i: number; top: boolean; sub: 'PH' | 'PR' | 'DEF'; in: string; out: string; pos: FieldPos | 'DH' };

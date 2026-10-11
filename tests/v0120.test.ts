@@ -15,7 +15,7 @@ import { checkNumber, setNumber } from '../src/league/numbers';
 import { ageIn, draftClass, isForeign, isPitcher, makeForeign } from '../src/league/players';
 import { balanceDepth, positionMove } from '../src/league/positions';
 import { checkInspect, inspect, scandalDay, serveSuspensions, suspended } from '../src/league/scandals';
-import { driftPotential, seasonStep } from '../src/league/scouting';
+import { driftPotential } from '../src/league/scouting';
 import { playDay } from '../src/league/season';
 import { orgPlayers, type Decision, type LeagueState } from '../src/league/state';
 import { DISPUTE, FINANCE, SCANDAL } from '../src/league/tuning';
@@ -133,13 +133,6 @@ describe('a future that moves', () => {
     expect(moved).toBe(young.length);
   });
 
-  it('the scouts move a young player a step for a season far from his level', () => {
-    const p = { birthday: '2005-01-01' } as unknown as Player;
-    expect(seasonStep(p, 1.5, false, 2027)).toBe(5);
-    expect(seasonStep(p, 2.5, false, 2027)).toBe(10);
-    expect(seasonStep(p, 1.4, true, 2027)).toBe(0);
-    expect(seasonStep(p, -2, true, 2027)).toBe(-5);
-  });
 });
 
 describe('national teams', () => {

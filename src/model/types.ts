@@ -61,6 +61,9 @@ export interface ScoutingReport {
   combine?: boolean;
 }
 
+/** One season's public report (1.7.0): [season, overall, then each ability in the order of `GRADE_KEYS`]. */
+export type GradeLogEntry = number[];
+
 export type PlayerStatus = 'amateur' | 'active' | 'military' | 'freeAgent' | 'overseas' | 'retired';
 
 export type MilitaryStatus = 'pending' | 'serving' | 'served' | 'exempt';
@@ -138,13 +141,15 @@ export interface PlayerOrigin {
   entryCategory: string;
   /** Draft pick in the league draft (overall), when drafted by a club. */
   overallPick?: number;
+  /** 1.7.0: the public future grade when he was drafted (the draft-day expectation). */
+  draftGrade?: number;
   /** Drafted with a pick another club traded away (V0.7.8): he cannot be traded in his first season. */
   pickVia?: string;
   /** Nationality for foreign players. */
   nationality?: string;
   asiaQuota?: boolean;
   /** Foreign players: where he played before and what he asked for when he came (US dollars). */
-  background?: { level: ForeignLevel; text: string; ask: number };
+  background?: { level: ForeignLevel; text: string; ask: number; /** 1.7.0: an old big-league name. */ veteran?: boolean };
 }
 
 export type ForeignLevel = 'mlb' | 'mlbCup' | 'aaa' | 'npb' | 'npbFarm' | 'jpIndie' | 'cpbl' | 'abl' | 'indie';
@@ -250,6 +255,9 @@ export interface Player {
   scouting: ScoutingReport;
   /** First professional season in the league. */
   proSince: number;
+  /** 1.7.0: the public report at the start of each season since 1.7.0 (season, overall, each ability), for the
+      graph on his screen. */
+  gradeLog?: GradeLogEntry[];
   career: SeasonRecord[];
   /** 1.4.0: postseason lines, one a year he played in it (not in `career`, so season totals stay as they were). */
   post?: PostRecord[];
@@ -257,6 +265,8 @@ export interface Player {
   honors?: string[];
   /** Injuries so far (first team and futures). */
   injuries?: InjuryRecord[];
+  /** 1.7.0 (adapt.ts): the season he failed to adapt to the KBO, and the grade points his main tools lose in games. */
+  adaptFail?: { year: number; date: string; delta: number };
   /** Uniform number and the club it belongs to (a player who moves gets a new one). */
   number?: number;
   numberTeam?: TeamId;
@@ -265,8 +275,32 @@ export interface Player {
   /** A draftee who refused to sign and went abroad (V0.7.3): when, and the draft he comes back through
       after the KBO's two-year wait (null: he stays abroad). */
   abroad?: { left: number; draft: number | null };
+  /** 1.7.0 (mlb.ts): a posted player's major league career — the deal, the club and each season abroad. */
+  mlb?: MlbCareer;
   /** Life off the field (V0.10, the user's players only): family, form, what fans think, what happened. */
   life?: PlayerLife;
+}
+
+export interface MlbCareer {
+  /** The winter he was posted, his guaranteed deal (years, US dollars) and his club. */
+  posted: number;
+  years: number;
+  total: number;
+  club: string;
+  seasons: MlbSeason[];
+  /** The winter he came home to the KBO, or ended his career abroad. */
+  back?: number;
+  ended?: number;
+}
+
+/** One season abroad: big-league games (the rest of it in triple-A when `aaa`). */
+export interface MlbSeason {
+  year: number;
+  club: string;
+  aaa?: boolean;
+  bat?: { g: number; pa: number; avg: number; obp: number; slg: number; hr: number; rbi: number; sb: number };
+  pit?: { g: number; gs: number; ip: number; w: number; l: number; sv: number; era: number; k: number };
+  war: number;
 }
 
 /** V0.10. Kept only for the user's club's players, so the shared simulation never reads it for others. */

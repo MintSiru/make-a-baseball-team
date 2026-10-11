@@ -4,6 +4,7 @@ import { apply } from '../src/league/actions';
 import { autoDecision, checkDecision, EXPANSION_ID } from '../src/league/expansion';
 import { bootstrap, playFullSeason } from '../src/league/history';
 import { carryOverInjuries, INJURY_TYPES, majorSurgeries, offRoster, sidelined } from '../src/league/injuries';
+import { FREAK_PARTS } from '../src/league/freak';
 import { medicalReview, socialOnly } from '../src/league/military';
 import { isForeign, isPitcher } from '../src/league/players';
 import { firstTeamIds, orgPlayers, type LeagueState } from '../src/league/state';
@@ -31,7 +32,8 @@ describe('injuries', () => {
     expect(list.length / clubs).toBeLessThan(22);
     expect(list.filter((i) => i.days >= 21).length / list.length).toBeGreaterThan(0.4);
     // Every injury has a name from the catalogue; operations are marked.
-    const names = new Set([...INJURY_TYPES.pitcher, ...INJURY_TYPES.hitter].map((t) => t.part));
+    // (1.7.0: and the freak injuries off the field, freak.ts.)
+    const names = new Set([...[...INJURY_TYPES.pitcher, ...INJURY_TYPES.hitter].map((t) => t.part), ...FREAK_PARTS]);
     expect(list.every((i) => names.has(i.part))).toBe(true);
     expect(list.filter((i) => i.surgery === 'major').every((i) => i.days >= 90)).toBe(true);
   });

@@ -30,6 +30,7 @@ import {
   sign,
 } from './offseason';
 import { ageIn, futureValue, isForeign, isPitcher, keepValue } from './players';
+import { extensionOptions, extensionProblem } from './extensions';
 import { aiCompensation, movePlayer, projectedPayroll } from './market';
 import { autoRound, checkRound, faPrice, guaranteed, marketValue, resolveRound, settleClubOptions, type RoundInput } from './fa';
 import { makeSecondPick } from './seconddraft';
@@ -846,17 +847,15 @@ export function salariesDecision(s: LeagueState): Decision | null {
     const merit = renewSalary(p, next);
     const war = lastWarOf(p, next - 1);
     const ask = Math.max(prev, Math.round((merit * (1 + Math.min(T.ask.max, T.ask.base + T.ask.perWar * Math.max(0, war)))) / 100) * 100);
-    const toFa = faSeasons(p) - p.service.creditedSeasons;
-    const extensionOk =
-      p.service.lastFreeAgencyAt === undefined && toFa > 0 && toFa <= T.extension.seasonsBefore && ageIn(p, next) <= T.extension.maxAge && keepValue(p, next) >= T.extension.minValue;
-    const m = marketValue(p, next);
+    // 1.7.0: the four-year deal of extensions.ts (any length can be offered from the player's screen).
+    const four = extensionProblem(s, p.id) ? undefined : extensionOptions(s, p.id).find((x) => x.years === 4);
     rows.push({
       id: p.id,
       prev,
       merit,
       ask,
       arbitration: next - p.proSince >= KBO_2026.arbitration.minProYears,
-      extension: extensionOk ? { annual: Math.max(merit, Math.round((m.annual * T.extension.share) / 1000) * 1000), years: T.extension.years } : null,
+      extension: four ? { annual: four.annual, years: four.years } : null,
     });
   }
   if (!rows.length) return null;
@@ -874,6 +873,8 @@ function settleSalaries(s: LeagueState, d: Extract<Decision, { kind: 'salaries' 
   for (const row of d.rows) {
     const p = s.players[row.id];
     if (!p || p.teamId !== u.teamId) continue;
+    // 1.7.0: signed to a multi-year deal while the talks were open (extensions.ts).
+    if (p.contract?.kind === 'multiYear' && p.contract.salaries.some((x) => x.season === next)) continue;
     const choice = choices[row.id] ?? 'merit';
     const r = rng(`${s.seed}|salary|${year}|${row.id}`);
     const easier = DIFFICULTY.salaryAccept[u.settings.difficulty];

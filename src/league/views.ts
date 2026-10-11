@@ -15,6 +15,7 @@ import { currentStandings } from './season';
 import { SANGMU } from './futures';
 import { cardFor, lineupFor, managerLean, penRoles, PEN_ROLE_LABELS, rotationFor } from './manager';
 import { isDevelopment, type LeagueState } from './state';
+import { captaincyLift } from './captains';
 import { avg, babip, babipAllowed, batterWar, era, fip, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
 import { addInto, emptyBat, emptyPit } from './state';
 import { traitsOf } from './traits';
@@ -132,6 +133,8 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
       number: p.numberTeam === teamId ? (p.number ?? null) : null,
       foreign: isForeign(p),
       development: isDevelopment(p),
+      /** 1.7.0: our captain ('C') or a vice-captain ('VC'). */
+      captain: u?.captains?.captain === id ? ('C' as const) : u?.captains?.vice.includes(id) ? ('VC' as const) : null,
       pitcher: isPitcher(p),
       pos: usage ?? positionLabel(p),
       /** Hitters: other positions he handles (V0.7). */
@@ -147,6 +150,8 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
       hand: __i18n_k("league.views.row.hand.0fdaea08", { throws: p.throws, bats: p.bats }),
       grade: p.scouting.current,
       future: p.scouting.futureValue,
+      /** 1.7.0: the draft-day expectation (the display setting "draft day only"). */
+      draftGrade: p.origin.draftGrade ?? null,
       line: group === 'military' || group === 'active' ? (isPitcher(p) ? pitLine(line?.pit ?? null) : batLine(line?.bat ?? null)) : futuresLine(s, id) || (isPitcher(p) ? pitLine(line?.pit ?? null) : batLine(line?.bat ?? null)),
       /** This season's numbers: first team for the first team, futures (or 상무) below it. */
       stats: statsFor(s, id, group),
@@ -354,6 +359,9 @@ export function seasonStats(s: LeagueState) {
 
 const POS_KO: Record<string, string> = { C: __i18n_k("league.views.pOS_KO.c.c6113c0f"), '1B': '1', '2B': '2', '3B': '3', SS: __i18n_k("league.views.pOS_KO.sS.71c706d6"), LF: '좌', CF: __i18n_k("league.views.pOS_KO.cF.43e88c0b"), RF: '우', DH: __i18n_k("league.views.pOS_KO.dH.0cb41994") };
 
+/** 1.7.0: how a substitute came in. */
+const SUB_KO: Record<string, string> = { PH: __i18n_k("league.views.text.4fe00bd7"), PR: __i18n_k("league.views.text.ac615d38"), DEF: __i18n_k("league.views.text.46160651") };
+
 export function boxView(s: LeagueState, id: string) {
   const b = s.boxes?.[id];
   if (!b) return null;
@@ -367,7 +375,16 @@ export function boxView(s: LeagueState, id: string) {
       color: teamOf(s, teamId)?.color ?? (teamId === 'dream' ? '#2563eb' : teamId === 'nanum' ? '#dc2626' : '#888'),
       line: b.line[i],
       rhe: b.rhe[i],
-      bat: b.bat[i].map(([pid, pos, ab, r, h, rbi, hr, bb, k, d, t, sb], order) => ({ id: pid, order: order + 1, name: name(pid), pos: POS_KO[pos] ?? pos, ab, r, h, rbi, hr, bb, k, d, t, sb })),
+      bat: (() => {
+        // 1.7.0: substitutes ("PH:SS") bat in the slot of the man before them.
+        let slot = 0;
+        return b.bat[i].map(([pid, pos, ab, r, h, rbi, hr, bb, k, d, t, sb]) => {
+          const [how, at] = pos.includes(':') ? (pos.split(':') as [string, string]) : [null, pos];
+          if (!how) slot++;
+          const posText = POS_KO[at] ?? at;
+          return { id: pid, order: how ? null : slot, name: name(pid), pos: how ? `${SUB_KO[how] ?? how}${at === 'DH' && how === 'PH' ? '' : ` → ${posText}`}` : posText, sub: !!how, ab, r, h, rbi, hr, bb, k, d, t, sb };
+        });
+      })(),
       pit: b.pit[i].map(([pid, outs, h, r, er, bb, k, hr, pitches, dec]) => ({ id: pid, name: name(pid), ip: ip(outs), h, r, er, bb, k, hr, pitches, dec: ({ W: '승', L: '패', S: __i18n_k("league.views.dec.s.c5e4d00d"), H: __i18n_k("league.views.dec.h.10a4423a") } as Record<string, string>)[dec] ?? '' })),
     };
   };
@@ -419,7 +436,7 @@ export function lineupView(s: LeagueState, teamId: TeamId, vs: 'L' | 'R') {
   const { style, prefer } = managerLean(s, teamId);
   // The user's club: the general manager's fixed spots (V0.8).
   const card = cardFor(s, { teamId });
-  const withCard = card ? { card: card[vs], cardRest: card.rest } : {};
+  const withCard = card ? { card: card[vs], places: card.places?.[vs], cardRest: card.rest } : {};
   const usual = lineupFor(s, active, prefer, false, vs, { style, ...withCard });
   const next = s.phase === 'regular' ? s.schedule.slice(s.next).find((g) => g.home === teamId || g.away === teamId) : undefined;
   const nextIds = next ? new Set(lineupFor(s, active, prefer, false, vs, { style, date: next.date, ...withCard }).map((b) => b.id)) : null;
@@ -432,7 +449,7 @@ export function lineupView(s: LeagueState, teamId: TeamId, vs: 'L' | 'R') {
       id: b.id,
       order: i + 1,
       pos: b.pos,
-      fixed: card?.[vs][i]?.id === b.id,
+      fixed: card?.[vs][i]?.id === b.id || !!card?.places?.[vs].some((x) => x.id === b.id),
       name: p.name,
       number: p.numberTeam === teamId ? p.number : undefined,
       bats: p.bats,
@@ -571,7 +588,9 @@ export function clubhouse(s: LeagueState, teamId: TeamId) {
   const leaders = roster.filter((p) => traitsOf(p).leadership >= LEADER && ageIn(p, s.year) >= 28).length;
   const makers = roster.filter((p) => p.personality === '밝은 분위기 메이커').length;
   const hurt = Object.entries(s.injuries).filter(([id, i]) => !i.dtd && s.players[id]?.teamId === teamId).length;
-  const score = (w + l ? (w / (w + l) - 0.5) * 2 : 0) + leaders * 0.08 + makers * 0.05 - hurt * 0.03 + (lastRes === 'W' ? 0.03 : lastRes === 'L' ? -0.03 : 0) * Math.min(streak, 6);
+  // 1.7.0: our captaincy (captains.ts).
+  const cap = teamId === s.user?.teamId ? captaincyLift(s) : null;
+  const score = (w + l ? (w / (w + l) - 0.5) * 2 : 0) + leaders * 0.08 + makers * 0.05 - hurt * 0.03 + (lastRes === 'W' ? 0.03 : lastRes === 'L' ? -0.03 : 0) * Math.min(streak, 6) + (cap?.lift ?? 0);
   const label = score >= 0.5 ? __i18n_k("league.views.clubhouse.label.a5d2fc54") : score >= 0.2 ? __i18n_k("league.views.clubhouse.label.5cd0d95b") : score > -0.2 ? __i18n_k("league.views.clubhouse.label.681592dc") : score > -0.5 ? __i18n_k("league.views.clubhouse.label.d6a40ea2") : __i18n_k("league.views.clubhouse.label.fef32446");
   const notes = [
     games.length ? __i18n_k("league.views.clubhouse.notes.0444399b", { w: w, l: l }) : __i18n_k("league.views.clubhouse.notes.74496d87"),
@@ -579,6 +598,7 @@ export function clubhouse(s: LeagueState, teamId: TeamId) {
     leaders ? __i18n_k("league.views.clubhouse.notes.9daf8a74", { leaders: leaders }) : __i18n_k("league.views.clubhouse.notes.acbbe47c"),
     makers ? __i18n_k("league.views.clubhouse.notes.0ca3f9fb", { makers: makers }) : '',
     hurt ? __i18n_k("league.views.clubhouse.notes.8b617938", { hurt: hurt }) : '',
+    cap?.note ?? '',
   ].filter(Boolean);
   return { label, score, notes, form: res };
 }

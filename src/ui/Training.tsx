@@ -1,5 +1,6 @@
 import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* Training abroad (V0.10): the four centres, sending a player, and who went where and what came of it. */
+import { shownFuture } from './grades';
 import { useMemo, useState } from 'preact/hooks';
 import { TOOL_LABELS, type ToolKey } from '../draftroom';
 import type { Action } from '../league/actions';
@@ -23,7 +24,7 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
     () =>
       orgPlayers(league, u.teamId)
         .filter((p) => p.status === 'active' && p.origin.kind !== 'foreign' && (S.who === 'all' || (S.who === 'pitcher') === isPitcher(p)))
-        .sort((a, b) => ageIn(a, year) - ageIn(b, year) || b.scouting.futureValue - a.scouting.futureValue),
+        .sort((a, b) => ageIn(a, year) - ageIn(b, year) || (shownFuture(b) ?? 0) - (shownFuture(a) ?? 0)),
     [league, site, year],
   );
   const chosen = fits.find((p) => p.id === pick) ? pick : '';
@@ -59,7 +60,7 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
           <select value={chosen} onChange={(e) => setPick((e.currentTarget as HTMLSelectElement).value)}>
             <option value="">{__i18n_t("ui.training.training.b77e609c")}</option>
             {__i18n_display(fits.map((p) => (
-              <option key={p.id} value={p.id}>{__i18n_t("ui.training.training.1cf929e7", { name: p.name, positionLabel: positionLabel(p), ageIn: ageIn(p, year), current: p.scouting.current, futureValue: p.scouting.futureValue })}</option>
+              <option key={p.id} value={p.id}>{__i18n_t("ui.training.training.1cf929e7", { name: p.name, positionLabel: positionLabel(p), ageIn: ageIn(p, year), current: p.scouting.current, futureValue: shownFuture(p) ?? '-' })}</option>
             )))}
           </select>
         </label>

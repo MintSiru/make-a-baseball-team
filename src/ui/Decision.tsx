@@ -29,7 +29,7 @@ import { money } from './format';
 import { serviceNote } from '../league/military';
 import { goalText } from '../league/parent';
 import { capPlayers, foreignCap, foreignCost } from '../league/foreigncap';
-import { gradeClass } from './grades';
+import { gradeClass, shownFuture } from './grades';
 import { positionKey, useSort, type SortColumn } from './sort';
 import { RivalForm } from './Twelve';
 import { FantasyBoard } from './FantasyDraft';
@@ -99,7 +99,7 @@ function usePlayerSort(players: Player[], year: number, extra?: Extra) {
     pos: { value: (p) => positionKey(positionLabel(p)), first: 1 },
     age: { value: (p) => ageIn(p, year), first: 1 },
     current: { value: (p) => p.scouting.current },
-    future: { value: (p) => p.scouting.futureValue },
+    future: { value: (p) => shownFuture(p) ?? -1 },
     extra: { value: (p) => extra?.sort?.(p) ?? 0 },
   };
   return useSort(players, columns);
@@ -235,13 +235,13 @@ function PlayerTable({
                     : p.service.postedIn !== undefined
                       ? __i18n_k("ui.decision.playerTable.378a9635", { postedIn: p.service.postedIn })
                       : p.origin.kind === 'foreign'
-                        ? `${p.archetype} · ${p.education.pathText}`
+                        ? `${p.origin.background?.veteran ? __i18n_t("ui.decision.text.f2667506") : ''}${p.archetype} · ${p.education.pathText}`
                         : p.career.length
                           ? __i18n_k("ui.decision.playerTable.e16b5dd5")
                           : p.origin.pathway)}
               </td>
               <td class={`num ${gradeClass(p.scouting.current)}`}>{__i18n_display(p.scouting.current)}</td>
-              <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{__i18n_display(p.scouting.futureValue)}</td>
+              <td class={`num strong ${gradeClass(shownFuture(p))}`}>{__i18n_display(shownFuture(p) ?? '-')}</td>
               {__i18n_display(extra && <td class="num">{__i18n_display(extra.value(p))}</td>)}
               {__i18n_display(control && <td>{__i18n_display(control(p))}</td>)}
             </tr>
@@ -257,7 +257,7 @@ function DraftTable({ league, onPlayer, onPick }: { league: LeagueState; onPlaye
   const draft = league.offseason!.draft!;
   const pool = useMemo(() => draft.pool.map((id) => league.players[id]!).sort((a, b) => a.amateur.draftRank - b.amateur.draftRank), [draft.pool.length]);
   const recommended = useMemo(() => {
-    const score = (p: Player) => p.scouting.futureValue * 0.6 + p.scouting.current * 0.4;
+    const score = (p: Player) => (shownFuture(p) ?? p.scouting.current) * 0.6 + p.scouting.current * 0.4;
     return new Set([...pool].sort((a, b) => score(b) - score(a) || a.amateur.draftRank - b.amateur.draftRank).slice(0, 3).map((p) => p.id));
   }, [pool]);
   const year = draft.year;
@@ -267,7 +267,7 @@ function DraftTable({ league, onPlayer, onPick }: { league: LeagueState; onPlaye
     pos: { value: (p) => positionKey(positionLabel(p)), first: 1 },
     age: { value: (p) => ageIn(p, year + 1), first: 1 },
     current: { value: (p) => p.scouting.current },
-    future: { value: (p) => p.scouting.futureValue },
+    future: { value: (p) => shownFuture(p) ?? -1 },
     velocity: { value: (p) => p.velocity ?? 0 },
   });
   return (
@@ -302,7 +302,7 @@ function DraftTable({ league, onPlayer, onPick }: { league: LeagueState; onPlaye
               <td class="num">{__i18n_display(ageIn(p, year + 1))}</td>
               <td class="muted">{__i18n_display(p.origin.pathway)}</td>
               <td class={`num ${gradeClass(p.scouting.current)}`}>{__i18n_display(p.scouting.current)}</td>
-              <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{__i18n_display(p.scouting.futureValue)}</td>
+              <td class={`num strong ${gradeClass(shownFuture(p))}`}>{__i18n_display(shownFuture(p) ?? '-')}</td>
               <td class="num">{__i18n_display(p.velocity ?? '-')}</td>
               <td>
                 <button type="button" class="pick" onClick={() => onPick(p.id)}>{__i18n_t("ui.decision.draftTable.68a26d9d")}</button>

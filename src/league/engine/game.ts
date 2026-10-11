@@ -9,7 +9,7 @@
    Determinism: every draw comes from the `r` passed in, in a fixed order. Changing the order of draws
    changes results and needs a SIM_VERSION bump. */
 import { ENGINE as E, Z, Zr } from '../tuning';
-import { emptySplit, type BattingLine, type BatterIn, type BullpenRole, type GameIn, type GameOut, type PitcherIn, type PitchingLine, type PlayEvent, type PlayResult, type RelieverIn, type Split, type TeamBox, type TeamIn } from './types';
+import { emptySplit, type BattingLine, type BatterIn, type BenchIn, type BullpenRole, type FieldPos, type GameIn, type GameOut, type PitcherIn, type PitchingLine, type PlayEvent, type PlayResult, type RelieverIn, type Split, type TeamBox, type TeamIn } from './types';
 
 type R = () => number;
 
@@ -37,7 +37,14 @@ interface Appearance {
 interface Side {
   team: TeamIn;
   box: TeamBox;
+  /** The nine in the game now, by batting-order slot (1.7.0: substitutes take their slot). */
+  lineup: BatterIn[];
+  /** The batting line of whoever is in each slot now. */
   bat: BattingLine[];
+  /** Every batting line of the game, a substitute after the man he replaced. */
+  lines: BattingLine[];
+  bench: BenchIn[];
+  subs: { ph: number; pr: number; def: number };
   apps: Appearance[];
   pen: RelieverIn[];
   next: number; // lineup index of the next batter
@@ -56,28 +63,112 @@ function emptyPitching(id: string, starter: boolean): PitchingLine {
   return { id, split: { L: emptySplit(), R: emptySplit() }, gs: starter ? 1 : 0, outs: 0, bf: 0, h: 0, hr: 0, bb: 0, hbp: 0, k: 0, r: 0, er: 0, pitches: 0, w: 0, l: 0, sv: 0, hld: 0, qs: 0 };
 }
 
-function makeSide(team: TeamIn): Side {
+/** Team fielding and the catcher's arm from the nine on the field now. */
+function fielding(side: Pick<Side, 'lineup' | 'team' | 'fieldZ' | 'catcherZ'>) {
   let w = 0,
     sum = 0;
-  for (const b of team.lineup) {
+  for (const b of side.lineup) {
     const fw = FIELD_WEIGHT[b.pos] ?? 0;
     w += fw;
     sum += fw * Z(b.defense);
   }
-  const catcher = team.lineup.find((b) => b.pos === 'C');
+  const catcher = side.lineup.find((b) => b.pos === 'C');
+  side.fieldZ = (w ? sum / w : 0) + (side.team.fieldBonus ?? 0);
+  side.catcherZ = catcher ? Z(catcher.defense) : 0;
+}
+
+function makeSide(team: TeamIn): Side {
   const box: TeamBox = { teamId: team.teamId, runs: 0, hits: 0, errors: 0, lineScore: [], batting: [], pitching: [] };
+  const bat = team.lineup.map(emptyBatting);
   const side: Side = {
     team,
     box,
-    bat: team.lineup.map(emptyBatting),
+    lineup: [...team.lineup],
+    bat,
+    lines: [...bat],
+    bench: [...(team.bench ?? [])],
+    subs: { ph: 0, pr: 0, def: 0 },
     apps: [],
     pen: [...team.bullpen],
     next: 0,
-    fieldZ: (w ? sum / w : 0) + (team.fieldBonus ?? 0),
-    catcherZ: catcher ? Z(catcher.defense) : 0,
+    fieldZ: 0,
+    catcherZ: 0,
   };
+  fielding(side);
   side.apps.push({ arm: team.starter, role: 'SP', line: emptyPitching(team.starter.id, true), entryLead: 0, entryRunners: 0, minLead: 0, exitLead: 0 });
   return side;
+}
+
+// ── The bench (1.7.0) ────────────────────────────────────────────────────────────────────────────
+
+/** A bench player takes a slot: he plays the position of the man he replaces, and bats in his place. */
+type Sub = { kind: 'PH' | 'PR' | 'DEF'; in: string; out: string; pos: FieldPos | 'DH' };
+function substitute(side: Side, slot: number, b: BenchIn, kind: Sub['kind']): Sub {
+  const out = side.lineup[slot]!.id;
+  const pos = side.lineup[slot]!.pos;
+  const into: BatterIn = { id: b.id, bats: b.bats, contact: b.contact, power: b.power, eye: b.eye, speed: b.speed, defense: pos === 'DH' ? b.defense : (b.defenseAt[pos] ?? b.defense - 15), pos };
+  side.lineup[slot] = into;
+  side.bench.splice(side.bench.indexOf(b), 1);
+  const line = emptyBatting(into);
+  line.sub = kind;
+  side.lines.splice(side.lines.indexOf(side.bat[slot]!) + 1, 0, line);
+  side.bat[slot] = line;
+  fielding(side);
+  return { kind, in: b.id, out, pos };
+}
+
+/** A bat against this pitcher's hand: contact, power and eye, less the platoon edge he gives up. */
+const batValue = (b: BatterIn, throws: 'L' | 'R') => (b.contact + b.power + b.eye) / 3 - (b.bats !== 'S' && b.bats === throws ? E.subs.platoon : 0);
+/** Someone left on the bench who can catch (a team does not pinch-hit for its last catcher). */
+const canCatch = (b: BenchIn) => (b.defenseAt.C ?? 0) >= 35;
+
+/** Late in a close game: a better bat for the man due up. */
+function pinchHit(side: Side, slot: number, throws: 'L' | 'R', inning: number, myLead: number): Sub | null {
+  const S = E.subs;
+  if (inning < S.fromInning || side.subs.ph >= S.phMax || Math.abs(myLead) > S.close || !side.bench.length) return null;
+  const cur = side.lineup[slot]!;
+  const pool = cur.pos === 'C' ? side.bench.filter(canCatch) : side.bench;
+  let best: BenchIn | null = null;
+  for (const b of pool) if (!best || batValue(b, throws) > batValue(best, throws)) best = b;
+  if (!best || batValue(best, throws) < batValue(cur, throws) + S.phMargin) return null;
+  side.subs.ph++;
+  return substitute(side, slot, best, 'PH');
+}
+
+/** Late in a one-run game: a fast runner for a slow one on first or second. */
+function pinchRun(side: Side, slots: number[], inning: number, myLead: number): Sub | null {
+  const S = E.subs;
+  if (inning < S.prInning || side.subs.pr >= 1 || Math.abs(myLead) > S.prClose || !side.bench.length) return null;
+  for (const slot of slots) {
+    const cur = side.lineup[slot]!;
+    if (cur.speed >= S.prSlow) continue;
+    const pool = cur.pos === 'C' ? side.bench.filter(canCatch) : side.bench;
+    let best: BenchIn | null = null;
+    for (const b of pool) if (!best || b.speed > best.speed) best = b;
+    if (!best || best.speed < cur.speed + S.prMargin) continue;
+    side.subs.pr++;
+    return substitute(side, slot, best, 'PR');
+  }
+  return null;
+}
+
+/** Protecting a late lead: the bench's best glove where it helps most. */
+function defensiveSub(side: Side, inning: number, myLead: number): Sub | null {
+  const S = E.subs;
+  if (inning < S.defInning || side.subs.def >= S.defMax || myLead < 1 || myLead > S.defLead || !side.bench.length) return null;
+  let pick: { slot: number; b: BenchIn; gain: number } | null = null;
+  side.lineup.forEach((cur, slot) => {
+    if (cur.pos === 'DH') return;
+    for (const b of side.bench) {
+      const glove = b.defenseAt[cur.pos] ?? 0;
+      const gain = (glove - cur.defense) * (FIELD_WEIGHT[cur.pos] ?? 0);
+      if (glove - cur.defense >= S.defMargin && (!pick || gain > pick.gain)) pick = { slot, b, gain };
+    }
+  });
+  if (!pick) return null;
+  const { slot, b } = pick as { slot: number; b: BenchIn };
+  side.subs.def++;
+  return substitute(side, slot, b, 'DEF');
 }
 
 /** Everything that happens in one game. */
@@ -164,7 +255,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       const line = app.line;
       const myLead = lead(field);
       let pull = false;
-      const upNext = game[isHome ? 'home' : 'away'].lineup[bat.next]!;
+      const upNext = bat.lineup[bat.next]!;
       // A left-handed hitter up late in a close game: the lefty specialist comes in for him.
       const lefty =
         inning >= 6 && Math.abs(myLead) <= 2 && upNext.bats === 'L' && app.arm.throws === 'R' && app.role !== 'CL' && app.role !== 'LO' && field.pen.some((p) => p.role === 'LO');
@@ -213,13 +304,19 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       log?.push({ k: 'pitch', i: inning, top: !isHome, p: arm.id, out: app.arm.id });
     };
 
+    // 1.7.0: protecting a late lead, the fielding side's best bench glove comes in.
+    const logSub = (x: Sub | null) => x && log?.push({ k: 'sub', i: inning, top: !isHome, sub: x.kind, in: x.in, out: x.out, pos: x.pos });
+    logSub(defensiveSub(field, inning, lead(field)));
     while (outs < 3 && !over) {
       closePA();
       pitchChange();
       const app = current();
       const p = app.arm,
         pl = app.line;
-      const batter = game[isHome ? 'home' : 'away'].lineup[bat.next]!;
+      // 1.7.0: the batting side's bench, late in a close game: a runner for a slow one, a bat for the man up.
+      logSub(pinchRun(bat, [bases[1]?.bat, bases[0]?.bat].filter((x): x is number => x !== undefined), inning, lead(bat)));
+      logSub(pinchHit(bat, bat.next, p.throws, inning, lead(bat)));
+      const batter = bat.lineup[bat.next]!;
       const bl = bat.bat[bat.next]!;
       const fatigue = Math.max(0, pl.pitches - p.pitchLimit) * 0.18;
       const stuff = Zr(p.stuff - fatigue),
@@ -229,7 +326,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       // Stolen base attempt before the pitch: runner on first, second base open.
       const runner1 = bases[0];
       if (runner1 && !bases[1] && outs < 3) {
-        const rs = game[isHome ? 'home' : 'away'].lineup[runner1.bat]!;
+        const rs = bat.lineup[runner1.bat]!;
         if (rs.speed >= E.steal.minSpeed && r() < inv(logit(E.steal.attempt.base) + E.steal.attempt.speed * Z(rs.speed) + (bat.team.smallBall ? E.smallBall.steal : 0))) {
           const ok = r() < inv(logit(E.steal.success.base) + E.steal.success.speed * Z(rs.speed) + E.steal.success.catcher * field.catcherZ);
           bases[0] = null;
@@ -379,7 +476,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
               const first = bases[0];
               bases[0] = null;
               if (first) {
-                const rsp = game[isHome ? 'home' : 'away'].lineup[first.bat]!.speed;
+                const rsp = bat.lineup[first.bat]!.speed;
                 if (r() < inv(logit(A.firstScoresOnDouble.base) + A.firstScoresOnDouble.speed * Z(rsp))) score(first, bl);
                 else bases[2] = first;
               }
@@ -392,12 +489,12 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
               bases[1] = null;
               bases[0] = null;
               if (second) {
-                const rsp = game[isHome ? 'home' : 'away'].lineup[second.bat]!.speed;
+                const rsp = bat.lineup[second.bat]!.speed;
                 if (r() < inv(logit(A.secondScoresOnSingle.base) + A.secondScoresOnSingle.speed * Z(rsp) - (outs === 2 ? -0.8 : 0))) score(second, bl);
                 else bases[2] = second;
               }
               if (first) {
-                const rsp = game[isHome ? 'home' : 'away'].lineup[first.bat]!.speed;
+                const rsp = bat.lineup[first.bat]!.speed;
                 if (!bases[2] && r() < inv(logit(A.firstToThirdOnSingle.base) + A.firstToThirdOnSingle.speed * Z(rsp))) bases[2] = first;
                 else bases[1] = first;
               }
@@ -446,7 +543,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
             } else {
               pl.outs++;
               outs++;
-              if (outs < 3 && bases[2] && r() < inv(logit(O.sacFly.base) + O.sacFly.speed * Z(game[isHome ? 'home' : 'away'].lineup[bases[2].bat]!.speed))) {
+              if (outs < 3 && bases[2] && r() < inv(logit(O.sacFly.base) + O.sacFly.speed * Z(bat.lineup[bases[2].bat]!.speed))) {
                 bl.ab--;
                 bl.sf++;
                 score(bases[2], bl);
@@ -487,7 +584,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
   for (const s of [home, away]) {
     const sp = s.apps[0]!.line;
     if (sp.outs >= 18 && sp.er <= 3) sp.qs = 1;
-    s.box.batting = s.bat;
+    s.box.batting = s.lines;
     s.box.pitching = s.apps.map((a) => a.line);
   }
   return { gameId: game.gameId, innings: inning, home: home.box, away: away.box, result };

@@ -14,7 +14,7 @@ import { today } from './entry';
 import { splitContract } from './foreign';
 import { movePlayer } from './market';
 import { leaveLeague, removeFromRoster, rosterLimit } from './offseason';
-import { ageIn, currentValue, isForeign, isPitcher, keepValue, makeForeign } from './players';
+import { ageIn, currentValue, isForeign, isPitcher, keepValue, makeForeign, veteranOnMarket } from './players';
 import { currentStandings } from './season';
 import { firstTeamIds, orgPlayers, registeredIds, type DraftSlot, type LeagueState, type TradeExtras } from './state';
 import { crossing } from './rivalry';
@@ -22,7 +22,9 @@ import { farewell } from './life';
 import { TRADES, DIFFICULTY } from './tuning';
 import { moveNews } from './movenews';
 import { cashFactor, clubStrategy, pickFactor, planFactor, planGuard, planReasons, spotOf } from './strategy';
-import { capRoom, chargeForeign } from './foreigncap';
+import { capRoom, chargeForeign, slotForeigners } from './foreigncap';
+import { failedToAdapt } from './adapt';
+import { firstTeamSize, foreignSlots } from './manager';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry, toForeignPool } from './foreignpool';
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
@@ -466,6 +468,13 @@ export function foreignMarket(s: LeagueState, teamId: TeamId): Player[] {
       p.status = 'amateur';
       out.push(p);
     }
+  // 1.7.0: now and then an old big-league name.
+  const vet = veteranOnMarket(`${s.seed}|fm${s.year}-${teamId}-${used}`);
+  if (vet) {
+    const p = makeForeign(s.seed, `fm${s.year}-${teamId}-${used}-v`, s.year, { kind: vet.kind, asiaQuota: false, veteran: true });
+    p.status = 'amateur';
+    out.unshift(p);
+  }
   return [...foreignPoolPlayers(s), ...out];
 }
 
@@ -476,9 +485,28 @@ export function foreignPriceNow(s: LeagueState, p: Player) {
   return Math.round((full * share) / 10_000) * 10_000;
 }
 
+/** In place of a player to let go: one of the club's open foreign places (1.7.0). */
+export const OPEN_SLOT = '';
+
+/** 1.7.0: the foreign places a club has left open this season (a player let go, retired or never signed). */
+export function openForeign(s: LeagueState, teamId: TeamId): { regular: number; asia: number } {
+  const slots = foreignSlots(s, teamId, s.year);
+  const have = slotForeigners(s, teamId, s.year);
+  return {
+    regular: Math.max(0, slots.regular - have.filter((p) => !p.origin.asiaQuota).length),
+    asia: Math.max(0, slots.asia - have.filter((p) => p.origin.asiaQuota).length),
+  };
+}
+
 export function canReplaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, inId: string): string | null {
   const closed = foreignWindow(s, teamId);
   if (closed) return closed;
+  if (out === OPEN_SLOT) {
+    const cand = foreignMarket(s, teamId).find((p) => p.id === inId);
+    if (!cand) return __i18n_k("league.trade.canReplaceForeign.668bfef3");
+    const open = openForeign(s, teamId);
+    return (cand.origin.asiaQuota ? open.asia : open.regular) > 0 ? null : cand.origin.asiaQuota ? __i18n_k("league.trade.text.e55cc372") : __i18n_k("league.trade.text.09801599");
+  }
   const old = s.players[out];
   if (!old || old.teamId !== teamId || !isForeign(old)) return __i18n_k("league.trade.canReplaceForeign.e3af4ea8");
   const cand = foreignMarket(s, teamId).find((p) => p.id === inId);
@@ -491,15 +519,16 @@ export function canReplaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId,
 export function replaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, inId: string, r: () => number = rng(`${s.seed}|foreign-swap|${s.year}|${teamId}|${inId}`)) {
   const problem = canReplaceForeign(s, teamId, out, inId);
   if (problem) throw new Error(problem);
-  const old = s.players[out]!;
+  const old = out === OPEN_SLOT ? null : s.players[out]!;
   const p = foreignMarket(s, teamId).find((x) => x.id === inId)!;
-  if (s.user?.teamId === teamId) {
+  if (old && s.user?.teamId === teamId) {
     const owed = Math.round(salaryIn(old, s.year) * seasonShareLeft(s));
     if (owed) (s.user.deadMoney ??= []).push({ season: s.year, amount: owed, label: __i18n_k("league.trade.replaceForeign.label.9f76e5f8", { name: old.name }), id: old.id });
   }
-  const wasActive = s.rosters[teamId]!.active.includes(out);
+  // Into an open place: the first team when it has room.
+  const wasActive = old ? s.rosters[teamId]!.active.includes(out) : s.rosters[teamId]!.active.length < firstTeamSize(s, teamId);
   const price = foreignPriceNow(s, p);
-  leaveForeign(s, old);
+  if (old) leaveForeign(s, old);
   leavePool(s, p.id);
   p.status = 'active';
   p.teamId = teamId;
@@ -508,7 +537,9 @@ export function replaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, in
   chargeForeign(s, teamId, p);
   s.rosters[teamId]![wasActive ? 'active' : 'futures'].push(p.id);
   (s.foreignChanges ??= {})[teamId] = (s.foreignChanges[teamId] ?? 0) + 1;
-  const text = __i18n_k("league.trade.replaceForeign.text.979c0f32", { shortOf: shortOf(s, teamId), name: old.name, name2: p.name, text: p.origin.background!.text });
+  const text = old
+    ? __i18n_k("league.trade.replaceForeign.text.979c0f32", { shortOf: shortOf(s, teamId), name: old.name, name2: p.name, text: p.origin.background!.text })
+    : __i18n_k("league.trade.text.c476cd4b", { shortOf: shortOf(s, teamId), name: p.name, text: p.origin.background!.text });
   logTransaction(s, text);
   moveNews(s, { type: 'foreign', teamId, out: old, in: p.id, price });
   if (s.user?.teamId === teamId) (s.user.log ??= []).push({ year: s.year, text });
@@ -524,6 +555,7 @@ export function aiForeignChanges(s: LeagueState, date: string, r: () => number) 
         const line = s.lines[p.id];
         const inj = s.injuries[p.id];
         if (inj && inj.until > addDays(date, 42)) return true;
+        if (failedToAdapt(p, s.year)) return true;
         if (isPitcher(p)) return !!line?.pit && line.pit.outs >= 120 && (27 * line.pit.er) / line.pit.outs > TRADES.foreign.badEra;
         const b = line?.bat;
         if (!b || b.pa < 180) return false;

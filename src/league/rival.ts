@@ -20,7 +20,7 @@ import { clubState } from './fans';
 import { milestone } from './milestones';
 import { addNews } from './news';
 import { developmentContract, leaveLeague, removeFromRoster, rosterLimit, sign, type OffseasonStep } from './offseason';
-import { ageIn, isForeign, keepValue } from './players';
+import { ageIn, DRAFT_ROOM_YEAR, isForeign, keepValue, shiftProspect } from './players';
 import { MANAGER_STYLES, staffOf } from './staff';
 import { developmentIds, emptyRoster, firstTeamIds, registeredIds, type Decision, type GmStyle, type LeagueState, type ManagerStyle, type RivalSettings } from './state';
 import { crossing } from './rivalry';
@@ -180,7 +180,8 @@ function rivalTryout(s: LeagueState, year: number): number {
   const pool = placeClass(
     generateDraftPool(seed)
       .players.filter((p) => ['독립구단', '해외독립 복귀', '마이너 복귀', '대졸'].includes(p.pathway) && p.age >= 21)
-      .map((p) => fromDraftProspect(p, year, seed))
+      // 1.7.0: their ages as of the founding year, not Draft Room's (they were four years too young in 2030).
+      .map((p) => fromDraftProspect(shiftProspect(p, year - DRAFT_ROOM_YEAR), year, seed))
       .map((p) => ({ ...p, id: `rt${year}-${p.origin.sourceId}` })),
     seed,
   );

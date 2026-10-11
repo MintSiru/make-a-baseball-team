@@ -76,20 +76,22 @@ const UNIT_SCALE: Record<Unit, number> = { eok: 1e8, man: 1e4, won: 1, usdMan: 1
 const UNIT_SYMBOL: Record<Unit, string> = { eok: '₩', man: '₩', won: '₩', usdMan: '$', usd: '$', manCount: '' };
 
 /** "1억 7,500만 원", "64.6억", "3,000만", "16,600원", "40만 달러" → the locale's amount, or null. */
-const MONEY_RE = /^([-−+])?\s*(?:([\d,]+(?:\.\d+)?)억)?\s*(?:([\d,]+(?:\.\d+)?)만)?\s*(원|달러)?$/;
+const MONEY_RE = /^([-−+])?\s*(?:([\d,]+(?:\.\d+)?)억)?\s*(?:([\d,]+(?:\.\d+)?)만)?\s*(원|달러|엔)?$/;
+/** 1.7.0: the display settings can show amounts in dollars or yen. */
+const SYMBOL: Record<string, [string, string]> = { 원: ['₩', 'ウォン'], 달러: ['$', 'ドル'], 엔: ['¥', '円'] };
 function moneyText(s: string, lc: Target): string | null {
   const m = MONEY_RE.exec(s);
   if (!m || (!m[2] && !m[3] && !(m[4] && /\d/.test(s)))) return null;
   if (!m[2] && !m[3]) {
-    const plain = /^([-−])?\s*([\d,]+)\s?(원|달러)$/.exec(s);
+    const plain = /^([-−])?\s*([\d,]+)\s?(원|달러|엔)$/.exec(s);
     if (!plain) return null;
     const n = numberOf(plain[2])! * (plain[1] ? -1 : 1);
-    return lc === 'en' ? compactAmount(n, plain[3] === '달러' ? '$' : '₩') : `${plain[1] ? '-' : ''}${plain[2]}${plain[3] === '달러' ? 'ドル' : 'ウォン'}`;
+    return lc === 'en' ? compactAmount(n, SYMBOL[plain[3]!]![0]) : `${plain[1] ? '-' : ''}${plain[2]}${SYMBOL[plain[3]!]![1]}`;
   }
-  const usd = m[4] === '달러';
-  if (lc === 'ja') return `${m[1] === '+' ? '+' : m[1] ? '-' : ''}${m[2] ? `${m[2]}億` : ''}${m[3] ? `${m[3]}万` : ''}${m[4] ? (usd ? 'ドル' : 'ウォン') : ''}`;
+  const unit = SYMBOL[m[4] ?? '원']!;
+  if (lc === 'ja') return `${m[1] === '+' ? '+' : m[1] ? '-' : ''}${m[2] ? `${m[2]}億` : ''}${m[3] ? `${m[3]}万` : ''}${m[4] ? unit[1] : ''}`;
   const n = ((numberOf(m[2]) ?? 0) * 1e8 + (numberOf(m[3]) ?? 0) * 1e4) * (m[1] && m[1] !== '+' ? -1 : 1);
-  return (m[1] === '+' ? '+' : '') + compactAmount(n, usd ? '$' : '₩');
+  return (m[1] === '+' ? '+' : '') + compactAmount(n, unit[0]);
 }
 
 // ── Names ───────────────────────────────────────────────────────────────────────────────────────────

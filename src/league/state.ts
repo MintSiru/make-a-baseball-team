@@ -383,7 +383,8 @@ export interface NationalEntry {
 
 export interface LineupSlot {
   id: PlayerId;
-  pos: import('./engine/types').FieldPos;
+  /** 1.7.0: null — the spot in the order is fixed, the manager picks where he plays. */
+  pos: import('./engine/types').FieldPos | null;
 }
 
 /**
@@ -394,6 +395,8 @@ export interface LineupSlot {
 export interface LineupCard {
   R: (LineupSlot | null)[];
   L: (LineupSlot | null)[];
+  /** 1.7.0: players fixed at a position only (the manager picks where they bat), against each hand. */
+  places?: { R: { id: PlayerId; pos: import('./engine/types').FieldPos }[]; L: { id: PlayerId; pos: import('./engine/types').FieldPos }[] };
   rotation: PlayerId[];
   rest: boolean;
 }
@@ -417,6 +420,10 @@ export interface UserClub {
   platoon?: Record<PlayerId, 'L' | 'R'>;
   /** The general manager's lineup card (V0.8): spots he fixed himself; the manager fills the rest. */
   lineup?: LineupCard;
+  /** 1.7.0 (extensions.ts): when a player last said no to a multi-year deal before free agency. */
+  extensionTalks?: Record<PlayerId, string>;
+  /** 1.7.0 (captains.ts): the captain and his vice-captains, and the season they were named. */
+  captains?: { captain: PlayerId | null; vice: PlayerId[]; since: number };
   /** 1.4.0 (alumni.ts): events with our former-player staff already told ("2028|lesson-p12", "ever|mark-p12-홈런"). */
   alumniDone?: string[];
   /** 1.3.0: our plan for the next postseason game — the starter he chose (cleared after the game) and the all-out
@@ -568,6 +575,8 @@ export interface LeagueState {
   foreignChanges?: Record<TeamId, number>;
   /** League moves for the news feed: trades, waiver claims, foreign changes. */
   transactions?: { date: string; text: string }[];
+  /** 1.7.0 (draftlog.ts): every rookie draft pick, kept after the player leaves the league. */
+  draftLog?: import('./draftlog').DraftPick[];
   /** One-off market events already run this season ("2027-trades-06"). */
   marketDone?: string[];
   /** 1.3.0 (postseason.ts): the postseason being played, game day by game day. */

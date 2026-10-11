@@ -29,6 +29,8 @@ import { inspect } from './scandals';
 import { runCampaign } from './allstar';
 import { workout } from './combine';
 import { openFacilities, startFacility } from './facilities';
+import { offerExtension } from './extensions';
+import { setCaptains } from './captains';
 
 export type Action =
   /** `stops` (1.6.0): end the run early at the moments the user asked to stop for (stops.ts). */
@@ -83,6 +85,10 @@ export type Action =
   | { kind: 'release'; id: PlayerId }
   | { kind: 'signPool'; id: PlayerId }
   | { kind: 'foreignSwap'; out: PlayerId; in: string }
+  /** 1.7.0: a multi-year deal before free agency (extensions.ts). */
+  | { kind: 'extend'; id: PlayerId; years: number }
+  /** 1.7.0: the captain and vice-captains (captains.ts). */
+  | { kind: 'captains'; captain: PlayerId | null; vice: PlayerId[] }
   // Players and facilities (V0.10)
   | { kind: 'trip'; id: PlayerId; site: SiteId }
   | { kind: 'facility'; facility: FacilityKind }
@@ -112,7 +118,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout', 'extend', 'captains'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -296,6 +302,12 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'number':
       setNumber(s, action.id, action.number);
+      break;
+    case 'extend':
+      offerExtension(s, action.id, action.years);
+      break;
+    case 'captains':
+      setCaptains(s, action.captain, action.vice);
       break;
     case 'inspect':
       inspect(s, action.id);

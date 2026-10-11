@@ -8,7 +8,7 @@ import { usd } from '../league/foreign';
 import type { LeagueState } from '../league/state';
 import { rates, rosterView } from '../league/views';
 import { money } from './format';
-import { gradeClass } from './grades';
+import { gradeClass, rowFuture } from './grades';
 import { positionKey, useSort } from './sort';
 
 export type Row = ReturnType<typeof rosterView>['active'][number];
@@ -31,6 +31,11 @@ function Name({ r, onPlayer }: { r: Row; onPlayer: (id: string) => void }) {
       <button type="button" class="link" onClick={() => onPlayer(r.id)}>
         {__i18n_display(r.name)}
       </button>
+      {r.captain && (
+        <span class="tag captain" title={r.captain === 'C' ? __i18n_t("ui.squad.text.a6ef8381") : __i18n_t("ui.squad.text.cb8f9e32")}>
+          {r.captain}
+        </span>
+      )}
       {__i18n_display(r.foreign && <span class="tag">{__i18n_t("ui.squad.name.5bd804b7")}</span>)}
       {__i18n_display(r.development && <span class="tag">{__i18n_t("ui.squad.name.818f3b79")}</span>)}
       {__i18n_display(r.injured && (
@@ -53,7 +58,7 @@ function PitcherTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; on
       pos: { value: (r) => positionKey(r.pos), first: 1 },
       age: { value: (r) => r.age, first: 1 },
       grade: { value: (r) => r.grade },
-      future: { value: (r) => r.future },
+      future: { value: (r) => rowFuture(r) ?? -1 },
       g: { value: (r) => p(r)?.g ?? 0 },
       wl: { value: (r) => (p(r)?.w ?? 0) - (p(r)?.l ?? 0) },
       svh: { value: (r) => (p(r)?.sv ?? 0) + (p(r)?.hld ?? 0) },
@@ -104,7 +109,7 @@ function PitcherTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; on
                 </td>
                 <td class="num">{__i18n_display(r.age)}</td>
                 <td class={`num ${gradeClass(r.grade)}`}>{__i18n_display(r.grade)}</td>
-                <td class={`num strong ${gradeClass(r.future)}`}>{__i18n_display(r.future)}</td>
+                <td class={`num strong ${gradeClass(rowFuture(r))}`}>{__i18n_display(rowFuture(r) ?? '-')}</td>
                 <td class="num">{__i18n_display(x?.g ?? '-')}</td>
                 <td class="num">{__i18n_display(x ? `${x.w}-${x.l}` : '-')}</td>
                 <td class="num">{__i18n_display(x ? `${x.sv}/${x.hld}` : '-')}</td>
@@ -132,7 +137,7 @@ function HitterTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; onP
       pos: { value: (r) => positionKey(r.pos), first: 1 },
       age: { value: (r) => r.age, first: 1 },
       grade: { value: (r) => r.grade },
-      future: { value: (r) => r.future },
+      future: { value: (r) => rowFuture(r) ?? -1 },
       g: { value: (r) => b(r)?.g ?? 0 },
       avg: { value: (r) => (b(r)?.ab ? rates.avg(b(r)!) : 0) },
       hr: { value: (r) => b(r)?.hr ?? 0 },
@@ -177,7 +182,7 @@ function HitterTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; onP
                 </td>
                 <td class="num">{__i18n_display(r.age)}</td>
                 <td class={`num ${gradeClass(r.grade)}`}>{__i18n_display(r.grade)}</td>
-                <td class={`num strong ${gradeClass(r.future)}`}>{__i18n_display(r.future)}</td>
+                <td class={`num strong ${gradeClass(rowFuture(r))}`}>{__i18n_display(rowFuture(r) ?? '-')}</td>
                 <td class="num">{__i18n_display(x?.g ?? '-')}</td>
                 <td class="num">{__i18n_display(x?.ab ? f3(rates.avg(x)) : '-')}</td>
                 <td class="num">{__i18n_display(x?.hr ?? '-')}</td>

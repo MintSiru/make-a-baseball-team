@@ -38,6 +38,9 @@ describe('display locale', () => {
     expect(translateFor('en', '1억 7,500만 원')).toBe('₩175M');
     expect(translateFor('en', '40만 달러')).toBe('$400K');
     expect(translateFor('ja', '1억 7,500만')).toBe('1億7,500万');
+    // 1.7.0: amounts shown in dollars or yen (display settings).
+    expect(translateFor('en', '1,075만 엔')).toBe('¥10.75M');
+    expect(translateFor('ja', '1억 2,000만 엔')).toBe('1億2,000万円');
     // A ko pattern with {value}억: English formats the amount, Japanese keeps 億 in its own text.
     expect(messageFor('en', key('league.movenews.moveNews.extra.58195e3f'), { value: '20' })).toBe('Cash: ₩2B');
     expect(messageFor('ja', key('league.movenews.moveNews.extra.58195e3f'), { value: '20' })).toContain('20億');

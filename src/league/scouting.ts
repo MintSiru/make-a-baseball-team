@@ -1,13 +1,12 @@
 import { k as __i18n_k } from '../i18n/index';
 /* A future that moves (V0.12). A young player's ceiling is not fixed at the draft: every winter it can jump (a
    breakout), stall, or drift a little, and a season that says so makes the jump or the stall likelier. During
-   the season the scouts revise a young player's future grade month by month from what they see: his numbers
-   against the level he plays at, a step of five either way from the winter's report (two for the youngest who
-   tear up the first team). Our players' changes make the news. */
+   the season the scouts revised a young player's future grade month by month until 1.6; since 1.7.0 it moves
+   once a season, with the winter's report, and our players' moves make one report in the news. */
 import type { Player, PlayerId } from '../model/types';
 import { addNews } from './news';
 import { ageIn, isForeign, isPitcher } from './players';
-import { addInto, emptyBat, emptyPit, type LeagueState, type SeasonLine } from './state';
+import type { LeagueState } from './state';
 import { era, obp, slg } from './stats';
 import { SCOUTING as S } from './tuning';
 import { breakoutFactor } from './traits';
@@ -55,90 +54,49 @@ export function driftPotential(p: Player, year: number, r: () => number) {
   for (const k of keys) set(k, (p.hidden.potential[k] ?? 40) + normal(r) * D.drift);
 }
 
-// ── In the season ───────────────────────────────────────────────────────────────────────────────
+// ── The winter report (1.7.0) ───────────────────────────────────────────────────────────────────
+// Until 1.6 the scouts revised the future grade month by month in the season; since 1.7.0 it moves once a
+// season, with the winter's report (rescout after the year's growth, the season's numbers already in the drift).
 
-type Level = { bat: ReturnType<typeof emptyBat>; pit: ReturnType<typeof emptyPit> };
-const levelOf = (lines: Record<PlayerId, SeasonLine>): Level => {
-  const bat = emptyBat(),
-    pit = emptyPit();
-  for (const l of Object.values(lines)) {
-    if (l.bat) addInto(bat, l.bat);
-    if (l.pit) addInto(pit, l.pit);
-  }
-  return { bat, pit };
-};
-
-/** How far his season stands from his level's average, in rough standard deviations (+ good), or null (too little). */
-function zOf(p: Player, line: SeasonLine | undefined, level: Level, minor: boolean): number | null {
-  const M = S.month;
-  if (!line) return null;
-  if (isPitcher(p)) {
-    if (!line.pit || line.pit.outs < (minor ? M.minorOuts : M.majorOuts)) return null;
-    return clamp((era(level.pit) - era(line.pit)) / M.eraSd, -3, 3);
-  }
-  if (!line.bat || line.bat.pa < (minor ? M.minorPA : M.majorPA)) return null;
-  return clamp((obp(line.bat) + slg(line.bat) - obp(level.bat) - slg(level.bat)) / M.opsSd, -3, 3);
+/** Every active domestic young player's future grade before the winter's growth. */
+export function futureBefore(s: LeagueState): Map<PlayerId, number> {
+  const out = new Map<PlayerId, number>();
+  for (const p of Object.values(s.players)) if (p.status === 'active' && young(p, s.year)) out.set(p.id, p.scouting.futureValue);
+  return out;
 }
 
-/** The step (grade points) the scouts add to the winter's future grade for what they have seen this season. */
-export function seasonStep(p: Player, z: number, minor: boolean, season: number): number {
-  const M = S.month;
-  const [up, down] = minor ? [M.minorUp, M.minorDown] : [M.majorUp, M.majorDown];
-  if (z >= up) return !minor && z >= M.twoSteps && ageIn(p, season) <= M.twoStepsAge ? 10 : 5;
-  if (z <= -down) return -5;
-  return 0;
-}
-
-/** First game day of a month: the scouts look again at every young player with enough of a season to judge. */
-export function scoutMonth(s: LeagueState, date: string) {
-  const major = levelOf(s.lines);
-  const minor = s.futures ? levelOf(s.futures.lines) : null;
-  for (const p of Object.values(s.players)) {
-    if (p.status !== 'active' || !p.teamId || !young(p, s.year)) continue;
-    const sc = p.scouting;
-    const base = sc.base ?? sc.futureValue;
-    // The first team says more; the futures league when he has not played enough up there.
-    let z = zOf(p, s.lines[p.id], major, false);
-    let fromMinor = false;
-    if (z === null && minor && s.futures) {
-      z = zOf(p, s.futures.lines[p.id], minor, true);
-      fromMinor = true;
-    }
-    if (z === null) continue;
-    const step = seasonStep(p, z, fromMinor, s.year);
-    const to = Math.max(sc.current, clamp(base + step, 20, 80));
-    if (to === sc.futureValue) continue;
-    const from = sc.futureValue;
-    // The abilities his numbers speak to follow the grade.
-    const keys: (keyof typeof sc.futureTools)[] = isPitcher(p) ? ['stuff', 'command', 'breaking'] : ['contact', 'power', 'eye'];
-    for (const k of keys) if (sc.futureTools[k] != null) sc.futureTools[k] = clamp(sc.futureTools[k]! + (to - from), 20, 80);
-    sc.base = base;
-    sc.futureValue = to;
-    sc.ceiling = Math.max(sc.ceiling, to);
-    sc.moved = { date, from, to };
-    if (p.teamId === s.user?.teamId) scoutNews(s, p, from, to, date, fromMinor);
+/** After the winter's growth: the moves show on each player's screen, and ours make one report in the news. */
+export function winterReport(s: LeagueState, year: number, before: Map<PlayerId, number>) {
+  const date = `${year}-12-01`;
+  const mine: { p: Player; from: number; to: number }[] = [];
+  for (const [id, from] of before) {
+    const p = s.players[id];
+    if (!p || p.status === 'retired') continue;
+    const to = p.scouting.futureValue;
+    if (to === from) continue;
+    p.scouting.moved = { date, from, to };
+    if (p.teamId && p.teamId === s.user?.teamId && Math.abs(to - from) >= 5) mine.push({ p, from, to });
   }
-}
-
-function scoutNews(s: LeagueState, p: Player, from: number, to: number, date: string, minor: boolean) {
-  const up = to > from;
-  const line = (minor ? s.futures?.lines : s.lines)?.[p.id];
-  const stat = isPitcher(p)
-    ? line?.pit
-      ? __i18n_k("league.scouting.scoutNews.stat.fd720153", { value: era(line.pit).toFixed(2), value2: Math.floor(line.pit.outs / 3) })
-      : ''
-    : line?.bat
-      ? __i18n_k("league.scouting.scoutNews.stat.732fc777", { value: (obp(line.bat) + slg(line.bat)).toFixed(3).replace(/^0/, ''), pa: line.bat.pa })
-      : '';
+  if (!mine.length) return;
+  mine.sort((a, b) => b.to - b.from - (a.to - a.from) || b.to - a.to);
+  const up = mine.filter((x) => x.to > x.from);
+  const down = mine.filter((x) => x.to < x.from);
+  const list = (xs: typeof mine) => xs.map((x) => __i18n_k("league.scouting.text.fde7a7f7", { name: x.p.name, from: x.from, to: x.to })).join(', ');
   addNews(s, {
-    id: `scout-${p.id}-${date}`,
+    id: `scout-winter-${year}`,
     date,
     kind: 'interview',
-    title: __i18n_k("league.scouting.scoutNews.title.03773cc3", { name: p.name, value: up ? __i18n_k("league.scouting.scoutNews.title.3dc47b86") : __i18n_k("league.scouting.scoutNews.title.79282c4f"), from: from, to: to }),
-    body: __i18n_k("league.scouting.scoutNews.body.a4e33c33", { value: minor ? __i18n_k("league.scouting.scoutNews.body.51439b09") : __i18n_k("league.scouting.scoutNews.body.ef2caeba"), stat: stat, name: p.name, from: from, to: to, value2: up ? __i18n_k("league.scouting.scoutNews.body.4a61d670") : __i18n_k("league.scouting.scoutNews.body.58a282f0") }),
+    title: __i18n_k("league.scouting.text.fb251a9e", { year, up: up.length, down: down.length }),
+    body: [
+      __i18n_k("league.scouting.text.34340af3"),
+      up.length ? __i18n_k("league.scouting.text.b6c86823", { list: list(up) }) : '',
+      down.length ? __i18n_k("league.scouting.text.3ce0ee17", { list: list(down) }) : '',
+    ]
+      .filter(Boolean)
+      .join(' '),
     quotes: [],
-    facts: { 선수: p.name, '미래 등급': `${from} → ${to}`, 기록: stat },
-    players: [p.id],
+    facts: { [__i18n_k("league.scouting.text.c13573d9")]: String(up.length), [__i18n_k("league.scouting.text.5356f002")]: String(down.length) },
+    players: mine.map((x) => x.p.id),
     mine: true,
   });
 }

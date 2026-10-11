@@ -28,6 +28,11 @@ const SCREENS: [string, string][] = [
 ];
 
 const GLOSSARY: [string, string][] = [
+  [__i18n_t("ui.manual.text.e03ccaea"), __i18n_t("ui.manual.text.6e4e226c")],
+  [__i18n_t("ui.manual.text.a6940a86"), __i18n_t("ui.manual.text.72e9bc37")],
+  [__i18n_t("ui.manual.text.d65f371c"), __i18n_t("ui.manual.text.74bff193")],
+  [__i18n_t("ui.manual.text.951a6ab7"), __i18n_t("ui.manual.text.ac35cade")],
+  [__i18n_t("ui.manual.text.35362dc0"), __i18n_t("ui.manual.text.0710e589")],
   [__i18n_k("ui.manual.gLOSSARY.28c6418c"), __i18n_k("ui.manual.gLOSSARY.fa8ce475")],
   ['WAR', __i18n_k("ui.manual.gLOSSARY.9faec22e")],
   ['wRC+', __i18n_k("ui.manual.gLOSSARY.ba2a3993")],

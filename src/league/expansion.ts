@@ -40,7 +40,7 @@ import {
   standardSlots,
   type OffseasonStep,
 } from './offseason';
-import { ageIn, currentValue, isForeign, isPitcher, keepValue, makeForeign } from './players';
+import { ageIn, currentValue, DRAFT_ROOM_YEAR, isForeign, isPitcher, keepValue, makeForeign, shiftProspect, veteranOnMarket } from './players';
 import { DIFFICULTY, FOREIGN_TALKS, OFFSEASON, PARENT } from './tuning';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './foreignpool';
 import { marchEvents, nextNationalDecision, novemberEvents } from './national';
@@ -219,7 +219,8 @@ function tryoutPool(s: LeagueState): Player[] {
   const pool = placeClass(
     generateDraftPool(seed)
       .players.filter((p) => ['독립구단', '해외독립 복귀', '마이너 복귀', '대졸'].includes(p.pathway) && p.age >= 21)
-      .map((p) => fromDraftProspect(p, y0, seed))
+      // 1.7.0: born as many years later as the tryout is after Draft Room's (a 2016 game had them ten years too young).
+      .map((p) => fromDraftProspect(shiftProspect(p, y0 - DRAFT_ROOM_YEAR), y0, seed))
       .map((p) => ({ ...p, id: `t${y0}-${p.origin.sourceId}` })),
     seed,
   )
@@ -290,6 +291,15 @@ function foreignCandidates(s: LeagueState, next: number): Player[] {
       s.players[p.id] = p;
       out.push(p);
     }
+  // 1.7.0: now and then an old big-league name (카라스코, 클레빈저, 노바).
+  const vet = veteranOnMarket(`${s.seed}|fc${next}`);
+  if (vet) {
+    const p = makeForeign(s.seed, `fc${next}-v`, next, { kind: vet.kind, asiaQuota: false, veteran: true });
+    p.status = 'amateur';
+    p.contract = foreignContract(EXPANSION_ID, next, splitContract(p.origin.background!.ask, rng(`${s.seed}|foreign-offer-v|${next}`)), false);
+    s.players[p.id] = p;
+    out.unshift(p);
+  }
   // Foreign players with KBO experience other clubs let go (V0.7.3): the same cap, priced by their KBO record.
   for (const p of foreignPoolPlayers(s)) {
     p.contract = foreignContract(EXPANSION_ID, next, splitContract(foreignPoolAsk(s, p), rng(`${s.seed}|foreign-pool-offer|${next}|${p.id}`)), !!p.origin.asiaQuota);
