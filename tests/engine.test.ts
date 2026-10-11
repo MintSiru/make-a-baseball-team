@@ -104,6 +104,10 @@ describe('the bench (1.7.0)', () => {
         const ids = own.batting.map((b) => b.id);
         expect(new Set(ids).size).toBe(ids.length);
         for (const b of own.batting) if (b.sub) seen[b.sub]++;
+        // 1.7.1: a late glove only ever replaces the starter (the first substitute in his slot).
+        own.batting.forEach((b, i) => {
+          if (b.sub === 'DEF') expect(own.batting[i - 1]!.sub).toBeUndefined();
+        });
         // Nine starters, the rest came off the bench.
         expect(own.batting.filter((b) => !b.sub)).toHaveLength(9);
       }

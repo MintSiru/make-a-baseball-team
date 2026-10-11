@@ -17,12 +17,12 @@ import { DIFFICULTY } from '../league/tuning';
 import { rollPersonality, rollTraits } from '../league/traits';
 import { FOREIGN_TYPES, foreignTypeOf } from '../league/players';
 import { backfillDraftLog } from '../league/draftlog';
-import { backfillMlb } from '../league/mlb';
+import { backfillMlb, rescoreMlb } from '../league/mlb';
 import { dealYears } from '../league/returnees';
 import { logGrades } from '../league/offseason';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0', '1.2.0', '1.3.0', '1.4.0', '1.6.0'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0', '1.2.0', '1.3.0', '1.4.0', '1.6.0', '1.7.0'];
 
 type Loose = Record<string, unknown>;
 
@@ -120,6 +120,8 @@ export function migrateState(raw: unknown, from: string): LeagueState {
   // future grades once a season start with the next draft and winter.
   backfillDraftLog(s);
   backfillMlb(s, dealYears);
+  // 1.7.1: the big-league seasons on the revised scale; a late glove only for a starter (the games from now on).
+  rescoreMlb(s);
   // The ability graph starts from today's report.
   for (const p of Object.values(s.players)) if (!p.gradeLog && (p.status === 'active' || p.status === 'military' || p.status === 'freeAgent')) logGrades(p, p.scouting.season);
   s.sim = SIM_VERSION;
