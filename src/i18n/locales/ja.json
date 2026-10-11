@@ -6604,5 +6604,12 @@
   "ui.history.text.65932266": "指名時期待値",
   "ui.history.text.d07eb370": "現在",
   "ui.history.text.d91dd513": "一軍シーズン",
-  "ui.history.text.e0cee61a": "試合"
+  "ui.history.text.e0cee61a": "試合",
+  "ui.gradeChart.text.6551f51e": "シーズンを重ねると能力値の推移がグラフで表示されます。",
+  "ui.gradeChart.text.844353c5": "{from}〜{to}年 総合評価 {a}→{b}",
+  "ui.gradeChart.text.125cde47": "グラフに加える能力",
+  "ui.gradeChart.text.f7c86d76": "総合",
+  "ui.gradeChart.text.49fb12ae": "シーズン別の数値",
+  "ui.gradeChart.text.b3000412": "シーズン",
+  "ui.playerPanel.text.89a8bfe6": "シーズン別能力値"
 }

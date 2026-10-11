@@ -14,6 +14,8 @@ import { isPitcher } from '../src/league/players';
 import { parseSave } from '../src/save/format';
 import { futureBefore, winterReport } from '../src/league/scouting';
 import { draftView, draftWatchDay, draftYears } from '../src/league/draftlog';
+import { developPlayer, GRADE_KEYS } from '../src/league/offseason';
+import { rng } from '../src/draftroom';
 import { ageIn } from '../src/league/players';
 
 export const loadSave = (v = '1.4.0') => parseSave(gunzipSync(readFileSync(new URL(`./fixtures/save-${v}.json.gz`, import.meta.url))).toString('utf8')).snapshot!.state as LeagueState;
@@ -123,5 +125,17 @@ describe('the draft over the years', () => {
     const before = s.news!.length;
     draftWatchDay(s, `${s.year}-08-16`);
     expect(s.news!.length).toBe(before);
+  });
+});
+
+describe('grades season by season', () => {
+  it('an older save starts the log from today; each winter adds the new report', () => {
+    const s = loadSave();
+    const p = Object.values(s.players).find((x) => x.status === 'active' && x.teamId === s.user!.teamId && !isPitcher(x))!;
+    expect(p.gradeLog).toEqual([[p.scouting.season, p.scouting.current, ...GRADE_KEYS.map((k) => (p.scouting.tools as Record<string, number>)[k] ?? 0)]]);
+    developPlayer(p, s.year, 0, rng('grow'));
+    expect(p.gradeLog!.length).toBe(2);
+    expect(p.gradeLog![1]![0]).toBe(s.year + 1);
+    expect(p.gradeLog![1]![1]).toBe(p.scouting.current);
   });
 });

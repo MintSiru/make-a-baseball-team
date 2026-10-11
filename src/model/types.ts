@@ -61,6 +61,9 @@ export interface ScoutingReport {
   combine?: boolean;
 }
 
+/** One season's public report (1.7.0): [season, overall, then each ability in the order of `GRADE_KEYS`]. */
+export type GradeLogEntry = number[];
+
 export type PlayerStatus = 'amateur' | 'active' | 'military' | 'freeAgent' | 'overseas' | 'retired';
 
 export type MilitaryStatus = 'pending' | 'serving' | 'served' | 'exempt';
@@ -252,6 +255,9 @@ export interface Player {
   scouting: ScoutingReport;
   /** First professional season in the league. */
   proSince: number;
+  /** 1.7.0: the public report at the start of each season since 1.7.0 (season, overall, each ability), for the
+      graph on his screen. */
+  gradeLog?: GradeLogEntry[];
   career: SeasonRecord[];
   /** 1.4.0: postseason lines, one a year he played in it (not in `career`, so season totals stay as they were). */
   post?: PostRecord[];

@@ -6604,5 +6604,12 @@
   "ui.history.text.65932266": "Draft Grade",
   "ui.history.text.d07eb370": "Now",
   "ui.history.text.d91dd513": "1st-Team Seasons",
-  "ui.history.text.e0cee61a": "G"
+  "ui.history.text.e0cee61a": "G",
+  "ui.gradeChart.text.6551f51e": "His grades will be charted here as the seasons go by.",
+  "ui.gradeChart.text.844353c5": "Overall grade {from}–{to}: {a}→{b}",
+  "ui.gradeChart.text.125cde47": "Abilities to add to the chart",
+  "ui.gradeChart.text.f7c86d76": "Overall",
+  "ui.gradeChart.text.49fb12ae": "Numbers by season",
+  "ui.gradeChart.text.b3000412": "Season",
+  "ui.playerPanel.text.89a8bfe6": "Grades by Season"
 }

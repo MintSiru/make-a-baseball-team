@@ -6604,5 +6604,12 @@
   "ui.history.text.65932266": "당시 기대",
   "ui.history.text.d07eb370": "지금",
   "ui.history.text.d91dd513": "1군 시즌",
-  "ui.history.text.e0cee61a": "경기"
+  "ui.history.text.e0cee61a": "경기",
+  "ui.gradeChart.text.6551f51e": "시즌이 지나면 능력치 변화가 그래프로 그려집니다.",
+  "ui.gradeChart.text.844353c5": "{from}~{to} 종합 등급 {a}→{b}",
+  "ui.gradeChart.text.125cde47": "그래프에 더할 능력치",
+  "ui.gradeChart.text.f7c86d76": "종합",
+  "ui.gradeChart.text.49fb12ae": "시즌별 숫자",
+  "ui.gradeChart.text.b3000412": "시즌",
+  "ui.playerPanel.text.89a8bfe6": "시즌별 능력치"
 }

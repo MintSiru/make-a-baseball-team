@@ -225,6 +225,21 @@ export function developPlayer(p: Player, year: number, lostDays: number, r: () =
     }
   h.current = next;
   rescout(p, year + 1, yearIndex + 1, r);
+  logGrades(p, year + 1);
+}
+
+/** Abilities in a grade log entry (1.7.0), after the season and the overall grade. */
+export const GRADE_KEYS = ['contact', 'power', 'eye', 'speed', 'defense', 'stuff', 'command', 'breaking', 'stamina'] as const;
+const GRADE_LOG_MAX = 25;
+
+/** The season's public report, kept for the graph on his screen (a pitcher's batting grades as 0, and the other way). */
+export function logGrades(p: Player, season: number) {
+  const t = p.scouting.tools as Record<string, number | undefined>;
+  const entry = [season, p.scouting.current, ...GRADE_KEYS.map((k) => t[k] ?? 0)];
+  const log = (p.gradeLog ??= []);
+  if (log.at(-1)?.[0] === season) log[log.length - 1] = entry;
+  else log.push(entry);
+  if (log.length > GRADE_LOG_MAX) log.splice(0, log.length - GRADE_LOG_MAX);
 }
 
 /** Our biggest award winner of the season talks to the reporters (1.2.0): MVP, then 신인왕, then a golden glove. */
@@ -474,6 +489,7 @@ export function makePick(s: LeagueState, d: DraftState, p: Player) {
   p.origin.overallPick = overall;
   p.origin.draftGrade = p.scouting.futureValue;
   logPick(s, p, slot.teamId, d.year, overall, slot.label);
+  logGrades(p, d.year + 1);
   if (slot.via) p.origin.pickVia = slot.via;
   d.pool = d.pool.filter((id) => id !== p.id);
   const clubs = new Set(d.slots.map((x) => x.teamId)).size;

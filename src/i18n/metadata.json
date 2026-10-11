@@ -64267,5 +64267,60 @@
     "line": 393,
     "params": {},
     "locations": []
+  },
+  "ui.gradeChart.text.6551f51e": {
+    "source": "src/ui/GradeChart.tsx",
+    "line": 18,
+    "params": {},
+    "locations": []
+  },
+  "ui.gradeChart.text.844353c5": {
+    "source": "src/ui/GradeChart.tsx",
+    "line": 31,
+    "params": {
+      "from": {
+        "expression": "seasons[0]"
+      },
+      "to": {
+        "expression": "seasons.at(-1)"
+      },
+      "a": {
+        "expression": "first[1]"
+      },
+      "b": {
+        "expression": "last[1]"
+      }
+    },
+    "locations": []
+  },
+  "ui.gradeChart.text.125cde47": {
+    "source": "src/ui/GradeChart.tsx",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "ui.gradeChart.text.f7c86d76": {
+    "source": "src/ui/GradeChart.tsx",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "ui.gradeChart.text.49fb12ae": {
+    "source": "src/ui/GradeChart.tsx",
+    "line": 64,
+    "params": {},
+    "locations": []
+  },
+  "ui.gradeChart.text.b3000412": {
+    "source": "src/ui/GradeChart.tsx",
+    "line": 69,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.89a8bfe6": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 395,
+    "params": {},
+    "locations": []
   }
 }

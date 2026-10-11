@@ -19,6 +19,7 @@ import { SITES } from '../league/training';
 import { usd } from '../league/foreign';
 import { handedness, militaryLabel, money, toolKeysFor } from './format';
 import { GradeBar, shownFuture, showsFutureDetail } from './grades';
+import { GradeChart } from './GradeChart';
 import { serviceNote } from '../league/military';
 import type { TraitReport } from '../league/reports';
 import { kboSeasons } from '../league/foreigncap';
@@ -389,6 +390,10 @@ export function PlayerPanel({
               {__i18n_display(s.moved && showsFutureDetail(p) && (
                 <p class={`small ${s.moved.to > s.moved.from ? 'plus' : 'minus'}`}>{__i18n_t("ui.playerPanel.playerPanel.e3838a42", { value: s.moved.to > s.moved.from ? '▲' : '▼', from: s.moved.from, to: s.moved.to, value2: s.moved.date.slice(5).replace('-', '/') })}</p>
               ))}
+            </section>
+            <section>
+              <h3>{__i18n_t("ui.playerPanel.text.89a8bfe6")}</h3>
+              <GradeChart log={p.gradeLog ?? []} role={p.role} />
             </section>
             {__i18n_display(!pitcher && card.positions.length > 0 && (
               <section class="pitch-box">

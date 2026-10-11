@@ -3076,3 +3076,15 @@ fieldset.stops {
   padding: 6px 12px 8px;
   margin: 8px 0;
 }
+
+/* 1.7.0: a player's grades season by season (GradeChart.tsx). */
+.grade-chart svg { width: 100%; max-width: 420px; height: auto; display: block; }
+.grade-chart .chart-rule { stroke: var(--rule); stroke-width: 1; }
+.grade-chart .chart-rule.mid { stroke-dasharray: 3 3; }
+.grade-chart .chart-axis { font-size: 9px; fill: var(--ink-2); }
+.grade-chart .chart-main { stroke: var(--accent); }
+.grade-chart .chart-dot { fill: var(--accent); }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0.4rem 0; }
+.chart-legend .chip { font-size: 0.8rem; padding: 0.1rem 0.55rem; border: 1px solid var(--rule); border-radius: 999px; background: transparent; color: var(--ink-2); }
+.chart-legend .chip.main { border-color: var(--accent); color: var(--accent); }
+.chart-legend .chip[aria-pressed='true'] { font-weight: 600; }
