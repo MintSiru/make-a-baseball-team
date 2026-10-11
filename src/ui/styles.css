@@ -3091,10 +3091,36 @@ fieldset.stops {
 
 /* 1.7.0: the relay a pitch at a time (BoxScore.tsx PitchRelay). */
 .pitch-board { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin: 0.6rem 0; padding: 0.6rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper-2, transparent); }
-.board-diamond { width: 200px; max-width: 48vw; height: auto; }
-.board-diamond .field { fill: #3f7d3a; stroke: #2c5a29; }
-.board-diamond .bag, .board-diamond .home { fill: #f4f1e8; stroke: #8c8577; }
-.board-diamond .stone { fill: #111; stroke: #f4f1e8; stroke-width: 2; }
+.board-diamond { width: 220px; max-width: 46vw; height: auto; }
+.board-diamond .grass { fill: #3f7d3a; stroke: #f4f1e8; stroke-width: 1.2; }
+.board-diamond .dirt { fill: #b58a5a; }
+.board-diamond .infield { fill: #4b8b45; }
+.board-diamond .line { fill: none; stroke: #f4f1e8; stroke-width: 0.8; }
+.board-diamond .bag, .board-diamond .home { fill: #f4f1e8; stroke: #8c8577; stroke-width: 0.6; }
+.board-diamond .stone { fill: #111; stroke: #f4f1e8; stroke-width: 1.5; }
+/* 1.7.1: where the ball came down — white for a hit, grey for an out. */
+.board-diamond .hit .trail { fill: none; stroke: #fff; stroke-width: 1.4; stroke-dasharray: 3 2.5; }
+.board-diamond .hit.safe .spot { fill: #ffd84d; stroke: #111; stroke-width: 1.2; }
+.board-diamond .hit.out .trail { stroke: #d9d9d9; opacity: 0.8; }
+.board-diamond .hit.out .spot { fill: #d9d9d9; stroke: #333; stroke-width: 1.2; }
+.board-diamond .hit.hr .spot { fill: #ff5a3c; }
+/* 1.7.1: the strike zone (catcher's view) and this plate appearance's pitches. */
+.zone-wrap { margin: 0; display: grid; justify-items: center; gap: 0.2rem; }
+.strike-zone { width: 120px; max-width: 30vw; height: auto; }
+.strike-zone .zone { fill: rgba(127, 127, 127, 0.08); stroke: var(--ink-2); stroke-width: 1.2; }
+.strike-zone .grid { stroke: var(--rule); stroke-width: 0.6; }
+.strike-zone .plate { fill: #f4f1e8; stroke: #8c8577; stroke-width: 0.6; }
+.strike-zone .pitch circle { stroke: #111; stroke-width: 0.8; opacity: 0.85; }
+.strike-zone .pitch text { font-size: 8.5px; font-weight: 700; text-anchor: middle; fill: #111; }
+.strike-zone .pitch.last circle { stroke-width: 2; opacity: 1; }
+.strike-zone .ball circle, .zone-key .ball::before { fill: #2e9e4f; background: #2e9e4f; }
+.strike-zone .strike circle, .zone-key .strike::before { fill: #e0b021; background: #e0b021; }
+.strike-zone .swing circle, .zone-key .swing::before { fill: #d0412f; background: #d0412f; }
+.strike-zone .foul circle, .zone-key .foul::before { fill: #9aa0a6; background: #9aa0a6; }
+.strike-zone .play circle, .zone-key .play::before { fill: #4f93d1; background: #4f93d1; }
+.strike-zone .hbp circle { fill: #8e5bd0; }
+.zone-key { display: flex; flex-wrap: wrap; gap: 0.15rem 0.5rem; justify-content: center; max-width: 12rem; color: var(--ink-2); }
+.zone-key .key::before { content: ''; display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 50%; margin-right: 0.2rem; vertical-align: -0.05rem; }
 .board-side { display: grid; gap: 0.2rem; min-width: 10rem; }
 .board-score { font-size: 1.15rem; margin: 0; }
 .board-half { margin: 0; color: var(--ink-2); }
@@ -3113,3 +3139,6 @@ fieldset.stops {
 
 /* 1.7.0: substitutes in a box score, under the man they replaced. */
 .sub-row td:nth-child(2) { padding-left: 1.2rem; }
+
+/* 1.7.1: our postseason game is next (App.tsx controls). */
+.big-game { flex-basis: 100%; margin: 0 0 0.2rem; padding: 0.35rem 0.6rem; border-left: 4px solid var(--accent); background: rgba(127, 127, 127, 0.08); border-radius: 4px; }

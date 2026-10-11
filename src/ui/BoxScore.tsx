@@ -9,7 +9,7 @@ import type { Action } from '../league/actions';
 import { NewsCard } from './Story';
 import type { StoryHooks } from './MyClub';
 import { markWatched, spoilerHidden } from './display';
-import { pitchFeed, type PitchFrame } from '../league/pitchfeed';
+import { pitchFeed, type PitchFrame, type PitchLoc } from '../league/pitchfeed';
 
 type Tab = 'box' | 'pbp' | 'story';
 const SPEEDS: [string, number][] = [
@@ -25,6 +25,7 @@ export function BoxScore({
   onPlayer,
   onAct,
   story = {},
+  live: watching = false,
 }: {
   league: LeagueState;
   id: string;
@@ -32,16 +33,18 @@ export function BoxScore({
   onPlayer: (id: string) => void;
   onAct?: (a: Action) => void;
   story?: StoryHooks;
+  /** 1.7.1: opened to watch our game live — the score hidden, a pitch at a time from the first pitch. */
+  live?: boolean;
 }) {
   const v = useMemo(() => boxView(league, id), [league, id]);
   const ours = !!league.user && !!v && (v.home.teamId === league.user.teamId || v.away.teamId === league.user.teamId);
   // 1.6.0: with the score hidden, our unseen game opens as a relay from the first pitch.
-  const [hidden] = useState(() => spoilerHidden(id, ours, !!v?.plays));
+  const [hidden] = useState(() => (watching && !!v?.plays) || spoilerHidden(id, ours, !!v?.plays));
   const [tab, setTab] = useState<Tab>(hidden ? 'pbp' : 'box');
   const [shown, setShown] = useState<number | null>(hidden ? 0 : null);
   const [speed, setSpeed] = useState(1100);
   // 1.7.0: the relay a plate appearance or a pitch at a time.
-  const [mode, setMode] = useState<'pa' | 'pitch'>('pa');
+  const [mode, setMode] = useState<'pa' | 'pitch'>(watching ? 'pitch' : 'pa');
   const heading = useRef<HTMLHeadingElement>(null);
   const box = useRef<HTMLDivElement>(null);
   useFocusTrap(box, onClose);
@@ -51,10 +54,11 @@ export function BoxScore({
   // Replay: one more play every tick until the end (then the game counts as seen).
   useEffect(() => {
     if (v?.plays && (shown === null || shown >= v.plays.length) && ours) markWatched(id);
-    if (shown === null || !v?.plays || shown >= v.plays.length) return;
+    // A pitch at a time, the relay below moves the score (onAt).
+    if (shown === null || !v?.plays || shown >= v.plays.length || mode === 'pitch') return;
     const t = setTimeout(() => setShown(shown + 1), speed);
     return () => clearTimeout(t);
-  }, [shown, speed, v]);
+  }, [shown, speed, v, mode]);
   if (!v) return null;
   const mine = !!league.user && (v.home.teamId === league.user.teamId || v.away.teamId === league.user.teamId);
   const article = league.news?.find((n) => n.id === `g-${id}`);
@@ -227,7 +231,7 @@ export function BoxScore({
             </button>
           </div>
         )}
-        {tab === 'pbp' && v.plays && mode === 'pitch' && <PitchRelay league={league} id={id} away={v.away.short} home={v.home.short} ours={ours} />}
+        {tab === 'pbp' && v.plays && mode === 'pitch' && <PitchRelay league={league} id={id} away={v.away.short} home={v.home.short} ours={ours} onAt={shown === null ? undefined : (play, done) => setShown(done ? v.plays!.length : play)} />}
         {__i18n_display(tab === 'pbp' && v.plays && mode === 'pa' && (
           <>
             <div class="relay-bar">
@@ -274,7 +278,7 @@ export function BoxScore({
 }
 
 /** 1.7.0: the relay a pitch at a time, on a board like the old FM's: the bases as go stones, the count as lamps. */
-function PitchRelay({ league, id, away, home, ours }: { league: LeagueState; id: string; away: string; home: string; ours: boolean }) {
+function PitchRelay({ league, id, away, home, ours, onAt }: { league: LeagueState; id: string; away: string; home: string; ours: boolean; onAt?: (play: number, done: boolean) => void }) {
   const frames = useMemo(() => pitchFeed(league, id) ?? [], [league, id]);
   const [at, setAt] = useState(0);
   const [playing, setPlaying] = useState(true);
@@ -289,6 +293,10 @@ function PitchRelay({ league, id, away, home, ours }: { league: LeagueState; id:
     const t = setTimeout(() => setAt(at + 1), f.kind === 'result' ? speed * 2.2 : f.kind === 'up' || f.kind === 'change' ? speed * 1.3 : speed);
     return () => clearTimeout(t);
   }, [at, playing, speed, frames]);
+  // The score above follows the relay while it is hidden (1.7.1): the plays before this one.
+  useEffect(() => {
+    if (frames.length) onAt?.(frames[at]!.play + (frames[at]!.kind === 'result' ? 1 : 0), at >= frames.length - 1);
+  }, [at, frames]);
   if (!frames.length) return <p class="muted">{__i18n_t("ui.boxScore.text.b66f68ea")}</p>;
   const f = frames[at]!;
   const nextUp = () => {
@@ -334,6 +342,7 @@ function PitchRelay({ league, id, away, home, ours }: { league: LeagueState; id:
       </div>
       <div class="pitch-board" aria-live="polite">
         <PitchDiamond f={f} />
+        <StrikeZone pitches={frames.slice(start, at + 1).flatMap((x) => (x.loc ? [x.loc] : []))} />
         <div class="board-side">
           <p class="board-score">
             <strong>{away}</strong> {f.score[0]} : {f.score[1]} <strong>{home}</strong>
@@ -376,23 +385,80 @@ function Lamps({ label, n, of, cls }: { label: string; n: number; of: number; cl
   );
 }
 
-/** The diamond with a go stone on each occupied base. */
+/** 1.7.1: the field, metres from home plate to the board's units (home at the bottom, centre field up). Distances are
+    drawn compressed (the 0.75th power) so the infield is not lost in a 120 m outfield. */
+const HOME: [number, number] = [100, 172];
+const spotAt = (dist: number, angle: number): [number, number] => {
+  const a = (angle * Math.PI) / 180,
+    r = 146 * Math.pow(Math.max(0, dist) / 125, 0.75);
+  return [HOME[0] + r * Math.sin(a), HOME[1] - r * Math.cos(a)];
+};
+/** Fence distances: 100 m down the lines, 122 m to centre. */
+const fence = (angle: number) => 100 + 22 * Math.cos((angle * Math.PI) / 90);
+const pts = (xs: [number, number][]) => xs.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+
+/** The whole field with a go stone on each occupied base, and where the ball came down on the play. */
 function PitchDiamond({ f }: { f: PitchFrame }) {
-  const at: [number, number][] = [
-    [150, 90],
-    [100, 40],
-    [50, 90],
-  ];
+  const outfield: [number, number][] = [HOME, ...Array.from({ length: 19 }, (_, i) => spotAt(fence(-45 + i * 5), -45 + i * 5))];
+  const dirt: [number, number][] = [HOME, ...Array.from({ length: 19 }, (_, i) => spotAt(44, -45 + i * 5))];
+  const bases = [spotAt(27.4, 45), spotAt(38.8, 0), spotAt(27.4, -45)];
+  const hit = f.kind === 'result' ? f.hit : undefined;
+  const land = hit ? spotAt(Math.min(hit.dist, 140), hit.angle) : null;
+  // A fly ball or a home run arcs; a grounder or a liner runs straight.
+  const path = hit && land ? (hit.kind === 'fly' || hit.kind === 'hr' ? `M${HOME[0]},${HOME[1]} Q${((HOME[0] + land[0]) / 2).toFixed(1)},${(Math.min(HOME[1], land[1]) - hit.dist * 0.35).toFixed(1)} ${land[0].toFixed(1)},${land[1].toFixed(1)}` : `M${HOME[0]},${HOME[1]} L${land[0].toFixed(1)},${land[1].toFixed(1)}`) : null;
+  const label = __i18n_t("ui.boxScore.text.7fedac48", { value: f.bases.map((b, i) => (b ? `${i + 1}` : '')).filter(Boolean).join(', ') || __i18n_t("ui.boxScore.text.d58fa73a") });
   return (
-    <svg viewBox="0 0 200 150" class="board-diamond" role="img" aria-label={__i18n_t("ui.boxScore.text.7fedac48", { value: f.bases.map((b, i) => (b ? `${i + 1}` : '')).filter(Boolean).join(', ') || __i18n_t("ui.boxScore.text.d58fa73a") })}>
-      <polygon points="100,140 150,90 100,40 50,90" class="field" />
-      <rect x="95" y="135" width="10" height="10" class="home" transform="rotate(45 100 140)" />
-      {at.map(([x, y], i) => (
+    <svg viewBox="0 0 200 182" class="board-diamond" role="img" aria-label={hit ? `${label} · ${__i18n_t("ui.boxScore.text.6d7d5b05", { text: f.text })}` : label}>
+      <polygon points={pts(outfield)} class="grass" />
+      <polygon points={pts(dirt)} class="dirt" />
+      <polyline points={pts([spotAt(fence(-45), -45), HOME, spotAt(fence(45), 45)])} class="line" />
+      <polygon points={pts([HOME, ...bases.slice(0, 1), bases[1]!, bases[2]!])} class="infield" />
+      <rect x={HOME[0] - 3.5} y={HOME[1] - 3.5} width="7" height="7" class="home" transform={`rotate(45 ${HOME[0]} ${HOME[1]})`} />
+      {bases.map(([x, y], i) => (
         <g key={i}>
-          <rect x={x - 6} y={y - 6} width="12" height="12" class="bag" transform={`rotate(45 ${x} ${y})`} />
-          {f.bases[i] && <circle cx={x} cy={y} r="9" class="stone" />}
+          <rect x={x - 3.5} y={y - 3.5} width="7" height="7" class="bag" transform={`rotate(45 ${x} ${y})`} />
+          {f.bases[i] && <circle cx={x} cy={y} r="6" class="stone" />}
         </g>
       ))}
+      {path && land && (
+        <g class={`hit ${hit!.out ? 'out' : 'safe'} ${hit!.kind}`}>
+          <path d={path} class="trail" />
+          <circle cx={land[0]} cy={land[1]} r={hit!.kind === 'hr' ? 5 : 4} class="spot" />
+        </g>
+      )}
     </svg>
+  );
+}
+
+/** 1.7.1: the strike zone from the catcher's view, with this plate appearance's pitches numbered in order. */
+function StrikeZone({ pitches }: { pitches: PitchLoc[] }) {
+  // The zone is −1…1 each way: 60 wide and 72 tall on the board, with room around it for balls.
+  const X = (x: number) => 60 + x * 30;
+  const Y = (y: number) => 75 - y * 36;
+  const CALL: Record<PitchLoc['call'], string> = { ball: __i18n_t("ui.boxScore.text.c72996aa"), strike: __i18n_t("ui.boxScore.text.4a03be0a"), swing: __i18n_t("ui.boxScore.text.6145417a"), foul: __i18n_t("ui.boxScore.text.1bd463ff"), play: __i18n_t("ui.boxScore.text.74b03362"), hbp: __i18n_t("ui.boxScore.text.58ef970a") };
+  return (
+    <figure class="zone-wrap">
+      <svg viewBox="0 0 120 150" class="strike-zone" role="img" aria-label={__i18n_t("ui.boxScore.text.442c081e", { value: pitches.map((p, i) => `${i + 1} ${CALL[p.call]}`).join(', ') || __i18n_t("ui.boxScore.text.d58fa73a") })}>
+        <rect x={X(-1)} y={Y(1)} width="60" height="72" class="zone" />
+        {[-1 / 3, 1 / 3].map((t) => (
+          <g key={t}>
+            <line x1={X(t)} y1={Y(1)} x2={X(t)} y2={Y(-1)} class="grid" />
+            <line x1={X(-1)} y1={Y(t)} x2={X(1)} y2={Y(t)} class="grid" />
+          </g>
+        ))}
+        <polygon points={pts([[X(-0.85), 142], [X(0.85), 142], [X(0.85), 146], [60, 149], [X(-0.85), 146]])} class="plate" />
+        {pitches.map((p, i) => (
+          <g key={i} class={`pitch ${p.call}${i === pitches.length - 1 ? ' last' : ''}`}>
+            <circle cx={X(Math.max(-1.9, Math.min(1.9, p.x)))} cy={Y(Math.max(-1.85, Math.min(1.85, p.y)))} r="7.5" />
+            <text x={X(Math.max(-1.9, Math.min(1.9, p.x)))} y={Y(Math.max(-1.85, Math.min(1.85, p.y))) + 3.4}>
+              {i + 1}
+            </text>
+          </g>
+        ))}
+      </svg>
+      <figcaption class="zone-key small">
+        <span class="key ball">{__i18n_t("ui.boxScore.text.c72996aa")}</span> <span class="key strike">{__i18n_t("ui.boxScore.text.4a03be0a")}</span> <span class="key swing">{__i18n_t("ui.boxScore.text.6145417a")}</span> <span class="key foul">{__i18n_t("ui.boxScore.text.1bd463ff")}</span> <span class="key play">{__i18n_t("ui.boxScore.text.74b03362")}</span>
+      </figcaption>
+    </figure>
   );
 }

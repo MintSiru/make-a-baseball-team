@@ -28,6 +28,83 @@ export interface PitchFrame {
   text: string;
   /** The first frame of a plate appearance (no pitch yet) or a pitching change. */
   kind: 'up' | 'pitch' | 'result' | 'change';
+  /** 1.7.1: where a pitch crossed the plate (the strike zone is −1…1 each way, up and the first-base side positive). */
+  loc?: PitchLoc;
+  /** 1.7.1: where a ball in play came down (metres from home plate, degrees off the centre-field line, right positive). */
+  hit?: HitSpot;
+}
+
+export type PitchCall = 'ball' | 'strike' | 'swing' | 'foul' | 'play' | 'hbp';
+export interface PitchLoc {
+  x: number;
+  y: number;
+  call: PitchCall;
+}
+export interface HitSpot {
+  dist: number;
+  angle: number;
+  kind: 'ground' | 'line' | 'fly' | 'hr';
+  out: boolean;
+}
+
+/** Where a pitch went, from its call: balls outside the zone, called strikes on it (often the corners), chases low. */
+function locOf(call: string, r: () => number): PitchLoc {
+  const u = (a: number, b: number) => a + r() * (b - a);
+  const outside = (): [number, number] => {
+    for (;;) {
+      const x = u(-2, 2),
+        y = u(-1.9, 1.7);
+      if (Math.abs(x) > 1.08 || Math.abs(y) > 1.08) return [x, y];
+    }
+  };
+  switch (call) {
+    case 'ball':
+    case 'ball4': {
+      const [x, y] = outside();
+      return { x, y, call: 'ball' };
+    }
+    case 'called':
+    case 'lookingK': {
+      // Called strikes live on the edges more than the middle.
+      const edge = () => (r() < 0.6 ? (r() < 0.5 ? -1 : 1) * u(0.55, 0.97) : u(-0.97, 0.97));
+      return { x: edge(), y: edge(), call: 'strike' };
+    }
+    case 'swing':
+    case 'swingK':
+      // Half the swings and misses chase one low or away.
+      return r() < 0.5 ? { x: u(-1.4, 1.4), y: u(-1.7, -1.1), call: 'swing' } : { x: u(-0.95, 0.95), y: u(-0.95, 0.95), call: 'swing' };
+    case 'foul':
+      return { x: u(-1.15, 1.15), y: u(-1.15, 1.15), call: 'foul' };
+    case 'hbp':
+      return { x: (r() < 0.5 ? -1 : 1) * u(1.8, 2.15), y: u(-0.4, 1.3), call: 'hbp' };
+    default:
+      return { x: u(-1.05, 1.05), y: u(-1.05, 1.05), call: 'play' };
+  }
+}
+
+// prettier-ignore
+/** Where the relay's words put the ball: the direction or the fielder, longest phrase first (canonical Korean, spaces
+    taken out): [metres from home, degrees off the centre-field line, how far either way it may be]. */
+const SPOTS: Record<string, [number, number, number?]> = {
+  좌중월: [118, -22], 우중월: [118, 22], 좌월: [108, -36], 우월: [108, 36], 중월: [126, 0],
+  좌중간: [96, -22], 우중간: [96, 22], 좌익선상: [84, -43], 우익선상: [84, 43], 펜스직격: [104, 0, 30],
+  좌전: [58, -28], 중전: [64, 0], 우전: [58, 28], 내야안타: [26, 0, 35], 유격수옆: [46, -9], 투수맞고: [22, 6],
+  포수: [9, -20], 유격수: [41, -15], '2루수': [41, 15], '3루수': [30, -34], '1루수': [30, 34],
+  좌익수: [80, -28], 중견수: [90, 0], 우익수: [80, 28], 투수: [17, 0], 희생번트: [12, 12],
+};
+
+/** The landing spot of a ball in play (null for a strikeout, a walk or a hit batter). */
+export function hitSpot(res: string, text: string, r: () => number): HitSpot | null {
+  if (res === 'K' || res === 'BB' || res === 'HBP') return null;
+  const out = res === 'OUT' || res === 'DP' || res === 'SF' || res === 'SH';
+  const kind: HitSpot['kind'] = res === 'HR' ? 'hr' : /땅볼|병살|번트|내야|굴절|빠지는|실책/.test(text) ? 'ground' : /뜬공|플라이/.test(text) ? 'fly' : 'line';
+  const jitter = (n: number) => (r() - 0.5) * 2 * n;
+  const flat = text.replace(/\s/g, '');
+  const spot = Object.keys(SPOTS).find((w) => flat.includes(w));
+  const [dist, angle, wide = 5] = spot ? SPOTS[spot]! : [60, 0];
+  // A foul pop comes down beyond the line on his side.
+  const a = flat.includes('파울') ? (angle <= 0 ? -1 : 1) * (52 + r() * 10) : angle + jitter(wide);
+  return { dist: Math.max(5, dist + jitter(kind === 'hr' ? 6 : 5)), angle: a, kind, out };
 }
 
 type Call = 'ball' | 'called' | 'swing' | 'foul';
@@ -137,24 +214,27 @@ export function pitchFeed(s: LeagueState, id: string): PitchFrame[] | null {
     const looking = ev.res === 'K' && text.includes(__i18n_k("league.pitchfeed.text.25c6a4e8"));
     const { calls, last } = countPath(ev, looking, r);
     const who = { batter: name(ev.b), pitcher: name(ev.p) };
+    // Where the pitches went and the ball landed: a stream of their own (the words above stay as they were).
+    const rl = rng(`${id}|loc|${n}`);
     let b = 0,
       st = 0;
     frames.push({ ...base, ...who, balls: 0, strikes: 0, outs, bases: [...bases], score: [...score], text: __i18n_k("league.pitchfeed.text.8f578dfd", { name: who.batter }), kind: 'up' });
     for (const c of calls) {
       if (c === 'ball') b++;
       else if (c !== 'foul' || st < 2) st = Math.min(2, st + 1);
-      frames.push({ ...base, ...who, balls: b, strikes: st, outs, bases: [...bases], score: [...score], text: __i18n_k("league.pitchfeed.text.d9ea4c15", { pitch: pitchOf(s, ev.p, r), call: words[c] }), kind: 'pitch' });
+      frames.push({ ...base, ...who, balls: b, strikes: st, outs, bases: [...bases], score: [...score], text: __i18n_k("league.pitchfeed.text.d9ea4c15", { pitch: pitchOf(s, ev.p, r), call: words[c] }), kind: 'pitch', loc: locOf(c, rl) });
     }
     // The last pitch: the count it ends on, then the play as the relay tells it, and the bases after.
     const fb = last === 'ball4' ? 4 : b,
       fs = last === 'swingK' || last === 'lookingK' ? 3 : st;
     const pitch = pitchOf(s, ev.p, r);
     const lastText = last === 'play' ? __i18n_k("league.pitchfeed.text.d6233f39", { pitch }) : __i18n_k("league.pitchfeed.text.d9ea4c15", { pitch, call: words[last as keyof typeof words] });
-    frames.push({ ...base, ...who, balls: Math.min(fb, 4), strikes: Math.min(fs, 3), outs, bases: [...bases], score: [...score], text: lastText, kind: 'pitch' });
+    frames.push({ ...base, ...who, balls: Math.min(fb, 4), strikes: Math.min(fs, 3), outs, bases: [...bases], score: [...score], text: lastText, kind: 'pitch', loc: locOf(last, rl) });
     outs = ev.outs;
     bases = [...ev.bases];
     score = [...ev.score];
-    frames.push({ ...base, ...who, balls: 0, strikes: 0, outs, bases: [...bases], score: [...score], text, kind: 'result' });
+    const spot = hitSpot(ev.res, text, rl);
+    frames.push({ ...base, ...who, balls: 0, strikes: 0, outs, bases: [...bases], score: [...score], text, kind: 'result', ...(spot ? { hit: spot } : {}) });
   });
   return frames;
 }

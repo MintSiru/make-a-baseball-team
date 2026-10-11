@@ -66400,5 +66400,123 @@
     "line": 35,
     "params": {},
     "locations": []
+  },
+  "ui.boxScore.text.6d7d5b05": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 402,
+    "params": {
+      "text": {
+        "expression": "f.text"
+      }
+    },
+    "locations": []
+  },
+  "ui.boxScore.text.c72996aa": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 429,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.4a03be0a": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 429,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.6145417a": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 429,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.1bd463ff": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 429,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.74b03362": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 429,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.58ef970a": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 429,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.442c081e": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 432,
+    "params": {
+      "value": {
+        "expression": "pitches.map((p, i) => `${i + 1} ${CALL[p.call]}`).join(', ') || __i18n_t(\"ui.boxScore.text.d58fa73a\")"
+      }
+    },
+    "locations": []
+  },
+  "league.stops.text.f08a5ece": {
+    "source": "src/league/stops.ts",
+    "line": 20,
+    "params": {},
+    "locations": []
+  },
+  "ui.app.text.06ff4ff1": {
+    "source": "src/ui/App.tsx",
+    "line": 523,
+    "params": {
+      "round": {
+        "expression": "ROUND_NAME[big.round]"
+      },
+      "game": {
+        "expression": "big.game"
+      }
+    },
+    "locations": []
+  },
+  "ui.app.text.ada6554e": {
+    "source": "src/ui/App.tsx",
+    "line": 523,
+    "params": {
+      "opp": {
+        "expression": "league.teams.find((t) => t.id === big.opp)?.short ?? big.opp"
+      },
+      "where": {
+        "expression": "big.home ? L('홈') : L('원정')"
+      }
+    },
+    "locations": []
+  },
+  "ui.app.text.13a46f96": {
+    "source": "src/ui/App.tsx",
+    "line": 523,
+    "params": {},
+    "locations": []
+  },
+  "ui.app.text.ef6b033f": {
+    "source": "src/ui/App.tsx",
+    "line": 523,
+    "params": {},
+    "locations": []
+  },
+  "ui.app.text.1fe38266": {
+    "source": "src/ui/App.tsx",
+    "line": 525,
+    "params": {},
+    "locations": []
+  },
+  "ui.app.text.1a3c3146": {
+    "source": "src/ui/App.tsx",
+    "line": 526,
+    "params": {},
+    "locations": []
+  },
+  "ui.app.text.7dae039f": {
+    "source": "src/ui/App.tsx",
+    "line": 527,
+    "params": {},
+    "locations": []
   }
 }

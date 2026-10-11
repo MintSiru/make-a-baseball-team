@@ -18,6 +18,7 @@ import { addNews, gameNews } from './news';
 import { eunneun, iga, wagwa } from './josa';
 import type { PlayEvent } from './engine/types';
 import { leagueTables, twoLeagues } from './twelve';
+import { stopsOf } from './stops';
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 
@@ -176,21 +177,47 @@ export function postseasonDay(s: LeagueState): boolean {
   return !b.done;
 }
 
-/** To the end of the round being played. */
-export function postseasonRound(s: LeagueState) {
+/** 1.7.1: our series' game on the next postseason day, or null (not ours, or we are out). */
+export function ourNextGame(s: LeagueState): { round: LiveSeries['round']; game: number; opp: TeamId; home: boolean } | null {
+  const u = s.user;
+  const b = s.bracket;
+  if (!u || !b || b.done) return null;
+  const playing = b.live.filter((x) => !over(x));
+  if (!playing.length) return null;
+  const date = playing.reduce((m, x) => (x.date < m ? x.date : m), playing[0]!.date);
+  const x = playing.find((y) => y.date === date && (y.high === u.teamId || y.low === u.teamId));
+  if (!x) return null;
+  const highHome = x.homes[Math.min(x.i, x.homes.length - 1)]!;
+  return { round: x.round, game: x.i + 1, opp: x.high === u.teamId ? x.low : x.high, home: highHome === (x.high === u.teamId) };
+}
+
+/** 1.7.1: our latest game's box score (the one just played, to watch it). */
+export function lastOurGame(s: LeagueState): string | null {
+  const me = s.user?.teamId;
+  if (!me) return null;
+  let best: { id: string; date: string } | null = null;
+  for (const [id, b] of Object.entries(s.boxes ?? {})) if ((b.home === me || b.away === me) && (!best || b.date >= best.date)) best = { id, date: b.date };
+  return best?.id ?? null;
+}
+
+/** 1.7.1: a run of postseason days stops before our game (the 'bigGame' stop), so it can be watched live or skipped. */
+const stopsBefore = (s: LeagueState, stops: boolean) => stops && stopsOf(s).includes('bigGame') && !!ourNextGame(s);
+
+/** To the end of the round being played (with `stops`, only up to our next game). */
+export function postseasonRound(s: LeagueState, stops = false) {
   const b = s.bracket;
   if (!b) return;
   const stage = b.stage;
-  while (!b.done && b.stage === stage && postseasonDay(s));
+  while (!b.done && b.stage === stage && !stopsBefore(s, stops) && postseasonDay(s));
 }
 
-/** The whole postseason (or what is left of it). */
-export function playPostseason(s: LeagueState) {
+/** The whole postseason, or what is left of it (with `stops`, only up to our next game). */
+export function playPostseason(s: LeagueState, stops = false) {
   startPostseason(s);
-  while (postseasonDay(s));
+  while (!stopsBefore(s, stops) && postseasonDay(s));
 }
 
-const ROUND_NAME: Record<SeriesResult['round'], string> = { wildcard: __i18n_k("league.postseason.rOUND_NAME.wildcard.82702aa7"), semipo: __i18n_k("league.postseason.rOUND_NAME.semipo.42e1bde5"), po: __i18n_k("league.postseason.rOUND_NAME.po.4651993c"), ks: __i18n_k("league.postseason.rOUND_NAME.ks.3c8e7785") };
+export const ROUND_NAME: Record<SeriesResult['round'], string> = { wildcard: __i18n_k("league.postseason.rOUND_NAME.wildcard.82702aa7"), semipo: __i18n_k("league.postseason.rOUND_NAME.semipo.42e1bde5"), po: __i18n_k("league.postseason.rOUND_NAME.po.4651993c"), ks: __i18n_k("league.postseason.rOUND_NAME.ks.3c8e7785") };
 
 /** Our club's series, won or lost: an article and an alert. */
 function seriesNews(s: LeagueState, ended: LiveSeries[]) {

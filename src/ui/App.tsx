@@ -39,7 +39,8 @@ import { Games } from './Games';
 import { DraftBoard } from './DraftBoard';
 import { History } from './History';
 import { Leaders } from './Leaders';
-import { postseasonStatus } from '../league/postseason';
+import { lastOurGame, ourNextGame, postseasonStatus, ROUND_NAME } from '../league/postseason';
+import { stopsOf } from '../league/stops';
 import { applyCombine, attends, checkWorkout, combineHeld, combineLines, workoutsOf } from '../league/combine';
 import { traitReport } from '../league/reports';
 import { COMBINE } from '../league/tuning';
@@ -123,6 +124,8 @@ export function App() {
   // 1.5.0: where the briefing sent the player in the market (n counts the visits so each opens fresh).
   const [marketIntent, setMarketIntent] = useState<{ view: 'search' | 'trade' | 'release' | 'foreign'; spot?: string; n: number }>({ view: 'trade', n: 0 });
   const [boxId, setBoxId] = useState<string | null>(null);
+  // 1.7.1: the box score was opened to watch our game live.
+  const [boxLive, setBoxLive] = useState(false);
   const [teamId, setTeamId] = useState<string>('kia');
   const [playerId, setPlayerId] = useState<PlayerId | null>(null);
   const [prospectId, setProspectId] = useState<PlayerId | null>(null);
@@ -502,18 +505,38 @@ export function App() {
   };
 
   const postLive = league.phase === 'postseason' && !!league.bracket && !league.bracket.done;
-  const controls = league.pending ? null : postLive ? (
+  // 1.7.1: our postseason game is next — watch it live, see the result, or go on without stopping.
+  const big = postLive && !league.pending && stopsOf(league).includes('bigGame') ? ourNextGame(league) : null;
+  const watchLive = async () => {
+    await act({ kind: 'postseasonDay' }, __i18n_k("ui.app.app.controls.e39c3d6f"), false);
+    const s = latest.current;
+    const id = s ? lastOurGame(s) : null;
+    if (id && s?.pbp?.[id]) {
+      setBoxLive(true);
+      setBoxId(id);
+    }
+  };
+  const controls = league.pending ? null : big ? (
+    <>
+      <p class="big-game">
+        <strong>{__i18n_t("ui.app.text.06ff4ff1", { round: ROUND_NAME[big.round], game: big.game })}</strong> {__i18n_t("ui.app.text.ada6554e", { opp: league.teams.find((t) => t.id === big.opp)?.short ?? big.opp, where: big.home ? __i18n_t("ui.app.text.13a46f96") : __i18n_t("ui.app.text.ef6b033f") })}
+      </p>
+      <button type="button" class="primary" onClick={watchLive}>{__i18n_t("ui.app.text.1fe38266")}</button>
+      <button type="button" onClick={() => act({ kind: 'postseasonDay' }, __i18n_k("ui.app.app.controls.e39c3d6f"), false)}>{__i18n_t("ui.app.text.1a3c3146")}</button>
+      <button type="button" onClick={() => act({ kind: 'postseason' }, __i18n_k("ui.app.app.controls.9edd7286"), true)}>{__i18n_t("ui.app.text.7dae039f")}</button>
+    </>
+  ) : postLive ? (
     <>
       <button type="button" onClick={() => act({ kind: 'postseasonDay' }, __i18n_k("ui.app.app.controls.e39c3d6f"), false)}>{__i18n_t("ui.app.app.controls.3b6ea03a")}</button>
-      <button type="button" onClick={() => act({ kind: 'postseasonRound' }, __i18n_k("ui.app.app.controls.9edd7286"), false)}>{__i18n_t("ui.app.app.controls.2878bba4")}</button>
-      <button type="button" onClick={() => act({ kind: 'postseason' }, __i18n_k("ui.app.app.controls.9edd7286"), true)}>{__i18n_t("ui.app.app.controls.8d2f8637")}</button>
+      <button type="button" onClick={() => act({ kind: 'postseasonRound', stops: true }, __i18n_k("ui.app.app.controls.9edd7286"), false)}>{__i18n_t("ui.app.app.controls.2878bba4")}</button>
+      <button type="button" onClick={() => act({ kind: 'postseason', stops: true }, __i18n_k("ui.app.app.controls.9edd7286"), true)}>{__i18n_t("ui.app.app.controls.8d2f8637")}</button>
     </>
   ) : league.phase === 'postseason' ? (
     <button type="button" onClick={() => act({ kind: 'nextSeason' }, __i18n_k("ui.app.app.controls.caf40e73"), true)}>{__i18n_t("ui.app.app.controls.0f1609e9")}</button>
   ) : regularOver(league) ? (
     <>
       <button type="button" onClick={() => act({ kind: 'postseasonStart' }, __i18n_k("ui.app.app.controls.55dbee7a"), false)}>{__i18n_t("ui.app.app.controls.0af8f4bd")}</button>
-      <button type="button" onClick={() => act({ kind: 'postseason' }, __i18n_k("ui.app.app.controls.9edd7286"), true)}>{__i18n_t("ui.app.app.controls.8d2f8637")}</button>
+      <button type="button" onClick={() => act({ kind: 'postseason', stops: true }, __i18n_k("ui.app.app.controls.9edd7286"), true)}>{__i18n_t("ui.app.app.controls.8d2f8637")}</button>
     </>
   ) : (
     <>
@@ -674,9 +697,15 @@ export function App() {
         <BoxScore
           league={league}
           id={boxId}
-          onClose={() => setBoxId(null)}
+          key={`${boxId}-${boxLive}`}
+          live={boxLive}
+          onClose={() => {
+            setBoxId(null);
+            setBoxLive(false);
+          }}
           onPlayer={(pid) => {
             setBoxId(null);
+            setBoxLive(false);
             setPlayerId(pid);
           }}
           onAct={(a) => act(a, __i18n_k("ui.app.app.8dd94575"), false)}
