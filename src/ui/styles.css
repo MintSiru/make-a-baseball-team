@@ -3088,3 +3088,20 @@ fieldset.stops {
 .chart-legend .chip { font-size: 0.8rem; padding: 0.1rem 0.55rem; border: 1px solid var(--rule); border-radius: 999px; background: transparent; color: var(--ink-2); }
 .chart-legend .chip.main { border-color: var(--accent); color: var(--accent); }
 .chart-legend .chip[aria-pressed='true'] { font-weight: 600; }
+
+/* 1.7.0: the relay a pitch at a time (BoxScore.tsx PitchRelay). */
+.pitch-board { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin: 0.6rem 0; padding: 0.6rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper-2, transparent); }
+.board-diamond { width: 200px; max-width: 48vw; height: auto; }
+.board-diamond .field { fill: #3f7d3a; stroke: #2c5a29; }
+.board-diamond .bag, .board-diamond .home { fill: #f4f1e8; stroke: #8c8577; }
+.board-diamond .stone { fill: #111; stroke: #f4f1e8; stroke-width: 2; }
+.board-side { display: grid; gap: 0.2rem; min-width: 10rem; }
+.board-score { font-size: 1.15rem; margin: 0; }
+.board-half { margin: 0; color: var(--ink-2); }
+.lamps { display: flex; align-items: center; gap: 0.3rem; margin: 0; }
+.lamp-label { width: 1.2rem; font-weight: 700; }
+.lamp { width: 0.85rem; height: 0.85rem; border-radius: 50%; border: 1px solid var(--rule); background: transparent; }
+.lamps.ball .lamp.on { background: #2e9e4f; border-color: #2e9e4f; }
+.lamps.strike .lamp.on { background: #e0b021; border-color: #e0b021; }
+.lamps.out .lamp.on { background: #d0412f; border-color: #d0412f; }
+.pitch-log { max-height: 14rem; overflow-y: auto; }

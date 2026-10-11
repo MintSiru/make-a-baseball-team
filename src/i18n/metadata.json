@@ -64322,5 +64322,233 @@
     "line": 395,
     "params": {},
     "locations": []
+  },
+  "league.pitchfeed.text.977ba357": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 90,
+    "params": {
+      "type": {
+        "expression": "PITCH_LABELS[rep.type]"
+      },
+      "velo": {
+        "expression": "Math.round(avg - drop + (r() - 0.5) * 6)"
+      }
+    },
+    "locations": []
+  },
+  "league.pitchfeed.text.0a35a0ff": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 93,
+    "params": {
+      "velo": {
+        "expression": "Math.round(avg + (r() - 0.3) * 4)"
+      }
+    },
+    "locations": []
+  },
+  "league.pitchfeed.text.b17dbbc7": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 93,
+    "params": {},
+    "locations": []
+  },
+  "league.pitchfeed.text.c72996aa": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 97,
+    "params": {},
+    "locations": []
+  },
+  "league.pitchfeed.text.4a03be0a": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 98,
+    "params": {},
+    "locations": []
+  },
+  "league.pitchfeed.text.6145417a": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 99,
+    "params": {},
+    "locations": []
+  },
+  "league.pitchfeed.text.1bd463ff": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 100,
+    "params": {},
+    "locations": []
+  },
+  "league.pitchfeed.text.21e0537f": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 101,
+    "params": {},
+    "locations": []
+  },
+  "league.pitchfeed.text.d3bcca1e": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 102,
+    "params": {},
+    "locations": []
+  },
+  "league.pitchfeed.text.53bee11b": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 103,
+    "params": {},
+    "locations": []
+  },
+  "league.pitchfeed.text.2a8b27c9": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 104,
+    "params": {},
+    "locations": []
+  },
+  "league.pitchfeed.text.25c6a4e8": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 132,
+    "params": {},
+    "locations": []
+  },
+  "league.pitchfeed.text.8f578dfd": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 137,
+    "params": {
+      "name": {
+        "expression": "who.batter"
+      }
+    },
+    "locations": []
+  },
+  "league.pitchfeed.text.d9ea4c15": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 141,
+    "params": {
+      "pitch": {
+        "expression": "pitchOf(s, ev.p, r)"
+      },
+      "call": {
+        "expression": "words[c]"
+      }
+    },
+    "locations": []
+  },
+  "league.pitchfeed.text.d6233f39": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 147,
+    "params": {
+      "pitch": {
+        "expression": "pitch"
+      }
+    },
+    "locations": []
+  },
+  "ui.boxScore.text.093867f4": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 221,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.4cf59d5c": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 223,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.534c9a1c": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 226,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.e8a20d8c": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 242,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.b66f68ea": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 292,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.c42a26f8": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 312,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.df123839": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 312,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.ad3f5845": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 315,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.5c5cf885": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 318,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.fd376da5": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 321,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.8ee63bce": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 324,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.b8949c89": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 329,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.2179da2c": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 330,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.de1ae880": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 331,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.ef406667": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 346,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.5db174c6": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 350,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.7fedac48": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 387,
+    "params": {
+      "value": {
+        "expression": "f.bases.map((b, i) => (b ? `${i + 1}` : '')).filter(Boolean).join(', ') || L('없음')"
+      }
+    },
+    "locations": []
+  },
+  "ui.boxScore.text.d58fa73a": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 387,
+    "params": {},
+    "locations": []
   }
 }

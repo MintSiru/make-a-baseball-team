@@ -16,6 +16,7 @@ import { futureBefore, winterReport } from '../src/league/scouting';
 import { draftView, draftWatchDay, draftYears } from '../src/league/draftlog';
 import { developPlayer, GRADE_KEYS } from '../src/league/offseason';
 import { rng } from '../src/draftroom';
+import { pitchFeed } from '../src/league/pitchfeed';
 import { ageIn } from '../src/league/players';
 
 export const loadSave = (v = '1.4.0') => parseSave(gunzipSync(readFileSync(new URL(`./fixtures/save-${v}.json.gz`, import.meta.url))).toString('utf8')).snapshot!.state as LeagueState;
@@ -137,5 +138,30 @@ describe('grades season by season', () => {
     expect(p.gradeLog!.length).toBe(2);
     expect(p.gradeLog![1]![0]).toBe(s.year + 1);
     expect(p.gradeLog![1]![1]).toBe(p.scouting.current);
+  });
+});
+
+describe('the relay a pitch at a time', () => {
+  it('every plate appearance ends on the pitch the engine played, the same way each time', () => {
+    const s = loadSave();
+    const id = Object.keys(s.pbp ?? {})[0]!;
+    const log = s.pbp![id]!;
+    const frames = pitchFeed(s, id)!;
+    expect(pitchFeed(s, id)).toEqual(frames);
+    const pas = log.filter((e) => e.k === 'pa');
+    expect(frames.filter((f) => f.kind === 'result')).toHaveLength(pas.length);
+    for (const [n, e] of log.entries()) {
+      if (e.k !== 'pa') continue;
+      const mine = frames.filter((f) => f.play === n);
+      const lastPitch = mine.filter((f) => f.kind === 'pitch').at(-1)!;
+      if (e.res === 'K') expect(lastPitch.strikes).toBe(3);
+      if (e.res === 'BB') expect(lastPitch.balls).toBe(4);
+      for (const f of mine.filter((f) => f.kind === 'pitch')) expect(f.balls <= 4 && f.strikes <= 3).toBe(true);
+      const result = mine.at(-1)!;
+      expect(result.kind).toBe('result');
+      expect(result.outs).toBe(e.outs);
+      expect(result.bases).toEqual(e.bases);
+      expect(result.score).toEqual(e.score);
+    }
   });
 });
