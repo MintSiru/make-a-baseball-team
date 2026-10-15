@@ -6956,5 +6956,14 @@
   "ui.twelve.text.763fd2e7": "NPB-style Climax Series",
   "ui.twelve.text.cdf3d196": "Each league's second and third places play the First Stage (best of three, all at the second's park); the winner meets the league winner in the Final Stage (best of six, first to four, the league winner starting a win up and at home throughout); the two league champions play the Korean Series (best of seven).",
   "ui.twelve.text.6d6d08ae": "Each league's winner plays the other league's runner-up in a best-of-seven playoff (if that league's third place has a better record than its runner-up, those two play a best-of-three first), and the two winners meet in the Korean Series.",
-  "ui.twelve.text.377304ea": "A change takes effect from the next postseason."
+  "ui.twelve.text.377304ea": "A change takes effect from the next postseason.",
+  "league.scenarios.text.8fe5ca36": "Injury Ward",
+  "league.scenarios.text.722fddfa": "A new fitness trainer's high-intensity programme: twice the injuries, for our club alone",
+  "league.scenarios.text.7f32c5d7": "Oh no! The new fitness trainer demands a high-intensity training schedule from the players. The owner brought him in personally, so he cannot be let go.",
+  "league.scenarios.text.4b46baf3": "Fatigue builds up. Our club alone is twice as likely to get hurt, rehab takes {rehab}% longer, tired players take the field with their main tools {fatigue} lower, and starters tire {pitches} pitches sooner.",
+  "league.scenarios.text.5a75c50b": "{n, plural, one{# player} other{# players}} injured now (injury chance ×{x}, rehab ×{rehab})",
+  "league.scenarios.text.933c6931": "A championship won in spite of the injury ward.",
+  "league.expansion.text.d57db4c0": "Oh no! The new fitness trainer demands high-intensity training",
+  "league.expansion.text.8d318296": "The trainer the owner brought in himself has drawn up a high-intensity schedule for every player. Fatigue builds up.",
+  "league.expansion.text.f57bd081": "Our club only: injury chance ×{x}, rehab +{rehab}% · main tools -{fatigue} · starters' pitch limit -{pitches}"
 }

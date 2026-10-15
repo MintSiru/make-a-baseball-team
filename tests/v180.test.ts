@@ -4,7 +4,12 @@ import { describe, expect, it } from 'vitest';
 import { faOutlook } from '../src/league/faclock';
 import { isForeign } from '../src/league/players';
 import { rosterView } from '../src/league/views';
-import { endRegular, loadSave } from './helpers';
+import { endRegular, loadSave, playDays } from './helpers';
+import { matchInputs } from '../src/league/manager';
+import { scenarioProgress, SCENARIOS, withScenario } from '../src/league/scenarios';
+import { WARD } from '../src/league/ward';
+import { createLeague } from '../src/league/history';
+import type { ExpansionSettings } from '../src/league/state';
 import { playPostseason, roundName } from '../src/league/postseason';
 import { autoDecision } from '../src/league/expansion';
 import { askOwnerChance, askOwnerProblem } from '../src/league/ownerask';
@@ -153,4 +158,44 @@ describe('two leagues the NPB way', () => {
     expect([ks.high, ks.low].sort()).toEqual(finals.map((x) => x.winner).sort());
     expect(roundName(s, 'semipo')).toContain('클라이맥스');
   }, 240_000);
+});
+
+describe('scenario 부상병동', () => {
+  const free: ExpansionSettings = { name: '검증 고래', short: '검증', color: '#1f6fb2', cityId: 'ulsan', parentType: 'midsize', parentName: '검증그룹', stadium: 'existing', promotion: 'afterFutures', difficulty: 'normal', scenario: null };
+
+  it('opens with the trainer and his programme', () => {
+    expect(SCENARIOS.at(-1)!.id).toBe('ward');
+    const s = apply(apply(createLeague('v180-ward'), { kind: 'toFounding' }), { kind: 'found', settings: withScenario(free, 'ward') });
+    expect(s.user!.settings.scenario).toBe('ward');
+    expect(s.alerts?.some((a) => a.id === 'ward-trainer')).toBe(true);
+  }, 120_000);
+
+  it('our club alone: hurt about twice as often, out longer, and playing tired', () => {
+    const usual = loadSave();
+    const ward = loadSave();
+    ward.user!.settings.scenario = 'ward';
+    const me = usual.user!.teamId;
+    // Tired: today's lineup a point down, the starter a few pitches shorter; the other side untouched.
+    const g = usual.schedule.slice(usual.next).find((x) => x.home === me || x.away === me)!;
+    const side = g.home === me ? 'home' : 'away';
+    const other = side === 'home' ? 'away' : 'home';
+    const a = matchInputs(usual, g.date, { teamId: g.home }, { teamId: g.away });
+    const b = matchInputs(ward, g.date, { teamId: g.home }, { teamId: g.away });
+    expect(b[side]!.lineup[0]!.contact).toBe(a[side]!.lineup[0]!.contact - WARD.fatigue);
+    expect(b[side]!.starter.pitchLimit).toBeLessThan(a[side]!.starter.pitchLimit);
+    expect(b[other]!.lineup[0]!.contact).toBe(a[other]!.lineup[0]!.contact);
+    // Hurt: every injury our players pick up over two months.
+    const since = usual.schedule[usual.next]!.date;
+    const hurt = (s: typeof usual) => {
+      playDays(s, 300);
+      const ours = Object.values(s.players).filter((p) => p.teamId === me);
+      const list = ours.flatMap((p) => (p.injuries ?? []).filter((x) => x.date >= since));
+      return { n: list.length, days: list.reduce((x, y) => x + y.days, 0) / Math.max(1, list.length) };
+    };
+    const x = hurt(usual);
+    const y = hurt(ward);
+    expect(y.n).toBeGreaterThan(x.n * 1.4);
+    expect(y.days).toBeGreaterThan(x.days);
+    expect(scenarioProgress(ward)!.lines.join(' ')).toContain('부상자');
+  }, 300_000);
 });

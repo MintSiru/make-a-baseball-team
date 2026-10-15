@@ -67189,5 +67189,92 @@
     "line": 174,
     "params": {},
     "locations": []
+  },
+  "league.scenarios.text.8fe5ca36": {
+    "source": "src/league/scenarios.ts",
+    "line": 226,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.722fddfa": {
+    "source": "src/league/scenarios.ts",
+    "line": 227,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.7f32c5d7": {
+    "source": "src/league/scenarios.ts",
+    "line": 229,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.4b46baf3": {
+    "source": "src/league/scenarios.ts",
+    "line": 230,
+    "params": {
+      "rehab": {
+        "expression": "Math.round((WARD.rehab - 1) * 100)"
+      },
+      "fatigue": {
+        "expression": "WARD.fatigue"
+      },
+      "pitches": {
+        "expression": "WARD.pitchLimit"
+      }
+    },
+    "locations": []
+  },
+  "league.scenarios.text.5a75c50b": {
+    "source": "src/league/scenarios.ts",
+    "line": 342,
+    "params": {
+      "n": {
+        "expression": "Object.entries(s.injuries).filter(([id, i]) => !i.dtd && s.players[id]?.teamId === me).length"
+      },
+      "x": {
+        "expression": "WARD.injury"
+      },
+      "rehab": {
+        "expression": "WARD.rehab"
+      }
+    },
+    "locations": []
+  },
+  "league.scenarios.text.933c6931": {
+    "source": "src/league/scenarios.ts",
+    "line": 392,
+    "params": {},
+    "locations": []
+  },
+  "league.expansion.text.d57db4c0": {
+    "source": "src/league/expansion.ts",
+    "line": 197,
+    "params": {},
+    "locations": []
+  },
+  "league.expansion.text.8d318296": {
+    "source": "src/league/expansion.ts",
+    "line": 198,
+    "params": {},
+    "locations": []
+  },
+  "league.expansion.text.f57bd081": {
+    "source": "src/league/expansion.ts",
+    "line": 198,
+    "params": {
+      "x": {
+        "expression": "WARD.injury"
+      },
+      "rehab": {
+        "expression": "Math.round((WARD.rehab - 1) * 100)"
+      },
+      "fatigue": {
+        "expression": "WARD.fatigue"
+      },
+      "pitches": {
+        "expression": "WARD.pitchLimit"
+      }
+    },
+    "locations": []
   }
 }

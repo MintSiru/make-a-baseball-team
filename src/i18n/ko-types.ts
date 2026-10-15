@@ -6957,5 +6957,14 @@ export const koSource = {
   "ui.twelve.text.763fd2e7": "NPB식 클라이맥스 시리즈",
   "ui.twelve.text.cdf3d196": "각 리그 2위와 3위가 퍼스트 스테이지(3전 2선승, 모두 2위 홈), 이긴 팀이 1위와 파이널 스테이지(6전 4선승, 1위가 1승을 안고 시작, 모두 1위 홈), 두 리그 우승팀이 한국시리즈(7전 4선승)를 치릅니다.",
   "ui.twelve.text.6d6d08ae": "각 리그 1위가 다른 리그 2위와 플레이오프(7전 4선승)를 치르고(같은 리그 3위의 승률이 그 2위보다 높으면 둘이 먼저 3전 2선승), 이긴 두 팀이 한국시리즈에서 만납니다.",
-  "ui.twelve.text.377304ea": "바꾸면 다음 포스트시즌부터 적용됩니다."
+  "ui.twelve.text.377304ea": "바꾸면 다음 포스트시즌부터 적용됩니다.",
+  "league.scenarios.text.8fe5ca36": "부상병동",
+  "league.scenarios.text.722fddfa": "새 피트니스 트레이너의 고강도 훈련 — 우리 구단만 부상 2배",
+  "league.scenarios.text.7f32c5d7": "저런! 새로 온 피트니스 트레이너가 선수들에게 고강도 훈련 스케줄을 요구합니다. 구단주가 직접 데려온 사람이라 내보낼 수도 없습니다.",
+  "league.scenarios.text.4b46baf3": "선수들의 피로가 쌓입니다. 우리 구단만 부상 확률이 2배이고 재활 기간이 {rehab}% 길어지며, 지친 몸으로 경기에 나서 주요 능력이 {fatigue} 낮고 선발투수는 투구 수 {pitches}개 일찍 지칩니다.",
+  "league.scenarios.text.5a75c50b": "지금 부상자 {n}명 (부상 확률 ×{x}, 재활 기간 ×{rehab})",
+  "league.scenarios.text.933c6931": "부상병동을 버텨 내고 이룬 우승입니다.",
+  "league.expansion.text.d57db4c0": "저런! 새 피트니스 트레이너가 고강도 훈련을 요구합니다",
+  "league.expansion.text.8d318296": "구단주가 직접 데려온 트레이너가 모든 선수에게 고강도 훈련 스케줄을 짜 왔습니다. 선수들의 피로가 쌓입니다.",
+  "league.expansion.text.f57bd081": "우리 구단만 부상 확률 {x}배, 재활 기간 {rehab}% 증가 · 주요 능력 -{fatigue} · 선발 투구 수 한도 -{pitches}"
 } as const;

@@ -13,6 +13,7 @@ import { addNews } from './news';
 import { ageIn, isForeign, isPitcher } from './players';
 import { firstTeamIds, type LeagueState } from './state';
 import { traitsOf } from './traits';
+import { inWard, WARD } from './ward';
 
 export const FREAK = {
   /** A club's chance of one, each game day of the regular season. */
@@ -115,7 +116,7 @@ export function freakDay(s: LeagueState, date: string) {
   if (s.phase !== 'regular') return;
   for (const teamId of firstTeamIds(s)) {
     const r = rng(`${s.seed}|freak|${teamId}|${date}`);
-    if (r() >= FREAK.perClubDay) continue;
+    if (r() >= FREAK.perClubDay * (inWard(s, teamId) ? WARD.injury : 1)) continue;
     const squad = (s.rosters[teamId]?.active ?? []).map((id) => s.players[id]!).filter((p) => p && !s.injuries[p.id]);
     if (!squad.length) continue;
     const p = squad[Math.floor(r() * squad.length)]!;
@@ -123,7 +124,7 @@ export function freakDay(s: LeagueState, date: string) {
     const total = options.reduce((a, f) => a + f.weight * (f.lean?.(p) ?? 1), 0);
     let x = r() * total;
     const f = options.find((o) => (x -= o.weight * (o.lean?.(p) ?? 1)) < 0) ?? options[0]!;
-    const days = f.days[0] + Math.floor(r() * (f.days[1] - f.days[0] + 1));
+    const days = Math.round((f.days[0] + Math.floor(r() * (f.days[1] - f.days[0] + 1))) * (inWard(s, teamId) && !f.dtd ? WARD.rehab : 1));
     const part = f.part();
     s.injuries[p.id] = { until: addDays(date, days + (f.dtd ? 1 : 0)), days, onList: !f.dtd, part, ...(f.dtd ? { dtd: true } : {}) };
     if (!f.dtd) {
