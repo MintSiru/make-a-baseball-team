@@ -17,6 +17,7 @@ import { ENGINE, STAFF } from './tuning';
 import { formOf } from './life';
 import { adaptPenalty } from './adapt';
 import { bigGameEdge } from './traits';
+import { inWard, WARD } from './ward';
 
 const STARTER_LIMIT = ENGINE.starterLimit;
 
@@ -493,7 +494,9 @@ export function managerLean(s: LeagueState, teamId: TeamId, base: Prefer = none)
     his composure in a postseason game (1.1.0, every club). */
 function withForm(s: LeagueState, date: string, team: TeamIn): TeamIn {
   const big = s.phase === 'postseason';
-  const today = (p: Player) => formOf(p, date) - adaptPenalty(p, s.year) + (big ? bigGameEdge(p) : 0);
+  // 1.8.0, scenario 부상병동: our players are worn out by the trainer's programme.
+  const tired = inWard(s, team.teamId) ? WARD.fatigue : 0;
+  const today = (p: Player) => formOf(p, date) - adaptPenalty(p, s.year) + (big ? bigGameEdge(p) : 0) - tired;
   for (const b of [...team.lineup, ...(team.bench ?? [])]) {
     const f = today(s.players[b.id]!);
     if (!f) continue;
@@ -543,7 +546,7 @@ export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away:
       teamId: me.x.teamId,
       lineup,
       bench,
-      starter: armIn(me.sp.p, me.sp.limit),
+      starter: armIn(me.sp.p, Math.max(55, me.sp.limit - (inWard(s, me.x.teamId) ? WARD.pitchLimit : 0))),
       bullpen: bullpenFor(s, me.x.teamId, me.ids, date, exclude, me.prefer, me.allOut),
       fieldBonus: STAFF.fielding * staffEdge(staffRating(s, me.x.teamId, 'analytics')),
       ...(me.style === 'smallBall' ? { smallBall: true } : {}),

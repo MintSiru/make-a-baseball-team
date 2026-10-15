@@ -543,6 +543,10 @@ export function PlayerPanel({
                 <dt>{__i18n_t("ui.playerPanel.playerPanel.2d4db98d")}</dt>
                 <dd>{__i18n_display(foreign ? '-' : __i18n_k("ui.playerPanel.playerPanel.58030cf8", { creditedSeasons: p.service.creditedSeasons }))}</dd>
               </div>
+              <div class="fact-wide">
+                <dt>{__i18n_t("ui.playerPanel.text.eb55a24f")}</dt>
+                <dd>{card.fa.text}</dd>
+              </div>
               <div>
                 <dt>{__i18n_t("ui.playerPanel.playerPanel.750fc29b")}</dt>
                 <dd>{__i18n_display(card.totals.seasons ? card.totals.war.toFixed(1) : '-')}</dd>

@@ -12,14 +12,16 @@ import { projectedPayroll, STADIUM_PLANS } from '../league/expansion';
 import { boom, leaguePrice } from '../league/fans';
 import { projectedReport, supportLabel } from '../league/finance';
 import { MANAGER_STYLES, STAFF_EFFECTS, STAFF_LABELS, STAFF_ROLES } from '../league/staff';
+import { defaultYears, dismissalCost, extendProblem, extensionSalary, fireProblem, staffTerms, yearsFor } from '../league/staffdeals';
 import { AlumnusTag } from './Alumni';
-import { firstTeamIds, type ClubReport, type LeagueState } from '../league/state';
+import { firstTeamIds, type ClubReport, type LeagueState, type StaffRole } from '../league/state';
 import { booksOf } from '../league/foreigncap';
 import { usd } from '../league/foreign';
 import { FANS } from '../league/tuning';
 import { checkStadiumName, STADIUM_NAME_MAX } from '../league/userclub';
 import { salaryCapFor } from '../rules/kbo2026';
 import { money } from './format';
+import { eulreul } from '../league/josa';
 import { Help } from './Help';
 import { RivalryBox, TwelveSettingField } from './Twelve';
 import { favourites } from '../league/life';
@@ -446,7 +448,10 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
                       <td class="num strong">{__i18n_display(m?.rating ?? '-')}</td>
                       <td class="num">{__i18n_display(m?.age ?? '-')}</td>
                       <td class="num">{__i18n_display(m ? money(m.salary) : '-')}</td>
-                      <td>{__i18n_display(m ? __i18n_k("ui.office.office.9c7dfa36", { until: m.until }) : '-')}</td>
+                      <td class="small">
+                        {m ? staffTerms(m, money) : '-'}
+                        {m && <StaffDeal league={league} role={role} onAct={onAct} />}
+                      </td>
                       <td class="muted small">
                         {__i18n_display(STAFF_EFFECTS[role])}
                         {__i18n_display(m?.style ? ` (${MANAGER_STYLES[m.style].note})` : '')}
@@ -523,7 +528,7 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
       {__i18n_display(section === 'rival' && (
         <>
           {__i18n_display(league.twelve ? (
-            <RivalryBox league={league} />
+            <RivalryBox league={league} onAct={onAct} />
           ) : (
             <>
               <p>{__i18n_t("ui.office.office.8a0c79d3")}</p>
@@ -616,5 +621,43 @@ function Facilities({ league, act }: { league: LeagueState; act: (a: Action) => 
       )))}
       {__i18n_display(options[0]?.blocked && <p class="muted small">{__i18n_display(options[0].blocked)}</p>)}
     </>
+  );
+}
+
+/** 1.8.0: extend a head in his last season, or dismiss him (his remaining pay is still owed; an interim takes over). */
+function StaffDeal({ league, role, onAct }: { league: LeagueState; role: StaffRole; onAct: (a: Action) => void }) {
+  const [years, setYears] = useState(defaultYears(role));
+  const canExtend = !extendProblem(league, role);
+  const canFire = !fireProblem(league, role);
+  if (!canExtend && !canFire) return null;
+  const m = league.clubs![league.user!.teamId]!.staff![role]!;
+  return (
+    <div class="staff-deal">
+      {canExtend && (
+        <>
+          <select value={String(years)} onChange={(e) => setYears(Number((e.currentTarget as HTMLSelectElement).value))} aria-label={__i18n_t("ui.office.text.df6ca733", { role: STAFF_LABELS[role] })}>
+            {yearsFor(role).map((y) => (
+              <option key={y} value={String(y)}>
+                {__i18n_t("ui.office.text.044a2535", { years: y })}
+              </option>
+            ))}
+          </select>{' '}
+          <button type="button" onClick={() => onAct({ kind: 'staffExtend', role, years })} title={__i18n_t("ui.office.text.bade81a1", { salary: money(extensionSalary(m)) })}>
+            {__i18n_t("ui.office.text.96c5cd44")}
+          </button>{' '}
+        </>
+      )}
+      {canFire && (
+        <button
+          type="button"
+          class="danger"
+          onClick={() => {
+            if (window.confirm(__i18n_t("ui.office.text.7a51c586", { name: eulreul(m.name), cost: money(dismissalCost(league, role)) }))) onAct({ kind: 'staffFire', role });
+          }}
+        >
+          {role === 'manager' ? __i18n_t("ui.office.text.9619a9ad") : __i18n_t("ui.office.text.dcac98c1")}
+        </button>
+      )}
+    </div>
   );
 }

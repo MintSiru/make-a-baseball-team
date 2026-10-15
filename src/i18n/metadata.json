@@ -66518,5 +66518,821 @@
     "line": 527,
     "params": {},
     "locations": []
+  },
+  "league.faclock.text.72556efc": {
+    "source": "src/league/faclock.ts",
+    "line": 36,
+    "params": {
+      "until": {
+        "expression": "longer"
+      }
+    },
+    "locations": []
+  },
+  "league.faclock.text.5537cf5c": {
+    "source": "src/league/faclock.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.faclock.text.d33b3ebb": {
+    "source": "src/league/faclock.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "league.faclock.text.d72e5822": {
+    "source": "src/league/faclock.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.faclock.text.99ffd4b0": {
+    "source": "src/league/faclock.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.faclock.text.af5d157c": {
+    "source": "src/league/faclock.ts",
+    "line": 53,
+    "params": {
+      "what": {
+        "expression": "what"
+      }
+    },
+    "locations": []
+  },
+  "league.faclock.text.8285a832": {
+    "source": "src/league/faclock.ts",
+    "line": 55,
+    "params": {
+      "year": {
+        "expression": "year"
+      },
+      "what": {
+        "expression": "what"
+      }
+    },
+    "locations": []
+  },
+  "league.faclock.text.dfd84a0f": {
+    "source": "src/league/faclock.ts",
+    "line": 57,
+    "params": {
+      "year": {
+        "expression": "year"
+      },
+      "what": {
+        "expression": "what"
+      }
+    },
+    "locations": []
+  },
+  "league.faclock.text.60bb069e": {
+    "source": "src/league/faclock.ts",
+    "line": 58,
+    "params": {
+      "year": {
+        "expression": "year"
+      },
+      "what": {
+        "expression": "what"
+      },
+      "left": {
+        "expression": "left"
+      }
+    },
+    "locations": []
+  },
+  "league.faclock.text.3fd8a01e": {
+    "source": "src/league/faclock.ts",
+    "line": 59,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.0e132981": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 302,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.d1bbc0ef": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 311,
+    "params": {
+      "grade": {
+        "expression": "p.scouting.current"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.8894ccc4": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 311,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.5b4e9f2f": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 311,
+    "params": {
+      "year": {
+        "expression": "fa.year!"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.07971499": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 312,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.bd44b910": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 317,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.0e9b4b49": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 319,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.eb55a24f": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 547,
+    "params": {},
+    "locations": []
+  },
+  "league.staffdeals.text.3ad8c73c": {
+    "source": "src/league/staffdeals.ts",
+    "line": 35,
+    "params": {
+      "until": {
+        "expression": "m.until"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.c9564808": {
+    "source": "src/league/staffdeals.ts",
+    "line": 38,
+    "params": {
+      "years": {
+        "expression": "years"
+      },
+      "total": {
+        "expression": "fmt(total)"
+      },
+      "bonus": {
+        "expression": "fmt(m.bonus)"
+      },
+      "salary": {
+        "expression": "fmt(m.salary)"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.325de140": {
+    "source": "src/league/staffdeals.ts",
+    "line": 38,
+    "params": {
+      "years": {
+        "expression": "years"
+      },
+      "salary": {
+        "expression": "fmt(m.salary)"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.f72ca661": {
+    "source": "src/league/staffdeals.ts",
+    "line": 38,
+    "params": {
+      "salary": {
+        "expression": "fmt(m.salary)"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.8ecb2402": {
+    "source": "src/league/staffdeals.ts",
+    "line": 39,
+    "params": {
+      "since": {
+        "expression": "m.since"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.3e551f4d": {
+    "source": "src/league/staffdeals.ts",
+    "line": 39,
+    "params": {
+      "until": {
+        "expression": "m.until"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.e837c83d": {
+    "source": "src/league/staffdeals.ts",
+    "line": 45,
+    "params": {},
+    "locations": []
+  },
+  "league.staffdeals.text.88482097": {
+    "source": "src/league/staffdeals.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "league.staffdeals.text.9d261813": {
+    "source": "src/league/staffdeals.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.staffdeals.text.c26ea4ab": {
+    "source": "src/league/staffdeals.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.staffdeals.text.b4f97ce4": {
+    "source": "src/league/staffdeals.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "league.staffdeals.text.b381fdab": {
+    "source": "src/league/staffdeals.ts",
+    "line": 72,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[role]"
+      },
+      "name": {
+        "expression": "m.name"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.6be6a14d": {
+    "source": "src/league/staffdeals.ts",
+    "line": 74,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[role]"
+      },
+      "name": {
+        "expression": "wagwa(m.name)",
+        "particle": "과/와"
+      },
+      "years": {
+        "expression": "years"
+      },
+      "salary": {
+        "expression": "money(salary)"
+      },
+      "until": {
+        "expression": "m.until"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.55e22a98": {
+    "source": "src/league/staffdeals.ts",
+    "line": 89,
+    "params": {},
+    "locations": []
+  },
+  "league.staffdeals.text.ab400851": {
+    "source": "src/league/staffdeals.ts",
+    "line": 103,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[role]"
+      },
+      "name": {
+        "expression": "m.name"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.060949bc": {
+    "source": "src/league/staffdeals.ts",
+    "line": 111,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[role]"
+      },
+      "name": {
+        "expression": "m.name"
+      },
+      "interim": {
+        "expression": "interim.name"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.c99c6378": {
+    "source": "src/league/staffdeals.ts",
+    "line": 117,
+    "params": {
+      "club": {
+        "expression": "team"
+      },
+      "name": {
+        "expression": "m.name"
+      },
+      "interim": {
+        "expression": "interim.name"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.d26acc74": {
+    "source": "src/league/staffdeals.ts",
+    "line": 118,
+    "params": {
+      "club": {
+        "expression": "iga(team)",
+        "particle": "이/가"
+      },
+      "name": {
+        "expression": "m.name"
+      },
+      "left": {
+        "expression": "Math.max(0, m.until - now) + (share ? 1 : 0)"
+      },
+      "interim": {
+        "expression": "interim.name"
+      }
+    },
+    "locations": []
+  },
+  "league.userclub.text.e19c3799": {
+    "source": "src/league/userclub.ts",
+    "line": 564,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[row.role]"
+      },
+      "name": {
+        "expression": "hire.name"
+      }
+    },
+    "locations": []
+  },
+  "league.userclub.text.5aaee79b": {
+    "source": "src/league/userclub.ts",
+    "line": 580,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[row.role]"
+      },
+      "name": {
+        "expression": "m.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.e52c8464": {
+    "source": "src/ui/Decision.tsx",
+    "line": 911,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.cf13f2c2": {
+    "source": "src/ui/Decision.tsx",
+    "line": 939,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[row.role]"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.044a2535": {
+    "source": "src/ui/Decision.tsx",
+    "line": 942,
+    "params": {
+      "years": {
+        "expression": "y"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.5bfc0de7": {
+    "source": "src/ui/Decision.tsx",
+    "line": 953,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.df6ca733": {
+    "source": "src/ui/Office.tsx",
+    "line": 638,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[role]"
+      }
+    },
+    "locations": []
+  },
+  "ui.office.text.044a2535": {
+    "source": "src/ui/Office.tsx",
+    "line": 641,
+    "params": {
+      "years": {
+        "expression": "y"
+      }
+    },
+    "locations": []
+  },
+  "ui.office.text.bade81a1": {
+    "source": "src/ui/Office.tsx",
+    "line": 645,
+    "params": {
+      "salary": {
+        "expression": "money(extensionSalary(m))"
+      }
+    },
+    "locations": []
+  },
+  "ui.office.text.96c5cd44": {
+    "source": "src/ui/Office.tsx",
+    "line": 646,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.7a51c586": {
+    "source": "src/ui/Office.tsx",
+    "line": 655,
+    "params": {
+      "name": {
+        "expression": "eulreul(m.name)",
+        "particle": "을/를"
+      },
+      "cost": {
+        "expression": "money(dismissalCost(league, role))"
+      }
+    },
+    "locations": []
+  },
+  "ui.office.text.9619a9ad": {
+    "source": "src/ui/Office.tsx",
+    "line": 658,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.dcac98c1": {
+    "source": "src/ui/Office.tsx",
+    "line": 658,
+    "params": {},
+    "locations": []
+  },
+  "league.ownerask.text.e8621a4d": {
+    "source": "src/league/ownerask.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.ownerask.text.2d20c512": {
+    "source": "src/league/ownerask.ts",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "league.ownerask.text.19d60d1c": {
+    "source": "src/league/ownerask.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.ownerask.text.09cffef4": {
+    "source": "src/league/ownerask.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.ownerask.text.ea57b6e1": {
+    "source": "src/league/ownerask.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.ownerask.text.9eb5fa6c": {
+    "source": "src/league/ownerask.ts",
+    "line": 41,
+    "params": {
+      "age": {
+        "expression": "OWNER_ASK.maxAge"
+      }
+    },
+    "locations": []
+  },
+  "league.ownerask.text.31861b5d": {
+    "source": "src/league/ownerask.ts",
+    "line": 73,
+    "params": {
+      "name": {
+        "expression": "eulreul(p.name)",
+        "particle": "을/를"
+      }
+    },
+    "locations": []
+  },
+  "league.ownerask.text.873ff20e": {
+    "source": "src/league/ownerask.ts",
+    "line": 74,
+    "params": {
+      "parent": {
+        "expression": "iga(u.settings.parentName)",
+        "particle": "이/가"
+      },
+      "name": {
+        "expression": "eulreul(p.name)",
+        "particle": "을/를"
+      },
+      "total": {
+        "expression": "eok(m.gift.total)"
+      }
+    },
+    "locations": []
+  },
+  "league.ownerask.text.f959c2dc": {
+    "source": "src/league/ownerask.ts",
+    "line": 78,
+    "params": {
+      "parent": {
+        "expression": "u.settings.parentName"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.ownerask.text.1f70003a": {
+    "source": "src/league/ownerask.ts",
+    "line": 85,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.ownerask.text.71e36b05": {
+    "source": "src/league/ownerask.ts",
+    "line": 86,
+    "params": {},
+    "locations": []
+  },
+  "league.ownerask.text.d968d82d": {
+    "source": "src/league/ownerask.ts",
+    "line": 91,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.ownerask.text.add6a4cd": {
+    "source": "src/league/ownerask.ts",
+    "line": 91,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.faMarket.text.d729c332": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 421,
+    "params": {},
+    "locations": []
+  },
+  "ui.faMarket.text.741043eb": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 423,
+    "params": {
+      "pct": {
+        "expression": "Math.round(askOwnerChance(league, t.id) * 100)"
+      }
+    },
+    "locations": []
+  },
+  "ui.faMarket.text.71ec6ccb": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 426,
+    "params": {},
+    "locations": []
+  },
+  "league.postseason.text.8f08356a": {
+    "source": "src/league/postseason.ts",
+    "line": 278,
+    "params": {},
+    "locations": []
+  },
+  "league.postseason.text.d3013cf2": {
+    "source": "src/league/postseason.ts",
+    "line": 278,
+    "params": {},
+    "locations": []
+  },
+  "league.postseason.text.84870a1e": {
+    "source": "src/league/postseason.ts",
+    "line": 403,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.2dcaef5e": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 162,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.59d1a4d6": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 164,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.763fd2e7": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 167,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.cdf3d196": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 172,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.6d6d08ae": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 173,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.377304ea": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 174,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.8fe5ca36": {
+    "source": "src/league/scenarios.ts",
+    "line": 226,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.722fddfa": {
+    "source": "src/league/scenarios.ts",
+    "line": 227,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.7f32c5d7": {
+    "source": "src/league/scenarios.ts",
+    "line": 229,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.4b46baf3": {
+    "source": "src/league/scenarios.ts",
+    "line": 230,
+    "params": {
+      "rehab": {
+        "expression": "Math.round((WARD.rehab - 1) * 100)"
+      },
+      "fatigue": {
+        "expression": "WARD.fatigue"
+      },
+      "pitches": {
+        "expression": "WARD.pitchLimit"
+      }
+    },
+    "locations": []
+  },
+  "league.scenarios.text.5a75c50b": {
+    "source": "src/league/scenarios.ts",
+    "line": 342,
+    "params": {
+      "n": {
+        "expression": "Object.entries(s.injuries).filter(([id, i]) => !i.dtd && s.players[id]?.teamId === me).length"
+      },
+      "x": {
+        "expression": "WARD.injury"
+      },
+      "rehab": {
+        "expression": "WARD.rehab"
+      }
+    },
+    "locations": []
+  },
+  "league.scenarios.text.933c6931": {
+    "source": "src/league/scenarios.ts",
+    "line": 392,
+    "params": {},
+    "locations": []
+  },
+  "league.expansion.text.d57db4c0": {
+    "source": "src/league/expansion.ts",
+    "line": 197,
+    "params": {},
+    "locations": []
+  },
+  "league.expansion.text.8d318296": {
+    "source": "src/league/expansion.ts",
+    "line": 198,
+    "params": {},
+    "locations": []
+  },
+  "league.expansion.text.f57bd081": {
+    "source": "src/league/expansion.ts",
+    "line": 198,
+    "params": {
+      "x": {
+        "expression": "WARD.injury"
+      },
+      "rehab": {
+        "expression": "Math.round((WARD.rehab - 1) * 100)"
+      },
+      "fatigue": {
+        "expression": "WARD.fatigue"
+      },
+      "pitches": {
+        "expression": "WARD.pitchLimit"
+      }
+    },
+    "locations": []
+  },
+  "ui.manual.text.eb55a24f": {
+    "source": "src/ui/Manual.tsx",
+    "line": 79,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.e402ce27": {
+    "source": "src/ui/Manual.tsx",
+    "line": 79,
+    "params": {
+      "hs": {
+        "expression": "K.freeAgency.seasonsHighSchool"
+      },
+      "col": {
+        "expression": "K.freeAgency.seasonsCollege"
+      },
+      "again": {
+        "expression": "K.freeAgency.seasonsToRequalify"
+      }
+    },
+    "locations": []
+  },
+  "ui.manual.text.1c39ef4c": {
+    "source": "src/ui/Manual.tsx",
+    "line": 80,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.181808f4": {
+    "source": "src/ui/Manual.tsx",
+    "line": 80,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.5aa18de4": {
+    "source": "src/ui/Manual.tsx",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.af32c9d1": {
+    "source": "src/ui/Manual.tsx",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.763fd2e7": {
+    "source": "src/ui/Manual.tsx",
+    "line": 82,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.76588ec4": {
+    "source": "src/ui/Manual.tsx",
+    "line": 82,
+    "params": {},
+    "locations": []
   }
 }

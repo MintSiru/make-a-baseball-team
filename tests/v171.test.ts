@@ -6,7 +6,7 @@ import { autoDecision } from '../src/league/expansion';
 import { hitSpot, pitchFeed } from '../src/league/pitchfeed';
 import { lastOurGame, ourNextGame } from '../src/league/postseason';
 import { rng } from '../src/draftroom';
-import { loadSave } from './v170.test';
+import { loadSave } from './helpers';
 
 describe('the relay shows where the ball went', () => {
   it('pitches by their call, balls in play by the words of the play', () => {

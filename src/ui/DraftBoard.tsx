@@ -49,7 +49,7 @@ export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect, ou
     <section class="board" aria-labelledby="board-title">
       <div class="board-head">
         <h2 id="board-title">{__i18n_t("ui.draftBoard.draftBoard.5fc24b91", { value: draftYear + 1 })}</h2>
-        <p class="muted">{__i18n_t("ui.draftBoard.draftBoard.2a2a21d8", { length: rows.length, value: ourView && __i18n_k("ui.draftBoard.draftBoard.371d7382") })}</p>
+        <p class="muted">{__i18n_t("ui.draftBoard.draftBoard.2a2a21d8", { length: rows.length, value: ourView ? __i18n_k("ui.draftBoard.draftBoard.371d7382") : '' })}</p>
       </div>
       <div class="controls">
         <div class="segmented" role="group" aria-label={__i18n_t("ui.draftBoard.draftBoard.81922a91")}>

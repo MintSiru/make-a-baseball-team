@@ -67,6 +67,7 @@ function PitcherTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; on
       whip: { value: (r) => (p(r)?.outs ? rates.whip(p(r)!) : 99), first: 1 },
       k: { value: (r) => p(r)?.k ?? 0 },
       salary: { value: (r) => r.salary + r.usd * 0.14 },
+      fa: { value: (r) => r.fa.year ?? 9999, first: 1 },
     },
     { key: 'pos', dir: 1 },
   );
@@ -89,6 +90,7 @@ function PitcherTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; on
             {__i18n_display(th('whip', 'WHIP', true))}
             {__i18n_display(th('k', __i18n_k("ui.squad.pitcherTable.3f349ed1"), true))}
             {__i18n_display(th('salary', __i18n_k("ui.squad.pitcherTable.cbf383ec"), true))}
+            {th('fa', 'FA', true)}
             {__i18n_display(actions && <th class="actions-head">{__i18n_t("ui.squad.pitcherTable.c29fba5a")}</th>)}
           </tr>
         </thead>
@@ -118,6 +120,9 @@ function PitcherTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; on
                 <td class="num">{__i18n_display(x?.outs ? rates.whip(x).toFixed(2) : '-')}</td>
                 <td class="num">{__i18n_display(x?.k ?? '-')}</td>
                 <td class="num">{__i18n_display(salaryText(r))}</td>
+                <td class={`num${r.fa.left === 0 || r.fa.left === 1 ? ' strong' : ''}`} title={r.fa.text}>
+                  {r.fa.short}
+                </td>
                 {__i18n_display(actions && <td>{__i18n_display(actions(r))}</td>)}
               </tr>
             );
@@ -145,6 +150,7 @@ function HitterTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; onP
       sb: { value: (r) => b(r)?.sb ?? 0 },
       ops: { value: (r) => (b(r)?.pa ? rates.ops(b(r)!) : 0) },
       salary: { value: (r) => r.salary + r.usd * 0.14 },
+      fa: { value: (r) => r.fa.year ?? 9999, first: 1 },
     },
     { key: 'pos', dir: 1 },
   );
@@ -166,6 +172,7 @@ function HitterTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; onP
             {__i18n_display(th('sb', __i18n_k("ui.squad.hitterTable.91e54831"), true))}
             {__i18n_display(th('ops', 'OPS', true))}
             {__i18n_display(th('salary', __i18n_k("ui.squad.hitterTable.cbf383ec"), true))}
+            {th('fa', 'FA', true)}
             {__i18n_display(actions && <th class="actions-head">{__i18n_t("ui.squad.hitterTable.c29fba5a")}</th>)}
           </tr>
         </thead>
@@ -190,6 +197,9 @@ function HitterTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; onP
                 <td class="num">{__i18n_display(x?.sb ?? '-')}</td>
                 <td class="num strong">{__i18n_display(x?.pa ? f3(rates.ops(x)) : '-')}</td>
                 <td class="num">{__i18n_display(salaryText(r))}</td>
+                <td class={`num${r.fa.left === 0 || r.fa.left === 1 ? ' strong' : ''}`} title={r.fa.text}>
+                  {r.fa.short}
+                </td>
                 {__i18n_display(actions && <td>{__i18n_display(actions(r))}</td>)}
               </tr>
             );

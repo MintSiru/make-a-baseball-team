@@ -3,6 +3,8 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
    club makes or changes offers (bonus, salary, incentives, a period option, promises), then lets the days run:
    to the next round, until one of its talks has news, or to the end of the market. */
 import { useEffect, useMemo, useState } from 'preact/hooks';
+import type { Action } from '../league/actions';
+import { askOwnerChance, askOwnerProblem } from '../league/ownerask';
 import { autoDecision, checkDecision, foreignReserve, type DecisionInput } from '../league/expansion';
 import {
   budgetUse,
@@ -41,6 +43,8 @@ interface Props {
   league: LeagueState;
   onSubmit: (input: DecisionInput) => void;
   onPlayer: (id: PlayerId) => void;
+  /** 1.8.0: actions while the market waits (asking the owner for a free agent). */
+  onAct?: (a: Action) => void;
 }
 
 const eok = (manwon: number) => Math.round(manwon / 1000) / 10;
@@ -92,7 +96,7 @@ function status(league: LeagueState, m: Market, t: FaTalk) {
   return n ? __i18n_k("ui.faMarket.status.71e4cd4c", { n: n }) : __i18n_k("ui.faMarket.status.8630cbaf");
 }
 
-export function FaMarket({ league, onSubmit, onPlayer }: Props) {
+export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
   const m = league.offseason!.fa!;
   const u = league.user!;
   const me = u.teamId;
@@ -263,6 +267,7 @@ export function FaMarket({ league, onSubmit, onPlayer }: Props) {
             check={(o) => checkDecision(league, { kind: 'faRound', offers: { ...drafts, [selected.id]: o }, run: 'round' })}
             setOffer={(o) => setDrafts((prev) => ({ ...prev, [selected.id]: o }))}
             onPlayer={onPlayer}
+            onAct={onAct}
             changed={selected.id in drafts}
           />
         ))}
@@ -358,9 +363,11 @@ function TalkPanel({
   check,
   setOffer,
   onPlayer,
+  onAct,
   changed,
 }: {
   league: LeagueState;
+  onAct?: (a: Action) => void;
   m: Market;
   t: FaTalk;
   next: number;
@@ -406,8 +413,17 @@ function TalkPanel({
         {__i18n_display(line ? `${line.year} ${line.text}` : __i18n_k("ui.faMarket.talkPanel.12ca5e35"))} · WAR {__i18n_display(lastWar(league, t.id)?.toFixed(1) ?? '-')}{__i18n_display(' ')}
         <button type="button" class="link small" onClick={() => onPlayer(p.id)}>{__i18n_t("ui.faMarket.talkPanel.243cf4c2")}</button>
       </p>
-      <p class="small">{__i18n_t("ui.faMarket.talkPanel.7b6d4a37", { termsText: termsText(t.price), value: t.demands.length ? t.demands.map(demandText).join(' · ') : __i18n_k("ui.faMarket.talkPanel.0dcc462c"), others: others, value2: t.decideOn !== undefined && __i18n_k("ui.faMarket.talkPanel.e858d967", { decideDate: decideDate(m, t) }) })}</p>
+      <p class="small">{__i18n_t("ui.faMarket.talkPanel.7b6d4a37", { termsText: termsText(t.price), value: t.demands.length ? t.demands.map(demandText).join(' · ') : __i18n_k("ui.faMarket.talkPanel.0dcc462c"), others: others, value2: t.decideOn !== undefined ? __i18n_k("ui.faMarket.talkPanel.e858d967", { decideDate: decideDate(m, t) }) : '' })}</p>
 
+      {onAct && !askOwnerProblem(league, t.id) && (
+        <p class="owner-ask small">
+          <button type="button" onClick={() => onAct({ kind: 'askOwner', id: t.id })}>
+            {__i18n_t("ui.faMarket.text.d729c332")}
+          </button>{' '}
+          <span class="muted">{__i18n_t("ui.faMarket.text.741043eb", { pct: Math.round(askOwnerChance(league, t.id) * 100) })}</span>
+        </p>
+      )}
+      {m.asked?.id === t.id && !m.asked.yes && <p class="notice small">{__i18n_t("ui.faMarket.text.71ec6ccb")}</p>}
       {__i18n_display(t.signed ? (
         <p class={`notice ${t.signed.teamId === me ? 'good' : ''}`}>
           {__i18n_display(t.signed.teamId === me ? __i18n_k("ui.faMarket.talkPanel.14152e46") : __i18n_k("ui.faMarket.talkPanel.4bfd172f", { shortName: wagwa(shortName(league, t.signed.teamId)) }))}: {__i18n_display(termsText(t.signed.offer))}

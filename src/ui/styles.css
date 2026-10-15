@@ -1506,7 +1506,14 @@ ul.plain li {
   font-weight: 600;
 }
 .staff-table select {
-  max-width: 340px;
+  max-width: 240px;
+}
+/* 1.8.0: the contract length under the choice. */
+.staff-table .staff-pick select {
+  display: block;
+}
+.staff-table .staff-pick select + select {
+  margin-top: 4px;
 }
 
 /* Games and box scores (V0.7) */
@@ -2906,6 +2913,10 @@ button.game-chip {
 .profile-facts dt {
   white-space: nowrap;
 }
+/* 1.8.0: a fact that needs the whole row (FA timing). */
+.facts .fact-wide {
+  grid-column: 1 / -1;
+}
 /* 1.4.0: former players on the staff */
 button.tag.link {
   cursor: pointer;
@@ -3142,3 +3153,4 @@ fieldset.stops {
 
 /* 1.7.1: our postseason game is next (App.tsx controls). */
 .big-game { flex-basis: 100%; margin: 0 0 0.2rem; padding: 0.35rem 0.6rem; border-left: 4px solid var(--accent); background: rgba(127, 127, 127, 0.08); border-radius: 4px; }
+.staff-deal { margin-top: 0.25rem; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; }

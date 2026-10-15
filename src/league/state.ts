@@ -62,6 +62,12 @@ export interface StaffMember {
   salary: number;
   /** Last season under contract. */
   until: number;
+  /** 1.8.0 (staffdeals.ts): the first season with the club, the length of his current deal and its signing bonus
+      (만 원, a manager's); an interim (대행) holds the post until the next staff decision. */
+  since?: number;
+  years?: number;
+  bonus?: number;
+  interim?: boolean;
   style?: ManagerStyle;
   /** 1.4.0 (alumni.ts): a former player — who he was, the club he played most for, and his fame then (0–100). */
   playerId?: PlayerId;
@@ -276,6 +282,8 @@ export interface TwelveState {
   manager: ManagerStyle;
   /** Two leagues: each club's side, set when the twelve clubs first play. */
   leagues?: Record<TeamId, LeagueSide>;
+  /** 1.8.0: two leagues' postseason — the cross-league spots (default) or the NPB way (클라이맥스 시리즈). */
+  playoffs?: 'kbo' | 'npb';
   /** Season series against the user's club, from the user's side. */
   h2h?: { year: number; w: number; l: number; t: number }[];
   /** Who it took in its special draft. */

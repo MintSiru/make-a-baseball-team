@@ -112,6 +112,8 @@ export interface FaMarket {
   news: { day: number; text: string; mine?: boolean }[];
   /** The owner's free agent (V0.7.7): the owner pays a deal of up to `total` guaranteed. */
   gift?: { id: PlayerId; total: number; years: number };
+  /** 1.8.0 (ownerask.ts): the free agent we asked the owner for this winter, and the answer. */
+  asked?: { id: PlayerId; yes: boolean };
   /** The user asked to play one round, until news of the club's talks, or to the end. */
   run?: 'round' | 'news' | 'close';
   closed?: boolean;

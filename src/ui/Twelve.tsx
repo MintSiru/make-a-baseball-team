@@ -1,6 +1,7 @@
 import { display as __i18n_display, k as __i18n_k, rich as __i18n_rich, t as __i18n_t } from '../i18n/index';
 /* The twelfth club in the screens (V0.9): the setting (new game and the front office), the founding form, and
    the rivalry at a glance. */
+import type { Action } from '../league/actions';
 import { cityById } from '../club/cities';
 import { PARENT_COMPANY_TYPES, type ParentCompanyType } from '../club/types';
 import { rivalCities, rivalTeam } from '../league/rival';
@@ -138,7 +139,7 @@ export function RivalForm({ league, value, onChange }: { league: LeagueState; va
 }
 
 /** The rival and the rivalry's record, for the front office. */
-export function RivalryBox({ league }: { league: LeagueState }) {
+export function RivalryBox({ league, onAct }: { league: LeagueState; onAct?: (a: Action) => void }) {
   const tw = league.twelve;
   const team = rivalTeam(league);
   if (!tw || !team) return null;
@@ -156,6 +157,24 @@ export function RivalryBox({ league }: { league: LeagueState }) {
       {__i18n_display(total.seasons > 0 && (
         <p>{__i18n_t("ui.twelve.rivalryBox.3094639b", { seasons: total.seasons, w: total.w, l: total.l, value: total.t ? __i18n_k("ui.twelve.rivalryBox.136ac74d", { value: total.t }) : '' })}</p>
       ))}
+      {tw.format === 'two' && (
+        <div class="two-playoffs">
+          <div class="segmented" role="group" aria-label={__i18n_t("ui.twelve.text.2dcaef5e")}>
+            <button type="button" aria-pressed={(tw.playoffs ?? 'kbo') === 'kbo'} disabled={!onAct} onClick={() => onAct?.({ kind: 'twoLeaguePlayoffs', style: 'kbo' })}>
+              {__i18n_t("ui.twelve.text.59d1a4d6")}
+            </button>
+            <button type="button" aria-pressed={tw.playoffs === 'npb'} disabled={!onAct} onClick={() => onAct?.({ kind: 'twoLeaguePlayoffs', style: 'npb' })}>
+              {__i18n_t("ui.twelve.text.763fd2e7")}
+            </button>
+          </div>
+          <p class="muted small">
+            {tw.playoffs === 'npb'
+              ? __i18n_t("ui.twelve.text.cdf3d196")
+              : __i18n_t("ui.twelve.text.6d6d08ae")}{' '}
+            {__i18n_t("ui.twelve.text.377304ea")}
+          </p>
+        </div>
+      )}
       {__i18n_display(tw.picks && tw.picks.length > 0 && <p class="muted small">{__i18n_t("ui.twelve.rivalryBox.282e66d3", { value: tw.picks.map((x) => `${league.teams.find((t) => t.id === x.from)?.short ?? x.from} ${x.name}`).join(', ') })}</p>)}
     </div>
   );

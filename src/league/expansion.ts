@@ -9,6 +9,8 @@ import { startYear } from './era';
 import { generateDraftPool, rng } from '../draftroom';
 import { cityById } from '../club/cities';
 import { scenarioDef, supportFactor } from './scenarios';
+import { WARD } from './ward';
+import { addAlert } from './alerts';
 import { aiFantasyChoice, isFantasyWinter, makeFantasyPick } from './fantasy';
 import { baseSupport, electMayor } from './parent';
 import { capPlayers, foreignCap, foreignCost, slotForeigners } from './foreigncap';
@@ -186,6 +188,16 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
   const b = budgetFor(settings);
   s.user = { teamId: EXPANSION_ID, settings, fund: b.fund, payrollBudget: b.payrollBudget, firstTeamYear, ledger: [], support: Math.round(baseSupport(settings.parentType) * DIFFICULTY_MONEY[settings.difficulty] * supportFactor(settings)), trust: scenarioDef(settings.scenario)?.owner?.startTrust ?? PARENT.startTrust, budgetScale: 1 };
   if (settings.scenario) s.user.scenario = { status: 'active' };
+  // 1.8.0, scenario 부상병동: the new fitness trainer arrives with his programme (ward.ts).
+  if (settings.scenario === 'ward')
+    addAlert(s, {
+      id: 'ward-trainer',
+      date: foundingDate(),
+      kind: 'owner',
+      title: __i18n_k("league.expansion.text.d57db4c0"),
+      lines: [__i18n_k("league.expansion.text.8d318296"), __i18n_k("league.expansion.text.f57bd081", { x: WARD.injury, rehab: Math.round((WARD.rehab - 1) * 100), fatigue: WARD.fatigue, pitches: WARD.pitchLimit })],
+      tone: 'bad',
+    });
   // A citizen club is founded by the mayor elected in June 2026 (parent.ts).
   if (settings.parentType === 'citizen') s.user.mayor = electMayor(s, y0);
   spend(s, __i18n_k("league.expansion.foundClub.b77f9a73"), b.entryFee, true);
