@@ -53,13 +53,15 @@ describe('the postseason, game day by game day', () => {
     expect(b.bracket!.live[0]!.low).toBe(b.postseason[0]!.winner);
   });
 
-  it('with two leagues: each league winner against the other runner-up, then the Korean Series', () => {
+  it('with two leagues: each league winner against the other side\'s semi-playoff winner, then the Korean Series', () => {
     const b = clone(s);
     const ids = b.teams.map((t) => t.id);
     b.twelve = { teamId: ids[0]!, cityId: 'x', founded: 2020, firstTeam: 2021, format: 'two', gm: 'balanced', manager: 'balanced', leagues: Object.fromEntries(ids.map((id, i) => [id, i % 2 ? 'magic' : 'dream'])) } as never;
     playPostseason(b);
     const rounds = b.postseason.map((x) => x.round);
     expect(rounds.filter((r) => r === 'po')).toHaveLength(2);
+    // 1.8.1: the semi-playoffs come first (each league's top three since).
+    expect(rounds.filter((r) => r === 'semipo')).toHaveLength(2);
     expect(rounds.at(-1)).toBe('ks');
     const ks = b.postseason.at(-1)!;
     const po = b.postseason.filter((x) => x.round === 'po');

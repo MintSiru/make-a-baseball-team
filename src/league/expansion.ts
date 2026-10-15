@@ -90,6 +90,10 @@ export const STADIUM_PLANS = {
   newMedium: { label: __i18n_k("league.expansion.newMedium.label.ce1f6012"), seats: 15_000, get opens() { return startYear() + 3; } },
   newLarge: { label: __i18n_k("league.expansion.newLarge.label.b74bcba1"), seats: 22_000, get opens() { return startYear() + 4; } },
   dome: { label: __i18n_k("league.expansion.dome.label.db5119df"), seats: 20_000, get opens() { return startYear() + 5; } },
+  // 1.8.1 (the 1.8 feedback): a big-city ballpark like 잠실's, three or four seasons later still. Its upkeep grows with
+  // the seats (finance.ts), so it pays only where the crowds come.
+  newGrand: { label: __i18n_k("league.expansion.text.536e4d98"), seats: 30_000, get opens() { return startYear() + 5; } },
+  newMega: { label: __i18n_k("league.expansion.text.45a3374c"), seats: 40_000, get opens() { return startYear() + 6; } },
 } as const;
 
 export function budgetFor(settings: ExpansionSettings) {
@@ -181,13 +185,18 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
     firstTeamFrom: firstTeamYear,
     benefitsUntil: firstTeamYear + EXPANSION_DEFAULTS.benefitSeasons - 1,
     parent: { type: settings.parentType, name: settings.parentName.trim() },
-    stadium: { name: city.stadium.name, size: city.stadium.seats < 10_000 ? 'small' : 'medium', capacity: city.stadium.seats, ownership: 'municipalLease' },
+    stadium: { name: city.stadium.name, size: city.stadium.seats < 10_000 ? 'small' : city.stadium.seats >= 20_000 ? 'large' : 'medium', capacity: city.stadium.seats, ownership: 'municipalLease' },
   };
   s.teams.push(team);
   s.rosters[EXPANSION_ID] = emptyRoster();
   const b = budgetFor(settings);
   s.user = { teamId: EXPANSION_ID, settings, fund: b.fund, payrollBudget: b.payrollBudget, firstTeamYear, ledger: [], support: Math.round(baseSupport(settings.parentType) * DIFFICULTY_MONEY[settings.difficulty] * supportFactor(settings)), trust: scenarioDef(settings.scenario)?.owner?.startTrust ?? PARENT.startTrust, budgetScale: 1 };
   if (settings.scenario) s.user.scenario = { status: 'active' };
+  // 1.8.1, scenario 돌아온 탕아: SSG has moved to its dome in 청라, leaving 문학 to us (game fiction).
+  if (settings.scenario === 'prodigal') {
+    const ssg = s.teams.find((t) => t.id === 'ssg');
+    if (ssg) ssg.stadium = { ...ssg.stadium, name: __i18n_k("league.expansion.text.86c13ef1"), size: 'dome', capacity: 21_000 };
+  }
   // 1.8.0, scenario 부상병동: the new fitness trainer arrives with his programme (ward.ts).
   if (settings.scenario === 'ward')
     addAlert(s, {

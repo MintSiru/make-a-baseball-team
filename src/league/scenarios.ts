@@ -19,6 +19,7 @@ import { k as __i18n_k } from '../i18n/index';
    10. 강철야구 — a TV show's club in 목동, its first squad retired players and players nobody drafted; the same goal.
    11. 부상병동 (1.8.0) — a new fitness trainer's high-intensity programme: our club alone gets hurt twice as often,
        stays out longer and plays tired (ward.ts); the same goal.
+   12. 돌아온 탕아 (1.8.1) — SSG moves to a dome in 청라 and 현대 유니콘스 come home to 문학; the same goal.
 
    The clubs, the cities beyond the real candidates and the stories are game fiction. */
 import { rng } from '../draftroom';
@@ -34,7 +35,7 @@ import { WARD } from './ward';
 
 const FANS_MIN = FANS.priceMin;
 
-export type ScenarioId = 'seoul' | 'comeback' | 'ulleung' | 'raiders' | 'fantasy' | 'past' | 'rescue' | 'recession' | 'unpopular' | 'steel' | 'ward';
+export type ScenarioId = 'seoul' | 'comeback' | 'ulleung' | 'raiders' | 'fantasy' | 'past' | 'rescue' | 'recession' | 'unpopular' | 'steel' | 'ward' | 'prodigal';
 
 export interface ScenarioState {
   status: 'active' | 'won' | 'lost';
@@ -235,6 +236,20 @@ export const SCENARIOS: ScenarioDef[] = [
     locked: [],
     titleWithin: 5,
   },
+  {
+    id: 'prodigal',
+    title: __i18n_k("league.scenarios.text.7182af3e"),
+    tagline: __i18n_k("league.scenarios.text.cc2890a0"),
+    story: [
+      __i18n_k("league.scenarios.text.ba215170"),
+      __i18n_k("league.scenarios.text.ada466e0"),
+    ],
+    goal: __i18n_k("league.scenarios.sCENARIOS.goal.e1c9c59b"),
+    stars: 3,
+    fixed: { cityId: 'incheon', parentType: 'conglomerate', name: __i18n_k("league.scenarios.text.8d8be041"), short: __i18n_k("league.scenarios.text.71b62f90"), parentName: __i18n_k("league.scenarios.text.c6abb474"), color: '#007F55', stadium: 'existing' },
+    locked: ['cityId', 'parentType', 'name', 'short', 'parentName', 'color', 'stadium'],
+    titleWithin: 5,
+  },
 ];
 
 export const scenarioDef = (id: string | null | undefined) => SCENARIOS.find((x) => x.id === id) ?? null;
@@ -335,7 +350,8 @@ export function scenarioProgress(s: LeagueState): { title: string; goal: string;
     case 'recession':
     case 'unpopular':
     case 'steel':
-    case 'ward': {
+    case 'ward':
+    case 'prodigal': {
       const until = u.firstTeamYear + def.titleWithin! - 1;
       lines.push(__i18n_k("league.scenarios.scenarioProgress.ede1a55d", { until: until, firstTeamYear: u.firstTeamYear, until2: until }));
       if (def.crowd) lines.push(__i18n_k("league.scenarios.scenarioProgress.525a10e6", { value: Math.round(def.crowd * 100) }));
@@ -387,9 +403,10 @@ export function scenarioWinter(s: LeagueState, year: number) {
       case 'recession':
       case 'unpopular':
       case 'steel':
-      case 'ward': {
+      case 'ward':
+      case 'prodigal': {
         const until = u.firstTeamYear + def.titleWithin! - 1;
-        const cheer = { recession: __i18n_k("league.scenarios.cheer.recession.5a3b4b76"), unpopular: __i18n_k("league.scenarios.cheer.unpopular.e7e09b87"), steel: __i18n_k("league.scenarios.cheer.steel.d2f57365"), ward: __i18n_k("league.scenarios.text.933c6931") }[def.id];
+        const cheer = { recession: __i18n_k("league.scenarios.cheer.recession.5a3b4b76"), unpopular: __i18n_k("league.scenarios.cheer.unpopular.e7e09b87"), steel: __i18n_k("league.scenarios.cheer.steel.d2f57365"), ward: __i18n_k("league.scenarios.text.933c6931"), prodigal: __i18n_k("league.scenarios.text.023843e3") }[def.id];
         if (won(s, me, year)) verdict = { status: 'won', text: __i18n_k("league.scenarios.scenarioWinter.text.97a7c92d", { year: year, cheer: cheer }) };
         else if (year >= until) verdict = { status: 'lost', text: __i18n_k("league.scenarios.scenarioWinter.text.e9a76454", { until: until }) };
         break;

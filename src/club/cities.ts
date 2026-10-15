@@ -43,6 +43,8 @@ export const CITIES: City[] = [
 
 /** 1.6.0: homes only a scenario starts in (scenarios.ts). */
 export const SCENARIO_CITIES: City[] = [
+  // 1.8.1, 돌아온 탕아: 문학, left empty when SSG moved to its 청라 dome (game fiction).
+  { id: 'incheon', name: __i18n_k("club.cities.text.41402f7e"), province: __i18n_k("club.cities.text.4f20da2a"), population: 3_020_000, stadium: { name: __i18n_k("club.cities.text.563ff67e"), seats: 23_000, real: true }, market: 72, competition: __i18n_k("club.cities.text.7853d34f"), note: __i18n_k("club.cities.text.ce29a185") },
   { id: 'seoul', name: __i18n_k("club.cities.sCENARIO_CITIES.name.ea9858ee"), province: __i18n_k("club.cities.sCENARIO_CITIES.province.3964bd52"), population: 9_386_034, stadium: { name: __i18n_k("club.cities.stadium.name.5a4b31e1"), seats: 10_500, real: false }, market: 78, competition: __i18n_k("club.cities.sCENARIO_CITIES.competition.7a0da299"), note: __i18n_k("club.cities.sCENARIO_CITIES.note.44d6c238") },
   { id: 'ulleung', name: __i18n_k("club.cities.sCENARIO_CITIES.name.e2971049"), province: __i18n_k("club.cities.sCENARIO_CITIES.province.9c479e8f"), population: 9_000, stadium: { name: __i18n_k("club.cities.stadium.name.cc8463f9"), seats: 3_000, real: false }, market: 4, competition: __i18n_k("club.cities.sCENARIO_CITIES.competition.f5759ff0"), note: __i18n_k("club.cities.sCENARIO_CITIES.note.e55b2828") },
 ];

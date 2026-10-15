@@ -1,6 +1,6 @@
 import { k as __i18n_k } from '../i18n/index';
 /* Ballpark projects (V0.6, RULES.md §13). In the winter the user's club can
-   - expand its ballpark (+3,000 seats, up to 25,000; the club's share 150억, ready next season),
+   - expand its ballpark (+3,000 seats, up to 40,000 since 1.8.1; the club's share 150억, ready next season),
    - move the fences (in: more home runs, out: fewer; 15억, next season),
    - build a new 22,000-seat ballpark with the city (the club prepays 25 years of use, 400억, as
      Samsung (500억) and KIA (300억) did; it opens three seasons later).

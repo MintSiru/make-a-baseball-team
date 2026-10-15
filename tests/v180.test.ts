@@ -164,7 +164,7 @@ describe('scenario 부상병동', () => {
   const free: ExpansionSettings = { name: '검증 고래', short: '검증', color: '#1f6fb2', cityId: 'ulsan', parentType: 'midsize', parentName: '검증그룹', stadium: 'existing', promotion: 'afterFutures', difficulty: 'normal', scenario: null };
 
   it('opens with the trainer and his programme', () => {
-    expect(SCENARIOS.at(-1)!.id).toBe('ward');
+    expect(SCENARIOS.some((x) => x.id === 'ward')).toBe(true);
     const s = apply(apply(createLeague('v180-ward'), { kind: 'toFounding' }), { kind: 'found', settings: withScenario(free, 'ward') });
     expect(s.user!.settings.scenario).toBe('ward');
     expect(s.alerts?.some((a) => a.id === 'ward-trainer')).toBe(true);

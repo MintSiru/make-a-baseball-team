@@ -123,7 +123,7 @@ export function RivalForm({ league, value, onChange }: { league: LeagueState; va
               [
                 'two',
                 __i18n_k("ui.twelve.rivalForm.a2308b8c"),
-                __i18n_k("ui.twelve.rivalForm.110c161b"),
+                __i18n_t("ui.twelve.text.fee5ed2a"),
               ],
             ] as [LeagueFormat, string, string][]
           ).map(([f, label, note]) => (
@@ -170,7 +170,7 @@ export function RivalryBox({ league, onAct }: { league: LeagueState; onAct?: (a:
           <p class="muted small">
             {tw.playoffs === 'npb'
               ? __i18n_t("ui.twelve.text.cdf3d196")
-              : __i18n_t("ui.twelve.text.6d6d08ae")}{' '}
+              : __i18n_t("ui.twelve.text.8d4a27a9")}{' '}
             {__i18n_t("ui.twelve.text.377304ea")}
           </p>
         </div>

@@ -175,7 +175,7 @@ describe('twelve clubs', () => {
     }
   });
 
-  it('two leagues: league winners meet the other runner-up, a better third plays it for the spot', () => {
+  it('two leagues (1.8.1): the top three each, a better 4th plays the other 3rd for the place, then cross-league rounds', () => {
     const c = structuredClone(s);
     c.twelve!.format = 'two';
     c.twelve!.leagues = assignLeagues(c);
@@ -185,11 +185,12 @@ describe('twelve clubs', () => {
     const po = c.postseason.filter((x) => x.round === 'po');
     expect(po).toHaveLength(2);
     expect(po.map((x) => x.high).sort()).toEqual([t.dream[0]!.teamId, t.magic[0]!.teamId].sort());
+    const wild = c.postseason.filter((x) => x.round === 'wildcard');
+    const expected = (t.dream[3] && t.dream[3].pct > t.magic[2]!.pct ? 1 : 0) + (t.magic[3] && t.magic[3].pct > t.dream[2]!.pct ? 1 : 0);
+    expect(wild).toHaveLength(expected);
     const semis = c.postseason.filter((x) => x.round === 'semipo');
-    const expected = (t.dream[2]!.pct > t.magic[1]!.pct ? 1 : 0) + (t.magic[2]!.pct > t.dream[1]!.pct ? 1 : 0);
-    expect(semis).toHaveLength(expected);
+    expect(semis.map((x) => x.high).sort()).toEqual([t.dream[1]!.teamId, t.magic[1]!.teamId].sort());
     expect(c.postseason.filter((x) => x.round === 'ks')).toHaveLength(1);
-    expect(c.postseason.some((x) => x.round === 'wildcard')).toBe(false);
   });
 
   it('the rivalry: an article for each game, the season series kept, and a bigger crowd', () => {

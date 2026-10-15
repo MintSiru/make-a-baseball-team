@@ -26,7 +26,7 @@ interface Props {
   onSpectate: (seed: string) => void;
 }
 
-const LOCK_LABEL: Record<string, string> = { cityId: __i18n_k("ui.newGame.lOCK_LABEL.cityId.e9211ac8"), parentType: __i18n_k("ui.newGame.lOCK_LABEL.parentType.8611634e"), parentName: __i18n_k("ui.newGame.lOCK_LABEL.parentName.0cfd0aa8"), name: __i18n_k("ui.newGame.lOCK_LABEL.name.3417788b"), short: __i18n_k("ui.newGame.lOCK_LABEL.short.7d2842b0"), difficulty: __i18n_k("ui.newGame.lOCK_LABEL.difficulty.e8ee93fa"), firing: __i18n_k("ui.newGame.lOCK_LABEL.firing.511fefbd"), promotion: __i18n_k("ui.newGame.lOCK_LABEL.promotion.c2eea1df"), stadium: __i18n_k("ui.newGame.lOCK_LABEL.stadium.5b164a3b"), tutorial: __i18n_k("ui.newGame.lOCK_LABEL.tutorial.aae32f40"), autoPrep: __i18n_k("ui.newGame.lOCK_LABEL.autoPrep.b506f73a") };
+const LOCK_LABEL: Record<string, string> = { cityId: __i18n_k("ui.newGame.lOCK_LABEL.cityId.e9211ac8"), parentType: __i18n_k("ui.newGame.lOCK_LABEL.parentType.8611634e"), parentName: __i18n_k("ui.newGame.lOCK_LABEL.parentName.0cfd0aa8"), name: __i18n_k("ui.newGame.lOCK_LABEL.name.3417788b"), short: __i18n_k("ui.newGame.lOCK_LABEL.short.7d2842b0"), difficulty: __i18n_k("ui.newGame.lOCK_LABEL.difficulty.e8ee93fa"), firing: __i18n_k("ui.newGame.lOCK_LABEL.firing.511fefbd"), promotion: __i18n_k("ui.newGame.lOCK_LABEL.promotion.c2eea1df"), stadium: __i18n_k("ui.newGame.lOCK_LABEL.stadium.5b164a3b"), tutorial: __i18n_k("ui.newGame.lOCK_LABEL.tutorial.aae32f40"), autoPrep: __i18n_k("ui.newGame.lOCK_LABEL.autoPrep.b506f73a"), color: __i18n_t("ui.newGame.text.4b828e65") };
 
 /** The recommended first game (1.5.0): a big parent, the existing ballpark, a futures year with the guide. */
 const NICKNAMES = [__i18n_k("ui.newGame.nICKNAMES.9a844dcf"), __i18n_k("ui.newGame.nICKNAMES.54445580"), __i18n_k("ui.newGame.nICKNAMES.ebdf4f1b"), __i18n_k("ui.newGame.nICKNAMES.2ac748b1")];
@@ -91,6 +91,7 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
     if (f.parentName) setParentName(f.parentName);
     if (f.name) setName(f.name);
     if (f.short) setShort(f.short);
+    if (f.color) setColor(f.color);
     if (f.stadium) setStadium(f.stadium);
     if (f.promotion) setPromotion(f.promotion);
     if (f.difficulty) setDifficulty(f.difficulty);
@@ -193,10 +194,10 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
         </div>
         <div class="swatches" role="radiogroup" aria-label={__i18n_t("ui.newGame.newGame.4b828e65")}>
           {__i18n_display(COLORS.map((c) => (
-            <button key={c} type="button" role="radio" aria-checked={c === color} aria-label={__i18n_displayText(c)} class="swatch-button" style={{ background: c }} onClick={() => setColor(c)} />
+            <button key={c} type="button" role="radio" aria-checked={c === color} aria-label={__i18n_displayText(c)} class="swatch-button" style={{ background: c }} disabled={locked.has('color')} onClick={() => setColor(c)} />
           )))}
           <label class="custom-color">
-            직접 고르기 <input type="color" value={color} onInput={(e) => setColor((e.currentTarget as HTMLInputElement).value)} />
+            직접 고르기 <input type="color" value={color} disabled={locked.has('color')} onInput={(e) => setColor((e.currentTarget as HTMLInputElement).value)} />
           </label>
         </div>
       </section>
