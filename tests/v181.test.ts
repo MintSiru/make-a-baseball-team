@@ -89,3 +89,16 @@ describe('bigger ballparks and 돌아온 탕아', () => {
     expect(s.teams.find((t) => t.id === 'ssg')!.stadium).toMatchObject({ name: '인천 청라돔', size: 'dome' });
   }, 120_000);
 });
+
+describe('ballpark expansion cap', () => {
+  it('a park can be expanded up to 40,000 seats', async () => {
+    const { projectOptions } = await import('../src/league/ballpark');
+    const s = loadSave();
+    const team = s.teams.find((t) => t.id === s.user!.teamId)!;
+    const expand = () => projectOptions(s).find((o) => o.kind === 'expand')!;
+    team.stadium.capacity = 30_000;
+    expect(expand().blocked ?? '').not.toContain('40,000');
+    team.stadium.capacity = 38_000;
+    expect(expand().blocked).toContain('40,000');
+  });
+});

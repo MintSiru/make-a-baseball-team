@@ -488,7 +488,8 @@ export const PARENT = {
 export const BALLPARK = {
   expandSeats: 3_000,
   expandCost: 1_500_000,
-  maxSeats: 25_000,
+  // 1.8.1 (the 1.8 feedback): up to 40,000, as far as the biggest new ballpark (25,000 before).
+  maxSeats: 40_000,
   fencesCost: 150_000,
   fencesStep: 0.04,
   parkMin: 0.9,
