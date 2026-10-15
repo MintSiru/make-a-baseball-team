@@ -66666,5 +66666,334 @@
     "line": 547,
     "params": {},
     "locations": []
+  },
+  "league.staffdeals.text.3ad8c73c": {
+    "source": "src/league/staffdeals.ts",
+    "line": 35,
+    "params": {
+      "until": {
+        "expression": "m.until"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.c9564808": {
+    "source": "src/league/staffdeals.ts",
+    "line": 38,
+    "params": {
+      "years": {
+        "expression": "years"
+      },
+      "total": {
+        "expression": "fmt(total)"
+      },
+      "bonus": {
+        "expression": "fmt(m.bonus)"
+      },
+      "salary": {
+        "expression": "fmt(m.salary)"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.325de140": {
+    "source": "src/league/staffdeals.ts",
+    "line": 38,
+    "params": {
+      "years": {
+        "expression": "years"
+      },
+      "salary": {
+        "expression": "fmt(m.salary)"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.f72ca661": {
+    "source": "src/league/staffdeals.ts",
+    "line": 38,
+    "params": {
+      "salary": {
+        "expression": "fmt(m.salary)"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.8ecb2402": {
+    "source": "src/league/staffdeals.ts",
+    "line": 39,
+    "params": {
+      "since": {
+        "expression": "m.since"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.3e551f4d": {
+    "source": "src/league/staffdeals.ts",
+    "line": 39,
+    "params": {
+      "until": {
+        "expression": "m.until"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.e837c83d": {
+    "source": "src/league/staffdeals.ts",
+    "line": 45,
+    "params": {},
+    "locations": []
+  },
+  "league.staffdeals.text.88482097": {
+    "source": "src/league/staffdeals.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "league.staffdeals.text.9d261813": {
+    "source": "src/league/staffdeals.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.staffdeals.text.c26ea4ab": {
+    "source": "src/league/staffdeals.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.staffdeals.text.b4f97ce4": {
+    "source": "src/league/staffdeals.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "league.staffdeals.text.b381fdab": {
+    "source": "src/league/staffdeals.ts",
+    "line": 72,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[role]"
+      },
+      "name": {
+        "expression": "m.name"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.6be6a14d": {
+    "source": "src/league/staffdeals.ts",
+    "line": 74,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[role]"
+      },
+      "name": {
+        "expression": "wagwa(m.name)",
+        "particle": "과/와"
+      },
+      "years": {
+        "expression": "years"
+      },
+      "salary": {
+        "expression": "money(salary)"
+      },
+      "until": {
+        "expression": "m.until"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.55e22a98": {
+    "source": "src/league/staffdeals.ts",
+    "line": 89,
+    "params": {},
+    "locations": []
+  },
+  "league.staffdeals.text.ab400851": {
+    "source": "src/league/staffdeals.ts",
+    "line": 103,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[role]"
+      },
+      "name": {
+        "expression": "m.name"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.060949bc": {
+    "source": "src/league/staffdeals.ts",
+    "line": 111,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[role]"
+      },
+      "name": {
+        "expression": "m.name"
+      },
+      "interim": {
+        "expression": "interim.name"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.c99c6378": {
+    "source": "src/league/staffdeals.ts",
+    "line": 117,
+    "params": {
+      "club": {
+        "expression": "team"
+      },
+      "name": {
+        "expression": "m.name"
+      },
+      "interim": {
+        "expression": "interim.name"
+      }
+    },
+    "locations": []
+  },
+  "league.staffdeals.text.d26acc74": {
+    "source": "src/league/staffdeals.ts",
+    "line": 118,
+    "params": {
+      "club": {
+        "expression": "iga(team)",
+        "particle": "이/가"
+      },
+      "name": {
+        "expression": "m.name"
+      },
+      "left": {
+        "expression": "Math.max(0, m.until - now) + (share ? 1 : 0)"
+      },
+      "interim": {
+        "expression": "interim.name"
+      }
+    },
+    "locations": []
+  },
+  "league.userclub.text.e19c3799": {
+    "source": "src/league/userclub.ts",
+    "line": 564,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[row.role]"
+      },
+      "name": {
+        "expression": "hire.name"
+      }
+    },
+    "locations": []
+  },
+  "league.userclub.text.5aaee79b": {
+    "source": "src/league/userclub.ts",
+    "line": 580,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[row.role]"
+      },
+      "name": {
+        "expression": "m.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.e52c8464": {
+    "source": "src/ui/Decision.tsx",
+    "line": 911,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.cf13f2c2": {
+    "source": "src/ui/Decision.tsx",
+    "line": 939,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[row.role]"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.044a2535": {
+    "source": "src/ui/Decision.tsx",
+    "line": 942,
+    "params": {
+      "years": {
+        "expression": "y"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.5bfc0de7": {
+    "source": "src/ui/Decision.tsx",
+    "line": 953,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.df6ca733": {
+    "source": "src/ui/Office.tsx",
+    "line": 638,
+    "params": {
+      "role": {
+        "expression": "STAFF_LABELS[role]"
+      }
+    },
+    "locations": []
+  },
+  "ui.office.text.044a2535": {
+    "source": "src/ui/Office.tsx",
+    "line": 641,
+    "params": {
+      "years": {
+        "expression": "y"
+      }
+    },
+    "locations": []
+  },
+  "ui.office.text.bade81a1": {
+    "source": "src/ui/Office.tsx",
+    "line": 645,
+    "params": {
+      "salary": {
+        "expression": "money(extensionSalary(m))"
+      }
+    },
+    "locations": []
+  },
+  "ui.office.text.96c5cd44": {
+    "source": "src/ui/Office.tsx",
+    "line": 646,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.7a51c586": {
+    "source": "src/ui/Office.tsx",
+    "line": 655,
+    "params": {
+      "name": {
+        "expression": "eulreul(m.name)",
+        "particle": "을/를"
+      },
+      "cost": {
+        "expression": "money(dismissalCost(league, role))"
+      }
+    },
+    "locations": []
+  },
+  "ui.office.text.9619a9ad": {
+    "source": "src/ui/Office.tsx",
+    "line": 658,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.dcac98c1": {
+    "source": "src/ui/Office.tsx",
+    "line": 658,
+    "params": {},
+    "locations": []
   }
 }

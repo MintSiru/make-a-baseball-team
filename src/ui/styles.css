@@ -3142,3 +3142,4 @@ fieldset.stops {
 
 /* 1.7.1: our postseason game is next (App.tsx controls). */
 .big-game { flex-basis: 100%; margin: 0 0 0.2rem; padding: 0.35rem 0.6rem; border-left: 4px solid var(--accent); background: rgba(127, 127, 127, 0.08); border-radius: 4px; }
+.staff-deal { margin-top: 0.25rem; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; }

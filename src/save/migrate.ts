@@ -122,6 +122,14 @@ export function migrateState(raw: unknown, from: string): LeagueState {
   backfillMlb(s, dealYears);
   // 1.7.1: the big-league seasons on the revised scale; a late glove only for a starter (the games from now on).
   rescoreMlb(s);
+  // 1.8.0: staff contracts on paper (staffdeals.ts) — the length left and a manager's bonus; the first season is not known.
+  const base = s.offseason ? s.offseason.year : s.year - 1;
+  for (const c of Object.values(s.clubs ?? {}))
+    for (const m of Object.values(c.staff ?? {}))
+      if (m && m.years === undefined) {
+        m.years = Math.max(1, m.until - base);
+        m.bonus = m.role === 'manager' ? Math.round((m.salary * 0.35 * m.years) / 1000) * 1000 : 0;
+      }
   // The ability graph starts from today's report.
   for (const p of Object.values(s.players)) if (!p.gradeLog && (p.status === 'active' || p.status === 'military' || p.status === 'freeAgent')) logGrades(p, p.scouting.season);
   s.sim = SIM_VERSION;

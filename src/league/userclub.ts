@@ -39,6 +39,7 @@ import { clubState } from './fans';
 import { iga } from './josa';
 import { changePosition, positionMove } from './positions';
 import { STAFF_LABELS, STAFF_ROLES, staffCandidates, staffOf } from './staff';
+import { defaultYears, signingBonus, yearsFor } from './staffdeals';
 import { alumnusHired, employedAlumni, legendFired } from './alumni';
 import { post, postingCandidates, postingNote } from './posting';
 import { toForeignPool } from './foreignpool';
@@ -88,7 +89,7 @@ export type AnnualInput =
   | { kind: 'posting'; id: PlayerId | null }
   | { kind: 'returnee'; ids: PlayerId[] }
   | { kind: 'sponsor'; index: number }
-  | { kind: 'staff'; hires: Partial<Record<StaffRole, string>> }
+  | { kind: 'staff'; hires: Partial<Record<StaffRole, string>>; /** 1.8.0: contract years for a hire or renewal. */ terms?: Partial<Record<StaffRole, number>> }
   /** Our players who want to retire: the ones the club asks to play on (V0.11). */
   | { kind: 'retire'; ids: PlayerId[] }
   /** Our players named for the national team: the ones the club asks to keep home (V0.12). */
@@ -257,6 +258,9 @@ export function developmentDecision(s: LeagueState, d: DraftState): Decision | n
 }
 
 /** Staff under contract, who is out of contract, and three candidates for every post. */
+/** The years a hire or renewal runs: the club's pick when it is allowed, else the usual. */
+const termYears = (role: StaffRole, picked: number | undefined, fallback = defaultYears(role)) => (picked && yearsFor(role).includes(picked) ? picked : fallback);
+
 export function staffDecision(s: LeagueState, year: number): Decision | null {
   const u = s.user!;
   const staff = staffOf(s, u.teamId);
@@ -551,13 +555,30 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           // A former player may meanwhile have gone to another club (1.4.0): then the club hires the post's next best.
           const gone = !!hire.playerId && employedAlumni(s).has(hire.playerId);
           const chosen = gone ? { ...hire, playerId: undefined, club: undefined, fame: undefined } : hire;
-          club.staff![row.role] = { ...chosen, id: `st-${u.teamId}-${row.role}-${year}`, until: year + (row.role === 'manager' ? 3 : 2) };
+          // 1.8.0: the length the club chose, and a manager's signing bonus paid now (staffdeals.ts).
+          const years = termYears(row.role, input.terms?.[row.role]);
+          const bonus = signingBonus(row.role, chosen.salary, years);
+          club.staff![row.role] = { ...chosen, id: `st-${u.teamId}-${row.role}-${year}`, until: year + years, since: year + 1, years, bonus, interim: undefined };
+          if (bonus) {
+            u.fund -= bonus;
+            u.ledger.push({ year, label: __i18n_k("league.userclub.text.e19c3799", { role: STAFF_LABELS[row.role], name: hire.name }), amount: -bonus });
+          }
           note(u, year, __i18n_k("league.userclub.resolveAnnual.4b2b440d", { value: STAFF_LABELS[row.role], name: hire.name, rating: hire.rating, money: money(hire.salary) }));
           alumnusHired(s, u.teamId, club.staff![row.role]!, `${year}-11-20`);
         } else if (row.expiring) {
           const m = club.staff![row.role]!;
-          m.until = year + 2;
+          const years = termYears(row.role, input.terms?.[row.role], 2);
+          m.until = year + years;
           m.salary = Math.round((m.salary * 1.05) / 1000) * 1000;
+          m.years = years;
+          m.bonus = signingBonus(row.role, m.salary, years);
+          m.since ??= year;
+          // An interim kept on loses the tag (대행 꼬리표를 뗀다).
+          delete m.interim;
+          if (m.bonus) {
+            u.fund -= m.bonus;
+            u.ledger.push({ year, label: __i18n_k("league.userclub.text.5aaee79b", { role: STAFF_LABELS[row.role], name: m.name }), amount: -m.bonus });
+          }
           note(u, year, __i18n_k("league.userclub.resolveAnnual.15d746b1", { value: STAFF_LABELS[row.role], name: m.name, money: money(m.salary) }));
         }
       }

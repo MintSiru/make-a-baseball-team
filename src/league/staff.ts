@@ -66,13 +66,13 @@ export function staffSalary(role: StaffRole, rating: number): number {
 /** A hire for `role`: since 1.4.0 often one of the league's retired players (alumni.ts), else a stranger. */
 export function makeStaff(s: LeagueState, role: StaffRole, key: string, year: number, quality = 0, opts: { club?: TeamId | null; exclude?: Set<PlayerId> } = {}): StaffMember {
   const alumnus = pickAlumnus(s, role, key, year, opts.club ?? null, opts.exclude);
-  if (alumnus) return alumnusStaff(s, alumnus, role, key, year, quality, staffSalary);
+  if (alumnus) return withTerms(alumnusStaff(s, alumnus, role, key, year, quality, staffSalary), year);
   const r = rng(`${s.seed}|staff|${key}`);
   const used = new Set(Object.values(s.clubs ?? {}).flatMap((c) => Object.values(c.staff ?? {}).map((m) => m!.name)));
   const rating = round5(50 + quality + (r() + r() + r() - 1.5) * 18);
   const age = role === 'manager' ? 45 + Math.floor(r() * 18) : 38 + Math.floor(r() * 22);
   const styles = Object.keys(MANAGER_STYLES) as ManagerStyle[];
-  return {
+  const m: StaffMember = {
     id: `st-${key}`,
     name: names.makeName(r, used).name,
     role,
@@ -82,6 +82,14 @@ export function makeStaff(s: LeagueState, role: StaffRole, key: string, year: nu
     until: year + 1 + Math.floor(r() * (role === 'manager' ? 3 : 2)),
     ...(role === 'manager' ? { style: styles[Math.floor(r() * styles.length)]! } : {}),
   };
+  // 1.8.0: the deal on paper (no further draws: the league's history is unchanged).
+  return withTerms(m, year);
+}
+
+/** 1.8.0: his first season, the deal's length and a manager's signing bonus, from the season he starts. */
+export function withTerms(m: StaffMember, year: number): StaffMember {
+  const years = Math.max(1, m.until - year);
+  return { ...m, since: m.since ?? year + 1, years, bonus: m.role === 'manager' ? Math.round((m.salary * 0.35 * years) / 1000) * 1000 : 0 };
 }
 
 /** Everyone the club employs (created on first use for a club without staff). */

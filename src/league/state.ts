@@ -62,6 +62,12 @@ export interface StaffMember {
   salary: number;
   /** Last season under contract. */
   until: number;
+  /** 1.8.0 (staffdeals.ts): the first season with the club, the length of his current deal and its signing bonus
+      (만 원, a manager's); an interim (대행) holds the post until the next staff decision. */
+  since?: number;
+  years?: number;
+  bonus?: number;
+  interim?: boolean;
   style?: ManagerStyle;
   /** 1.4.0 (alumni.ts): a former player — who he was, the club he played most for, and his fame then (0–100). */
   playerId?: PlayerId;

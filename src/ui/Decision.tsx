@@ -23,6 +23,7 @@ import { FaMarket } from './FaMarket';
 import { eulreul, iga, ro } from '../league/josa';
 import { positionLabel, shortName } from '../league/views';
 import { MANAGER_STYLES, STAFF_EFFECTS, STAFF_LABELS } from '../league/staff';
+import { defaultYears, yearsFor } from '../league/staffdeals';
 import type { Position } from '../model/position';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { money } from './format';
@@ -408,7 +409,12 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
       case 'sponsor':
         return { kind: 'sponsor', index: Number(choices.pick ?? 0) };
       case 'staff':
-        return { kind: 'staff', hires: Object.fromEntries(Object.entries(choices).filter(([, v]) => v)) };
+        return {
+          kind: 'staff',
+          hires: Object.fromEntries(Object.entries(choices).filter(([k, v]) => v && !k.endsWith(':years'))),
+          // 1.8.0: the contract length picked for each post (hire or renewal).
+          terms: Object.fromEntries(Object.entries(choices).filter(([k, v]) => v && k.endsWith(':years')).map(([k, v]) => [k.slice(0, -6), Number(v)])),
+        };
       case 'faCompensation':
         return { kind: 'faCompensation', player: choices.pick && choices.pick !== 'cash' ? choices.pick : null };
       case 'roster':
@@ -463,7 +469,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
         setChoices({ pick: String(a.index) });
         break;
       case 'staff':
-        setChoices(a.hires as Record<string, string>);
+        setChoices({ ...(a.hires as Record<string, string>), ...Object.fromEntries(Object.entries(a.terms ?? {}).map(([k, v]) => [`${k}:years`, String(v)])) });
         break;
       case 'rival':
         setRival(a.settings);
@@ -902,6 +908,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
                   <th class="num">{__i18n_t("ui.decision.decision.cbf383ec")}</th>
                   <th>{__i18n_t("ui.decision.decision.b4116369")}</th>
                   <th>{__i18n_t("ui.decision.decision.08109e41")}</th>
+                  <th>{__i18n_t("ui.decision.text.e52c8464")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -927,11 +934,23 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
                         )))}
                       </select>
                     </td>
+                    <td>
+                      {(row.expiring || choices[row.role]) && (
+                        <select value={choices[`${row.role}:years`] ?? String(choices[row.role] ? defaultYears(row.role) : 2)} onChange={(e) => choose(`${row.role}:years`, (e.currentTarget as HTMLSelectElement).value)} aria-label={__i18n_t("ui.decision.text.cf13f2c2", { role: STAFF_LABELS[row.role] })}>
+                          {yearsFor(row.role).map((y) => (
+                            <option key={y} value={String(y)}>
+                              {__i18n_t("ui.decision.text.044a2535", { years: y })}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </td>
                   </tr>
                 )))}
               </tbody>
             </table>
           </div>
+          <p class="muted small">{__i18n_t("ui.decision.text.5bfc0de7")}</p>
           {__i18n_display(d.rows.some((r) => r.candidates.some((c) => c.playerId)) && (
             <>
               <h4>{__i18n_t("ui.decision.decision.d378d082")}</h4>
