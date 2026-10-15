@@ -17,6 +17,7 @@ import { foreignContract, MANWON_PER_USD, renewSalary, salaryIn, slotBonus } fro
 import { usd } from './foreign';
 import { cityById } from '../club/cities';
 import { budgetFor, foreignSigningDecision, STADIUM_PLANS } from './expansion';
+import { ownerSweep } from './sweep';
 import {
   developmentContract,
   leaveLeague,
@@ -194,6 +195,8 @@ export function yearlyGrant(s: LeagueState) {
   scenarioWinter(s, year);
   if (year < startYear() + 1) return; // the founding fund covers the first winter
   const event = ownerEvents(s, year);
+  // 1.8.2: after seasons of surplus the owner may take part of a large fund back (sweep.ts).
+  ownerSweep(s, year);
   const k = DIFFICULTY_MONEY[u.settings.difficulty];
   const b = nextBudget(
     { support: baseSupport(u.settings.parentType) * k * supportFactor(u.settings), payroll: (budgetFor(u.settings).payrollBudget * salaryCapFor(next)) / salaryCapFor(startYear() + 1) },

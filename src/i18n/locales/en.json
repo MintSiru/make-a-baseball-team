@@ -6994,5 +6994,17 @@
   "ui.twelve.text.fee5ed2a": "Two leagues of six clubs, as in 1999–2000. 14 games against each club in the same league, 12–13 against the other league. The top three of each league reach the postseason (a wild card game if one league's 4th has a better record than the other's 3rd); the semi-playoffs and playoffs are cross-league",
   "ui.twelve.text.8d4a27a9": "The top three of each league reach the postseason. If one league's 4th has a better record than the other league's 3rd, the two play a wild card series for the place (best of three, two games at the 4th's park). In the semi-playoffs (best of five) each league's 2nd meets the other league's 3rd; in the playoffs (best of five) each league winner meets the winner of the other league's 2nd's semi-playoff; the two winners play the Korean Series (best of seven).",
   "ui.standings.text.1c606c76": "Each league's 2nd and 3rd play the Climax Series First Stage, the winner meets the league winner in the Final Stage (the winner starting a win up), and the two league champions meet in the Korean Series (NPB style).",
-  "ui.standings.text.940e69f5": "The top three of each league reach the postseason. If one league's 4th has a better record than the other league's 3rd, they play a wild card series for the place; the semi-playoffs and playoffs are cross-league."
+  "ui.standings.text.940e69f5": "The top three of each league reach the postseason. If one league's 4th has a better record than the other league's 3rd, they play a wild card series for the place; the semi-playoffs and playoffs are cross-league.",
+  "league.sweep.text.a7762a23": "the city",
+  "league.sweep.text.455b9ad1": "the investors",
+  "league.sweep.text.cf76b767": "the parent company",
+  "league.sweep.text.10be9b03": "Returned to the city's budget",
+  "league.sweep.text.ac0c0577": "Dividend to the investors",
+  "league.sweep.text.c0de68bc": "Dividend to the parent company (fund taken back)",
+  "league.sweep.text.db0fc332": "{value}",
+  "league.sweep.text.186c8990": "{who} takes {amount} of the club's fund",
+  "league.sweep.text.b692d735": "After {years} seasons in surplus the club's fund had grown to {fund}, and {who} took {amount} of it.",
+  "league.sweep.text.30e3f6c0": "The club's fund is now {left}, and {who}'s trust rose a little.",
+  "ui.manual.text.a53ca2a8": "The owner takes the surplus",
+  "ui.manual.text.6e1e1ae1": "If the club's fund grows {years} seasons running and passes a set amount ({big} for a conglomerate, {small} for a citizen or naming-rights club), the owner (the city for a citizen club, the investors for a naming-rights club) may take part of it as a dividend in the winter: about half of what is above the level it lets the club keep. After that it waits for another {years} seasons of surplus. Building work does not count toward the surplus or the deficit."
 }
