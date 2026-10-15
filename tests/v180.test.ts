@@ -4,7 +4,9 @@ import { describe, expect, it } from 'vitest';
 import { faOutlook } from '../src/league/faclock';
 import { isForeign } from '../src/league/players';
 import { rosterView } from '../src/league/views';
-import { loadSave } from './helpers';
+import { endRegular, loadSave } from './helpers';
+import { autoDecision } from '../src/league/expansion';
+import { askOwnerChance, askOwnerProblem } from '../src/league/ownerask';
 import { apply } from '../src/league/actions';
 import { STAFF_ROLES, staffOf } from '../src/league/staff';
 import { dismissalCost, extendProblem, fireProblem, staffTerms } from '../src/league/staffdeals';
@@ -80,4 +82,42 @@ describe('staff contracts in detail', () => {
     expect(s.news!.some((n) => n.id.startsWith('fire-') && n.mine)).toBe(true);
     expect(fireProblem(s, 'manager')).not.toBeNull();
   });
+});
+
+describe('asking the owner for a free agent', () => {
+  it('once a winter: a yes pays his deal like a gift, a no costs a little trust; a conglomerate says yes more', () => {
+    const s = loadSave();
+    endRegular(s);
+    apply(s, { kind: 'postseason' });
+    apply(s, { kind: 'nextSeason' });
+    for (let i = 0; i < 300 && s.pending?.kind !== 'faRound'; i++) {
+      if (s.pending) apply(s, { kind: 'decide', input: autoDecision(s)! });
+      else apply(s, { kind: 'nextSeason' });
+    }
+    expect(s.pending?.kind).toBe('faRound');
+    const m = s.offseason!.fa!;
+    const u = s.user!;
+    delete m.gift;
+    const target = m.order.find((id) => !askOwnerProblem(s, id))!;
+    expect(target).toBeDefined();
+    // The parent's type and trust move the odds.
+    u.settings.parentType = 'conglomerate';
+    u.trust = 70;
+    const rich = askOwnerChance(s, target);
+    u.settings.parentType = 'citizen';
+    expect(askOwnerChance(s, target)).toBeLessThan(rich);
+    u.trust = 30;
+    expect(askOwnerChance(s, target)).toBeLessThan(rich);
+    // A sure yes: the owner pays his deal (the market's gift), and nobody can be asked again this winter.
+    u.settings.parentType = 'conglomerate';
+    u.trust = 100;
+    const trust = u.trust;
+    apply(s, { kind: 'askOwner', id: target });
+    if (m.asked!.yes) {
+      expect(m.gift?.id).toBe(target);
+      expect(u.trust).toBe(trust);
+    } else expect(u.trust).toBe(trust - 3);
+    const another = m.order.find((id) => id !== target);
+    expect(askOwnerProblem(s, another!)).not.toBeNull();
+  }, 240_000);
 });

@@ -6931,5 +6931,21 @@
   "ui.office.text.96c5cd44": "Extend",
   "ui.office.text.7a51c586": "Let {name} go? The {cost} left on his contract is still paid, and an interim takes over until next winter.",
   "ui.office.text.9619a9ad": "Fire",
-  "ui.office.text.dcac98c1": "Dismiss"
+  "ui.office.text.dcac98c1": "Dismiss",
+  "league.ownerask.text.e8621a4d": "You can only ask while the free-agent market is open.",
+  "league.ownerask.text.2d20c512": "The owner is already paying for one free agent this winter.",
+  "league.ownerask.text.19d60d1c": "You've already been to the owner this winter.",
+  "league.ownerask.text.09cffef4": "You can only ask for a free agent still on the market.",
+  "league.ownerask.text.ea57b6e1": "Our own free agents have to be kept within the club's budget.",
+  "league.ownerask.text.9eb5fa6c": "The owner won't spend on players over {age}.",
+  "league.ownerask.text.31861b5d": "The owner: \"Go and get {name}\"",
+  "league.ownerask.text.873ff20e": "{parent} will pay to sign {name}: up to {total} guaranteed, outside the club's budget.",
+  "league.ownerask.text.f959c2dc": "{parent} promises the money to sign {name}",
+  "league.ownerask.text.1f70003a": "The owner won't pay for {name}",
+  "league.ownerask.text.71e36b05": "\"I have better uses for that money.\" The owner's trust has dropped a little.",
+  "league.ownerask.text.d968d82d": "Asked the owner to pay for {name}; the owner agreed",
+  "league.ownerask.text.add6a4cd": "Asked the owner to pay for {name}; the owner said no",
+  "ui.faMarket.text.d729c332": "Ask the owner to pay for him",
+  "ui.faMarket.text.741043eb": "About {pct}% chance of a yes · once a winter · a no costs a little trust",
+  "ui.faMarket.text.71ec6ccb": "The owner turned down paying for this player."
 }

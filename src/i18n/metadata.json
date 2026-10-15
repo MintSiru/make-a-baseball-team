@@ -66995,5 +66995,145 @@
     "line": 658,
     "params": {},
     "locations": []
+  },
+  "league.ownerask.text.e8621a4d": {
+    "source": "src/league/ownerask.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.ownerask.text.2d20c512": {
+    "source": "src/league/ownerask.ts",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "league.ownerask.text.19d60d1c": {
+    "source": "src/league/ownerask.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.ownerask.text.09cffef4": {
+    "source": "src/league/ownerask.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.ownerask.text.ea57b6e1": {
+    "source": "src/league/ownerask.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.ownerask.text.9eb5fa6c": {
+    "source": "src/league/ownerask.ts",
+    "line": 41,
+    "params": {
+      "age": {
+        "expression": "OWNER_ASK.maxAge"
+      }
+    },
+    "locations": []
+  },
+  "league.ownerask.text.31861b5d": {
+    "source": "src/league/ownerask.ts",
+    "line": 73,
+    "params": {
+      "name": {
+        "expression": "eulreul(p.name)",
+        "particle": "을/를"
+      }
+    },
+    "locations": []
+  },
+  "league.ownerask.text.873ff20e": {
+    "source": "src/league/ownerask.ts",
+    "line": 74,
+    "params": {
+      "parent": {
+        "expression": "iga(u.settings.parentName)",
+        "particle": "이/가"
+      },
+      "name": {
+        "expression": "eulreul(p.name)",
+        "particle": "을/를"
+      },
+      "total": {
+        "expression": "eok(m.gift.total)"
+      }
+    },
+    "locations": []
+  },
+  "league.ownerask.text.f959c2dc": {
+    "source": "src/league/ownerask.ts",
+    "line": 78,
+    "params": {
+      "parent": {
+        "expression": "u.settings.parentName"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.ownerask.text.1f70003a": {
+    "source": "src/league/ownerask.ts",
+    "line": 85,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.ownerask.text.71e36b05": {
+    "source": "src/league/ownerask.ts",
+    "line": 86,
+    "params": {},
+    "locations": []
+  },
+  "league.ownerask.text.d968d82d": {
+    "source": "src/league/ownerask.ts",
+    "line": 91,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.ownerask.text.add6a4cd": {
+    "source": "src/league/ownerask.ts",
+    "line": 91,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.faMarket.text.d729c332": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 421,
+    "params": {},
+    "locations": []
+  },
+  "ui.faMarket.text.741043eb": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 423,
+    "params": {
+      "pct": {
+        "expression": "Math.round(askOwnerChance(league, t.id) * 100)"
+      }
+    },
+    "locations": []
+  },
+  "ui.faMarket.text.71ec6ccb": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 426,
+    "params": {},
+    "locations": []
   }
 }

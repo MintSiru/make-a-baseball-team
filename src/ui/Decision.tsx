@@ -4,6 +4,7 @@ import { AlumnusTag } from './Alumni';
 import { isLegend } from '../league/alumni';
 import type { ComponentChildren } from 'preact';
 import { useEffect, useMemo, useState } from 'preact/hooks';
+import type { Action } from '../league/actions';
 import { Help } from './Help';
 import { decisionTip } from './tutorial';
 import { draftContracts, TOOL_LABELS, type Difficulty } from '../draftroom';
@@ -40,6 +41,7 @@ interface Props {
   league: LeagueState;
   onSubmit: (input: DecisionInput) => void;
   onPlayer: (id: PlayerId) => void;
+  onAct?: (a: Action) => void;
 }
 
 const TITLES: Record<DecisionT['kind'], string> = {
@@ -316,7 +318,7 @@ function DraftTable({ league, onPlayer, onPick }: { league: LeagueState; onPlaye
   );
 }
 
-export function Decision({ league, onSubmit, onPlayer }: Props) {
+export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
   const d = league.pending!;
   const u = league.user!;
   const next = league.offseason ? league.offseason.year + 1 : league.year + 1;
@@ -491,7 +493,7 @@ export function Decision({ league, onSubmit, onPlayer }: Props) {
   );
 
   // The free-agent market has its own screen (V0.8).
-  if (d.kind === 'faRound') return <FaMarket league={league} onSubmit={onSubmit} onPlayer={onPlayer} />;
+  if (d.kind === 'faRound') return <FaMarket league={league} onSubmit={onSubmit} onPlayer={onPlayer} onAct={onAct} />;
 
   let body: ComponentChildren = null;
   switch (d.kind) {

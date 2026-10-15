@@ -633,7 +633,7 @@ export function App() {
         ))}
         <Guard resetKey={`${tab}|${clubView}`} onBack={() => setTab(tab === 'standings' ? (league.user ? 'club' : 'leaders') : 'standings')}>
         <TutorialCard league={league} tab={tab} view={tab === 'club' ? clubView : undefined} onAct={(a) => act(a, __i18n_k("ui.app.app.aca4b433"), false)} />
-        {__i18n_display(tab === 'decision' && league.pending && <Decision league={league} onPlayer={setPlayerId} onSubmit={(input) => act({ kind: 'decide', input }, __i18n_k("ui.app.app.7890cafc"), false)} />)}
+        {__i18n_display(tab === 'decision' && league.pending && <Decision league={league} onPlayer={setPlayerId} onSubmit={(input) => act({ kind: 'decide', input }, __i18n_k("ui.app.app.7890cafc"), false)} onAct={(a) => act(a, __i18n_k("ui.app.app.7890cafc"), false)} />)}
         {__i18n_display(tab === 'club' && league.user && (
           <MyClub
             league={league}

@@ -1,4 +1,5 @@
 import { extendStaff, fireStaff } from './staffdeals';
+import { askOwner } from './ownerask';
 import type { StaffRole } from './state';
 import { k as __i18n_k } from '../i18n/index';
 /* What the player can do, as state transitions. The UI and the worker both call these. */
@@ -94,6 +95,8 @@ export type Action =
   /** 1.8.0 (staffdeals.ts): extend a head in his last season, or dismiss him (an interim takes over). */
   | { kind: 'staffExtend'; role: StaffRole; years: number }
   | { kind: 'staffFire'; role: StaffRole }
+  /** 1.8.0 (ownerask.ts): ask the owner to pay for a free agent (once a winter). */
+  | { kind: 'askOwner'; id: PlayerId }
   // Players and facilities (V0.10)
   | { kind: 'trip'; id: PlayerId; site: SiteId }
   | { kind: 'facility'; facility: FacilityKind }
@@ -123,7 +126,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout', 'extend', 'captains', 'staffExtend'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -319,6 +322,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'staffFire':
       fireStaff(s, action.role);
+      break;
+    case 'askOwner':
+      askOwner(s, action.id);
       break;
     case 'inspect':
       inspect(s, action.id);

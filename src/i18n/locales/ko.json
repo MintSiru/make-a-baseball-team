@@ -6931,5 +6931,21 @@
   "ui.office.text.96c5cd44": "연장",
   "ui.office.text.7a51c586": "{name} 내보낼까요? 남은 연봉 {cost}은 그대로 나가고, 다음 겨울까지 대행이 맡습니다.",
   "ui.office.text.9619a9ad": "경질",
-  "ui.office.text.dcac98c1": "해임"
+  "ui.office.text.dcac98c1": "해임",
+  "league.ownerask.text.e8621a4d": "FA 시장이 열려 있을 때만 부탁할 수 있습니다.",
+  "league.ownerask.text.2d20c512": "이번 겨울에는 구단주가 이미 FA 한 명을 맡았습니다.",
+  "league.ownerask.text.19d60d1c": "이번 겨울에는 이미 구단주를 찾아갔습니다.",
+  "league.ownerask.text.09cffef4": "시장에 남아 있는 FA만 부탁할 수 있습니다.",
+  "league.ownerask.text.ea57b6e1": "우리 구단 FA는 구단 예산으로 잡아야 합니다.",
+  "league.ownerask.text.9eb5fa6c": "구단주는 {age}세가 넘는 선수에게는 돈을 쓰지 않습니다.",
+  "league.ownerask.text.31861b5d": "구단주, \"{name} 잡아 오게\"",
+  "league.ownerask.text.873ff20e": "{parent} {name} 영입 자금을 대기로 했습니다. 보장액 {total}까지 구단 예산 밖에서 냅니다.",
+  "league.ownerask.text.f959c2dc": "{parent}, {name} 영입 자금 지원 약속",
+  "league.ownerask.text.1f70003a": "구단주, {name} 영입 지원을 거절",
+  "league.ownerask.text.71e36b05": "\"그 돈이면 다른 데 쓰겠네.\" 구단주의 신뢰가 조금 떨어졌습니다.",
+  "league.ownerask.text.d968d82d": "구단주에게 {name} 영입 지원을 부탁해 승낙받음",
+  "league.ownerask.text.add6a4cd": "구단주에게 {name} 영입 지원을 부탁했다가 거절당함",
+  "ui.faMarket.text.d729c332": "구단주에게 영입 지원 부탁",
+  "ui.faMarket.text.741043eb": "승낙 가능성 약 {pct}% · 한 겨울에 한 번 · 거절당하면 신뢰가 조금 떨어집니다",
+  "ui.faMarket.text.71ec6ccb": "구단주가 이 선수의 영입 지원을 거절했습니다."
 }

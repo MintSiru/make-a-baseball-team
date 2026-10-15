@@ -6931,5 +6931,21 @@
   "ui.office.text.96c5cd44": "延長",
   "ui.office.text.7a51c586": "{name}を解任しますか？残りの年俸{cost}はそのまま支払われ、次の冬まで代行が務めます。",
   "ui.office.text.9619a9ad": "解任",
-  "ui.office.text.dcac98c1": "解任"
+  "ui.office.text.dcac98c1": "解任",
+  "league.ownerask.text.e8621a4d": "FA市場が開いている間だけ頼めます。",
+  "league.ownerask.text.2d20c512": "今冬はオーナーがすでにFAを一人引き受けています。",
+  "league.ownerask.text.19d60d1c": "今冬はすでにオーナーを訪ねました。",
+  "league.ownerask.text.09cffef4": "市場に残っているFAだけ頼めます。",
+  "league.ownerask.text.ea57b6e1": "自チームのFAは球団予算で引き留める必要があります。",
+  "league.ownerask.text.9eb5fa6c": "オーナーは{age}歳を超える選手にはお金を出しません。",
+  "league.ownerask.text.31861b5d": "オーナー「{name}を獲ってこい」",
+  "league.ownerask.text.873ff20e": "{parent}が{name}の獲得資金を出すことにしました。保証額{total}まで球団予算の外から出します。",
+  "league.ownerask.text.f959c2dc": "{parent}、{name}獲得資金の支援を約束",
+  "league.ownerask.text.1f70003a": "オーナー、{name}獲得の支援を拒否",
+  "league.ownerask.text.71e36b05": "「その金なら他に使う」オーナーの信頼が少し下がりました。",
+  "league.ownerask.text.d968d82d": "オーナーに{name}の獲得支援を頼み、承諾を得た",
+  "league.ownerask.text.add6a4cd": "オーナーに{name}の獲得支援を頼んだが断られた",
+  "ui.faMarket.text.d729c332": "オーナーに獲得支援を頼む",
+  "ui.faMarket.text.741043eb": "承諾の見込み約{pct}% · 一冬に一度 · 断られると信頼が少し下がります",
+  "ui.faMarket.text.71ec6ccb": "オーナーはこの選手の獲得支援を断りました。"
 }
