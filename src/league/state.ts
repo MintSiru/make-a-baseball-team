@@ -421,7 +421,9 @@ export interface UserClub {
   payrollBudget: number;
   firstTeamYear: number;
   /** Cash in and out of the fund; `settlement` marks the year-end operating result and parent support. */
-  ledger: { year: number; label: string; amount: number; settlement?: boolean; capital?: boolean }[];
+  ledger: { year: number; label: string; amount: number; settlement?: boolean; capital?: boolean; /** 1.8.2: the owner took part of the fund (sweep.ts). */ sweep?: boolean }[];
+  /** 1.8.2 (sweep.ts): the winters the owner took part of the fund, and how much. */
+  sweeps?: { year: number; amount: number }[];
   /** Bullpen roles the general manager set (the manager fills the rest). */
   penRoles?: Record<PlayerId, BullpenRole>;
   /** Platoon halves: players who start only against left- ('L') or right-handed ('R') starters. */

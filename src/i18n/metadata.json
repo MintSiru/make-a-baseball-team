@@ -67460,5 +67460,119 @@
     "line": 38,
     "params": {},
     "locations": []
+  },
+  "league.sweep.text.a7762a23": {
+    "source": "src/league/sweep.ts",
+    "line": 59,
+    "params": {},
+    "locations": []
+  },
+  "league.sweep.text.455b9ad1": {
+    "source": "src/league/sweep.ts",
+    "line": 59,
+    "params": {},
+    "locations": []
+  },
+  "league.sweep.text.cf76b767": {
+    "source": "src/league/sweep.ts",
+    "line": 59,
+    "params": {},
+    "locations": []
+  },
+  "league.sweep.text.10be9b03": {
+    "source": "src/league/sweep.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "league.sweep.text.ac0c0577": {
+    "source": "src/league/sweep.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "league.sweep.text.c0de68bc": {
+    "source": "src/league/sweep.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "league.sweep.text.db0fc332": {
+    "source": "src/league/sweep.ts",
+    "line": 64,
+    "params": {
+      "value": {
+        "expression": "Math.round(n / 10_000)"
+      }
+    },
+    "locations": []
+  },
+  "league.sweep.text.186c8990": {
+    "source": "src/league/sweep.ts",
+    "line": 66,
+    "params": {
+      "who": {
+        "expression": "parent"
+      },
+      "amount": {
+        "expression": "eok(amount)"
+      }
+    },
+    "locations": []
+  },
+  "league.sweep.text.b692d735": {
+    "source": "src/league/sweep.ts",
+    "line": 68,
+    "params": {
+      "years": {
+        "expression": "SWEEP.years"
+      },
+      "fund": {
+        "expression": "eok(u.fund + amount)"
+      },
+      "who": {
+        "expression": "iga(who)",
+        "particle": "이/가"
+      },
+      "amount": {
+        "expression": "eok(amount)"
+      }
+    },
+    "locations": []
+  },
+  "league.sweep.text.30e3f6c0": {
+    "source": "src/league/sweep.ts",
+    "line": 69,
+    "params": {
+      "left": {
+        "expression": "eok(u.fund)"
+      },
+      "who": {
+        "expression": "who"
+      }
+    },
+    "locations": []
+  },
+  "ui.manual.text.a53ca2a8": {
+    "source": "src/ui/Manual.tsx",
+    "line": 84,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.6e1e1ae1": {
+    "source": "src/ui/Manual.tsx",
+    "line": 84,
+    "params": {
+      "years": {
+        "expression": "SWEEP.years"
+      },
+      "big": {
+        "expression": "eok(SWEEP.threshold.conglomerate)"
+      },
+      "small": {
+        "expression": "eok(SWEEP.threshold.citizen)"
+      }
+    },
+    "locations": []
   }
 }

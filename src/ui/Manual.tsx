@@ -8,6 +8,7 @@ import { DIFFICULTY_LABEL, DIFFICULTY_NOTE } from './Settings';
 import { decisionTips } from './tutorial';
 import { GROWTH_LABELS, GROWTH_NOTES, GROWTH_ORDER } from '../league/traits';
 import { ALL_STAR, COMBINE } from '../league/tuning';
+import { SWEEP } from '../league/sweep';
 
 const K = KBO_2026;
 const eok = (manwon: number) => __i18n_k("ui.manual.eok.db0fc332", { value: Math.round(manwon / 1000) / 10 });
@@ -80,6 +81,7 @@ const GLOSSARY: [string, string][] = [
   [__i18n_t("ui.manual.text.1c39ef4c"), __i18n_t("ui.manual.text.181808f4")],
   [__i18n_t("ui.manual.text.5aa18de4"), __i18n_t("ui.manual.text.af32c9d1")],
   [__i18n_t("ui.manual.text.763fd2e7"), __i18n_t("ui.manual.text.76588ec4")],
+  [__i18n_t("ui.manual.text.a53ca2a8"), __i18n_t("ui.manual.text.6e1e1ae1", { years: SWEEP.years, big: eok(SWEEP.threshold.conglomerate), small: eok(SWEEP.threshold.citizen) })],
 ];
 
 const YEAR: [string, string][] = [
