@@ -6965,5 +6965,13 @@
   "league.scenarios.text.933c6931": "A championship won in spite of the injury ward.",
   "league.expansion.text.d57db4c0": "Oh no! The new fitness trainer demands high-intensity training",
   "league.expansion.text.8d318296": "The trainer the owner brought in himself has drawn up a high-intensity schedule for every player. Fatigue builds up.",
-  "league.expansion.text.f57bd081": "Our club only: injury chance ×{x}, rehab +{rehab}% · main tools -{fatigue} · starters' pitch limit -{pitches}"
+  "league.expansion.text.f57bd081": "Our club only: injury chance ×{x}, rehab +{rehab}% · main tools -{fatigue} · starters' pitch limit -{pitches}",
+  "ui.manual.text.eb55a24f": "FA timing",
+  "ui.manual.text.e402ce27": "The FA column in the squad tables and the player screen show the season after which each domestic player qualifies for free agency. It counts the registered seasons still needed ({hs} from high school, {col} from college, {again} more after a free-agent deal) as if he spends each on the first team, and moves it to the end of a multi-year contract that runs longer. Other clubs' players are shown the same way.",
+  "ui.manual.text.1c39ef4c": "Manager and coach contracts",
+  "ui.manual.text.181808f4": "When hiring or renewing staff you choose the length of the deal (a manager 1–4 years, a head coach and the others 1–3). A manager also receives a signing bonus up front. Staff in the last season of a contract can be extended at any time (a better coach asks a bigger raise); a dismissed one is still paid the rest of his contract, and an interim takes the post until the next winter's staff decision.",
+  "ui.manual.text.5aa18de4": "Asking the owner for a free agent",
+  "ui.manual.text.af32c9d1": "Once a winter, while the FA market is open, you may pick one player on the market and ask the owner to pay for him. A conglomerate is the likeliest to agree and a citizen club the least; higher trust and a lower price help. If the owner agrees, the deal is paid outside the budget, like a parent-company gift; a refusal costs a little trust.",
+  "ui.manual.text.763fd2e7": "NPB-style Climax Series",
+  "ui.manual.text.76588ec4": "When a rival's founding splits the league in two, choose the postseason format in the expansion panel. NPB-style: each league's second and third play the First Stage (best of three, all at the second's park), the winner meets the league winner in the Final Stage (the winner starting a win up and at home throughout), and the two league champions play the Korean Series."
 }

@@ -76,6 +76,10 @@ const GLOSSARY: [string, string][] = [
   [__i18n_k("ui.manual.gLOSSARY.efd6260e"), __i18n_k("ui.manual.gLOSSARY.ca87286d")],
   [__i18n_k("ui.manual.gLOSSARY.0d653027"), __i18n_k("ui.manual.gLOSSARY.9c78929a")],
   [__i18n_k("ui.manual.gLOSSARY.5672f8d9"), __i18n_k("ui.manual.gLOSSARY.ebd7f0a7")],
+  [__i18n_t("ui.manual.text.eb55a24f"), __i18n_t("ui.manual.text.e402ce27", { hs: K.freeAgency.seasonsHighSchool, col: K.freeAgency.seasonsCollege, again: K.freeAgency.seasonsToRequalify })],
+  [__i18n_t("ui.manual.text.1c39ef4c"), __i18n_t("ui.manual.text.181808f4")],
+  [__i18n_t("ui.manual.text.5aa18de4"), __i18n_t("ui.manual.text.af32c9d1")],
+  [__i18n_t("ui.manual.text.763fd2e7"), __i18n_t("ui.manual.text.76588ec4")],
 ];
 
 const YEAR: [string, string][] = [

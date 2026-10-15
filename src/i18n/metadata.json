@@ -67276,5 +67276,63 @@
       }
     },
     "locations": []
+  },
+  "ui.manual.text.eb55a24f": {
+    "source": "src/ui/Manual.tsx",
+    "line": 79,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.e402ce27": {
+    "source": "src/ui/Manual.tsx",
+    "line": 79,
+    "params": {
+      "hs": {
+        "expression": "K.freeAgency.seasonsHighSchool"
+      },
+      "col": {
+        "expression": "K.freeAgency.seasonsCollege"
+      },
+      "again": {
+        "expression": "K.freeAgency.seasonsToRequalify"
+      }
+    },
+    "locations": []
+  },
+  "ui.manual.text.1c39ef4c": {
+    "source": "src/ui/Manual.tsx",
+    "line": 80,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.181808f4": {
+    "source": "src/ui/Manual.tsx",
+    "line": 80,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.5aa18de4": {
+    "source": "src/ui/Manual.tsx",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.af32c9d1": {
+    "source": "src/ui/Manual.tsx",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.763fd2e7": {
+    "source": "src/ui/Manual.tsx",
+    "line": 82,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.76588ec4": {
+    "source": "src/ui/Manual.tsx",
+    "line": 82,
+    "params": {},
+    "locations": []
   }
 }
