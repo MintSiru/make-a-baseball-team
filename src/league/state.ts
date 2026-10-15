@@ -521,7 +521,7 @@ export interface ExpansionSettings {
   cityId: string;
   parentType: import('../club/types').ParentCompanyType;
   parentName: string;
-  stadium: 'existing' | 'newMedium' | 'newLarge' | 'dome';
+  stadium: 'existing' | 'newMedium' | 'newLarge' | 'dome' | 'newGrand' | 'newMega';
   promotion: Promotion;
   difficulty: Difficulty;
   /** A scenario (1.6.0, scenarios.ts), or null for a free founding. */

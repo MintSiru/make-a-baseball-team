@@ -67334,5 +67334,131 @@
     "line": 82,
     "params": {},
     "locations": []
+  },
+  "league.expansion.text.536e4d98": {
+    "source": "src/league/expansion.ts",
+    "line": 95,
+    "params": {},
+    "locations": []
+  },
+  "league.expansion.text.45a3374c": {
+    "source": "src/league/expansion.ts",
+    "line": 96,
+    "params": {},
+    "locations": []
+  },
+  "league.expansion.text.86c13ef1": {
+    "source": "src/league/expansion.ts",
+    "line": 198,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.7182af3e": {
+    "source": "src/league/scenarios.ts",
+    "line": 241,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.cc2890a0": {
+    "source": "src/league/scenarios.ts",
+    "line": 242,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.ba215170": {
+    "source": "src/league/scenarios.ts",
+    "line": 244,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.ada466e0": {
+    "source": "src/league/scenarios.ts",
+    "line": 245,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.8d8be041": {
+    "source": "src/league/scenarios.ts",
+    "line": 249,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.71b62f90": {
+    "source": "src/league/scenarios.ts",
+    "line": 249,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.c6abb474": {
+    "source": "src/league/scenarios.ts",
+    "line": 249,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.023843e3": {
+    "source": "src/league/scenarios.ts",
+    "line": 409,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.41402f7e": {
+    "source": "src/club/cities.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.4f20da2a": {
+    "source": "src/club/cities.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.563ff67e": {
+    "source": "src/club/cities.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.7853d34f": {
+    "source": "src/club/cities.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.ce29a185": {
+    "source": "src/club/cities.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "ui.newGame.text.4b828e65": {
+    "source": "src/ui/NewGame.tsx",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.fee5ed2a": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 126,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.8d4a27a9": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 173,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.1c606c76": {
+    "source": "src/ui/Standings.tsx",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.940e69f5": {
+    "source": "src/ui/Standings.tsx",
+    "line": 38,
+    "params": {},
+    "locations": []
   }
 }

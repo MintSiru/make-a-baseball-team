@@ -15,8 +15,8 @@ export function Standings({ league, onTeam, onBox, onAct }: { league: LeagueStat
   const two = twoLeagues(league) ? leagueTables(rows, league.twelve!.leagues!) : null;
   const groups: { title: string | null; rows: Row[]; cut: number }[] = two
     ? [
-        { title: LEAGUE_NAMES.dream, rows: two.dream, cut: 2 },
-        { title: LEAGUE_NAMES.magic, rows: two.magic, cut: 2 },
+        { title: LEAGUE_NAMES.dream, rows: two.dream, cut: 3 },
+        { title: LEAGUE_NAMES.magic, rows: two.magic, cut: 3 },
       ]
     : [{ title: null, rows, cut: 5 }];
   const series = seasonSeries(league);
@@ -33,7 +33,9 @@ export function Standings({ league, onTeam, onBox, onAct }: { league: LeagueStat
           )))}
           <p class="muted">
             {__i18n_display(two
-              ? __i18n_k("ui.standings.standings.86752959")
+              ? league.twelve?.playoffs === 'npb'
+                ? __i18n_t("ui.standings.text.1c606c76")
+                : __i18n_t("ui.standings.text.940e69f5")
               : __i18n_k("ui.standings.standings.83a72e8d"))}
           </p>
           {__i18n_display(rival && league.user && series.w + series.l + series.t > 0 && (

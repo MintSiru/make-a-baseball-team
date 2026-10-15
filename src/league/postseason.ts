@@ -47,8 +47,11 @@ export interface Bracket {
   /** Single league: the five seeds; two leagues: the league tables' top three each. */
   seeds: TeamId[];
   done: boolean;
-  /** 1.8.0: two leagues the NPB way (클라이맥스 시리즈): each league's 2nd v 3rd, then its winner with a win in hand. */
-  style?: 'npb';
+  /** 1.8.0: two leagues the NPB way (클라이맥스 시리즈): each league's 2nd v 3rd, then its winner with a win in hand.
+      1.8.1, 'cross' (the two-league default since): each league's top three, a wild card for a league's 4th with a
+      better record than the other league's 3rd, then cross-league semi-playoffs and playoffs (seeds 6 and 7 are the
+      two 4ths). A two-league bracket with no style is the 1999–2000 rule it replaced, kept for a postseason under way. */
+  style?: 'npb' | 'cross';
 }
 
 const five = [true, true, false, false, true];
@@ -92,7 +95,7 @@ function playSeriesGame(s: LeagueState, x: LiveSeries) {
       lowRuns = highHome ? out.away.runs : out.home.runs;
     if (highRuns > lowRuns) x.hw++;
     else if (lowRuns > highRuns) x.lw++;
-    else if (x.round === 'wildcard') x.hw = x.need; // a tie sends the 4th seed through
+    else if (x.round === 'wildcard' && s.bracket?.mode !== 'two') x.hw = x.need; // a tie sends the 4th seed through
   }
   x.date = addDays(date, i === 1 || i === 4 ? 2 : 1); // travel days after games 2 and 5
   x.i++;
@@ -121,6 +124,30 @@ function nextRound(s: LeagueState, b: Bracket, ended: LiveSeries[]): LiveSeries[
       return [live('po', d1!, w(d2!), 4, allHome(6), start, 1), live('po', m1!, w(m2!), 4, allHome(6), start, 1)];
     }
     if (b.stage === 1) {
+      const pct = (id: TeamId) => currentStandings(s).find((r) => r.teamId === id)!.pct;
+      const [x, y] = ended.map((z) => result(z).winner) as [TeamId, TeamId];
+      const [high, low] = pct(x) >= pct(y) ? [x, y] : [y, x];
+      return [live('ks', high, low, 4, seven, addDays(end, 2))];
+    }
+    return null;
+  }
+  // 1.8.1, cross: the wild cards, the cross-league semi-playoffs (each 2nd v the other league's 3rd, or the wild card
+  // that took its place), the playoffs (each league winner v the other league's 2nd side), then the final.
+  if (b.style === 'cross') {
+    const start = ended.length ? addDays(end, 1) : b.live[0]?.date ?? '';
+    if (b.stage === 0) {
+      // A wild card series is the 4th (high, the better record) against the other league's 3rd.
+      const third = (id: TeamId) => {
+        const wc = ended.find((x) => x.round === 'wildcard' && x.low === id);
+        return wc ? result(wc).winner : id;
+      };
+      return [live('semipo', d2!, third(m3!), 3, five, start), live('semipo', m2!, third(d3!), 3, five, start)];
+    }
+    if (b.stage === 1) {
+      const w = (high: TeamId) => result(ended.find((x) => x.high === high)!).winner;
+      return [live('po', d1!, w(m2!), 3, five, start), live('po', m1!, w(d2!), 3, five, start)];
+    }
+    if (b.stage === 2) {
       const pct = (id: TeamId) => currentStandings(s).find((r) => r.teamId === id)!.pct;
       const [x, y] = ended.map((z) => result(z).winner) as [TeamId, TeamId];
       const [high, low] = pct(x) >= pct(y) ? [x, y] : [y, x];
@@ -160,15 +187,18 @@ export function startPostseason(s: LeagueState) {
       s.bracket = { year: s.year, mode: 'two', style: 'npb', stage: 0, seeds, done: false, live: [live('semipo', seeds[1]!, seeds[2]!, 2, allHome(3), date), live('semipo', seeds[4]!, seeds[5]!, 2, allHome(3), date)] };
       return;
     }
-    // A league's third with a better record than the other league's runner-up plays it first, best of three.
-    const first: LiveSeries[] = [];
-    if (d[2]!.pct > m[1]!.pct) first.push(live('semipo', d[2]!.teamId, m[1]!.teamId, 2, three, date));
-    if (m[2]!.pct > d[1]!.pct) first.push(live('semipo', m[2]!.teamId, d[1]!.teamId, 2, three, date));
-    const b: Bracket = { year: s.year, mode: 'two', stage: 0, live: first, seeds, done: false };
+    // 1.8.1 (the 1.8 feedback): each league's top three; a league's 4th with a better record than the other league's
+    // 3rd plays it for the place first, best of three (two games at the 4th's park).
+    const fourth = [d[3], m[3]];
+    const wild: LiveSeries[] = [];
+    if (d[3] && d[3].pct > m[2]!.pct) wild.push(live('wildcard', d[3].teamId, m[2]!.teamId, 2, three, date));
+    if (m[3] && m[3].pct > d[2]!.pct) wild.push(live('wildcard', m[3].teamId, d[2]!.teamId, 2, three, date));
+    const b: Bracket = { year: s.year, mode: 'two', style: 'cross', stage: 0, live: wild, seeds: [...seeds, ...fourth.map((r) => r?.teamId ?? '')], done: false };
     s.bracket = b;
-    if (!first.length) {
-      // Nobody plays for the spots: straight to the two playoffs, on the first date.
-      b.live = [live('po', seeds[0]!, seeds[4]!, 4, seven, date), live('po', seeds[3]!, seeds[1]!, 4, seven, date)];
+    if (!wild.length) {
+      // No wild card: straight to the semi-playoffs on the first date.
+      b.live = nextRound(s, b, [])!;
+      for (const x of b.live) x.date = date;
       b.stage = 1;
     }
     return;
@@ -312,6 +342,14 @@ export function postseasonView(s: LeagueState) {
 
 const ROUNDS: SeriesResult['round'][] = ['wildcard', 'semipo', 'po', 'ks'];
 
+/** Wins a round's series needs in this postseason's format. */
+function needOf(b: Bracket | null, round: SeriesResult['round']): number {
+  if (round === 'ks') return 4;
+  if (round === 'wildcard') return 2;
+  if (b?.mode !== 'two' || b.style === 'cross') return 3;
+  return round === 'po' ? 4 : 2;
+}
+
 export interface BracketSide {
   teamId: TeamId | null;
   /** "3위", "드림 1위", or who will fill it ("와일드카드 승자"). */
@@ -358,7 +396,8 @@ export function bracketView(s: LeagueState): BracketView | null {
     if (!id || !b) return { teamId: id ?? null, label: fallback };
     const i = b.seeds.indexOf(id);
     if (i < 0) return { teamId: id, label: fallback };
-    return { teamId: id, label: b.mode === 'one' ? __i18n_k("league.postseason.seedLabel.label.290bdca7", { value: i + 1 }) : __i18n_k("league.postseason.seedLabel.label.04d70338", { value: i < 3 ? __i18n_k("league.postseason.seedLabel.label.c2c3ed38") : __i18n_k("league.postseason.seedLabel.label.c01e9ae7"), value2: (i % 3) + 1 }) };
+    // Two leagues: seeds 0–2 dream, 3–5 magic; 1.8.1, cross: 6 and 7 the two 4ths.
+    return { teamId: id, label: b.mode === 'one' ? __i18n_k("league.postseason.seedLabel.label.290bdca7", { value: i + 1 }) : __i18n_k("league.postseason.seedLabel.label.04d70338", { value: i < 3 || i === 6 ? __i18n_k("league.postseason.seedLabel.label.c2c3ed38") : __i18n_k("league.postseason.seedLabel.label.c01e9ae7"), value2: i >= 6 ? 4 : (i % 3) + 1 }) };
   };
   const marks = (high: TeamId, games: SeriesResult['games']) =>
     games.map((g) => {
@@ -371,7 +410,7 @@ export function bracketView(s: LeagueState): BracketView | null {
     low: seedLabel(x.low, ''),
     hw: x.highWins,
     lw: x.lowWins,
-    need: x.round === 'ks' || (x.round === 'po' && b?.mode === 'two') ? 4 : x.round === 'wildcard' || (x.round === 'semipo' && b?.mode === 'two') ? 2 : 3,
+    need: needOf(b, x.round),
     games: marks(x.high, x.games),
     state: 'done',
     winner: x.winner,
@@ -397,7 +436,23 @@ export function bracketView(s: LeagueState): BracketView | null {
       } else {
         // Two leagues: the spots are played (or not) at the start; then each league winner's playoff, then the final.
         // 1.8.0, NPB: each league's winner waits for its 2nd-v-3rd winner, with a win in hand.
-        if (round === 'po' && b.style === 'npb') {
+        // 1.8.1, cross: each 2nd against the other league's 3rd (or the wild card that took its place), then each
+        // league winner against the semi-playoff of the other league's 2nd.
+        if (b.style === 'cross' && round === 'semipo') {
+          const third = (id: TeamId | undefined) => {
+            const wc = [...done, ...liveNow.map(result)].find((x) => x.round === 'wildcard' && x.low === id);
+            if (!wc) return seedLabel(id, '');
+            const doneWc = done.find((x) => x.round === 'wildcard' && x.low === id);
+            return doneWc ? seedLabel(doneWc.winner, '') : { teamId: null, label: __i18n_k("league.postseason.bracketView.label.cb698be3") };
+          };
+          series = [waiting(round, seedLabel(s1, __i18n_k("league.postseason.bracketView.d77a90d7")), third(s5), 3), waiting(round, seedLabel(s4, __i18n_k("league.postseason.bracketView.846e9986")), third(s2), 3)];
+        } else if (b.style === 'cross' && round === 'po') {
+          const semi = (high: TeamId | undefined) => {
+            const w = winnerOf('semipo', (x) => x.high === high);
+            return w ? seedLabel(w, '') : { teamId: null, label: __i18n_k("league.postseason.bracketView.label.de953763") };
+          };
+          series = [waiting(round, seedLabel(s0, __i18n_k("league.postseason.bracketView.d77a90d7")), semi(s4), 3), waiting(round, seedLabel(s3, __i18n_k("league.postseason.bracketView.846e9986")), semi(s1), 3)];
+        } else if (round === 'po' && b.style === 'npb') {
           const fs = (high: TeamId | undefined) => {
             const w = winnerOf('semipo', (x) => x.high === high);
             return w ? seedLabel(w, '') : { teamId: null, label: __i18n_k("league.postseason.text.84870a1e") };
@@ -430,7 +485,7 @@ export function bracketView(s: LeagueState): BracketView | null {
 function oursIn(s: LeagueState, rounds: BracketRound[], me: TeamId, b: Bracket | null): string {
   const all = rounds.flatMap((r) => r.series);
   const mine = all.filter((x) => x.high.teamId === me || x.low.teamId === me);
-  if (!mine.length && !(b?.seeds.includes(me) ?? false)) return '포스트시즌 진출 실패';
+  if (!mine.length && !(b?.seeds.slice(0, 6).includes(me) ?? false)) return '포스트시즌 진출 실패';
   const live = mine.find((x) => x.state === 'live');
   if (live) {
     const [w, l] = live.high.teamId === me ? [live.hw, live.lw] : [live.lw, live.hw];
