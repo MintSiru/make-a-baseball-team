@@ -2,7 +2,10 @@
    test that plays to the end of the regular season answers those the scouts' way and goes on. */
 import { apply, regularOver } from '../src/league/actions';
 import { autoDecision } from '../src/league/expansion';
+import { readFileSync } from 'node:fs';
+import { gunzipSync } from 'node:zlib';
 import type { LeagueState } from '../src/league/state';
+import { parseSave } from '../src/save/format';
 
 /** Plays to the end of the regular season, answering in-season decisions the scouts' way. */
 export function endRegular(s: LeagueState) {
@@ -21,3 +24,6 @@ export function playDays(s: LeagueState, n: number) {
     if (s.pending) apply(s, { kind: 'decide', input: autoDecision(s)! });
   }
 }
+
+/** A saved game from a fixture (default: 1.4.0, three weeks into the club's first first-team season), migrated. */
+export const loadSave = (v = '1.4.0') => parseSave(gunzipSync(readFileSync(new URL(`./fixtures/save-${v}.json.gz`, import.meta.url))).toString('utf8')).snapshot!.state as LeagueState;

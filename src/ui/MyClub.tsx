@@ -14,6 +14,7 @@ import type { BullpenRole } from '../league/engine/types';
 import { rosterLimit } from '../league/offseason';
 import { ageIn, isPitcher } from '../league/players';
 import { captainsOf, captainsProblem } from '../league/captains';
+import { faOutlook } from '../league/faclock';
 import { developmentIds, orgIds, registeredIds, type LeagueState, type Squad as SquadName } from '../league/state';
 import { OFFSEASON } from '../league/tuning';
 import { injuryNote, rates, shortName, standingsView } from '../league/views';
@@ -265,6 +266,7 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
             <p class="empty">{__i18n_display(league.phase === 'regular' ? __i18n_k("ui.myClub.overview.c372dc4c") : __i18n_k("ui.myClub.overview.974a96d9"))}</p>
           ))}
         </section>
+        <FaSoon league={league} onPlayer={onPlayer} />
         <section class="panel" tabIndex={0} aria-label={__i18n_t("ui.myClub.overview.433c886b")}>
           <h3>{__i18n_t("ui.myClub.overview.433c886b")}</h3>
           {__i18n_display(u.log?.length ? (
@@ -284,6 +286,38 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
         </section>
       </div>
     </>
+  );
+}
+
+/** 1.8.0: our players whose free agency is near (this winter and the next), the best first. */
+function FaSoon({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
+  const now = league.offseason ? league.offseason.year : league.year;
+  const rows = orgIds(league, league.user!.teamId)
+    .map((id) => league.players[id]!)
+    .map((p) => ({ p, fa: faOutlook(league, p) }))
+    .filter((x) => x.fa.year !== null && x.fa.year <= now + 1)
+    .sort((a, b) => a.fa.year! - b.fa.year! || b.p.scouting.current - a.p.scouting.current)
+    .slice(0, 10);
+  return (
+    <section class="panel" tabIndex={0} aria-label={__i18n_t("ui.myClub.text.0e132981")}>
+      <h3>{__i18n_t("ui.myClub.text.0e132981")}</h3>
+      {rows.length ? (
+        <ul class="plain fa-soon">
+          {rows.map(({ p, fa }) => (
+            <li key={p.id}>
+              <button type="button" class="link" onClick={() => onPlayer(p.id)}>
+                {p.name}
+              </button>{' '}
+              <span class="muted small">{__i18n_t("ui.myClub.text.d1bbc0ef", { grade: p.scouting.current })}</span> <span class={fa.year === now ? 'strong' : undefined}>{fa.year === now ? __i18n_t("ui.myClub.text.8894ccc4") : __i18n_t("ui.myClub.text.5b4e9f2f", { year: fa.year! })}</span>
+              {fa.again && <span class="muted small"> {__i18n_t("ui.myClub.text.07971499")}</span>}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="empty">{__i18n_t("ui.myClub.text.bd44b910")}</p>
+      )}
+      <p class="muted small">{__i18n_t("ui.myClub.text.0e9b4b49")}</p>
+    </section>
   );
 }
 

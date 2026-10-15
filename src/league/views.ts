@@ -4,6 +4,7 @@ import { k as __i18n_k } from '../i18n/index';
 import { alumnusJob } from './alumni';
 import { ROLE_LABELS } from '../draftroom';
 import { publicView, type PublicPlayer } from '../model/player';
+import { faOutlook, type FaOutlook } from './faclock';
 import type { BatTotals, InjuryRecord, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { emptySplit, type Splits } from './engine/types';
 import { averageVelocity, pitchGrades, topVelocity } from './pitches';
@@ -156,6 +157,8 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
       /** This season's numbers: first team for the first team, futures (or 상무) below it. */
       stats: statsFor(s, id, group),
       salary: salaryIn(p, s.year),
+      /** 1.8.0: when he reaches free agency (faclock.ts). */
+      fa: faOutlook(s, p),
       /** Foreign players: the contract total in US dollars (bonus + salary + options). */
       usd: usdTotal(p.contract),
       injured: !!s.injuries[id] && !s.injuries[id]!.dtd,
@@ -204,6 +207,8 @@ export function careerView(s: LeagueState, p: Player): CareerRow[] {
 export interface PlayerCard {
   player: PublicPlayer;
   team: string;
+  /** 1.8.0 (faclock.ts): when he reaches free agency. */
+  fa: FaOutlook;
   age: number;
   salary: number;
   status: string;
@@ -288,6 +293,7 @@ export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
   return {
     player: publicView(p),
     team: teamOf(s, p.teamId)?.name ?? '-',
+    fa: faOutlook(s, p),
     age: ageIn(p, s.year),
     salary: salaryIn(p, s.year),
     status,
