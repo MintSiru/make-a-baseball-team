@@ -413,7 +413,7 @@ function TalkPanel({
         {__i18n_display(line ? `${line.year} ${line.text}` : __i18n_k("ui.faMarket.talkPanel.12ca5e35"))} · WAR {__i18n_display(lastWar(league, t.id)?.toFixed(1) ?? '-')}{__i18n_display(' ')}
         <button type="button" class="link small" onClick={() => onPlayer(p.id)}>{__i18n_t("ui.faMarket.talkPanel.243cf4c2")}</button>
       </p>
-      <p class="small">{__i18n_t("ui.faMarket.talkPanel.7b6d4a37", { termsText: termsText(t.price), value: t.demands.length ? t.demands.map(demandText).join(' · ') : __i18n_k("ui.faMarket.talkPanel.0dcc462c"), others: others, value2: t.decideOn !== undefined && __i18n_k("ui.faMarket.talkPanel.e858d967", { decideDate: decideDate(m, t) }) })}</p>
+      <p class="small">{__i18n_t("ui.faMarket.talkPanel.7b6d4a37", { termsText: termsText(t.price), value: t.demands.length ? t.demands.map(demandText).join(' · ') : __i18n_k("ui.faMarket.talkPanel.0dcc462c"), others: others, value2: t.decideOn !== undefined ? __i18n_k("ui.faMarket.talkPanel.e858d967", { decideDate: decideDate(m, t) }) : '' })}</p>
 
       {onAct && !askOwnerProblem(league, t.id) && (
         <p class="owner-ask small">

@@ -909,8 +909,9 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
                   <th class="num">{__i18n_t("ui.decision.decision.89dbf513")}</th>
                   <th class="num">{__i18n_t("ui.decision.decision.cbf383ec")}</th>
                   <th>{__i18n_t("ui.decision.decision.b4116369")}</th>
-                  <th>{__i18n_t("ui.decision.decision.08109e41")}</th>
-                  <th>{__i18n_t("ui.decision.text.e52c8464")}</th>
+                  <th>
+                    {__i18n_t("ui.decision.decision.08109e41")} · {__i18n_t("ui.decision.text.e52c8464")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -928,15 +929,13 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
                     <td class="num strong">{__i18n_display(row.current.rating)}</td>
                     <td class="num">{__i18n_display(money(row.current.salary))}</td>
                     <td>{__i18n_display(row.expiring ? <span class="tag warn">{__i18n_t("ui.decision.decision.36009eb0")}</span> : __i18n_k("ui.decision.decision.9c7dfa36", { until: row.current.until }))}</td>
-                    <td>
+                    <td class="staff-pick">
                       <select value={choices[row.role] ?? ''} onChange={(e) => choose(row.role, (e.currentTarget as HTMLSelectElement).value)} aria-label={__i18n_displayText(__i18n_k("ui.decision.decision.5e8b41fb", { value: STAFF_LABELS[row.role] }))}>
                         <option value="">{__i18n_display(row.expiring ? __i18n_k("ui.decision.decision.994331cf") : __i18n_k("ui.decision.decision.bb3ad48c"))}</option>
                         {__i18n_display(row.candidates.map((c) => (
                           <option key={c.id} value={c.id}>{__i18n_t("ui.decision.decision.ac4dcaa2", { value: c.playerId ? (isLegend(c) ? __i18n_k("ui.decision.decision.c4104e94") : __i18n_k("ui.decision.decision.b99806f6")) : '', name: c.name, rating: c.rating, money: money(c.salary), value2: c.style ? ` · ${MANAGER_STYLES[c.style].label}` : '', value3: row.buyout ? __i18n_k("ui.decision.decision.abbee6cd", { money: money(row.buyout) }) : '' })}</option>
                         )))}
                       </select>
-                    </td>
-                    <td>
                       {(row.expiring || choices[row.role]) && (
                         <select value={choices[`${row.role}:years`] ?? String(choices[row.role] ? defaultYears(row.role) : 2)} onChange={(e) => choose(`${row.role}:years`, (e.currentTarget as HTMLSelectElement).value)} aria-label={__i18n_t("ui.decision.text.cf13f2c2", { role: STAFF_LABELS[row.role] })}>
                           {yearsFor(row.role).map((y) => (
