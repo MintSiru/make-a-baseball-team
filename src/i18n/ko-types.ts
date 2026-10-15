@@ -6948,5 +6948,14 @@ export const koSource = {
   "league.ownerask.text.add6a4cd": "구단주에게 {name} 영입 지원을 부탁했다가 거절당함",
   "ui.faMarket.text.d729c332": "구단주에게 영입 지원 부탁",
   "ui.faMarket.text.741043eb": "승낙 가능성 약 {pct}% · 한 겨울에 한 번 · 거절당하면 신뢰가 조금 떨어집니다",
-  "ui.faMarket.text.71ec6ccb": "구단주가 이 선수의 영입 지원을 거절했습니다."
+  "ui.faMarket.text.71ec6ccb": "구단주가 이 선수의 영입 지원을 거절했습니다.",
+  "league.postseason.text.8f08356a": "클라이맥스 퍼스트 스테이지",
+  "league.postseason.text.d3013cf2": "클라이맥스 파이널 스테이지",
+  "league.postseason.text.84870a1e": "퍼스트 스테이지 승자",
+  "ui.twelve.text.2dcaef5e": "양대리그 포스트시즌",
+  "ui.twelve.text.59d1a4d6": "교차 진출 (기본)",
+  "ui.twelve.text.763fd2e7": "NPB식 클라이맥스 시리즈",
+  "ui.twelve.text.cdf3d196": "각 리그 2위와 3위가 퍼스트 스테이지(3전 2선승, 모두 2위 홈), 이긴 팀이 1위와 파이널 스테이지(6전 4선승, 1위가 1승을 안고 시작, 모두 1위 홈), 두 리그 우승팀이 한국시리즈(7전 4선승)를 치릅니다.",
+  "ui.twelve.text.6d6d08ae": "각 리그 1위가 다른 리그 2위와 플레이오프(7전 4선승)를 치르고(같은 리그 3위의 승률이 그 2위보다 높으면 둘이 먼저 3전 2선승), 이긴 두 팀이 한국시리즈에서 만납니다.",
+  "ui.twelve.text.377304ea": "바꾸면 다음 포스트시즌부터 적용됩니다."
 } as const;

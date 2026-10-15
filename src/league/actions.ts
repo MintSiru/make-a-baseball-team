@@ -97,6 +97,8 @@ export type Action =
   | { kind: 'staffFire'; role: StaffRole }
   /** 1.8.0 (ownerask.ts): ask the owner to pay for a free agent (once a winter). */
   | { kind: 'askOwner'; id: PlayerId }
+  /** 1.8.0: two leagues' postseason format (from the next postseason drawn). */
+  | { kind: 'twoLeaguePlayoffs'; style: 'kbo' | 'npb' }
   // Players and facilities (V0.10)
   | { kind: 'trip'; id: PlayerId; site: SiteId }
   | { kind: 'facility'; facility: FacilityKind }
@@ -126,7 +128,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -325,6 +327,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'askOwner':
       askOwner(s, action.id);
+      break;
+    case 'twoLeaguePlayoffs':
+      if (s.twelve) s.twelve.playoffs = action.style;
       break;
     case 'inspect':
       inspect(s, action.id);

@@ -39,7 +39,7 @@ import { Games } from './Games';
 import { DraftBoard } from './DraftBoard';
 import { History } from './History';
 import { Leaders } from './Leaders';
-import { lastOurGame, ourNextGame, postseasonStatus, ROUND_NAME } from '../league/postseason';
+import { lastOurGame, ourNextGame, postseasonStatus, roundName } from '../league/postseason';
 import { stopsOf } from '../league/stops';
 import { applyCombine, attends, checkWorkout, combineHeld, combineLines, workoutsOf } from '../league/combine';
 import { traitReport } from '../league/reports';
@@ -519,7 +519,7 @@ export function App() {
   const controls = league.pending ? null : big ? (
     <>
       <p class="big-game">
-        <strong>{__i18n_t("ui.app.text.06ff4ff1", { round: ROUND_NAME[big.round], game: big.game })}</strong> {__i18n_t("ui.app.text.ada6554e", { opp: league.teams.find((t) => t.id === big.opp)?.short ?? big.opp, where: big.home ? __i18n_t("ui.app.text.13a46f96") : __i18n_t("ui.app.text.ef6b033f") })}
+        <strong>{__i18n_t("ui.app.text.06ff4ff1", { round: roundName(league, big.round), game: big.game })}</strong> {__i18n_t("ui.app.text.ada6554e", { opp: league.teams.find((t) => t.id === big.opp)?.short ?? big.opp, where: big.home ? __i18n_t("ui.app.text.13a46f96") : __i18n_t("ui.app.text.ef6b033f") })}
       </p>
       <button type="button" class="primary" onClick={watchLive}>{__i18n_t("ui.app.text.1fe38266")}</button>
       <button type="button" onClick={() => act({ kind: 'postseasonDay' }, __i18n_k("ui.app.app.controls.e39c3d6f"), false)}>{__i18n_t("ui.app.text.1a3c3146")}</button>

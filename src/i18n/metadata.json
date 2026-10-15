@@ -67135,5 +67135,59 @@
     "line": 426,
     "params": {},
     "locations": []
+  },
+  "league.postseason.text.8f08356a": {
+    "source": "src/league/postseason.ts",
+    "line": 278,
+    "params": {},
+    "locations": []
+  },
+  "league.postseason.text.d3013cf2": {
+    "source": "src/league/postseason.ts",
+    "line": 278,
+    "params": {},
+    "locations": []
+  },
+  "league.postseason.text.84870a1e": {
+    "source": "src/league/postseason.ts",
+    "line": 403,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.2dcaef5e": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 162,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.59d1a4d6": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 164,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.763fd2e7": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 167,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.cdf3d196": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 172,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.6d6d08ae": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 173,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.377304ea": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 174,
+    "params": {},
+    "locations": []
   }
 }

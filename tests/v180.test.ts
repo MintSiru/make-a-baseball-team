@@ -5,6 +5,7 @@ import { faOutlook } from '../src/league/faclock';
 import { isForeign } from '../src/league/players';
 import { rosterView } from '../src/league/views';
 import { endRegular, loadSave } from './helpers';
+import { playPostseason, roundName } from '../src/league/postseason';
 import { autoDecision } from '../src/league/expansion';
 import { askOwnerChance, askOwnerProblem } from '../src/league/ownerask';
 import { apply } from '../src/league/actions';
@@ -114,10 +115,42 @@ describe('asking the owner for a free agent', () => {
     const trust = u.trust;
     apply(s, { kind: 'askOwner', id: target });
     if (m.asked!.yes) {
-      expect(m.gift?.id).toBe(target);
+      expect(s.offseason!.fa!.gift?.id).toBe(target);
       expect(u.trust).toBe(trust);
     } else expect(u.trust).toBe(trust - 3);
     const another = m.order.find((id) => id !== target);
     expect(askOwnerProblem(s, another!)).not.toBeNull();
+  }, 240_000);
+});
+
+describe('two leagues the NPB way', () => {
+  it('2nd v 3rd at the 2nd\'s park, the winner a win up and at home throughout, then the final', () => {
+    const s = loadSave();
+    endRegular(s);
+    const ids = s.teams.filter((t) => s.rosters[t.id]).map((t) => t.id);
+    s.twelve = { teamId: ids[0]!, cityId: 'x', founded: 2020, firstTeam: 2021, format: 'two', gm: 'balanced', manager: 'balanced', leagues: Object.fromEntries(ids.map((id, i) => [id, i % 2 ? 'magic' : 'dream'])), playoffs: 'npb' } as never;
+    playPostseason(s);
+    const seeds = s.bracket!.seeds;
+    expect(s.bracket!.style).toBe('npb');
+    const first = s.postseason.filter((x) => x.round === 'semipo');
+    expect(first.map((x) => [x.high, x.low])).toEqual([
+      [seeds[1], seeds[2]],
+      [seeds[4], seeds[5]],
+    ]);
+    for (const x of [...first, ...s.postseason.filter((y) => y.round === 'po')]) {
+      for (const g of x.games) expect(g.home).toBe(x.high);
+      expect(Math.max(x.highWins, x.lowWins)).toBe(x.round === 'po' ? 4 : 2);
+    }
+    const finals = s.postseason.filter((x) => x.round === 'po');
+    expect(finals.map((x) => x.high)).toEqual([seeds[0], seeds[3]]);
+    // The league winner's win in hand: one more win than games won.
+    for (const x of finals) {
+      const won = x.games.filter((g) => (g.home === x.high ? g.hs > g.as : g.as > g.hs)).length;
+      expect(x.highWins).toBe(won + 1);
+    }
+    const ks = s.postseason.at(-1)!;
+    expect(ks.round).toBe('ks');
+    expect([ks.high, ks.low].sort()).toEqual(finals.map((x) => x.winner).sort());
+    expect(roundName(s, 'semipo')).toContain('클라이맥스');
   }, 240_000);
 });

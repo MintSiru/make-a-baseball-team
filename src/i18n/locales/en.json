@@ -6947,5 +6947,14 @@
   "league.ownerask.text.add6a4cd": "Asked the owner to pay for {name}; the owner said no",
   "ui.faMarket.text.d729c332": "Ask the owner to pay for him",
   "ui.faMarket.text.741043eb": "About {pct}% chance of a yes · once a winter · a no costs a little trust",
-  "ui.faMarket.text.71ec6ccb": "The owner turned down paying for this player."
+  "ui.faMarket.text.71ec6ccb": "The owner turned down paying for this player.",
+  "league.postseason.text.8f08356a": "Climax Series First Stage",
+  "league.postseason.text.d3013cf2": "Climax Series Final Stage",
+  "league.postseason.text.84870a1e": "First Stage winner",
+  "ui.twelve.text.2dcaef5e": "Two-league postseason",
+  "ui.twelve.text.59d1a4d6": "Cross-league (default)",
+  "ui.twelve.text.763fd2e7": "NPB-style Climax Series",
+  "ui.twelve.text.cdf3d196": "Each league's second and third places play the First Stage (best of three, all at the second's park); the winner meets the league winner in the Final Stage (best of six, first to four, the league winner starting a win up and at home throughout); the two league champions play the Korean Series (best of seven).",
+  "ui.twelve.text.6d6d08ae": "Each league's winner plays the other league's runner-up in a best-of-seven playoff (if that league's third place has a better record than its runner-up, those two play a best-of-three first), and the two winners meet in the Korean Series.",
+  "ui.twelve.text.377304ea": "A change takes effect from the next postseason."
 }

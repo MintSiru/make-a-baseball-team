@@ -528,7 +528,7 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
       {__i18n_display(section === 'rival' && (
         <>
           {__i18n_display(league.twelve ? (
-            <RivalryBox league={league} />
+            <RivalryBox league={league} onAct={onAct} />
           ) : (
             <>
               <p>{__i18n_t("ui.office.office.8a0c79d3")}</p>

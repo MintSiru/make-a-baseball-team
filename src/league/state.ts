@@ -282,6 +282,8 @@ export interface TwelveState {
   manager: ManagerStyle;
   /** Two leagues: each club's side, set when the twelve clubs first play. */
   leagues?: Record<TeamId, LeagueSide>;
+  /** 1.8.0: two leagues' postseason — the cross-league spots (default) or the NPB way (클라이맥스 시리즈). */
+  playoffs?: 'kbo' | 'npb';
   /** Season series against the user's club, from the user's side. */
   h2h?: { year: number; w: number; l: number; t: number }[];
   /** Who it took in its special draft. */

@@ -2,7 +2,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 import type { LeagueState } from '../league/state';
 import { lastDayScores, shortName, standingsView } from '../league/views';
 import { LEAGUE_NAMES, leagueTables, seasonSeries, twelveClubs, twoLeagues } from '../league/twelve';
-import { postseasonView, ROUND_LABEL } from '../league/postseason';
+import { postseasonView, roundName } from '../league/postseason';
 import type { Action } from '../league/actions';
 import { PostseasonBracket } from './Bracket';
 
@@ -72,7 +72,7 @@ function PostPlan({ league, onAct }: { league: LeagueState; onAct?: (a: Action) 
   return (
     <section class="live-postseason post-plan" aria-label={__i18n_t("ui.standings.postPlan.c18189ff")}>
       <h3>{__i18n_t("ui.standings.postPlan.7bb8b998", { md: md(n.date), game: n.game, value: n.home ? __i18n_k("ui.standings.postPlan.13a46f96") : __i18n_k("ui.standings.postPlan.ef6b033f"), shortName: shortName(league, n.opponent) })}</h3>
-      <p>{__i18n_rich("ui.standings.postPlan.483a64ec", { value: ROUND_LABEL[v.live.find((x) => !x.over && (x.high === league.user?.teamId || x.low === league.user?.teamId))?.round ?? 'po'], value2: ' ', value3: <strong>{__i18n_t("ui.standings.postPlan.a32bb25b", { wins: n.wins, losses: n.losses })}</strong> })}</p>
+      <p>{__i18n_rich("ui.standings.postPlan.483a64ec", { value: roundName(league, v.live.find((x) => !x.over && (x.high === league.user?.teamId || x.low === league.user?.teamId))?.round ?? 'po'), value2: ' ', value3: <strong>{__i18n_t("ui.standings.postPlan.a32bb25b", { wins: n.wins, losses: n.losses })}</strong> })}</p>
       <label>
         선발{__i18n_display(' ')}
         <select value={v.plan.starter ?? ''} onChange={(e) => onAct({ kind: 'postPlan', starter: (e.currentTarget as HTMLSelectElement).value || null })}>

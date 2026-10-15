@@ -47,11 +47,15 @@ export interface Bracket {
   /** Single league: the five seeds; two leagues: the league tables' top three each. */
   seeds: TeamId[];
   done: boolean;
+  /** 1.8.0: two leagues the NPB way (클라이맥스 시리즈): each league's 2nd v 3rd, then its winner with a win in hand. */
+  style?: 'npb';
 }
 
 const five = [true, true, false, false, true];
 const seven = [true, true, false, false, false, true, true];
 const three = [true, true, false];
+/** 1.8.0, NPB: every game of a Climax Series stage at the higher seed's park. */
+const allHome = (n: number) => Array<boolean>(n).fill(true);
 
 const live = (round: SeriesResult['round'], high: TeamId, low: TeamId, need: number, homes: boolean[], date: string, headStart = 0): LiveSeries => ({ round, high, low, need, homes, date, i: 0, hw: headStart, lw: 0, games: [] });
 const over = (x: LiveSeries) => x.hw >= x.need || x.lw >= x.need || x.i >= x.homes.length + 3;
@@ -109,6 +113,21 @@ function nextRound(s: LeagueState, b: Bracket, ended: LiveSeries[]): LiveSeries[
   }
   // Two leagues: the spots against each league's winner, then the two playoffs, then the Korean Series.
   const [d1, d2, d3, m1, m2, m3] = b.seeds;
+  // 1.8.0, NPB: each league's final stage (its winner a win up, best of six at home), then the final.
+  if (b.style === 'npb') {
+    if (b.stage === 0) {
+      const w = (high: TeamId) => result(ended.find((x) => x.high === high)!).winner;
+      const start = addDays(end, 1);
+      return [live('po', d1!, w(d2!), 4, allHome(6), start, 1), live('po', m1!, w(m2!), 4, allHome(6), start, 1)];
+    }
+    if (b.stage === 1) {
+      const pct = (id: TeamId) => currentStandings(s).find((r) => r.teamId === id)!.pct;
+      const [x, y] = ended.map((z) => result(z).winner) as [TeamId, TeamId];
+      const [high, low] = pct(x) >= pct(y) ? [x, y] : [y, x];
+      return [live('ks', high, low, 4, seven, addDays(end, 2))];
+    }
+    return null;
+  }
   if (b.stage === 0) {
     const won = (low: TeamId, high: TeamId) => ended.find((x) => x.high === high && x.low === low);
     const vsDream = won(m2!, d3!) ? result(won(m2!, d3!)!).winner : m2!;
@@ -136,6 +155,11 @@ export function startPostseason(s: LeagueState) {
     const [d, m] = [t.dream, t.magic];
     if (d.length < 3 || m.length < 3) return void (s.bracket = { year: s.year, mode: 'two', stage: 2, live: [], seeds: [], done: true });
     const seeds = [d[0]!, d[1]!, d[2]!, m[0]!, m[1]!, m[2]!].map((r) => r.teamId);
+    // 1.8.0, NPB (클라이맥스 시리즈): each league's 2nd and 3rd, best of three, every game at the 2nd's park.
+    if (s.twelve?.playoffs === 'npb') {
+      s.bracket = { year: s.year, mode: 'two', style: 'npb', stage: 0, seeds, done: false, live: [live('semipo', seeds[1]!, seeds[2]!, 2, allHome(3), date), live('semipo', seeds[4]!, seeds[5]!, 2, allHome(3), date)] };
+      return;
+    }
     // A league's third with a better record than the other league's runner-up plays it first, best of three.
     const first: LiveSeries[] = [];
     if (d[2]!.pct > m[1]!.pct) first.push(live('semipo', d[2]!.teamId, m[1]!.teamId, 2, three, date));
@@ -231,15 +255,15 @@ function seriesNews(s: LeagueState, ended: LiveSeries[]) {
     const opp = s.teams.find((t) => t.id === (x.high === u.teamId ? x.low : x.high))!.short;
     const [mine, theirs] = x.high === u.teamId ? [x.hw, x.lw] : [x.lw, x.hw];
     const date = x.games.at(-1)?.date ?? x.date;
-    const title = won ? (x.round === 'ks' ? __i18n_k("league.postseason.seriesNews.title.b6fdb4de", { me: me }) : __i18n_k("league.postseason.seriesNews.title.139f69be", { me: me, opp: opp, value: ROUND_NAME[x.round] })) : __i18n_k("league.postseason.seriesNews.title.0fa2ef1e", { me: me, value: ROUND_NAME[x.round], opp: opp });
+    const title = won ? (x.round === 'ks' ? __i18n_k("league.postseason.seriesNews.title.b6fdb4de", { me: me }) : __i18n_k("league.postseason.seriesNews.title.139f69be", { me: me, opp: opp, value: roundName(s, x.round) })) : __i18n_k("league.postseason.seriesNews.title.0fa2ef1e", { me: me, value: roundName(s, x.round), opp: opp });
     addNews(s, {
       id: `series-${s.year}-${x.round}-${u.teamId}`,
       date,
       kind: 'game',
       title,
-      body: __i18n_k("league.postseason.seriesNews.body.25f549e9", { value: won ? iga(me) : eunneun(me), value2: ROUND_NAME[x.round], opp: wagwa(opp), mine: mine, theirs: theirs, value3: won ? (x.round === 'ks' ? __i18n_k("league.postseason.seriesNews.body.43c2d684") : __i18n_k("league.postseason.seriesNews.body.c371e40b")) : __i18n_k("league.postseason.seriesNews.body.797dcb00") }),
+      body: __i18n_k("league.postseason.seriesNews.body.25f549e9", { value: won ? iga(me) : eunneun(me), value2: roundName(s, x.round), opp: wagwa(opp), mine: mine, theirs: theirs, value3: won ? (x.round === 'ks' ? __i18n_k("league.postseason.seriesNews.body.43c2d684") : __i18n_k("league.postseason.seriesNews.body.c371e40b")) : __i18n_k("league.postseason.seriesNews.body.797dcb00") }),
       quotes: [],
-      facts: { round: ROUND_NAME[x.round], club: me, opponent: opp, wins: mine, losses: theirs },
+      facts: { round: roundName(s, x.round), club: me, opponent: opp, wins: mine, losses: theirs },
       players: [],
       mine: true,
     });
@@ -250,6 +274,10 @@ export const champion = (s: LeagueState): TeamId | null => s.postseason.find((x)
 // ── For the screen ───────────────────────────────────────────────────────────────────────────────
 
 export const ROUND_LABEL = ROUND_NAME;
+/** 1.8.0: the NPB-style rounds' names. */
+export const NPB_ROUND_NAME: Record<SeriesResult['round'], string> = { wildcard: ROUND_NAME.wildcard, semipo: __i18n_k("league.postseason.text.8f08356a"), po: __i18n_k("league.postseason.text.d3013cf2"), ks: ROUND_NAME.ks };
+/** A round's name in this postseason's format. */
+export const roundName = (s: LeagueState, round: SeriesResult['round']) => (s.bracket?.year === s.year && s.bracket.style === 'npb' ? NPB_ROUND_NAME : ROUND_NAME)[round];
 
 /** The series being played now, and our club's next game with the arms it could start. */
 export function postseasonView(s: LeagueState) {
@@ -368,7 +396,14 @@ export function bracketView(s: LeagueState): BracketView | null {
         if (round === 'ks') series = [waiting(round, seedLabel(s0, '1위'), winnerOf('po') ? seedLabel(winnerOf('po'), '') : { teamId: null, label: __i18n_k("league.postseason.bracketView.label.05a7144b") }, 4)];
       } else {
         // Two leagues: the spots are played (or not) at the start; then each league winner's playoff, then the final.
-        if (round === 'po') {
+        // 1.8.0, NPB: each league's winner waits for its 2nd-v-3rd winner, with a win in hand.
+        if (round === 'po' && b.style === 'npb') {
+          const fs = (high: TeamId | undefined) => {
+            const w = winnerOf('semipo', (x) => x.high === high);
+            return w ? seedLabel(w, '') : { teamId: null, label: __i18n_k("league.postseason.text.84870a1e") };
+          };
+          series = [waiting(round, seedLabel(s0, __i18n_k("league.postseason.bracketView.d77a90d7")), fs(s1), 4), waiting(round, seedLabel(s3, __i18n_k("league.postseason.bracketView.846e9986")), fs(s4), 4)];
+        } else if (round === 'po') {
           const spot = (third: TeamId | undefined, second: TeamId | undefined) => {
             const w = winnerOf('semipo', (x) => x.high === third && x.low === second);
             return w ? seedLabel(w, '') : seedLabel(second, '');
@@ -383,7 +418,7 @@ export function bracketView(s: LeagueState): BracketView | null {
     }
     if (!series.length) continue;
     const state = series.every((x) => x.state === 'done') ? 'done' : series.some((x) => x.state !== 'waiting') ? 'live' : 'waiting';
-    rounds.push({ round, label: ROUND_NAME[round], state, series });
+    rounds.push({ round, label: roundName(s, round), state, series });
   }
   const champ = champion(s);
   // Our club only once it plays in the first team (a futures year has no postseason to miss).
@@ -399,13 +434,13 @@ function oursIn(s: LeagueState, rounds: BracketRound[], me: TeamId, b: Bracket |
   const live = mine.find((x) => x.state === 'live');
   if (live) {
     const [w, l] = live.high.teamId === me ? [live.hw, live.lw] : [live.lw, live.hw];
-    return __i18n_k("league.postseason.oursIn.d11bb1fd", { value: ROUND_NAME[live.round], w: w, l: l, value2: live.next ? __i18n_k("league.postseason.oursIn.c28dacbf", { game: live.next.game }) : '' });
+    return __i18n_k("league.postseason.oursIn.d11bb1fd", { value: roundName(s, live.round), w: w, l: l, value2: live.next ? __i18n_k("league.postseason.oursIn.c28dacbf", { game: live.next.game }) : '' });
   }
   const lost = mine.find((x) => x.state === 'done' && x.winner !== me);
-  if (lost) return lost.round === 'ks' ? __i18n_k("league.postseason.oursIn.d3bd9b4b") : __i18n_k("league.postseason.oursIn.80e2ba84", { value: ROUND_NAME[lost.round] });
+  if (lost) return lost.round === 'ks' ? __i18n_k("league.postseason.oursIn.d3bd9b4b") : __i18n_k("league.postseason.oursIn.80e2ba84", { value: roundName(s, lost.round) });
   if (mine.some((x) => x.round === 'ks' && x.winner === me)) return __i18n_k("league.postseason.oursIn.0b104a90");
   const wait = mine.find((x) => x.state === 'waiting');
-  return wait ? __i18n_k("league.postseason.oursIn.3272023b", { value: ROUND_NAME[wait.round] }) : __i18n_k("league.postseason.oursIn.e0961d9f");
+  return wait ? __i18n_k("league.postseason.oursIn.3272023b", { value: roundName(s, wait.round) }) : __i18n_k("league.postseason.oursIn.e0961d9f");
 }
 
 /** The status bar's line while the postseason is on: the round, how far along, and our club. */
