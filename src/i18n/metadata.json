@@ -67574,5 +67574,21 @@
       }
     },
     "locations": []
+  },
+  "ui.decision.text.2512c067": {
+    "source": "src/ui/Decision.tsx",
+    "line": 536,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.6009a51b": {
+    "source": "src/ui/Decision.tsx",
+    "line": 549,
+    "params": {
+      "name": {
+        "expression": "league.players[special[teamId]!]!.name"
+      }
+    },
+    "locations": []
   }
 }

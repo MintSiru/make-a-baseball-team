@@ -218,6 +218,8 @@ function PlayerTable({
                     name={name}
                     checked={selected?.has(p.id)}
                     onChange={() => toggle?.(p.id)}
+                    // 1.8.3: a checked radio fires no change; clicking it again takes the pick back.
+                    onClick={radio && selected?.has(p.id) ? () => toggle?.(p.id) : undefined}
                     aria-label={__i18n_displayText(__i18n_k("ui.decision.playerTable.23814a70", { name: p.name }))}
                   />
                 </td>
@@ -528,11 +530,34 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         <>
           <p>{__i18n_t("ui.decision.decision.a4684b26", { protectedCount: d.protectedCount, money: money(d.fee), value: ' ', count: count, money2: money(count * d.fee) })}</p>
           {__i18n_display(budgetLine)}
+          {count > 0 && (
+            <p>
+              <button type="button" onClick={() => setSpecial({})}>
+                {__i18n_t("ui.decision.text.2512c067")}
+              </button>
+            </p>
+          )}
           {__i18n_display(Object.entries(d.lists).map(([teamId, ids]) => (
             <details key={teamId} open={!special[teamId]}>
               <summary>
                 {__i18n_display(league.teams.find((t) => t.id === teamId)?.name)}
                 {__i18n_display(special[teamId] && ` → ${league.players[special[teamId]!]!.name}`)}
+                {/* 1.8.3: on the header, which stays in sight when the club's list folds after a pick. */}
+                {special[teamId] && (
+                  <>
+                    {' '}
+                    <button
+                      type="button"
+                      class="small"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setSpecial((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== teamId)));
+                      }}
+                    >
+                      {__i18n_t("ui.decision.text.6009a51b", { name: league.players[special[teamId]!]!.name })}
+                    </button>
+                  </>
+                )}
               </summary>
               <PlayerTable
                 league={league}
