@@ -149,8 +149,10 @@ export function checkTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get
   const limit = rosterLimit(s.phase === 'regular' ? s.year : s.year + 1);
   const mine = registeredIds(s, u.teamId).length - (give.length - devCount(gives)) + (get.length - devCount(gets));
   const theirs = registeredIds(s, teamId).length - (get.length - devCount(gets)) + (give.length - devCount(gives));
-  if (mine > limit) return no(__i18n_k("league.trade.checkTrade.9366b66d", { limit: limit }));
-  if (theirs > limit) return no(__i18n_k("league.trade.checkTrade.8d3f3e84", { limit: limit }));
+  // 1.8.3: only a trade that adds to a club over the limit is refused; one that leaves a club already over it with
+  // fewer players goes through (taking more players from a full club was refused before).
+  if (mine > limit && mine > registeredIds(s, u.teamId).length) return no(__i18n_k("league.trade.checkTrade.9366b66d", { limit: limit }));
+  if (theirs > limit && theirs > registeredIds(s, teamId).length) return no(__i18n_k("league.trade.checkTrade.8d3f3e84", { limit: limit }));
   // 1.6.0: the other club weighs what it gets by its plan (strategy.ts), and keeps its guards.
   const plan = clubStrategy(s, teamId);
   const reasons = planReasons(s, teamId, plan, gives as Player[], picksOut.length, cashOut);

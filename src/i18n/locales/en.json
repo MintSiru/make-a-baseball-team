@@ -7006,5 +7006,7 @@
   "league.sweep.text.b692d735": "After {years} seasons in surplus the club's fund had grown to {fund}, and {who} took {amount} of it.",
   "league.sweep.text.30e3f6c0": "The club's fund is now {left}, and {who}'s trust rose a little.",
   "ui.manual.text.a53ca2a8": "The owner takes the surplus",
-  "ui.manual.text.6e1e1ae1": "If the club's fund grows {years} seasons running and passes a set amount ({big} for a conglomerate, {small} for a citizen or naming-rights club), the owner (the city for a citizen club, the investors for a naming-rights club) may take part of it as a dividend in the winter: about half of what is above the level it lets the club keep. After that it waits for another {years} seasons of surplus. Building work does not count toward the surplus or the deficit."
+  "ui.manual.text.6e1e1ae1": "If the club's fund grows {years} seasons running and passes a set amount ({big} for a conglomerate, {small} for a citizen or naming-rights club), the owner (the city for a citizen club, the investors for a naming-rights club) may take part of it as a dividend in the winter: about half of what is above the level it lets the club keep. After that it waits for another {years} seasons of surplus. Building work does not count toward the surplus or the deficit.",
+  "ui.decision.text.2512c067": "Clear all picks",
+  "ui.decision.text.6009a51b": "Take back the pick of {name}"
 }
