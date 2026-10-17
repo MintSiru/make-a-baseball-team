@@ -76,7 +76,7 @@ export function TraitReportBox({ report }: { report: TraitReport }) {
    with the records split again into the regular season, the postseason, career highs and left/right. The part
    last opened stays open for the next player. */
 type Part = 'ability' | 'records' | 'report' | 'profile' | 'injuries';
-type RecordView = 'seasons' | 'post' | 'highs' | 'splits' | 'mlb';
+type RecordView = 'seasons' | 'post' | 'highs' | 'splits' | 'batted' | 'mlb';
 const PARTS: { key: Part; label: string }[] = [
   { key: 'ability', label: __i18n_k("ui.playerPanel.pARTS.label.9e9117d0") },
   { key: 'records', label: __i18n_k("ui.playerPanel.pARTS.label.d84b6f4b") },
@@ -89,6 +89,8 @@ const RECORD_VIEWS: { key: RecordView; label: string }[] = [
   { key: 'post', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.a0f7a345") },
   { key: 'highs', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.dc5975f8") },
   { key: 'splits', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.1df210e9") },
+  // 2.0.1: batted-ball data.
+  { key: 'batted', label: __i18n_k("ui.playerPanel.text.f697b0c7") },
   // 1.9.3: MLB, the minors and NPB.
   { key: 'mlb', label: __i18n_k("ui.playerPanel.text.98a07411") },
 ];
@@ -400,6 +402,7 @@ export function PlayerPanel({
                 <GradeBar label={__i18n_t("ui.playerPanel.playerPanel.f7c86d76")} now={s.current} future={shownFuture(p) ?? undefined} />
               </div>
               <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.40f3273a")}</p>
+              {card.batted.profile && <p class="small">{__i18n_t("ui.playerPanel.text.b07fe0a1", { pull: PULL_LABEL()[card.batted.profile.pull + 2]!, lift: LIFT_LABEL()[card.batted.profile.lift + 2]! })}</p>}
               {__i18n_display(s.moved && showsFutureDetail(p) && (
                 <p class={`small ${s.moved.to > s.moved.from ? 'plus' : 'minus'}`}>{__i18n_t("ui.playerPanel.playerPanel.e3838a42", { value: s.moved.to > s.moved.from ? '▲' : '▼', from: s.moved.from, to: s.moved.to, value2: s.moved.date.slice(5).replace('-', '/') })}</p>
               ))}
@@ -478,6 +481,7 @@ export function PlayerPanel({
               ) : (
                 <p class="muted">{__i18n_t("ui.playerPanel.playerPanel.3055338b")}</p>
               )))}
+            {records === 'batted' && <BattedTable batted={card.batted} pitcher={pitcher} />}
             {__i18n_display(records === 'splits' &&
               (card.splits.season || card.splits.career ? (
                 <>
@@ -903,6 +907,73 @@ function ExtensionOffer({ league, id, onAct }: { league: LeagueState; id: string
           <span class="muted small">{__i18n_t("ui.playerPanel.text.9d415c3d")}</span>
         </>
       )}
+    </div>
+  );
+}
+
+const PULL_LABEL = () => [__i18n_t("ui.playerPanel.text.e089203f"), __i18n_t("ui.playerPanel.text.e6c78e11"), __i18n_t("ui.playerPanel.text.b90fdaf4"), __i18n_t("ui.playerPanel.text.8ba5121a"), __i18n_t("ui.playerPanel.text.e8f4ff7e")];
+const LIFT_LABEL = () => [__i18n_t("ui.playerPanel.text.0402d4de"), __i18n_t("ui.playerPanel.text.2716bc95"), __i18n_t("ui.playerPanel.text.2179da2c"), __i18n_t("ui.playerPanel.text.2d6dbf09"), __i18n_t("ui.playerPanel.text.6f7bed73")];
+
+/** 2.0.1: his batted balls by season (a pitcher's: the balls hit off him), and his tendencies (battedball.ts). */
+function BattedTable({ batted, pitcher }: { batted: PlayerCard['batted']; pitcher: boolean }) {
+  const pct = (x: number) => x.toFixed(1);
+  const three = (x: number) => x.toFixed(3).replace(/^0/, '');
+  const row = (key: string, label: string, r: NonNullable<PlayerCard['batted']['career']>) => (
+    <tr key={key}>
+      <td>{label}</td>
+      <td class="num">{r.n}</td>
+      <td class="num">{r.ev.toFixed(1)}</td>
+      <td class="num">{r.evMax.toFixed(1)}</td>
+      <td class="num">{r.la.toFixed(1)}</td>
+      <td class="num">{pct(r.hard)}</td>
+      <td class="num">{pct(r.barrel)}</td>
+      <td class="num">{pct(r.sweet)}</td>
+      <td class="num">{`${Math.round(r.gb)}/${Math.round(r.ld)}/${Math.round(r.fb)}/${Math.round(r.pu)}`}</td>
+      <td class="num">{`${Math.round(r.pull)}/${Math.round(r.cent)}/${Math.round(r.oppo)}`}</td>
+      <td class="num">{three(r.xba)}</td>
+      <td class="num">{three(r.xslg)}</td>
+      <td class="num">{three(r.xwcon)}</td>
+      <td class="num">{r.hrDist == null ? '-' : `${r.hrDist}/${r.hrMax}`}</td>
+    </tr>
+  );
+  return (
+    <div class="tracking">
+      {batted.profile && <p class="small">{__i18n_t("ui.playerPanel.text.b07fe0a1", { pull: PULL_LABEL()[batted.profile.pull + 2]!, lift: LIFT_LABEL()[batted.profile.lift + 2]! })}</p>}
+      {batted.seasons.length ? (
+        <div class="table-wrap">
+          <table class="record-table small">
+            <thead>
+              <tr>
+                <th>{__i18n_t("ui.playerPanel.text.d5bc99dd")}</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.f697b0c7")}</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.ecee66d3")}</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.50922e57")}</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.9fd86f4d")}</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.4408711e")}</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.4c8fb2fa")}</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.9f032c27")}</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.27309da6")}</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.e3351339")}</th>
+                <th class="num">xBA</th>
+                <th class="num">xSLG</th>
+                <th class="num">xwOBAcon</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.c10f6806")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {batted.seasons.map((x) => row(String(x.year), x.current ? __i18n_t("ui.playerPanel.text.04555519", { year: x.year }) : String(x.year), x.rates))}
+              {batted.career && batted.seasons.length > 1 && row('career', __i18n_t("ui.playerPanel.text.fc7fa3d0"), batted.career)}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p class="muted">{__i18n_t("ui.playerPanel.text.2d6b42aa")}</p>
+      )}
+      <p class="muted small">
+        {pitcher
+          ? __i18n_t("ui.playerPanel.text.159d875f")
+          : __i18n_t("ui.playerPanel.text.32fd6cf4")}
+      </p>
     </div>
   );
 }

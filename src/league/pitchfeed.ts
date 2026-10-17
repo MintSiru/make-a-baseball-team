@@ -6,6 +6,7 @@ import { k as __i18n_k } from '../i18n/index';
    strike, a walk on ball four, a ball in play). Seeded by the game and the play: the same game reads the same way
    every time, and nothing here touches the simulation. */
 import { rng } from '../draftroom';
+import { distanceOf, type BattedBall } from './battedball';
 import type { PlayEvent } from './engine/types';
 import { averageVelocity, FASTBALL_LABELS, fastballOf, repertoire, PITCH_LABELS, type PitchType } from './pitches';
 import { halfLabel, playText } from './playtext';
@@ -96,8 +97,9 @@ const SPOTS: Record<string, [number, number, number?]> = {
   좌익수: [80, -28], 중견수: [90, 0], 우익수: [80, 28], 투수: [17, 0], 희생번트: [12, 12],
 };
 
-/** The landing spot of a ball in play (null for a strikeout, a walk or a hit batter). */
-export function hitSpot(res: string, text: string, r: () => number): HitSpot | null {
+/** The landing spot of a ball in play (null for a strikeout, a walk or a hit batter). 2.0.1: with the ball's flight
+    in the log, its direction and (in the air) its carry; the fielder's spot still for a ball on the ground. */
+export function hitSpot(res: string, text: string, r: () => number, ball?: BattedBall): HitSpot | null {
   if (res === 'K' || res === 'BB' || res === 'HBP') return null;
   const out = res === 'OUT' || res === 'DP' || res === 'SF' || res === 'SH';
   const kind: HitSpot['kind'] = res === 'HR' ? 'hr' : /땅볼|병살|번트|내야|굴절|빠지는|실책/.test(text) ? 'ground' : /뜬공|플라이/.test(text) ? 'fly' : 'line';
@@ -107,6 +109,14 @@ export function hitSpot(res: string, text: string, r: () => number): HitSpot | n
   const [dist, angle, wide = 5] = spot ? SPOTS[spot]! : [60, 0];
   // A foul pop comes down beyond the line on his side.
   const a = flat.includes('파울') ? (angle <= 0 ? -1 : 1) * (52 + r() * 10) : angle + jitter(wide);
+  if (ball && !flat.includes('파울')) {
+    const air = ball.la >= 10;
+    const k: HitSpot['kind'] = res === 'HR' ? 'hr' : !air ? 'ground' : ball.la < 25 ? 'line' : 'fly';
+    // A ground ball comes to rest where the fielder took it (or through the infield for a hit); a pop-up stays short.
+    const carry = ball.dist ?? Math.min(115, distanceOf(ball.ev, ball.la) * (ball.la >= 50 ? 0.55 : 1));
+    const far = air ? carry : out ? dist : Math.max(dist, 42 + r() * 12);
+    return { dist: Math.max(5, Math.round(far)), angle: ball.dir, kind: k, out };
+  }
   return { dist: Math.max(5, dist + jitter(kind === 'hr' ? 6 : 5)), angle: a, kind, out };
 }
 
@@ -238,8 +248,11 @@ export function pitchFeed(s: LeagueState, id: string): PitchFrame[] | null {
     outs = ev.outs;
     bases = [...ev.bases];
     score = [...ev.score];
-    const spot = hitSpot(ev.res, text, rl);
-    frames.push({ ...base, ...who, balls: 0, strikes: 0, outs, bases: [...bases], score: [...score], text, kind: 'result', ...(spot ? { hit: spot } : {}) });
+    const spot = hitSpot(ev.res, text, rl, ev.ball);
+    // 2.0.1: what the tracking read off the ball.
+    const flew = ev.ball;
+    const read = flew ? (flew.dist ? __i18n_k("league.pitchfeed.text.d0a27f8f", { ev: flew.ev.toFixed(1), la: flew.la, dist: flew.dist }) : __i18n_k("league.pitchfeed.text.1186ab8b", { ev: flew.ev.toFixed(1), la: flew.la })) : '';
+    frames.push({ ...base, ...who, balls: 0, strikes: 0, outs, bases: [...bases], score: [...score], text: text + read, kind: 'result', ...(spot ? { hit: spot } : {}) });
   });
   return frames;
 }

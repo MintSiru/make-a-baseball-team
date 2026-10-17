@@ -1,4 +1,5 @@
 import { rulesFor } from '../rules/history';
+import { battingProfile } from './battedball';
 import { k as __i18n_k } from '../i18n/index';
 /* The AI manager of every club. Decisions use public scouting grades and this season's results only;
    the engine input it builds carries true ability, because the engine plays the actual players. */
@@ -342,6 +343,7 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
     // A player who changed position this spring is still learning it (spring camp plan).
     defense: t(p, 'defense') - fitPenalty(p, pos, games(p)) - (p.plan?.adaptingIn === s.year ? ADAPTING_PENALTY : 0),
     pos,
+    ...battingProfile(p),
   }));
 }
 
@@ -359,7 +361,7 @@ export function benchFor(s: LeagueState, ids: PlayerId[], lineup: BatterIn[]): B
       const adapting = p.plan?.adaptingIn === s.year ? ADAPTING_PENALTY : 0;
       const defenseAt: Partial<Record<FieldPos, number>> = {};
       for (const pos of SLOTS) if (pos !== 'DH') defenseAt[pos] = t(p, 'defense') - fitPenalty(p, pos, games) - adapting;
-      return { id: p.id, bats: handOf(p.bats), contact: t(p, 'contact'), power: t(p, 'power'), eye: t(p, 'eye'), speed: t(p, 'speed'), defense: t(p, 'defense'), pos: 'DH' as FieldPos, defenseAt };
+      return { id: p.id, bats: handOf(p.bats), contact: t(p, 'contact'), power: t(p, 'power'), eye: t(p, 'eye'), speed: t(p, 'speed'), defense: t(p, 'defense'), pos: 'DH' as FieldPos, defenseAt, ...battingProfile(p) };
     });
 }
 

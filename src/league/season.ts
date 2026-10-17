@@ -1,5 +1,6 @@
 import { k as __i18n_k } from '../i18n/index';
 /* The regular season, one game day at a time: registered days, games, injuries and roster moves. */
+import { addBatted, emptyBatted } from './battedball';
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { draftWatchDay } from './draftlog';
@@ -198,8 +199,9 @@ export function record(s: LeagueState, box: TeamBox, date: string, lines: Record
     const line = lineOf(b.id, box.teamId);
     if (!line) continue;
     const bat = (line.bat ??= emptyBat());
-    const { id: _id, pos: _pos, split, sub, ...counts } = b;
+    const { id: _id, pos: _pos, split, sub, bip, ...counts } = b;
     addInto(bat, counts);
+    if (bip) addBatted((bat.bip ??= emptyBatted()), bip);
     if (split && lines === s.lines) addSplits(bat, split);
     // Games at a position are the starts there (1.7.0: a substitute's inning or two does not count).
     if (lines === s.lines && !sub) (bat.posG ??= {})[b.pos] = (bat.posG[b.pos] ?? 0) + 1;
@@ -210,8 +212,9 @@ export function record(s: LeagueState, box: TeamBox, date: string, lines: Record
     const line = lineOf(p.id, box.teamId);
     if (line) {
       const pit = (line.pit ??= emptyPit());
-      const { id: _id, split, ...counts } = p;
+      const { id: _id, split, bip, ...counts } = p;
       addInto(pit, counts);
+      if (bip) addBatted((pit.bip ??= emptyBatted()), bip);
       if (split && lines === s.lines) addSplits(pit, split);
       pit.g++;
     }
@@ -266,7 +269,9 @@ export function playGame(s: LeagueState, homeId: TeamId, awayId: TeamId, id: str
   // 1.9.9: the board's game rules (board.ts), the 승부치기 in the regular season only.
   const ghost = maxInnings !== null ? boardValue('ghostRunner', s.year) : undefined;
   const three = boardValue('threeBatter', s.year) === 1;
-  return simulateGame({ gameId: id, home, away, maxInnings, park, ...(ghost ? { ghostFrom: 10 } : {}), ...(three ? { threeBatter: true } : {}) }, gameRng(s, id), log);
+  // 2.0.1: the batted-ball stream, apart from the game's so the plays stay as they were drawn.
+  const balls = rng(`${s.seed}|balls|${id}`);
+  return simulateGame({ gameId: id, home, away, maxInnings, park, balls, ...(ghost ? { ghostFrom: 10 } : {}), ...(three ? { threeBatter: true } : {}) }, gameRng(s, id), log);
 }
 
 /** Plays every game on the next date. Returns false when the regular season is over. */

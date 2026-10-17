@@ -185,6 +185,8 @@ export interface BatTotals {
   split?: Splits;
   /** Games started at each position (V0.7). */
   posG?: Partial<Record<FieldPos, number>>;
+  /** 2.0.1: his balls in play (battedball.ts); absent in records from before. */
+  bip?: import('../league/battedball').BattedTotals;
 }
 
 export interface PitTotals {
@@ -209,6 +211,8 @@ export interface PitTotals {
   pitches: number;
   /** First team only: against left- and right-handed batters. */
   split?: Splits;
+  /** 2.0.1: the balls put in play against him. */
+  bip?: import('../league/battedball').BattedTotals;
 }
 
 export interface SeasonRecord {

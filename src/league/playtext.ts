@@ -2,9 +2,10 @@ import { k as __i18n_k } from '../i18n/index';
 /* Play-by-play in Korean (V0.7). Only the wording is picked here (from a hash of the game and event,
    never the simulation's random stream); the facts come from the engine's log. */
 import { hashUnit } from '../draftroom';
+import type { BattedBall } from './battedball';
 import type { PlayEvent } from './engine/types';
 
-const pick = <T,>(xs: T[], key: string) => xs[Math.floor(hashUnit(key) * xs.length)]!;
+const pickBy = <T,>(xs: T[], key: string) => xs[Math.floor(hashUnit(key) * xs.length)]!;
 
 const OUTS = [__i18n_k("league.playtext.oUTS.7f111c95"), __i18n_k("league.playtext.oUTS.62c082bd"), __i18n_k("league.playtext.oUTS.028f714c"), __i18n_k("league.playtext.oUTS.b89bb598"), __i18n_k("league.playtext.oUTS.5786dec2"), __i18n_k("league.playtext.oUTS.1bff398a"), __i18n_k("league.playtext.oUTS.dea249dc"), __i18n_k("league.playtext.oUTS.2435e352"), __i18n_k("league.playtext.oUTS.7cabec65"), __i18n_k("league.playtext.oUTS.361fac51"), __i18n_k("league.playtext.oUTS.e8715b18"), __i18n_k("league.playtext.oUTS.a7902cf9")];
 const SINGLES = [__i18n_k("league.playtext.sINGLES.83ca09de"), __i18n_k("league.playtext.sINGLES.2f8aefc0"), __i18n_k("league.playtext.sINGLES.d054bff7"), __i18n_k("league.playtext.sINGLES.5ad7d6e7"), __i18n_k("league.playtext.sINGLES.80f23bdc"), __i18n_k("league.playtext.sINGLES.148128da")];
@@ -17,6 +18,39 @@ const ERRORS = [__i18n_k("league.playtext.eRRORS.ae52eeb7"), __i18n_k("league.pl
 /** 1.7.0: where a defensive replacement goes (the alerts' position names). */
 const POS: Record<string, string> = { C: __i18n_k("league.alerts.pOS.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("league.alerts.pOS.sS.3e24c7f1"), LF: __i18n_k("league.alerts.pOS.lF.73836db2"), CF: __i18n_k("league.alerts.pOS.cF.56780b2a"), RF: __i18n_k("league.alerts.pOS.rF.a28a0ef8") };
 
+/** 2.0.1: the word that fits where the ball went (battedball.ts), as an index into the lists above; null without a
+    ball (a log from before), when the wording is picked as it was. `dir`: degrees off the centre-field line, left
+    field negative. */
+function byBall(res: string, ball: BattedBall, runs: number): number | null {
+  const { dir, la, ev } = ball;
+  const ground = la < 10;
+  // Infielders on the ground: third, short, second, first; the pitcher on a soft one up the middle.
+  const infield = () => (Math.abs(dir) < 4 && ev < 125 ? 4 : dir < -22 ? 2 : dir < -2 ? 0 : dir < 20 ? 1 : 3);
+  switch (res) {
+    case 'HR':
+      return dir < -22 ? 0 : dir < -8 ? 3 : dir <= 8 ? 1 : dir <= 22 ? 4 : 2;
+    case '3B':
+      return dir > 30 ? 2 : dir >= 0 ? 0 : 1;
+    case '2B':
+      return dir < -30 ? 2 : dir > 30 ? 3 : dir < 0 ? 0 : 1;
+    case '1B':
+      return ground && ev < 120 ? 3 : dir < -12 ? 0 : dir > 12 ? 2 : 1;
+    case 'DP':
+      return [0, 1, 2, 1, 3][infield()]!;
+    case 'SF':
+      return dir < -15 ? 0 : dir > 15 ? 2 : 1;
+    case 'E':
+      return ground ? [0, 2, 1, 3, 0][infield()]! : 4;
+    case 'OUT': {
+      if (ground || runs > 0) return infield();
+      if (la >= 50) return Math.abs(dir) < 12 ? (dir < 0 ? 9 : 11) : dir < 0 ? 10 : 9;
+      if (la < 25 && dir > 0 && dir < 22) return 8;
+      return dir < -15 ? 6 : dir > 15 ? 7 : 5;
+    }
+  }
+  return null;
+}
+
 export function playText(ev: PlayEvent, key: string, name: (id: string) => string): string {
   if (ev.k === 'sub') {
     const v = { name: name(ev.in), out: name(ev.out) };
@@ -26,6 +60,8 @@ export function playText(ev: PlayEvent, key: string, name: (id: string) => strin
   }
   if (ev.k === 'pitch') return __i18n_k("league.playtext.playText.43752078", { name: name(ev.out), name2: name(ev.p) });
   const who = name(ev.b);
+  const at = ev.ball ? byBall(ev.res, ev.ball, ev.runs) : null;
+  const pick = <T,>(xs: T[], key: string) => (at != null && xs[at] !== undefined ? xs[at]! : pickBy(xs, key));
   const what = (() => {
     switch (ev.res) {
       case 'HR':
@@ -41,7 +77,7 @@ export function playText(ev: PlayEvent, key: string, name: (id: string) => strin
       case 'HBP':
         return __i18n_k("league.playtext.playText.what.58ef970a");
       case 'K':
-        return pick([__i18n_k("league.playtext.playText.what.53bee11b"), __i18n_k("league.playtext.playText.what.2a8b27c9"), __i18n_k("league.playtext.playText.what.3f349ed1")], key);
+        return pickBy([__i18n_k("league.playtext.playText.what.53bee11b"), __i18n_k("league.playtext.playText.what.2a8b27c9"), __i18n_k("league.playtext.playText.what.3f349ed1")], key);
       case 'DP':
         return pick(DPS, key);
       case 'SF':
@@ -52,7 +88,7 @@ export function playText(ev: PlayEvent, key: string, name: (id: string) => strin
         return pick(ERRORS, key);
       default:
         // An out that scores a run is a ground ball to the infield (a fly would be a sacrifice fly).
-        return pick(ev.runs > 0 ? OUTS.filter((x) => x.endsWith('땅볼')) : OUTS, key);
+        return at != null ? OUTS[at]! : pick(ev.runs > 0 ? OUTS.filter((x) => x.endsWith('땅볼')) : OUTS, key);
     }
   })();
   return ev.res !== 'HR' && ev.runs > 0 ? __i18n_k("league.playtext.playText.7b8ebb4c", { who: who, what: what, runs: ev.runs }) : __i18n_k("league.playtext.playText.ebc0b8c7", { who: who, what: what });
