@@ -41,11 +41,12 @@ type Prefer = (p: Player) => number;
 const none: Prefer = () => 0;
 
 /** Choose the first-team roster: 13–14 pitchers (5 starters), two catchers, the best of the rest. */
-export function chooseActive(s: LeagueState, teamId: TeamId): PlayerId[] {
-  const size = firstTeamSize(s, teamId);
-  const pitchersWanted = size >= 29 ? 14 : 13;
-  // Development players cannot be registered until they are converted (RULES.md §6).
-  const pool = registeredIds(s, teamId)
+export function chooseActive(s: LeagueState, teamId: TeamId, opts?: { size?: number; pitchers?: number; from?: PlayerId[] }): PlayerId[] {
+  const size = opts?.size ?? firstTeamSize(s, teamId);
+  const pitchersWanted = opts?.pitchers ?? (size >= 29 ? 14 : 13);
+  // Development players cannot be registered until they are converted (RULES.md §6). 1.9.0: a postseason entry
+  // chooses from the players eligible for it (`from`, postentry.ts).
+  const pool = (opts?.from ?? registeredIds(s, teamId))
     .map((id) => s.players[id]!)
     .filter((p) => !offRoster(s, p.id) && p.status === 'active');
   const perf = (p: Player) => performanceNudge(s, p);

@@ -156,10 +156,10 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       if (regularOver(s) || (s.phase === 'postseason' && s.bracket && !s.bracket.done)) playPostseason(s, !!action.stops);
       break;
     case 'postseasonStart':
-      if (regularOver(s)) startPostseason(s);
+      if (regularOver(s)) startPostseason(s, true);
       break;
     case 'postseasonDay':
-      if (s.phase === 'postseason') postseasonDay(s);
+      if (s.phase === 'postseason') postseasonDay(s, true);
       break;
     case 'postseasonRound':
       if (s.phase === 'postseason') postseasonRound(s, !!action.stops);

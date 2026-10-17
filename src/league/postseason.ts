@@ -19,6 +19,7 @@ import { eunneun, iga, wagwa } from './josa';
 import type { PlayEvent } from './engine/types';
 import { leagueTables, twoLeagues } from './twelve';
 import { stopsOf } from './stops';
+import { openEntries, restoreFirstTeams, settleOurEntry } from './postentry';
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 
@@ -176,9 +177,15 @@ function nextRound(s: LeagueState, b: Bracket, ended: LiveSeries[]): LiveSeries[
   return null;
 }
 
-/** Draws the bracket at the end of the regular season (no game played yet). */
-export function startPostseason(s: LeagueState) {
+/** Draws the bracket at the end of the regular season (no game played yet). 1.9.0: the clubs of the first round hand
+    in their entries (ours through a decision with `stops`). */
+export function startPostseason(s: LeagueState, stops = false) {
   if (s.bracket?.year === s.year) return;
+  drawBracket(s);
+  if (s.bracket && !s.bracket.done) openEntries(s, s.bracket.live, stops);
+}
+
+function drawBracket(s: LeagueState) {
   s.phase = 'postseason';
   const last = s.schedule[s.schedule.length - 1]?.date ?? `${s.year}-10-01`;
   const date = addDays(last, 3);
@@ -215,10 +222,13 @@ export function startPostseason(s: LeagueState) {
   s.bracket = { year: s.year, mode: 'one', stage: 0, live: [live('wildcard', seeds[3]!, seeds[4]!, 2, [true, true], date, 1)], seeds, done: false };
 }
 
-/** Plays the postseason's next game day (every series with a game that day). Returns false when it is over. */
-export function postseasonDay(s: LeagueState): boolean {
+/** Plays the postseason's next game day (every series with a game that day). Returns false when it is over.
+    1.9.0: nothing is played while our entry is still to be handed in; with `stops` the next round's entry is ours to
+    choose. */
+export function postseasonDay(s: LeagueState, stops = false): boolean {
   const b = s.bracket;
   if (!b || b.done) return false;
+  if (s.pending) return true;
   const playing = b.live.filter((x) => !over(x));
   if (playing.length) {
     const date = playing.reduce((m, x) => (x.date < m ? x.date : m), playing[0]!.date);
@@ -231,7 +241,11 @@ export function postseasonDay(s: LeagueState): boolean {
     if (next) {
       b.stage++;
       b.live = next;
-    } else b.done = true;
+      openEntries(s, next, stops);
+    } else {
+      b.done = true;
+      restoreFirstTeams(s);
+    }
   }
   return !b.done;
 }
@@ -267,13 +281,15 @@ export function postseasonRound(s: LeagueState, stops = false) {
   const b = s.bracket;
   if (!b) return;
   const stage = b.stage;
-  while (!b.done && b.stage === stage && !stopsBefore(s, stops) && postseasonDay(s));
+  while (!b.done && b.stage === stage && !s.pending && !stopsBefore(s, stops) && postseasonDay(s, stops));
 }
 
 /** The whole postseason, or what is left of it (with `stops`, only up to our next game). */
 export function playPostseason(s: LeagueState, stops = false) {
-  startPostseason(s);
-  while (!stopsBefore(s, stops) && postseasonDay(s));
+  startPostseason(s, stops);
+  // Played through: an entry of ours still open stands as the scouts suggested it.
+  if (!stops) settleOurEntry(s);
+  while (!s.pending && !stopsBefore(s, stops) && postseasonDay(s, stops));
 }
 
 export const ROUND_NAME: Record<SeriesResult['round'], string> = { wildcard: __i18n_k("league.postseason.rOUND_NAME.wildcard.82702aa7"), semipo: __i18n_k("league.postseason.rOUND_NAME.semipo.42e1bde5"), po: __i18n_k("league.postseason.rOUND_NAME.po.4651993c"), ks: __i18n_k("league.postseason.rOUND_NAME.ks.3c8e7785") };

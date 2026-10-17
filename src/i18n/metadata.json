@@ -67793,5 +67793,150 @@
       }
     },
     "locations": []
+  },
+  "league.postentry.text.6fa5ccf1": {
+    "source": "src/league/postentry.ts",
+    "line": 78,
+    "params": {},
+    "locations": []
+  },
+  "league.postentry.text.51d475e7": {
+    "source": "src/league/postentry.ts",
+    "line": 79,
+    "params": {
+      "max": {
+        "expression": "ENTRY.registered"
+      }
+    },
+    "locations": []
+  },
+  "league.postentry.text.1716fc61": {
+    "source": "src/league/postentry.ts",
+    "line": 80,
+    "params": {
+      "min": {
+        "expression": "ENTRY_MIN.players"
+      }
+    },
+    "locations": []
+  },
+  "league.postentry.text.19606fb4": {
+    "source": "src/league/postentry.ts",
+    "line": 82,
+    "params": {
+      "pitchers": {
+        "expression": "ENTRY_MIN.pitchers"
+      },
+      "hitters": {
+        "expression": "ENTRY_MIN.hitters"
+      }
+    },
+    "locations": []
+  },
+  "league.stops.text.3b819fa3": {
+    "source": "src/league/stops.ts",
+    "line": 22,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.48de5d15": {
+    "source": "src/league/advice.ts",
+    "line": 96,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.1889aeca": {
+    "source": "src/league/advice.ts",
+    "line": 99,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.dc90c52a": {
+    "source": "src/league/advice.ts",
+    "line": 101,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.2bfab379": {
+    "source": "src/ui/Decision.tsx",
+    "line": 79,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.a72848c6": {
+    "source": "src/ui/Decision.tsx",
+    "line": 821,
+    "params": {
+      "round": {
+        "expression": "__i18n_displayText(ROUND_NAME[d.round])"
+      },
+      "opp": {
+        "expression": "shortName(league, d.opp)"
+      },
+      "size": {
+        "expression": "d.size"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.49fb9fbe": {
+    "source": "src/ui/Decision.tsx",
+    "line": 822,
+    "params": {
+      "count": {
+        "expression": "picked.length"
+      },
+      "pitchers": {
+        "expression": "pitchers"
+      },
+      "hitters": {
+        "expression": "picked.length - pitchers"
+      },
+      "foreign": {
+        "expression": "foreign"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.38dae898": {
+    "source": "src/ui/Decision.tsx",
+    "line": 823,
+    "params": {
+      "names": {
+        "expression": "d.late.map((id) => league.players[id]?.name ?? id).join(', ')"
+      }
+    },
+    "locations": []
+  },
+  "ui.manual.text.2bfab379": {
+    "source": "src/ui/Manual.tsx",
+    "line": 88,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.f4e79f70": {
+    "source": "src/ui/Manual.tsx",
+    "line": 88,
+    "params": {
+      "size": {
+        "expression": "ENTRY.registered"
+      },
+      "active": {
+        "expression": "ENTRY.active"
+      }
+    },
+    "locations": []
+  },
+  "ui.tutorial.text.2bfab379": {
+    "source": "src/ui/tutorial.ts",
+    "line": 117,
+    "params": {},
+    "locations": []
+  },
+  "ui.tutorial.text.962095d8": {
+    "source": "src/ui/tutorial.ts",
+    "line": 117,
+    "params": {},
+    "locations": []
   }
 }

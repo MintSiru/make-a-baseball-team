@@ -14,6 +14,7 @@ import { gameNews, milestoneNews, monthNews } from './news';
 import { parkFactor } from './clubs';
 import { assignSquads, futuresPreference, futuresSquad, makeFuturesLeague } from './futures';
 import { chooseActive, matchInputs } from './manager';
+import { noteEligibility } from './postentry';
 import { manualReplacements } from './entry';
 import { ensureNumbers } from './numbers';
 import { attendance, clubState, recordGate } from './fans';
@@ -314,6 +315,8 @@ export function playDay(s: LeagueState): boolean {
   playFuturesDay(s, date);
   // Every ten game days the manager looks at the whole roster again; otherwise only injuries force moves.
   maintainRosters(s, date, day > 0 && Math.floor(s.next / (firstTeamIds(s).length / 2)) % 10 === 0);
+  // 1.9.0: who may play in the postseason, once the registration deadlines have passed (postentry.ts).
+  noteEligibility(s);
   return s.next < s.schedule.length;
 }
 

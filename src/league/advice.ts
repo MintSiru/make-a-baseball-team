@@ -89,6 +89,18 @@ export function adviceFor(s: LeagueState): Advice | null {
       return { rule: __i18n_k("league.advice.adviceFor.rule.e049e905"), picks: none(input.ids, __i18n_k("league.advice.adviceFor.picks.5c6950b1")), tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.e2b3546a") };
     case 'faOptions':
       return { rule: __i18n_k("league.advice.adviceFor.rule.077be73f"), picks: none(input.keep, __i18n_k("league.advice.adviceFor.picks.a6e55f8c")), tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.c07ca09d") };
+    case 'postEntry': {
+      // 1.9.0: the players it adds to the regular-season first team.
+      const first = s.postEntry?.before?.[s.user.teamId] ?? s.rosters[s.user.teamId]!.active;
+      return {
+        rule: __i18n_k("league.advice.text.48de5d15"),
+        picks: none(
+          input.ids.filter((id) => !first.includes(id)),
+          __i18n_k("league.advice.text.1889aeca"),
+        ),
+        tradeoff: __i18n_k("league.advice.text.dc90c52a"),
+      };
+    }
     case 'faProtect':
     case 'secondProtect':
       return { rule: __i18n_k("league.advice.adviceFor.rule.2f705ae8"), picks: list(input.ids), tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.276381a9") };

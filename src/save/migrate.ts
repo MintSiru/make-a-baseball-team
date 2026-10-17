@@ -22,7 +22,7 @@ import { dealYears } from '../league/returnees';
 import { logGrades } from '../league/offseason';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0', '1.2.0', '1.3.0', '1.4.0', '1.6.0', '1.7.0', '1.7.1', '1.8.0', '1.8.1', '1.8.2'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0', '1.2.0', '1.3.0', '1.4.0', '1.6.0', '1.7.0', '1.7.1', '1.8.0', '1.8.1', '1.8.2', '1.8.4'];
 
 type Loose = Record<string, unknown>;
 
@@ -130,6 +130,10 @@ export function migrateState(raw: unknown, from: string): LeagueState {
         m.years = Math.max(1, m.until - base);
         m.bonus = m.role === 'manager' ? Math.round((m.salary * 0.35 * m.years) / 1000) * 1000 : 0;
       }
+  // 1.9.0: postseason entries (postentry.ts). A club that stops before its postseason games stops for its entry too;
+  // a season past the deadlines lets everyone in this year, and a postseason under way plays its round as it stands.
+  const stops = s.user?.settings.stops;
+  if (stops?.includes('bigGame') && !stops.includes('postEntry')) stops.push('postEntry');
   // The ability graph starts from today's report.
   for (const p of Object.values(s.players)) if (!p.gradeLog && (p.status === 'active' || p.status === 'military' || p.status === 'freeAgent')) logGrades(p, p.scouting.season);
   s.sim = SIM_VERSION;
