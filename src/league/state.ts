@@ -151,13 +151,15 @@ export interface Evaluation {
 }
 
 export interface StadiumProject {
-  kind: 'expand' | 'fences' | 'newPark';
+  /** 'fences': a run factor of before 2.0.2; 'layout': the 2.0.2 editor's fences. */
+  kind: 'expand' | 'fences' | 'layout' | 'newPark';
   label: string;
   /** Opens before this season. */
   opens: number;
   cost: number;
   seats?: number;
   park?: number;
+  layout?: import('./layout').ParkLayout;
 }
 
 export interface SeriesResult {

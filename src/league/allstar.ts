@@ -13,6 +13,7 @@ import { k as __i18n_k } from '../i18n/index';
 
    The game is played in the All-Star break at a ballpark that changes every year, the 홈런 레이스 the day before.
    Nothing counts: no records, no rest days, no injuries. The best player on the winning side is 미스터 올스타. */
+import { layoutOf } from './layout';
 import { hashUnit, rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { addAlert } from './alerts';
@@ -364,8 +365,9 @@ function playAllStar(s: LeagueState, a: AllStarState, date: string) {
   if (!home || !away || !d) return;
   const boxId = `${s.year}-allstar`;
   const log: PlayEvent[] = [];
-  const park = s.teams.find((t) => t.id === host)?.stadium.park ?? 1;
-  const out = simulateGame({ gameId: boxId, home, away, maxInnings: 9, park }, rng(`${s.seed}|game|${boxId}`), log);
+  const hostTeam = s.teams.find((t) => t.id === host);
+  const park = hostTeam?.stadium.park ?? 1;
+  const out = simulateGame({ gameId: boxId, home, away, maxInnings: 9, park, ...(hostTeam ? { layout: layoutOf(hostTeam) } : {}) }, rng(`${s.seed}|game|${boxId}`), log);
   const capacity = s.teams.find((t) => t.id === host)?.stadium.capacity ?? 20000;
   const box = compactBox(out, boxId, date, capacity);
   keepBox(s, box, log);

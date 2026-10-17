@@ -351,6 +351,8 @@ try {
   await page.getByRole('button', { name: '구단 운영', exact: true }).click();
   await page.getByRole('group', { name: '구단 운영' }).getByRole('button', { name: '구장', exact: true }).click();
   check(!(await page.locator('.page').textContent())?.includes('공사는 비시즌에만'), 'ballpark work can start during the winter');
+  // 2.0.2: the layout editor draws the park and prices a change.
+  check((await page.locator('.layout-field').count()) > 0, 'the layout editor draws the park');
   const start = page.locator('.page button:not([disabled])', { hasText: /^시작$/ });
   if (await start.count()) {
     await start.first().click();

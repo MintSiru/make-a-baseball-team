@@ -1,6 +1,7 @@
 import { display as __i18n_display, k as __i18n_k, rich as __i18n_rich, t as __i18n_t } from '../i18n/index';
 /* One game (V0.7): the line score, both clubs' batting and pitching, and for the user's games the text
    relay, which can be replayed play by play (관전 모드). */
+import { fenceAt, type ParkLayout } from '../league/layout';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { useFocusTrap } from './modal';
 import type { LeagueState } from '../league/state';
@@ -393,12 +394,13 @@ const spotAt = (dist: number, angle: number): [number, number] => {
     r = 146 * Math.pow(Math.max(0, dist) / 125, 0.75);
   return [HOME[0] + r * Math.sin(a), HOME[1] - r * Math.cos(a)];
 };
-/** Fence distances: 100 m down the lines, 122 m to centre. */
-const fence = (angle: number) => 100 + 22 * Math.cos((angle * Math.PI) / 90);
+/** Fence distances: 100 m down the lines, 122 m to centre; 2.0.2: the home park's own when the relay knows it. */
+const fenceOf = (park?: ParkLayout) => (angle: number) => (park ? fenceAt(park, angle).dist : 100 + 22 * Math.cos((angle * Math.PI) / 90));
 const pts = (xs: [number, number][]) => xs.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
 
 /** The whole field with a go stone on each occupied base, and where the ball came down on the play. */
 function PitchDiamond({ f }: { f: PitchFrame }) {
+  const fence = fenceOf(f.park);
   const outfield: [number, number][] = [HOME, ...Array.from({ length: 19 }, (_, i) => spotAt(fence(-45 + i * 5), -45 + i * 5))];
   const dirt: [number, number][] = [HOME, ...Array.from({ length: 19 }, (_, i) => spotAt(44, -45 + i * 5))];
   const bases = [spotAt(27.4, 45), spotAt(38.8, 0), spotAt(27.4, -45)];

@@ -73,7 +73,7 @@ export type Action =
   // The business side (V0.6)
   | { kind: 'ticketPrice'; level: number }
   | { kind: 'marketing'; amount: number }
-  | { kind: 'stadiumProject'; project: ProjectKind }
+  | { kind: 'stadiumProject'; project: ProjectKind; layout?: import('./layout').ParkLayout }
   // Stories (V0.7)
   | { kind: 'interview'; id: PlayerId }
   | { kind: 'gameStory'; id: string }
@@ -249,7 +249,7 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     }
     case 'stadiumProject':
-      startProject(s, action.project);
+      startProject(s, action.project, action.layout);
       break;
     case 'interview':
       if (s.players[action.id]?.teamId === s.user?.teamId) interviewNews(s, action.id, s.phase === 'regular' ? (s.schedule[Math.max(0, s.next - 1)]?.date ?? `${s.year}-03-01`) : `${s.year}-11-15`);

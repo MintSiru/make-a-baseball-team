@@ -8,6 +8,7 @@ import { k as __i18n_k } from '../i18n/index';
 
    Each opening day: the clubs founded that year, the names and owners of the year, the two leagues of 1999–2000, and
    a notice of the rules that changed. */
+import { NEUTRAL, shifted } from './layout';
 import { rng } from '../draftroom';
 import type { Team, TeamId } from '../model/types';
 import { EXPANSION_DEFAULTS } from '../rules/kbo2026';
@@ -59,9 +60,10 @@ function asIn(t: Team, year: number): Team {
 /** 1.9.7: the club's ballpark in `year` (lineage.ts PARKS): an old park's name, seats and run factor, or today's. */
 function stadiumIn(t: Team, year: number): Team['stadium'] {
   const p = parkIn(t.id, year);
-  if (p) return { ...t.stadium, name: p.name, capacity: p.seats, park: p.factor };
+  // 2.0.2: an old park's fences, the neutral park moved in or out by its run factor (layout.ts).
+  if (p) return { ...t.stadium, name: p.name, capacity: p.seats, park: p.factor, layout: shifted(NEUTRAL, p.factor) };
   const now = existingTeams().find((x) => x.id === t.id)?.stadium ?? t.stadium;
-  const { park: _old, ...rest } = { ...t.stadium, name: now.name, capacity: now.capacity };
+  const { park: _old, layout: _fences, ...rest } = { ...t.stadium, name: now.name, capacity: now.capacity };
   return rest;
 }
 

@@ -91,6 +91,9 @@ export interface GameIn {
   threeBatter?: boolean;
   /** 2.0.1: the batted-ball stream (battedball.ts); given, every ball in play gets its flight, kept on the lines. */
   balls?: () => number;
+  /** 2.0.2: the home park's fences (layout.ts): its home-run and gap effects in place of `park`'s, and a home run
+      clears the fence where it goes. */
+  layout?: import('../layout').ParkLayout;
 }
 
 /** One side of a platoon split: plate appearances against left- or right-handers. */

@@ -7,6 +7,7 @@ import { k as __i18n_k } from '../i18n/index';
    every time, and nothing here touches the simulation. */
 import { rng } from '../draftroom';
 import { distanceOf, type BattedBall } from './battedball';
+import { clearance, layoutOf, type ParkLayout } from './layout';
 import type { PlayEvent } from './engine/types';
 import { averageVelocity, FASTBALL_LABELS, fastballOf, repertoire, PITCH_LABELS, type PitchType } from './pitches';
 import { halfLabel, playText } from './playtext';
@@ -36,6 +37,8 @@ export interface PitchFrame {
   loc?: PitchLoc;
   /** 1.7.1: where a ball in play came down (metres from home plate, degrees off the centre-field line, right positive). */
   hit?: HitSpot;
+  /** 2.0.2: the home park's fences (layout.ts), to draw the field by. */
+  park?: ParkLayout;
 }
 
 export type PitchCall = 'ball' | 'strike' | 'swing' | 'foul' | 'play' | 'hbp';
@@ -99,7 +102,7 @@ const SPOTS: Record<string, [number, number, number?]> = {
 
 /** The landing spot of a ball in play (null for a strikeout, a walk or a hit batter). 2.0.1: with the ball's flight
     in the log, its direction and (in the air) its carry; the fielder's spot still for a ball on the ground. */
-export function hitSpot(res: string, text: string, r: () => number, ball?: BattedBall): HitSpot | null {
+export function hitSpot(res: string, text: string, r: () => number, ball?: BattedBall, park?: ParkLayout): HitSpot | null {
   if (res === 'K' || res === 'BB' || res === 'HBP') return null;
   const out = res === 'OUT' || res === 'DP' || res === 'SF' || res === 'SH';
   const kind: HitSpot['kind'] = res === 'HR' ? 'hr' : /땅볼|병살|번트|내야|굴절|빠지는|실책/.test(text) ? 'ground' : /뜬공|플라이/.test(text) ? 'fly' : 'line';
@@ -114,7 +117,9 @@ export function hitSpot(res: string, text: string, r: () => number, ball?: Batte
     const k: HitSpot['kind'] = res === 'HR' ? 'hr' : !air ? 'ground' : ball.la < 25 ? 'line' : 'fly';
     // A ground ball comes to rest where the fielder took it (or through the infield for a hit); a pop-up stays short.
     const carry = ball.dist ?? Math.min(115, distanceOf(ball.ev, ball.la) * (ball.la >= 50 ? 0.55 : 1));
-    const far = air ? carry : out ? dist : Math.max(dist, 42 + r() * 12);
+    // In the park: a ball that stayed in came down short of the fence (or off it).
+    const inside = park && res !== 'HR' ? Math.min(carry, clearance(park, ball.dir) - 2) : carry;
+    const far = air ? inside : out ? dist : Math.max(dist, 42 + r() * 12);
     return { dist: Math.max(5, Math.round(far)), angle: ball.dir, kind: k, out };
   }
   return { dist: Math.max(5, dist + jitter(kind === 'hr' ? 6 : 5)), angle: a, kind, out };
@@ -203,6 +208,8 @@ export function pitchFeed(s: LeagueState, id: string): PitchFrame[] | null {
   if (!log) return null;
   const name = (pid: string) => s.players[pid]?.name ?? '?';
   const words = CALL_TEXT();
+  const host = s.teams.find((t) => t.id === s.boxes?.[id]?.home);
+  const park = host ? layoutOf(host) : undefined;
   const frames: PitchFrame[] = [];
   let half = '',
     outs = 0,
@@ -215,7 +222,7 @@ export function pitchFeed(s: LeagueState, id: string): PitchFrame[] | null {
       outs = 0;
       bases = [false, false, false];
     }
-    const base = { play: n, half: h, inning: ev.i, top: ev.top };
+    const base = { play: n, half: h, inning: ev.i, top: ev.top, ...(park ? { park } : {}) };
     if (ev.k === 'sub') {
       frames.push({ ...base, batter: '', pitcher: frames.at(-1)?.pitcher ?? '', balls: 0, strikes: 0, outs, bases: [...bases], score: [...score], text: playText(ev, `${id}-${n}`, name), kind: 'change' });
       return;
@@ -248,7 +255,7 @@ export function pitchFeed(s: LeagueState, id: string): PitchFrame[] | null {
     outs = ev.outs;
     bases = [...ev.bases];
     score = [...ev.score];
-    const spot = hitSpot(ev.res, text, rl, ev.ball);
+    const spot = hitSpot(ev.res, text, rl, ev.ball, park);
     // 2.0.1: what the tracking read off the ball.
     const flew = ev.ball;
     const read = flew ? (flew.dist ? __i18n_k("league.pitchfeed.text.d0a27f8f", { ev: flew.ev.toFixed(1), la: flew.la, dist: flew.dist }) : __i18n_k("league.pitchfeed.text.1186ab8b", { ev: flew.ev.toFixed(1), la: flew.la })) : '';

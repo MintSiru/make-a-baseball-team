@@ -1,7 +1,8 @@
 /* V0.6: attendance, accounts, owner, staff, ballpark. */
 import { beforeAll, describe, expect, it } from 'vitest';
 import { apply } from '../src/league/actions';
-import { projectOptions } from '../src/league/ballpark';
+import { layoutOption, projectOptions } from '../src/league/ballpark';
+import { layoutOf } from '../src/league/layout';
 import { autoDecision, EXPANSION_ID } from '../src/league/expansion';
 import { attendance, clubState } from '../src/league/fans';
 import { broadcastPool, postseasonTakes } from '../src/league/finance';
@@ -128,12 +129,16 @@ describe('the user club', () => {
     const fund = u.user!.fund;
     apply(u, { kind: 'ticketPrice', level: 1.1 });
     expect(clubState(u, EXPANSION_ID).price).toBe(1.1);
-    const fences = projectOptions(u).find((o) => o.kind === 'fencesIn')!;
+    // 2.0.2: the fences are rebuilt in the layout editor (layout.ts), 3 m in down the lines.
+    const before = layoutOf(team());
+    const wanted = { dist: before.dist.map((d, i) => (i === 0 || i === 4 ? d - 3 : d)) as typeof before.dist, wall: [...before.wall] as typeof before.wall };
+    const fences = layoutOption(u, wanted);
     expect(fences.blocked).toBeNull();
-    apply(u, { kind: 'stadiumProject', project: 'fencesIn' });
+    expect(fences.factor.to).toBeGreaterThan(fences.factor.from);
+    apply(u, { kind: 'stadiumProject', project: 'layout', layout: wanted });
     const project = u.user!.projects!.at(-1)!;
-    expect(project).toMatchObject({ kind: 'fences', opens: next });
-    expect(team().stadium.park).not.toBe(project.park);
+    expect(project).toMatchObject({ kind: 'layout', opens: next });
+    expect(team().stadium.layout).toBeUndefined();
     expect(u.user!.fund).toBe(fund - fences.cost);
     const day = u.next;
     apply(u, { kind: 'days', days: 1 });
@@ -141,6 +146,6 @@ describe('the user club', () => {
     while (u.pending) apply(u, { kind: 'decide', input: autoDecision(u)! });
     expect(u.year).toBe(next);
     expect(u.phase).toBe('regular');
-    expect(team().stadium.park).toBe(project.park);
+    expect(team().stadium.layout).toEqual(wanted);
   }, 240_000);
 });

@@ -9,6 +9,7 @@
    Determinism: every draw comes from the `r` passed in, in a fixed order. Changing the order of draws
    changes results and needs a SIM_VERSION bump. */
 import { countBall, drawBall, emptyBatted, groundShift, homeRunShift, type BattedBall, type BipResult } from '../battedball';
+import { clearance, layoutEffects } from '../layout';
 import { ENGINE as E, Z, Zr } from '../tuning';
 import { emptySplit, type BattingLine, type BatterIn, type BenchIn, type BullpenRole, type FieldPos, type GameIn, type GameOut, type PitcherIn, type PitchingLine, type PlayEvent, type PlayResult, type RelieverIn, type Split, type TeamBox, type TeamIn } from './types';
 
@@ -181,8 +182,9 @@ function defensiveSub(side: Side, inning: number, myLead: number): Sub | null {
 export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
   const home = makeSide(game.home),
     away = makeSide(game.away);
-  const parkHr = Math.log(game.park) * 1.4,
-    parkBabip = Math.log(game.park) * 0.6;
+  const shape = game.layout ? layoutEffects(game.layout) : null;
+  const parkHr = shape ? shape.hr : Math.log(game.park) * 1.4,
+    parkBabip = shape ? shape.babip : Math.log(game.park) * 0.6;
   // The last lead change: pitcher of record for the team that went ahead, and the pitcher charged with the go-ahead run.
   const state: { goAhead: { winnerApp: number; loserApp: number } | null } = { goAhead: null };
   let inning = 0;
@@ -415,6 +417,11 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
         if (!game.balls) return;
         const lefty = hitsFrom === 'L';
         const x = drawBall(res, zp, { pull: batter.pull ?? 0, lift: batter.lift ?? 0, edge: batter.edge ?? 0 }, lefty, game.balls);
+        // 2.0.2: over the fence where it went (a little past it at the least).
+        if (x.dist !== undefined && game.layout) {
+          const need = clearance(game.layout, x.dir);
+          if (x.dist < need + 1) x.dist = Math.round(need + 1 + game.balls() * 6);
+        }
         countBall((bl.bip ??= emptyBatted()), x, lefty);
         countBall((pl.bip ??= emptyBatted()), x, lefty);
         pa.ball = x;

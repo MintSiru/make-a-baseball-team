@@ -74231,5 +74231,182 @@
       }
     },
     "locations": []
+  },
+  "league.layout.text.2bdb66a1": {
+    "source": "src/league/layout.ts",
+    "line": 121,
+    "params": {
+      "a": {
+        "expression": "lines[0]"
+      },
+      "b": {
+        "expression": "lines[1]"
+      },
+      "c": {
+        "expression": "alleys[0]"
+      },
+      "d": {
+        "expression": "alleys[1]"
+      },
+      "e": {
+        "expression": "centre[0]"
+      },
+      "f": {
+        "expression": "centre[1]"
+      },
+      "g": {
+        "expression": "wall[0]"
+      },
+      "h": {
+        "expression": "wall[1]"
+      }
+    },
+    "locations": []
+  },
+  "league.ballpark.text.2e952b61": {
+    "source": "src/league/ballpark.ts",
+    "line": 64,
+    "params": {},
+    "locations": []
+  },
+  "league.ballpark.text.766c7278": {
+    "source": "src/league/ballpark.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "league.ballpark.text.db11260d": {
+    "source": "src/league/ballpark.ts",
+    "line": 65,
+    "params": {
+      "from": {
+        "expression": "homeRunFactor(now).toFixed(2)"
+      },
+      "to": {
+        "expression": "homeRunFactor(layout).toFixed(2)"
+      }
+    },
+    "locations": []
+  },
+  "ui.layoutEditor.text.62653dc7": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 11,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.f19bcd1a": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 11,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.00d61f4e": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 11,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.d1d124e1": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 11,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.39c7aac0": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 11,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.2aafec51": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.7d1e784b": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 80,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.51f0ac1e": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 83,
+    "params": {
+      "zone": {
+        "expression": "zones[i]!"
+      }
+    },
+    "locations": []
+  },
+  "ui.layoutEditor.text.30aa8639": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 88,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.5b4448b9": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 91,
+    "params": {
+      "zone": {
+        "expression": "zones[i]!"
+      }
+    },
+    "locations": []
+  },
+  "ui.layoutEditor.text.d07eb370": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 96,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.5574e7bf": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 105,
+    "params": {
+      "from": {
+        "expression": "o.factor.from.toFixed(2)"
+      },
+      "to": {
+        "expression": "o.factor.to.toFixed(2)"
+      },
+      "cost": {
+        "expression": "money(o.cost)"
+      },
+      "opens": {
+        "expression": "o.opens"
+      }
+    },
+    "locations": []
+  },
+  "ui.layoutEditor.text.bde565c3": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 109,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.660c89da": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 112,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.54abb2ee": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 116,
+    "params": {
+      "fund": {
+        "expression": "money(u.fund)"
+      }
+    },
+    "locations": []
+  },
+  "ui.office.text.fbe7156c": {
+    "source": "src/ui/Office.tsx",
+    "line": 510,
+    "params": {},
+    "locations": []
   }
 }

@@ -398,8 +398,11 @@ export interface Stadium {
   size: StadiumSize;
   capacity: number;
   ownership: StadiumOwnership;
-  /** Run factor when it differs from the club's default (fences moved, V0.6). */
+  /** Run factor when it differs from the club's default (fences moved, V0.6; an old park of a league that plays
+      history, 1.9.7). */
   park?: number;
+  /** 2.0.2: the layout our club built in the editor (layout.ts); absent: the park's own. */
+  layout?: import('../league/layout').ParkLayout;
 }
 
 export interface Team {
