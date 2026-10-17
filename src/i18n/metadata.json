@@ -72575,5 +72575,11 @@
       }
     },
     "locations": []
+  },
+  "league.lineage.text.70eae725": {
+    "source": "src/league/lineage.ts",
+    "line": 164,
+    "params": {},
+    "locations": []
   }
 }

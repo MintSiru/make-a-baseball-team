@@ -7720,5 +7720,6 @@ export const koSource = {
   "league.lineage.text.48eeed9f": "인천 도원야구장",
   "league.lineage.text.7924944d": "마산야구장",
   "league.legacy1982.text.febc872d": "{club}, 새 홈구장 {park}",
-  "league.legacy1982.text.a3c77e99": "{club} {year}시즌부터 {before} 대신 {park}({seats}석)에서 홈경기를 치릅니다."
+  "league.legacy1982.text.a3c77e99": "{club} {year}시즌부터 {before} 대신 {park}({seats}석)에서 홈경기를 치릅니다.",
+  "league.lineage.text.70eae725": "서울종합운동장 야구장 (잠실)"
 } as const;

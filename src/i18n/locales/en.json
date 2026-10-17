@@ -7719,5 +7719,6 @@
   "league.lineage.text.48eeed9f": "Incheon Dowon Baseball Stadium",
   "league.lineage.text.7924944d": "Masan Baseball Stadium",
   "league.legacy1982.text.febc872d": "{club} move to a new home park: {park}",
-  "league.legacy1982.text.a3c77e99": "From the {year} season, {club} play home games at {park} ({seats} seats) instead of {before}."
+  "league.legacy1982.text.a3c77e99": "From the {year} season, {club} play home games at {park} ({seats} seats) instead of {before}.",
+  "league.lineage.text.70eae725": "Seoul Sports Complex Baseball Stadium (Jamsil)"
 }

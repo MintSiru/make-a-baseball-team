@@ -93,7 +93,8 @@ describe('the legacy start as it was', () => {
     expect(parks[1984]!.doosan).toBe(parkIn('doosan', 1984)!.name);
     expect(parks[1985]!.doosan).toBe(parkIn('doosan', 1985)!.name);
     expect(parks[1986]!.doosan).toBe(parks[1986]!.lg);
-    expect(parks[1985]!.lotte).not.toBe(parks[1986]!.lotte);
+    expect(parks[1986]!.lotte).not.toBe(parks[1987]!.lotte);
+    expect(parks[1984]!.doosan).not.toBe(parks[1985]!.doosan);
     expect(parkIn('samsung', 2016)).toBeNull();
   });
 

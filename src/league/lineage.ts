@@ -159,11 +159,20 @@ export interface ParkEra {
 const park = (from: number, name: string, seats: number, factor: number): ParkEra => ({ from, park: { name, seats, factor } });
 const today = (from: number): ParkEra => ({ from, park: null });
 
+/** 잠실 (MBC from its first season; OB from its move to Seoul in 1985): its seats over the years, today's from 2027. */
+const JAMSIL = (from: number): ParkEra[] => [
+  park(from, __i18n_k("league.lineage.text.70eae725"), 30_500, 0.94),
+  park(2010, __i18n_k("league.lineage.text.70eae725"), 27_000, 0.94),
+  park(2014, __i18n_k("league.lineage.text.70eae725"), 25_000, 0.94),
+  park(2022, __i18n_k("league.lineage.text.70eae725"), 23_750, 0.94),
+  today(2027),
+];
+
 export const PARKS: Record<TeamId, ParkEra[]> = {
   samsung: [park(1982, __i18n_k("league.lineage.text.01ce704f"), 10_000, 1.08), today(2016)],
-  lotte: [park(1982, __i18n_k("league.lineage.text.5eb6dc59"), 18_000, 1.02), today(1986)],
-  lg: [park(1982, __i18n_k("league.lineage.text.17655463"), 20_000, 1.04), today(1983)],
-  doosan: [park(1982, __i18n_k("league.lineage.text.ed33e3ba"), 10_500, 1.06), park(1985, __i18n_k("league.lineage.text.17655463"), 20_000, 1.04), today(1986)],
+  lotte: [park(1982, __i18n_k("league.lineage.text.5eb6dc59"), 18_000, 1.02), today(1987)],
+  lg: [...JAMSIL(1982)],
+  doosan: [park(1982, __i18n_k("league.lineage.text.ed33e3ba"), 10_500, 1.06), ...JAMSIL(1985)],
   kia: [park(1982, __i18n_k("league.lineage.text.3f6477b4"), 12_500, 1.03), today(2014)],
   kiwoom: [park(1982, __i18n_k("league.lineage.text.bac657f3"), 15_000, 1.03), park(2000, __i18n_k("league.lineage.text.7ddc350e"), 14_000, 1.0), park(2008, __i18n_k("league.lineage.text.5a4b31e1"), 12_500, 1.08), today(2016)],
   hanwha: [park(1985, __i18n_k("league.lineage.text.ed33e3ba"), 10_500, 1.06), today(2025)],
