@@ -1255,6 +1255,14 @@ h3 {
 .profile-head h2 {
   margin: 2px 0 0;
 }
+.profile-head p.profile-nickname {
+  margin-top: 2px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.nickname-form input {
+  width: 10em;
+}
 .profile-number {
   min-width: 56px;
   height: 56px;

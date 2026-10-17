@@ -96,6 +96,16 @@ describe('the draft class with the north', () => {
     expect(isNorth(n.education.region)).toBe(true);
     expect(n.education.school).not.toBe(p.education.school);
   });
+
+  it('1.9.3: northern amateurs come from all seven regions, many towns and schools, with many given names', () => {
+    const used = new Set<string>();
+    const ps = draftClass('v192-class', 2027).map((p, i) => makeNorthern(p, `div${i}`, used));
+    const count = (f: (p: (typeof ps)[number]) => string) => new Set(ps.map(f)).size;
+    expect(count((p) => p.education.region)).toBe(NORTH_REGIONS.length);
+    expect(count((p) => p.birthplace)).toBeGreaterThan(45);
+    expect(count((p) => p.education.school)).toBeGreaterThan(55);
+    expect(count((p) => p.name.slice(-2))).toBeGreaterThan(110);
+  });
 });
 
 describe('a unified league', () => {

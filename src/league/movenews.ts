@@ -25,7 +25,7 @@ export type Move =
   | { type: 'pool'; teamId: TeamId; id: PlayerId; salary: number }
   /** `out` is passed whole: a foreign player with no first-team record leaves the player list. */
   | { type: 'foreign'; teamId: TeamId; out: Player | null; in: PlayerId; price: number }
-  | { type: 'posting'; teamId: TeamId; id: PlayerId; deal: { years: number; total: number; fee: number } | null }
+  | { type: 'posting'; teamId: TeamId; id: PlayerId; deal: { years: number; total: number; fee: number } | null; npb?: boolean }
   /** A free-agent deal: since V0.8 with its bonus, incentives and period option. */
   | { type: 'fa'; from: TeamId; to: TeamId; id: PlayerId; years: number; annual: number; grade: string; bonus?: number; options?: number; extra?: { years: number; holder: 'club' | 'player' } }
   | { type: 'secondDraft'; teamId: TeamId; from: TeamId; id: PlayerId; round: number }
@@ -274,8 +274,10 @@ export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ?
       addNews(s, {
         ...base,
         id,
-        title: d ? __i18n_k("league.movenews.moveNews.title.415f7ac3", { name: x.name, years: d.years, usd: usd(d.total) }) : __i18n_k("league.movenews.moveNews.title.09a1152c", { name: x.name, club: club }),
-        body: d
+        title: d && m.npb ? __i18n_k("league.movenews.text.73c17476", { name: x.name, years: d.years, usd: usd(d.total) }) : d ? __i18n_k("league.movenews.moveNews.title.415f7ac3", { name: x.name, years: d.years, usd: usd(d.total) }) : __i18n_k("league.movenews.moveNews.title.09a1152c", { name: x.name, club: club }),
+        body: d && m.npb
+          ? __i18n_k("league.movenews.text.dfbe88c2", { club, name: iga(x.name), years: d.years, usd: usd(d.total), club2: eunneun(club), usd2: usd(d.fee), value: r ? __i18n_k("league.movenews.moveNews.body.85330a1d", { name: x.name, r }) : '' })
+          : d
           ? __i18n_k("league.movenews.moveNews.body.c6e0374e", { club: club, name: iga(x.name), years: d.years, usd: usd(d.total), club2: eunneun(club), usd2: usd(d.fee), value: r ? __i18n_k("league.movenews.moveNews.body.85330a1d", { name: x.name, r: r }) : '' })
           : __i18n_k("league.movenews.moveNews.body.b661cdba", { club: club, name: iga(x.name), name2: eunneun(x.name), club2: club }),
         quotes: [said(x, d ? pick(MLB, id) : __i18n_k("league.movenews.moveNews.quotes.17c3607e")), ...(mine && d ? fans(FANS.leaving, id) : [])],

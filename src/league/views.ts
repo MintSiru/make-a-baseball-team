@@ -7,7 +7,7 @@ import { publicView, type PublicPlayer } from '../model/player';
 import { faOutlook, type FaOutlook } from './faclock';
 import type { BatTotals, InjuryRecord, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { emptySplit, type Splits } from './engine/types';
-import { averageVelocity, pitchGrades, topVelocity } from './pitches';
+import { averageVelocity, fastballOf, pitchGrades, topVelocity, type FastballType } from './pitches';
 import { POSITION_SHORT, positionGrades, secondaryPositions } from './positions';
 import { halfLabel, playText } from './playtext';
 import { salaryIn, usdTotal } from './contracts';
@@ -220,6 +220,8 @@ export interface PlayerCard {
   splits: { season: Splits | null; career: Splits | null };
   velocity: { top: number; average: number } | null;
   pitches: ReturnType<typeof pitchGrades>;
+  /** 1.9.3: his main fastball. */
+  fastball: FastballType | null;
   injuries: InjuryRecord[];
   /** Hitters: grade and first-team games at each position he can play. */
   positions: ReturnType<typeof positionGrades>;
@@ -303,6 +305,7 @@ export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
     splits: { season: line ? (side(line) ?? null) : null, career: sumSplits(major.map(side)) },
     velocity: top == null ? null : { top, average: averageVelocity(p)! },
     pitches: pitchGrades(p),
+    fastball: pitcher ? fastballOf(p) : null,
     injuries: [...(p.injuries ?? [])].reverse(),
     positions: positionGrades(s, p),
     report: traitReport(s, p),

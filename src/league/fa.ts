@@ -18,10 +18,14 @@ import { eulreul, iga, ro, wagwa } from './josa';
 import { clubState } from './fans';
 import { aiCompensation, compensationCash, externalLimit, faGrades, moneyFor, parentGiftFor, projectedPayroll, protectedBy, type FaGrade, type FaQueueItem } from './market';
 import { moveNews } from './movenews';
-import { freeAgentsFor, removeFromRoster } from './offseason';
+import { freeAgentsFor, leaveLeague, removeFromRoster } from './offseason';
+import { joinNpb } from './mlb';
+import { npbMarket } from './posting';
+import { usd } from './foreign';
+import { addNews } from './news';
 import { ageIn, currentValue, isForeign, isPitcher, keepValue } from './players';
 import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from './state';
-import { FA, MARKET, DIFFICULTY } from './tuning';
+import { FA, MARKET, DIFFICULTY, NPB_MOVE } from './tuning';
 import { gmAppetite, gmOf } from './twelve';
 import { crossing } from './rivalry';
 import { farewell } from './life';
@@ -507,10 +511,33 @@ function appetite(s: LeagueState, teamId: TeamId, t: FaTalk, p: Player, next: nu
   return { chance, need: need * comp };
 }
 
+/** 1.9.3: free agents good enough and not too old may sign in Japan before the KBO market opens (no compensation:
+    he leaves the league). The chance is his own, drawn from his id and the year. */
+export function toJapan(s: LeagueState, next: number) {
+  const year = next - 1;
+  for (const p of freeAgentsFor(s, next)) {
+    if (isForeign(p) || p.scouting.current < NPB_MOVE.faMinGrade || ageIn(p, next) > NPB_MOVE.faMaxAge) continue;
+    const r = rng(`${s.seed}|fa-npb|${year}|${p.id}`);
+    if (r() > NPB_MOVE.faChance) continue;
+    const deal = npbMarket(p, next, r, NPB_MOVE.faMinGrade, 1);
+    if (!deal) continue;
+    const from = p.teamId!;
+    const club = s.teams.find((t) => t.id === from)?.short ?? from;
+    leaveLeague(s, p, 'overseas');
+    joinNpb(p, year, deal, 'fa');
+    const title = __i18n_k("league.fa.text.ac84d726", { name: p.name });
+    const body = __i18n_k("league.fa.text.5b7f8326", { club, name: iga(p.name), npb: p.mlb!.club, years: deal.years, usd: usd(deal.total) });
+    if (s.user) addNews(s, { id: `fa-npb-${year}-${p.id}`, date: `${year}-11-12`, kind: 'move', title, body, quotes: [], facts: { club, years: deal.years }, players: [p.id], mine: from === s.user?.teamId });
+    if (from === s.user?.teamId) addAlert(s, { id: `fa-npb-${p.id}`, date: `${year}-11-12`, kind: 'fa', title, lines: [body], tone: 'bad', players: [p.id] });
+  }
+}
+
 /** Opens the winter's market: every free agent's price, ask, demands and the AI clubs that want him. */
 export function openMarket(s: LeagueState, next: number): FaMarket {
   const year = next - 1;
   const u = s.user;
+  // 1.9.3: a few of the best leave for Japan before the market opens.
+  toJapan(s, next);
   const fas = freeAgentsFor(s, next);
   const grades = faGrades(s, next, fas);
   const entering = !!u && next === u.firstTeamYear;

@@ -165,7 +165,7 @@ describe('pitches', () => {
     expect(Math.max(...shares)).toBeLessThanOrEqual(0.66 + 1e-9);
     // A forkball reliever's best pitch is the forkball more often than not.
     const fork = arms.filter((p) => p.archetype === '포크볼 불펜');
-    expect(fork.filter((p) => repertoire(p)[0]!.type === 'FO').length / fork.length).toBeGreaterThan(0.5);
+    expect(fork.filter((p) => repertoire(p)[0]!.type === 'FRK').length / fork.length).toBeGreaterThan(0.5);
     // Best pitch thrown most.
     for (const p of arms.slice(0, 100)) {
       const r = repertoire(p);

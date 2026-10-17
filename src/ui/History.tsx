@@ -26,7 +26,7 @@ export function History({ league, onPlayer }: { league: LeagueState; onPlayer: (
             ['retired', __i18n_k("ui.history.history.adad27c2")],
             ['national', __i18n_k("ui.history.history.3243618b")],
             ['draft', __i18n_t("ui.history.text.dddce47e")],
-            ['mlb', __i18n_t("ui.history.text.35362dc0")],
+            ['mlb', __i18n_t("ui.history.text.c02cebf4")],
           ] as [View, string][]
         ).map(([id, label]) => (
           <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>

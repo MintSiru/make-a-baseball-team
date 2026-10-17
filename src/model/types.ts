@@ -263,6 +263,10 @@ export interface Player {
   post?: PostRecord[];
   /** Awards and titles ("2027 MVP", "2027 홈런 1위 (38개)"). */
   honors?: string[];
+  /** 1.9.3 (nicknames.ts): the fans' nickname — which one (code, index into its names), the winter it came and the
+      club a "{club}" in it names — and the general manager's own for our player, which shows instead. */
+  nickname?: { code: string; i: number; year: number; team?: TeamId };
+  nicknameOwn?: string;
   /** Injuries so far (first team and futures). */
   injuries?: InjuryRecord[];
   /** 1.7.0 (adapt.ts): the season he failed to adapt to the KBO, and the grade points his main tools lose in games. */
@@ -291,16 +295,43 @@ export interface MlbCareer {
   /** The winter he came home to the KBO, or ended his career abroad. */
   back?: number;
   ended?: number;
+  /** 1.9.3: the league abroad — the majors (missing) or Japan's NPB — and how he went (posting when missing). */
+  league?: 'npb';
+  via?: 'fa';
 }
 
-/** One season abroad: big-league games (the rest of it in triple-A when `aaa`). */
+/** One season abroad: top-league games (the rest of it in triple-A — or NPB's 2군 — when `aaa`). */
 export interface MlbSeason {
   year: number;
   club: string;
   aaa?: boolean;
-  bat?: { g: number; pa: number; avg: number; obp: number; slg: number; hr: number; rbi: number; sb: number };
-  pit?: { g: number; gs: number; ip: number; w: number; l: number; sv: number; era: number; k: number };
+  bat?: OverseasBat;
+  pit?: OverseasPit;
   war: number;
+  /** 1.9.3: his line in the minors (triple-A, or NPB's farm) for the part of the year he spent there. */
+  minors?: { bat?: OverseasBat; pit?: OverseasPit };
+}
+
+export interface OverseasBat {
+  g: number;
+  pa: number;
+  avg: number;
+  obp: number;
+  slg: number;
+  hr: number;
+  rbi: number;
+  sb: number;
+}
+
+export interface OverseasPit {
+  g: number;
+  gs: number;
+  ip: number;
+  w: number;
+  l: number;
+  sv: number;
+  era: number;
+  k: number;
 }
 
 /** V0.10. Kept only for the user's club's players, so the shared simulation never reads it for others. */

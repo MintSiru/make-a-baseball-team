@@ -7,9 +7,12 @@ import { k as __i18n_k } from '../i18n/index';
    every time, and nothing here touches the simulation. */
 import { rng } from '../draftroom';
 import type { PlayEvent } from './engine/types';
-import { averageVelocity, repertoire, PITCH_LABELS } from './pitches';
+import { averageVelocity, FASTBALL_LABELS, fastballOf, repertoire, PITCH_LABELS, type PitchType } from './pitches';
 import { halfLabel, playText } from './playtext';
 import type { LeagueState } from './state';
+
+/** How much slower than his fastball each pitch comes (km/h). */
+const PITCH_DROP: Record<PitchType, number> = { CB: 25, CH: 17, FRK: 17, CUT: 5, '2SFB': 5, SL: 13, SW: 13, SNK: 3, CIR: 17, SPL: 12, SLV: 18, KN: 38, SCR: 20, PLM: 27, SH: 4 };
 
 export interface PitchFrame {
   /** Index of the play in the game's log (the relay's line). */
@@ -164,11 +167,13 @@ function pitchOf(s: LeagueState, pid: string, r: () => number): string {
   let x = r();
   for (const rep of reps) {
     if ((x -= rep.usage) < 0) {
-      const drop = rep.type === 'CB' ? 25 : rep.type === 'CH' || rep.type === 'FO' ? 17 : rep.type === 'CT' || rep.type === 'SI' ? 5 : 13;
+      const drop = PITCH_DROP[rep.type];
       return avg ? __i18n_k("league.pitchfeed.text.977ba357", { type: PITCH_LABELS[rep.type], velo: Math.round(avg - drop + (r() - 0.5) * 6) }) : PITCH_LABELS[rep.type];
     }
   }
-  return avg ? __i18n_k("league.pitchfeed.text.0a35a0ff", { velo: Math.round(avg + (r() - 0.3) * 4) }) : __i18n_k("league.pitchfeed.text.b17dbbc7");
+  // 1.9.3: his fastball by its kind (포심, 투심, 커터).
+  const fb = FASTBALL_LABELS[fastballOf(p)];
+  return avg ? __i18n_k("league.pitchfeed.text.977ba357", { type: fb, velo: Math.round(avg + (r() - 0.3) * 4) }) : fb;
 }
 
 const CALL_TEXT = (): Record<Call | 'ball4' | 'hbp' | 'swingK' | 'lookingK', string> => ({
