@@ -117,9 +117,10 @@ export function drawHistoric(s: LeagueState, date: string): Bracket {
 /** 1.9.7: who goes on to the postseason this year, for the standings page (null: the page's own note). */
 export function postseasonNote(year: number): string | null {
   switch (rulesFor(year).postseason) {
-    case 'halves':
     case 'halvesBest':
-      return __i18n_k("league.historic.text.1f5d90b7");
+      return __i18n_k("league.historic.text.dbe29b06");
+    case 'halves':
+      return __i18n_k("league.historic.text.7f40b938");
     case 'halvesTickets':
       return __i18n_k("league.historic.text.0d17b1f6");
     case 'four':

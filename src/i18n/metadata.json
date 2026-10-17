@@ -72195,12 +72195,6 @@
     },
     "locations": []
   },
-  "league.historic.text.1f5d90b7": {
-    "source": "src/league/historic.ts",
-    "line": 110,
-    "params": {},
-    "locations": []
-  },
   "league.historic.text.0d17b1f6": {
     "source": "src/league/historic.ts",
     "line": 112,
@@ -72579,6 +72573,18 @@
   "league.lineage.text.70eae725": {
     "source": "src/league/lineage.ts",
     "line": 164,
+    "params": {},
+    "locations": []
+  },
+  "league.historic.text.dbe29b06": {
+    "source": "src/league/historic.ts",
+    "line": 121,
+    "params": {},
+    "locations": []
+  },
+  "league.historic.text.7f40b938": {
+    "source": "src/league/historic.ts",
+    "line": 123,
     "params": {},
     "locations": []
   }

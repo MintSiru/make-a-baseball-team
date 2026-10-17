@@ -7667,7 +7667,6 @@
   "league.kyopo.text.74fb91a0": "Korean-Japanese",
   "league.kyopo.text.8136d32f": "Korean-Japanese · Japanese name {japanese} · {text}",
   "league.entry.text.bf471176": "At most {limit, plural, one {# overseas Korean player} other {# overseas Korean players}} on the first team.",
-  "league.historic.text.1f5d90b7": "The first-half and second-half winners meet in the Korean Series. A club that wins both halves is champion without one.",
   "league.historic.text.0d17b1f6": "The top two of each half make the postseason. A club that makes it twice goes straight to the Korean Series.",
   "league.historic.text.c2b723cf": "Top four make the postseason: 3rd and 4th play the semi-playoff, the winner meets 2nd in the playoff, and 1st goes straight to the Korean Series.",
   "league.historic.text.ddca07d3": "Top four make the postseason. If 4th is more than three games behind 3rd, there is no semi-playoff and 3rd plays 2nd in the playoff.",
@@ -7720,5 +7719,7 @@
   "league.lineage.text.7924944d": "Masan Baseball Stadium",
   "league.legacy1982.text.febc872d": "{club} move to a new home park: {park}",
   "league.legacy1982.text.a3c77e99": "From the {year} season, {club} play home games at {park} ({seats} seats) instead of {before}.",
-  "league.lineage.text.70eae725": "Seoul Sports Complex Baseball Stadium (Jamsil)"
+  "league.lineage.text.70eae725": "Seoul Sports Complex Baseball Stadium (Jamsil)",
+  "league.historic.text.dbe29b06": "The best record over the whole season goes straight to the Korean Series. If that club won neither half, the two half winners play a playoff for the other spot. A club that wins both halves is champion without a Korean Series.",
+  "league.historic.text.7f40b938": "The first-half and second-half winners meet in the Korean Series. If one club wins both halves, it meets the club with the second-best record over the season."
 }

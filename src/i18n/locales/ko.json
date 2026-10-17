@@ -7667,7 +7667,6 @@
   "league.kyopo.text.74fb91a0": "재일교포",
   "league.kyopo.text.8136d32f": "재일교포 · 일본 이름 {japanese} · {text}",
   "league.entry.text.bf471176": "해외 교포 선수는 1군에 {limit}명까지입니다.",
-  "league.historic.text.1f5d90b7": "전기 1위와 후기 1위가 한국시리즈에서 맞붙습니다. 한 팀이 둘 다 1위면 한국시리즈 없이 우승합니다.",
   "league.historic.text.0d17b1f6": "전기·후기 1·2위가 가을야구에 나갑니다. 두 번 오른 팀은 한국시리즈로 바로 갑니다.",
   "league.historic.text.c2b723cf": "4위까지 가을야구: 3·4위 준플레이오프, 이긴 팀이 2위와 플레이오프, 1위는 한국시리즈로 바로 갑니다.",
   "league.historic.text.ddca07d3": "4위까지 가을야구에 나갑니다. 4위가 3위에 3경기 넘게 뒤지면 준플레이오프 없이 3위가 2위와 플레이오프를 치릅니다.",
@@ -7720,5 +7719,7 @@
   "league.lineage.text.7924944d": "마산야구장",
   "league.legacy1982.text.febc872d": "{club}, 새 홈구장 {park}",
   "league.legacy1982.text.a3c77e99": "{club} {year}시즌부터 {before} 대신 {park}({seats}석)에서 홈경기를 치릅니다.",
-  "league.lineage.text.70eae725": "서울종합운동장 야구장 (잠실)"
+  "league.lineage.text.70eae725": "서울종합운동장 야구장 (잠실)",
+  "league.historic.text.dbe29b06": "시즌 통합 승률 1위가 한국시리즈로 바로 갑니다. 통합 1위가 전·후기 우승 팀이 아니면 전기·후기 1위끼리 플레이오프를 치릅니다. 한 팀이 전·후기를 모두 이기면 한국시리즈 없이 우승합니다.",
+  "league.historic.text.7f40b938": "전기 1위와 후기 1위가 한국시리즈에서 맞붙습니다. 한 팀이 둘 다 1위면 시즌 승률 2위 팀과 한국시리즈를 치릅니다."
 }
