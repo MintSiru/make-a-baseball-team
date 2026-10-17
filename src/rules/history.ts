@@ -229,6 +229,39 @@ export function rulesOfYear(year: number, history = true): YearRules {
     today's terms. */
 export const rulesFor = (calendarYear: number) => (playsHistory() ? rulesOfYear(calendarYear, true) : rulesOfYear(ruleYear(calendarYear), false));
 
+/** 1.9.8 (the user's request and research, RULES.md §14): how the managers of an era used their pitchers, in a
+    league that plays history (null: today's way, every other game and 2015 on). The league's complete games fell
+    from 150–250 a season (1982–1995: a four-man rotation on four days' rest, aces in relief between starts, the
+    closer from the 7th for two or three innings — 중무리) through 120 → 47 (1996–2000, the five-man rotation and
+    the bullpen split) and 20–30 (2000s, the one-inning closer from 2005) to single figures today. Calibrated on the
+    league's complete games by season (tests/v198). */
+export interface EraUsage {
+  rotation: number;
+  /** Days of rest a starter needs (4: pitches every fifth day of a four-man rotation). */
+  rest: number;
+  /** Pitches added to the manager's count for a starter, and the most he gives. */
+  limitBonus: number;
+  limitMax: number;
+  completeGame: number;
+  runsBeforeHook: number;
+  /** Starters not pitching today may come out of the bullpen (rested two days or more). */
+  starterRelief: boolean;
+  closerFrom: number;
+  closerOuts: number;
+  closerPitches: number;
+}
+const USAGE: Steps<EraUsage | null> = [
+  [1982, { rotation: 4, rest: 4, limitBonus: 62, limitMax: 180, completeGame: 0.8, runsBeforeHook: 8, starterRelief: true, closerFrom: 7, closerOuts: 9, closerPitches: 60 }],
+  [1990, { rotation: 4, rest: 4, limitBonus: 52, limitMax: 168, completeGame: 0.75, runsBeforeHook: 7, starterRelief: true, closerFrom: 7, closerOuts: 9, closerPitches: 55 }],
+  [1996, { rotation: 5, rest: 5, limitBonus: 40, limitMax: 154, completeGame: 0.45, runsBeforeHook: 6, starterRelief: false, closerFrom: 7, closerOuts: 7, closerPitches: 45 }],
+  [1997, { rotation: 5, rest: 5, limitBonus: 32, limitMax: 146, completeGame: 0.4, runsBeforeHook: 6, starterRelief: false, closerFrom: 7, closerOuts: 7, closerPitches: 45 }],
+  [1999, { rotation: 5, rest: 5, limitBonus: 26, limitMax: 140, completeGame: 0.35, runsBeforeHook: 6, starterRelief: false, closerFrom: 7, closerOuts: 7, closerPitches: 45 }],
+  [2001, { rotation: 5, rest: 5, limitBonus: 23, limitMax: 138, completeGame: 0.3, runsBeforeHook: 6, starterRelief: false, closerFrom: 8, closerOuts: 6, closerPitches: 40 }],
+  [2005, { rotation: 5, rest: 5, limitBonus: 20, limitMax: 134, completeGame: 0.22, runsBeforeHook: 6, starterRelief: false, closerFrom: 9, closerOuts: 4, closerPitches: 28 }],
+  [MODERN_FROM, null],
+];
+export const eraUsage = (calendarYear: number): EraUsage | null => (playsHistory() ? stepAt(USAGE, calendarYear) : null);
+
 /** 1.9.6: the cap on a foreign player's pay in a game that plays history (12만 달러 1998–2004, 30만 2005–2013), or
     null for today's caps (every other game, and a history game from 2014). */
 export const historicForeignCap = (calendarYear: number) => (playsHistory() ? rulesFor(calendarYear).foreign.capUsd : null);

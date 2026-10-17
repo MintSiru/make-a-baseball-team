@@ -501,6 +501,8 @@ function territorialSlots(s: LeagueState, draftYear: number, slots: DraftSlot[])
 
 /** A prospect from the club's region (where he went to school or was born). */
 const fromRegion = (s: LeagueState, teamId: TeamId, p: Player) => hometownClub(s, teamId, p.education.region, p.birthplace);
+/** 1.9.8: who a club may take with a territorial (1차) pick: a high-school player from its region. */
+export const territorialEligible = (s: LeagueState, teamId: TeamId, p: Player) => p.origin.entryCategory !== 'college' && fromRegion(s, teamId, p);
 
 function draftScore(s: LeagueState, p: Player, counts: Record<string, number>, r: () => number, weights: [number, number] = [0.6, 0.4]) {
   const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
@@ -519,7 +521,7 @@ export function aiDraftChoice(s: LeagueState, d: DraftState, teamId: TeamId, pic
   const territorial = !!d.slots[pickNo - 1]?.territorial;
   for (const id of d.pool) {
     const p = s.players[id]!;
-    if (territorial && (p.origin.entryCategory === 'college' || !fromRegion(s, teamId, p))) continue;
+    if (territorial && !territorialEligible(s, teamId, p)) continue;
     const v = draftScore(s, p, counts, r, weights);
     if (v > bestScore) {
       bestScore = v;
@@ -552,13 +554,15 @@ export function makePick(s: LeagueState, d: DraftState, p: Player) {
 function runDraft(s: LeagueState, d: DraftState): 'wait' | 'done' {
   while (d.next < d.slots.length) {
     const slot = d.slots[d.next]!;
-    // 1.9.5: a territorial pick nobody from the region is left for is passed; ours is the scouts' (the region's best).
+    // 1.9.5: a territorial pick nobody from the region is left for is passed.
     if (slot.territorial && !aiDraftChoice(s, d, slot.teamId, d.next + 1)) {
       d.next++;
       continue;
     }
-    if (slot.teamId === s.user?.teamId && !slot.territorial) {
-      s.pending = { kind: 'draftPick', overall: d.next + 1, label: slot.label };
+    // 1.9.8: ours, the territorial picks too (among the region's high-school players).
+    if (slot.teamId === s.user?.teamId) {
+      const eligible = slot.territorial ? d.pool.filter((id) => territorialEligible(s, slot.teamId, s.players[id]!)) : undefined;
+      s.pending = { kind: 'draftPick', overall: d.next + 1, label: slot.label, ...(eligible ? { eligible } : {}) };
       return 'wait';
     }
     const p = aiDraftChoice(s, d, slot.teamId, d.next + 1);

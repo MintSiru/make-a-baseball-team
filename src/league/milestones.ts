@@ -17,6 +17,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'founded', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.22817f11"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.a0ce0ff1") },
   { id: 'firstWin', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.322c05b0"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.64dd18b6") },
   { id: 'walkOff', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.38f4c682"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.b7aae489") },
+  { id: 'immaculate', label: __i18n_k("league.milestones.text.17fb66f7"), note: __i18n_k("league.milestones.text.6192e20a") },
   { id: 'noHitter', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.b1faa7c8"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.b23a0740") },
   { id: 'winning', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.d1db6ed1"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.e75e1289") },
   { id: 'playoffs', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.83425fb3"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.7fb83a6e") },
@@ -88,6 +89,9 @@ export function gameMoments(s: LeagueState, box: StoredBox) {
     // Home team scoring the winning run in its last half inning.
     if (us === 1 && box.line[1].length === box.line[0].length && (box.line[1].at(-1) ?? 0) > 0) unlock(s, 'walkOff', year, __i18n_k("league.milestones.gameMoments.7f5f8b64", { date: box.date, opp: opp }));
   }
+  // 1.9.8: three strikeouts on nine pitches by one of ours.
+  const imm = box.imm?.[us]?.[0];
+  if (imm) unlock(s, 'immaculate', year, __i18n_k("league.milestones.text.da856f9f", { name: s.players[imm.pitcher]?.name ?? '', date: box.date, opp, inning: imm.inning }));
   if (box.rhe[them]![1] === 0 && box.line[them]!.length >= 9) {
     unlock(s, 'noHitter', year, __i18n_k("league.milestones.gameMoments.7f5f8b64", { date: box.date, opp: opp }));
     milestone(s, year, __i18n_k("league.milestones.gameMoments.fc4d5aab", { date: box.date, opp: opp }));

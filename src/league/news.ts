@@ -118,6 +118,8 @@ export function gameNews(s: LeagueState, box: StoredBox, log?: PlayEvent[] | nul
   const walkOff = won && us === 1 && box.line[1].length === box.line[0].length && (box.line[1].at(-1) ?? 0) > 0;
   const rivalry = /^\d{4}-\d{4}$/.test(box.id) && isRivalry(s, box.home, box.away);
   const noHit = box.rhe[them][1] === 0 && box.line[them].length >= 9;
+  // 1.9.8: three strikeouts on nine pitches in one inning.
+  const immaculate = box.imm?.[us]?.[0];
   const multiHr = bat.find((b) => b[6] >= 2);
   const bigK = pit.find((p) => p[6] >= 10);
   const fourHits = bat.find((b) => b[4] >= 4);
@@ -131,6 +133,10 @@ export function gameNews(s: LeagueState, box: StoredBox, log?: PlayEvent[] | nul
     occasion = { kind: 'noHit' };
     title = __i18n_k("league.news.gameNews.82f0729a", { me: me, opp: opp });
     body = __i18n_k("league.news.gameNews.f0571619", { me: iga(me), date: box.date, opp: opp, value: ace![1] >= 27 ? __i18n_k("league.news.gameNews.bb2076c4", { name: iga(name(ace![0])) }) : __i18n_k("league.news.gameNews.11f99d62", { name: wagwa(name(ace![0])) }), value2: pit.reduce((a, p) => a + p[6], 0), rs: rs, rt: rt });
+  } else if (immaculate) {
+    star = immaculate.pitcher;
+    title = __i18n_k("league.news.text.9500e654", { name: name(immaculate.pitcher) });
+    body = __i18n_k("league.news.text.d8926a78", { name: iga(name(immaculate.pitcher)), date: box.date, opp, inning: immaculate.inning, me, rs, rt, result: won ? __i18n_k("league.news.text.90e5e4d2") : rs < rt ? __i18n_k("league.news.text.e99c8bc0") : __i18n_k("league.news.text.ff1b1cbc") });
   } else if (walkOff) {
     star = hero?.[0] ?? null;
     occasion = { kind: 'walkOff' };

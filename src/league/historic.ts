@@ -1,8 +1,9 @@
 import { k as __i18n_k } from '../i18n/index';
 /* 1.9.5: the postseason of a league that plays history (the 1982 legacy start; RULES.md §14), drawn by the year's
    rules (rules/history.ts):
-   - 1982–1985 (halves, halvesBest): the first half's winner against the second half's in the Korean Series; a club
-     that wins both halves is the champion without one (Samsung, 1985).
+   - 1982–1985 (halves, halvesBest): the first half's winner against the second half's in the Korean Series. A club
+     that wins both halves meets the best of the rest in 1982–1984 (a game assumption) and is the champion without a
+     series in 1985 (Samsung); in 1985 the best on the whole season goes straight to the final (1.9.8).
    - 1986–1988 (halvesTickets): the first two of each half get a place each; a club with two goes straight to the
      final, the others play the playoff (four different clubs: each half's winner against the other half's second).
    - 1989–1992, 2001–2014 (four) and 1993–1998 (fourWithin3): a ladder of the top four — the 3rd and 4th, the winner
@@ -63,10 +64,17 @@ export function drawHistoric(s: LeagueState, date: string): Bracket {
         const a = first[0]!.teamId,
           b = second[0]!.teamId;
         if (a === b) {
-          // Both halves to one club: the champion without a Korean Series.
+          // 1.9.8: 1982–1984, both halves to one club: the Korean Series against the best of the rest on the whole
+          // season (game assumption, RULES.md §14). 1985: the champion without one (삼성).
+          const rest = table.find((x) => x.teamId !== a)?.teamId;
+          if (r.postseason === 'halves' && rest) return { ...base, style: 'halves', stage: 1, live: [series('ks', a, rest, date)], seeds: [a, rest] };
           s.postseason.push({ round: 'ks', high: a, low: a, highWins: 0, lowWins: 0, winner: a, games: [] });
           return { ...base, style: 'halves', stage: 1, live: [], seeds: [a], done: true };
         }
+        // 1.9.8: 1985, the best on the whole season goes straight to the final: when it won neither half, the two half
+        // winners play off for the other place.
+        const best = table[0]!.teamId;
+        if (r.postseason === 'halvesBest' && best !== a && best !== b) return { ...base, style: 'halves', stage: 0, live: [series('po', a, b, date)], seeds: [best] };
         return { ...base, style: 'halves', stage: 1, live: [series('ks', a, b, date)], seeds: [a, b] };
       }
       const tickets = [first[0]!, first[1]!, second[0]!, second[1]!].map((x) => x.teamId);
@@ -109,9 +117,10 @@ export function drawHistoric(s: LeagueState, date: string): Bracket {
 /** 1.9.7: who goes on to the postseason this year, for the standings page (null: the page's own note). */
 export function postseasonNote(year: number): string | null {
   switch (rulesFor(year).postseason) {
-    case 'halves':
     case 'halvesBest':
-      return __i18n_k("league.historic.text.1f5d90b7");
+      return __i18n_k("league.historic.text.dbe29b06");
+    case 'halves':
+      return __i18n_k("league.historic.text.7f40b938");
     case 'halvesTickets':
       return __i18n_k("league.historic.text.0d17b1f6");
     case 'four':

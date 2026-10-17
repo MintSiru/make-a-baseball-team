@@ -190,7 +190,8 @@ export interface SeasonSummary {
 /** A choice the game waits for before it can go on. Only the user's club ever raises one. */
 export type Decision =
   | { kind: 'tryout'; candidates: PlayerId[]; max: number }
-  | { kind: 'draftPick'; overall: number; label: string }
+  /** 1.9.8: `eligible` — a territorial (1차) pick: only these (the region's high-school players) may be taken. */
+  | { kind: 'draftPick'; overall: number; label: string; eligible?: PlayerId[] }
   | { kind: 'specialDraft'; lists: Record<TeamId, PlayerId[]>; protectedCount: number; fee: number }
   | { kind: 'released'; candidates: PlayerId[]; max: number }
   | {
@@ -658,7 +659,7 @@ export interface LeagueState {
 }
 
 export const emptyBat = (): BatTotals => ({ g: 0, pa: 0, ab: 0, h: 0, d: 0, t: 0, hr: 0, bb: 0, hbp: 0, k: 0, r: 0, rbi: 0, sb: 0, cs: 0, sf: 0, sh: 0, gdp: 0 });
-export const emptyPit = (): PitTotals => ({ g: 0, gs: 0, outs: 0, bf: 0, h: 0, hr: 0, bb: 0, hbp: 0, k: 0, r: 0, er: 0, w: 0, l: 0, sv: 0, hld: 0, qs: 0, pitches: 0 });
+export const emptyPit = (): PitTotals => ({ g: 0, gs: 0, outs: 0, bf: 0, h: 0, hr: 0, bb: 0, hbp: 0, k: 0, r: 0, er: 0, w: 0, l: 0, sv: 0, hld: 0, qs: 0, cg: 0, pitches: 0 });
 
 export function addInto<T extends object>(into: T, from: Partial<T>): T {
   const acc = into as Record<string, number>;

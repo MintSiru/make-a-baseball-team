@@ -72195,12 +72195,6 @@
     },
     "locations": []
   },
-  "league.historic.text.1f5d90b7": {
-    "source": "src/league/historic.ts",
-    "line": 110,
-    "params": {},
-    "locations": []
-  },
   "league.historic.text.0d17b1f6": {
     "source": "src/league/historic.ts",
     "line": 112,
@@ -72579,6 +72573,181 @@
   "league.lineage.text.70eae725": {
     "source": "src/league/lineage.ts",
     "line": 164,
+    "params": {},
+    "locations": []
+  },
+  "league.historic.text.dbe29b06": {
+    "source": "src/league/historic.ts",
+    "line": 121,
+    "params": {},
+    "locations": []
+  },
+  "league.historic.text.7f40b938": {
+    "source": "src/league/historic.ts",
+    "line": 123,
+    "params": {},
+    "locations": []
+  },
+  "ui.updates.text.b90eb779": {
+    "source": "src/ui/Updates.tsx",
+    "line": 11,
+    "params": {},
+    "locations": []
+  },
+  "ui.updates.text.552800b9": {
+    "source": "src/ui/Updates.tsx",
+    "line": 26,
+    "params": {
+      "release": {
+        "expression": "RELEASE"
+      }
+    },
+    "locations": []
+  },
+  "ui.updates.text.483585b1": {
+    "source": "src/ui/Updates.tsx",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "ui.updates.text.0d435c6f": {
+    "source": "src/ui/Updates.tsx",
+    "line": 45,
+    "params": {
+      "release": {
+        "expression": "RELEASE"
+      }
+    },
+    "locations": []
+  },
+  "ui.updates.text.6654f975": {
+    "source": "src/ui/Updates.tsx",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "ui.updates.text.468266d6": {
+    "source": "src/ui/Updates.tsx",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.f59812c4": {
+    "source": "src/ui/Settings.tsx",
+    "line": 28,
+    "params": {},
+    "locations": []
+  },
+  "league.expansion.text.ad8fb12b": {
+    "source": "src/league/expansion.ts",
+    "line": 515,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.262e41d5": {
+    "source": "src/ui/Decision.tsx",
+    "line": 527,
+    "params": {
+      "n": {
+        "expression": "d.eligible.length"
+      }
+    },
+    "locations": []
+  },
+  "league.news.text.9500e654": {
+    "source": "src/league/news.ts",
+    "line": 138,
+    "params": {
+      "name": {
+        "expression": "name(immaculate.pitcher)"
+      }
+    },
+    "locations": []
+  },
+  "league.news.text.d8926a78": {
+    "source": "src/league/news.ts",
+    "line": 139,
+    "params": {
+      "name": {
+        "expression": "iga(name(immaculate.pitcher))",
+        "particle": "이/가"
+      },
+      "date": {
+        "expression": "box.date"
+      },
+      "opp": {
+        "expression": "opp"
+      },
+      "inning": {
+        "expression": "immaculate.inning"
+      },
+      "me": {
+        "expression": "me"
+      },
+      "rs": {
+        "expression": "rs"
+      },
+      "rt": {
+        "expression": "rt"
+      },
+      "result": {
+        "expression": "won ? L('승리') : rs < rt ? L('패배') : L('무승부')"
+      }
+    },
+    "locations": []
+  },
+  "league.news.text.90e5e4d2": {
+    "source": "src/league/news.ts",
+    "line": 139,
+    "params": {},
+    "locations": []
+  },
+  "league.news.text.e99c8bc0": {
+    "source": "src/league/news.ts",
+    "line": 139,
+    "params": {},
+    "locations": []
+  },
+  "league.news.text.ff1b1cbc": {
+    "source": "src/league/news.ts",
+    "line": 139,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.17fb66f7": {
+    "source": "src/league/milestones.ts",
+    "line": 20,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.6192e20a": {
+    "source": "src/league/milestones.ts",
+    "line": 20,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.da856f9f": {
+    "source": "src/league/milestones.ts",
+    "line": 94,
+    "params": {
+      "name": {
+        "expression": "s.players[imm.pitcher]?.name ?? ''"
+      },
+      "date": {
+        "expression": "box.date"
+      },
+      "opp": {
+        "expression": "opp"
+      },
+      "inning": {
+        "expression": "imm.inning"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.e401a056": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 172,
     "params": {},
     "locations": []
   }

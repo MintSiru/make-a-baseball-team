@@ -23,6 +23,8 @@ export interface StoredBox {
   rhe: [[number, number, number], [number, number, number]];
   bat: [BatRow[], BatRow[]];
   pit: [PitRow[], PitRow[]];
+  /** 1.9.8: immaculate innings, away then home. */
+  imm?: [{ pitcher: string; inning: number }[], { pitcher: string; inning: number }[]];
 }
 
 /** 1.7.0: a substitute's position as "PH:SS" (how he came in, then where he played). */
@@ -45,6 +47,7 @@ export function compactBox(out: GameOut, id: string, date: string, att?: number)
     ],
     bat: [batRows(out.away), batRows(out.home)],
     pit: [pitRows(out.away), pitRows(out.home)],
+    ...(out.away.immaculate || out.home.immaculate ? { imm: [out.away.immaculate ?? [], out.home.immaculate ?? []] as StoredBox['imm'] } : {}),
   };
 }
 

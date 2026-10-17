@@ -511,6 +511,8 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       const draft = s.offseason?.draft;
       if (!draft) return __i18n_k("league.expansion.checkDecision.0ed089e1");
       if (input.id && !draft.pool.includes(input.id)) return __i18n_k("league.expansion.checkDecision.11dcd2b0");
+      const eligible = (d as Extract<Decision, { kind: 'draftPick' }>).eligible;
+      if (input.id && eligible && !eligible.includes(input.id)) return __i18n_k("league.expansion.text.ad8fb12b");
       return null;
     }
     case 'specialDraft': {
@@ -588,6 +590,7 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
     }
     case 'draftPick': {
       const draft = s.offseason!.draft!;
+      // No one picked: the scouts' choice (for a territorial pick, the region's best).
       const p = input.id ? s.players[input.id]! : aiDraftChoice(s, draft, u.teamId, draft.next + 1)!;
       makePick(s, draft, p);
       break;

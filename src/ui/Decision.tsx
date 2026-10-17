@@ -260,9 +260,10 @@ function PlayerTable({
 }
 
 /** The draft board on the clock: every heading sorts, the scouts' top three are marked. */
-function DraftTable({ league, onPlayer, onPick }: { league: LeagueState; onPlayer: (id: PlayerId) => void; onPick: (id: PlayerId) => void }) {
+function DraftTable({ league, onPlayer, onPick, only }: { league: LeagueState; onPlayer: (id: PlayerId) => void; onPick: (id: PlayerId) => void; only?: PlayerId[] }) {
   const draft = league.offseason!.draft!;
-  const pool = useMemo(() => draft.pool.map((id) => league.players[id]!).sort((a, b) => a.amateur.draftRank - b.amateur.draftRank), [draft.pool.length]);
+  // 1.9.8: a territorial pick shows only the region's high-school players.
+  const pool = useMemo(() => (only ?? draft.pool).map((id) => league.players[id]!).sort((a, b) => a.amateur.draftRank - b.amateur.draftRank), [draft.pool.length, only]);
   const recommended = useMemo(() => {
     const score = (p: Player) => (shownFuture(p) ?? p.scouting.current) * 0.6 + p.scouting.current * 0.4;
     return new Set([...pool].sort((a, b) => score(b) - score(a) || a.amateur.draftRank - b.amateur.draftRank).slice(0, 3).map((p) => p.id));
@@ -519,12 +520,12 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       break;
     case 'draftPick': {
       const draft = league.offseason!.draft!;
-      const mine = Object.values(league.players).filter((p) => p.teamId === u.teamId && p.origin.draftYear === draft.year && p.origin.overallPick);
+      const mine = Object.values(league.players).filter((p) => p.teamId === u.teamId && p.origin.draftYear === draft.year && (p.origin.overallPick || p.origin.territorial));
       body = (
         <>
           <p>{__i18n_rich("ui.decision.decision.0a4eef4a", { value: draft.year + 1, label: d.label, overall: d.overall, length: draft.pool.length, length2: mine.length, value2: ' ', value3: <span class="muted">{__i18n_display(mine.map((p) => p.name).join(', ') || __i18n_k("ui.decision.decision.d58fa73a"))}</span> })}</p>
-          <p class="muted">{__i18n_t("ui.decision.decision.bd4cd855")}</p>
-          <DraftTable league={league} onPlayer={onPlayer} onPick={(id) => onSubmit({ kind: 'draftPick', id })} />
+          {d.eligible ? <p class="notice">{__i18n_t("ui.decision.text.262e41d5", { n: d.eligible.length })}</p> : <p class="muted">{__i18n_t("ui.decision.decision.bd4cd855")}</p>}
+          <DraftTable league={league} onPlayer={onPlayer} onPick={(id) => onSubmit({ kind: 'draftPick', id })} only={d.eligible} />
         </>
       );
       break;
