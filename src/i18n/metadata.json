@@ -71016,5 +71016,515 @@
     "line": 56,
     "params": {},
     "locations": []
+  },
+  "league.lineage.text.ebfb77ab": {
+    "source": "src/league/lineage.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.1d9554f4": {
+    "source": "src/league/lineage.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.b175f6f4": {
+    "source": "src/league/lineage.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.604f78d4": {
+    "source": "src/league/lineage.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.6ebc8480": {
+    "source": "src/league/lineage.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.9625876c": {
+    "source": "src/league/lineage.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.e3fa752a": {
+    "source": "src/league/lineage.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.25f016f2": {
+    "source": "src/league/lineage.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.fc37b702": {
+    "source": "src/league/lineage.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.8d097133": {
+    "source": "src/league/lineage.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.d963ca65": {
+    "source": "src/league/lineage.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.ea9858ee": {
+    "source": "src/league/lineage.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.8bfa0c03": {
+    "source": "src/league/lineage.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.b4301e4b": {
+    "source": "src/league/lineage.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.0e156b09": {
+    "source": "src/league/lineage.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.2a846912": {
+    "source": "src/league/lineage.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.29a6de2f": {
+    "source": "src/league/lineage.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.8a15b66a": {
+    "source": "src/league/lineage.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.1e783cc6": {
+    "source": "src/league/lineage.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.0b110249": {
+    "source": "src/league/lineage.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.ca26415b": {
+    "source": "src/league/lineage.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.5763d3d6": {
+    "source": "src/league/lineage.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.83cd9ddc": {
+    "source": "src/league/lineage.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.57ac38df": {
+    "source": "src/league/lineage.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.ad0d7d4b": {
+    "source": "src/league/lineage.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.b97606a8": {
+    "source": "src/league/lineage.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.a09a11f6": {
+    "source": "src/league/lineage.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.108e8876": {
+    "source": "src/league/lineage.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.1202f8b2": {
+    "source": "src/league/lineage.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.e7c559da": {
+    "source": "src/league/lineage.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.3f2fed71": {
+    "source": "src/league/lineage.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.41402f7e": {
+    "source": "src/league/lineage.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.6aafaa3d": {
+    "source": "src/league/lineage.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.89bec59f": {
+    "source": "src/league/lineage.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.8cb4926c": {
+    "source": "src/league/lineage.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.534883cb": {
+    "source": "src/league/lineage.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.4af3e3ae": {
+    "source": "src/league/lineage.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.640702e8": {
+    "source": "src/league/lineage.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.8d8be041": {
+    "source": "src/league/lineage.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.71b62f90": {
+    "source": "src/league/lineage.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.c6abb474": {
+    "source": "src/league/lineage.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.08ccbbe9": {
+    "source": "src/league/lineage.ts",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.9e30a527": {
+    "source": "src/league/lineage.ts",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.055c18cb": {
+    "source": "src/league/lineage.ts",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.473eff22": {
+    "source": "src/league/lineage.ts",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.97e20f27": {
+    "source": "src/league/lineage.ts",
+    "line": 53,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.92c575a5": {
+    "source": "src/league/lineage.ts",
+    "line": 53,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.3cc50bf2": {
+    "source": "src/league/lineage.ts",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.30c9ab22": {
+    "source": "src/league/lineage.ts",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.a6985879": {
+    "source": "src/league/lineage.ts",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.b096e371": {
+    "source": "src/league/lineage.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.def4ac54": {
+    "source": "src/league/lineage.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.44ede046": {
+    "source": "src/league/lineage.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.4aef5aa5": {
+    "source": "src/league/lineage.ts",
+    "line": 58,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.ed594922": {
+    "source": "src/league/lineage.ts",
+    "line": 58,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.68d9f56e": {
+    "source": "src/league/lineage.ts",
+    "line": 58,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.f67e4351": {
+    "source": "src/league/lineage.ts",
+    "line": 58,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.4ff3f14f": {
+    "source": "src/league/lineage.ts",
+    "line": 58,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.27066a3c": {
+    "source": "src/league/lineage.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.fcc26bb5": {
+    "source": "src/league/lineage.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.7ad3e60e": {
+    "source": "src/league/lineage.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.64ada749": {
+    "source": "src/league/lineage.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.1fb73ac9": {
+    "source": "src/league/lineage.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.8f15af5e": {
+    "source": "src/league/lineage.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.d22d802b": {
+    "source": "src/league/lineage.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.58c49993": {
+    "source": "src/league/lineage.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.c5a8fe79": {
+    "source": "src/league/lineage.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.db35c245": {
+    "source": "src/league/lineage.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.6e9552f9": {
+    "source": "src/league/lineage.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.ee2493b9": {
+    "source": "src/league/lineage.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.8202403e": {
+    "source": "src/league/lineage.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.d517715a": {
+    "source": "src/league/lineage.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.5ea849ea": {
+    "source": "src/league/lineage.ts",
+    "line": 66,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.396d913d": {
+    "source": "src/league/lineage.ts",
+    "line": 66,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.956f1239": {
+    "source": "src/league/lineage.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.a6fb63b8": {
+    "source": "src/league/lineage.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.6dc04037": {
+    "source": "src/league/lineage.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.17a340d7": {
+    "source": "src/league/lineage.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.ddd086e7": {
+    "source": "src/league/lineage.ts",
+    "line": 75,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.423c0933": {
+    "source": "src/league/lineage.ts",
+    "line": 76,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.46c332b0": {
+    "source": "src/league/lineage.ts",
+    "line": 85,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.098ca0de": {
+    "source": "src/league/lineage.ts",
+    "line": 89,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.4e73ce8d": {
+    "source": "src/league/lineage.ts",
+    "line": 103,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.146e1324": {
+    "source": "src/league/lineage.ts",
+    "line": 111,
+    "params": {},
+    "locations": []
+  },
+  "league.lineage.text.7aeadd5c": {
+    "source": "src/league/lineage.ts",
+    "line": 121,
+    "params": {},
+    "locations": []
   }
 }

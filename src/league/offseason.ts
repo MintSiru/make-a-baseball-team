@@ -4,7 +4,7 @@
    national-team exemptions → development → retirement → military service → posting → free agency → salaries →
    rookie draft → (expansion special draft) → roster limits → released players → foreign players.
    The user's club can make the game wait at a step for a decision (see OffseasonHooks). */
-import { ruleYear } from './era';
+import { rulesFor } from '../rules/history';
 import { hashUnit, observe, overall, rng, toGrade, type Tools } from '../draftroom';
 import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
@@ -55,7 +55,7 @@ import type { SeasonAwards } from './awards';
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
 
-export const rosterLimit = (season: number) => (ruleYear(season) >= 2026 ? KBO_2026.league.rosterLimit : 65);
+export const rosterLimit = (season: number) => rulesFor(season).rosterLimit;
 
 /** Moves finished-season lines into careers, credits service days and stores the season summary. */
 export function closeSeason(s: LeagueState) {

@@ -1,10 +1,10 @@
+import { rulesFor } from '../rules/history';
 import { k as __i18n_k } from '../i18n/index';
 /* The second draft (2차 드래프트, RULES.md §6): every other winter since 2023. Each club protects 35;
    players in their first three pro years, this winter's free-agent signings and foreign players are
    exempt. Clubs pick in reverse order of the standings for three rounds (the bottom three get two more
    picks), may pass, pay 4억 / 3억 / 2억 / 1억 by round to the club losing the player, and a club loses at
    most four players. */
-import { ruleYear } from './era';
 import { iga, ro } from './josa';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { KBO_2026 } from '../rules/kbo2026';
@@ -30,10 +30,8 @@ export interface SecondDraftState {
   picked?: PlayerId[];
 }
 
-export const isSecondDraftYear = (calendarYear: number) => {
-  const year = ruleYear(calendarYear);
-  return year >= R.firstYear && (year - R.firstYear) % 2 === 0;
-};
+/** 1.9.4: from the year-by-year rules (rules/history.ts): every other winter from 2023 in the game's years. */
+export const isSecondDraftYear = (calendarYear: number) => rulesFor(calendarYear).secondDraft;
 
 /** Players who never need protecting. */
 const exempt = (p: Player, year: number) =>

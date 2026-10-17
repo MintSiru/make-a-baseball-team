@@ -558,6 +558,9 @@ export interface LeagueState {
   seed: string;
   /** 1.6.0 (era.ts): years before the usual 2026 start (−10: 「백 투 더 패스트」, from 2016); missing for 0. */
   era?: number;
+  /** 1.9.4: the league plays the KBO's own history (the 1982 legacy start, 1.9.5): the year-by-year rules before 2015
+      (rules/history.ts) and the clubs' names of each year (lineage.ts). Absent: today's rules in every year. */
+  historical?: boolean;
   year: number;
   phase: LeaguePhase;
   teams: Team[];
