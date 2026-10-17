@@ -156,7 +156,7 @@ export const GM_STYLES: Record<GmStyle, { label: string; note: string }> = {
 };
 
 /** The front-office style of a club: only the twelfth club has one of its own. */
-export const gmOf = (s: LeagueState, teamId: TeamId): GmStyle | null => (s.twelve?.teamId === teamId ? s.twelve.gm : null);
+export const gmOf = (s: LeagueState, teamId: TeamId): GmStyle | null => (s.twelve?.teamId === teamId ? s.twelve.gm : (s.unified?.clubs.find((c) => c.teamId === teamId)?.gm ?? null));
 
 /** How a front office ranks a player it could take (tryout, special draft, released players). */
 export function gmValue(p: Player, next: number, gm: GmStyle): number {

@@ -4,6 +4,8 @@ import { k as __i18n_k } from '../i18n/index';
    bidding for an 11th club or a futures club in 2026 (RULES.md §12). `market` (0–100) and
    `competition` are the game's own estimates of catchment and nearby clubs. */
 
+import { NORTH_CITIES } from '../league/north';
+
 export interface City {
   id: string;
   name: string;
@@ -49,4 +51,4 @@ export const SCENARIO_CITIES: City[] = [
   { id: 'ulleung', name: __i18n_k("club.cities.sCENARIO_CITIES.name.e2971049"), province: __i18n_k("club.cities.sCENARIO_CITIES.province.9c479e8f"), population: 9_000, stadium: { name: __i18n_k("club.cities.stadium.name.cc8463f9"), seats: 3_000, real: false }, market: 4, competition: __i18n_k("club.cities.sCENARIO_CITIES.competition.f5759ff0"), note: __i18n_k("club.cities.sCENARIO_CITIES.note.e55b2828") },
 ];
 
-export const cityById = (id: string) => CITIES.find((c) => c.id === id) ?? SCENARIO_CITIES.find((c) => c.id === id);
+export const cityById = (id: string) => CITIES.find((c) => c.id === id) ?? SCENARIO_CITIES.find((c) => c.id === id) ?? NORTH_CITIES.find((c) => c.id === id);

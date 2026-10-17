@@ -22,7 +22,7 @@ import { addNews } from './news';
 import { developmentContract, leaveLeague, removeFromRoster, rosterLimit, sign, type OffseasonStep } from './offseason';
 import { ageIn, DRAFT_ROOM_YEAR, isForeign, keepValue, shiftProspect } from './players';
 import { MANAGER_STYLES, staffOf } from './staff';
-import { developmentIds, emptyRoster, firstTeamIds, registeredIds, type Decision, type GmStyle, type LeagueState, type ManagerStyle, type RivalSettings } from './state';
+import { developmentIds, emptyRoster, firstTeamIds, registeredIds, type Decision, type GmStyle, type LeagueState, type ManagerStyle, type RivalSettings, type TwelveState } from './state';
 import { crossing } from './rivalry';
 import { farewell } from './life';
 import { GM_STYLES, gmValue } from './twelve';
@@ -145,7 +145,7 @@ export function foundRival(s: LeagueState, settings: RivalSettings, year: number
   clubState(s, RIVAL_ID);
   const staff = staffOf(s, RIVAL_ID);
   staff.manager.style = settings.manager;
-  const signed = rivalTryout(s, year);
+  const signed = rivalTryout(s, year, RIVAL_ID, settings.gm);
   const date = `${year}-12-10`;
   const format = settings.format === 'two' ? __i18n_k("league.rival.foundRival.format.6374c518") : __i18n_k("league.rival.foundRival.format.a14f2bc9");
   addNews(s, {
@@ -172,25 +172,31 @@ export function foundRival(s: LeagueState, settings: RivalSettings, year: number
   milestone(s, year, __i18n_k("league.rival.foundRival.8b44c495", { name: team.name, name2: city.name }), 'rivalFounded');
 }
 
-/** The founding tryout: independent-league players, returnees from abroad and young players let go this year. */
-function rivalTryout(s: LeagueState, year: number): number {
-  const seed = `${s.seed}|tryout|${RIVAL_ID}|${year}`;
+/** A new club the AI runs: the twelfth club, or 1.9.2 one of the north's clubs founded with ours (unified.ts). */
+export type FoundingClub = Pick<TwelveState, 'teamId' | 'founded' | 'firstTeam' | 'gm' | 'picks'>;
+
+/** The founding tryout: independent-league players, returnees from abroad and young players let go this year. 1.9.2:
+    for any new club the AI runs (several in a year take turns, each skipping who is signed). */
+export function rivalTryout(s: LeagueState, year: number, teamId: TeamId, gm: GmStyle, withReleased = true, north?: { count: number; make: (p: Player) => Player }): number {
+  const seed = `${s.seed}|tryout|${teamId}|${year}`;
   const next = year + 1;
-  const gm = s.twelve!.gm;
   const pool = placeClass(
     generateDraftPool(seed)
       .players.filter((p) => ['독립구단', '해외독립 복귀', '마이너 복귀', '대졸'].includes(p.pathway) && p.age >= 21)
       // 1.7.0: their ages as of the founding year, not Draft Room's (they were four years too young in 2030).
       .map((p) => fromDraftProspect(shiftProspect(p, year - DRAFT_ROOM_YEAR), year, seed))
-      .map((p) => ({ ...p, id: `rt${year}-${p.origin.sourceId}` })),
+      .map((p) => ({ ...p, id: teamId === RIVAL_ID ? `rt${year}-${p.origin.sourceId}` : `rt${year}-${teamId}-${p.origin.sourceId}` }))
+      // 1.9.2: the north's clubs try out the north's own adult players (unified.ts).
+      .map((p) => (north ? north.make(p) : p)),
     seed,
   );
-  const released = Object.values(s.players).filter((p) => p.status === 'retired' && p.career.length && (p.career.at(-1)?.year ?? 0) >= year - 1 && ageIn(p, next) <= 33);
-  const chosen = [...released, ...pool].sort((a, b) => gmValue(b, next, gm) - gmValue(a, next, gm)).slice(0, RIVAL.tryout);
+  // Players let go this year: not for the north's clubs, founded while ours holds its own tryout.
+  const released = !withReleased ? [] : Object.values(s.players).filter((p) => p.status === 'retired' && p.career.length && (p.career.at(-1)?.year ?? 0) >= year - 1 && ageIn(p, next) <= 33);
+  const chosen = [...released, ...pool].sort((a, b) => gmValue(b, next, gm) - gmValue(a, next, gm)).slice(0, north?.count ?? RIVAL.tryout);
   for (const p of chosen) {
     p.proSince = Math.max(p.proSince, next);
-    sign(s, p, RIVAL_ID, {
-      teamId: RIVAL_ID,
+    sign(s, p, teamId, {
+      teamId,
       kind: 'standard',
       signedIn: year,
       signingBonus: 0,
@@ -238,9 +244,10 @@ export function resolveRivalProtect(s: LeagueState, d: Extract<Decision, { kind:
 export const autoProtect = (s: LeagueState, d: Extract<Decision, { kind: 'rivalProtect' }>, next: number) =>
   [...d.candidates].sort((a, b) => keepValue(s.players[b]!, next) - keepValue(s.players[a]!, next)).slice(0, d.protect);
 
-/** The twelfth club takes one unprotected player from each first-team club and pays each club 10억. */
-export function rivalSpecialDraft(s: LeagueState, next: number) {
-  const tw = s.twelve;
+/** The twelfth club takes one unprotected player from each first-team club and pays each club 10억. 1.9.2: any new
+    club the AI runs (`club`; the news only for the twelfth club, the north's clubs have one story together). */
+export function rivalSpecialDraft(s: LeagueState, next: number, club?: FoundingClub) {
+  const tw = club ?? s.twelve;
   if (!tw || tw.firstTeam !== next || tw.picks) return;
   const P = EXPANSION_DEFAULTS.specialDraft;
   const u = s.user;
@@ -275,6 +282,7 @@ export function rivalSpecialDraft(s: LeagueState, next: number) {
     }
   }
   tw.picks = picks;
+  if (club) return;
   const team = rivalTeam(s)!;
   const date = `${next - 1}-11-28`;
   const ours = picks.find((x) => x.from === u?.teamId);
@@ -307,8 +315,8 @@ export function rivalSpecialDraft(s: LeagueState, next: number) {
 
 /** In its founding winter and the one before its first-team debut, the twelfth club looks at the players the
     other clubs let go before anyone else (after the user's club). */
-export function rivalFill(s: LeagueState, next: number) {
-  const tw = s.twelve,
+export function rivalFill(s: LeagueState, next: number, club?: FoundingClub) {
+  const tw = club ?? s.twelve,
     o = s.offseason;
   if (!tw || !o || next > tw.firstTeam) return;
   const F = RIVAL.fill;
@@ -327,8 +335,15 @@ export function rivalFill(s: LeagueState, next: number) {
 /** The twelfth club's part of an offseason step, after the user's decision for it. */
 export function rivalStep(s: LeagueState, step: OffseasonStep) {
   const o = s.offseason;
-  if (!s.twelve || !o) return;
+  if (!o) return;
   const next = o.year + 1;
+  // 1.9.2: the north's clubs (unified.ts), each in turn, after ours.
+  for (const c of s.unified?.clubs ?? []) {
+    if (step === 'special') rivalSpecialDraft(s, next, c);
+    if (step === 'released') rivalFill(s, next, c);
+    if (step === 'check') rivalTrim(s, next, c);
+  }
+  if (!s.twelve) return;
   if (step === 'special') rivalSpecialDraft(s, next);
   if (step === 'released') rivalFill(s, next);
   if (step === 'check') rivalTrim(s, next);
@@ -336,8 +351,8 @@ export function rivalStep(s: LeagueState, step: OffseasonStep) {
 
 /** After its foreign signings (four and the Asia quota in its first season), the twelfth club gets down to the
     registered-player limit as the user's club must: the least valuable go, the young ones as development players. */
-function rivalTrim(s: LeagueState, next: number) {
-  const tw = s.twelve!;
+export function rivalTrim(s: LeagueState, next: number, club?: FoundingClub) {
+  const tw = club ?? s.twelve!;
   const over = registeredIds(s, tw.teamId).length - rosterLimit(next);
   if (over <= 0) return;
   const D = OFFSEASON.development;

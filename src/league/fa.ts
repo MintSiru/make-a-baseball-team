@@ -105,6 +105,8 @@ export interface FaMarket {
   userFree: boolean;
   /** The twelfth club in its founding winter (V0.9): three outside signings, no compensation. */
   newClub?: TeamId;
+  /** 1.9.2: the north's clubs in their founding winter (unified.ts): the same three signings without compensation. */
+  northClubs?: TeamId[];
   talks: Record<PlayerId, FaTalk>;
   /** Best first. */
   order: PlayerId[];
@@ -499,7 +501,8 @@ function appetite(s: LeagueState, teamId: TeamId, t: FaTalk, p: Player, next: nu
   const style = gmAppetite(gmOf(s, teamId), ageIn(p, next));
   chance = Math.max(0, Math.min(own ? 1 : MARKET.interest.max, chance * (own ? 1 : style.chance)));
   const need = Math.max(0.8, Math.min(1.25, 0.9 + gain * 0.02)) * style.need;
-  const founding = s.twelve?.teamId === teamId && s.twelve.firstTeam === next;
+  // 1.9.2: the north's clubs too (unified.ts).
+  const founding = (s.twelve?.teamId === teamId && s.twelve.firstTeam === next) || !!s.unified?.clubs.some((c) => c.teamId === teamId && c.firstTeam === next);
   const comp = own || t.free || founding ? 1 : FA.ai.compensation[t.grade];
   return { chance, need: need * comp };
 }
@@ -519,6 +522,7 @@ export function openMarket(s: LeagueState, next: number): FaMarket {
     userLimit: entering ? EXPANSION_DEFAULTS.freeAgentSigns : limit,
     userFree: entering,
     ...(s.twelve && s.twelve.firstTeam === next ? { newClub: s.twelve.teamId } : {}),
+    ...(s.unified?.clubs.some((c) => c.firstTeam === next) ? { northClubs: s.unified.clubs.filter((c) => c.firstTeam === next).map((c) => c.teamId) } : {}),
     talks: {},
     order: [],
     signedOut: {},
@@ -621,7 +625,7 @@ const isOpen = (t: FaTalk) => !t.signed && !t.gone;
 export const openDrafts = <T>(m: FaMarket, drafts: Record<PlayerId, T>): Record<PlayerId, T> =>
   Object.fromEntries(Object.entries(drafts).filter(([id]) => !!m.talks[id] && isOpen(m.talks[id]!)));
 const outside = (m: FaMarket, t: FaTalk, teamId: TeamId) => teamId !== t.from;
-const limitOf = (s: LeagueState, m: FaMarket, teamId: TeamId) => (teamId === s.user?.teamId ? m.userLimit : teamId === m.newClub ? EXPANSION_DEFAULTS.freeAgentSigns : m.limit);
+const limitOf = (s: LeagueState, m: FaMarket, teamId: TeamId) => (teamId === s.user?.teamId ? m.userLimit : teamId === m.newClub || m.northClubs?.includes(teamId) ? EXPANSION_DEFAULTS.freeAgentSigns : m.limit);
 
 /** Plays the next round: AI clubs bid, raise or pull out, then every player decides. Returns whether anything
     touched the user's club (an answer to its offer, one of its free agents signing, news it waits for). */
@@ -878,7 +882,7 @@ function signTalk(s: LeagueState, m: FaMarket, t: FaTalk, teamId: TeamId, o: FaO
   if (from === me && teamId !== me) farewell(s, p, from, __i18n_k("league.fa.signTalk.1046ffcb", { short: short(s, teamId) }), date);
   if (teamId === from) return;
   // Compensation to the club he left (none after a declined option, none for the user's founding signings).
-  if (t.free || (teamId === me && m.userFree) || teamId === m.newClub) return;
+  if (t.free || (teamId === me && m.userFree) || teamId === m.newClub || m.northClubs?.includes(teamId)) return;
   if (t.grade === 'C') {
     moneyFor(s, teamId, from, compensationCash('C', salary).cashOnly, __i18n_k("league.fa.signTalk.a1be4423", { name: p.name }), year);
     return;

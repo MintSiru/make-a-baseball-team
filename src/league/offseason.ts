@@ -451,7 +451,7 @@ export const standardSlots = (order: TeamId[]): DraftSlot[] =>
 /** Puts the September draft of `draftYear` on the board. */
 export function openDraft(s: LeagueState, draftYear: number, slots: DraftSlot[]): DraftState {
   // The class as the clubs know it after the combine (1.3.0).
-  const pool = applyCombine(s.seed, draftYear, draftClass(s.seed, draftYear));
+  const pool = applyCombine(s.seed, draftYear, draftClass(s.seed, draftYear, s.unified));
   for (const p of pool) s.players[p.id] = p;
   // Draftees who went abroad and are back after the two-year wait (V0.7.3), ranked among this class.
   const back = draftReturnees(s, draftYear);
@@ -789,7 +789,7 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         return 'waiting';
       }
     }
-    if (hooks.auto && s.twelve && !o.done.includes(`auto:${step}`)) {
+    if (hooks.auto && (s.twelve || s.unified) && !o.done.includes(`auto:${step}`)) {
       o.done.push(`auto:${step}`);
       hooks.auto(s, step);
     }

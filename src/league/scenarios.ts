@@ -35,7 +35,7 @@ import { WARD } from './ward';
 
 const FANS_MIN = FANS.priceMin;
 
-export type ScenarioId = 'seoul' | 'comeback' | 'ulleung' | 'raiders' | 'fantasy' | 'past' | 'rescue' | 'recession' | 'unpopular' | 'steel' | 'ward' | 'prodigal';
+export type ScenarioId = 'seoul' | 'comeback' | 'ulleung' | 'raiders' | 'fantasy' | 'past' | 'rescue' | 'recession' | 'unpopular' | 'steel' | 'ward' | 'prodigal' | 'unified' | 'unifiedFree';
 
 export interface ScenarioState {
   status: 'active' | 'won' | 'lost';
@@ -76,6 +76,9 @@ export interface ScenarioDef {
   crowd?: number;
   /** No goal: a free game under the scenario's conditions. */
   free?: boolean;
+  /** 1.9.2, 통일 한국: the home is one of the north's cities, five more northern clubs are founded with ours, and the
+      league is sixteen clubs in two leagues (no twelfth club). */
+  north?: boolean;
 }
 
 export const SCENARIOS: ScenarioDef[] = [
@@ -250,6 +253,36 @@ export const SCENARIOS: ScenarioDef[] = [
     locked: ['cityId', 'parentType', 'name', 'short', 'parentName', 'color', 'stadium'],
     titleWithin: 5,
   },
+  // 1.9.2 (unified.ts): after a peaceful unification, six clubs from the north at once.
+  {
+    id: 'unified',
+    title: __i18n_k("league.scenarios.text.408f8a52"),
+    tagline: __i18n_k("league.scenarios.text.40909020"),
+    story: [
+      __i18n_k("league.scenarios.text.3c304a7c"),
+      __i18n_k("league.scenarios.text.3b7bb23f"),
+    ],
+    goal: __i18n_k("league.scenarios.text.c4c2a58d"),
+    stars: 4,
+    fixed: { cityId: 'pyongyang' },
+    locked: [],
+    titleWithin: 10,
+    north: true,
+  },
+  {
+    id: 'unifiedFree',
+    title: __i18n_k("league.scenarios.text.4496a1bf"),
+    tagline: __i18n_k("league.scenarios.text.3cc6c6e2"),
+    story: [
+      __i18n_k("league.scenarios.text.1b7ac7c5"),
+    ],
+    goal: __i18n_k("league.scenarios.text.ae8b4c97"),
+    stars: 2,
+    fixed: { cityId: 'pyongyang' },
+    locked: [],
+    free: true,
+    north: true,
+  },
 ];
 
 export const scenarioDef = (id: string | null | undefined) => SCENARIOS.find((x) => x.id === id) ?? null;
@@ -351,7 +384,8 @@ export function scenarioProgress(s: LeagueState): { title: string; goal: string;
     case 'unpopular':
     case 'steel':
     case 'ward':
-    case 'prodigal': {
+    case 'prodigal':
+    case 'unified': {
       const until = u.firstTeamYear + def.titleWithin! - 1;
       lines.push(__i18n_k("league.scenarios.scenarioProgress.ede1a55d", { until: until, firstTeamYear: u.firstTeamYear, until2: until }));
       if (def.crowd) lines.push(__i18n_k("league.scenarios.scenarioProgress.525a10e6", { value: Math.round(def.crowd * 100) }));
@@ -404,9 +438,10 @@ export function scenarioWinter(s: LeagueState, year: number) {
       case 'unpopular':
       case 'steel':
       case 'ward':
-      case 'prodigal': {
+      case 'prodigal':
+      case 'unified': {
         const until = u.firstTeamYear + def.titleWithin! - 1;
-        const cheer = { recession: __i18n_k("league.scenarios.cheer.recession.5a3b4b76"), unpopular: __i18n_k("league.scenarios.cheer.unpopular.e7e09b87"), steel: __i18n_k("league.scenarios.cheer.steel.d2f57365"), ward: __i18n_k("league.scenarios.text.933c6931"), prodigal: __i18n_k("league.scenarios.text.023843e3") }[def.id];
+        const cheer = { recession: __i18n_k("league.scenarios.cheer.recession.5a3b4b76"), unpopular: __i18n_k("league.scenarios.cheer.unpopular.e7e09b87"), steel: __i18n_k("league.scenarios.cheer.steel.d2f57365"), ward: __i18n_k("league.scenarios.text.933c6931"), prodigal: __i18n_k("league.scenarios.text.023843e3"), unified: __i18n_k("league.scenarios.text.63a9bba2") }[def.id];
         if (won(s, me, year)) verdict = { status: 'won', text: __i18n_k("league.scenarios.scenarioWinter.text.97a7c92d", { year: year, cheer: cheer }) };
         else if (year >= until) verdict = { status: 'lost', text: __i18n_k("league.scenarios.scenarioWinter.text.e9a76454", { until: until }) };
         break;
@@ -442,6 +477,11 @@ export const withScenario = (settings: ExpansionSettings, id: ScenarioId | null)
   const def = scenarioDef(id);
   if (!def) return { ...settings, scenario: null };
   const locked = Object.fromEntries(def.locked.filter((k) => k in def.fixed).map((k) => [k, def.fixed[k]]));
+  // 1.9.2: the north's scenarios: sixteen clubs, no twelfth club.
+  if (def.north) {
+    const { twelve: _twelve, ...rest } = settings;
+    return { ...rest, ...locked, scenario: def.id };
+  }
   return { ...settings, ...locked, scenario: def.id };
 };
 

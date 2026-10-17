@@ -47,7 +47,8 @@ export function initialClubState(s: LeagueState, teamId: TeamId): ClubState {
   let popularity = POPULARITY[teamId];
   if (popularity == null) {
     // A new club: its city's market, a little more loyalty for a citizen-owned club.
-    const city = s.user?.teamId === teamId ? cityById(s.user.settings.cityId) : s.twelve?.teamId === teamId ? cityById(s.twelve.cityId) : null;
+    const north = s.unified?.clubs.find((c) => c.teamId === teamId);
+    const city = s.user?.teamId === teamId ? cityById(s.user.settings.cityId) : s.twelve?.teamId === teamId ? cityById(s.twelve.cityId) : north ? cityById(north.cityId) : null;
     popularity = FANS.newClub.base + (city?.market ?? 50) * FANS.newClub.perMarket;
     if (team.parent.type === 'citizen') popularity *= 1.1;
   }

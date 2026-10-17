@@ -3,6 +3,7 @@ import { useState } from 'preact/hooks';
 import { accentStyle } from './display';
 import { useDark } from './useDisplay';
 import { CITIES, cityById } from '../club/cities';
+import { NORTH_CITIES } from '../league/north';
 import { SCENARIOS, scenarioDef, withScenario, type ScenarioId } from '../league/scenarios';
 import { setEra, startYear } from '../league/era';
 import { PARENT_COMPANY_TYPES, type ParentCompanyType } from '../club/types';
@@ -100,7 +101,8 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
     if (f.autoPrep != null) setAutoPrep(f.autoPrep);
   };
   const city = cityById(cityId)!;
-  const cities = locked.has('cityId') ? [city] : CITIES;
+  // 1.9.2: the north's scenarios found the club in one of the north's cities.
+  const cities = locked.has('cityId') ? [city] : def?.north ? NORTH_CITIES : CITIES;
   // The twelfth club comes once ours is in the first team.
   // 1.6.0: 「백 투 더 패스트」 founds the club ten years earlier.
   // The page has no league yet: the calendar follows the scenario picked (the ballpark years and the risks too).
@@ -138,7 +140,7 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
 
   return (
     <main class="page new-game" style={accentStyle(color, dark)}>
-      <h2>{__i18n_t("ui.newGame.newGame.f0854faa", { y0: y0 })}</h2>
+      <h2>{def?.north ? __i18n_t("ui.newGame.text.226e8bb5", { y0 }) : __i18n_t("ui.newGame.newGame.f0854faa", { y0: y0 })}</h2>
       <p>{__i18n_t("ui.newGame.newGame.e24b6970", { value: ' ', value2: promotion === 'afterFutures' ? __i18n_k("ui.newGame.newGame.d98092a4", { value: y0 + 1, value2: y0 + 2 }) : __i18n_k("ui.newGame.newGame.cf9d3fe9", { value: y0 + 1 }), value3: guide ? __i18n_k("ui.newGame.newGame.2fd6c9f6") : '' })}</p>
 
       <section class="form-block" aria-labelledby="ng-scenario">
@@ -276,10 +278,10 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
         </div>
       </section>
 
-      <section class="form-block" aria-labelledby="ng-twelve">
+      {__i18n_display(!def?.north && (<section class="form-block" aria-labelledby="ng-twelve">
         <h3 id="ng-twelve">{__i18n_t("ui.newGame.newGame.a91a78ef")}</h3>
         <TwelveSettingField value={twelveSetting} from={twelveFrom} onChange={setTwelve} />
-      </section>
+      </section>))}
 
       <section class="form-block" aria-labelledby="ng-rules">
         <h3 id="ng-rules">{__i18n_t("ui.newGame.newGame.595d660f")}</h3>
