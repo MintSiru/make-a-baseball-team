@@ -204,6 +204,8 @@ export interface PitTotals {
   sv: number;
   hld: number;
   qs: number;
+  /** 1.9.8: complete games (absent in records from before). */
+  cg?: number;
   pitches: number;
   /** First team only: against left- and right-handed batters. */
   split?: Splits;

@@ -264,24 +264,30 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       // A left-handed hitter up late in a close game: the lefty specialist comes in for him.
       const lefty =
         inning >= 6 && Math.abs(myLead) <= 2 && upNext.bats === 'L' && app.arm.throws === 'R' && app.role !== 'CL' && app.role !== 'LO' && field.pen.some((p) => p.role === 'LO');
+      const usage = field.team.usage;
       if (app.role === 'SP') {
         const limit = app.arm.pitchLimit;
-        if (line.pitches >= limit) pull = true;
-        else if (line.r >= E.starter.runsBeforeHook) pull = true;
+        // 1.9.8: a no-hitter in progress stays with its starter (up to a ceiling), whatever the count says.
+        const noHit = line.h === 0 && line.outs >= E.starter.noHitAfterOuts;
+        if (noHit) pull = line.pitches >= E.starter.noHitPitches;
+        else if (line.pitches >= limit) pull = true;
+        else if (line.r >= (usage?.runsBeforeHook ?? E.starter.runsBeforeHook)) pull = true;
         else if (inning <= E.starter.earlyHookInning && line.r >= E.starter.earlyHookRuns && line.pitches > 50 && runnersOn() > 0) pull = true;
-        else if (inning >= 9 && outs === 0 && runnersOn() === 0 && r() > E.starter.completeGameChance) pull = true;
+        else if (inning >= 9 && outs === 0 && runnersOn() === 0 && r() > (usage?.completeGame ?? E.starter.completeGameChance)) pull = true;
         else if (lefty && line.pitches >= E.reliever.lefty.starterPitches && runnersOn() > 0) pull = true;
       } else {
         const long = app.role === 'LR';
         const mopUp = app.role === 'MU';
-        const maxOuts = long ? E.reliever.maxOutsLong : mopUp ? E.reliever.maxOutsMopUp : E.reliever.maxOutsShort;
-        const pitchLimit = long ? E.reliever.pitchLimitLong : mopUp ? E.reliever.pitchLimitMopUp : E.reliever.pitchLimitShort;
+        // 1.9.8: the closer of an era that rode him for innings (중무리).
+        const longCloser = app.role === 'CL' && !!usage && usage.closerFrom < 9;
+        const maxOuts = longCloser ? usage!.closerOuts : long ? E.reliever.maxOutsLong : mopUp ? E.reliever.maxOutsMopUp : E.reliever.maxOutsShort;
+        const pitchLimit = longCloser ? usage!.closerPitches : long ? E.reliever.pitchLimitLong : mopUp ? E.reliever.pitchLimitMopUp : E.reliever.pitchLimitShort;
         const fresh = outs === 0 && runnersOn() === 0;
         if (line.pitches >= pitchLimit || line.outs >= maxOuts) pull = true;
         // The specialist's job ends when the lefties do.
         else if (app.role === 'LO' && line.bf >= 1 && upNext.bats !== 'L') pull = true;
         else if (lefty && line.bf >= 1) pull = true;
-        else if (fresh && line.outs >= 3 && !(app.role === 'CL' && myLead > 0 && inning >= 9)) pull = true;
+        else if (fresh && line.outs >= 3 && !(app.role === 'CL' && myLead > 0 && (inning >= 9 || longCloser))) pull = true;
         // Trouble late in a close game: two on and already a run in → the next arm.
         else if (inning >= 6 && !long && !mopUp && runnersOn() >= 2 && line.r >= 1 && Math.abs(myLead) <= 3 && line.bf >= 3) pull = true;
       }
@@ -289,7 +295,8 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       const want: BullpenRole[] = [];
       const close = myLead >= 0 && myLead <= 3;
       if (lefty) want.push('LO');
-      if (inning >= 9 && myLead > 0 && myLead <= 3) want.push('CL', 'SU', 'HL');
+      if (usage && usage.closerFrom < 9 && inning >= usage.closerFrom && myLead > 0 && myLead <= 3) want.push('CL', 'SU', 'HL');
+      else if (inning >= 9 && myLead > 0 && myLead <= 3) want.push('CL', 'SU', 'HL');
       else if (inning >= 9 && myLead === 0) want.push('CL', 'SU', 'HL');
       else if (inning === 8 && close) want.push('SU', 'HL');
       else if (inning >= 6 && close) want.push('HL', 'SU');
@@ -312,10 +319,13 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
     // 1.7.0: protecting a late lead, the fielding side's best bench glove comes in.
     const logSub = (x: Sub | null) => x && log?.push({ k: 'sub', i: inning, top: !isHome, sub: x.kind, in: x.in, out: x.out, pos: x.pos });
     logSub(defensiveSub(field, inning, lead(field)));
+    // 1.9.8: the pitcher of the half and his line when it began, for an immaculate inning.
+    let half0: { app: number; pitches: number; k: number; bf: number } | null = null;
     while (outs < 3 && !over) {
       closePA();
       pitchChange();
       const app = current();
+      half0 ??= { app: field.apps.length - 1, pitches: app.line.pitches, k: app.line.k, bf: app.line.bf };
       const p = app.arm,
         pl = app.line;
       // 1.7.0: the batting side's bench, late in a close game: a runner for a slow one, a bat for the man up.
@@ -565,6 +575,10 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       pl.pitches += Math.max(1, Math.round(pitches));
     }
     closePA();
+    if (half0 && outs === 3 && field.apps.length - 1 === half0.app) {
+      const l = current().line;
+      if (l.k - half0.k === 3 && l.bf - half0.bf === 3 && l.pitches - half0.pitches === 9) (field.box.immaculate ??= []).push({ pitcher: l.id, inning });
+    }
     return runsThisHalf;
   }
 
@@ -589,6 +603,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
   for (const s of [home, away]) {
     const sp = s.apps[0]!.line;
     if (sp.outs >= 18 && sp.er <= 3) sp.qs = 1;
+    if (s.apps.length === 1) sp.cg = 1;
     s.box.batting = s.lines;
     s.box.pitching = s.apps.map((a) => a.line);
   }

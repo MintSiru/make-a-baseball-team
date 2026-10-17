@@ -169,6 +169,7 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
               <th class="num">{__i18n_t("ui.playerPanel.seasonTable.36260e2c")}</th>
               <th class="num">{__i18n_t("ui.playerPanel.seasonTable.c5e4d00d")}</th>
               <th class="num">{__i18n_t("ui.playerPanel.seasonTable.10a4423a")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.text.e401a056")}</th>
               <th class="num">{__i18n_t("ui.playerPanel.seasonTable.639a1f2f")}</th>
               <th class="num">{__i18n_t("ui.playerPanel.seasonTable.3f349ed1")}</th>
               <th class="num">{__i18n_t("ui.playerPanel.seasonTable.21e0537f")}</th>
@@ -194,6 +195,7 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
                   <td class="num">{__i18n_display(r.pit?.l ?? 0)}</td>
                   <td class="num">{__i18n_display(r.pit?.sv ?? 0)}</td>
                   <td class="num">{__i18n_display(r.pit?.hld ?? 0)}</td>
+                  <td class="num">{__i18n_display(r.pit?.cg ?? 0)}</td>
                   <td class="num">{__i18n_display(rates.ip(r.pit?.outs ?? 0))}</td>
                   <td class="num">{__i18n_display(r.pit?.k ?? 0)}</td>
                   <td class="num">{__i18n_display(r.pit?.bb ?? 0)}</td>
@@ -215,6 +217,7 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
                 <td class="num">{__i18n_display(t.pit.l)}</td>
                 <td class="num">{__i18n_display(t.pit.sv)}</td>
                 <td class="num">{__i18n_display(t.pit.hld)}</td>
+                <td class="num">{__i18n_display(t.pit.cg ?? 0)}</td>
                 <td class="num">{__i18n_display(rates.ip(t.pit.outs))}</td>
                 <td class="num">{__i18n_display(t.pit.k)}</td>
                 <td class="num">{__i18n_display(t.pit.bb)}</td>

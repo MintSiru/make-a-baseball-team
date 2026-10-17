@@ -7730,5 +7730,14 @@
   "ui.updates.text.468266d6": "확인",
   "ui.settings.text.f59812c4": "업데이트 소식",
   "league.expansion.text.ad8fb12b": "1차 지명은 연고 지역 고등학교 선수만 뽑을 수 있습니다.",
-  "ui.decision.text.262e41d5": "1차 지명: 연고 지역 고등학교 선수 {n}명 가운데 한 명을 고릅니다."
+  "ui.decision.text.262e41d5": "1차 지명: 연고 지역 고등학교 선수 {n}명 가운데 한 명을 고릅니다.",
+  "league.news.text.9500e654": "{name}, 무결점 이닝",
+  "league.news.text.d8926a78": "{name} {date} {opp}전 {inning}회에 공 9개로 세 타자를 모두 삼진으로 돌려세웠습니다. 경기는 {me} {rs}-{rt} {result}.",
+  "league.news.text.90e5e4d2": "승리",
+  "league.news.text.e99c8bc0": "패배",
+  "league.news.text.ff1b1cbc": "무승부",
+  "league.milestones.text.17fb66f7": "무결점 이닝",
+  "league.milestones.text.6192e20a": "한 이닝을 공 9개, 삼진 3개로",
+  "league.milestones.text.da856f9f": "{name}, {date} {opp}전 {inning}회",
+  "ui.playerPanel.text.e401a056": "완투"
 }

@@ -7730,5 +7730,14 @@
   "ui.updates.text.468266d6": "OK",
   "ui.settings.text.f59812c4": "Update notes",
   "league.expansion.text.ad8fb12b": "A territorial pick can only take a high-school player from the club's region.",
-  "ui.decision.text.262e41d5": "Territorial pick: choose one of {n, plural, one {# high-school player} other {# high-school players}} from our region."
+  "ui.decision.text.262e41d5": "Territorial pick: choose one of {n, plural, one {# high-school player} other {# high-school players}} from our region.",
+  "league.news.text.9500e654": "{name} throws an immaculate inning",
+  "league.news.text.d8926a78": "{name} struck out the side on nine pitches in inning {inning} against {opp} on {date}. The game: {me} {rs}-{rt}, a {result}.",
+  "league.news.text.90e5e4d2": "win",
+  "league.news.text.e99c8bc0": "loss",
+  "league.news.text.ff1b1cbc": "tie",
+  "league.milestones.text.17fb66f7": "Immaculate Inning",
+  "league.milestones.text.6192e20a": "An inning of three strikeouts on nine pitches",
+  "league.milestones.text.da856f9f": "{name}, {date} vs {opp}, inning {inning}",
+  "ui.playerPanel.text.e401a056": "CG"
 }

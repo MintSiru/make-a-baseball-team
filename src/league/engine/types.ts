@@ -53,6 +53,21 @@ export interface TeamIn {
   fieldBonus?: number;
   /** The manager bunts and steals more. */
   smallBall?: boolean;
+  /** 1.9.8: how the manager of the era uses his pitchers (a league that plays history); absent: today's way. */
+  usage?: PitchingUsage;
+}
+
+/** 1.9.8: the era's pitching usage (rules/history.ts eraUsage). */
+export interface PitchingUsage {
+  /** Chance a starter still dominant after eight innings is left in for the ninth. */
+  completeGame: number;
+  /** Runs a starter may give up before the hook. */
+  runsBeforeHook: number;
+  /** The closer comes in from this inning with a lead of one to three (9: today's one-inning closer). */
+  closerFrom: number;
+  /** A closer's outs and pitches at most. */
+  closerOuts: number;
+  closerPitches: number;
 }
 
 export interface GameIn {
@@ -130,6 +145,8 @@ export interface PitchingLine {
   sv: 0 | 1;
   hld: 0 | 1;
   qs: 0 | 1;
+  /** 1.9.8: a complete game (the starter was his side's only pitcher). */
+  cg?: 0 | 1;
 }
 
 export interface TeamBox {
@@ -140,6 +157,8 @@ export interface TeamBox {
   lineScore: number[];
   batting: BattingLine[];
   pitching: PitchingLine[];
+  /** 1.9.8: immaculate innings (three strikeouts on nine pitches) by this side's pitchers. */
+  immaculate?: { pitcher: string; inning: number }[];
 }
 
 export interface GameOut {

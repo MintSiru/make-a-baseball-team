@@ -19,6 +19,7 @@ import { adaptPenalty } from './adapt';
 import { bigGameEdge } from './traits';
 import { inWard, WARD } from './ward';
 import { isKyopo, kyopoLimit } from './kyopo';
+import { eraUsage, type EraUsage } from '../rules/history';
 
 const STARTER_LIMIT = ENGINE.starterLimit;
 
@@ -372,11 +373,11 @@ const rotationScore = (p: Player, prefer: Prefer) => starterValue(p.scouting.too
 
 /** The five-man rotation: starters (role SP) by public starter value; everyone else pitches from the bullpen.
     `order` (the user's club, V0.8): the general manager's starters first, in his order, while on the squad. */
-export function rotationFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none, order: PlayerId[] = []): Player[] {
+export function rotationFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none, order: PlayerId[] = [], size = eraUsage(s.year)?.rotation ?? 5): Player[] {
   const pitchers = ids.map((id) => s.players[id]!).filter((p) => isPitcher(p));
-  const mine = order.filter((id, i) => order.indexOf(id) === i && pitchers.some((p) => p.id === id)).slice(0, 5);
+  const mine = order.filter((id, i) => order.indexOf(id) === i && pitchers.some((p) => p.id === id)).slice(0, size);
   const rest = pitchers.filter((p) => !mine.includes(p.id)).sort((a, b) => rotationScore(b, prefer) - rotationScore(a, prefer) || a.id.localeCompare(b.id));
-  return [...mine.map((id) => s.players[id]!), ...rest].slice(0, 5);
+  return [...mine.map((id) => s.players[id]!), ...rest].slice(0, size);
 }
 
 /** The user's lineup card for a squad (the first team only; futures squads are the manager's). */
@@ -392,7 +393,8 @@ export function starterFor(s: LeagueState, key: string, date: string, rotation: 
     const p = rotation[(start + i) % n]!;
     const arm = s.arms[p.id];
     const days = arm ? daysBetween(arm.lastDate, date) : 99;
-    if (available(s, p.id) && days >= 5) {
+    // 1.9.8: a history game's four-man rotations went on four days' rest.
+    if (available(s, p.id) && days >= (eraUsage(s.year)?.rest ?? 5)) {
       pick = p;
       rest = days;
       s.rotation[key] = (start + i + 1) % n;
@@ -406,15 +408,17 @@ export function starterFor(s: LeagueState, key: string, date: string, rotation: 
     pick = healthy.sort((a, b) => (s.arms[a.id]?.lastDate ?? '').localeCompare(s.arms[b.id]?.lastDate ?? ''))[0]!;
     rest = s.arms[pick.id] ? daysBetween(s.arms[pick.id]!.lastDate, date) : 99;
   }
-  return { p: pick, limit: starterLimit(pick, date, rest, hook) };
+  return { p: pick, limit: starterLimit(pick, date, rest, hook, eraUsage(s.year)) };
 }
 
 /** How many pitches the manager gives today's starter: stamina, rest, April, the hook. */
-function starterLimit(p: Player, date: string, rest: number, hook: number): number {
+function starterLimit(p: Player, date: string, rest: number, hook: number, era: EraUsage | null = null): number {
   const stamina = t(p, 'stamina');
   const month = Number(date.slice(5, 7));
-  const limit = Math.round(STARTER_LIMIT.base + (stamina - 50) * STARTER_LIMIT.perStamina - (rest < 5 ? 18 : 0) - (month <= 4 ? 5 : 0) + hook);
-  return Math.max(55, Math.min(118, limit));
+  // 1.9.8: the era's starters went longer, and four days' rest was rest enough (eraUsage).
+  const short = rest < (era?.rest ?? 5);
+  const limit = Math.round(STARTER_LIMIT.base + (era?.limitBonus ?? 0) + (stamina - 50) * STARTER_LIMIT.perStamina - (short ? 18 : 0) - (month <= 4 ? 5 : 0) + hook);
+  return Math.max(55, Math.min(era?.limitMax ?? 118, limit));
 }
 
 /**
@@ -538,7 +542,7 @@ export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away:
     const pp = postPlanFor(s, x, ids);
     const hook = (style === 'quickHook' ? ENGINE.hook.quickHook : style === 'patient' ? ENGINE.hook.patient : 0) + (pp?.allOut ? ENGINE.hook.allOut : 0);
     const rest = (p: Player) => (s.arms[p.id] ? daysBetween(s.arms[p.id]!.lastDate, date) : 99);
-    const sp = pp?.chosen ? { p: pp.chosen, limit: starterLimit(pp.chosen, date, rest(pp.chosen), hook) } : starterFor(s, x.rotationKey ?? x.teamId, date, rotation, hook);
+    const sp = pp?.chosen ? { p: pp.chosen, limit: starterLimit(pp.chosen, date, rest(pp.chosen), hook, eraUsage(s.year)) } : starterFor(s, x.rotationKey ?? x.teamId, date, rotation, hook);
     return { x, ids, prefer, rotation, style, card, sp, allOut: !!pp?.allOut, rest };
   };
   const h = plan(home),
@@ -557,7 +561,10 @@ export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away:
     if (lineup.length < 9) return null;
     const bench = benchFor(s, me.ids, lineup);
     // All out: only today's starter and the starters who pitched in the last two days stay out of the bullpen.
-    const exclude = new Set(me.allOut ? [me.sp.p.id, ...me.rotation.filter((p) => me.rest(p) <= 2).map((p) => p.id)] : [...me.rotation.map((p) => p.id), me.sp.p.id]);
+    // 1.9.8: so too in the eras when starters relieved between starts (eraUsage), the first team only.
+    const era = eraUsage(s.year);
+    const relieve = me.allOut || (!!era?.starterRelief && !futures);
+    const exclude = new Set(relieve ? [me.sp.p.id, ...me.rotation.filter((p) => me.rest(p) <= 2).map((p) => p.id)] : [...me.rotation.map((p) => p.id), me.sp.p.id]);
     return withForm(s, date, {
       teamId: me.x.teamId,
       lineup,
@@ -566,6 +573,7 @@ export function matchInputs(s: LeagueState, date: string, home: SquadSpec, away:
       bullpen: bullpenFor(s, me.x.teamId, me.ids, date, exclude, me.prefer, me.allOut),
       fieldBonus: STAFF.fielding * staffEdge(staffRating(s, me.x.teamId, 'analytics')),
       ...(me.style === 'smallBall' ? { smallBall: true } : {}),
+      ...(era && !futures ? { usage: { completeGame: era.completeGame, runsBeforeHook: era.runsBeforeHook, closerFrom: era.closerFrom, closerOuts: era.closerOuts, closerPitches: era.closerPitches } } : {}),
     });
   };
   return { home: build(h, a), away: build(a, h) };

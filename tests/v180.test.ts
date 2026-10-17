@@ -190,7 +190,9 @@ describe('scenario 부상병동', () => {
       playDays(s, 300);
       const ours = Object.values(s.players).filter((p) => p.teamId === me);
       const list = ours.flatMap((p) => (p.injuries ?? []).filter((x) => x.date >= since));
-      return { n: list.length, days: list.reduce((x, y) => x + y.days, 0) / Math.max(1, list.length) };
+      // The median: a single season-ending injury on either side would swing a mean of a few dozen (1.9.8).
+      const days = list.map((x) => x.days).sort((a, b) => a - b);
+      return { n: list.length, days: days[Math.floor(days.length / 2)] ?? 0 };
     };
     const x = hurt(usual);
     const y = hurt(ward);

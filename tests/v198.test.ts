@@ -9,6 +9,7 @@ import { LEGACY_ERA } from '../src/league/legacy1982';
 import { withScenario } from '../src/league/scenarios';
 import { setEra } from '../src/league/era';
 import type { ExpansionSettings } from '../src/league/state';
+import { eraUsage } from '../src/rules/history';
 
 describe('update notes', () => {
   it('reads every version of the change log, newest first, the current one on top', () => {
@@ -49,5 +50,46 @@ describe('our territorial picks', () => {
     }
     setEra(0);
     expect(asked?.length).toBeGreaterThan(0);
+  });
+});
+
+describe('pitching by era', () => {
+  it('rides starters longer and earlier closers in the old days, today’s way from 2015 and in other games', () => {
+    setEra({ era: LEGACY_ERA, historical: true });
+    const [a, b, c, d] = [eraUsage(1985)!, eraUsage(1993)!, eraUsage(1998)!, eraUsage(2008)!];
+    expect(a.rotation).toBe(4);
+    expect(a.starterRelief).toBe(true);
+    expect(c.rotation).toBe(5);
+    expect(a.limitBonus).toBeGreaterThanOrEqual(b.limitBonus);
+    expect(b.limitBonus).toBeGreaterThan(c.limitBonus);
+    expect(c.limitBonus).toBeGreaterThan(d.limitBonus);
+    expect(a.closerFrom).toBeLessThan(9);
+    expect(d.closerFrom).toBe(9);
+    expect(eraUsage(2015)).toBeNull();
+    setEra(0);
+    expect(eraUsage(1985)).toBeNull();
+  });
+
+  it('completes about as many games as the KBO did in the 1980s', { timeout: 300_000 }, () => {
+    const settings = (): ExpansionSettings =>
+      withScenario({ name: '청주 독수리', short: '독수리', color: '#1f6fb2', cityId: 'cheongju', parentType: 'conglomerate', parentName: '청주그룹', stadium: 'existing', promotion: 'afterFutures', difficulty: 'normal', scenario: null }, 'legacy');
+    const s = createLeague('v198-cg', undefined, LEGACY_ERA);
+    apply(s, { kind: 'toFounding' });
+    apply(s, { kind: 'found', settings: settings() });
+    const rates: number[] = [];
+    for (let g = 0; g < 30000 && s.year < 1988; g++) {
+      if (s.pending) apply(s, { kind: 'decide', input: autoDecision(s)! });
+      else if (s.phase === 'regular' && !regularOver(s)) apply(s, { kind: 'regularEnd' });
+      else if (s.phase === 'regular') {
+        const pits = Object.values(s.lines).flatMap((l) => (l.pit ? [l.pit] : []));
+        rates.push(pits.reduce((x, p) => x + (p.cg ?? 0), 0) / pits.reduce((x, p) => x + p.gs, 0));
+        apply(s, { kind: 'postseason' });
+      } else apply(s, { kind: 'nextSeason' });
+    }
+    setEra(0);
+    // The KBO 1982–1987: 131–254 complete games, a fifth to three tenths of the starts (RULES.md §14).
+    const mean = rates.reduce((x, y) => x + y, 0) / rates.length;
+    expect(mean).toBeGreaterThan(0.17);
+    expect(mean).toBeLessThan(0.36);
   });
 });

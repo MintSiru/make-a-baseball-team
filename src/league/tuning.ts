@@ -78,6 +78,10 @@ export const ENGINE = {
     earlyHookInning: 5,
     /** Starters rarely finish: hook in the 9th unless dominant. */
     completeGameChance: 0.12,
+    /** 1.9.8 (the user's request): a no-hitter (no hit allowed, five innings done) keeps its starter whatever the
+        pitch count, up to this many pitches. */
+    noHitPitches: 135,
+    noHitAfterOuts: 15,
   },
   /** A small-ball manager: steal attempts (logit) and bunts (multiplier). */
   smallBall: { steal: 0.35, bunt: 1.6 },
