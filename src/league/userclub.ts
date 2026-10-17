@@ -21,6 +21,7 @@ import { budgetFor, foreignSigningDecision, STADIUM_PLANS } from './expansion';
 import { ownerSweep } from './sweep';
 import {
   developmentContract,
+  faSeasonsFor,
   leaveLeague,
   setSalary,
   enlistAs,
@@ -866,7 +867,8 @@ export const isAnnual = (kind: Decision['kind']) =>
 // ── Salary talks ─────────────────────────────────────────────────────────────────────────────────
 
 const lastWarOf = (p: Player, year: number) => p.career.find((c) => c.year === year && !c.level)?.war ?? 0;
-const faSeasons = (p: Player) => (p.origin.entryCategory === 'college' ? KBO_2026.freeAgency.seasonsCollege : KBO_2026.freeAgency.seasonsHighSchool);
+/** Seasons to free agency (1.9.9: the latest the board set). */
+const faSeasons = (p: Player) => faSeasonsFor(p, Infinity);
 
 /** The user's players whose pay for next season is not set: merit figure, ask, arbitration and extension options. */
 export function salariesDecision(s: LeagueState): Decision | null {

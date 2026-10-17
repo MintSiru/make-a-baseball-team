@@ -2,7 +2,7 @@
    Every value comes from docs/RULES.md; the section number is noted beside each group. Values marked
    `assumed` are the game's own choices where real KBO has no precedent (RULES.md §9). Money is in
    만 원 (10,000 KRW) unless the name says USD. */
-import { ruleYear } from '../league/era';
+import { boardValue, ruleYear } from '../league/era';
 
 export interface SalaryCapYear {
   year: number;
@@ -172,6 +172,12 @@ export const ELEVEN_CLUB_SCHEDULE = { gamesPerClub: 144, heavyOpponents: 4, heav
 export const TWELVE_CLUB_SCHEDULE = { gamesPerClub: 144, single: { rival: 14, other: 13 }, two: { same: 14, near: 13, far: 12, nearOpponents: 2 } } as const;
 
 export function salaryCapFor(calendarYear: number): number {
+  // 1.9.9: the board may set it higher or lower (board.ts, in percent).
+  const scale = boardValue('cap', calendarYear);
+  return scale === undefined ? capOfYear(calendarYear) : Math.round((capOfYear(calendarYear) * scale) / 100);
+}
+
+function capOfYear(calendarYear: number): number {
   // 1.6.0: a game started earlier reads the cap as of the usual calendar (era.ts).
   const year = ruleYear(calendarYear);
   const years = KBO_2026.salaryCap.years;
@@ -183,7 +189,20 @@ export function salaryCapFor(calendarYear: number): number {
   return Math.round(last.cap * (1 + KBO_2026.salaryCap.growthAfter2028) ** (year - last.year));
 }
 
+/** 1.9.9 (board.ts): a rule the board set in percent of today's (100 when never changed). */
+const boardPct = (item: string, season?: number) => (boardValue(item, season) ?? 100) / 100;
+/** A new foreign player's cap (US dollars), the three foreign players' total cap, the replacements a season, and the
+    seasons to posting, as the board last set them. */
+export const foreignNewCapUsd = () => Math.round(KBO_2026.foreign.newContractCapUSD * boardPct('foreignCap'));
+export const foreignTotalCapUsd = () => Math.round(KBO_2026.foreign.clubTotalCapUSD * boardPct('foreignTotal'));
+export const foreignReplacements = () => boardValue('foreignChanges') ?? KBO_2026.foreign.replacementsPerSeason;
+export const postingSeasons = () => boardValue('postingSeasons') ?? KBO_2026.posting.seasons;
+
 export function minimumSalaryFor(calendarYear: number): number {
+  return Math.round(minimumOfYear(calendarYear) * boardPct('minSalary', calendarYear));
+}
+
+function minimumOfYear(calendarYear: number): number {
   const year = ruleYear(calendarYear);
   let amount: number = KBO_2026.minimumSalary[0].amount;
   for (const step of KBO_2026.minimumSalary) if (year >= step.from) amount = step.amount;

@@ -10,7 +10,7 @@ import { k as __i18n_k } from '../i18n/index';
    leave the league), so the golden master does not change. */
 import { hashUnit } from '../draftroom';
 import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
-import { KBO_2026 } from '../rules/kbo2026';
+import { foreignNewCapUsd, KBO_2026 } from '../rules/kbo2026';
 import { usdTotal } from './contracts';
 import { leaveLeague, removeFromRoster } from './offseason';
 import { ageIn, isPitcher } from './players';
@@ -65,7 +65,7 @@ export function foreignPoolAsk(s: LeagueState, p: Player): number {
   const jitter = 0.95 + hashUnit(`${p.id}-pool-ask-${poolEntry(s, p.id)?.since ?? 0}`) * 0.1;
   const round = (n: number) => Math.round(n / 10_000) * 10_000;
   if (asia) return round(Math.max(POOL.asiaFloorUSD, Math.min(KBO_2026.foreign.asiaQuotaCapUSD, (90_000 + (p.scouting.current - 45) * 5_000) * form * jitter)));
-  return round(Math.max(POOL.floorUSD, Math.min(KBO_2026.foreign.newContractCapUSD, (450_000 + (p.scouting.current - 50) * 45_000) * form * jitter)));
+  return round(Math.max(POOL.floorUSD, Math.min(foreignNewCapUsd(), (450_000 + (p.scouting.current - 50) * 45_000) * form * jitter)));
 }
 
 /** Takes a player off the market once a club signs him. */

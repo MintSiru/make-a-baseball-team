@@ -3103,6 +3103,17 @@ fieldset.stops {
 .grade-chart .chart-axis { font-size: 9px; fill: var(--ink-2); }
 .grade-chart .chart-main { stroke: var(--accent); }
 .grade-chart .chart-dot { fill: var(--accent); }
+/* 1.9.9: the board's motions (Decision.tsx). */
+.board-motion { margin: 0.8rem 0; padding-top: 0.5rem; border-top: 1px solid var(--rule); }
+.board-motion h3 { margin: 0 0 0.2rem; }
+.board-votes { display: flex; flex-wrap: wrap; gap: 0.25rem 0.6rem; list-style: none; padding: 0; margin: 0.3rem 0 0.5rem; font-size: 0.85rem; }
+.board-votes .vote-yes { color: var(--good, #2e7d32); }
+.board-votes .vote-no { color: var(--bad, #c62828); }
+.board-votes .vote-abstain { color: var(--ink-2); }
+/* 1.9.9: the mean of the abilities, and a legacy player's years before the KBO. */
+.grade-chart .chart-mean { stroke: var(--ink-2); opacity: 0.6; }
+.grade-chart .chart-before { fill: var(--rule); opacity: 0.35; }
+.chart-legend .chip.mean { border-style: dashed; }
 .chart-legend { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0.4rem 0; }
 .chart-legend .chip { font-size: 0.8rem; padding: 0.1rem 0.55rem; border: 1px solid var(--rule); border-radius: 999px; background: transparent; color: var(--ink-2); }
 .chart-legend .chip.main { border-color: var(--accent); color: var(--accent); }

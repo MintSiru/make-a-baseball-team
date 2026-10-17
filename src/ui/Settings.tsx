@@ -16,6 +16,7 @@ import { ro } from '../league/josa';
 import { DisplayOptions } from './DisplaySettings';
 import { StoryOptions } from './StorySettings';
 import { UpdateNotes } from './Updates';
+import { boardLine, motionText } from '../league/board';
 
 const SECTIONS: [string, string][] = [
   ['settings-display', __i18n_k("ui.settings.sECTIONS.43c786f1")],
@@ -24,6 +25,8 @@ const SECTIONS: [string, string][] = [
   ['settings-save', __i18n_k("ui.settings.sECTIONS.1f1712ac")],
   ['settings-story', __i18n_k("ui.settings.sECTIONS.fdc0ffd0")],
   ['settings-about', __i18n_k("ui.settings.sECTIONS.032e3f1f")],
+  // 1.9.9: the board's votes and the rules it changed.
+  ['settings-board', __i18n_t("ui.settings.text.daefc16b")],
   // 1.9.8: what changed in each version.
   ['settings-updates', __i18n_t("ui.settings.text.f59812c4")],
 ];
@@ -112,6 +115,11 @@ export function Settings({ league, store, busy, story, onAct, onExport, onImport
       <section id="settings-story" class={block('settings-story')}>
         <h2>{__i18n_t("ui.settings.settings.fdc0ffd0")}</h2>
         <StoryOptions settings={story.settings} usage={story.usage} pausedUntil={story.pausedUntil} onSave={story.onSave} />
+      </section>
+
+      <section id="settings-board" class={block('settings-board')}>
+        <h2>{__i18n_t("ui.settings.text.daefc16b")}</h2>
+        <BoardOptions league={league} busy={busy} onAct={onAct} />
       </section>
 
       <section id="settings-updates" class={block('settings-updates')}>
@@ -362,6 +370,45 @@ function SaveOptions({ league, store, busy, onExport, onImport }: { league: Leag
         ))}
       </div>
       <p class="muted small">{__i18n_t("ui.settings.saveOptions.291e0032")}</p>
+    </>
+  );
+}
+
+/** 1.9.9: the board on or off (from the coming winter), the rules it changed and its votes. */
+function BoardOptions({ league, busy, onAct }: { league: LeagueState; busy: boolean; onAct: (a: Action) => void }) {
+  const b = league.board;
+  const on = !!b?.on;
+  const log = [...(b?.log ?? [])].reverse();
+  return (
+    <>
+      <p class="muted small">{__i18n_t("ui.settings.text.6c274592")}</p>
+      {league.user && (
+        <label class="check">
+          <input type="checkbox" checked={on} disabled={busy} onChange={(e) => onAct({ kind: 'board', on: (e.currentTarget as HTMLInputElement).checked })} /> {__i18n_t("ui.settings.text.11864af0")}
+        </label>
+      )}
+      {!!b?.changes.length && (
+        <>
+          <h3>{__i18n_t("ui.settings.text.11028e1d")}</h3>
+          <ul class="small">
+            {b.changes.map((c, i) => (
+              <li key={i}>{__i18n_t("ui.settings.text.fca7a9ea", { season: c.from, what: motionText({ item: c.item, value: c.value, now: b.log.find((r) => r.year === c.from - 1 && r.item === c.item && r.passed)?.now ?? c.value }) })}</li>
+            ))}
+          </ul>
+        </>
+      )}
+      {log.length > 0 ? (
+        <>
+          <h3>{__i18n_t("ui.settings.text.b4bf00ef")}</h3>
+          <ul class="small">
+            {log.map((r, i) => (
+              <li key={i}>{__i18n_t("ui.settings.text.e31deb6b", { year: r.year, line: boardLine(league, r) })}</li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p class="muted small">{__i18n_t("ui.settings.text.2675d8a3")}</p>
+      )}
     </>
   );
 }

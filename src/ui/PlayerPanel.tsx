@@ -28,6 +28,7 @@ import { kboSeasons } from '../league/foreigncap';
 import { extensionCooldown, extensionOptions, extensionProblem } from '../league/extensions';
 import { postRows, postTotals, type PostRow } from '../league/poststats';
 import { FASTBALL_LABELS } from '../league/pitches';
+import { LEGACY_START } from '../league/era';
 
 const POSITION_NAMES: Record<string, string> = { C: __i18n_k("ui.playerPanel.pOSITION_NAMES.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("ui.playerPanel.pOSITION_NAMES.sS.3e24c7f1"), LF: __i18n_k("ui.playerPanel.pOSITION_NAMES.lF.73836db2"), CF: __i18n_k("ui.playerPanel.pOSITION_NAMES.cF.56780b2a"), RF: __i18n_k("ui.playerPanel.pOSITION_NAMES.rF.a28a0ef8") };
 
@@ -404,7 +405,7 @@ export function PlayerPanel({
             </section>
             <section>
               <h3>{__i18n_t("ui.playerPanel.text.89a8bfe6")}</h3>
-              <GradeChart log={p.gradeLog ?? []} role={p.role} />
+              <GradeChart log={p.gradeLog ?? []} role={p.role} proFrom={league.historical ? LEGACY_START : undefined} />
             </section>
             {__i18n_display(!pitcher && card.positions.length > 0 && (
               <section class="pitch-box">

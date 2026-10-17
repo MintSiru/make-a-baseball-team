@@ -15,6 +15,13 @@ import { rulesFor } from '../rules/history';
 
 export const ageIn = (p: Player, year: number) => ageOn(p.birthday, `${year}-04-01`);
 export const isPitcher = (p: Pick<Player, 'role'>) => isPitcherRole(p.role);
+/** 1.9.9: a pitcher whose first-team career came out of the bullpen (fewer than one start in four games). */
+export const isReliever = (p: Player) => {
+  if (!isPitcher(p)) return false;
+  const rows = p.career.filter((c) => !c.level && c.pit);
+  const g = rows.reduce((a, c) => a + c.pit!.g, 0);
+  return g >= 100 && rows.reduce((a, c) => a + c.pit!.gs, 0) * 4 < g;
+};
 
 /** Hitting value from public tools (defense handled by position). */
 export const batValue = (t: Tools) => 0.3 * (t.contact ?? 30) + 0.3 * (t.power ?? 30) + 0.22 * (t.eye ?? 30) + 0.1 * (t.speed ?? 30) + 0.08 * (t.defense ?? 30);

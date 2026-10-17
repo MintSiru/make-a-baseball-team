@@ -22,6 +22,7 @@ import { stopsOf } from './stops';
 import { openEntries, restoreFirstTeams, settleOurEntry } from './postentry';
 import { drawHistoric, historicNext } from './historic';
 import { rulesFor } from '../rules/history';
+import { boardValue } from './era';
 
 export const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 
@@ -196,7 +197,8 @@ function drawBracket(s: LeagueState) {
   const last = s.schedule[s.schedule.length - 1]?.date ?? `${s.year}-10-01`;
   const date = addDays(last, 3);
   // 1.9.5: a league that plays history draws its year's postseason (historic.ts); 2015 on, today's.
-  if (s.historical && rulesFor(s.year).postseason !== 'five') return void (s.bracket = drawHistoric(s, date));
+  // 1.9.9: a board's four-club postseason is drawn the same way.
+  if ((s.historical || boardValue('postseason', s.year) !== undefined) && rulesFor(s.year).postseason !== 'five') return void (s.bracket = drawHistoric(s, date));
   const sides = sidesOf(s);
   if (sides) {
     const t = leagueTables(currentStandings(s), sides);

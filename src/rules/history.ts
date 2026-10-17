@@ -7,7 +7,7 @@
    (the golden file checks it). Where the game simplifies
    2015–2025 (a 28-man first team from 2015, three foreign players in a game, the second draft only from 2023),
    RULES.md §14 says so. The years before 2015 are for the 1982 legacy start (1.9.5). */
-import { playsHistory, ruleYear } from '../league/era';
+import { boardValue, playsHistory, ruleYear } from '../league/era';
 import { KBO_2026 } from './kbo2026';
 
 /** The first year the table hands over to today's game. */
@@ -227,7 +227,31 @@ export function rulesOfYear(year: number, history = true): YearRules {
 /** The rules in force in a calendar year of this game (a game started in 2016 reads 2026's in 2016: era.ts). A league
     that plays history (1.9.5, the 1982 legacy start) reads the KBO's own year: its era shift keeps only the money in
     today's terms. */
-export const rulesFor = (calendarYear: number) => (playsHistory() ? rulesOfYear(calendarYear, true) : rulesOfYear(ruleYear(calendarYear), false));
+export const rulesFor = (calendarYear: number) => withBoard(playsHistory() ? rulesOfYear(calendarYear, true) : rulesOfYear(ruleYear(calendarYear), false), calendarYear);
+
+/** 1.9.9 (board.ts): the rules the board changed, over the year's own (none: the year's rules as they are). Two
+    leagues take the two leagues' postseason (postseason.ts); the cap is read by kbo2026.ts `salaryCapFor`. */
+function withBoard(r: YearRules, year: number): YearRules {
+  const v = (item: string) => boardValue(item, year);
+  const [foreign, team, games, post, extras, fa, two, asia, roster, rounds, second] = ['foreign', 'firstTeam', 'games', 'postseason', 'extras', 'faSeasons', 'twoLeagues', 'asiaQuota', 'rosterLimit', 'draftRounds', 'secondDraft'].map(v);
+  if ([foreign, team, games, post, extras, fa, two, asia, roster, rounds, second].every((x) => x === undefined)) return r;
+  const out: YearRules = { ...r, foreign: { ...r.foreign }, firstTeam: { ...r.firstTeam } };
+  if (foreign !== undefined) out.foreign = { ...out.foreign, hold: foreign, play: foreign };
+  if (team !== undefined) out.firstTeam = { registered: team, active: team - 1 };
+  if (games !== undefined) out.gamesPerClub = games;
+  if (post !== undefined) out.postseason = post === 4 ? 'four' : 'five';
+  if (extras !== undefined) out.extraInnings = extras;
+  if (fa !== undefined) out.freeAgencySeasons = fa;
+  if (asia !== undefined) out.foreign = { ...out.foreign, asia };
+  if (roster !== undefined) out.rosterLimit = roster;
+  if (rounds !== undefined) out.draftRounds = rounds;
+  if (second === 0) out.secondDraft = false;
+  if (two !== undefined) {
+    out.twoLeagues = two === 1;
+    if (two === 1) out.postseason = 'five';
+  }
+  return out;
+}
 
 /** 1.9.8 (the user's request and research, RULES.md §14): how the managers of an era used their pitchers, in a
     league that plays history (null: today's way, every other game and 2015 on). The league's complete games fell

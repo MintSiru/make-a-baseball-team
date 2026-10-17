@@ -35,6 +35,7 @@ import { workout } from './combine';
 import { openFacilities, startFacility } from './facilities';
 import { offerExtension } from './extensions';
 import { setCaptains } from './captains';
+import { setBoardOn } from './board';
 
 export type Action =
   /** `stops` (1.6.0): end the run early at the moments the user asked to stop for (stops.ts). */
@@ -67,6 +68,8 @@ export type Action =
   | { kind: 'clubNames'; labels: Record<TeamId, ClubLabel> }
   /** The basic difficulty, changed mid-game (V0.14): noted on the club's timeline. */
   | { kind: 'difficulty'; level: Difficulty }
+  /** 1.9.9: the board's meetings on or off, from the coming winter (board.ts). */
+  | { kind: 'board'; on: boolean }
   // The business side (V0.6)
   | { kind: 'ticketPrice'; level: number }
   | { kind: 'marketing'; amount: number }
@@ -131,7 +134,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -225,6 +228,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'clubNames':
       renameClubs(s.teams, action.labels);
+      break;
+    case 'board':
+      setBoardOn(s, action.on);
       break;
     case 'difficulty': {
       const u = s.user;

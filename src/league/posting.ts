@@ -9,7 +9,7 @@ import { k as __i18n_k } from '../i18n/index';
    anchored on recent deals: two-year deals for fringe players, four to six years for stars). */
 import { hashUnit, rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
-import { KBO_2026 } from '../rules/kbo2026';
+import { KBO_2026, postingSeasons } from '../rules/kbo2026';
 import { MANWON_PER_USD } from './contracts';
 import { usd } from './foreign';
 import { eulreul, iga } from './josa';
@@ -57,7 +57,7 @@ export function postingCandidates(s: LeagueState, teamId: TeamId, next: number):
         !isForeign(p) &&
         p.status === 'active' &&
         p.contract?.kind !== 'development' &&
-        p.service.creditedSeasons >= P.seasons &&
+        p.service.creditedSeasons >= postingSeasons() &&
         p.service.lastFreeAgencyAt === undefined &&
         p.service.postedIn === undefined &&
         !(p.contract?.kind === 'freeAgent' || p.contract?.kind === 'multiYear') &&

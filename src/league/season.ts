@@ -44,6 +44,8 @@ import { assignLeagues, sidesOf, twelveClubs, twelveGames } from './twelve';
 import { finishTrips } from './training';
 import { lifeDay } from './life';
 import { alumniDay } from './alumni';
+import { boardValue } from './era';
+import { boardLeagues } from './board';
 
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
@@ -57,11 +59,13 @@ export function startSeason(s: LeagueState) {
   const teams = firstTeamIds(s);
   // 1.9.2, 통일 한국: the two leagues of eight, drawn before the first sixteen-club season.
   assignUnifiedLeagues(s);
+  // 1.9.9: one league or two, as the board voted (board.ts).
+  boardLeagues(s);
   // 1.9.1: any other league in two leagues (leagueSides) gets its own pairings.
   const sides = sidesOf(s);
   const twelve = twelveGames(s, teams, s.year);
   // 1.9.5: a league that plays history plays its year's number of games (80 in 1982 … 144 from 2015).
-  const games = s.historical ? rulesFor(s.year).gamesPerClub : undefined;
+  const games = s.historical || boardValue('games', s.year) !== undefined ? rulesFor(s.year).gamesPerClub : undefined;
   s.schedule = makeSchedule(teams, s.year, s.seed, twelve, games, !twelve && sides ? teams.map((id) => (sides[id] === 'dream' ? 0 : 1)) : undefined);
   s.next = 0;
   s.scores = [];
@@ -259,7 +263,10 @@ export function playGame(s: LeagueState, homeId: TeamId, awayId: TeamId, id: str
   const { home, away } = matchInputs(s, date, { teamId: homeId }, { teamId: awayId });
   if (!home || !away) return null;
   const park = s.teams.find((t) => t.id === homeId)?.stadium.park ?? parkFactor(homeId);
-  return simulateGame({ gameId: id, home, away, maxInnings, park }, gameRng(s, id), log);
+  // 1.9.9: the board's game rules (board.ts), the 승부치기 in the regular season only.
+  const ghost = maxInnings !== null ? boardValue('ghostRunner', s.year) : undefined;
+  const three = boardValue('threeBatter', s.year) === 1;
+  return simulateGame({ gameId: id, home, away, maxInnings, park, ...(ghost ? { ghostFrom: 10 } : {}), ...(three ? { threeBatter: true } : {}) }, gameRng(s, id), log);
 }
 
 /** Plays every game on the next date. Returns false when the regular season is over. */
@@ -303,7 +310,7 @@ export function playDay(s: LeagueState): boolean {
     const g = s.schedule[s.next]!;
     const log: PlayEvent[] | undefined = isUserGame(s, g.home, g.away) ? [] : undefined;
     // 1.9.5: a tiebreaker is played until it is decided; a league that plays history stops at its year's limit.
-    const limit = isTiebreaker(g.id) ? null : s.historical ? rulesFor(s.year).extraInnings : ENGINE.maxInnings;
+    const limit = isTiebreaker(g.id) ? null : s.historical || boardValue('extras', s.year) !== undefined ? rulesFor(s.year).extraInnings : ENGINE.maxInnings;
     const out = playGame(s, g.home, g.away, g.id, date, limit, log);
     s.next++;
     if (!out) continue;

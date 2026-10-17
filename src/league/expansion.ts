@@ -18,7 +18,7 @@ import { milestone, unlock } from './milestones';
 import type { ParentCompanyType } from '../club/types';
 import { fromDraftProspect, placeClass } from '../model/player';
 import type { Player, PlayerId, Team, TeamId } from '../model/types';
-import { EXPANSION_DEFAULTS, KBO_2026, minimumSalaryFor } from '../rules/kbo2026';
+import { EXPANSION_DEFAULTS, foreignNewCapUsd, KBO_2026, minimumSalaryFor } from '../rules/kbo2026';
 import { foreignContract, MANWON_PER_USD, renewSalary, salaryIn, usdTotal } from './contracts';
 import { splitContract, usd } from './foreign';
 import { dealTotal, reply, signsElsewhere, suggestedOffer, termsFor, type ForeignOffer } from './foreigntalks';
@@ -70,6 +70,7 @@ import {
 import { developmentIds, emptyRoster, firstTeamIds, orgIds, registeredIds, type Decision, type DraftSlot, type ExpansionSettings, type LeagueState, type RivalSettings, type UserClub, aiFoundingClubs } from './state';
 import { openTryout, runTryout, takeTryoutPick, tryoutYear } from './tryout';
 import { historicForeignCap } from '../rules/history';
+import { autoBoard, boardDecision, LEGACY_BOARD_FROM, resolveBoard, type BoardVote } from './board';
 
 export const EXPANSION_ID = 'new';
 export const FOUNDING_DATE = '2026-07-01';
@@ -195,6 +196,8 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
   const b = budgetFor(settings);
   s.user = { teamId: EXPANSION_ID, settings, fund: b.fund, payrollBudget: b.payrollBudget, firstTeamYear, ledger: [], support: Math.round(baseSupport(settings.parentType) * DIFFICULTY_MONEY[settings.difficulty] * supportFactor(settings)), trust: scenarioDef(settings.scenario)?.owner?.startTrust ?? PARENT.startTrust, budgetScale: 1 };
   if (settings.scenario) s.user.scenario = { status: 'active' };
+  // 1.9.9: the board changes the rules by vote; in a legacy game only once the KBO's own history is played out.
+  if (settings.board) s.board = { on: true, since: s.legacy ? LEGACY_BOARD_FROM : y0, changes: [], log: [] };
   // 1.8.1, scenario 돌아온 탕아: SSG has moved to its dome in 청라, leaving 문학 to us (game fiction).
   if (settings.scenario === 'prodigal') {
     const ssg = s.teams.find((t) => t.id === 'ssg');
@@ -348,6 +351,9 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
   const entering = next === u.firstTeamYear;
   const space = rosterLimit(next) - registeredIds(s, u.teamId).length;
   switch (step) {
+    case 'board':
+      // 1.9.9: the winter's board meeting, when it meets and our club is in the first team.
+      return boardDecision(s, o.year);
     case 'military':
       return militaryDecision(s);
     case 'international':
@@ -476,6 +482,8 @@ export type DecisionInput =
   /** The twelfth club (V0.9): its design, or null to vote it down when the board offers it. */
   | { kind: 'rival'; settings: RivalSettings | null }
   | { kind: 'rivalProtect'; ids: PlayerId[] }
+  /** 1.9.9: our vote on each motion, and the motion we put (an index into the options), if any. */
+  | { kind: 'board'; votes: BoardVote[]; own: number | null }
   | AnnualInput;
 
 const isAnnualInput = (input: DecisionInput): input is AnnualInput => isAnnual(input.kind);
@@ -498,6 +506,12 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       const dd = d as Extract<Decision, { kind: 'tryout' | 'released' }>;
       if (input.ids.some((id) => !dd.candidates.includes(id))) return __i18n_k("league.expansion.checkDecision.98ce3a2b");
       if (input.ids.length > dd.max) return __i18n_k("league.expansion.checkDecision.3c960698", { max: dd.max });
+      return null;
+    }
+    case 'board': {
+      const dd = d as Extract<Decision, { kind: 'board' }>;
+      if (input.votes.length !== dd.motions.length || input.votes.some((v) => v !== 'yes' && v !== 'no' && v !== 'abstain')) return __i18n_k("league.expansion.text.8e93d31b");
+      if (input.own != null && !dd.options[input.own]) return __i18n_k("league.expansion.text.9d756aea");
       return null;
     }
     case 'fantasyPick': {
@@ -624,6 +638,9 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
     case 'rival':
       resolveRival(s, d as Extract<Decision, { kind: 'rival' }>, input.settings);
       break;
+    case 'board':
+      resolveBoard(s, d as Extract<Decision, { kind: 'board' }>, input.votes, input.own);
+      break;
     case 'rivalProtect':
       resolveRivalProtect(s, d as Extract<Decision, { kind: 'rivalProtect' }>, input.ids);
       break;
@@ -655,7 +672,7 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
 }
 
 /** The cap on a new foreign signing, transfer fee included (RULES.md §5). */
-export const newSigningCap = (p: Player) => (p.origin.asiaQuota ? KBO_2026.foreign.asiaQuotaCapUSD : KBO_2026.foreign.newContractCapUSD);
+export const newSigningCap = (p: Player) => (p.origin.asiaQuota ? KBO_2026.foreign.asiaQuotaCapUSD : foreignNewCapUsd());
 
 /** A round of foreign talks (1.3.0): the offered answer, the others may sign elsewhere; the next round, or null when the
     talks are over (every slot filled, nobody left, or three rounds). */
@@ -741,6 +758,8 @@ export function autoDecision(s: LeagueState): DecisionInput | null {
   const next = nextSeasonOf(s);
   const best = (ids: PlayerId[], n: number) => [...ids].sort((a, b) => keepValue(s.players[b]!, next) - keepValue(s.players[a]!, next)).slice(0, Math.max(0, n));
   switch (d.kind) {
+    case 'board':
+      return { kind: 'board', votes: autoBoard(s, d), own: null };
     case 'tryout':
       return { kind: 'tryout', ids: best(d.candidates, 12) };
     case 'draftPick':

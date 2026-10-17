@@ -37,6 +37,7 @@ import { RivalForm } from './Twelve';
 import { FantasyBoard } from './FantasyDraft';
 import { MEDDLE } from '../league/scenarios';
 import { ROUND_NAME } from '../league/postseason';
+import { motionText, type BoardVote } from '../league/board';
 
 interface Props {
   league: LeagueState;
@@ -77,6 +78,7 @@ const TITLES: Record<DecisionT['kind'], string> = {
   meddle: __i18n_k("ui.decision.tITLES.meddle.8a1f72de"),
   fantasyPick: __i18n_k("ui.decision.tITLES.fantasyPick.bc92c419"),
   postEntry: __i18n_t("ui.decision.text.2bfab379"),
+  board: __i18n_t("ui.decision.text.b736056d"),
 };
 
 /** What the scouts hear about major league interest, from the public grade. */
@@ -437,6 +439,9 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         return { kind: 'scandal', answer: (choices.pick ?? 'extra') as 'release' | 'extra' | 'none' };
       case 'dispute':
         return { kind: 'dispute', answer: (choices.pick ?? 'settle') as 'settle' | 'fight' };
+      case 'board':
+        // 1.9.9: our vote on each motion (as our interest says until changed) and the motion we put, if any.
+        return { kind: 'board', votes: d.motions.map((_, i) => (choices[`m${i}`] ?? d.expected[i]![league.user!.teamId] ?? 'abstain') as BoardVote), own: choices.own && choices.own !== 'none' ? Number(choices.own) : null };
       default:
         return { kind: d.kind, ids: [...selected] } as DecisionInput;
     }
@@ -489,6 +494,9 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       case 'dispute':
       case 'meddle':
         setChoices({ pick: a.answer });
+        break;
+      case 'board':
+        setChoices(Object.fromEntries([...a.votes.map((v, i) => [`m${i}`, v]), ['own', a.own == null ? 'none' : String(a.own)]]));
         break;
       default:
         if ('ids' in a) setSelected(new Set(a.ids));
@@ -1102,6 +1110,65 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
               </button>
             )))}
           </div>
+        </>
+      );
+      break;
+    }
+    case 'board': {
+      // 1.9.9: each motion with the clubs' expected votes (the committee's mood), our vote; then a motion of our own.
+      const me = league.user!.teamId;
+      const name = (id: TeamId) => league.teams.find((t) => t.id === id)?.short ?? id;
+      const VOTES: [BoardVote, string][] = [
+        ['yes', __i18n_t("ui.decision.text.a479b08f")],
+        ['no', __i18n_t("ui.decision.text.231ed254")],
+        ['abstain', __i18n_t("ui.decision.text.ddec7914")],
+      ];
+      body = (
+        <>
+          <p>{__i18n_t("ui.decision.text.d24bd412", { need: d.need })}</p>
+          {d.motions.map((m, i) => {
+            const expected = d.expected[i]!;
+            const pick = choices[`m${i}`] ?? expected[me] ?? 'abstain';
+            const yes = Object.entries(expected).filter(([id, v]) => id !== me && v === 'yes').length;
+            return (
+              <section key={i} class="board-motion">
+                <h3>{motionText(m)}</h3>
+                <p class="muted small">
+                  {__i18n_t("ui.decision.text.abf35d90", { yes, need: d.need })}
+                </p>
+                <ul class="board-votes">
+                  {Object.entries(expected)
+                    .filter(([id]) => id !== me)
+                    .map(([id, v]) => (
+                      <li key={id} class={`vote-${v}`}>
+                        {name(id)} {VOTES.find((x) => x[0] === v)![1]}
+                      </li>
+                    ))}
+                </ul>
+                <div class="choice-grid" role="radiogroup" aria-label={__i18n_t("ui.decision.text.8024471c")}>
+                  {VOTES.map(([k, label]) => (
+                    <button key={k} type="button" class="choice" role="radio" aria-checked={pick === k} aria-pressed={pick === k} onClick={() => choose(`m${i}`, k)}>
+                      <strong>{label}</strong>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+          <section class="board-motion">
+            <h3>{__i18n_t("ui.decision.text.c4c5d585")}</h3>
+            <p class="muted small">{__i18n_t("ui.decision.text.a386a544")}</p>
+            <label>
+              <select value={choices.own ?? 'none'} onChange={(e) => choose('own', (e.currentTarget as HTMLSelectElement).value)}>
+                <option value="none">{__i18n_t("ui.decision.text.ec06c2e0")}</option>
+                {d.options.map((m, i) => (
+                  <option key={i} value={String(i)}>
+                    {__i18n_t("ui.decision.text.de226207", { what: motionText(m), yes: d.optionYes[i]! })}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </section>
         </>
       );
       break;

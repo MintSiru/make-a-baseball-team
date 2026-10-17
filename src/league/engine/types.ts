@@ -78,6 +78,10 @@ export interface GameIn {
   maxInnings: number | null;
   /** Park run factor, 1 = neutral. */
   park: number;
+  /** 1.9.9 (board.ts): extra innings from this one start with a runner on second (승부치기). */
+  ghostFrom?: number;
+  /** 1.9.9: a reliever faces three batters or ends the inning before he may be taken out. */
+  threeBatter?: boolean;
 }
 
 /** One side of a platoon split: plate appearances against left- or right-handers. */

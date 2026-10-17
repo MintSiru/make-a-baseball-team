@@ -12,7 +12,7 @@ import { k as __i18n_k } from '../i18n/index';
    stays on them), take in-season replacements as they sign and options as they are paid, and close after
    the season. An expansion club's extra foreign slot adds one new-signing cap (game assumption). */
 import type { Player, TeamId } from '../model/types';
-import { KBO_2026 } from '../rules/kbo2026';
+import { foreignNewCapUsd, foreignTotalCapUsd, KBO_2026 } from '../rules/kbo2026';
 import { MANWON_PER_USD, usdTotal } from './contracts';
 import { addAlert } from './alerts';
 import { foreignSlots } from './manager';
@@ -45,7 +45,7 @@ export const capPlayers = (s: LeagueState, teamId: TeamId, season: number) =>
 /** The club's cap for `season` with these players: $4M, the tenure raises, and an expansion club's extra slot. */
 export function foreignCap(s: LeagueState, teamId: TeamId, season: number, players = capPlayers(s, teamId, season)): number {
   const extra = Math.max(0, foreignSlots(s, teamId, season).regular - F.regular);
-  return F.clubTotalCapUSD + extra * F.newContractCapUSD + players.reduce((a, p) => a + F.tenureRaiseUSD * tenureWith(p, teamId, season), 0);
+  return foreignTotalCapUsd() + extra * foreignNewCapUsd() + players.reduce((a, p) => a + F.tenureRaiseUSD * tenureWith(p, teamId, season), 0);
 }
 
 /** What these contracts cost at most (options counted in full), US dollars. */
