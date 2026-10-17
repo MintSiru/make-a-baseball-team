@@ -5,6 +5,7 @@ import { k as __i18n_k } from '../i18n/index';
    national-team exemptions → development → retirement → military service → posting → free agency → salaries →
    rookie draft → (expansion special draft) → roster limits → released players → foreign players.
    The user's club can make the game wait at a step for a decision (see OffseasonHooks). */
+import { seasonStaff } from './clubrecords';
 import { closeMeetings, headToHead } from './matchups';
 import { seasonMix } from './savant';
 import { historicForeignCap, MODERN_FROM, rulesFor } from '../rules/history';
@@ -139,6 +140,7 @@ export function closeSeason(s: LeagueState) {
     ...(futuresTable ? { futures: futuresTable } : {}),
     ...(sidesOf(s) ? { leagues: { ...sidesOf(s)! } } : {}),
     h2h: headToHead(s.scores),
+    staff: seasonStaff(s),
   });
   closeMeetings(s);
   // The business year closes with the baseball one: accounts, fans' mood, AI staff changes.

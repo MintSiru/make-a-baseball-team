@@ -1,6 +1,7 @@
 import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* The user's club in three views: an overview you can read at a glance, the squads (with the general
    manager's moves), and the front office (money, ballpark, club facts). */
+import { ClubRecords } from './ClubRecords';
 import { useEffect, useState } from 'preact/hooks';
 import { accentStyle } from './display';
 import { useDark } from './useDisplay';
@@ -30,7 +31,7 @@ import type { NewsItem } from '../league/news';
 import type { BriefGo } from '../league/briefing';
 import { Briefing } from './Briefing';
 
-export type View = 'overview' | 'squad' | 'lineup' | 'training' | 'story' | 'office';
+export type View = 'overview' | 'squad' | 'lineup' | 'training' | 'story' | 'records' | 'office';
 
 export interface StoryHooks {
   onRewrite?: (item: NewsItem) => void;
@@ -79,6 +80,8 @@ export function MyClub({
               ['lineup', __i18n_k("ui.myClub.myClub.4c31ef82")],
               ['training', __i18n_k("ui.myClub.myClub.b4927759")],
               ['story', __i18n_k("ui.myClub.myClub.d77486d9")],
+              // 2.0.5: the club's all-time records.
+              ['records', __i18n_k("ui.myClub.text.253af1e8")],
               ['office', __i18n_k("ui.myClub.myClub.6bc69497")],
             ] as [View, string][]
           ).map(([id, label]) => (
@@ -107,6 +110,7 @@ export function MyClub({
       {__i18n_display(view === 'lineup' && <Lineup league={league} teamId={u.teamId} onPlayer={onPlayer} onAct={onAct} />)}
       {__i18n_display(view === 'training' && <Training league={league} onAct={onAct} onPlayer={onPlayer} />)}
       {__i18n_display(view === 'story' && <Story league={league} {...story} />)}
+      {view === 'records' && <ClubRecords league={league} teamId={u.teamId} onPlayer={onPlayer} />}
       {__i18n_display(view === 'office' && <Office league={league} onAct={onAct} setMsg={setMsg} onPlayer={onPlayer} />)}
       {__i18n_display(msg && (
         <p class="toast" role="status">

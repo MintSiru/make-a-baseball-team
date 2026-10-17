@@ -568,6 +568,13 @@ try {
   await page.locator('nav.tabs').getByRole('button', { name: '순위', exact: true }).click();
   await page.locator('details.h2h summary').click();
   check((await page.locator('.h2h-table tbody tr').count()) > 0, 'the standings show the clubs\' head-to-head');
+  // 2.0.5: our club's all-time records.
+  await page.locator('nav.tabs').getByRole('button', { name: '우리 구단', exact: true }).click();
+  await page.getByRole('group', { name: '우리 구단 보기' }).getByRole('button', { name: '역대 기록', exact: true }).click();
+  check((await page.locator('.club-records').count()) === 1, 'our club\'s all-time records open');
+  for (const v of ['구단 통산 순위', '구단 단일 시즌 기록', '영구결번·명예의 전당', '연도별 성적']) await page.getByRole('group', { name: '역대 기록 보기' }).getByRole('button', { name: v, exact: true }).click();
+  await page.screenshot({ path: join(shots, 'club-records.png'), fullPage: false });
+  await page.getByRole('group', { name: '우리 구단 보기' }).getByRole('button', { name: '개요', exact: true }).click().catch(() => undefined);
   for (const tab of ['기록', '구단', '역대', '드래프트 후보', '우리 구단']) await page.getByRole('button', { name: tab, exact: true }).click();
   await page.getByRole('button', { name: '선수단', exact: true }).click();
   await page.locator('.squad-table .link').first().click();

@@ -189,6 +189,8 @@ export interface SeasonSummary {
   awards?: import('./awards').SeasonAwards;
   /** 2.0.4: each club's wins, losses and ties against each other (matchups.ts). */
   h2h?: import('./matchups').HeadToHead;
+  /** 2.0.5 (clubrecords.ts): each club's manager at the season's end, and the user's captain. */
+  staff?: Record<TeamId, { manager?: string; captain?: PlayerId }>;
 }
 
 /** A choice the game waits for before it can go on. Only the user's club ever raises one. */

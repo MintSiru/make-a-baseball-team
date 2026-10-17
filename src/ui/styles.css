@@ -3317,3 +3317,9 @@ fieldset.stops {
     grid-template-columns: 4.5rem 1fr 4rem;
   }
 }
+
+/* 2.0.5: our club's all-time records (ClubRecords.tsx). */
+.club-years tr.champion-row td {
+  background: var(--paper-2);
+  font-weight: 600;
+}
