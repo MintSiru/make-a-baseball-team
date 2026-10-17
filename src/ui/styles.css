@@ -3183,10 +3183,28 @@ fieldset.stops {
 .layout-editor .layout-field {
   display: block;
   width: 100%;
-  max-width: 360px;
+  max-width: 440px;
+  touch-action: none;
   height: auto;
   margin: 0.25rem 0 0.5rem;
 }
 .layout-editor input[type='number'] {
-  width: 4.2rem;
+  width: 5.4rem;
+}
+.layout-editor .layout-handle {
+  cursor: grab;
+}
+.layout-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1rem;
+}
+.layout-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.layout-options input[type='checkbox'] {
+  width: auto;
 }

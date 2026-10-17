@@ -74232,37 +74232,6 @@
     },
     "locations": []
   },
-  "league.layout.text.2bdb66a1": {
-    "source": "src/league/layout.ts",
-    "line": 121,
-    "params": {
-      "a": {
-        "expression": "lines[0]"
-      },
-      "b": {
-        "expression": "lines[1]"
-      },
-      "c": {
-        "expression": "alleys[0]"
-      },
-      "d": {
-        "expression": "alleys[1]"
-      },
-      "e": {
-        "expression": "centre[0]"
-      },
-      "f": {
-        "expression": "centre[1]"
-      },
-      "g": {
-        "expression": "wall[0]"
-      },
-      "h": {
-        "expression": "wall[1]"
-      }
-    },
-    "locations": []
-  },
   "league.ballpark.text.2e952b61": {
     "source": "src/league/ballpark.ts",
     "line": 64,
@@ -74407,6 +74376,213 @@
     "source": "src/ui/Office.tsx",
     "line": 510,
     "params": {},
+    "locations": []
+  },
+  "league.layout.text.356b3a1f": {
+    "source": "src/league/layout.ts",
+    "line": 161,
+    "params": {
+      "a": {
+        "expression": "lines[0]"
+      },
+      "b": {
+        "expression": "lines[1]"
+      },
+      "c": {
+        "expression": "field[0]"
+      },
+      "d": {
+        "expression": "field[1]"
+      },
+      "e": {
+        "expression": "wall[0]"
+      },
+      "f": {
+        "expression": "wall[1]"
+      }
+    },
+    "locations": []
+  },
+  "ui.layoutEditor.text.fa42e37f": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 19,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.0287dd66": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 20,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.22e5e643": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 21,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.08ccbbe9": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 22,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.1369d986": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 23,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.7ed5277e": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.51d9696d": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 25,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.d517715a": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 26,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.b385d89b": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 27,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.d9b060bf": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 28,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.49779429": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.a7746e75": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.25345671": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.ac78272c": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.3e877e65": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.215aa164": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.9e56ff2b": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.8165f0f9": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 98,
+    "params": {
+      "angle": {
+        "expression": "angleOf(plan, i)"
+      },
+      "dist": {
+        "expression": "d"
+      },
+      "wall": {
+        "expression": "plan.wall[i]!"
+      }
+    },
+    "locations": []
+  },
+  "ui.layoutEditor.text.f01a5a52": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 130,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.5c9cf21a": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 140,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.a277e3a1": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 150,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.4e24b561": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 153,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.9a2dddbe": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 156,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.d57ae193": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 161,
+    "params": {},
+    "locations": []
+  },
+  "ui.layoutEditor.text.c2d28afa": {
+    "source": "src/ui/LayoutEditor.tsx",
+    "line": 204,
+    "params": {
+      "a": {
+        "expression": "LAYOUT_BOUNDS.lines[0]"
+      },
+      "b": {
+        "expression": "LAYOUT_BOUNDS.lines[1]"
+      },
+      "c": {
+        "expression": "LAYOUT_BOUNDS.field[0]"
+      },
+      "d": {
+        "expression": "LAYOUT_BOUNDS.field[1]"
+      },
+      "e": {
+        "expression": "LAYOUT_BOUNDS.wall[0]"
+      },
+      "f": {
+        "expression": "LAYOUT_BOUNDS.wall[1]"
+      },
+      "fund": {
+        "expression": "money(u.fund)"
+      }
+    },
     "locations": []
   }
 }

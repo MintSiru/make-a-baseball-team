@@ -1,7 +1,7 @@
 /* 2.0.2: ballpark layouts — fence distance and height by field, their home-run effect, and our club's layout editor. */
 import { describe, expect, it } from 'vitest';
 import { createLeague } from '../src/league/history';
-import { checkLayout, clearance, fenceAt, homeRunFactor, layoutCost, layoutEffects, layoutOf, LAYOUTS, NEUTRAL, shifted } from '../src/league/layout';
+import { checkLayout, clearance, fenceAt, homeRunFactor, layoutCost, layoutEffects, layoutOf, LAYOUTS, MLB_PRESETS, NEUTRAL, refine, shifted } from '../src/league/layout';
 import { playGame } from '../src/league/season';
 import type { PlayEvent } from '../src/league/engine/types';
 
@@ -17,11 +17,12 @@ describe('ballpark layouts', () => {
     expect(Math.abs(layoutEffects(NEUTRAL).hr)).toBeLessThan(0.08);
   });
 
-  it('reads the fence between zones and asks more of a ball over a high wall', () => {
+  it('reads the fence between points and asks more of a ball over a high wall', () => {
+    expect(fenceAt(NEUTRAL, 11.25).dist).toBeCloseTo((122 + 117) / 2, 5);
     const l = LAYOUTS.hanwha!;
+    expect(l.dist).toHaveLength(19);
     expect(fenceAt(l, -45).dist).toBe(99);
     expect(fenceAt(l, 0).dist).toBe(122);
-    expect(fenceAt(l, 11.25).dist).toBeCloseTo((122 + 112) / 2, 5);
     // The 8 m wall in right: a shorter fence than left, but more carry to clear it.
     expect(fenceAt(l, 45).dist).toBeLessThan(fenceAt(l, -45).dist);
     expect(clearance(l, 45)).toBeGreaterThan(clearance(l, -45));
@@ -41,9 +42,31 @@ describe('ballpark layouts', () => {
     expect(checkLayout({ dist: [98, 117, 122, 117, 98], wall: [3, 3, 3, 3, 30] })).toBeTruthy();
   });
 
+  it('draws a park on a fine grid as freely as the old major-league parks, and charges nothing for the same fence redrawn', () => {
+    const fine = refine(NEUTRAL);
+    expect(fine.dist).toHaveLength(19);
+    expect(layoutCost(NEUTRAL, fine)).toBe(0);
+    for (const l of Object.values(MLB_PRESETS)) expect(checkLayout(l)).toBeNull();
+    // Fenway: a short left field behind the Green Monster, a shorter right corner and the deep triangle.
+    const fenway = MLB_PRESETS.fenway!;
+    expect(fenceAt(fenway, -45).wall).toBeGreaterThan(11);
+    expect(fenceAt(fenway, 45).dist).toBeLessThan(fenceAt(fenway, -45).dist);
+    expect(fenceAt(fenway, 10).dist).toBeGreaterThan(125);
+    // A notch: one point pulled in on the fine grid moves the fence there only.
+    const notch = { dist: [...fine.dist], wall: [...fine.wall] };
+    notch.dist[3] = 95;
+    expect(clearance(notch, -30)).toBeLessThan(clearance(fine, -30) - 15);
+    expect(clearance(notch, 10)).toBeCloseTo(clearance(fine, 10), 5);
+    expect(homeRunFactor(notch)).toBeGreaterThan(homeRunFactor(fine));
+    expect(layoutCost(fine, notch)).toBeGreaterThan(0);
+    // The fine grid allows a corner as short as 85 m, nowhere else under 95 m.
+    expect(checkLayout({ dist: fine.dist.map((d, i) => (i === 0 ? 85 : d)), wall: fine.wall })).toBeNull();
+    expect(checkLayout({ dist: fine.dist.map((d, i) => (i === 9 ? 90 : d)), wall: fine.wall })).toBeTruthy();
+  });
+
   it('gives every club its park, a moved fence of before included', () => {
     const s = createLeague('v202');
-    for (const t of s.teams) expect(layoutOf(t).dist).toHaveLength(5);
+    for (const t of s.teams) expect(layoutOf(t).dist.length).toBeGreaterThanOrEqual(5);
     const lg = s.teams.find((t) => t.id === 'lg')!;
     expect(layoutOf(lg)).toEqual(LAYOUTS.lg);
     expect(homeRunFactor(layoutOf({ ...lg, stadium: { ...lg.stadium, park: 1.02 } }))).toBeGreaterThan(homeRunFactor(LAYOUTS.lg!));
