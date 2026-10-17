@@ -35,7 +35,8 @@ function emptyState(seed: string, legacy = false): LeagueState {
     sim: SIM_VERSION,
     seed,
     ...(era() ? { era: era() } : {}),
-    ...(legacy ? { historical: true } : {}),
+    // 1.9.7: with its state from the start, so the first opening is on the league's timeline.
+    ...(legacy ? { historical: true, legacy: { clubs: [] } } : {}),
     year: (legacy ? LEGACY_START : historyStart()) - BOOTSTRAP_YEARS,
     phase: 'offseason',
     teams,
@@ -159,8 +160,7 @@ export function createLeague(seed: string, onYear?: (year: number) => void, shif
   setEra(historical ? { era: LEGACY_ERA, historical: true } : shift);
   if (historical) {
     const s = bootstrap(seed, true);
-    // The clubs history founds later join this list (legacy1982.ts); it also runs the AI clubs' founding steps.
-    s.legacy = { clubs: [] };
+    // The clubs history founds later join `s.legacy.clubs` (legacy1982.ts); it also runs the AI clubs' founding steps.
     return s;
   }
   const s = bootstrap(seed);

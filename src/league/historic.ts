@@ -1,3 +1,4 @@
+import { k as __i18n_k } from '../i18n/index';
 /* 1.9.5: the postseason of a league that plays history (the 1982 legacy start; RULES.md §14), drawn by the year's
    rules (rules/history.ts):
    - 1982–1985 (halves, halvesBest): the first half's winner against the second half's in the Korean Series; a club
@@ -15,6 +16,7 @@ import { addDays, live, result, type Bracket, type LiveSeries } from './postseas
 import { standings, type StandingRow } from './standings';
 import { firstTeamIds, type LeagueState, type SeriesResult } from './state';
 import { isTiebreaker } from './tiebreak';
+import { unlock } from './milestones';
 import { leagueTables, sidesOf } from './twelve';
 import type { TeamId } from '../model/types';
 
@@ -55,6 +57,8 @@ export function drawHistoric(s: LeagueState, date: string): Bracket {
     case 'halvesBest':
     case 'halvesTickets': {
       const [first, second] = halfTables(s);
+      // 1.9.7: our club first in both halves (a legacy achievement).
+      if (s.user && first[0]?.teamId === s.user.teamId && second[0]?.teamId === s.user.teamId) unlock(s, 'halves', year, String(year));
       if (r.postseason !== 'halvesTickets') {
         const a = first[0]!.teamId,
           b = second[0]!.teamId;
@@ -99,6 +103,23 @@ export function drawHistoric(s: LeagueState, date: string): Bracket {
       // No semi-playoff: straight to the two playoffs (each league's winner against the other league's 2nd).
       return { ...two, stage: 1, live: [live('po', seeds[0]!, seeds[4]!, 4, homesOf(7), date), live('po', seeds[3]!, seeds[1]!, 4, homesOf(7), date)] };
     }
+  }
+}
+
+/** 1.9.7: who goes on to the postseason this year, for the standings page (null: the page's own note). */
+export function postseasonNote(year: number): string | null {
+  switch (rulesFor(year).postseason) {
+    case 'halves':
+    case 'halvesBest':
+      return __i18n_k("league.historic.text.1f5d90b7");
+    case 'halvesTickets':
+      return __i18n_k("league.historic.text.0d17b1f6");
+    case 'four':
+      return __i18n_k("league.historic.text.c2b723cf");
+    case 'fourWithin3':
+      return __i18n_k("league.historic.text.ddca07d3");
+    default:
+      return null;
   }
 }
 

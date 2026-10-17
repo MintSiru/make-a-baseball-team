@@ -1,6 +1,8 @@
 import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, rich as __i18n_rich, t as __i18n_t } from '../i18n/index';
 import type { LeagueState } from '../league/state';
-import { lastDayScores, shortName, standingsView } from '../league/views';
+import { halfStandingsView, lastDayScores, shortName, standingsView } from '../league/views';
+import { postseasonNote } from '../league/historic';
+import { rulesFor } from '../rules/history';
 import { LEAGUE_NAMES, leagueTables, playoffsOf, seasonSeries, sidesOf, twelveClubs } from '../league/twelve';
 import { postseasonView, roundName } from '../league/postseason';
 import type { Action } from '../league/actions';
@@ -20,6 +22,14 @@ export function Standings({ league, onTeam, onBox, onAct }: { league: LeagueStat
         { title: LEAGUE_NAMES.magic, rows: two.magic, cut: 3 },
       ]
     : [{ title: null, rows, cut: 5 }];
+  // 1.9.7: a history game's split seasons (1982–1988) and its own postseason format.
+  const halves = halfStandingsView(league);
+  if (halves) {
+    const tickets = rulesFor(league.year).postseason === 'halvesTickets' ? 2 : 1;
+    groups[0] = { title: __i18n_t("ui.standings.text.b51cab9a"), rows, cut: 0 };
+    groups.push({ title: __i18n_t("ui.standings.text.9e9a1dff"), rows: halves[0], cut: tickets }, { title: __i18n_t("ui.standings.text.41764652"), rows: halves[1], cut: tickets });
+  } else if (league.historical && !two && postseasonNote(league.year)) groups[0] = { title: null, rows, cut: 4 };
+  const note = league.historical ? postseasonNote(league.year) : null;
   const series = seasonSeries(league);
   const rival = league.twelve && twelveClubs(league) ? league.teams.find((t) => t.id === league.twelve!.teamId) : null;
   return (
@@ -37,7 +47,7 @@ export function Standings({ league, onTeam, onBox, onAct }: { league: LeagueStat
               ? playoffsOf(league) === 'npb'
                 ? __i18n_t("ui.standings.text.1c606c76")
                 : __i18n_t("ui.standings.text.940e69f5")
-              : __i18n_k("ui.standings.standings.83a72e8d"))}
+              : (note ?? __i18n_k("ui.standings.standings.83a72e8d")))}
           </p>
           {__i18n_display(rival && league.user && series.w + series.l + series.t > 0 && (
             <p>{__i18n_rich("ui.standings.standings.2196d9ea", { short: rival.short, value: ' ', value2: <strong>{__i18n_t("ui.standings.standings.eae1f95b", { w: series.w, l: series.l, value: series.t ? __i18n_k("ui.standings.standings.136ac74d", { value: series.t }) : '' })}</strong> })}</p>

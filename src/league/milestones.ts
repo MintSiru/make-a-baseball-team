@@ -34,6 +34,24 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'hallOfFame', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.6999864f"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.ffcebc4c") },
 ];
 
+/** 1.9.7: the legacy start's own (a game that plays history): a title in each decade, the split season's both halves,
+    the overseas Korean and tryout-draft players of their eras, and forty seasons. */
+export const LEGACY_ACHIEVEMENTS: Achievement[] = [
+  { id: 'era1980', label: __i18n_k("league.milestones.text.db401fe8"), note: __i18n_k("league.milestones.text.9903bf85") },
+  { id: 'era1990', label: __i18n_k("league.milestones.text.851d5b96"), note: __i18n_k("league.milestones.text.0d7fc86b") },
+  { id: 'era2000', label: __i18n_k("league.milestones.text.c380fec3"), note: __i18n_k("league.milestones.text.e8d317f7") },
+  { id: 'era2010', label: __i18n_k("league.milestones.text.b777fd1f"), note: __i18n_k("league.milestones.text.ee054afb") },
+  { id: 'era2020', label: __i18n_k("league.milestones.text.dc528f29"), note: __i18n_k("league.milestones.text.6c7cfd5a") },
+  { id: 'everyEra', label: __i18n_k("league.milestones.text.f3f185bf"), note: __i18n_k("league.milestones.text.3bb368c3") },
+  { id: 'halves', label: __i18n_k("league.milestones.text.96202c05"), note: __i18n_k("league.milestones.text.24ab7a12") },
+  { id: 'kyopoAce', label: __i18n_k("league.milestones.text.d2c0e40e"), note: __i18n_k("league.milestones.text.1146d0c9") },
+  { id: 'tryoutGem', label: __i18n_k("league.milestones.text.5d7685e0"), note: __i18n_k("league.milestones.text.4def1e0c") },
+  { id: 'fortySeasons', label: __i18n_k("league.milestones.text.18246f8e"), note: __i18n_k("league.milestones.text.6ab65e28") },
+];
+
+/** The achievements of this game: the legacy start's on top of everyone's. */
+export const achievementsFor = (s: Pick<LeagueState, 'historical'>) => (s.historical ? [...ACHIEVEMENTS, ...LEGACY_ACHIEVEMENTS] : ACHIEVEMENTS);
+
 /** Adds a line to the club timeline (once per key). */
 export function milestone(s: LeagueState, year: number, text: string, key?: string) {
   const u = s.user;
@@ -45,7 +63,7 @@ export function milestone(s: LeagueState, year: number, text: string, key?: stri
 /** Unlocks an achievement (once) and notes it on the timeline. */
 export function unlock(s: LeagueState, id: string, year: number, detail = '') {
   const u = s.user;
-  const a = ACHIEVEMENTS.find((x) => x.id === id);
+  const a = achievementsFor(s).find((x) => x.id === id);
   if (!u || !a || u.achievements?.some((x) => x.id === id)) return;
   (u.achievements ??= []).push({ id, year });
   milestone(s, year, __i18n_k("league.milestones.unlock.742fa29d", { label: a.label, value: detail ? ` (${detail})` : '' }));
@@ -113,10 +131,31 @@ export function seasonMoments(s: LeagueState, year: number, awards: SeasonAwards
     const c = p.career.find((x) => x.year === year && !x.level && x.teamId === u.teamId);
     if (c && c.war >= 5 && p.origin.draftYear && p.career.every((x) => x.teamId === u.teamId)) unlock(s, 'homegrown', year, `${p.name} WAR ${c.war.toFixed(1)}`);
   }
+  if (s.historical) legacyMoments(s, year);
   const report = s.clubs?.[u.teamId]?.reports.find((r) => r.year === year);
   if (report) {
     if (report.fans >= 1_000_000) unlock(s, 'crowd', year, __i18n_k("league.milestones.seasonMoments.d8e22743", { value: report.fans.toLocaleString('ko-KR') }));
     if (report.operating >= 0 && report.homeGames) unlock(s, 'profit', year);
     if ((report.sellouts ?? 0) >= 30) unlock(s, 'sellouts', year, __i18n_k("league.milestones.seasonMoments.29555f1e", { sellouts: report.sellouts }));
   }
+}
+
+/** 1.9.7: the legacy achievements at the end of a season. */
+function legacyMoments(s: LeagueState, year: number) {
+  const u = s.user!;
+  const titles = s.history.filter((h) => h.champion === u.teamId).map((h) => h.year);
+  const decades = [1980, 1990, 2000, 2010, 2020];
+  if (titles.includes(year)) {
+    const d = Math.floor(year / 10) * 10;
+    if (decades.includes(d)) unlock(s, `era${d}`, year, String(year));
+  }
+  if (decades.every((d) => titles.some((y) => y >= d && y < d + 10))) unlock(s, 'everyEra', year);
+  // Both halves of a split season: unlocked when the postseason is drawn (historic.ts).
+  for (const p of Object.values(s.players)) {
+    const c = p.career.find((x) => x.year === year && !x.level && x.teamId === u.teamId);
+    if (!c) continue;
+    if (p.origin.kyopo && c.war >= 5) unlock(s, 'kyopoAce', year, `${p.name} WAR ${c.war.toFixed(1)}`);
+    if (p.id.startsWith('ft') && c.war >= 4) unlock(s, 'tryoutGem', year, `${p.name} WAR ${c.war.toFixed(1)}`);
+  }
+  if (year - u.firstTeamYear + 1 >= 40) unlock(s, 'fortySeasons', year);
 }

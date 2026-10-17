@@ -362,7 +362,7 @@ function Release({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
         league={league}
         players={pool}
         onPlayer={onPlayer}
-        extra={{ title: __i18n_k("ui.market.release.title.138d1c03"), value: (p) => money(poolAsk(league, p)), sort: (p) => poolAsk(league, p) }}
+        extra={{ title: __i18n_k("ui.market.release.title.138d1c03"), value: (p) => (p.origin.kyopo ? `${money(poolAsk(league, p))} · ${__i18n_t("ui.market.text.74fb91a0")}` : money(poolAsk(league, p))), sort: (p) => poolAsk(league, p) }}
         action={(p) => (
           <button type="button" disabled={!!canSignFromPool(league, p.id)} title={__i18n_displayText(canSignFromPool(league, p.id) ?? '')} onClick={() => onAct({ kind: 'signPool', id: p.id })}>{__i18n_t("ui.market.release.b4116369")}</button>
         )}

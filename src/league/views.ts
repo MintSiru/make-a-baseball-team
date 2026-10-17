@@ -13,6 +13,9 @@ import { halfLabel, playText } from './playtext';
 import { salaryIn, usdTotal } from './contracts';
 import { ageIn, isForeign, isPitcher } from './players';
 import { currentStandings } from './season';
+import { rulesFor } from '../rules/history';
+import { halfTables } from './historic';
+import type { StandingRow } from './standings';
 import { SANGMU } from './futures';
 import { cardFor, lineupFor, managerLean, penRoles, PEN_ROLE_LABELS, rotationFor } from './manager';
 import { isDevelopment, type LeagueState } from './state';
@@ -41,6 +44,18 @@ export function standingsView(s: LeagueState) {
     const crowd = gate?.games ? Math.round(gate.fans / gate.games) : last?.homeGames && last.year === s.year ? Math.round(last.fans / last.homeGames) : 0;
     return { ...r, name: teamOf(s, r.teamId)!.name, short: shortName(s, r.teamId), color: teamOf(s, r.teamId)!.color, games: r.w + r.l + r.t, crowd };
   });
+}
+
+/** 1.9.7: the first and second halves' tables of a split season (a history game, 1982–1988), as the full table's rows;
+    null in any other season. */
+export function halfStandingsView(s: LeagueState) {
+  if (!s.historical || !rulesFor(s.year).halves) return null;
+  const full = standingsView(s);
+  const row = (r: StandingRow) => {
+    const f = full.find((x) => x.teamId === r.teamId)!;
+    return { ...r, name: f.name, short: f.short, color: f.color, games: r.w + r.l + r.t, crowd: f.crowd };
+  };
+  return halfTables(s).map((t) => t.map(row)) as [typeof full, typeof full];
 }
 
 export function lastDayScores(s: LeagueState) {

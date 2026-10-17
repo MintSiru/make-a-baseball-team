@@ -20,6 +20,7 @@ import { ro } from './josa';
 import { clubIn, LINEAGE, lineageOf } from './lineage';
 import { milestone } from './milestones';
 import { addNews } from './news';
+import { leagueEvent } from './leagueevents';
 import { rivalTryout, specialEligible, type FoundingClub } from './rival';
 import { keepValue } from './players';
 import { removeFromRoster } from './offseason';
@@ -35,11 +36,15 @@ export const LEGACY_TRYOUT = 25;
 export interface LegacyState {
   /** The clubs founded in their real years, run by the AI (빙그레, 쌍방울, NC, KT). */
   clubs: FoundingClub[];
+  /** 1.9.7: the league's own timeline (리그 연표): openings, foundings, new names, rule changes, firsts. */
+  events?: { year: number; text: string }[];
   /** 1.9.6: the foreign players' tryout draft of the winter (tryout.ts). */
   tryout?: import('./tryout').ForeignTryout;
 }
 
 export const isLegacy = (s: LeagueState) => !!s.historical;
+
+export { leagueEvent } from './leagueevents';
 
 const GM_KEYS: GmStyle[] = ['balanced', 'develop', 'winNow', 'moneyball'];
 
@@ -71,6 +76,7 @@ export function applyLineage(s: LeagueState, year: number) {
     const title = __i18n_k("league.legacy1982.text.0958720a", { before, after: ro(e.name) });
     const body = __i18n_k("league.legacy1982.text.9628baee", { before, year, after: e.name, company: e.company, city: e.city });
     addNews(s, { id: `lineage-${year}-${t.id}`, date: `${year}-01-15`, kind: 'season', title, body, quotes: [], facts: { club: e.name, year }, players: [], mine: false });
+    leagueEvent(s, year, title);
     milestone(s, year, title, 'lineage');
   }
 }
@@ -98,6 +104,7 @@ export function legacyFoundings(s: LeagueState, year: number) {
     const lines = [__i18n_k("league.legacy1982.text.60eccbcf", { name: e.name, company: e.company, city: e.city, firstTeam: l.firstTeam }), __i18n_k("league.legacy1982.text.83a41736", { signed })];
     addNews(s, { id: `legacy-found-${l.id}`, date: `${year}-03-10`, kind: 'season', title, body: lines.join(' '), quotes: [], facts: { club: e.name, firstTeam: l.firstTeam }, players: [], mine: false });
     addAlert(s, { id: `legacy-found-${l.id}`, date: `${year}-03-10`, kind: 'season', title, lines });
+    leagueEvent(s, year, title);
     milestone(s, year, title, 'legacyFounded');
   }
 }
@@ -231,15 +238,36 @@ export function ruleNoticeLines(from: YearRules, to: YearRules): string[] {
   return out;
 }
 
+/** 1.9.7: how long after his last season a retired player's detail is kept in full. */
+export const TRIM_AFTER = 10;
+
+/** 1.9.7, a legacy game's fifty seasons (about 20 MB of save by 2032, players nine tenths of it): a player retired
+    for `TRIM_AFTER` seasons keeps his season lines but not their left/right splits, nor his yearly grade log. */
+export function trimRetired(s: LeagueState, year: number) {
+  for (const p of Object.values(s.players)) {
+    if (p.status !== 'retired' || !p.career.length || p.career.at(-1)!.year > year - TRIM_AFTER) continue;
+    if (p.gradeLog) delete p.gradeLog;
+    for (const c of p.career) {
+      if (c.bat?.split) delete c.bat.split;
+      if (c.pit?.split) delete c.pit.split;
+    }
+  }
+}
+
 /** Opening day of a legacy season: the clubs founded this year, the year's names, the leagues and the rule notices. */
 export function legacySeason(s: LeagueState) {
   if (!isLegacy(s)) return;
   const year = s.year;
+  trimRetired(s, year);
   legacyFoundings(s, year);
   applyLineage(s, year);
   legacyLeagues(s, year);
-  if (year <= LEGACY_START) return;
+  if (year <= LEGACY_START) {
+    if (year === LEGACY_START) leagueEvent(s, year, __i18n_k("league.legacy1982.text.7aedbca8", { clubs: firstTeamIds(s, year).map((id) => s.teams.find((t) => t.id === id)!.name).join('·') }));
+    return;
+  }
   const lines = ruleNoticeLines(rulesFor(year - 1), rulesFor(year));
+  for (const line of lines) leagueEvent(s, year, line);
   if (!lines.length) return;
   const title = __i18n_k("league.legacy1982.text.56998c23", { year });
   addNews(s, { id: `rules-${year}`, date: `${year}-03-01`, kind: 'season', title, body: lines.join(' '), quotes: [], facts: { year }, players: [], mine: true });

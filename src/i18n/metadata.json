@@ -72194,5 +72194,225 @@
       }
     },
     "locations": []
+  },
+  "league.historic.text.1f5d90b7": {
+    "source": "src/league/historic.ts",
+    "line": 110,
+    "params": {},
+    "locations": []
+  },
+  "league.historic.text.0d17b1f6": {
+    "source": "src/league/historic.ts",
+    "line": 112,
+    "params": {},
+    "locations": []
+  },
+  "league.historic.text.c2b723cf": {
+    "source": "src/league/historic.ts",
+    "line": 114,
+    "params": {},
+    "locations": []
+  },
+  "league.historic.text.ddca07d3": {
+    "source": "src/league/historic.ts",
+    "line": 116,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.b51cab9a": {
+    "source": "src/ui/Standings.tsx",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.9e9a1dff": {
+    "source": "src/ui/Standings.tsx",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.41764652": {
+    "source": "src/ui/Standings.tsx",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.db401fe8": {
+    "source": "src/league/milestones.ts",
+    "line": 43,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.9903bf85": {
+    "source": "src/league/milestones.ts",
+    "line": 43,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.851d5b96": {
+    "source": "src/league/milestones.ts",
+    "line": 44,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.0d7fc86b": {
+    "source": "src/league/milestones.ts",
+    "line": 44,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.c380fec3": {
+    "source": "src/league/milestones.ts",
+    "line": 45,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.e8d317f7": {
+    "source": "src/league/milestones.ts",
+    "line": 45,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.b777fd1f": {
+    "source": "src/league/milestones.ts",
+    "line": 46,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.ee054afb": {
+    "source": "src/league/milestones.ts",
+    "line": 46,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.dc528f29": {
+    "source": "src/league/milestones.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.6c7cfd5a": {
+    "source": "src/league/milestones.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.f3f185bf": {
+    "source": "src/league/milestones.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.3bb368c3": {
+    "source": "src/league/milestones.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.96202c05": {
+    "source": "src/league/milestones.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.24ab7a12": {
+    "source": "src/league/milestones.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.d2c0e40e": {
+    "source": "src/league/milestones.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.1146d0c9": {
+    "source": "src/league/milestones.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.5d7685e0": {
+    "source": "src/league/milestones.ts",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.4def1e0c": {
+    "source": "src/league/milestones.ts",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.18246f8e": {
+    "source": "src/league/milestones.ts",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.6ab65e28": {
+    "source": "src/league/milestones.ts",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "ui.story.text.2cddacf9": {
+    "source": "src/ui/Story.tsx",
+    "line": 128,
+    "params": {},
+    "locations": []
+  },
+  "ui.story.text.2df9c9ba": {
+    "source": "src/ui/Story.tsx",
+    "line": 195,
+    "params": {
+      "team": {
+        "expression": "name(champion, year)"
+      }
+    },
+    "locations": []
+  },
+  "league.legacy1982.text.7aedbca8": {
+    "source": "src/league/legacy1982.ts",
+    "line": 253,
+    "params": {
+      "clubs": {
+        "expression": "firstTeamIds(s, year).map((id) => s.teams.find((t) => t.id === id)!.name).join('·')"
+      }
+    },
+    "locations": []
+  },
+  "league.kyopo.text.f14aaf8c": {
+    "source": "src/league/kyopo.ts",
+    "line": 59,
+    "params": {
+      "name": {
+        "expression": "arrived[0]!.name"
+      }
+    },
+    "locations": []
+  },
+  "league.kyopo.text.4224db84": {
+    "source": "src/league/kyopo.ts",
+    "line": 85,
+    "params": {
+      "n": {
+        "expression": "free.length"
+      }
+    },
+    "locations": []
+  },
+  "league.kyopo.text.8042589f": {
+    "source": "src/league/kyopo.ts",
+    "line": 86,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.74fb91a0": {
+    "source": "src/ui/Market.tsx",
+    "line": 365,
+    "params": {},
+    "locations": []
   }
 }
