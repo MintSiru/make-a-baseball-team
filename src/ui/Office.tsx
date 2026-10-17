@@ -15,6 +15,7 @@ import { twelveClubs } from '../league/twelve';
 import { MANAGER_STYLES, STAFF_EFFECTS, STAFF_LABELS, STAFF_ROLES } from '../league/staff';
 import { defaultYears, dismissalCost, extendProblem, extensionSalary, fireProblem, staffTerms, yearsFor } from '../league/staffdeals';
 import { AlumnusTag } from './Alumni';
+import { LayoutEditor } from './LayoutEditor';
 import { firstTeamIds, type ClubReport, type LeagueState, type StaffRole } from '../league/state';
 import { booksOf } from '../league/foreigncap';
 import { usd } from '../league/foreign';
@@ -506,6 +507,8 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
               </tbody>
             </table>
           </div>
+          <h3>{__i18n_t("ui.office.text.fbe7156c")}</h3>
+          <LayoutEditor key={`${league.year}-${league.phase}-${u.projects?.length ?? 0}`} league={league} act={act} />
           {__i18n_display(!!u.projects?.length && (
             <>
               <h3>{__i18n_t("ui.office.office.0a2532f5")}</h3>

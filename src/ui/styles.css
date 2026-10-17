@@ -3178,3 +3178,33 @@ fieldset.stops {
 .update-notes > div { margin-top: 0.6rem; }
 .update-notes dd { margin: 0.15rem 0 0; line-height: 1.5; }
 .dialog .update-notes { max-height: 55vh; overflow: auto; }
+
+/* 2.0.2: the ballpark layout editor. */
+.layout-editor .layout-field {
+  display: block;
+  width: 100%;
+  max-width: 440px;
+  touch-action: none;
+  height: auto;
+  margin: 0.25rem 0 0.5rem;
+}
+.layout-editor input[type='number'] {
+  width: 5.4rem;
+}
+.layout-editor .layout-handle {
+  cursor: grab;
+}
+.layout-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1rem;
+}
+.layout-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.layout-options input[type='checkbox'] {
+  width: auto;
+}

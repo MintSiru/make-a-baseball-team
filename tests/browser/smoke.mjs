@@ -273,10 +273,21 @@ try {
   check((await founded.textContent())?.includes('창단'), 'the founding pops up as an achievement');
   await page.screenshot({ path: join(shots, 'alert.png'), fullPage: false });
   // From here on, event pop-ups (V0.7.4) are closed whenever one is in the way.
-  await page.addLocatorHandler(page.getByRole('alertdialog'), async (dialog) => {
-    const all = dialog.getByRole('button', { name: '모두 확인' });
-    await ((await all.count()) ? all : dialog.getByRole('button', { name: '확인', exact: true })).click();
-  });
+  // Pop-ups can keep coming while the season runs on (a new one opens as the last is closed): close them as they come
+  // and do not wait for the dialog to be gone for good before the next action (2.0.2: CI timed out waiting so).
+  await page.addLocatorHandler(
+    page.getByRole('alertdialog'),
+    async (dialog) => {
+      for (let k = 0; k < 20 && (await dialog.isVisible().catch(() => false)); k++) {
+        const all = dialog.getByRole('button', { name: '모두 확인' });
+        const one = dialog.getByRole('button', { name: '확인', exact: true });
+        const button = (await all.count()) ? all : (await one.count()) ? one : dialog.getByRole('button').first();
+        await button.click({ timeout: 5_000 }).catch(() => {});
+        await page.waitForTimeout(50);
+      }
+    },
+    { noWaitAfter: true },
+  );
   // Tutorial mode (V0.7.5): the guide opens with the founding and moves on as lessons are read.
   check((await page.locator('.tutorial h2').textContent())?.includes('환영합니다'), 'the tutorial welcomes the new general manager');
   await page.screenshot({ path: join(shots, 'tutorial.png'), fullPage: false });
@@ -351,6 +362,12 @@ try {
   await page.getByRole('button', { name: '구단 운영', exact: true }).click();
   await page.getByRole('group', { name: '구단 운영' }).getByRole('button', { name: '구장', exact: true }).click();
   check(!(await page.locator('.page').textContent())?.includes('공사는 비시즌에만'), 'ballpark work can start during the winter');
+  // 2.0.2: the layout editor draws the park and prices a change.
+  check((await page.locator('.layout-field').count()) > 0, 'the layout editor draws the park');
+  await page.locator('.layout-editor select').selectOption('fenway');
+  check((await page.locator('.layout-table tbody tr').count()) === 19, 'a major-league park loads on the fine grid');
+  await page.locator('.layout-editor').screenshot({ path: join(shots, 'layout-fenway.png') });
+  await page.locator('.layout-editor button', { hasText: '지금 펜스로 되돌리기' }).click();
   const start = page.locator('.page button:not([disabled])', { hasText: /^시작$/ });
   if (await start.count()) {
     await start.first().click();

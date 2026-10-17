@@ -159,7 +159,8 @@ export function usualBonusShare(g: number, t = 0.5) {
 export function splitOffer(g: number, years: number, share: number, options: number, next: number, extra?: FaOffer['extra']): FaOffer {
   const bonus = round1000(g * share);
   const annual = Math.max(minimumSalaryFor(next), (g - bonus) / years >= 10000 ? round1000((g - bonus) / years) : round100((g - bonus) / years));
-  return { years, bonus, annual, options: round1000(options), ...(extra ? { extra } : {}) };
+  // 2.0.2: a small deal's incentives to the million won (rounded to ten million they came to nothing).
+  return { years, bonus, annual, options: options >= 10000 ? round1000(options) : round100(options), ...(extra ? { extra } : {}) };
 }
 
 /** The same offer at a different guaranteed total (bonus, salary and incentives in proportion). */

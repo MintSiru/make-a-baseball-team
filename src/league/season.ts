@@ -1,6 +1,7 @@
 import { k as __i18n_k } from '../i18n/index';
 /* The regular season, one game day at a time: registered days, games, injuries and roster moves. */
 import { addBatted, emptyBatted } from './battedball';
+import { layoutOf } from './layout';
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { draftWatchDay } from './draftlog';
@@ -271,7 +272,10 @@ export function playGame(s: LeagueState, homeId: TeamId, awayId: TeamId, id: str
   const three = boardValue('threeBatter', s.year) === 1;
   // 2.0.1: the batted-ball stream, apart from the game's so the plays stay as they were drawn.
   const balls = rng(`${s.seed}|balls|${id}`);
-  return simulateGame({ gameId: id, home, away, maxInnings, park, balls, ...(ghost ? { ghostFrom: 10 } : {}), ...(three ? { threeBatter: true } : {}) }, gameRng(s, id), log);
+  // 2.0.2: the home park's fences (layout.ts).
+  const host = s.teams.find((t) => t.id === homeId);
+  const layout = host ? layoutOf(host) : undefined;
+  return simulateGame({ gameId: id, home, away, maxInnings, park, balls, ...(layout ? { layout } : {}), ...(ghost ? { ghostFrom: 10 } : {}), ...(three ? { threeBatter: true } : {}) }, gameRng(s, id), log);
 }
 
 /** Plays every game on the next date. Returns false when the regular season is over. */
