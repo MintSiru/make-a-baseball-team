@@ -9,11 +9,18 @@
 export const USUAL_START = 2026;
 
 let shift = 0;
+/** 1.9.4: a league that plays the KBO's own history (the 1982 legacy start, 1.9.5) reads the year-by-year rules
+    before 2015 (rules/history.ts); every other game plays today's rules in every year, as before. */
+let historical = false;
 
-/** Sets the calendar from a league (its `era`, 0 when missing) or a shift in years. */
-export function setEra(from: { era?: number } | number | null | undefined) {
+/** Sets the calendar from a league (its `era`, 0 when missing, and whether it plays history) or a shift in years. */
+export function setEra(from: { era?: number; historical?: boolean } | number | null | undefined) {
   shift = typeof from === 'number' ? from : (from?.era ?? 0);
+  historical = typeof from === 'object' && !!from?.historical;
 }
+
+/** The league plays the KBO's own history (1.9.4). */
+export const playsHistory = () => historical;
 
 /** Years before the usual calendar (−10 for a game from 2016). */
 export const era = () => shift;
