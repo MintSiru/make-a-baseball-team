@@ -17,6 +17,7 @@ import { iga } from './josa';
 import { isPitcher } from './players';
 import type { LeagueState } from './state';
 import { COMBINE as C } from './tuning';
+import { featureClosed, featureOpen } from './features';
 
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
 const round5 = (n: number) => Math.round(n / 5) * 5;
@@ -77,6 +78,7 @@ const MEASURED: Record<'pitcher' | 'hitter', (keyof Tools)[]> = { pitcher: ['stu
 
 /** Every club's public report after the combine: the measured abilities most of the way to the truth, the future with them. */
 export function applyCombine(seed: string, draftYear: number, players: Player[]): Player[] {
+  if (!featureOpen('combine', draftYear)) return players;
   for (const p of players) {
     if (!attends(seed, draftYear, p) || p.scouting.combine) continue;
     const s = p.scouting;
@@ -99,6 +101,8 @@ export function applyCombine(seed: string, draftYear: number, players: Player[])
 /** The day of the combine: the article (our club's league only). */
 export function combineDay(s: LeagueState, date: string, players: () => Player[]) {
   const key = `${s.year}-combine`;
+  // 1.9.7: a history game holds the combine only from 2023 (features.ts).
+  if (!featureOpen('combine', s.year)) return;
   if (!s.user || date < `${s.year}-${C.date}` || s.marketDone?.includes(key)) return;
   (s.marketDone ??= []).push(key);
   const came = players().filter((p) => attends(s.seed, s.year, p));
@@ -131,6 +135,8 @@ export const workoutsOf = (s: LeagueState, draftYear: number): PlayerId[] => s.u
 export function checkWorkout(s: LeagueState, draftYear: number, id: PlayerId): string | null {
   const u = s.user;
   if (!u) return __i18n_k("league.combine.checkWorkout.272add95");
+  const closed = featureClosed('combine', draftYear);
+  if (closed) return closed;
   if (!id.startsWith(`d${draftYear}-`)) return __i18n_k("league.combine.checkWorkout.a21e72ad");
   if (s.offseason?.draft && s.offseason.year === draftYear) return __i18n_k("league.combine.checkWorkout.4e66852b");
   if (!combineHeld(s, draftYear)) return __i18n_k("league.combine.checkWorkout.2d5c711e", { number: Number(C.date.slice(0, 2)), number2: Number(C.date.slice(3)) });

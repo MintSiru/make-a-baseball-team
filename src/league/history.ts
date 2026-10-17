@@ -161,6 +161,17 @@ export function createLeague(seed: string, onYear?: (year: number) => void, shif
   if (historical) {
     const s = bootstrap(seed, true);
     // The clubs history founds later join `s.legacy.clubs` (legacy1982.ts); it also runs the AI clubs' founding steps.
+    // 1.9.7: before 1982 there was no KBO draft: the first players came from the amateur and company leagues, with
+    // no pick on record (the bootstrap's own drafts are only how the game makes them).
+    for (const p of Object.values(s.players)) {
+      const o = p.origin;
+      if (o.kind !== 'draftClass' || o.draftYear === undefined || o.draftYear >= LEGACY_START) continue;
+      o.preLeague = true;
+      delete o.overallPick;
+      delete o.draftGrade;
+      delete o.pickVia;
+    }
+    if (s.draftLog) s.draftLog = s.draftLog.filter((x) => x.year >= LEGACY_START);
     return s;
   }
   const s = bootstrap(seed);

@@ -472,8 +472,10 @@ function renewContracts(s: LeagueState, next: number) {
 const TARGET_SHARE: Record<string, number> = { SP: 0.26, RP: 0.26, C: 0.08, IF: 0.22, OF: 0.18 };
 
 /** Eleven rounds in the given order, labelled by round. */
-export const standardSlots = (order: TeamId[]): DraftSlot[] =>
-  Array.from({ length: KBO_2026.draft.rounds }, (_, i) => order.map((teamId) => ({ teamId, label: `${i + 1}R` }))).flat();
+/** 1.9.7: the rounds are the year's (a history game's draft grows; today's eleven otherwise). The draft held in
+    September of `draftYear` fills the next season. */
+export const standardSlots = (order: TeamId[], draftYear?: number): DraftSlot[] =>
+  Array.from({ length: draftYear === undefined ? KBO_2026.draft.rounds : rulesFor(draftYear + 1).draftRounds }, (_, i) => order.map((teamId) => ({ teamId, label: `${i + 1}R` }))).flat();
 
 /** Puts the September draft of `draftYear` on the board. */
 export function openDraft(s: LeagueState, draftYear: number, slots: DraftSlot[]): DraftState {
@@ -532,6 +534,10 @@ export function makePick(s: LeagueState, d: DraftState, p: Player) {
   const overall = d.next + 1;
   p.origin.overallPick = overall;
   p.origin.draftGrade = p.scouting.futureValue;
+  // 1.9.7: a territorial (1차) pick is on record as one; the others are numbered among themselves (2차).
+  const before = d.slots.slice(0, d.next).filter((x) => x.territorial).length;
+  if (slot.territorial) p.origin.territorial = true;
+  else if (before) p.origin.secondPick = overall - before;
   logPick(s, p, slot.teamId, d.year, overall, slot.label);
   logGrades(p, d.year + 1);
   if (slot.via) p.origin.pickVia = slot.via;
@@ -957,7 +963,7 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
           const table = s.history[s.history.length - 1]?.table ?? [];
           const order = table.length ? [...table].reverse().map((row) => row.teamId) : firstTeamIds(s, year);
           // Picks traded during the year (V0.7.8) go to the clubs that hold them.
-          const slots = applyPickTrades(s, year, applyForeignPickDrop(s, year, applyPickDrop(s, year, hooks.draftSlots?.(s, year, order) ?? standardSlots(order))));
+          const slots = applyPickTrades(s, year, applyForeignPickDrop(s, year, applyPickDrop(s, year, hooks.draftSlots?.(s, year, order) ?? standardSlots(order, year))));
           o.draft = openDraft(s, year, slots);
         }
         if (runDraft(s, o.draft) === 'wait') return 'waiting';
@@ -1014,7 +1020,7 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
 
 /** A whole draft with AI picks only (the history bootstrap). */
 export function runWholeDraft(s: LeagueState, draftYear: number, order: TeamId[]) {
-  runDraft(s, openDraft(s, draftYear, standardSlots(order)));
+  runDraft(s, openDraft(s, draftYear, standardSlots(order, draftYear)));
 }
 
 /** A whole offseason with no user decisions (spectator leagues and history). */

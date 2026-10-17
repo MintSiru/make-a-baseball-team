@@ -278,10 +278,10 @@ function draftSlots(s: LeagueState, draftYear: number, order: TeamId[]): DraftSl
   if (tw && !order.includes(tw.teamId) && draftYear + 1 <= tw.firstTeam) founding.push({ teamId: tw.teamId, first: draftYear === tw.founded });
   // 1.9.2: the north's clubs, after ours.
   for (const c of aiFoundingClubs(s)) if (!order.includes(c.teamId) && draftYear + 1 <= c.firstTeam) founding.push({ teamId: c.teamId, first: draftYear === c.founded });
-  if (!founding.length) return standardSlots(order);
+  if (!founding.length) return standardSlots(order, draftYear);
   const slots: DraftSlot[] = [];
   for (const f of founding) if (f.first) for (let i = 0; i < EXPANSION_DEFAULTS.rookiePriorityPicks; i++) slots.push({ teamId: f.teamId, label: __i18n_k("league.expansion.draftSlots.label.b31947fa") });
-  const rounds = standardSlots(order).length / order.length;
+  const rounds = standardSlots(order, draftYear).length / order.length;
   for (let round = 1; round <= rounds; round++) {
     for (const f of founding) slots.push({ teamId: f.teamId, label: `${round}R` });
     for (const teamId of order) slots.push({ teamId, label: `${round}R` });

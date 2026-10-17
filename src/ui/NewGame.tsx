@@ -118,7 +118,8 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
     short,
     color,
     cityId,
-    parentType,
+    // 1.9.7: no naming-rights club before 2008 (features.ts), so not in the legacy start.
+    parentType: def?.legacy && parentType === 'namingRights' ? 'conglomerate' : parentType,
     parentName,
     stadium,
     promotion,
@@ -226,7 +227,7 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
         <h3 id="ng-parent">{__i18n_t("ui.newGame.newGame.cf76b767")}</h3>
         <div class="choice-grid">
           {__i18n_display((Object.keys(PARENT_COMPANY_TYPES) as ParentCompanyType[]).map((t) => (
-            <button key={t} type="button" class="choice" aria-pressed={t === parentType} disabled={locked.has('parentType') && t !== parentType} onClick={() => setParentType(t)}>
+            <button key={t} type="button" class="choice" aria-pressed={t === (def?.legacy && parentType === 'namingRights' ? 'conglomerate' : parentType)} disabled={(locked.has('parentType') && t !== parentType) || (!!def?.legacy && t === 'namingRights')} onClick={() => setParentType(t)}>
               <strong>{__i18n_display(PARENT_COMPANY_TYPES[t].label)}</strong>
               <span class="muted">{__i18n_display(PARENT_COMPANY_TYPES[t].summary)}</span>
             </button>

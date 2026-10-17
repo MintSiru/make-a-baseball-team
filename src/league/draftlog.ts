@@ -24,11 +24,15 @@ export interface DraftPick {
   from: string;
   /** The public future grade on draft day; null for picks logged from a save older than 1.7.0. */
   grade: number | null;
+  /** 1.9.7: a territorial (1차) pick, or the number among the 2차 picks when the draft had territorial picks. */
+  territorial?: boolean;
+  second?: number;
 }
 
 /** A pick, as it is made. */
 export function logPick(s: LeagueState, p: Player, teamId: TeamId, year: number, overall: number, label: string) {
-  (s.draftLog ??= []).push({ year, overall, label, teamId, id: p.id, name: p.name, pos: positionLabel(p), from: p.education.school, grade: p.scouting.futureValue });
+  const o = p.origin;
+  (s.draftLog ??= []).push({ year, overall, label, teamId, id: p.id, name: p.name, pos: positionLabel(p), from: p.education.school, grade: p.scouting.futureValue, ...(o.territorial ? { territorial: true } : {}), ...(o.secondPick ? { second: o.secondPick } : {}) });
 }
 
 /** A save from before 1.7.0: the picks read back from the players still in the league (the club that has him now,

@@ -26,6 +26,8 @@ import { capRoom, chargeForeign, slotForeigners } from './foreigncap';
 import { failedToAdapt } from './adapt';
 import { firstTeamSize, foreignSlots } from './manager';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry, toForeignPool } from './foreignpool';
+import { featureOpen } from './features';
+import { rulesFor } from '../rules/history';
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 const shortOf = (s: LeagueState, id: TeamId | null) => s.teams.find((t) => t.id === id)?.short ?? '-';
@@ -87,10 +89,11 @@ export const pickHolder = (s: LeagueState, year: number, round: number, teamId: 
     two of one draft (KBO 2019 rule). A club outside the regular draft order (before its first team) has none. */
 export function tradablePicks(s: LeagueState, teamId: TeamId): number[] {
   const year = tradeDraftYear(s);
-  if (!firstTeamIds(s, year).includes(teamId) || s.offseason?.draft) return [];
+  // 1.9.7: a history game trades picks only from 2019 (features.ts).
+  if (!firstTeamIds(s, year).includes(teamId) || s.offseason?.draft || !featureOpen('pickTrade', year)) return [];
   const gone = (s.pickTrades ?? []).filter((x) => x.year === year && x.from === teamId).length;
   if (gone >= TRADES.picks.perClub) return [];
-  return Array.from({ length: KBO_2026.draft.rounds }, (_, i) => i + 1).filter((round) => pickHolder(s, year, round, teamId) === teamId);
+  return Array.from({ length: rulesFor(year + 1).draftRounds }, (_, i) => i + 1).filter((round) => pickHolder(s, year, round, teamId) === teamId);
 }
 
 /** A club's place in the coming draft order (1 = picks first): the worst record picks first. */

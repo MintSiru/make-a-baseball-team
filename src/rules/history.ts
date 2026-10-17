@@ -89,6 +89,8 @@ export interface YearRules {
   development: boolean;
   /** Territorial first picks a club may make (Infinity: no limit; 0: none). */
   territorialPicks: number;
+  /** 1.9.7: rounds of the (2차) draft. */
+  draftRounds: number;
   foreign: ForeignRules;
   kyopo: KyopoRules;
   /** Seasons to free agency (high school entry), null before it began. */
@@ -115,6 +117,7 @@ interface HistoryTable {
   futuresLeague: Steps<boolean>;
   development: Steps<boolean>;
   territorialPicks: Steps<number>;
+  draftRounds: Steps<number>;
   foreign: Steps<ForeignRules>;
   kyopo: Steps<KyopoRules>;
   freeAgencySeasons: Steps<number | null>;
@@ -146,6 +149,10 @@ export const HISTORY: HistoryTable = {
   rosterLimit: [[1982, 45], [1990, 55], [2005, 63]],
   futuresLeague: [[1982, false], [1990, true]],
   development: [[1982, false], [2005, true]],
+  // 1.9.7 (the user's request): the draft grows round by round — a game assumption (no yearly count found) from a
+  // few rounds when the territorial picks did most of the work to ten in the 2000s; before 1982 (the legacy start's
+  // own made-up drafts) as today.
+  draftRounds: [[0, 11], [1982, 4], [1986, 6], [1991, 8], [2000, 10]],
   territorialPicks: [[1982, Infinity], [1986, 10], [1987, 3], [1990, 2], [1991, 1], [2010, 0], [2014, 1], [2023, 0]],
   foreign: [
     [1982, { hold: 0, play: 0, asia: 0, signing: 'none', capUsd: null }],
@@ -171,7 +178,7 @@ export const HISTORY: HistoryTable = {
 
 /** Today's game, as it plays 2015 on (the same values as the code that reads them: manager.ts, offseason.ts,
     futures.ts, seconddraft.ts, the free-agency and foreign rules). */
-function modern(year: number): Pick<YearRules, 'firstTeam' | 'rosterLimit' | 'futuresSimulated' | 'foreign' | 'freeAgencySeasons' | 'secondDraft' | 'salaryCap'> {
+function modern(year: number): Pick<YearRules, 'firstTeam' | 'rosterLimit' | 'futuresSimulated' | 'foreign' | 'freeAgencySeasons' | 'secondDraft' | 'salaryCap' | 'draftRounds'> {
   const now = year >= 2026;
   const sd = KBO_2026.secondaryDraft.firstYear;
   return {
@@ -182,6 +189,7 @@ function modern(year: number): Pick<YearRules, 'firstTeam' | 'rosterLimit' | 'fu
     freeAgencySeasons: KBO_2026.freeAgency.seasonsHighSchool,
     secondDraft: year >= sd && (year - sd) % 2 === 0,
     salaryCap: year >= KBO_2026.salaryCap.from,
+    draftRounds: KBO_2026.draft.rounds,
   };
 }
 
@@ -204,6 +212,7 @@ export function rulesOfYear(year: number, history = true): YearRules {
     futuresSimulated: false,
     development: stepAt(H.development, year),
     territorialPicks: stepAt(H.territorialPicks, year),
+    draftRounds: stepAt(H.draftRounds, year),
     foreign: { ...stepAt(H.foreign, year) },
     kyopo: { ...stepAt(H.kyopo, year) },
     freeAgencySeasons: stepAt(H.freeAgencySeasons, year),

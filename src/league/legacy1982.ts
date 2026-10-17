@@ -16,8 +16,8 @@ import { addAlert } from './alerts';
 import { existingTeams } from './clubs';
 import { LEGACY_ERA, LEGACY_START } from './era';
 import { clubState } from './fans';
-import { ro } from './josa';
-import { clubIn, LINEAGE, lineageOf } from './lineage';
+import { iga, ro } from './josa';
+import { clubIn, LINEAGE, lineageOf, parkIn } from './lineage';
 import { milestone } from './milestones';
 import { addNews } from './news';
 import { leagueEvent } from './leagueevents';
@@ -53,7 +53,16 @@ function asIn(t: Team, year: number): Team {
   const e = clubIn(t.id, year);
   const l = lineageOf(t.id);
   if (!e || !l) return t;
-  return { ...t, name: e.name, short: e.short, region: e.region, founded: l.founded, firstTeamFrom: l.firstTeam, parent: { type: e.parent, name: e.company } };
+  return { ...t, name: e.name, short: e.short, region: e.region, founded: l.founded, firstTeamFrom: l.firstTeam, parent: { type: e.parent, name: e.company }, stadium: stadiumIn(t, year) };
+}
+
+/** 1.9.7: the club's ballpark in `year` (lineage.ts PARKS): an old park's name, seats and run factor, or today's. */
+function stadiumIn(t: Team, year: number): Team['stadium'] {
+  const p = parkIn(t.id, year);
+  if (p) return { ...t.stadium, name: p.name, capacity: p.seats, park: p.factor };
+  const now = existingTeams().find((x) => x.id === t.id)?.stadium ?? t.stadium;
+  const { park: _old, ...rest } = { ...t.stadium, name: now.name, capacity: now.capacity };
+  return rest;
 }
 
 /** The existing clubs founded by `year`, under that year's names (the 1982 league for the legacy start). */
@@ -72,6 +81,14 @@ export function applyLineage(s: LeagueState, year: number) {
     t.short = e.short;
     t.region = e.region;
     t.parent = { type: e.parent, name: e.company };
+    // 1.9.7: a new home ballpark (its own news; the old name stays wherever the records keep it).
+    const home = t.stadium.name;
+    t.stadium = stadiumIn(t, year);
+    if (home !== t.stadium.name && year !== LEGACY_START) {
+      const title = __i18n_k("league.legacy1982.text.febc872d", { club: e.name, park: t.stadium.name });
+      addNews(s, { id: `park-${year}-${t.id}`, date: `${year}-03-05`, kind: 'season', title, body: __i18n_k("league.legacy1982.text.a3c77e99", { club: iga(e.name), year, before: home, park: t.stadium.name, seats: t.stadium.capacity.toLocaleString('ko-KR') }), quotes: [], facts: { year }, players: [], mine: false });
+      leagueEvent(s, year, title);
+    }
     if (before === e.name || year === LEGACY_START) continue;
     const title = __i18n_k("league.legacy1982.text.0958720a", { before, after: ro(e.name) });
     const body = __i18n_k("league.legacy1982.text.9628baee", { before, year, after: e.name, company: e.company, city: e.city });
@@ -205,6 +222,9 @@ export function ruleNoticeLines(from: YearRules, to: YearRules): string[] {
         break;
       case 'territorialPicks':
         out.push(to.territorialPicks === 0 ? __i18n_k("league.legacy1982.text.fac4f512") : to.territorialPicks === Infinity ? __i18n_k("league.legacy1982.text.396267e6") : __i18n_k("league.legacy1982.text.028d95de", { n: to.territorialPicks }));
+        break;
+      case 'draftRounds':
+        out.push(__i18n_k("league.legacy1982.text.404a2882", { n: to.draftRounds }));
         break;
       case 'foreign':
         if (from.foreign.hold === 0 && to.foreign.hold > 0) out.push(__i18n_k("league.legacy1982.text.af29f845", { n: to.foreign.hold }));

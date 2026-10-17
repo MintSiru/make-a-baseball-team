@@ -11,12 +11,16 @@ import { achievementsFor, ACHIEVEMENTS, LEGACY_ACHIEVEMENTS } from '../src/leagu
 import { withScenario } from '../src/league/scenarios';
 import type { ExpansionSettings, LeagueState } from '../src/league/state';
 import { halfStandingsView } from '../src/league/views';
+import { featureClosed, featureOpen } from '../src/league/features';
+import { parkIn } from '../src/league/lineage';
+import { rulesOfYear } from '../src/rules/history';
 
 const settings = (): ExpansionSettings =>
   withScenario({ name: '청주 독수리', short: '독수리', color: '#1f6fb2', cityId: 'cheongju', parentType: 'conglomerate', parentName: '청주그룹', stadium: 'existing', promotion: 'afterFutures', difficulty: 'normal', scenario: null }, 'legacy');
 
 let league: LeagueState | null = null;
 const halves: Record<number, number[][] | null> = {};
+const parks: Record<number, Record<string, string>> = {};
 /** A legacy game to 1991's opening day, the split tables taken at each regular season's end. */
 function legacy(): LeagueState {
   if (league) return league;
@@ -29,6 +33,7 @@ function legacy(): LeagueState {
     else if (s.phase === 'regular') {
       setEra(s);
       halves[s.year] = halfStandingsView(s)?.map((t) => t.map((r) => r.games)) ?? null;
+      parks[s.year] = Object.fromEntries(s.teams.map((t) => [t.id, t.stadium.name]));
       apply(s, { kind: 'postseason' });
     } else apply(s, { kind: 'nextSeason' });
   }
@@ -78,5 +83,43 @@ describe('the legacy start played long', () => {
     const s = legacy();
     const known = new Set(all.map((a) => a.id));
     for (const a of s.user!.achievements ?? []) expect(known.has(a.id)).toBe(true);
+  });
+});
+
+describe('the legacy start as it was', () => {
+  it('plays each club in its park of the year', () => {
+    legacy();
+    expect(parks[1982]!.lg).toBe(parkIn('lg', 1982)!.name);
+    expect(parks[1984]!.doosan).toBe(parkIn('doosan', 1984)!.name);
+    expect(parks[1985]!.doosan).toBe(parkIn('doosan', 1985)!.name);
+    expect(parks[1986]!.doosan).toBe(parks[1986]!.lg);
+    expect(parks[1985]!.lotte).not.toBe(parks[1986]!.lotte);
+    expect(parkIn('samsung', 2016)).toBeNull();
+  });
+
+  it('keeps no draft before the KBO, and marks the territorial picks', () => {
+    const s = legacy();
+    expect(Math.min(...s.draftLog!.map((x) => x.year))).toBeGreaterThanOrEqual(1982);
+    const first = Object.values(s.players).filter((p) => p.proSince <= 1982 && p.origin.kind === 'draftClass');
+    expect(first.length).toBeGreaterThan(100);
+    expect(first.every((p) => p.origin.preLeague && !p.origin.overallPick)).toBe(true);
+    const picks = s.draftLog!.filter((x) => x.year === 1986);
+    expect(picks.some((x) => x.territorial)).toBe(true);
+    const second = picks.filter((x) => !x.territorial);
+    expect(Math.min(...second.map((x) => x.second ?? 99))).toBe(1);
+  });
+
+  it('grows the draft round by round', () => {
+    expect([1983, 1987, 1995, 2005, 2015].map((y) => rulesOfYear(y).draftRounds)).toEqual([4, 6, 8, 10, 11]);
+    expect(rulesOfYear(1983, false).draftRounds).toBe(11);
+  });
+
+  it('opens the newer features in their years only in a history game', () => {
+    setEra({ era: LEGACY_ERA, historical: true });
+    expect(featureOpen('trip', 1990)).toBe(false);
+    expect(featureClosed('extension', 2010)).toContain('2022');
+    expect(featureOpen('pickTrade', 2019)).toBe(true);
+    setEra(0);
+    expect(featureOpen('combine', 1990)).toBe(true);
   });
 });
