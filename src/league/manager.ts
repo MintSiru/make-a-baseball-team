@@ -27,7 +27,8 @@ const baseFirstTeam = (year: number) => rulesFor(year).firstTeam.registered;
 export const firstTeamSize = (s: LeagueState, teamId: TeamId, year = s.year) => baseFirstTeam(year) + (hasBenefits(s, teamId, year) ? EXPANSION_DEFAULTS.extraFirstTeamSpots : 0);
 /** Foreign slots: three plus the Asia quota from 2026, and one more for an expansion club during its benefit seasons. */
 export const foreignSlots = (s: LeagueState, teamId: TeamId, year = s.year) => ({
-  regular: KBO_2026.foreign.regular + (hasBenefits(s, teamId, year) ? EXPANSION_DEFAULTS.extraForeignPlayers : 0),
+  // 1.9.5: as many as the year's rules allow (none before 1998 in a league that plays history), one more for a new club.
+  regular: rulesFor(year).foreign.hold + (rulesFor(year).foreign.hold && hasBenefits(s, teamId, year) ? EXPANSION_DEFAULTS.extraForeignPlayers : 0),
   asia: rulesFor(year).foreign.asia,
 });
 

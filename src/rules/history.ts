@@ -215,8 +215,10 @@ export function rulesOfYear(year: number, history = true): YearRules {
   return year >= MODERN_FROM || !history ? { ...base, ...modern(year) } : base;
 }
 
-/** The rules in force in a calendar year of this game (a game started in 2016 reads 2026's in 2016: era.ts). */
-export const rulesFor = (calendarYear: number) => rulesOfYear(ruleYear(calendarYear), playsHistory());
+/** The rules in force in a calendar year of this game (a game started in 2016 reads 2026's in 2016: era.ts). A league
+    that plays history (1.9.5, the 1982 legacy start) reads the KBO's own year: its era shift keeps only the money in
+    today's terms. */
+export const rulesFor = (calendarYear: number) => (playsHistory() ? rulesOfYear(calendarYear, true) : rulesOfYear(ruleYear(calendarYear), false));
 
 /** What changed from one season to the next, for the winter's notice (1.9.5): the fields that differ. */
 export function ruleChanges(from: YearRules, to: YearRules): (keyof YearRules)[] {

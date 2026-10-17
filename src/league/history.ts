@@ -7,6 +7,7 @@ import { rng } from '../draftroom';
 import { SIM_VERSION } from '../core/version';
 import type { Player } from '../model/types';
 import { existingTeams } from './clubs';
+import { LEGACY_ERA, LEGACY_START, legacyTeams } from './legacy1982';
 import { estimatedSalary, freeAgentContract } from './contracts';
 import { closeSeason, developPlayer, enforceLimits, enlist, leaveLeague, refreshForeigners, retirementChance, runOffseason, runWholeDraft } from './offseason';
 import { applyInternational } from './national';
@@ -23,15 +24,19 @@ export const GAME_START = 2026;
 const BOOTSTRAP_YEARS = 20;
 const historyStart = () => HISTORY_START + era();
 
-function emptyState(seed: string): LeagueState {
+function emptyState(seed: string, legacy = false): LeagueState {
   // A game started earlier (era.ts) still has the ten clubs of today from its history's first season: the clubs
-  // that joined later in reality (키움, NC, KT) are there from the start of the fictional history.
-  const teams = existingTeams().map((t) => (t.firstTeamFrom != null && t.firstTeamFrom > historyStart() ? { ...t, firstTeamFrom: historyStart(), founded: Math.min(t.founded, historyStart() - 2) } : t));
+  // that joined later in reality (키움, NC, KT) are there from the start of the fictional history. 1.9.5: the 1982
+  // legacy start has the six clubs of 1982 under their names then; the others are founded in their years (legacy.ts).
+  const teams = legacy
+    ? legacyTeams(LEGACY_START)
+    : existingTeams().map((t) => (t.firstTeamFrom != null && t.firstTeamFrom > historyStart() ? { ...t, firstTeamFrom: historyStart(), founded: Math.min(t.founded, historyStart() - 2) } : t));
   return {
     sim: SIM_VERSION,
     seed,
     ...(era() ? { era: era() } : {}),
-    year: historyStart() - BOOTSTRAP_YEARS,
+    ...(legacy ? { historical: true } : {}),
+    year: (legacy ? LEGACY_START : historyStart()) - BOOTSTRAP_YEARS,
     phase: 'offseason',
     teams,
     players: {},
@@ -123,10 +128,11 @@ function bootstrapContracts(s: LeagueState) {
   }
 }
 
-export function bootstrap(seed: string): LeagueState {
-  const s = emptyState(seed);
-  while (s.year < historyStart()) {
-    if (s.year > historyStart() - BOOTSTRAP_YEARS) virtualSeason(s);
+export function bootstrap(seed: string, legacy = false): LeagueState {
+  const s = emptyState(seed, legacy);
+  const start = legacy ? LEGACY_START : historyStart();
+  while (s.year < start) {
+    if (s.year > start - BOOTSTRAP_YEARS) virtualSeason(s);
     fastOffseason(s);
   }
   bootstrapContracts(s);
@@ -144,9 +150,19 @@ export function playFullSeason(s: LeagueState) {
   startSeason(s);
 }
 
-/** A new league, played through 2025, waiting at 2026 opening day (`shift` years earlier for 「백 투 더 패스트」). */
-export function createLeague(seed: string, onYear?: (year: number) => void, shift = 0): LeagueState {
-  setEra(shift);
+/** A new league, played through 2025, waiting at 2026 opening day (`shift` years earlier for 「백 투 더 패스트」).
+    1.9.5, `historical` (the 1982 legacy start): no fictional history, the league of 1982 waiting at its first opening
+    day, its era shift keeping the money in today's terms while the rules follow the KBO's own years. */
+export function createLeague(seed: string, onYear?: (year: number) => void, shift = 0, historical = false): LeagueState {
+  // 1.9.5: the legacy start's shift is its own (the scenario's era, LEGACY_ERA).
+  if (shift === LEGACY_ERA) historical = true;
+  setEra(historical ? { era: LEGACY_ERA, historical: true } : shift);
+  if (historical) {
+    const s = bootstrap(seed, true);
+    // The clubs history founds later join this list (legacy1982.ts); it also runs the AI clubs' founding steps.
+    s.legacy = { clubs: [] };
+    return s;
+  }
   const s = bootstrap(seed);
   while (s.year < startYear()) {
     onYear?.(s.year);

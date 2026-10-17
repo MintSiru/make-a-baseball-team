@@ -7,6 +7,9 @@
    One league at a time: the shift is set whenever a league is made or acted on (createLeague, apply) and when
    the page shows one. */
 export const USUAL_START = 2026;
+/** 1.9.5, scenario 레거시: the KBO's first season, and the era shift that makes 1982 the usual 2026 for the money. */
+export const LEGACY_START = 1982;
+export const LEGACY_ERA = LEGACY_START - USUAL_START;
 
 let shift = 0;
 /** 1.9.4: a league that plays the KBO's own history (the 1982 legacy start, 1.9.5) reads the year-by-year rules

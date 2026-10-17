@@ -319,6 +319,8 @@ export interface DraftSlot {
   label: string;
   /** The club whose pick this was, when it came in a trade (V0.7.8). */
   via?: TeamId;
+  /** 1.9.5: a territorial (1차) pick, from the club's own region (a league that plays history). */
+  territorial?: boolean;
 }
 
 /** Cash and draft picks in a trade (V0.7.8), from the user's side: cash in 만 원, picks as rounds of the
@@ -644,6 +646,8 @@ export interface LeagueState {
   leagueSides?: { sides: Record<TeamId, LeagueSide>; playoffs?: 'kbo' | 'npb' };
   /** 1.9.2 (unified.ts): 통일 한국 — the north's clubs founded with ours. */
   unified?: import('./unified').UnifiedState;
+  /** 1.9.5: the clubs a legacy league founds in their real years (legacy1982.ts). */
+  legacy?: import('./legacy1982').LegacyState;
   /** Null in a spectator league. */
   user: UserClub | null;
   pending: Decision | null;
@@ -663,6 +667,9 @@ export function addInto<T extends object>(into: T, from: Partial<T>): T {
 /** Clubs playing in the first-team league this season (an expansion club joins from `firstTeamFrom`). */
 export const firstTeamIds = (s: LeagueState, year = s.year) =>
   s.teams.filter((t) => t.firstTeamFrom !== null && t.firstTeamFrom <= year).map((t) => t.id);
+
+/** The new clubs the AI runs besides the twelfth: the north's (1.9.2) and a legacy league's (1.9.5). */
+export const aiFoundingClubs = (s: LeagueState): import('./rival').FoundingClub[] => [...(s.unified?.clubs ?? []), ...(s.legacy?.clubs ?? [])];
 
 export const hasBenefits = (s: LeagueState, teamId: string, year = s.year) => {
   const t = s.teams.find((x) => x.id === teamId);
