@@ -1,7 +1,7 @@
 import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, rich as __i18n_rich, t as __i18n_t } from '../i18n/index';
 import type { LeagueState } from '../league/state';
 import { lastDayScores, shortName, standingsView } from '../league/views';
-import { LEAGUE_NAMES, leagueTables, seasonSeries, twelveClubs, twoLeagues } from '../league/twelve';
+import { LEAGUE_NAMES, leagueTables, playoffsOf, seasonSeries, sidesOf, twelveClubs } from '../league/twelve';
 import { postseasonView, roundName } from '../league/postseason';
 import type { Action } from '../league/actions';
 import { PostseasonBracket } from './Bracket';
@@ -12,7 +12,8 @@ export function Standings({ league, onTeam, onBox, onAct }: { league: LeagueStat
   const rows = standingsView(league);
   const scores = lastDayScores(league);
   // Two leagues (V0.9): a table for each, ranks and games behind inside the league.
-  const two = twoLeagues(league) ? leagueTables(rows, league.twelve!.leagues!) : null;
+  const sides = sidesOf(league);
+  const two = sides ? leagueTables(rows, sides) : null;
   const groups: { title: string | null; rows: Row[]; cut: number }[] = two
     ? [
         { title: LEAGUE_NAMES.dream, rows: two.dream, cut: 3 },
@@ -33,7 +34,7 @@ export function Standings({ league, onTeam, onBox, onAct }: { league: LeagueStat
           )))}
           <p class="muted">
             {__i18n_display(two
-              ? league.twelve?.playoffs === 'npb'
+              ? playoffsOf(league) === 'npb'
                 ? __i18n_t("ui.standings.text.1c606c76")
                 : __i18n_t("ui.standings.text.940e69f5")
               : __i18n_k("ui.standings.standings.83a72e8d"))}

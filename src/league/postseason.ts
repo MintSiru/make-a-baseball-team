@@ -17,7 +17,7 @@ import { gameMoments } from './milestones';
 import { addNews, gameNews } from './news';
 import { eunneun, iga, wagwa } from './josa';
 import type { PlayEvent } from './engine/types';
-import { leagueTables, twoLeagues } from './twelve';
+import { leagueTables, playoffsOf, sidesOf } from './twelve';
 import { stopsOf } from './stops';
 import { openEntries, restoreFirstTeams, settleOurEntry } from './postentry';
 
@@ -189,13 +189,14 @@ function drawBracket(s: LeagueState) {
   s.phase = 'postseason';
   const last = s.schedule[s.schedule.length - 1]?.date ?? `${s.year}-10-01`;
   const date = addDays(last, 3);
-  if (twoLeagues(s)) {
-    const t = leagueTables(currentStandings(s), s.twelve!.leagues!);
+  const sides = sidesOf(s);
+  if (sides) {
+    const t = leagueTables(currentStandings(s), sides);
     const [d, m] = [t.dream, t.magic];
     if (d.length < 3 || m.length < 3) return void (s.bracket = { year: s.year, mode: 'two', stage: 2, live: [], seeds: [], done: true });
     const seeds = [d[0]!, d[1]!, d[2]!, m[0]!, m[1]!, m[2]!].map((r) => r.teamId);
     // 1.8.0, NPB (클라이맥스 시리즈): each league's 2nd and 3rd, best of three, every game at the 2nd's park.
-    if (s.twelve?.playoffs === 'npb') {
+    if (playoffsOf(s) === 'npb') {
       s.bracket = { year: s.year, mode: 'two', style: 'npb', stage: 0, seeds, done: false, live: [live('semipo', seeds[1]!, seeds[2]!, 2, allHome(3), date), live('semipo', seeds[4]!, seeds[5]!, 2, allHome(3), date)] };
       return;
     }

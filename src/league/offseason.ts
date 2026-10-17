@@ -42,7 +42,7 @@ import { draftReturnees } from './returnees';
 import { awardAlert, retirementAlert, seasonAlert } from './alerts';
 import { applyInternational, asianGamesSoon, marchEvents, novemberEvents, winterSquads } from './national';
 import { staffEdge, staffRating } from './staff';
-import { gmDraftWeights, gmOf, twoLeagues } from './twelve';
+import { gmDraftWeights, gmOf, sidesOf } from './twelve';
 import { closeRivalry } from './rivalry';
 import { facilityAging, facilityGrowth } from './facilities';
 import { declineOf, growTools, matureAge, traitsOf } from './traits';
@@ -126,7 +126,7 @@ export function closeSeason(s: LeagueState) {
     totals: { bat, pit, games: s.scores.length },
     ...(userFutures ? { userFutures } : {}),
     ...(futuresTable ? { futures: futuresTable } : {}),
-    ...(twoLeagues(s) ? { leagues: { ...s.twelve!.leagues! } } : {}),
+    ...(sidesOf(s) ? { leagues: { ...sidesOf(s)! } } : {}),
   });
   // The business year closes with the baseball one: accounts, fans' mood, AI staff changes.
   const summary = s.history[s.history.length - 1]!;
