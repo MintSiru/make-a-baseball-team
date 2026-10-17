@@ -380,14 +380,26 @@ export const FANS = {
   postseasonPrice: 3,
 } as const;
 
-/** 1.9.0 (the 1.8 feedback): postseason money by the gate, not by prize shares. Each game's ticket money is split:
-    the league's running costs, the home club and the visitors; tickets cost the home club's own price times the
-    round's factor (a Korean Series seat about three times a regular-season one). */
+/** 1.9.0 (the 1.8 feedback): postseason money by the gate, not by prize shares. Each game's ticket money is split
+    between the home club, the visitors and the league; the league's share also pays the Korean Series champion a
+    share of the whole postseason's gate (so a club that wins it quickly is not out-earned by the clubs it beat).
+    Tickets cost the home club's own price times the round's factor (a Korean Series seat about three times a
+    regular-season one).
+    With twelve clubs the money follows NPB instead (`npb`): a club keeps the whole gate of the games it hosts before
+    the final (the Climax Series rule), and the final is split as the Japan Series is — games 1–4: each club 24%, the
+    league 24%, the players 28% (16.8% the winners', 11.2% the losers'); game 5 on: each club 31.5%, the league 37%. */
 export const POSTSEASON_GATE = {
-  league: 0.3,
-  home: 0.4,
-  away: 0.3,
+  home: 0.35,
+  away: 0.25,
+  champion: 0.2,
+  league: 0.2,
   price: { wildcard: 1.8, semipo: 2.2, po: 2.6, ks: 3.2 },
+  npb: {
+    host: 1,
+    earlyGames: 4,
+    early: { club: 0.24, league: 0.24, players: 0.28, winners: 0.168, losers: 0.112 },
+    late: { club: 0.315, league: 0.37 },
+  },
 } as const;
 
 /** Club accounts (V0.6, finance.ts), 만 원 a year unless noted. */

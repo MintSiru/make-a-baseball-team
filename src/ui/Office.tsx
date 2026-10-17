@@ -11,6 +11,7 @@ import { capFloorFor, capTotal } from '../league/cap';
 import { projectedPayroll, STADIUM_PLANS } from '../league/expansion';
 import { boom, leaguePrice } from '../league/fans';
 import { projectedReport, supportLabel } from '../league/finance';
+import { twelveClubs } from '../league/twelve';
 import { MANAGER_STYLES, STAFF_EFFECTS, STAFF_LABELS, STAFF_ROLES } from '../league/staff';
 import { defaultYears, dismissalCost, extendProblem, extensionSalary, fireProblem, staffTerms, yearsFor } from '../league/staffdeals';
 import { AlumnusTag } from './Alumni';
@@ -393,15 +394,15 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
           </label>
           {/* 1.9.0: postseason prices follow the regular one, and the gate is split game by game. */}
           <p class="muted small">
-            {__i18n_t("ui.office.text.c05f7da6", {
+            {__i18n_t("ui.office.text.fa58cf84", {
               wc: priceWon(club.price * POSTSEASON_GATE.price.wildcard).toLocaleString('ko-KR'),
               semi: priceWon(club.price * POSTSEASON_GATE.price.semipo).toLocaleString('ko-KR'),
               po: priceWon(club.price * POSTSEASON_GATE.price.po).toLocaleString('ko-KR'),
               ks: priceWon(club.price * POSTSEASON_GATE.price.ks).toLocaleString('ko-KR'),
-              home: Math.round(POSTSEASON_GATE.home * 100),
-              away: Math.round(POSTSEASON_GATE.away * 100),
-              league: Math.round(POSTSEASON_GATE.league * 100),
-            })}
+            })}{' '}
+            {twelveClubs(league)
+              ? __i18n_t("ui.office.text.47b8a7e6", { early: Math.round(POSTSEASON_GATE.npb.early.club * 100), players: Math.round(POSTSEASON_GATE.npb.early.players * 100), league: Math.round(POSTSEASON_GATE.npb.early.league * 100), late: (POSTSEASON_GATE.npb.late.club * 100).toFixed(1) })
+              : __i18n_t("ui.office.text.736a57d9", { home: Math.round(POSTSEASON_GATE.home * 100), away: Math.round(POSTSEASON_GATE.away * 100), champion: Math.round(POSTSEASON_GATE.champion * 100), league: Math.round(POSTSEASON_GATE.league * 100) })}
           </p>
           <h3>{__i18n_t("ui.office.office.9e4505ff")}</h3>
           <p class="muted">{__i18n_t("ui.office.office.627a6285", { value: tickets ? __i18n_k("ui.office.office.57f49a0f", { value: tickets.sold.toLocaleString('ko-KR'), value2: Math.round(tickets.discount * 100), money: money(tickets.paid) }) : '' })}</p>

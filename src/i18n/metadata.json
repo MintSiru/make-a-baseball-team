@@ -67671,5 +67671,127 @@
       }
     },
     "locations": []
+  },
+  "ui.office.text.fa58cf84": {
+    "source": "src/ui/Office.tsx",
+    "line": 397,
+    "params": {
+      "wc": {
+        "expression": "priceWon(club.price * POSTSEASON_GATE.price.wildcard).toLocaleString('ko-KR')"
+      },
+      "semi": {
+        "expression": "priceWon(club.price * POSTSEASON_GATE.price.semipo).toLocaleString('ko-KR')"
+      },
+      "po": {
+        "expression": "priceWon(club.price * POSTSEASON_GATE.price.po).toLocaleString('ko-KR')"
+      },
+      "ks": {
+        "expression": "priceWon(club.price * POSTSEASON_GATE.price.ks).toLocaleString('ko-KR')"
+      }
+    },
+    "locations": []
+  },
+  "ui.office.text.47b8a7e6": {
+    "source": "src/ui/Office.tsx",
+    "line": 404,
+    "params": {
+      "early": {
+        "expression": "Math.round(POSTSEASON_GATE.npb.early.club * 100)"
+      },
+      "players": {
+        "expression": "Math.round(POSTSEASON_GATE.npb.early.players * 100)"
+      },
+      "league": {
+        "expression": "Math.round(POSTSEASON_GATE.npb.early.league * 100)"
+      },
+      "late": {
+        "expression": "(POSTSEASON_GATE.npb.late.club * 100).toFixed(1)"
+      }
+    },
+    "locations": []
+  },
+  "ui.office.text.736a57d9": {
+    "source": "src/ui/Office.tsx",
+    "line": 405,
+    "params": {
+      "home": {
+        "expression": "Math.round(POSTSEASON_GATE.home * 100)"
+      },
+      "away": {
+        "expression": "Math.round(POSTSEASON_GATE.away * 100)"
+      },
+      "champion": {
+        "expression": "Math.round(POSTSEASON_GATE.champion * 100)"
+      },
+      "league": {
+        "expression": "Math.round(POSTSEASON_GATE.league * 100)"
+      }
+    },
+    "locations": []
+  },
+  "ui.manual.text.05cb18ed": {
+    "source": "src/ui/Manual.tsx",
+    "line": 85,
+    "params": {
+      "home": {
+        "expression": "Math.round(POSTSEASON_GATE.home * 100)"
+      },
+      "away": {
+        "expression": "Math.round(POSTSEASON_GATE.away * 100)"
+      },
+      "champion": {
+        "expression": "Math.round(POSTSEASON_GATE.champion * 100)"
+      },
+      "league": {
+        "expression": "Math.round(POSTSEASON_GATE.league * 100)"
+      },
+      "wc": {
+        "expression": "POSTSEASON_GATE.price.wildcard"
+      },
+      "semi": {
+        "expression": "POSTSEASON_GATE.price.semipo"
+      },
+      "po": {
+        "expression": "POSTSEASON_GATE.price.po"
+      },
+      "ks": {
+        "expression": "POSTSEASON_GATE.price.ks"
+      }
+    },
+    "locations": []
+  },
+  "ui.manual.text.3a159eee": {
+    "source": "src/ui/Manual.tsx",
+    "line": 86,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.cccb2160": {
+    "source": "src/ui/Manual.tsx",
+    "line": 86,
+    "params": {
+      "early": {
+        "expression": "Math.round(POSTSEASON_GATE.npb.early.club * 100)"
+      },
+      "league": {
+        "expression": "Math.round(POSTSEASON_GATE.npb.early.league * 100)"
+      },
+      "players": {
+        "expression": "Math.round(POSTSEASON_GATE.npb.early.players * 100)"
+      },
+      "winners": {
+        "expression": "(POSTSEASON_GATE.npb.early.winners * 100).toFixed(1)"
+      },
+      "losers": {
+        "expression": "(POSTSEASON_GATE.npb.early.losers * 100).toFixed(1)"
+      },
+      "late": {
+        "expression": "(POSTSEASON_GATE.npb.late.club * 100).toFixed(1)"
+      },
+      "late_league": {
+        "expression": "Math.round(POSTSEASON_GATE.npb.late.league * 100)"
+      }
+    },
+    "locations": []
   }
 }

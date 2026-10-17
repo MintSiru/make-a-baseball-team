@@ -14,7 +14,8 @@ import { KBO_2026 } from '../rules/kbo2026';
 import { boom, clubState, leaguePrice } from './fans';
 import { payroll } from './offseason';
 import { staffCost } from './staff';
-import { firstTeamIds, orgPlayers, type ClubReport, type LeagueState } from './state';
+import { firstTeamIds, orgPlayers, type ClubReport, type LeagueState, type SeriesResult } from './state';
+import { twelveClubs } from './twelve';
 import { DEMOTION, FANS, FINANCE as F, POSTSEASON_GATE } from './tuning';
 import { concessionsShare, facilityUpkeep, premiumShare } from './facilities';
 import { favouritesMerch } from './life';
@@ -28,21 +29,34 @@ export function broadcastPool(year: number): number {
 }
 
 /**
- * 1.9.0 (the 1.8 feedback): no prize shares. Each postseason game's ticket money is split between the league's
- * running costs, the home club and the visitors (POSTSEASON_GATE), so a club earns from every game it plays, more at
- * home and more the deeper it goes (tickets cost more each round). A game played before 1.9.0 has no recorded gate:
- * its money is the old flat price.
+ * 1.9.0 (the 1.8 feedback): no prize shares by final position. Each postseason game's ticket money is split between
+ * the home club, the visitors and the league, and the league's share pays the Korean Series champion a part of the
+ * whole postseason's gate (POSTSEASON_GATE). With twelve clubs the NPB rule: the host keeps a game's whole gate
+ * before the final, and the final is split as the Japan Series is (the players' pool is theirs, not the clubs').
+ * A game played before 1.9.0 has no recorded gate: its money is the old flat price.
  */
 export function postseasonTakes(s: LeagueState): Record<TeamId, number> {
-  const G = POSTSEASON_GATE;
   const out: Record<TeamId, number> = {};
+  const add = (id: TeamId, x: number) => (out[id] = (out[id] ?? 0) + Math.round(x));
+  const gateOf = (g: { att?: number; gate?: number }) => g.gate ?? Math.round((g.att ?? 0) * leaguePrice(s.year) * FANS.postseasonPrice);
   for (const x of s.postseason)
-    for (const g of x.games) {
-      const gate = g.gate ?? Math.round((g.att ?? 0) * leaguePrice(s.year) * FANS.postseasonPrice);
-      out[g.home] = (out[g.home] ?? 0) + Math.round(gate * G.home);
-      out[g.away] = (out[g.away] ?? 0) + Math.round(gate * G.away);
-    }
+    x.games.forEach((g, i) => {
+      const share = gameShares(s, x.round, i);
+      add(g.home, gateOf(g) * share.home);
+      add(g.away, gateOf(g) * share.away);
+    });
+  const ks = s.postseason.find((x) => x.round === 'ks');
+  if (ks && !twelveClubs(s)) add(ks.winner, s.postseason.flatMap((x) => x.games).reduce((a, g) => a + gateOf(g), 0) * POSTSEASON_GATE.champion);
   return out;
+}
+
+/** The home club's and the visitors' shares of one postseason game's gate (game `i`, 0-based, of its series). */
+export function gameShares(s: LeagueState, round: SeriesResult['round'], i: number): { home: number; away: number } {
+  const G = POSTSEASON_GATE;
+  if (!twelveClubs(s)) return { home: G.home, away: G.away };
+  if (round !== 'ks') return { home: G.npb.host, away: 0 };
+  const club = i < G.npb.earlyGames ? G.npb.early.club : G.npb.late.club;
+  return { home: club, away: club };
 }
 
 /** One club's postseason in money: games at home and away and what it took from them (for the club's report). */

@@ -43,7 +43,8 @@ import { lastOurGame, ourNextGame, postseasonStatus, postseasonTicket, roundName
 import { stopsOf } from '../league/stops';
 import { applyCombine, attends, checkWorkout, combineHeld, combineLines, workoutsOf } from '../league/combine';
 import { traitReport } from '../league/reports';
-import { COMBINE, POSTSEASON_GATE } from '../league/tuning';
+import { COMBINE } from '../league/tuning';
+import { gameShares } from '../league/finance';
 import { money } from './format';
 import { applyHere, applyInWorker, createInWorker } from './leagueClient';
 import { Market } from './Market';
@@ -525,7 +526,7 @@ export function App() {
           {' '}
           {__i18n_t("ui.app.text.a1f1d2fc", {
             price: Math.round(postseasonTicket(league, big.home ? league.user!.teamId : big.opp, big.round) * 10000).toLocaleString('ko-KR'),
-            pct: Math.round((big.home ? POSTSEASON_GATE.home : POSTSEASON_GATE.away) * 100),
+            pct: Math.round(gameShares(league, big.round, big.game - 1)[big.home ? 'home' : 'away'] * 1000) / 10,
           })}
         </span>
       </p>
