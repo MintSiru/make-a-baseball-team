@@ -73703,5 +73703,116 @@
     "line": 663,
     "params": {},
     "locations": []
+  },
+  "league.board.text.ed851f8b": {
+    "source": "src/league/board.ts",
+    "line": 409,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.44d5ae3d": {
+    "source": "src/league/board.ts",
+    "line": 409,
+    "params": {},
+    "locations": []
+  },
+  "league.offseason.text.19a2581b": {
+    "source": "src/league/offseason.ts",
+    "line": 1054,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.offseason.text.d65e73e3": {
+    "source": "src/league/offseason.ts",
+    "line": 1054,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.ec80bf60": {
+    "source": "src/ui/Decision.tsx",
+    "line": 112,
+    "params": {
+      "picked": {
+        "expression": "input.ids.length"
+      },
+      "max": {
+        "expression": "d.protect"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.cda6ff57": {
+    "source": "src/ui/Decision.tsx",
+    "line": 117,
+    "params": {
+      "picked": {
+        "expression": "input.ids.length"
+      },
+      "max": {
+        "expression": "d.protect"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.a3c6b741": {
+    "source": "src/ui/Decision.tsx",
+    "line": 122,
+    "params": {
+      "picked": {
+        "expression": "input.ids.length"
+      },
+      "max": {
+        "expression": "d.protect"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.680bb626": {
+    "source": "src/ui/Decision.tsx",
+    "line": 127,
+    "params": {
+      "n": {
+        "expression": "missing"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.da97bfb1": {
+    "source": "src/ui/Decision.tsx",
+    "line": 132,
+    "params": {
+      "n": {
+        "expression": "open"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.709ec7d2": {
+    "source": "src/ui/Decision.tsx",
+    "line": 137,
+    "params": {
+      "n": {
+        "expression": "none"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.7b47d2f5": {
+    "source": "src/ui/Decision.tsx",
+    "line": 147,
+    "params": {
+      "what": {
+        "expression": "what"
+      }
+    },
+    "locations": []
   }
 }

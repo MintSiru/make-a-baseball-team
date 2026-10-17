@@ -41,6 +41,7 @@ export type BoardItem =
   | 'postingSeasons'
   | 'draftRounds'
   | 'secondDraft'
+  | 'territorial'
   | 'twoLeagues';
 export type BoardVote = 'yes' | 'no' | 'abstain';
 
@@ -93,6 +94,7 @@ export const BOARD_ITEMS: Record<BoardItem, { min: number; max: number; step: nu
   postingSeasons: { min: 6, max: 8, step: 1 },
   draftRounds: { min: 9, max: 13, step: 1 },
   secondDraft: { min: 0, max: 1, step: 1 },
+  territorial: { min: 0, max: 1, step: 1 },
   games: { min: 128, max: 152, step: 8 },
   postseason: { min: 4, max: 5, step: 1 },
   extras: { min: 11, max: 12, step: 1 },
@@ -143,6 +145,8 @@ export function currentValue(s: LeagueState, item: BoardItem, season: number): n
     case 'ghostRunner':
     case 'threeBatter':
       return boardValue(item, season) ?? 0;
+    case 'territorial':
+      return r.territorialPicks > 0 ? 1 : 0;
   }
 }
 
@@ -229,6 +233,10 @@ function stance(item: BoardItem, up: boolean, c: { strength: number; rich: numbe
     case 'secondDraft':
       // The second draft: a weaker club picks first from the others' depth.
       return d * (0.5 - c.strength) * 0.8;
+    case 'territorial':
+      // A territorial pick: the big cities' clubs, with the most high schools at home, gain; the others lose
+      // the best of the class to them.
+      return d * (0.6 * (c.rich - 0.5) + 0.05);
   }
 }
 
@@ -290,6 +298,7 @@ export function committeeMotions(s: LeagueState, year: number): BoardMotion[] {
     { item: 'postingSeasons', up: r() < 0.4, weight: 0.3, push: 0.05 },
     { item: 'draftRounds', up: r() < 0.5, weight: 0.4, push: 0.05 },
     { item: 'secondDraft', up: currentValue(s, 'secondDraft', next) === 0, weight: 0.3, push: 0.05 },
+    { item: 'territorial', up: currentValue(s, 'territorial', next) === 0, weight: 0.4, push: 0.05 },
   ];
   const open = items(s, next);
   const out: BoardMotion[] = [];
@@ -396,6 +405,8 @@ export function motionText(m: Pick<BoardMotion, 'item' | 'value' | 'now'>): stri
       return __i18n_k("league.board.text.5ab98fc9", { now, value });
     case 'secondDraft':
       return value ? __i18n_k("league.board.text.1f5b0fb2") : __i18n_k("league.board.text.9e38c80a");
+    case 'territorial':
+      return value ? __i18n_k("league.board.text.ed851f8b") : __i18n_k("league.board.text.44d5ae3d");
   }
 }
 

@@ -17,8 +17,6 @@ import { bullpenTitles } from './awards';
 const RETIRE = { war: 60, seasons: 12, relieverWar: 35, relieverSaves: 250, relieverTitles: 3, perRetired: 0.25 };
 
 const fits = (p: Player, n: number) => (isDevelopment(p) ? n >= 100 && n <= 199 : n >= 0 && n <= 99);
-/** 1.9.9: a registered player keeps a three-digit number he was given because 0–99 had run out. */
-const keeps = (p: Player, n: number) => fits(p, n) || (!isDevelopment(p) && n >= 100 && n <= 199);
 
 /** How much a player likes a number: pitchers wear the teens to the sixties, hitters single digits and the twenties to fifties. */
 function liking(p: Player, n: number): number {
@@ -35,7 +33,7 @@ function teamNumbers(s: LeagueState, teamId: TeamId) {
   const taken = new Set<number>();
   // Players who already wear a valid number here keep it; the longest-serving wins a clash.
   const keep = players
-    .filter((p) => p.numberTeam === teamId && p.number != null && keeps(p, p.number) && !retired.has(p.number))
+    .filter((p) => p.numberTeam === teamId && p.number != null && fits(p, p.number) && !retired.has(p.number))
     .sort((a, b) => a.proSince - b.proSince || a.id.localeCompare(b.id));
   const need: Player[] = players.filter((p) => !keep.includes(p));
   for (const p of keep) {

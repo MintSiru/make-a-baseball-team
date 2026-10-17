@@ -7865,5 +7865,16 @@
   "league.board.text.1f5b0fb2": "2次ドラフトの復活",
   "league.board.text.9e38c80a": "2次ドラフトの廃止",
   "ui.app.text.9de885d0": "自チームの試合を観戦",
-  "ui.app.text.3b74579c": "自チームの試合を中継中 — 中継を閉じると結果と次の進行が表示されます。"
+  "ui.app.text.3b74579c": "自チームの試合を中継中 — 中継を閉じると結果と次の進行が表示されます。",
+  "league.board.text.ed851f8b": "1次指名(地元高校選手の優先指名)の復活",
+  "league.board.text.44d5ae3d": "1次指名の廃止",
+  "league.offseason.text.19a2581b": "{name}、外国人枠の縮小で退団",
+  "league.offseason.text.d65e73e3": "理事会が外国人枠を減らしたため、{name}選手との契約を整理しました。",
+  "ui.decision.text.ec80bf60": "2次ドラフトのプロテクトリストに{picked}人しか入れていません(最大{max}人)。外れた選手は他球団に指名される可能性があります。",
+  "ui.decision.text.cda6ff57": "特別指名のプロテクトリストに{picked}人しか入れていません(最大{max}人)。外れた選手は新球団に指名される可能性があります。",
+  "ui.decision.text.a3c6b741": "FA補償のプロテクトリストに{picked}人しか入れていません(最大{max}人)。外れた選手は補償選手として指名される可能性があります。",
+  "ui.decision.text.680bb626": "特別指名で{n}球団の選手を選んでいません。選ばなかった球団からは獲得できません。",
+  "ui.decision.text.da97bfb1": "外国人枠{n}つを空けたまま進みます。",
+  "ui.decision.text.709ec7d2": "指名した新人{n}人に契約金を提示していません。契約しなければ去ります。",
+  "ui.decision.text.7b47d2f5": "{what} このまま確定しますか?"
 }

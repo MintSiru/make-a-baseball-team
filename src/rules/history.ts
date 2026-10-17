@@ -233,8 +233,8 @@ export const rulesFor = (calendarYear: number) => withBoard(playsHistory() ? rul
     leagues take the two leagues' postseason (postseason.ts); the cap is read by kbo2026.ts `salaryCapFor`. */
 function withBoard(r: YearRules, year: number): YearRules {
   const v = (item: string) => boardValue(item, year);
-  const [foreign, team, games, post, extras, fa, two, asia, roster, rounds, second] = ['foreign', 'firstTeam', 'games', 'postseason', 'extras', 'faSeasons', 'twoLeagues', 'asiaQuota', 'rosterLimit', 'draftRounds', 'secondDraft'].map(v);
-  if ([foreign, team, games, post, extras, fa, two, asia, roster, rounds, second].every((x) => x === undefined)) return r;
+  const [foreign, team, games, post, extras, fa, two, asia, roster, rounds, second, territorial] = ['foreign', 'firstTeam', 'games', 'postseason', 'extras', 'faSeasons', 'twoLeagues', 'asiaQuota', 'rosterLimit', 'draftRounds', 'secondDraft', 'territorial'].map(v);
+  if ([foreign, team, games, post, extras, fa, two, asia, roster, rounds, second, territorial].every((x) => x === undefined)) return r;
   const out: YearRules = { ...r, foreign: { ...r.foreign }, firstTeam: { ...r.firstTeam } };
   if (foreign !== undefined) out.foreign = { ...out.foreign, hold: foreign, play: foreign };
   if (team !== undefined) out.firstTeam = { registered: team, active: team - 1 };
@@ -246,6 +246,7 @@ function withBoard(r: YearRules, year: number): YearRules {
   if (roster !== undefined) out.rosterLimit = roster;
   if (rounds !== undefined) out.draftRounds = rounds;
   if (second === 0) out.secondDraft = false;
+  if (territorial !== undefined) out.territorialPicks = territorial;
   if (two !== undefined) {
     out.twoLeagues = two === 1;
     if (two === 1) out.postseason = 'five';

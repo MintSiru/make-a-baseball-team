@@ -450,8 +450,8 @@ export function foreignSigningDecision(s: LeagueState, next: number): Decision |
   const u = user(s);
   const slots = foreignSlots(s, u.teamId, next);
   const have = slotForeigners(s, u.teamId, next);
-  const regular = slots.regular - have.filter((p) => !p.origin.asiaQuota).length;
-  const asia = slots.asia - have.filter((p) => p.origin.asiaQuota).length;
+  const regular = Math.max(0, slots.regular - have.filter((p) => !p.origin.asiaQuota).length);
+  const asia = Math.max(0, slots.asia - have.filter((p) => p.origin.asiaQuota).length);
   if (regular <= 0 && asia <= 0) return null;
   const candidates = foreignCandidates(s, next);
   // 1.9.6: under a history game's cap (12만 달러 to 2004, 30만 to 2013) everyone signs at his ask within it, no talks.

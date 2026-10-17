@@ -100,6 +100,53 @@ const pct = (x: number) => `${Math.round(x * 100)}%`;
 type Extra = { title: string; value: (p: Player) => string; sort?: (p: Player) => number };
 
 /** Sortable player columns shared by the decision tables: name, position, age, current, future (+ one extra). */
+/** 1.9.9 (the user's request): what an important decision leaves out — protected places unused, a club in the
+    special draft not picked from, foreign places left open, a draft pick not signed — asked about before it is sent
+    (a click through left the second draft's list empty and the players gone). Null when nothing is left out. */
+export function omission(d: DecisionT, input: DecisionInput): string | null {
+  const short = (picked: number, max: number, of: number) => Math.min(max, of) - picked;
+  switch (input.kind) {
+    case 'secondProtect': {
+      if (d.kind !== 'secondProtect') return null;
+      const n = short(input.ids.length, d.protect, d.candidates.length);
+      return n > 0 ? __i18n_t("ui.decision.text.ec80bf60", { picked: input.ids.length, max: d.protect }) : null;
+    }
+    case 'rivalProtect': {
+      if (d.kind !== 'rivalProtect') return null;
+      const n = short(input.ids.length, d.protect, d.candidates.length);
+      return n > 0 ? __i18n_t("ui.decision.text.cda6ff57", { picked: input.ids.length, max: d.protect }) : null;
+    }
+    case 'faProtect': {
+      if (d.kind !== 'faProtect') return null;
+      const n = short(input.ids.length, d.protect, d.candidates.length);
+      return n > 0 ? __i18n_t("ui.decision.text.a3c6b741", { picked: input.ids.length, max: d.protect }) : null;
+    }
+    case 'specialDraft': {
+      if (d.kind !== 'specialDraft') return null;
+      const missing = Object.keys(d.lists).filter((teamId) => !input.picks[teamId]).length;
+      return missing > 0 ? __i18n_t("ui.decision.text.680bb626", { n: missing }) : null;
+    }
+    case 'foreign': {
+      if (d.kind !== 'foreign' || d.tryout) return null;
+      const open = d.regular + d.asia - input.ids.length;
+      return input.ids.length === 0 && open > 0 && d.candidates.length > 0 ? __i18n_t("ui.decision.text.da97bfb1", { n: open }) : null;
+    }
+    case 'rookieBonus': {
+      if (d.kind !== 'rookieBonus') return null;
+      const none = d.picks.filter((pk) => !input.offers[pk.id]).length;
+      return none > 0 ? __i18n_t("ui.decision.text.709ec7d2", { n: none }) : null;
+    }
+    default:
+      return null;
+  }
+}
+
+/** Sends the decision, asking first when something important is left out. */
+const confirmOmission = (d: DecisionT, input: DecisionInput) => {
+  const what = omission(d, input);
+  return !what || typeof window === 'undefined' || window.confirm(__i18n_t("ui.decision.text.7b47d2f5", { what }));
+};
+
 function usePlayerSort(players: Player[], year: number, extra?: Extra) {
   const columns: Record<string, SortColumn<Player>> = {
     name: { value: (p) => p.name },
@@ -1414,7 +1461,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
           </>
         ) : (
           <>
-            <button type="button" class="primary" disabled={!!problem} onClick={() => input && onSubmit(input)}>{__i18n_t("ui.decision.decision.55536106")}</button>
+            <button type="button" class="primary" disabled={!!problem} onClick={() => input && confirmOmission(d, input) && onSubmit(input)}>{__i18n_t("ui.decision.decision.55536106")}</button>
             <button type="button" onClick={recommend}>
               {__i18n_display(d.kind === 'camp' ? __i18n_k("ui.decision.decision.3d05078a") : __i18n_k("ui.decision.decision.abd43abb"))}
             </button>

@@ -7865,5 +7865,16 @@
   "league.board.text.1f5b0fb2": "2차 드래프트 부활",
   "league.board.text.9e38c80a": "2차 드래프트 폐지",
   "ui.app.text.9de885d0": "우리 경기 관전",
-  "ui.app.text.3b74579c": "우리 경기 중계 중 — 중계 창을 닫으면 결과와 다음 진행이 보입니다."
+  "ui.app.text.3b74579c": "우리 경기 중계 중 — 중계 창을 닫으면 결과와 다음 진행이 보입니다.",
+  "league.board.text.ed851f8b": "1차 지명(연고 지역 고교 선수 우선 지명) 부활",
+  "league.board.text.44d5ae3d": "1차 지명 폐지",
+  "league.offseason.text.19a2581b": "{name}, 외국인 선수 인원 축소로 결별",
+  "league.offseason.text.d65e73e3": "이사회가 외국인 선수 인원을 줄여 {name} 선수와의 계약을 정리했습니다.",
+  "ui.decision.text.ec80bf60": "2차 드래프트 보호 명단에 {picked}명만 넣었습니다(최대 {max}명). 빠진 선수는 다른 구단이 데려갈 수 있습니다.",
+  "ui.decision.text.cda6ff57": "특별지명 보호 명단에 {picked}명만 넣었습니다(최대 {max}명). 빠진 선수는 새 구단이 데려갈 수 있습니다.",
+  "ui.decision.text.a3c6b741": "FA 보상 보호 명단에 {picked}명만 넣었습니다(최대 {max}명). 빠진 선수는 보상 선수로 지명될 수 있습니다.",
+  "ui.decision.text.680bb626": "특별지명에서 {n}개 구단의 선수를 고르지 않았습니다. 고르지 않은 구단에서는 데려오지 못합니다.",
+  "ui.decision.text.da97bfb1": "외국인 선수 자리 {n}개를 비워 둔 채로 넘어갑니다.",
+  "ui.decision.text.709ec7d2": "지명한 신인 {n}명에게 계약금을 제시하지 않았습니다. 계약하지 않으면 떠납니다.",
+  "ui.decision.text.7b47d2f5": "{what} 이대로 확정할까요?"
 }

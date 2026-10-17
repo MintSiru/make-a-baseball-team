@@ -7865,5 +7865,16 @@
   "league.board.text.1f5b0fb2": "Second draft restored",
   "league.board.text.9e38c80a": "Second draft abolished",
   "ui.app.text.9de885d0": "Watch our game",
-  "ui.app.text.3b74579c": "Our game is on — close the broadcast to see the result and go on."
+  "ui.app.text.3b74579c": "Our game is on — close the broadcast to see the result and go on.",
+  "league.board.text.ed851f8b": "Territorial first picks restored (a home-region high-school player first)",
+  "league.board.text.44d5ae3d": "Territorial first picks abolished",
+  "league.offseason.text.19a2581b": "{name} let go as the foreign places are cut",
+  "league.offseason.text.d65e73e3": "With the board cutting the foreign places, the club has ended {name}'s contract.",
+  "ui.decision.text.ec80bf60": "Only {picked} of up to {max} on the Second Draft protected list. Anyone left off can be taken by another club.",
+  "ui.decision.text.cda6ff57": "Only {picked} of up to {max} on the special-draft protected list. Anyone left off can be taken by the new club.",
+  "ui.decision.text.a3c6b741": "Only {picked} of up to {max} on the free-agent compensation protected list. Anyone left off can be taken as compensation.",
+  "ui.decision.text.680bb626": "No player picked from {n, plural, one {# club} other {# clubs}} in the special draft. Nobody comes from a club you skip.",
+  "ui.decision.text.da97bfb1": "{n, plural, one {# foreign place stays} other {# foreign places stay}} empty.",
+  "ui.decision.text.709ec7d2": "No signing bonus offered to {n, plural, one {# drafted rookie} other {# drafted rookies}}. Unsigned picks leave.",
+  "ui.decision.text.7b47d2f5": "{what} Confirm anyway?"
 }

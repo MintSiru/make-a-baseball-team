@@ -49,9 +49,11 @@ describe('carrying older saves forward', () => {
       const text = serializeSave({ ...makeSave(s.seed, [], { at: { year: 2025, phase: 'offseason' }, state: old }), sim });
       return (parseSave(text).snapshot!.state as typeof s).offseason!.step;
     };
-    expect(at('0.5')).toBe(7); // posting came in 0.5.1
-    expect(at('0.6')).toBe(6);
-    expect(at('0.7')).toBe(6);
+    // Posting came in 0.5.1; the board's meeting (1.9.9) is a step before all of them.
+    expect(at('0.5')).toBe(8);
+    expect(at('0.6')).toBe(7);
+    expect(at('0.7')).toBe(7);
+    expect(at('1.9.8')).toBe(7);
   }, 120_000);
 
   it('still refuses versions it cannot carry', () => {

@@ -158,3 +158,17 @@ describe('uniform numbers and the honours', () => {
     expect(team.retiredNumbers.some((x) => x.number === 77)).toBe(false);
   });
 });
+
+describe('important decisions left short', () => {
+  it('asks before a protected list goes in short, or foreign places stay open', async () => {
+    const { omission } = await import('../src/ui/Decision');
+    const d = { kind: 'secondProtect' as const, candidates: ['a', 'b', 'c', 'd'], protect: 3 };
+    expect(omission(d, { kind: 'secondProtect', ids: [] })).toContain('2차 드래프트');
+    expect(omission(d, { kind: 'secondProtect', ids: ['a', 'b', 'c'] })).toBeNull();
+    // Fewer candidates than places: all of them is enough.
+    expect(omission({ ...d, candidates: ['a', 'b'] }, { kind: 'secondProtect', ids: ['a', 'b'] })).toBeNull();
+    const f = { kind: 'foreign' as const, candidates: ['x'], regular: 2, asia: 0 };
+    expect(omission(f, { kind: 'foreign', ids: [] })).toContain('2');
+    expect(omission(f, { kind: 'foreign', ids: ['x'] })).toBeNull();
+  });
+});
