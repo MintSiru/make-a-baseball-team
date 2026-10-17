@@ -263,7 +263,7 @@ export function App() {
       league
         ? [
             // After the combine (1.3.0) the clubs know the class better.
-            ...(combineHeld(league, draftYear) ? applyCombine(league.seed, draftYear, draftClass(league.seed, draftYear)) : draftClass(league.seed, draftYear)),
+            ...(combineHeld(league, draftYear) ? applyCombine(league.seed, draftYear, draftClass(league.seed, draftYear, league.unified)) : draftClass(league.seed, draftYear, league.unified)),
             ...Object.values(league.players).filter((p) => p.status === 'overseas' && p.abroad?.draft === draftYear),
           ]
         : [],

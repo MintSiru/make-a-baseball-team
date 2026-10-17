@@ -48,6 +48,7 @@ import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './fore
 import { marchEvents, nextNationalDecision, novemberEvents } from './national';
 import { disputeDecision } from './dispute';
 import { homecomings } from './returnees';
+import { foundNorthClubs } from './unified';
 import { autoProtect, checkRival, checkRivalProtect, resolveRival, resolveRivalProtect, rivalDecision, rivalProtectDecision, rivalStep } from './rival';
 import {
   autoAnnual,
@@ -207,6 +208,8 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
       lines: [__i18n_k("league.expansion.text.8d318296"), __i18n_k("league.expansion.text.f57bd081", { x: WARD.injury, rehab: Math.round((WARD.rehab - 1) * 100), fatigue: WARD.fatigue, pitches: WARD.pitchLimit })],
       tone: 'bad',
     });
+  // 1.9.2, 통일 한국: the north's five other clubs are founded with ours (unified.ts).
+  if (settings.scenario === 'unified' || settings.scenario === 'unifiedFree') foundNorthClubs(s, y0, firstTeamYear, settings.cityId);
   // A citizen club is founded by the mayor elected in June 2026 (parent.ts).
   if (settings.parentType === 'citizen') s.user.mayor = electMayor(s, y0);
   spend(s, __i18n_k("league.expansion.foundClub.b77f9a73"), b.entryFee, true);
@@ -267,6 +270,8 @@ function draftSlots(s: LeagueState, draftYear: number, order: TeamId[]): DraftSl
   if (u && !order.includes(u.teamId) && draftYear + 1 <= u.firstTeamYear) founding.push({ teamId: u.teamId, first: draftYear === startYear() });
   const tw = s.twelve;
   if (tw && !order.includes(tw.teamId) && draftYear + 1 <= tw.firstTeam) founding.push({ teamId: tw.teamId, first: draftYear === tw.founded });
+  // 1.9.2: the north's clubs, after ours.
+  for (const c of s.unified?.clubs ?? []) if (!order.includes(c.teamId) && draftYear + 1 <= c.firstTeam) founding.push({ teamId: c.teamId, first: draftYear === c.founded });
   if (!founding.length) return standardSlots(order);
   const slots: DraftSlot[] = [];
   for (const f of founding) if (f.first) for (let i = 0; i < EXPANSION_DEFAULTS.rookiePriorityPicks; i++) slots.push({ teamId: f.teamId, label: __i18n_k("league.expansion.draftSlots.label.b31947fa") });

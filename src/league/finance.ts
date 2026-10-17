@@ -117,7 +117,8 @@ export function clubReport(s: LeagueState, teamId: TeamId, year: number, shares:
   const heat = Math.max(0.5, 1 + c.interest * 0.5);
   const revenue = {
     gate: gate?.revenue ?? 0,
-    broadcast: inFirstTeam ? Math.round(broadcastPool(year) / clubs) : 0,
+    // 1.9.2, 통일 리그: sixteen clubs sell more games, so the deal grows with them (each club's share as with eleven).
+    broadcast: inFirstTeam ? Math.round((broadcastPool(year) * (s.unified ? Math.max(1, clubs / 11) : 1)) / clubs) : 0,
     sponsors: Math.round((F.sponsor.base + (c.popularity / 1000) * F.sponsor.perThousandFans) * heat * (inFirstTeam ? 1 : F.futuresYear)),
     naming: team.parent.type === 'namingRights' ? namingFee(s, teamId) : 0,
     // The user's club (V0.10): its best-loved players sell shirts, and its shops sell more food.

@@ -8,6 +8,7 @@ import { background, careerText, foreignAsk, foreignName, LEVEL_LABELS, veteranC
 import type { Player } from '../model/types';
 import { FOREIGN } from './tuning';
 import { rollPersonality, rollTraits } from './traits';
+import { makeNorthern } from './north';
 
 export const ageIn = (p: Player, year: number) => ageOn(p.birthday, `${year}-04-01`);
 export const isPitcher = (p: Pick<Player, 'role'>) => isPitcherRole(p.role);
@@ -60,15 +61,42 @@ export function shiftProspect(p: DraftProspect, years: number): DraftProspect {
 
 export const poolSeed = (seed: string, draftYear: number) => (draftYear === DRAFT_ROOM_YEAR ? seed : `${seed}|draft|${draftYear}`);
 
-/** The prospects of the draft held in September of `draftYear`, as league amateurs. */
-export function draftClass(seed: string, draftYear: number): Player[] {
+/** The prospects of the draft held in September of `draftYear`, as league amateurs. 1.9.2: a unified league
+    (`north`, 통일 한국) adds the north's amateurs (north.ts). */
+export function draftClass(seed: string, draftYear: number, north?: { since: number } | null): Player[] {
   const ps = poolSeed(seed, draftYear);
   const pool = generateDraftPool(ps);
-  return placeClass(
+  const south = placeClass(
     pool.players.map((p) => fromDraftProspect(shiftProspect(p, draftYear - DRAFT_ROOM_YEAR), draftYear, ps)),
     ps,
   );
+  return north && draftYear >= north.since ? withNorth(seed, draftYear, north.since, south) : south;
 }
+
+/**
+ * 1.9.2: the north's amateurs join the class (60% as many again, so sixteen clubs draft from a class as deep as ten
+ * did). Baseball there starts small: in the first drafts the north's best are held back (its top 60 prospects the
+ * first year, twelve fewer each year after), so its players are weaker at first and as good as the south's within
+ * five years. The draft ranks are drawn again over the whole class.
+ */
+function withNorth(seed: string, draftYear: number, since: number, south: Player[]): Player[] {
+  const ps = `${poolSeed(seed, draftYear)}|north`;
+  const used = new Set(south.map((p) => p.name));
+  const held = Math.max(0, NORTH_CLASS.heldBack - NORTH_CLASS.heldBackStep * (draftYear - since));
+  const pool = generateDraftPool(ps)
+    .players.map((p) => ({ ...p, id: `N${p.id}` }))
+    .sort((a, b) => a.rank - b.rank)
+    .slice(held, held + NORTH_CLASS.size);
+  const north = placeClass(
+    pool.map((p) => makeNorthern(fromDraftProspect(shiftProspect(p, draftYear - DRAFT_ROOM_YEAR), draftYear, ps), ps, used)),
+    ps,
+  );
+  const all = [...south, ...north].sort((a, b) => futureValue(b) - futureValue(a) || a.amateur.draftRank - b.amateur.draftRank);
+  all.forEach((p, i) => (p.amateur = { ...p.amateur, draftRank: i + 1 }));
+  return all;
+}
+
+export const NORTH_CLASS = { size: 240, heldBack: 60, heldBackStep: 12 } as const;
 
 // ── Foreign players (names and backgrounds in foreign.ts) ───────────────────────────────────────
 

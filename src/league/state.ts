@@ -639,6 +639,8 @@ export interface LeagueState {
   /** 1.9.1: a league played in two leagues without a twelfth club (a scenario's): each club's side and the
       postseason's style. */
   leagueSides?: { sides: Record<TeamId, LeagueSide>; playoffs?: 'kbo' | 'npb' };
+  /** 1.9.2 (unified.ts): 통일 한국 — the north's clubs founded with ours. */
+  unified?: import('./unified').UnifiedState;
   /** Null in a spectator league. */
   user: UserClub | null;
   pending: Decision | null;

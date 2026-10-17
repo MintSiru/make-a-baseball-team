@@ -109,7 +109,7 @@ export function draftWatchDay(s: LeagueState, date: string) {
   if (!s.user || s.phase !== 'regular') return;
   const due = (Object.entries(WATCH) as [keyof typeof WATCH, string][]).filter(([k, md]) => date >= `${s.year}-${md}` && !s.marketDone?.includes(`${s.year}-watch-${k}`));
   if (!due.length) return;
-  const cls = draftClass(s.seed, s.year).sort((a, b) => a.amateur.draftRank - b.amateur.draftRank);
+  const cls = draftClass(s.seed, s.year, s.unified).sort((a, b) => a.amateur.draftRank - b.amateur.draftRank);
   for (const [kind] of due) {
     (s.marketDone ??= []).push(`${s.year}-watch-${kind}`);
     const id = `draft-watch-${s.year}-${kind}`;

@@ -68,7 +68,7 @@ export function openFantasy(s: LeagueState, year: number): FantasyDraft {
   }
   // The class: as many as a rookie draft takes, by the clubs' ranking after the combine.
   const size = clubs.length * FANTASY.classRounds;
-  const rookies = applyCombine(s.seed, year, draftClass(s.seed, year))
+  const rookies = applyCombine(s.seed, year, draftClass(s.seed, year, s.unified))
     .sort((a, b) => a.amateur.draftRank - b.amateur.draftRank)
     .slice(0, size);
   for (const p of rookies) s.players[p.id] = p;

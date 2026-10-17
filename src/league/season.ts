@@ -15,6 +15,7 @@ import { parkFactor } from './clubs';
 import { assignSquads, futuresPreference, futuresSquad, makeFuturesLeague } from './futures';
 import { chooseActive, matchInputs } from './manager';
 import { noteEligibility } from './postentry';
+import { assignUnifiedLeagues } from './unified';
 import { manualReplacements } from './entry';
 import { ensureNumbers } from './numbers';
 import { attendance, clubState, recordGate } from './fans';
@@ -49,6 +50,8 @@ export function startSeason(s: LeagueState) {
   // Twelve clubs (V0.9): two leagues are drawn once, before the first twelve-club season.
   if (s.twelve?.format === 'two' && !s.twelve.leagues && twelveClubs(s)) s.twelve.leagues = assignLeagues(s);
   const teams = firstTeamIds(s);
+  // 1.9.2, 통일 한국: the two leagues of eight, drawn before the first sixteen-club season.
+  assignUnifiedLeagues(s);
   // 1.9.1: any other league in two leagues (leagueSides) gets its own pairings.
   const sides = sidesOf(s);
   const twelve = twelveGames(s, teams, s.year);
@@ -277,7 +280,7 @@ export function playDay(s: LeagueState): boolean {
   marketEvents(s, date);
   // The All-Star voting and game (1.2.0), the draft combine (1.3.0).
   allStarDay(s, date);
-  combineDay(s, date, () => applyCombine(s.seed, s.year, draftClass(s.seed, s.year)));
+  combineDay(s, date, () => applyCombine(s.seed, s.year, draftClass(s.seed, s.year, s.unified)));
   // 1.7.0: the draft class in the papers (draftlog.ts).
   draftWatchDay(s, date);
   // 1.7.0: foreigners in their first season who fail to adapt (adapt.ts).
