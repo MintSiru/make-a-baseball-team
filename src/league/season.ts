@@ -36,7 +36,7 @@ import { standings } from './standings';
 import { ENGINE } from './tuning';
 import { carryOverInjuries, offRoster, rollInjuries } from './injuries';
 import { openForeignBooks } from './foreigncap';
-import { assignLeagues, twelveClubs, twelveGames } from './twelve';
+import { assignLeagues, sidesOf, twelveClubs, twelveGames } from './twelve';
 import { finishTrips } from './training';
 import { lifeDay } from './life';
 import { alumniDay } from './alumni';
@@ -49,7 +49,10 @@ export function startSeason(s: LeagueState) {
   // Twelve clubs (V0.9): two leagues are drawn once, before the first twelve-club season.
   if (s.twelve?.format === 'two' && !s.twelve.leagues && twelveClubs(s)) s.twelve.leagues = assignLeagues(s);
   const teams = firstTeamIds(s);
-  s.schedule = makeSchedule(teams, s.year, s.seed, twelveGames(s, teams, s.year));
+  // 1.9.1: any other league in two leagues (leagueSides) gets its own pairings.
+  const sides = sidesOf(s);
+  const twelve = twelveGames(s, teams, s.year);
+  s.schedule = makeSchedule(teams, s.year, s.seed, twelve, undefined, !twelve && sides ? teams.map((id) => (sides[id] === 'dream' ? 0 : 1)) : undefined);
   s.next = 0;
   s.scores = [];
   s.lines = {};

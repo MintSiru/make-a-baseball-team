@@ -27,10 +27,21 @@ export const NATURAL_RIVALS: [TeamId, TeamId][] = [
 /** Twelve clubs in the first team this season. */
 export const twelveClubs = (s: LeagueState, year = s.year) => !!s.twelve && firstTeamIds(s, year).includes(s.twelve.teamId);
 
-/** Two leagues this season (the sides are set when the twelve clubs first play). */
-export const twoLeagues = (s: LeagueState, year = s.year) => s.twelve?.format === 'two' && twelveClubs(s, year) && !!s.twelve.leagues;
+/** The two leagues' sides this season: the twelve-club setting's (set when the twelve clubs first play), or 1.9.1 a
+    league set up in two leagues from the start (`leagueSides`, every first-team club on a side). */
+export function sidesOf(s: LeagueState, year = s.year): Record<TeamId, LeagueSide> | undefined {
+  if (s.twelve?.format === 'two' && twelveClubs(s, year) && s.twelve.leagues) return s.twelve.leagues;
+  const sides = s.leagueSides?.sides;
+  return sides && firstTeamIds(s, year).every((id) => sides[id]) ? sides : undefined;
+}
 
-export const sideOf = (s: LeagueState, teamId: TeamId): LeagueSide | undefined => s.twelve?.leagues?.[teamId];
+/** Two leagues this season. */
+export const twoLeagues = (s: LeagueState, year = s.year) => !!sidesOf(s, year);
+
+export const sideOf = (s: LeagueState, teamId: TeamId): LeagueSide | undefined => sidesOf(s)?.[teamId];
+
+/** 1.8.0: the two leagues' postseason, the cross-league spots (default) or the NPB way. */
+export const playoffsOf = (s: LeagueState) => s.twelve?.playoffs ?? s.leagueSides?.playoffs;
 
 /**
  * The two leagues, set once before the first twelve-club season. The user's club and the twelfth club play in

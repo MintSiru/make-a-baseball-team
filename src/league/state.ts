@@ -636,6 +636,9 @@ export interface LeagueState {
   pbp?: Record<string, import('./engine/types').PlayEvent[]>;
   /** The twelfth club (V0.9), once founded. */
   twelve?: TwelveState;
+  /** 1.9.1: a league played in two leagues without a twelfth club (a scenario's): each club's side and the
+      postseason's style. */
+  leagueSides?: { sides: Record<TeamId, LeagueSide>; playoffs?: 'kbo' | 'npb' };
   /** Null in a spectator league. */
   user: UserClub | null;
   pending: Decision | null;

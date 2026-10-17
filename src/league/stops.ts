@@ -8,6 +8,7 @@ import { KBO_2026 } from '../rules/kbo2026';
 import { addAlert } from './alerts';
 import { firstTeamIds, type LeagueState } from './state';
 import { standings } from './standings';
+import { twoLeagues } from './twelve';
 
 export type StopKind = 'injury' | 'deadline' | 'debut' | 'race' | 'bigGame' | 'postEntry';
 export const STOP_KINDS: StopKind[] = ['injury', 'deadline', 'debut', 'race', 'bigGame', 'postEntry'];
@@ -43,7 +44,7 @@ function regular(s: LeagueState, p: Player): boolean {
 /** Where our club stands against the postseason line: 'in', 'out' or still open. */
 export function raceState(s: LeagueState): 'in' | 'out' | null {
   const u = s.user;
-  if (!u || s.twelve?.format === 'two') return null;
+  if (!u || twoLeagues(s)) return null;
   const ids = firstTeamIds(s, s.year);
   if (!ids.includes(u.teamId)) return null;
   const rows = standings(ids, s.scores);

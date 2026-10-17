@@ -330,6 +330,7 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'twoLeaguePlayoffs':
       if (s.twelve) s.twelve.playoffs = action.style;
+      else if (s.leagueSides) s.leagueSides.playoffs = action.style;
       break;
     case 'inspect':
       inspect(s, action.id);
