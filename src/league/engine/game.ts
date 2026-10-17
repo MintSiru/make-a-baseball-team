@@ -10,6 +10,7 @@
    changes results and needs a SIM_VERSION bump. */
 import { countBall, drawBall, emptyBatted, groundShift, homeRunShift, type BattedBall, type BipResult } from '../battedball';
 import { clearance, layoutEffects } from '../layout';
+import { emptyField, FIELDER_DIR, fielderFor } from '../fielding';
 import { ENGINE as E, Z, Zr } from '../tuning';
 import { emptySplit, type BattingLine, type BatterIn, type BenchIn, type BullpenRole, type FieldPos, type GameIn, type GameOut, type PitcherIn, type PitchingLine, type PlayEvent, type PlayResult, type RelieverIn, type Split, type TeamBox, type TeamIn } from './types';
 
@@ -54,7 +55,13 @@ interface Side {
   next: number; // lineup index of the next batter
   fieldZ: number; // team fielding z
   catcherZ: number;
+  /** 2.0.3: the nine's sure hands, and the catcher's game-calling (z). */
+  handsZ: number;
+  leadZ: number;
 }
+
+/** 2.0.3: how much a pitcher's ground-ball or fly-ball step weighs against a hitter's. */
+const PITCHER_LIFT = 0.8;
 
 // Position weights for team fielding: the middle of the diamond matters most.
 const FIELD_WEIGHT: Record<string, number> = { C: 0.6, '1B': 0.5, '2B': 1.1, '3B': 0.9, SS: 1.3, LF: 0.7, CF: 1.1, RF: 0.8, DH: 0 };
@@ -67,19 +74,26 @@ function emptyPitching(id: string, starter: boolean): PitchingLine {
   return { id, split: { L: emptySplit(), R: emptySplit() }, gs: starter ? 1 : 0, outs: 0, bf: 0, h: 0, hr: 0, bb: 0, hbp: 0, k: 0, r: 0, er: 0, pitches: 0, w: 0, l: 0, sv: 0, hld: 0, qs: 0 };
 }
 
-/** Team fielding and the catcher's arm from the nine on the field now. */
-function fielding(side: Pick<Side, 'lineup' | 'team' | 'fieldZ' | 'catcherZ'>) {
+/** Team fielding and the catcher's arm from the nine on the field now (2.0.3: range, hands and arm in parts). */
+function fielding(side: Pick<Side, 'lineup' | 'team' | 'fieldZ' | 'catcherZ' | 'handsZ' | 'leadZ'>) {
   let w = 0,
-    sum = 0;
+    sum = 0,
+    hands = 0;
   for (const b of side.lineup) {
     const fw = FIELD_WEIGHT[b.pos] ?? 0;
     w += fw;
-    sum += fw * Z(b.defense);
+    sum += fw * Z(b.range ?? b.defense);
+    hands += fw * Z(b.hands ?? b.defense);
   }
   const catcher = side.lineup.find((b) => b.pos === 'C');
   side.fieldZ = (w ? sum / w : 0) + (side.team.fieldBonus ?? 0);
-  side.catcherZ = catcher ? Z(catcher.defense) : 0;
+  side.handsZ = w ? hands / w : 0;
+  side.catcherZ = catcher ? Z(catcher.arm ?? catcher.defense) : 0;
+  side.leadZ = catcher?.lead !== undefined ? Z(catcher.lead) : 0;
 }
+
+/** 2.0.3: a fielder's line in this game. */
+const fieldLine = (side: Side, slot: number) => (side.bat[slot]!.fld ??= emptyField());
 
 function makeSide(team: TeamIn): Side {
   const box: TeamBox = { teamId: team.teamId, runs: 0, hits: 0, errors: 0, lineScore: [], batting: [], pitching: [] };
@@ -98,6 +112,8 @@ function makeSide(team: TeamIn): Side {
     next: 0,
     fieldZ: 0,
     catcherZ: 0,
+    handsZ: 0,
+    leadZ: 0,
   };
   fielding(side);
   side.apps.push({ arm: team.starter, role: 'SP', line: emptyPitching(team.starter.id, true), entryLead: 0, entryRunners: 0, minLead: 0, exitLead: 0 });
@@ -111,7 +127,11 @@ type Sub = { kind: 'PH' | 'PR' | 'DEF'; in: string; out: string; pos: FieldPos |
 function substitute(side: Side, slot: number, b: BenchIn, kind: Sub['kind']): Sub {
   const out = side.lineup[slot]!.id;
   const pos = side.lineup[slot]!.pos;
-  const into: BatterIn = { id: b.id, bats: b.bats, contact: b.contact, power: b.power, eye: b.eye, speed: b.speed, defense: pos === 'DH' ? b.defense : (b.defenseAt[pos] ?? b.defense - 15), pos, pull: b.pull, lift: b.lift, edge: b.edge };
+  const defense = pos === 'DH' ? b.defense : (b.defenseAt[pos] ?? b.defense - 15);
+  // 2.0.3: his fielding parts lose what his grade loses away from his own positions.
+  const off = b.defense - defense;
+  const part = (x: number | undefined) => (x === undefined ? undefined : x - off);
+  const into: BatterIn = { id: b.id, bats: b.bats, contact: b.contact, power: b.power, eye: b.eye, speed: b.speed, defense, pos, pull: b.pull, lift: b.lift, edge: b.edge, range: part(b.range), hands: part(b.hands), arm: part(b.arm), ...(pos === 'C' && b.lead !== undefined ? { lead: b.lead } : {}) };
   side.lineup[slot] = into;
   side.bench.splice(side.bench.indexOf(b), 1);
   const line = emptyBatting(into);
@@ -351,7 +371,16 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       if (runner1 && !bases[1] && outs < 3) {
         const rs = bat.lineup[runner1.bat]!;
         if (rs.speed >= E.steal.minSpeed && r() < inv(logit(E.steal.attempt.base) + E.steal.attempt.speed * Z(rs.speed) + (bat.team.smallBall ? E.smallBall.steal : 0))) {
-          const ok = r() < inv(logit(E.steal.success.base) + E.steal.success.speed * Z(rs.speed) + E.steal.success.catcher * field.catcherZ);
+          const steal = logit(E.steal.success.base) + E.steal.success.speed * Z(rs.speed);
+          const ok = r() < inv(steal + E.steal.success.catcher * field.catcherZ);
+          // 2.0.3: the catcher's line: attempts, runners thrown out, and thrown out above an average arm.
+          const cslot = game.balls ? field.lineup.findIndex((x) => x.pos === 'C') : -1;
+          if (cslot >= 0) {
+            const f = fieldLine(field, cslot);
+            f.sba++;
+            if (!ok) f.cs++;
+            f.csaa += Math.round(((ok ? 0 : 1) - (1 - inv(steal + E.steal.success.catcher * E.fielding.ref.arm))) * 1000);
+          }
           bases[0] = null;
           if (ok) {
             bases[1] = runner1;
@@ -401,22 +430,34 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
         zp = Zr(batter.power),
         ze = Zr(batter.eye),
         zs = Zr(batter.speed);
-      const pBB = inv(logit(E.base.bb) + b.bb.eye * ze + b.bb.contact * zc + q.bb.command * command + q.bb.stuff * stuff + E.platoon.bb * same);
+      // 2.0.3: the catcher's game-calling, a little on the strikeouts and walks.
+      const callZ = game.balls ? field.leadZ : 0;
+      const pBB = inv(logit(E.base.bb) + b.bb.eye * ze + b.bb.contact * zc + q.bb.command * command + q.bb.stuff * stuff + E.platoon.bb * same - E.catcher.lead * callZ);
       const pHBP = inv(logit(E.base.hbp) + q.hbp.command * command);
-      const pK = inv(logit(E.base.k) + b.k.contact * zc + b.k.power * zp + b.k.eye * ze + q.k.stuff * stuff + q.k.breaking * breaking + q.k.command * command + E.platoon.k * same);
+      const pK = inv(logit(E.base.k) + b.k.contact * zc + b.k.power * zp + b.k.eye * ze + q.k.stuff * stuff + q.k.breaking * breaking + q.k.command * command + E.platoon.k * same + E.catcher.lead * callZ);
       const pHR = inv(
         logit(E.base.hr) + b.hr.power * zp + b.hr.contact * zc + q.hr.stuff * stuff + q.hr.command * command + q.hr.breaking * breaking + E.platoon.hr * same + E.home.hr * hb + parkHr +
-          homeRunShift(batter.edge ?? 0),
+          homeRunShift(batter.edge ?? 0) +
+          homeRunShift(p.lift ?? 0) * PITCHER_LIFT,
       );
 
       const hitsFrom = batter.bats === 'S' ? (p.throws === 'L' ? 'R' : 'L') : batter.bats;
       const pa: OpenPa = { bl, pl, vsPitcher: p.throws, vsBatter: hitsFrom, before: counts(bl), runs: bat.box.runs, err: field.box.errors, gdp: bl.gdp, rbi: bl.rbi };
       open = pa;
+      // 2.0.3: the catcher's plate appearances and the runs his game-calling is worth over them (z × 0.001 a PA).
+      if (game.balls) {
+        const cslot = field.lineup.findIndex((x) => x.pos === 'C');
+        if (cslot >= 0) {
+          const f = fieldLine(field, cslot);
+          f.cpa++;
+          f.lead += Math.round(field.leadZ * 50);
+        }
+      }
       // 2.0.1: the ball's flight, drawn to fit the play from a stream of its own (battedball.ts).
-      const flight = (res: BipResult) => {
+      const flight = (res: BipResult, aim?: number) => {
         if (!game.balls) return;
         const lefty = hitsFrom === 'L';
-        const x = drawBall(res, zp, { pull: batter.pull ?? 0, lift: batter.lift ?? 0, edge: batter.edge ?? 0 }, lefty, game.balls);
+        const x = drawBall(res, zp, { pull: batter.pull ?? 0, lift: (batter.lift ?? 0) + (p.lift ?? 0) * PITCHER_LIFT, edge: batter.edge ?? 0 }, lefty, game.balls, aim);
         // 2.0.2: over the fence where it went (a little past it at the least).
         if (x.dist !== undefined && game.layout) {
           const need = clearance(game.layout, x.dir);
@@ -476,22 +517,61 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       } else {
         // Ball in play.
         bl.ab++;
-        if (r() < inv(logit(E.errorPerBip) + E.fielding.error * field.fieldZ)) {
+        const O = E.outs;
+        // 2.0.3: the pitcher's tendency too (a sinkerballer's balls on the ground, a riding fastball's in the air).
+        const groundShare = O.groundShare + groundShift(batter.edge ?? 0) + groundShift(p.lift ?? 0) * PITCHER_LIFT;
+        // 2.0.3 (fielding.ts): whose ball it is — his range and hands bear on it, and he is credited with what he makes
+        // of it against a fielder of average range (OAA). Without a batted-ball stream: the nine together, as before.
+        const fpos = game.balls ? fielderFor(game.balls, groundShare, batter.pull ?? 0, hitsFrom === 'L') : null;
+        // Nobody at that position today (a lineup short of a fielder): the nearest one who is out there.
+        const IN = ['3B', 'SS', '2B', '1B'],
+          OUT = ['LF', 'CF', 'RF'];
+        const near = (pos: string) => (IN.includes(pos) ? IN : OUT);
+        let fslot = fpos ? field.lineup.findIndex((x) => x.pos === fpos) : -1;
+        if (fpos && fslot < 0) fslot = field.lineup.findIndex((x) => near(fpos).includes(x.pos));
+        if (fpos && fslot < 0) fslot = field.lineup.findIndex((x) => x.pos !== 'DH');
+        const fielder = fslot >= 0 ? field.lineup[fslot]! : null;
+        const aim = fpos ? FIELDER_DIR[fpos] : undefined;
+        const outfielder = fpos === 'LF' || fpos === 'CF' || fpos === 'RF';
+        const errBase = logit(E.errorPerBip);
+        const pErr = inv(errBase + E.fielding.error * (fielder ? 0.7 * Z(fielder.hands ?? fielder.defense) + 0.3 * field.handsZ : field.handsZ));
+        const R = E.fielding.ref;
+        const pErr0 = inv(errBase + E.fielding.error * (fielder ? 0.7 * R.hands + 0.3 * field.handsZ : field.handsZ));
+        const hitBase =
+          logit(E.base.babip) + b.babip.contact * zc + b.babip.speed * zs + q.babip.stuff * stuff + q.babip.breaking * breaking + E.platoon.babip * same + E.home.babip * hb + parkBabip;
+        // Range runs higher than the old 수비 grade (speed goes into it): counted from the regulars' average of each.
+        const shift = R.range - E.fielding.defense;
+        const pHit = inv(hitBase + E.fielding.babip * ((fielder ? 0.5 * Z(fielder.range ?? fielder.defense) + 0.5 * field.fieldZ : field.fieldZ) - shift));
+        const pHit0 = inv(hitBase + E.fielding.babip * ((fielder ? 0.5 * R.range + 0.5 * field.fieldZ : field.fieldZ) - shift));
+        const credit = (made: boolean, error = false) => {
+          if (!fielder) return;
+          const f = fieldLine(field, fslot);
+          f.ch++;
+          if (error) f.e++;
+          if (made) f.po++;
+          f.oaa += Math.round(((made ? 1 : 0) - (1 - pErr0) * (1 - pHit0)) * 1000);
+        };
+        // An outfielder's arm on the runners' extra base, and the runs it saved against an average arm.
+        const armZ = fielder && outfielder ? Z(fielder.arm ?? fielder.defense) : 0;
+        const held = (base: number) => {
+          const p = inv(base + E.fielding.arm * armZ);
+          if (fielder && outfielder) fieldLine(field, fslot).arm += Math.round((inv(base + E.fielding.arm * R.arm) - p) * 250);
+          return p;
+        };
+        if (r() < pErr) {
+          credit(false, true);
           field.box.errors++;
           errorOuts++;
           me.unearned = true;
-          flight('E');
+          flight('E', aim);
           // Runs that score because of the error are unearned.
           if (bases[2]) score({ ...bases[2], unearned: true }, null);
           bases[2] = bases[1];
           bases[1] = bases[0];
           bases[0] = me;
         } else {
-          const pHit = inv(
-            logit(E.base.babip) + b.babip.contact * zc + b.babip.speed * zs + q.babip.stuff * stuff + q.babip.breaking * breaking + E.fielding.babip * field.fieldZ +
-              E.platoon.babip * same + E.home.babip * hb + parkBabip,
-          );
           if (r() < pHit) {
+            credit(false);
             bl.h++;
             pl.h++;
             bat.box.hits++;
@@ -500,7 +580,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
             const pDouble = inv(logit(T.double.base) + T.double.power * zp + T.double.speed * zs);
             const v = r();
             const A = E.advance;
-            flight(v < pTriple ? '3B' : v < pTriple + pDouble ? '2B' : '1B');
+            flight(v < pTriple ? '3B' : v < pTriple + pDouble ? '2B' : '1B', aim);
             if (v < pTriple) {
               bl.t++;
               for (let i = 2; i >= 0; i--) {
@@ -519,7 +599,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
               bases[0] = null;
               if (first) {
                 const rsp = bat.lineup[first.bat]!.speed;
-                if (r() < inv(logit(A.firstScoresOnDouble.base) + A.firstScoresOnDouble.speed * Z(rsp))) score(first, bl);
+                if (r() < held(logit(A.firstScoresOnDouble.base) + A.firstScoresOnDouble.speed * Z(rsp))) score(first, bl);
                 else bases[2] = first;
               }
               bases[1] = me;
@@ -532,22 +612,22 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
               bases[0] = null;
               if (second) {
                 const rsp = bat.lineup[second.bat]!.speed;
-                if (r() < inv(logit(A.secondScoresOnSingle.base) + A.secondScoresOnSingle.speed * Z(rsp) - (outs === 2 ? -0.8 : 0))) score(second, bl);
+                if (r() < held(logit(A.secondScoresOnSingle.base) + A.secondScoresOnSingle.speed * Z(rsp) - (outs === 2 ? -0.8 : 0))) score(second, bl);
                 else bases[2] = second;
               }
               if (first) {
                 const rsp = bat.lineup[first.bat]!.speed;
-                if (!bases[2] && r() < inv(logit(A.firstToThirdOnSingle.base) + A.firstToThirdOnSingle.speed * Z(rsp))) bases[2] = first;
+                if (!bases[2] && r() < held(logit(A.firstToThirdOnSingle.base) + A.firstToThirdOnSingle.speed * Z(rsp))) bases[2] = first;
                 else bases[1] = first;
               }
               bases[0] = me;
             }
           } else {
-            // Out in play.
+            // Out in play: on the ground when an infielder made it (2.0.3), else drawn as before.
+            credit(true);
             pitches -= 0.4;
-            const O = E.outs;
-            const ground = r() < O.groundShare + groundShift(batter.edge ?? 0);
-            flight(ground ? 'GO' : 'FO');
+            const ground = fpos ? !outfielder : r() < groundShare;
+            flight(ground ? 'GO' : 'FO', aim);
             if (ground) {
               if (bases[0] && outs < 2 && r() < inv(logit(O.doublePlay.base) + O.doublePlay.speed * zs)) {
                 bl.gdp++;

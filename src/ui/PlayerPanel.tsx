@@ -2,6 +2,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 /* A league player's page (V0.5.1 layout; in parts since 1.4.0): who he is and his latest season at a glance on top,
    then one part at a time — scouting grades as bars with positions or pitches, records, the staff's read, his
    background and injuries. Everything shown is public: grades are scouting reports, velocity is the radar gun. */
+import type { FieldTotals } from '../league/fielding';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useFocusTrap } from './modal';
 import { TOOL_LABELS } from '../draftroom';
@@ -76,7 +77,7 @@ export function TraitReportBox({ report }: { report: TraitReport }) {
    with the records split again into the regular season, the postseason, career highs and left/right. The part
    last opened stays open for the next player. */
 type Part = 'ability' | 'records' | 'report' | 'profile' | 'injuries';
-type RecordView = 'seasons' | 'post' | 'highs' | 'splits' | 'batted' | 'mlb';
+type RecordView = 'seasons' | 'post' | 'highs' | 'splits' | 'batted' | 'fielding' | 'mlb';
 const PARTS: { key: Part; label: string }[] = [
   { key: 'ability', label: __i18n_k("ui.playerPanel.pARTS.label.9e9117d0") },
   { key: 'records', label: __i18n_k("ui.playerPanel.pARTS.label.d84b6f4b") },
@@ -91,6 +92,8 @@ const RECORD_VIEWS: { key: RecordView; label: string }[] = [
   { key: 'splits', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.1df210e9") },
   // 2.0.1: batted-ball data.
   { key: 'batted', label: __i18n_k("ui.playerPanel.text.f697b0c7") },
+  // 2.0.3: fielding.
+  { key: 'fielding', label: __i18n_k("ui.playerPanel.text.ed9be858") },
   // 1.9.3: MLB, the minors and NPB.
   { key: 'mlb', label: __i18n_k("ui.playerPanel.text.98a07411") },
 ];
@@ -422,6 +425,21 @@ export function PlayerPanel({
                 <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.92af1732")}</p>
               </section>
             ))}
+            {card.fielding && (
+              <section class="pitch-box">
+                <h3>{__i18n_t("ui.playerPanel.text.8d1966c8")}</h3>
+                <div class="gradebars">
+                  <GradeBar label={__i18n_t("ui.playerPanel.text.88c280f6")} now={card.fielding.parts.range} note={__i18n_t("ui.playerPanel.text.cb6177aa")} />
+                  <GradeBar label={__i18n_t("ui.playerPanel.text.f06721a0")} now={card.fielding.parts.hands} />
+                  <GradeBar label={__i18n_t("ui.playerPanel.text.5894110d")} now={card.fielding.parts.arm} />
+                  {card.fielding.parts.lead !== null && <GradeBar label={__i18n_t("ui.playerPanel.text.f94f5492")} now={card.fielding.parts.lead} />}
+                </div>
+                <p class="small">
+                  {__i18n_t("ui.playerPanel.text.e8f50717", { ms: card.fielding.sprint.toFixed(2), fts: (card.fielding.sprint / 0.3048).toFixed(1) })}
+                  {card.fielding.pop !== null && ` · ${__i18n_t("ui.playerPanel.text.098a5b7d", { s: card.fielding.pop.toFixed(2) })}`}
+                </p>
+              </section>
+            )}
             {__i18n_display(pitcher && (
               <section class="pitch-box">
                 <h3>{__i18n_t("ui.playerPanel.playerPanel.79ffa7f7")}</h3>
@@ -437,6 +455,7 @@ export function PlayerPanel({
                     <GradeBar key={x.type} label={`${x.type} ${__i18n_displayText(x.label)}`} now={x.grade} note={__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round(x.usage * 100) })} />
                   )))}
                 </div>
+                {card.pitchingLift !== null && <p class="small">{__i18n_t("ui.playerPanel.text.41757042", { kind: PITCH_LIFT_LABEL()[card.pitchingLift + 2]! })}</p>}
                 {card.tracking && <TrackingTable t={card.tracking} />}
               </section>
             ))}
@@ -482,6 +501,7 @@ export function PlayerPanel({
                 <p class="muted">{__i18n_t("ui.playerPanel.playerPanel.3055338b")}</p>
               )))}
             {records === 'batted' && <BattedTable batted={card.batted} pitcher={pitcher} />}
+            {records === 'fielding' && (card.fielding ? <FieldingTable fielding={card.fielding} /> : <p class="muted">{__i18n_t("ui.playerPanel.text.189e71c9")}</p>)}
             {__i18n_display(records === 'splits' &&
               (card.splits.season || card.splits.career ? (
                 <>
@@ -911,6 +931,64 @@ function ExtensionOffer({ league, id, onAct }: { league: LeagueState; id: string
   );
 }
 
+/** 2.0.3: his fielding by season — chances, outs, errors, outs above average, an outfielder's arm, a catcher's
+    throwing and game-calling, the runs they make and his defensive WAR (fielding.ts). */
+function FieldingTable({ fielding }: { fielding: NonNullable<PlayerCard['fielding']> }) {
+  const one = (x: number) => (x / 1000).toFixed(1);
+  const signed = (x: number) => (x > 0 ? `+${x.toFixed(1)}` : x.toFixed(1));
+  const catcher = fielding.seasons.some((x) => x.f.cpa > 0);
+  const row = (key: string, label: string, pos: string, f: FieldTotals, runs: number, dwar: number | null) => (
+    <tr key={key}>
+      <td>{label}</td>
+      <td>{pos}</td>
+      <td class="num">{f.ch}</td>
+      <td class="num">{f.po}</td>
+      <td class="num">{f.e}</td>
+      <td class="num">{signed(f.oaa / 1000)}</td>
+      <td class="num">{one(f.arm)}</td>
+      {catcher && <td class="num">{f.sba ? `${f.cs}/${f.sba}` : '-'}</td>}
+      {catcher && <td class="num">{signed(f.csaa / 1000)}</td>}
+      {catcher && <td class="num">{signed(f.lead / 100000)}</td>}
+      <td class="num">{signed(runs)}</td>
+      <td class="num">{dwar === null ? '-' : signed(dwar)}</td>
+    </tr>
+  );
+  return (
+    <div class="tracking">
+      {fielding.seasons.length ? (
+        <div class="table-wrap">
+          <table class="record-table small">
+            <thead>
+              <tr>
+                <th>{__i18n_t("ui.playerPanel.text.d5bc99dd")}</th>
+                <th>{__i18n_t("ui.playerPanel.text.f8fce955")}</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.9c19ac98")}</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.d5edec7e")}</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.8d9aaf03")}</th>
+                <th class="num">OAA</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.8c0849d0")}</th>
+                {catcher && <th class="num">{__i18n_t("ui.playerPanel.text.482a43eb")}</th>}
+                {catcher && <th class="num">{__i18n_t("ui.playerPanel.text.bb6b6d8a")}</th>}
+                {catcher && <th class="num">{__i18n_t("ui.playerPanel.text.2f4b81c5")}</th>}
+                <th class="num">{__i18n_t("ui.playerPanel.text.e980cd4b")}</th>
+                <th class="num">dWAR</th>
+              </tr>
+            </thead>
+            <tbody>
+              {fielding.seasons.map((x) => row(String(x.year), x.current ? __i18n_t("ui.playerPanel.text.04555519", { year: x.year }) : String(x.year), x.pos, x.f, x.runs, x.dwar))}
+              {fielding.career && fielding.seasons.length > 1 && row('career', __i18n_t("ui.playerPanel.text.fc7fa3d0"), '', fielding.career.f, fielding.career.runs, null)}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p class="muted">{__i18n_t("ui.playerPanel.text.9c069f6d")}</p>
+      )}
+      <p class="muted small">{__i18n_t("ui.playerPanel.text.d281e340")}</p>
+    </div>
+  );
+}
+
+const PITCH_LIFT_LABEL = () => [__i18n_t("ui.playerPanel.text.c2c26ac4"), __i18n_t("ui.playerPanel.text.3209d10f"), __i18n_t("ui.playerPanel.text.2179da2c"), __i18n_t("ui.playerPanel.text.d8e32136"), __i18n_t("ui.playerPanel.text.45f504a1")];
 const PULL_LABEL = () => [__i18n_t("ui.playerPanel.text.e089203f"), __i18n_t("ui.playerPanel.text.e6c78e11"), __i18n_t("ui.playerPanel.text.b90fdaf4"), __i18n_t("ui.playerPanel.text.8ba5121a"), __i18n_t("ui.playerPanel.text.e8f4ff7e")];
 const LIFT_LABEL = () => [__i18n_t("ui.playerPanel.text.0402d4de"), __i18n_t("ui.playerPanel.text.2716bc95"), __i18n_t("ui.playerPanel.text.2179da2c"), __i18n_t("ui.playerPanel.text.2d6dbf09"), __i18n_t("ui.playerPanel.text.6f7bed73")];
 

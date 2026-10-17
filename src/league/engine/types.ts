@@ -2,6 +2,7 @@
    hands it a lineup, a starter and a bullpen, and it returns a box score. Abilities are hidden
    (continuous 20–80) values; the engine may read them, the UI may not. */
 import type { BattedBall, BattedTotals } from '../battedball';
+import type { FieldTotals } from '../fielding';
 
 export type FieldPos = 'C' | '1B' | '2B' | '3B' | 'SS' | 'LF' | 'CF' | 'RF' | 'DH';
 export type Hand = 'L' | 'R' | 'S';
@@ -22,6 +23,12 @@ export interface BatterIn {
   lift?: number;
   /** His lift beyond what his bat makes of it (battedball.ts BattingProfile.edge): what moves the plays. */
   edge?: number;
+  /** 2.0.3 (fielding.ts): his fielding in parts at the position played (after any out-of-position penalty), and a
+      catcher's game-calling. Absent: his `defense` for each. */
+  range?: number;
+  hands?: number;
+  arm?: number;
+  lead?: number;
 }
 
 /** 마무리 · 셋업맨 · 필승조 · 추격조 · 롱릴리프 · 원 포인트 (left-handed specialist). */
@@ -38,6 +45,8 @@ export interface PitcherIn {
   pitchLimit: number;
   /** Size of his same-side advantage (1 = league norm; his repertoire decides it). */
   platoon?: number;
+  /** 2.0.3: −2 extreme ground-ball pitcher … 2 extreme fly-ball pitcher (battedball.ts pitcherLift). */
+  lift?: number;
 }
 
 export interface RelieverIn extends PitcherIn {
@@ -142,6 +151,8 @@ export interface BattingLine {
   gdp: number;
   /** 2.0.1: his balls in play (with a batted-ball stream). */
   bip?: BattedTotals;
+  /** 2.0.3: his fielding in the game (with a batted-ball stream). */
+  fld?: FieldTotals;
 }
 
 export interface PitchingLine {

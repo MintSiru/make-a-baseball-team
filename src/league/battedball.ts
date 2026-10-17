@@ -102,6 +102,12 @@ export function battingProfile(p: Pick<Player, 'id' | 'hidden'>): BattingProfile
   };
 }
 
+/** 2.0.3 (the user's request): a pitcher's tendency on the same five steps, 극단적 땅볼 투수 (−2) … 극단적 뜬공
+    투수 (2), from his own seed moved by `up` (what his pitches do: a sinker or splitter down, a riding fastball up). */
+export function pitcherLift(id: string, up: number): number {
+  return five(Math.max(0.01, Math.min(0.99, hashUnit(`pitcher-lift|${id}`) + up)));
+}
+
 /** How a tendency moves the engine (by its edge): the share of outs on the ground, and the home-run log-odds. */
 export const groundShift = (edge: number) => -0.06 * edge;
 export const homeRunShift = (edge: number) => 0.12 * edge;
@@ -141,8 +147,9 @@ export const isBarrel = (ev: number, la: number) => ev >= 158 && la >= 26 - (ev 
 export type BipResult = 'HR' | '3B' | '2B' | '1B' | 'GO' | 'FO' | 'E';
 
 /** Draws the flight of a ball in play to fit what the engine decided. `r` is the batted-ball stream; `power` the
-    batter's z-score, `prof` his tendencies, `lefty` whether he hit from the left side. */
-export function drawBall(result: BipResult, power: number, prof: BattingProfile, lefty: boolean, r: () => number): BattedBall {
+    batter's z-score, `prof` his tendencies, `lefty` whether he hit from the left side; `aim` (2.0.3, degrees, left
+    field negative), the direction of the fielder whose ball it was. */
+export function drawBall(result: BipResult, power: number, prof: BattingProfile, lefty: boolean, r: () => number, aim?: number): BattedBall {
   const n = () => (r() + r() + r() - 1.5) * 2;
   const p = power * 3;
   let ev: number, la: number;
@@ -193,7 +200,8 @@ export function drawBall(result: BipResult, power: number, prof: BattingProfile,
   // Pulled more on the ground and over the fence; his tendency moves the middle of it.
   const centre = -4 + prof.pull * 7 - (la < 10 ? 4 : 0) - (result === 'HR' ? 8 : 0);
   const pullSide = Math.round(Math.max(-45, Math.min(45, centre + n() * 26)));
-  return { ev, la, dir: lefty ? -pullSide : pullSide, ...(result === 'HR' ? { dist: distanceOf(ev, la) } : {}) };
+  const dir = aim === undefined ? (lefty ? -pullSide : pullSide) : Math.round(Math.max(-45, Math.min(45, aim + n() * 7)));
+  return { ev, la, dir, ...(result === 'HR' ? { dist: distanceOf(ev, la) } : {}) };
 }
 
 /** Adds one ball to a season's totals (`lefty`: he hit from the left side, so his pull side is right field). */

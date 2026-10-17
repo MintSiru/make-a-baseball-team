@@ -74584,5 +74584,176 @@
       }
     },
     "locations": []
+  },
+  "ui.playerPanel.text.ed9be858": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 96,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.8d1966c8": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 430,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.88c280f6": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 432,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.cb6177aa": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 432,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.f06721a0": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 433,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.5894110d": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 434,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.f94f5492": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 435,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.e8f50717": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 438,
+    "params": {
+      "ms": {
+        "expression": "card.fielding.sprint.toFixed(2)"
+      },
+      "fts": {
+        "expression": "(card.fielding.sprint / 0.3048).toFixed(1)"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.098a5b7d": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 439,
+    "params": {
+      "s": {
+        "expression": "card.fielding.pop.toFixed(2)"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.189e71c9": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 503,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.f8fce955": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 963,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.9c19ac98": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 964,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.d5edec7e": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 965,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.8d9aaf03": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 966,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.8c0849d0": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 968,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.482a43eb": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 969,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.bb6b6d8a": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 970,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.2f4b81c5": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 971,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.e980cd4b": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 972,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.9c069f6d": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 983,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.d281e340": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 985,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.41757042": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 458,
+    "params": {
+      "kind": {
+        "expression": "PITCH_LIFT_LABEL()[card.pitchingLift + 2]!"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.c2c26ac4": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 991,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.3209d10f": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 991,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.d8e32136": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 991,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.45f504a1": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 991,
+    "params": {},
+    "locations": []
   }
 }

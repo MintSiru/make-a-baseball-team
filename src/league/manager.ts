@@ -1,4 +1,5 @@
 import { rulesFor } from '../rules/history';
+import { fieldingOf } from './fielding';
 import { battingProfile } from './battedball';
 import { k as __i18n_k } from '../i18n/index';
 /* The AI manager of every club. Decisions use public scouting grades and this season's results only;
@@ -13,7 +14,7 @@ import { ageIn, batValue, currentValue, isForeign, isPitcher, keepValue, starter
 import { staffEdge, staffRating } from './staff';
 import { hasBenefits, registeredIds, type LeagueState, type LineupSlot, type ManagerStyle } from './state';
 import { EXPANSION_DEFAULTS, KBO_2026 } from '../rules/kbo2026';
-import { platoonFactor } from './pitches';
+import { pitchingLift, platoonFactor } from './pitches';
 import { ENGINE, STAFF } from './tuning';
 import { formOf } from './life';
 import { adaptPenalty } from './adapt';
@@ -37,6 +38,12 @@ export const foreignSlots = (s: LeagueState, teamId: TeamId, year = s.year) => (
 
 const handOf = (h: string): Hand => (h === '좌' ? 'L' : h === '양' ? 'S' : 'R');
 const t = (p: Player, k: string) => (p.hidden.current as Record<string, number>)[k] ?? 30;
+
+/** 2.0.3: range, hands and arm at a position, `off` lower for playing away from his own; a catcher's game-calling. */
+function fieldParts(p: Player, off: number, pos: FieldPos) {
+  const f = fieldingOf(p);
+  return { range: f.range - off, hands: f.hands - off, arm: f.arm - off, ...(pos === 'C' && f.lead !== null ? { lead: f.lead } : {}) };
+}
 const pub = (p: Player, k: string) => (p.scouting.tools as Record<string, number>)[k] ?? 30;
 
 /** Can play today: not hurt (a knock included) and not with the national team. */
@@ -344,6 +351,8 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
     defense: t(p, 'defense') - fitPenalty(p, pos, games(p)) - (p.plan?.adaptingIn === s.year ? ADAPTING_PENALTY : 0),
     pos,
     ...battingProfile(p),
+    // 2.0.3 (fielding.ts): his fielding in parts, less the same penalty away from his positions.
+    ...fieldParts(p, fitPenalty(p, pos, games(p)) + (p.plan?.adaptingIn === s.year ? ADAPTING_PENALTY : 0), pos),
   }));
 }
 
@@ -361,12 +370,12 @@ export function benchFor(s: LeagueState, ids: PlayerId[], lineup: BatterIn[]): B
       const adapting = p.plan?.adaptingIn === s.year ? ADAPTING_PENALTY : 0;
       const defenseAt: Partial<Record<FieldPos, number>> = {};
       for (const pos of SLOTS) if (pos !== 'DH') defenseAt[pos] = t(p, 'defense') - fitPenalty(p, pos, games) - adapting;
-      return { id: p.id, bats: handOf(p.bats), contact: t(p, 'contact'), power: t(p, 'power'), eye: t(p, 'eye'), speed: t(p, 'speed'), defense: t(p, 'defense'), pos: 'DH' as FieldPos, defenseAt, ...battingProfile(p) };
+      return { id: p.id, bats: handOf(p.bats), contact: t(p, 'contact'), power: t(p, 'power'), eye: t(p, 'eye'), speed: t(p, 'speed'), defense: t(p, 'defense'), pos: 'DH' as FieldPos, defenseAt, ...battingProfile(p), ...fieldParts(p, 0, 'C') };
     });
 }
 
 export function armIn(p: Player, pitchLimit: number): PitcherIn {
-  return { id: p.id, throws: p.throws === '좌' ? 'L' : 'R', stuff: t(p, 'stuff'), command: t(p, 'command'), breaking: t(p, 'breaking'), stamina: t(p, 'stamina'), pitchLimit, platoon: platoonFactor(p) };
+  return { id: p.id, throws: p.throws === '좌' ? 'L' : 'R', stuff: t(p, 'stuff'), command: t(p, 'command'), breaking: t(p, 'breaking'), stamina: t(p, 'stamina'), pitchLimit, platoon: platoonFactor(p), lift: pitchingLift(p) };
 }
 
 /** Pitchers set as starters come first: a reliever only starts when there are not five starters. */

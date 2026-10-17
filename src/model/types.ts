@@ -187,6 +187,8 @@ export interface BatTotals {
   posG?: Partial<Record<FieldPos, number>>;
   /** 2.0.1: his balls in play (battedball.ts); absent in records from before. */
   bip?: import('../league/battedball').BattedTotals;
+  /** 2.0.3: his fielding (fielding.ts); absent in records from before. */
+  fld?: import('../league/fielding').FieldTotals;
 }
 
 export interface PitTotals {

@@ -7,7 +7,7 @@ import { publicView, type PublicPlayer } from '../model/player';
 import { faOutlook, type FaOutlook } from './faclock';
 import type { BatTotals, InjuryRecord, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { emptySplit, type Splits } from './engine/types';
-import { averageVelocity, fastballOf, pitchGrades, topVelocity, type FastballType } from './pitches';
+import { averageVelocity, fastballOf, pitchGrades, pitchingLift, topVelocity, type FastballType } from './pitches';
 import { POSITION_SHORT, positionGrades, secondaryPositions } from './positions';
 import { halfLabel, playText } from './playtext';
 import { salaryIn, usdTotal } from './contracts';
@@ -20,12 +20,14 @@ import { SANGMU } from './futures';
 import { cardFor, lineupFor, managerLean, penRoles, PEN_ROLE_LABELS, rotationFor } from './manager';
 import { isDevelopment, type LeagueState } from './state';
 import { captaincyLift } from './captains';
-import { avg, babip, babipAllowed, batterWar, era, fip, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
+import { avg, babip, babipAllowed, batterWar, defensiveWar, era, fip, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
 import { addInto, emptyBat, emptyPit } from './state';
 import { traitsOf } from './traits';
 import { traitReport, type TraitReport } from './reports';
 import { trackingOf } from './tracking';
 import { addBatted, battedRates, battingProfile, emptyBatted, type BattingProfile } from './battedball';
+import type { FieldPos } from './engine/types';
+import { addField, emptyField, fieldingRuns, popTime, scoutedFielding, sprintSpeed, type FieldingRatings, type FieldTotals } from './fielding';
 
 /** 리더십 from which a senior counts as a clubhouse leader. */
 const LEADER = 68;
@@ -209,6 +211,22 @@ export interface CareerRow {
   current: boolean;
 }
 
+/** 2.0.3: his fielding by first-team season (from 2.0.3 on), with its runs and defensive WAR at his main position. */
+function fieldingView(p: Player, major: CareerRow[]): PlayerCard['fielding'] {
+  const all = emptyField();
+  const seasons: NonNullable<PlayerCard['fielding']>['seasons'] = [];
+  for (const r of major) {
+    const f = r.bat?.fld;
+    if (!f || !r.bat) continue;
+    addField(all, f);
+    const g = r.bat.posG ?? {};
+    const pos = (Object.entries(g).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0]?.[0] ?? p.position ?? 'DH') as FieldPos;
+    seasons.push({ year: r.year, team: r.team, current: r.current, pos, f, runs: Math.round(fieldingRuns(f) * 10) / 10, dwar: defensiveWar(r.bat, pos) });
+  }
+  const catcher = p.position === 'C' || (p.alt ?? []).includes('C');
+  return { parts: scoutedFielding(p), sprint: sprintSpeed(p), pop: catcher ? popTime(p) : null, seasons, career: seasons.length ? { f: all, runs: Math.round(fieldingRuns(all) * 10) / 10 } : null };
+}
+
 /** 2.0.1: the batted-ball rows of his first-team seasons (balls he hit, or a pitcher's balls hit off him). */
 function battedView(p: Player, major: CareerRow[], pitcher: boolean): PlayerCard['batted'] {
   const all = emptyBatted();
@@ -254,6 +272,17 @@ export interface PlayerCard {
   /** 1.9.3: his main fastball. */
   fastball: FastballType | null;
   tracking: import('./tracking').Tracking | null;
+  /** 2.0.3 (fielding.ts): a hitter's fielding in parts as the scouts see it, his sprint speed and a catcher's pop time,
+      and his fielding by season and in all with the runs and defensive WAR they make. */
+  fielding: {
+    parts: FieldingRatings;
+    sprint: number;
+    pop: number | null;
+    seasons: { year: number; team: string; current: boolean; pos: string; f: FieldTotals; runs: number; dwar: number }[];
+    career: { f: FieldTotals; runs: number } | null;
+  } | null;
+  /** 2.0.3: a pitcher's step from 극단적 땅볼 투수 (−2) to 극단적 뜬공 투수 (2) (pitches.ts pitchingLift). */
+  pitchingLift: number | null;
   /** 2.0.1: his tendencies (hitters) and his first-team batted balls by season and in all (battedball.ts). */
   batted: { profile: BattingProfile | null; seasons: { year: number; team: string; current: boolean; rates: NonNullable<ReturnType<typeof battedRates>> }[]; career: ReturnType<typeof battedRates> };
   injuries: InjuryRecord[];
@@ -343,6 +372,8 @@ export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
     // 2.0.0: his arm slot and what a tracking system reads off his pitches (tracking.ts).
     tracking: pitcher ? trackingOf(p) : null,
     batted: battedView(p, major, pitcher),
+    fielding: pitcher ? null : fieldingView(p, major),
+    pitchingLift: pitcher ? pitchingLift(p) : null,
     injuries: [...(p.injuries ?? [])].reverse(),
     positions: positionGrades(s, p),
     report: traitReport(s, p),
