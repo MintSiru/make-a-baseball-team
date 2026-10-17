@@ -7729,5 +7729,7 @@ export const koSource = {
   "ui.updates.text.0d435c6f": "{release} 업데이트",
   "ui.updates.text.6654f975": "설정 → 업데이트 소식에서 언제든 다시 볼 수 있습니다.",
   "ui.updates.text.468266d6": "확인",
-  "ui.settings.text.f59812c4": "업데이트 소식"
+  "ui.settings.text.f59812c4": "업데이트 소식",
+  "league.expansion.text.ad8fb12b": "1차 지명은 연고 지역 고등학교 선수만 뽑을 수 있습니다.",
+  "ui.decision.text.262e41d5": "1차 지명: 연고 지역 고등학교 선수 {n}명 가운데 한 명을 고릅니다."
 } as const;

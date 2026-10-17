@@ -7728,5 +7728,7 @@
   "ui.updates.text.0d435c6f": "{release} アップデート",
   "ui.updates.text.6654f975": "設定 → アップデート情報でいつでも見られます。",
   "ui.updates.text.468266d6": "OK",
-  "ui.settings.text.f59812c4": "アップデート情報"
+  "ui.settings.text.f59812c4": "アップデート情報",
+  "league.expansion.text.ad8fb12b": "1次指名は地元地域の高校生選手しか指名できません。",
+  "ui.decision.text.262e41d5": "1次指名：地元地域の高校生選手{n}人の中から1人を選びます。"
 }

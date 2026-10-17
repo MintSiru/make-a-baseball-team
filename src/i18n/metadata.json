@@ -72637,5 +72637,21 @@
     "line": 28,
     "params": {},
     "locations": []
+  },
+  "league.expansion.text.ad8fb12b": {
+    "source": "src/league/expansion.ts",
+    "line": 515,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.262e41d5": {
+    "source": "src/ui/Decision.tsx",
+    "line": 527,
+    "params": {
+      "n": {
+        "expression": "d.eligible.length"
+      }
+    },
+    "locations": []
   }
 }

@@ -190,7 +190,8 @@ export interface SeasonSummary {
 /** A choice the game waits for before it can go on. Only the user's club ever raises one. */
 export type Decision =
   | { kind: 'tryout'; candidates: PlayerId[]; max: number }
-  | { kind: 'draftPick'; overall: number; label: string }
+  /** 1.9.8: `eligible` — a territorial (1차) pick: only these (the region's high-school players) may be taken. */
+  | { kind: 'draftPick'; overall: number; label: string; eligible?: PlayerId[] }
   | { kind: 'specialDraft'; lists: Record<TeamId, PlayerId[]>; protectedCount: number; fee: number }
   | { kind: 'released'; candidates: PlayerId[]; max: number }
   | {

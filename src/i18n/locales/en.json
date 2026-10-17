@@ -7728,5 +7728,7 @@
   "ui.updates.text.0d435c6f": "Update {release}",
   "ui.updates.text.6654f975": "You can read these again any time under Settings → Update notes.",
   "ui.updates.text.468266d6": "OK",
-  "ui.settings.text.f59812c4": "Update notes"
+  "ui.settings.text.f59812c4": "Update notes",
+  "league.expansion.text.ad8fb12b": "A territorial pick can only take a high-school player from the club's region.",
+  "ui.decision.text.262e41d5": "Territorial pick: choose one of {n, plural, one {# high-school player} other {# high-school players}} from our region."
 }
