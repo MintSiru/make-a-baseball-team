@@ -1,6 +1,7 @@
 /* Rate stats and WAR from counting totals. WAR is this game's estimate (not an official figure):
    batting runs from linear-weight wOBA against the league, a positional adjustment and replacement
    level; pitching from runs allowed per nine against a replacement pitcher. 10 runs = 1 win. */
+import { fieldingRuns } from './fielding';
 import type { BatTotals, PitTotals } from '../model/types';
 import type { FieldPos } from './engine/types';
 
@@ -45,7 +46,16 @@ export function batterWar(b: BatTotals, pos: FieldPos, lg: LeagueContext): numbe
   const running = b.sb * 0.2 - b.cs * 0.4;
   const positional = (POS_RUNS[pos] * b.pa) / 600;
   const replacement = (20 * b.pa) / 600;
-  return Math.round(((batting + running + positional + replacement) / RUNS_PER_WIN) * 10) / 10;
+  // 2.0.3: his fielding runs (OAA, arm, a catcher's throwing and game-calling: fielding.ts).
+  const fielding = fieldingRuns(b.fld);
+  return Math.round(((batting + running + positional + fielding + replacement) / RUNS_PER_WIN) * 10) / 10;
+}
+
+/** 2.0.3: defensive WAR — the position adjustment and his fielding runs over his plate appearances' share of the
+    season (the batting and running taken out). */
+export function defensiveWar(b: BatTotals, pos: FieldPos): number {
+  if (!b.pa) return 0;
+  return Math.round((((POS_RUNS[pos] * b.pa) / 600 + fieldingRuns(b.fld)) / RUNS_PER_WIN) * 10) / 10;
 }
 
 /** Pitcher WAR: runs saved against replacement (starters 1.1 R/9 worse than average, relievers 0.6). */

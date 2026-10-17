@@ -36,7 +36,19 @@ export const ENGINE = {
     babip: { stuff: -0.07, breaking: -0.04 },
   },
   /** Team fielding (average of the fielders' defense, weighted by position). */
-  fielding: { babip: -0.1, error: -0.35 },
+  fielding: {
+    babip: -0.1,
+    error: -0.35,
+    /** 2.0.3: an outfielder's arm on the runners' extra base (logit per z). */
+    arm: -0.25,
+    /** 2.0.3: an everyday fielder's parts on average (z), the line OAA and the arm runs are counted from (a league's
+        regulars field better than a grade of 50: measured over a season). */
+    ref: { range: 1.0, hands: 0.7, arm: 0.65 },
+    /** The nine's 수비 on average before 2.0.3 (z): range is counted from it so the league's hits hold. */
+    defense: 0.7,
+  },
+  /** 2.0.3: a catcher's game-calling on his pitchers' strikeouts and walks (logit per z). */
+  catcher: { lead: 0.015 },
   /** Batter against a pitcher of the same hand (switch hitters never). */
   platoon: { k: 0.12, bb: -0.06, hr: -0.15, babip: -0.045 },
   home: { babip: 0.012, hr: 0.03 },

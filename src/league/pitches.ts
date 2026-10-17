@@ -12,6 +12,7 @@ import { k as __i18n_k } from '../i18n/index';
    specialist throws it half the time or more.
 
    Velocity is public (a radar gun), so it follows the hidden 구위 as it grows or fades. */
+import { pitcherLift } from './battedball';
 import { hashUnit, rng } from '../draftroom';
 import type { Player } from '../model/types';
 import { isForeign } from './players';
@@ -53,6 +54,21 @@ const FASTBALL_PLATOON: Record<FastballType, number> = { '4SFB': 1, '2SFB': 1.05
 const FASTBALL_SLOWER: Record<FastballType, number> = { '4SFB': 0, '2SFB': 1, CUT: 3 };
 
 /** His main fastball, fixed per player (seeded by id): two-seamers for ground-ball arms and foreign pitchers more. */
+/** 2.0.3: where his pitches send the ball — a two-seamer, a sinker, a splitter or a forkball on the ground, a lively
+    four-seamer or a big curve in the air — as a step from 극단적 땅볼 투수 (−2) to 극단적 뜬공 투수 (2) (battedball.ts). */
+export function pitchingLift(p: Player): number {
+  if (p.hidden.current.breaking == null) return 0;
+  const fb = fastballOf(p);
+  let up = fb === '2SFB' ? -0.2 : fb === 'CUT' ? -0.05 : ((p.hidden.current.stuff ?? 50) - 50) * 0.004;
+  if (p.archetype === '땅볼 유도형 선발') up -= 0.15;
+  for (const x of repertoire(p)) {
+    if (x.type === 'SNK' || x.type === 'SPL' || x.type === 'FRK' || x.type === 'SH' || x.type === '2SFB') up -= 0.8 * x.usage;
+    else if (x.type === 'CB' || x.type === 'SW' || x.type === 'KN') up += 0.3 * x.usage;
+  }
+  // Centred on the league's arms (the sinkers and splitters would otherwise tip it to the ground).
+  return pitcherLift(p.id, up + 0.11);
+}
+
 export function fastballOf(p: Player): FastballType {
   if (p.hidden.current.breaking == null) return '4SFB';
   const ground = p.archetype === '땅볼 유도형 선발';

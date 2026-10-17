@@ -1,6 +1,7 @@
 import { k as __i18n_k } from '../i18n/index';
 /* The regular season, one game day at a time: registered days, games, injuries and roster moves. */
 import { addBatted, emptyBatted } from './battedball';
+import { addField, emptyField } from './fielding';
 import { layoutOf } from './layout';
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
@@ -200,9 +201,10 @@ export function record(s: LeagueState, box: TeamBox, date: string, lines: Record
     const line = lineOf(b.id, box.teamId);
     if (!line) continue;
     const bat = (line.bat ??= emptyBat());
-    const { id: _id, pos: _pos, split, sub, bip, ...counts } = b;
+    const { id: _id, pos: _pos, split, sub, bip, fld, ...counts } = b;
     addInto(bat, counts);
     if (bip) addBatted((bat.bip ??= emptyBatted()), bip);
+    if (fld) addField((bat.fld ??= emptyField()), fld);
     if (split && lines === s.lines) addSplits(bat, split);
     // Games at a position are the starts there (1.7.0: a substitute's inning or two does not count).
     if (lines === s.lines && !sub) (bat.posG ??= {})[b.pos] = (bat.posG[b.pos] ?? 0) + 1;

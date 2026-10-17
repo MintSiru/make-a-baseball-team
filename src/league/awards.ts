@@ -11,6 +11,7 @@ import { k as __i18n_k } from '../i18n/index';
      outfield three; designated hitter).
    Honours go on the players; the season summary keeps the list. Retired greats with enough career
    WAR enter the hall of fame (명예의 전당, a game feature: the KBO has none yet). */
+import { fieldingRuns } from './fielding';
 import type { FieldPos } from './engine/types';
 import type { BatTotals, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { isForeign, isPitcher, isReliever } from './players';
@@ -144,7 +145,9 @@ export function computeAwards(s: LeagueState, year: number, table: StandingRow[]
     position goes to the best glove there among those who played half the season at it (the scouts' fielding grade
     at the position, a little more for more games); the pitcher's to a qualified pitcher by his own fielding (a game
     estimate from his 제구 and athleticism, until the 2.0 plan's fourth stage measures it); the utility award to the
-    best glove across three positions or more, 20 games or more at each. */
+    best glove across three positions or more, 20 games or more at each. 2.0.3: as the plan said, by what he did in
+    the field once it is measured — his fielding runs (OAA, arm, a catcher's throwing and game-calling: fielding.ts);
+    the grade for a season played before. */
 function defenseAwards(s: LeagueState, hitters: Rec[], pitchers: Rec[], games: number): { pos: string; id: PlayerId }[] {
   const out: { pos: string; id: PlayerId }[] = [];
   const posGames = (r: Rec, pos: FieldPos) => r.c.bat?.posG?.[pos] ?? 0;
@@ -157,7 +160,7 @@ function defenseAwards(s: LeagueState, hitters: Rec[], pitchers: Rec[], games: n
   for (const pos of ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'] as FieldPos[]) {
     const top = best(
       hitters.filter((r) => posGames(r, pos) >= games / 2),
-      (r) => (gradeAt(r)[pos] ?? 0) + posGames(r, pos) / 30,
+      (r) => (r.c.bat?.fld ? fieldingRuns(r.c.bat.fld) + posGames(r, pos) / 60 : (gradeAt(r)[pos] ?? 0) + posGames(r, pos) / 30),
     );
     if (top) out.push({ pos: NAMES[pos]!, id: top.p.id });
   }
@@ -165,8 +168,9 @@ function defenseAwards(s: LeagueState, hitters: Rec[], pitchers: Rec[], games: n
   const utility = best(
     hitters.filter((r) => multi(r).length >= 3 && !out.some((x) => x.id === r.p.id)),
     (r) => {
-      const at = gradeAt(r);
       const list = multi(r);
+      if (r.c.bat?.fld) return fieldingRuns(r.c.bat.fld) + list.length * 1.5;
+      const at = gradeAt(r);
       return list.reduce((a, pos) => a + (at[pos] ?? 0), 0) / list.length + list.length * 2;
     },
   );
