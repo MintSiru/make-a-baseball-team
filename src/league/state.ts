@@ -187,6 +187,8 @@ export interface SeasonSummary {
   futures?: StandingRow[];
   /** MVP, rookie, golden gloves and titles (V0.7). */
   awards?: import('./awards').SeasonAwards;
+  /** 2.0.4: each club's wins, losses and ties against each other (matchups.ts). */
+  h2h?: import('./matchups').HeadToHead;
 }
 
 /** A choice the game waits for before it can go on. Only the user's club ever raises one. */
@@ -632,6 +634,10 @@ export interface LeagueState {
   countedThrough: string | null;
   postseason: SeriesResult[];
   history: SeasonSummary[];
+  /** 2.0.4 (matchups.ts): this season's batter-against-pitcher meetings ("batter|pitcher"), and every season's
+      before it for the men still playing. */
+  matchups?: Record<string, number[]>;
+  matchupsAll?: Record<string, number[]>;
   international: NationalEntry[];
   /** Players serving a KBO suspension or ban (V0.12, scandals.ts). */
   suspended?: Record<PlayerId, import('./scandals').Suspension>;

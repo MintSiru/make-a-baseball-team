@@ -3208,3 +3208,112 @@ fieldset.stops {
 .layout-options input[type='checkbox'] {
   width: auto;
 }
+
+/* 2.0.4: a player's percentile bars, spray chart and pitch mix (Savant.tsx); the clubs' head-to-head table. */
+.savant-bars {
+  list-style: none;
+  margin: 0.4rem 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+  max-width: 34rem;
+}
+.savant-bars li {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr 3.5rem;
+  align-items: center;
+  gap: 0.6rem;
+}
+.savant-label {
+  font-size: 0.85rem;
+}
+.savant-track {
+  position: relative;
+  height: 0.5rem;
+  border-radius: 0.25rem;
+  background: var(--rule);
+}
+.savant-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 0.25rem;
+  opacity: 0.55;
+}
+.savant-dot {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 2px solid var(--paper);
+}
+.savant-value {
+  text-align: right;
+  font-size: 0.85rem;
+}
+.spray {
+  margin: 0.4rem 0;
+  max-width: 26rem;
+}
+.spray .layout-field {
+  display: block;
+  width: 100%;
+}
+.spray-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-right: 0.8rem;
+}
+.spray-swatch {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+}
+.pitch-mix {
+  max-width: 34rem;
+}
+.pitch-mix-row {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr 5rem;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.3rem 0;
+  font-size: 0.85rem;
+}
+.pitch-mix-bar {
+  display: flex;
+  height: 0.9rem;
+  border-radius: 0.2rem;
+  overflow: hidden;
+  background: var(--rule);
+}
+.pitch-mix-velo {
+  text-align: right;
+}
+.h2h summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin: 0.8rem 0 0.4rem;
+}
+.h2h-table td.good {
+  color: var(--good, #2f7d32);
+}
+.h2h-table td.bad {
+  color: var(--bad, #c62828);
+}
+@media (max-width: 480px) {
+  .savant-bars li {
+    grid-template-columns: 6.5rem 1fr 3rem;
+  }
+  .pitch-mix-row {
+    grid-template-columns: 4.5rem 1fr 4rem;
+  }
+}

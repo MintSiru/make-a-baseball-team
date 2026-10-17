@@ -5,6 +5,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 import type { FieldTotals } from '../league/fielding';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useFocusTrap } from './modal';
+import { MeetingsView, SavantView } from './Savant';
 import { TOOL_LABELS } from '../draftroom';
 import type { Split, Splits } from '../league/engine/types';
 import type { Action } from '../league/actions';
@@ -77,7 +78,7 @@ export function TraitReportBox({ report }: { report: TraitReport }) {
    with the records split again into the regular season, the postseason, career highs and left/right. The part
    last opened stays open for the next player. */
 type Part = 'ability' | 'records' | 'report' | 'profile' | 'injuries';
-type RecordView = 'seasons' | 'post' | 'highs' | 'splits' | 'batted' | 'fielding' | 'mlb';
+type RecordView = 'seasons' | 'post' | 'highs' | 'splits' | 'batted' | 'fielding' | 'savant' | 'meetings' | 'mlb';
 const PARTS: { key: Part; label: string }[] = [
   { key: 'ability', label: __i18n_k("ui.playerPanel.pARTS.label.9e9117d0") },
   { key: 'records', label: __i18n_k("ui.playerPanel.pARTS.label.d84b6f4b") },
@@ -94,6 +95,9 @@ const RECORD_VIEWS: { key: RecordView; label: string }[] = [
   { key: 'batted', label: __i18n_k("ui.playerPanel.text.f697b0c7") },
   // 2.0.3: fielding.
   { key: 'fielding', label: __i18n_k("ui.playerPanel.text.ed9be858") },
+  // 2.0.4: his percentiles, spray chart and pitch mix; his head-to-head records.
+  { key: 'savant', label: __i18n_k("ui.playerPanel.text.d5ce088d") },
+  { key: 'meetings', label: __i18n_k("ui.playerPanel.text.eb71400a") },
   // 1.9.3: MLB, the minors and NPB.
   { key: 'mlb', label: __i18n_k("ui.playerPanel.text.98a07411") },
 ];
@@ -316,10 +320,13 @@ export function PlayerPanel({
   onClose,
   onInterview,
   onAct,
+  onPlayer,
 }: {
   league: LeagueState;
   id: string;
   onClose: () => void;
+  /** 2.0.4: open another player (an opponent in his head-to-head records). */
+  onPlayer?: (id: string) => void;
   onInterview?: (id: string) => void;
   /** Our players' uniform number and the club's answer to warning signs (V0.12). */
   onAct?: (a: Action) => void;
@@ -501,6 +508,8 @@ export function PlayerPanel({
                 <p class="muted">{__i18n_t("ui.playerPanel.playerPanel.3055338b")}</p>
               )))}
             {records === 'batted' && <BattedTable batted={card.batted} pitcher={pitcher} />}
+            {records === 'savant' && <SavantView league={league} id={id} pitcher={pitcher} />}
+            {records === 'meetings' && <MeetingsView league={league} id={id} pitcher={pitcher} onPlayer={onPlayer} />}
             {records === 'fielding' && (card.fielding ? <FieldingTable fielding={card.fielding} /> : <p class="muted">{__i18n_t("ui.playerPanel.text.189e71c9")}</p>)}
             {__i18n_display(records === 'splits' &&
               (card.splits.season || card.splits.career ? (

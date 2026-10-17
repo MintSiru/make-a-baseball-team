@@ -153,6 +153,9 @@ export interface BattingLine {
   bip?: BattedTotals;
   /** 2.0.3: his fielding in the game (with a batted-ball stream). */
   fld?: FieldTotals;
+  /** 2.0.4: where his hits came down, three numbers each: direction (°, left field negative), distance (m) and the
+      hit (0 single … 3 home run). */
+  spray?: number[];
 }
 
 export interface PitchingLine {
@@ -190,6 +193,9 @@ export interface TeamBox {
   pitching: PitchingLine[];
   /** 1.9.8: immaculate innings (three strikeouts on nine pitches) by this side's pitchers. */
   immaculate?: { pitcher: string; inning: number }[];
+  /** 2.0.4: this side's batters against each pitcher ("batter|pitcher"): PA, AB, H, total bases, HR, BB+HBP, K
+      (with a batted-ball stream). */
+  vs?: Record<string, number[]>;
 }
 
 export interface GameOut {

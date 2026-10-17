@@ -189,6 +189,9 @@ export interface BatTotals {
   bip?: import('../league/battedball').BattedTotals;
   /** 2.0.3: his fielding (fielding.ts); absent in records from before. */
   fld?: import('../league/fielding').FieldTotals;
+  /** 2.0.4: this season's hits for his spray chart (engine/types.ts BattingLine.spray); dropped when the season is
+      archived. */
+  spray?: number[];
 }
 
 export interface PitTotals {
@@ -230,6 +233,9 @@ export interface SeasonRecord {
   bat: BatTotals | null;
   pit: PitTotals | null;
   war: number;
+  /** 2.0.4: a pitcher's mix that season (each pitch and the share thrown, percent) and his average velocity. */
+  mix?: [string, number][];
+  velo?: number;
 }
 
 /** A postseason's line (1.4.0). */

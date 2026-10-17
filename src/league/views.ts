@@ -7,6 +7,7 @@ import { publicView, type PublicPlayer } from '../model/player';
 import { faOutlook, type FaOutlook } from './faclock';
 import type { BatTotals, InjuryRecord, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { emptySplit, type Splits } from './engine/types';
+import { batDetail, pitDetail } from './savant';
 import { averageVelocity, fastballOf, pitchGrades, pitchingLift, topVelocity, type FastballType } from './pitches';
 import { POSITION_SHORT, positionGrades, secondaryPositions } from './positions';
 import { halfLabel, playText } from './playtext';
@@ -420,6 +421,8 @@ export function seasonStats(s: LeagueState) {
         ...base,
         g: b.g, pa: b.pa, avg: avg(b), obp: obp(b), slg: slg(b), ops: ops(b), hr: b.hr, rbi: b.rbi, r: b.r, sb: b.sb, bb: b.bb, k: b.k,
         babip: babip(b), wrc: wrcPlus(b, rc), war: batterWar(b, p.position ?? 'DH', lg), qualified: b.pa >= teamGames * 3.1,
+        // 2.0.4: the detail tab's numbers (savant.ts).
+        x: batDetail(b, p.position ?? 'DH'),
       });
     const q = line.pit;
     if (q && q.g > 0)
@@ -427,6 +430,7 @@ export function seasonStats(s: LeagueState) {
         ...base,
         g: q.g, gs: q.gs, w: q.w, l: q.l, sv: q.sv, hld: q.hld, outs: q.outs, era: era(q), whip: whip(q), fip: fip(q, rc), k: q.k, bb: q.bb,
         k9: per9(q.k, q.outs), bb9: per9(q.bb, q.outs), babip: babipAllowed(q), war: pitcherWar(q, lg), qualified: q.outs >= teamGames * 3,
+        x: pitDetail(q),
       });
   }
   return { batters, pitchers, qualifying: { pa: Math.ceil(teamGames * 3.1), innings: teamGames } };

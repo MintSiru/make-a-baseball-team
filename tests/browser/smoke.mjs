@@ -558,6 +558,16 @@ try {
   check((await page.getByRole('group', { name: '외국인 장기 근속 규정' }).count()) === 1, 'settings offer the foreign veteran rule');
 
   // 6. Every screen, the player dialog, reload.
+  // 2.0.4: the records room's detail table, and the clubs' head-to-head on the standings.
+  await page.locator('nav.tabs').getByRole('button', { name: '기록', exact: true }).click();
+  await page.getByRole('group', { name: '보기' }).getByRole('button', { name: '타자 전체', exact: true }).click();
+  await page.getByRole('group', { name: '기록 종류' }).getByRole('button', { name: '세부', exact: true }).click();
+  check(((await page.locator('.stats-table thead').textContent()) ?? '').includes('xwOBA'), 'the batters\' detail table shows xwOBA');
+  await page.screenshot({ path: join(shots, 'records-detail.png'), fullPage: false });
+  await page.getByRole('group', { name: '기록 종류' }).getByRole('button', { name: '기본', exact: true }).click();
+  await page.locator('nav.tabs').getByRole('button', { name: '순위', exact: true }).click();
+  await page.locator('details.h2h summary').click();
+  check((await page.locator('.h2h-table tbody tr').count()) > 0, 'the standings show the clubs\' head-to-head');
   for (const tab of ['기록', '구단', '역대', '드래프트 후보', '우리 구단']) await page.getByRole('button', { name: tab, exact: true }).click();
   await page.getByRole('button', { name: '선수단', exact: true }).click();
   await page.locator('.squad-table .link').first().click();
@@ -579,6 +589,11 @@ try {
   await page.screenshot({ path: join(shots, 'player.png') });
   await page.getByRole('tab', { name: '기록' }).click();
   const views = page.getByRole('group', { name: '기록 보기' });
+  // 2.0.4: the Savant page and the head-to-head records.
+  await views.getByRole('button', { name: '분석', exact: true }).click();
+  check((await page.locator('.dialog .savant').count()) === 1, 'the analysis view shows');
+  await views.getByRole('button', { name: '상대 전적', exact: true }).click();
+  check((await page.locator('.dialog .meetings').count()) === 1, 'the head-to-head view shows');
   for (const t of ['포스트시즌', '커리어 하이', '좌우 기록', '정규시즌']) await views.getByRole('button', { name: t }).click();
   await page.getByRole('tab', { name: /^부상/ }).click();
   await page.getByRole('tab', { name: '기록' }).click();
@@ -596,6 +611,8 @@ try {
   await page.getByRole('dialog').waitFor();
   await page.getByRole('group', { name: '기록 보기' }).getByRole('button', { name: '포스트시즌' }).click();
   await page.screenshot({ path: join(shots, 'hitter.png') });
+  await page.getByRole('group', { name: '기록 보기' }).getByRole('button', { name: '분석', exact: true }).click();
+  await page.screenshot({ path: join(shots, 'hitter-savant.png') });
   await page.keyboard.press('Escape');
   const saved = await status(page);
   await page.reload();
