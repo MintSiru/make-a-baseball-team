@@ -23,7 +23,7 @@ import { dealYears } from '../league/returnees';
 import { logGrades } from '../league/offseason';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0', '1.2.0', '1.3.0', '1.4.0', '1.6.0', '1.7.0', '1.7.1', '1.8.0', '1.8.1', '1.8.2', '1.8.4', '1.9.0', '1.9.3', '1.9.5'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0', '1.2.0', '1.3.0', '1.4.0', '1.6.0', '1.7.0', '1.7.1', '1.8.0', '1.8.1', '1.8.2', '1.8.4', '1.9.0', '1.9.3', '1.9.5', '1.9.8'];
 
 type Loose = Record<string, unknown>;
 
@@ -53,6 +53,8 @@ export function migrateState(raw: unknown, from: string): LeagueState {
   // 0.5.1 added posting before free agency (step 4): only saves from before it move on (0.5.1 and
   // later already have the step).
   if (s.offseason && ['0.2', '0.3', '0.4', '0.4.1', '0.5'].includes(from) && s.offseason.step >= 4) s.offseason.step += 1;
+  // 1.9.9 added the board's meeting as the offseason's first step (board.ts): every later step moves one on.
+  if (s.offseason && MIGRATABLE.indexOf(from) >= 0 && MIGRATABLE.indexOf(from) <= MIGRATABLE.indexOf('1.9.8')) s.offseason.step += 1;
   // 0.5.1: left-handed throwers bat left as in the league (좌투우타 became rare).
   for (const p of Object.values(s.players)) p.bats = batsFor(p.id, p.throws, p.bats);
   // 0.6: the business side. Clubs get fans, prices and staff; this season's gates are rebuilt from the

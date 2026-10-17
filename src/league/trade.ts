@@ -8,12 +8,12 @@ import { k as __i18n_k } from '../i18n/index';
 import { ro } from './josa';
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
-import { KBO_2026, minimumSalaryFor } from '../rules/kbo2026';
+import { foreignReplacements, KBO_2026, minimumSalaryFor } from '../rules/kbo2026';
 import { foreignContract, renewSalary, salaryIn } from './contracts';
 import { today } from './entry';
 import { splitContract } from './foreign';
 import { movePlayer } from './market';
-import { leaveLeague, removeFromRoster, rosterLimit } from './offseason';
+import { faSeasonsFor, leaveLeague, removeFromRoster, rosterLimit } from './offseason';
 import { ageIn, currentValue, isForeign, isPitcher, keepValue, makeForeign, veteranOnMarket } from './players';
 import { currentStandings } from './season';
 import { firstTeamIds, orgPlayers, registeredIds, type DraftSlot, type LeagueState, type TradeExtras } from './state';
@@ -39,7 +39,8 @@ export function logTransaction(s: LeagueState, text: string) {
 
 // ── Value ────────────────────────────────────────────────────────────────────────────────────────
 
-const faSeasons = (p: Player) => (p.origin.entryCategory === 'college' ? KBO_2026.freeAgency.seasonsCollege : KBO_2026.freeAgency.seasonsHighSchool);
+/** Seasons to free agency (1.9.9: the latest the board set). */
+const faSeasons = (p: Player) => faSeasonsFor(p, Infinity);
 
 /** Seasons the club controls him: his contract, or until he reaches free agency. */
 function control(s: LeagueState, p: Player) {
@@ -451,7 +452,7 @@ export function clearPool(s: LeagueState) {
 export function foreignWindow(s: LeagueState, teamId: TeamId): string | null {
   if (s.phase !== 'regular') return __i18n_k("league.trade.foreignWindow.8f1829b0");
   if (today(s) > `${s.year}-${KBO_2026.foreign.replacementDeadline}`) return __i18n_k("league.trade.foreignWindow.0d58f649");
-  if ((s.foreignChanges?.[teamId] ?? 0) >= KBO_2026.foreign.replacementsPerSeason) return __i18n_k("league.trade.foreignWindow.1f6cbcf8", { replacementsPerSeason: KBO_2026.foreign.replacementsPerSeason });
+  if ((s.foreignChanges?.[teamId] ?? 0) >= foreignReplacements()) return __i18n_k("league.trade.foreignWindow.1f6cbcf8", { replacementsPerSeason: foreignReplacements() });
   return null;
 }
 

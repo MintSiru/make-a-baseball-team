@@ -129,6 +129,8 @@ export function App() {
   const [boxId, setBoxId] = useState<string | null>(null);
   // 1.7.1: the box score was opened to watch our game live.
   const [boxLive, setBoxLive] = useState(false);
+  // 1.9.9: while our game is watched live, the page behind shows the league from before it (no result spoiled).
+  const [shield, setShield] = useState<LeagueState | null>(null);
   const [teamId, setTeamId] = useState<string>('kia');
   const [playerId, setPlayerId] = useState<PlayerId | null>(null);
   const [prospectId, setProspectId] = useState<PlayerId | null>(null);
@@ -517,15 +519,25 @@ export function App() {
   const postLive = league.phase === 'postseason' && !!league.bracket && !league.bracket.done;
   // 1.7.1: our postseason game is next — watch it live, see the result, or go on without stopping.
   const big = postLive && !league.pending && stopsOf(league).includes('bigGame') ? ourNextGame(league) : null;
-  const watchLive = async () => {
-    await act({ kind: 'postseasonDay' }, __i18n_k("ui.app.app.controls.e39c3d6f"), false);
+  // 1.9.9: play the day and open our game live, the page behind kept as it was before the game until it is closed
+  // (the postseason's big game, and from the regular season's controls).
+  const watchLive = async (action: Action = { kind: 'postseasonDay' }) => {
+    const before = latest.current;
+    const was = before ? lastOurGame(before) : null;
+    // A copy: the day is played on the league in place.
+    setShield(before ? structuredClone(before) : null);
+    await act(action, __i18n_k("ui.app.app.controls.e39c3d6f"), false);
     const s = latest.current;
     const id = s ? lastOurGame(s) : null;
-    if (id && s?.pbp?.[id]) {
+    if (id && id !== was && s?.pbp?.[id]) {
       setBoxLive(true);
       setBoxId(id);
-    }
+    } else setShield(null);
   };
+  // 1.9.9: our club plays on the next game day of the regular season.
+  const me = league.user?.teamId;
+  const nextDay = league.phase === 'regular' ? league.schedule[league.next]?.date : undefined;
+  const oursToday = !!me && !!nextDay && league.schedule.slice(league.next).some((g) => g.date === nextDay && (g.home === me || g.away === me));
   const controls = league.pending ? null : big ? (
     <>
       <p class="big-game">
@@ -539,7 +551,7 @@ export function App() {
           })}
         </span>
       </p>
-      <button type="button" class="primary" onClick={watchLive}>{__i18n_t("ui.app.text.1fe38266")}</button>
+      <button type="button" class="primary" onClick={() => watchLive()}>{__i18n_t("ui.app.text.1fe38266")}</button>
       <button type="button" onClick={() => act({ kind: 'postseasonDay' }, __i18n_k("ui.app.app.controls.e39c3d6f"), false)}>{__i18n_t("ui.app.text.1a3c3146")}</button>
       <button type="button" onClick={() => act({ kind: 'postseason' }, __i18n_k("ui.app.app.controls.9edd7286"), true)}>{__i18n_t("ui.app.text.7dae039f")}</button>
     </>
@@ -558,6 +570,11 @@ export function App() {
     </>
   ) : (
     <>
+      {oursToday && (
+        <button type="button" class="primary" onClick={() => watchLive({ kind: 'days', days: 1 })}>
+          {__i18n_t("ui.app.text.9de885d0")}
+        </button>
+      )}
       <button type="button" onClick={() => act({ kind: 'days', days: 1 }, __i18n_k("ui.app.app.controls.e39c3d6f"), false)}>{__i18n_t("ui.app.app.controls.c3537d9a")}</button>
       <button type="button" onClick={() => act({ kind: 'days', days: 6, stops: true }, __i18n_k("ui.app.app.controls.e39c3d6f"), false)}>{__i18n_t("ui.app.app.controls.3d84dffe")}</button>
       <button type="button" onClick={() => act({ kind: 'days', days: 26, stops: true }, __i18n_k("ui.app.app.controls.3b268e0d"), true)}>{__i18n_t("ui.app.app.controls.f425e3ef")}</button>
@@ -565,6 +582,8 @@ export function App() {
     </>
   );
 
+  // 1.9.9: what the page shows (the league before our game while it is watched live).
+  const shown = shield ?? league;
   const userTeam = league.user ? league.teams.find((t) => t.id === league.user!.teamId) : null;
   // The club colour as the accent, made readable on this page (V0.15).
   const accent = userTeam ? readableAccent(userTeam.color, dark) : null;
@@ -592,7 +611,7 @@ export function App() {
             <button type="button" aria-current={tab === 'settings' ? 'page' : undefined} onClick={() => setTab('settings')}>{__i18n_t("ui.app.app.c14a567e")}</button>
           </div>
         </header>
-        {__i18n_display(league.user && <ClubSummary league={league} onTab={setTab} />)}
+        {__i18n_display(shown.user && <ClubSummary league={shown} onTab={setTab} />)}
         <nav class="tabs" aria-label={__i18n_t("ui.app.app.43c786f1")}>
           {__i18n_display(TABS.filter((t) => (!t.userOnly || league.user) && (!t.waiting || league.pending)).map((t) => (
             <button key={t.id} type="button" class={t.waiting ? 'tab-waiting' : undefined} aria-current={tab === t.id ? 'page' : undefined} onClick={() => setTab(t.id)}>
@@ -625,7 +644,7 @@ export function App() {
         />
       ))}
       {updates.length > 0 && <UpdateDialog notes={updates} onClose={closeUpdates} />}
-      {__i18n_display((popups || alertsOpen) && !busy && unseen.length > 0 && (
+      {__i18n_display((popups || alertsOpen) && !busy && !shield && unseen.length > 0 && (
         <AlertPopup
           key={unseen[0]!.id}
           alerts={unseen}
@@ -638,10 +657,10 @@ export function App() {
       ))}
       <div class="progress-bar">
         <p class="status" aria-live="polite">
-          {__i18n_display(busy ?? statusLine(league))}
+          {__i18n_display(busy ?? statusLine(shown))}
         </p>
-        <fieldset class="controls" disabled={!!busy}>
-          {__i18n_display(controls)}
+        <fieldset class="controls" disabled={!!busy || !!shield}>
+          {__i18n_display(shield ? <p class="muted small">{__i18n_t("ui.app.text.3b74579c")}</p> : controls)}
         </fieldset>
       </div>
       <main class="page" id="main" tabIndex={-1} data-version={version}>
@@ -650,12 +669,12 @@ export function App() {
             {__i18n_display(notice)}
           </p>
         ))}
-        <Guard resetKey={`${tab}|${clubView}`} onBack={() => setTab(tab === 'standings' ? (league.user ? 'club' : 'leaders') : 'standings')}>
-        <TutorialCard league={league} tab={tab} view={tab === 'club' ? clubView : undefined} onAct={(a) => act(a, __i18n_k("ui.app.app.aca4b433"), false)} />
-        {__i18n_display(tab === 'decision' && league.pending && <Decision league={league} onPlayer={setPlayerId} onSubmit={(input) => act({ kind: 'decide', input }, __i18n_k("ui.app.app.7890cafc"), false)} onAct={(a) => act(a, __i18n_k("ui.app.app.7890cafc"), false)} />)}
-        {__i18n_display(tab === 'club' && league.user && (
+        <Guard resetKey={`${tab}|${clubView}`} onBack={() => setTab(tab === 'standings' ? (shown.user ? 'club' : 'leaders') : 'standings')}>
+        <TutorialCard league={shown} tab={tab} view={tab === 'club' ? clubView : undefined} onAct={(a) => act(a, __i18n_k("ui.app.app.aca4b433"), false)} />
+        {__i18n_display(tab === 'decision' && shown.pending && <Decision league={shown} onPlayer={setPlayerId} onSubmit={(input) => act({ kind: 'decide', input }, __i18n_k("ui.app.app.7890cafc"), false)} onAct={(a) => act(a, __i18n_k("ui.app.app.7890cafc"), false)} />)}
+        {__i18n_display(tab === 'club' && shown.user && (
           <MyClub
-            league={league}
+            league={shown}
             onPlayer={setPlayerId}
             onAct={(a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false)}
             onView={setClubView}
@@ -667,17 +686,17 @@ export function App() {
             story={{ onRewrite: writeStory, onRevert: revertStory, busyId: storyBusy }}
           />
         ))}
-        {__i18n_display(tab === 'market' && league.user && (
-          <Market key={marketIntent.n} league={league} intent={marketIntent.n ? marketIntent : undefined} onPlayer={setPlayerId} onAct={(a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false)} />
+        {__i18n_display(tab === 'market' && shown.user && (
+          <Market key={marketIntent.n} league={shown} intent={marketIntent.n ? marketIntent : undefined} onPlayer={setPlayerId} onAct={(a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false)} />
         ))}
-        {__i18n_display(tab === 'games' && <Games league={league} onOpen={setBoxId} />)}
-        {__i18n_display(tab === 'standings' && <Standings league={league} onTeam={openTeam} onBox={setBoxId} onAct={league.user ? (a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false) : undefined} />)}
-        {__i18n_display(tab === 'leaders' && <Leaders league={league} onPlayer={setPlayerId} onBox={setBoxId} onAct={league.user ? (a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false) : undefined} />)}
-        {__i18n_display(tab === 'team' && <TeamRoster league={league} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />)}
-        {__i18n_display(tab === 'history' && <History league={league} onPlayer={setPlayerId} />)}
+        {__i18n_display(tab === 'games' && <Games league={shown} onOpen={setBoxId} />)}
+        {__i18n_display(tab === 'standings' && <Standings league={shown} onTeam={openTeam} onBox={setBoxId} onAct={shown.user ? (a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false) : undefined} />)}
+        {__i18n_display(tab === 'leaders' && <Leaders league={shown} onPlayer={setPlayerId} onBox={setBoxId} onAct={shown.user ? (a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false) : undefined} />)}
+        {__i18n_display(tab === 'team' && <TeamRoster league={shown} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />)}
+        {__i18n_display(tab === 'history' && <History league={shown} onPlayer={setPlayerId} />)}
         {__i18n_display(tab === 'settings' && (
           <Settings
-            league={league}
+            league={shown}
             store={store}
             busy={!!busy}
             story={{ settings: storySettings, usage: usage.current, pausedUntil: storySettings.auto ? autoPause.current : 0, onSave: saveStory }}
@@ -690,18 +709,18 @@ export function App() {
         {__i18n_display(tab === 'help' && <Manual />)}
         {__i18n_display(tab === 'draft' && (
           <div class="layout">
-            <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} ourView={league?.user ? (p) => scoutView(league!, p) : undefined} />
+            <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} ourView={shown?.user ? (p) => scoutView(shown!, p) : undefined} />
             <PlayerProfile
               player={prospect && publicView(prospect)}
               age={prospect && prospectAge(prospect)}
-              combine={prospect && league && combineHeld(league, draftYear) && attends(league.seed, draftYear, prospect) ? combineLines(league.seed, draftYear, prospect) : null}
-              combineNote={league && !combineHeld(league, draftYear) ? __i18n_k("ui.app.app.dabfaec3", { draftYear: draftYear }) : __i18n_k("ui.app.app.5e6c4cae")}
-              report={prospect && league?.user ? traitReport(league, prospect) : null}
+              combine={prospect && league && combineHeld(shown, draftYear) && attends(shown.seed, draftYear, prospect) ? combineLines(shown.seed, draftYear, prospect) : null}
+              combineNote={league && !combineHeld(shown, draftYear) ? __i18n_k("ui.app.app.dabfaec3", { draftYear: draftYear }) : __i18n_k("ui.app.app.5e6c4cae")}
+              report={prospect && shown?.user ? traitReport(shown, prospect) : null}
               workout={
-                prospect && league?.user
+                prospect && shown?.user
                   ? {
-                      done: workoutsOf(league, draftYear).includes(prospect.id),
-                      blocked: checkWorkout(league, draftYear, prospect.id),
+                      done: workoutsOf(shown, draftYear).includes(prospect.id),
+                      blocked: checkWorkout(shown, draftYear, prospect.id),
                       cost: money(COMBINE.workoutCost),
                       onClick: () => act({ kind: 'workout', draftYear, id: prospect.id, name: prospect.name }, __i18n_k("ui.app.app.onClick.bd04d7e4"), false),
                     }
@@ -721,10 +740,12 @@ export function App() {
           onClose={() => {
             setBoxId(null);
             setBoxLive(false);
+            setShield(null);
           }}
           onPlayer={(pid) => {
             setBoxId(null);
             setBoxLive(false);
+            setShield(null);
             setPlayerId(pid);
           }}
           onAct={(a) => act(a, __i18n_k("ui.app.app.8dd94575"), false)}

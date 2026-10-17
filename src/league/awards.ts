@@ -13,7 +13,7 @@ import { k as __i18n_k } from '../i18n/index';
    WAR enter the hall of fame (명예의 전당, a game feature: the KBO has none yet). */
 import type { FieldPos } from './engine/types';
 import type { BatTotals, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
-import { isForeign, isPitcher } from './players';
+import { isForeign, isPitcher, isReliever } from './players';
 import { avg, era, obp, slg } from './stats';
 import type { LeagueState } from './state';
 import type { StandingRow } from './standings';
@@ -160,14 +160,24 @@ export interface HallEntry {
   line: string;
 }
 
-const HALL = { war: 65, warWithHonours: 55, honours: 5 };
+/** 1.9.9 (the user's request): a reliever's WAR is small, so the bullpen's bar is lower: WAR 40, or WAR 25 with 300
+    saves and holds, or WAR 25 with three save or hold titles. */
+const HALL = { war: 65, warWithHonours: 55, honours: 5, relieverWar: 40, relieverWarWithSaves: 25, relieverSaves: 300, relieverTitles: 3 };
+
+/** 1.9.9: how many times he led the league in saves or holds. */
+export const bullpenTitles = (s: Pick<LeagueState, 'history'>, id: PlayerId) => {
+  const labels = [awardLabel('sv'), awardLabel('hld')];
+  return s.history.reduce((a, h) => a + (h.awards?.titles.filter((t) => t.id === id && labels.includes(t.label)).length ?? 0), 0);
+};
 
 /** A retiring player's career: enough WAR, or a strong career with major awards, enters the hall. */
 export function hallOfFameCheck(s: LeagueState, p: Player, year: number) {
   const major = p.career.filter((c) => !c.level);
   const war = Math.round(major.reduce((a, c) => a + c.war, 0) * 10) / 10;
   const big = (p.honors ?? []).filter((h) => h.includes('MVP') || h.includes('골든글러브') || h.includes('신인왕')).length;
-  if (war < HALL.war && !(war >= HALL.warWithHonours && big >= HALL.honours)) return;
+  const saves = major.reduce((a, c) => a + (c.pit?.sv ?? 0) + (c.pit?.hld ?? 0), 0);
+  const bullpen = isReliever(p) && (war >= HALL.relieverWar || (war >= HALL.relieverWarWithSaves && (saves >= HALL.relieverSaves || bullpenTitles(s, p.id) >= HALL.relieverTitles)));
+  if (war < HALL.war && !(war >= HALL.warWithHonours && big >= HALL.honours) && !bullpen) return;
   if (s.hallOfFame?.some((h) => h.id === p.id)) return;
   const bat = major.reduce((a, c) => ({ h: a.h + (c.bat?.h ?? 0), hr: a.hr + (c.bat?.hr ?? 0) }), { h: 0, hr: 0 });
   const pit = major.reduce((a, c) => ({ w: a.w + (c.pit?.w ?? 0), sv: a.sv + (c.pit?.sv ?? 0), outs: a.outs + (c.pit?.outs ?? 0) }), { w: 0, sv: 0, outs: 0 });

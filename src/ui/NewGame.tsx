@@ -65,6 +65,8 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
   const [autoPrep, setAutoPrep] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>('normal');
   const [firing, setFiring] = useState(false);
+  // 1.9.9: the board changes the rules by vote; null follows the default (the sandbox and the legacy start).
+  const [board, setBoard] = useState<boolean | null>(null);
   const [seed, setSeed] = useState(initialSeed);
   const [twelve, setTwelve] = useState<TwelveSetting>({ mode: 'off' });
   // 1.6.0: a scenario sets some of the conditions (and locks some of them).
@@ -126,6 +128,7 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
     difficulty,
     scenario: null,
     ...(firing ? { firing } : {}),
+    ...((board ?? (!firing || !!def?.legacy)) ? { board: true } : {}),
     ...(guide ? { tutorial: true } : {}),
     ...(autoPrep ? { autoPrep: true } : {}),
     ...(twelveSetting.mode !== 'off' ? { twelve: twelveSetting } : {}),
@@ -298,6 +301,9 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
         <p class="muted small">{__i18n_t("ui.newGame.newGame.2624d548", { value: DIFFICULTY_NOTE[difficulty] })}</p>
         <label class="check">
           <input type="checkbox" checked={firing} disabled={locked.has('firing')} onChange={(e) => setFiring((e.currentTarget as HTMLInputElement).checked)} /> 성적이 나쁘면 모기업이 단장을 해임할 수 있음 (끄면 샌드박스)
+        </label>
+        <label class="check">
+          <input type="checkbox" checked={board ?? (!firing || !!def?.legacy)} onChange={(e) => setBoard((e.currentTarget as HTMLInputElement).checked)} /> {__i18n_t("ui.newGame.text.e2f4a6e6")}
         </label>
         <label class="seed-field">
           시드

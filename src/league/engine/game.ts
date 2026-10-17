@@ -291,6 +291,8 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
         // Trouble late in a close game: two on and already a run in → the next arm.
         else if (inning >= 6 && !long && !mopUp && runnersOn() >= 2 && line.r >= 1 && Math.abs(myLead) <= 3 && line.bf >= 3) pull = true;
       }
+      // 1.9.9: three batters or the end of an inning before a reliever may go (not at a new inning's start).
+      if (pull && game.threeBatter && app.role !== 'SP' && line.bf < 3 && half0 !== null) pull = false;
       if (!pull || field.pen.length === 0) return;
       const want: BullpenRole[] = [];
       const close = myLead >= 0 && myLead <= 3;
@@ -316,6 +318,8 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       log?.push({ k: 'pitch', i: inning, top: !isHome, p: arm.id, out: app.arm.id });
     };
 
+    // 1.9.9, 승부치기: an extra inning starts with the batter before the leadoff man on second (no pitcher charged).
+    if (game.ghostFrom && inning >= game.ghostFrom) bases[1] = { bat: (bat.next + bat.lineup.length - 1) % bat.lineup.length, resp: field.apps.length - 1, unearned: true };
     // 1.7.0: protecting a late lead, the fielding side's best bench glove comes in.
     const logSub = (x: Sub | null) => x && log?.push({ k: 'sub', i: inning, top: !isHome, sub: x.kind, in: x.in, out: x.out, pos: x.pos });
     logSub(defensiveSub(field, inning, lead(field)));

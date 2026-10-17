@@ -19,6 +19,7 @@ import type { LeagueState } from './state';
 import { traitsOf } from './traits';
 import { DIFFICULTY } from './tuning';
 import { featureClosed } from './features';
+import { faSeasonsFor } from './offseason';
 
 export const EXTENSION = {
   years: [2, 3, 4, 5, 6] as const,
@@ -42,7 +43,8 @@ export interface ExtensionOption {
   total: number;
 }
 
-const faSeasons = (p: Player) => (p.origin.entryCategory === 'college' ? KBO_2026.freeAgency.seasonsCollege : KBO_2026.freeAgency.seasonsHighSchool);
+/** Seasons to free agency (1.9.9: the latest the board set). */
+const faSeasons = (p: Player) => faSeasonsFor(p, Infinity);
 /** The season the deal starts (the next one; in the winter, the coming one). */
 const startOf = (s: LeagueState) => (s.offseason ? s.offseason.year + 1 : s.year + 1);
 const dateOf = (s: LeagueState) => (s.offseason ? `${s.offseason.year}-12-01` : today(s));

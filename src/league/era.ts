@@ -16,10 +16,22 @@ let shift = 0;
     before 2015 (rules/history.ts); every other game plays today's rules in every year, as before. */
 let historical = false;
 
+/** 1.9.9 (board.ts): the rules the board has changed, each from a season on. */
+let board: readonly { from: number; item: string; value: number }[] = [];
+
 /** Sets the calendar from a league (its `era`, 0 when missing, and whether it plays history) or a shift in years. */
-export function setEra(from: { era?: number; historical?: boolean } | number | null | undefined) {
+export function setEra(from: { era?: number; historical?: boolean; board?: { changes: { from: number; item: string; value: number }[] } } | number | null | undefined) {
   shift = typeof from === 'number' ? from : (from?.era ?? 0);
   historical = typeof from === 'object' && !!from?.historical;
+  board = (typeof from === 'object' && from?.board?.changes) || [];
+}
+
+/** 1.9.9: the value the board set for `item` in force in `season` (the latest voted when omitted: a winter's signings
+    are for the season the change starts), or undefined when it never changed it. */
+export function boardValue(item: string, season = Infinity): number | undefined {
+  let out: number | undefined;
+  for (const c of board) if (c.item === item && c.from <= season) out = c.value;
+  return out;
 }
 
 /** The league plays the KBO's own history (1.9.4). */

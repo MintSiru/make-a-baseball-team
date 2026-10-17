@@ -37,6 +37,7 @@ import { RivalForm } from './Twelve';
 import { FantasyBoard } from './FantasyDraft';
 import { MEDDLE } from '../league/scenarios';
 import { ROUND_NAME } from '../league/postseason';
+import { motionText, type BoardVote } from '../league/board';
 
 interface Props {
   league: LeagueState;
@@ -77,6 +78,7 @@ const TITLES: Record<DecisionT['kind'], string> = {
   meddle: __i18n_k("ui.decision.tITLES.meddle.8a1f72de"),
   fantasyPick: __i18n_k("ui.decision.tITLES.fantasyPick.bc92c419"),
   postEntry: __i18n_t("ui.decision.text.2bfab379"),
+  board: __i18n_t("ui.decision.text.b736056d"),
 };
 
 /** What the scouts hear about major league interest, from the public grade. */
@@ -98,6 +100,53 @@ const pct = (x: number) => `${Math.round(x * 100)}%`;
 type Extra = { title: string; value: (p: Player) => string; sort?: (p: Player) => number };
 
 /** Sortable player columns shared by the decision tables: name, position, age, current, future (+ one extra). */
+/** 1.9.9 (the user's request): what an important decision leaves out — protected places unused, a club in the
+    special draft not picked from, foreign places left open, a draft pick not signed — asked about before it is sent
+    (a click through left the second draft's list empty and the players gone). Null when nothing is left out. */
+export function omission(d: DecisionT, input: DecisionInput): string | null {
+  const short = (picked: number, max: number, of: number) => Math.min(max, of) - picked;
+  switch (input.kind) {
+    case 'secondProtect': {
+      if (d.kind !== 'secondProtect') return null;
+      const n = short(input.ids.length, d.protect, d.candidates.length);
+      return n > 0 ? __i18n_t("ui.decision.text.ec80bf60", { picked: input.ids.length, max: d.protect }) : null;
+    }
+    case 'rivalProtect': {
+      if (d.kind !== 'rivalProtect') return null;
+      const n = short(input.ids.length, d.protect, d.candidates.length);
+      return n > 0 ? __i18n_t("ui.decision.text.cda6ff57", { picked: input.ids.length, max: d.protect }) : null;
+    }
+    case 'faProtect': {
+      if (d.kind !== 'faProtect') return null;
+      const n = short(input.ids.length, d.protect, d.candidates.length);
+      return n > 0 ? __i18n_t("ui.decision.text.a3c6b741", { picked: input.ids.length, max: d.protect }) : null;
+    }
+    case 'specialDraft': {
+      if (d.kind !== 'specialDraft') return null;
+      const missing = Object.keys(d.lists).filter((teamId) => !input.picks[teamId]).length;
+      return missing > 0 ? __i18n_t("ui.decision.text.680bb626", { n: missing }) : null;
+    }
+    case 'foreign': {
+      if (d.kind !== 'foreign' || d.tryout) return null;
+      const open = d.regular + d.asia - input.ids.length;
+      return input.ids.length === 0 && open > 0 && d.candidates.length > 0 ? __i18n_t("ui.decision.text.da97bfb1", { n: open }) : null;
+    }
+    case 'rookieBonus': {
+      if (d.kind !== 'rookieBonus') return null;
+      const none = d.picks.filter((pk) => !input.offers[pk.id]).length;
+      return none > 0 ? __i18n_t("ui.decision.text.709ec7d2", { n: none }) : null;
+    }
+    default:
+      return null;
+  }
+}
+
+/** Sends the decision, asking first when something important is left out. */
+const confirmOmission = (d: DecisionT, input: DecisionInput) => {
+  const what = omission(d, input);
+  return !what || typeof window === 'undefined' || window.confirm(__i18n_t("ui.decision.text.7b47d2f5", { what }));
+};
+
 function usePlayerSort(players: Player[], year: number, extra?: Extra) {
   const columns: Record<string, SortColumn<Player>> = {
     name: { value: (p) => p.name },
@@ -437,6 +486,9 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         return { kind: 'scandal', answer: (choices.pick ?? 'extra') as 'release' | 'extra' | 'none' };
       case 'dispute':
         return { kind: 'dispute', answer: (choices.pick ?? 'settle') as 'settle' | 'fight' };
+      case 'board':
+        // 1.9.9: our vote on each motion (as our interest says until changed) and the motion we put, if any.
+        return { kind: 'board', votes: d.motions.map((_, i) => (choices[`m${i}`] ?? d.expected[i]![league.user!.teamId] ?? 'abstain') as BoardVote), own: choices.own && choices.own !== 'none' ? Number(choices.own) : null };
       default:
         return { kind: d.kind, ids: [...selected] } as DecisionInput;
     }
@@ -489,6 +541,9 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       case 'dispute':
       case 'meddle':
         setChoices({ pick: a.answer });
+        break;
+      case 'board':
+        setChoices(Object.fromEntries([...a.votes.map((v, i) => [`m${i}`, v]), ['own', a.own == null ? 'none' : String(a.own)]]));
         break;
       default:
         if ('ids' in a) setSelected(new Set(a.ids));
@@ -1106,6 +1161,65 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       );
       break;
     }
+    case 'board': {
+      // 1.9.9: each motion with the clubs' expected votes (the committee's mood), our vote; then a motion of our own.
+      const me = league.user!.teamId;
+      const name = (id: TeamId) => league.teams.find((t) => t.id === id)?.short ?? id;
+      const VOTES: [BoardVote, string][] = [
+        ['yes', __i18n_t("ui.decision.text.a479b08f")],
+        ['no', __i18n_t("ui.decision.text.231ed254")],
+        ['abstain', __i18n_t("ui.decision.text.ddec7914")],
+      ];
+      body = (
+        <>
+          <p>{__i18n_t("ui.decision.text.d24bd412", { need: d.need })}</p>
+          {d.motions.map((m, i) => {
+            const expected = d.expected[i]!;
+            const pick = choices[`m${i}`] ?? expected[me] ?? 'abstain';
+            const yes = Object.entries(expected).filter(([id, v]) => id !== me && v === 'yes').length;
+            return (
+              <section key={i} class="board-motion">
+                <h3>{motionText(m)}</h3>
+                <p class="muted small">
+                  {__i18n_t("ui.decision.text.abf35d90", { yes, need: d.need })}
+                </p>
+                <ul class="board-votes">
+                  {Object.entries(expected)
+                    .filter(([id]) => id !== me)
+                    .map(([id, v]) => (
+                      <li key={id} class={`vote-${v}`}>
+                        {name(id)} {VOTES.find((x) => x[0] === v)![1]}
+                      </li>
+                    ))}
+                </ul>
+                <div class="choice-grid" role="radiogroup" aria-label={__i18n_t("ui.decision.text.8024471c")}>
+                  {VOTES.map(([k, label]) => (
+                    <button key={k} type="button" class="choice" role="radio" aria-checked={pick === k} aria-pressed={pick === k} onClick={() => choose(`m${i}`, k)}>
+                      <strong>{label}</strong>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+          <section class="board-motion">
+            <h3>{__i18n_t("ui.decision.text.c4c5d585")}</h3>
+            <p class="muted small">{__i18n_t("ui.decision.text.a386a544")}</p>
+            <label>
+              <select value={choices.own ?? 'none'} onChange={(e) => choose('own', (e.currentTarget as HTMLSelectElement).value)}>
+                <option value="none">{__i18n_t("ui.decision.text.ec06c2e0")}</option>
+                {d.options.map((m, i) => (
+                  <option key={i} value={String(i)}>
+                    {__i18n_t("ui.decision.text.de226207", { what: motionText(m), yes: d.optionYes[i]! })}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </section>
+        </>
+      );
+      break;
+    }
     case 'dispute': {
       const pick = choices.pick ?? 'settle';
       const options: [string, string, string][] = [
@@ -1347,7 +1461,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
           </>
         ) : (
           <>
-            <button type="button" class="primary" disabled={!!problem} onClick={() => input && onSubmit(input)}>{__i18n_t("ui.decision.decision.55536106")}</button>
+            <button type="button" class="primary" disabled={!!problem} onClick={() => input && confirmOmission(d, input) && onSubmit(input)}>{__i18n_t("ui.decision.decision.55536106")}</button>
             <button type="button" onClick={recommend}>
               {__i18n_display(d.kind === 'camp' ? __i18n_k("ui.decision.decision.3d05078a") : __i18n_k("ui.decision.decision.abd43abb"))}
             </button>

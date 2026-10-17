@@ -6,7 +6,8 @@ import { k as __i18n_k } from '../i18n/index';
    rookie draft → (expansion special draft) → roster limits → released players → foreign players.
    The user's club can make the game wait at a step for a decision (see OffseasonHooks). */
 import { historicForeignCap, MODERN_FROM, rulesFor } from '../rules/history';
-import { playsHistory } from './era';
+import { boardValue, playsHistory } from './era';
+import { boardMeets, committeeMotions, holdMeeting } from './board';
 import { hometownClub } from './fa';
 import { hashUnit, observe, overall, rng, toGrade, type Tools } from '../draftroom';
 import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
@@ -422,8 +423,15 @@ const faSeasonsNeeded = (p: Player, next: number) => {
     const n = rulesFor(next - 1).freeAgencySeasons;
     return n == null ? Infinity : n - (p.origin.entryCategory === 'college' && next - 1 >= 2011 ? 1 : 0);
   }
-  return p.origin.entryCategory === 'college' ? KBO_2026.freeAgency.seasonsCollege : KBO_2026.freeAgency.seasonsHighSchool;
+  return faSeasonsFor(p, next - 1);
 };
+
+/** Seasons to free agency for a player after `season` (1.9.9: as the board set them; college players one fewer). */
+export function faSeasonsFor(p: Player, season: number): number {
+  const board = boardValue('faSeasons', season);
+  if (board !== undefined) return board - (p.origin.entryCategory === 'college' ? 1 : 0);
+  return p.origin.entryCategory === 'college' ? KBO_2026.freeAgency.seasonsCollege : KBO_2026.freeAgency.seasonsHighSchool;
+}
 
 function isFreeAgent(p: Player, next: number) {
   if (isForeign(p) || p.status !== 'active' || !p.teamId) return false;
@@ -492,7 +500,8 @@ export function openDraft(s: LeagueState, draftYear: number, slots: DraftSlot[])
     in the early 1980s: three, a game assumption), from the high schools of its region (RULES.md §14). */
 export const TERRITORIAL_CAP = 3;
 function territorialSlots(s: LeagueState, draftYear: number, slots: DraftSlot[]): DraftSlot[] {
-  if (!s.historical) return [];
+  // 1.9.9: outside a history game, only when the board brought them back (board.ts).
+  if (!s.historical && boardValue('territorial', draftYear + 1) === undefined) return [];
   const n = Math.min(rulesFor(draftYear + 1).territorialPicks, TERRITORIAL_CAP);
   if (n <= 0) return [];
   const clubs = [...new Set(slots.map((x) => x.teamId))];
@@ -831,7 +840,7 @@ export interface OffseasonHooks {
 const hooks: OffseasonHooks = {};
 export const setOffseasonHooks = (h: OffseasonHooks) => Object.assign(hooks, h);
 
-export const OFFSEASON_STEPS = ['international', 'develop', 'retire', 'military', 'posting', 'freeAgency', 'renew', 'draft', 'special', 'secondDraft', 'limits', 'released', 'foreign', 'check', 'camp'] as const;
+export const OFFSEASON_STEPS = ['board', 'international', 'develop', 'retire', 'military', 'posting', 'freeAgency', 'renew', 'draft', 'special', 'secondDraft', 'limits', 'released', 'foreign', 'check', 'camp'] as const;
 export type OffseasonStep = (typeof OFFSEASON_STEPS)[number];
 
 export function beginOffseason(s: LeagueState) {
@@ -862,6 +871,11 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
       hooks.auto(s, step);
     }
     switch (step) {
+      case 'board':
+        // 1.9.9: the winter's board meeting (board.ts), when our club did not hold it through its decision.
+        if (boardMeets(s, year) && !o.boardHeld) holdMeeting(s, year, committeeMotions(s, year));
+        o.boardHeld = true;
+        break;
       case 'international':
         // November events: named and played now (V0.12); anything else of the year left unfinished too.
         winterSquads(s, novemberEvents(year));
@@ -988,6 +1002,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         break;
       }
       case 'limits':
+        // 1.9.9: fewer foreign places from next season (board.ts): the clubs over them let their least valuable go.
+        trimForeigners(s, next);
         o.released = cutToLimits(s, next).map((p) => p.id);
         break;
       case 'released':
@@ -1020,6 +1036,27 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
   s.offseason = null;
   s.year = next;
   return 'done';
+}
+
+/** 1.9.9: a club with more foreign players than next season's places (the board cut them, board.ts) lets the least
+    valuable go, ours too (with a notice): they join the market of KBO-experienced foreigners or go abroad. */
+function trimForeigners(s: LeagueState, next: number) {
+  for (const t of s.teams) {
+    if (!s.rosters[t.id] || t.firstTeamFrom === null || t.firstTeamFrom > next) continue;
+    const slots = foreignSlots(s, t.id, next);
+    const have = slotForeigners(s, t.id, next);
+    for (const [asia, max] of [
+      [false, slots.regular],
+      [true, slots.asia],
+    ] as const) {
+      const list = have.filter((p) => !!p.origin.asiaQuota === asia).sort((a, b) => currentValue(a) - currentValue(b) || a.id.localeCompare(b.id));
+      for (const p of list.slice(0, Math.max(0, list.length - max))) {
+        if (t.id === s.user?.teamId) addNews(s, { id: `foreign-cut-${next}-${p.id}`, date: `${next - 1}-12-01`, kind: 'move', title: __i18n_k("league.offseason.text.19a2581b", { name: p.name }), body: __i18n_k("league.offseason.text.d65e73e3", { name: p.name }), quotes: [], facts: {}, players: [p.id], mine: true });
+        removeFromRoster(s, p);
+        if (!(s.user && !foreignLeaves(s, p, next) && toForeignPool(s, p, next - 1))) leaveLeague(s, p, 'overseas');
+      }
+    }
+  }
 }
 
 /** A whole draft with AI picks only (the history bootstrap). */

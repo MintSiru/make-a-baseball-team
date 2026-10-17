@@ -240,6 +240,9 @@ export type Decision =
   | { kind: 'scandal'; id: PlayerId; offense: string; penalty: string }
   /** An investor from the founding days claims part of the club (V0.12, dispute.ts). */
   | { kind: 'dispute'; investor: string; firm: string; settle: number; legal: number; loss: number }
+  /** 1.9.9 (board.ts): the winter's board meeting — the committee's motions with each club's expected vote, and the
+      motions our club may put (with the yes votes each would expect). */
+  | { kind: 'board'; motions: import('./board').BoardMotion[]; expected: Record<TeamId, import('./board').BoardVote>[]; options: import('./board').BoardMotion[]; optionYes: number[]; need: number }
   /** The owner's order in the season (1.6.0, scenario 재기): what he said, the trust a refusal costs, his manager. */
   | { kind: 'meddle'; order: import('./scenarios').MeddleOrder; date: string; lines: string[]; refuse: number; manager?: StaffMember }
   /** 판타지 드래프트 (1.6.0, fantasy.ts): our turn. */
@@ -370,6 +373,8 @@ export interface OffseasonState {
   /** The free-agent negotiation (V0.8), whether it is over, and the decisions it left for the user. */
   fa?: import('./fa').FaMarket;
   faDone?: boolean;
+  /** 1.9.9: this winter's board meeting is over (board.ts). */
+  boardHeld?: boolean;
   faQueue?: import('./market').FaQueueItem[];
   /** The second draft in progress (odd winters). */
   second?: import('./seconddraft').SecondDraftState | null;
@@ -545,6 +550,8 @@ export interface ExpansionSettings {
   twelve?: TwelveSetting;
   /** 1.5.0: decisions before the first-team debut follow the scouts' recommendation (the page submits them). */
   autoPrep?: boolean;
+  /** 1.9.9: the board changes the rules by vote (board.ts). Off when missing. */
+  board?: boolean;
 }
 
 /** The season's futures league (from 2026): every club's futures squad plus 상무. */
@@ -651,6 +658,8 @@ export interface LeagueState {
   unified?: import('./unified').UnifiedState;
   /** 1.9.5: the clubs a legacy league founds in their real years (legacy1982.ts). */
   legacy?: import('./legacy1982').LegacyState;
+  /** 1.9.9: the board's votes and the rules it changed (board.ts); missing: it never met. */
+  board?: import('./board').BoardState;
   /** Null in a spectator league. */
   user: UserClub | null;
   pending: Decision | null;

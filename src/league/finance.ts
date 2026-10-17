@@ -34,7 +34,18 @@ export function broadcastPool(year: number): number {
     a few 억 in the 1980s through some 100억 around 2000 to 400억 or so with the new media by 2014 (RULES.md §9). */
 const HISTORIC_BROADCAST: [number, number][] = [[1982, 0.02], [1990, 0.04], [1995, 0.06], [2000, 0.1], [2005, 0.13], [2010, 0.2], [2014, 0.42]];
 function historicBroadcast(year: number): number {
-  const pts = HISTORIC_BROADCAST;
+  return between(HISTORIC_BROADCAST, year);
+}
+
+/** 1.9.9 (the user's report: a legacy club lost 200억 and more a year, its front office alone costing more than all it
+    took in): a league that plays history runs its front office, game days, ballpark and second team at the era's
+    scale too, as its gates and rights already are — a third of today's in the 1980s, today's from 2015 (a game
+    estimate). The clubs still lose money then, as the KBO's did; their parents cover it. */
+const HISTORIC_COSTS: [number, number][] = [[1982, 0.35], [1990, 0.45], [2000, 0.6], [2010, 0.8], [2015, 1]];
+export const historicCosts = (year: number) => (playsHistory() && year < 2015 ? between(HISTORIC_COSTS, year) : 1);
+
+/** A value along steps `[year, value]`, straight between them. */
+function between(pts: [number, number][], year: number): number {
   if (year <= pts[0]![0]) return pts[0]![1];
   const i = pts.findIndex(([y]) => y >= year);
   if (i < 0) return pts.at(-1)![1];
@@ -144,15 +155,16 @@ export function clubReport(s: LeagueState, teamId: TeamId, year: number, shares:
   const homeGames = gate?.games ?? 0;
   const dome = team.stadium.size === 'dome';
   const upkeep = facilityUpkeep(s, teamId);
+  const era = historicCosts(year);
   const expenses = {
     players:
       payroll(s, teamId, year) +
       (teamId === s.user?.teamId ? (s.user.deadMoney ?? []).filter((d) => d.season === year).reduce((a, d) => a + d.amount, 0) : faCash(s, teamId, year)),
     staff: staffCost(s, teamId),
-    frontOffice: Math.round((F.frontOffice.base + (c.popularity / 1000) * F.frontOffice.perThousandFans) * (inFirstTeam ? 1 : F.futuresYear)),
-    gameDays: homeGames * F.perHomeGame,
-    ballpark: (longTerm ? F.ballpark.operator : F.ballpark.tenant) + (dome ? F.ballpark.dome : 0) + Math.round(team.stadium.capacity * F.ballpark.perSeat) + upkeep.ballpark,
-    farm: F.farm + upkeep.training,
+    frontOffice: Math.round((F.frontOffice.base + (c.popularity / 1000) * F.frontOffice.perThousandFans) * (inFirstTeam ? 1 : F.futuresYear) * era),
+    gameDays: Math.round(homeGames * F.perHomeGame * era),
+    ballpark: Math.round(((longTerm ? F.ballpark.operator : F.ballpark.tenant) + (dome ? F.ballpark.dome : 0) + team.stadium.capacity * F.ballpark.perSeat) * era) + upkeep.ballpark,
+    farm: Math.round(F.farm * era) + upkeep.training,
     marketing: c.marketing,
   };
   const income = Object.values(revenue).reduce((a, b) => a + b, 0);

@@ -5,11 +5,16 @@ import { k as __i18n_k } from '../i18n/index';
    A club retires the number of a great who spent his career there. */
 import { rng } from '../draftroom';
 import type { Player, TeamId } from '../model/types';
-import { isForeign, isPitcher } from './players';
+import { isForeign, isPitcher, isReliever } from './players';
 import { isDevelopment, orgPlayers, type LeagueState } from './state';
 import { milestone, unlock } from './milestones';
+import { bullpenTitles } from './awards';
 
-const RETIRE = { war: 60, seasons: 12 };
+/** A number is retired for 12 first-team seasons at the club and WAR 60 there; 1.9.9: a reliever's WAR 35, 250
+    saves and holds there or three save or hold titles (the user's request: a closer's WAR is small), and each number the club has already retired
+    raises the bar by a quarter: the KBO's clubs retired one to four in forty years (두산 2, KIA 2, LG 3, 한화 4, 롯데 2,
+    SSG 1, 삼성 4; RULES.md §9), where long games retired thirty and more at one club. */
+const RETIRE = { war: 60, seasons: 12, relieverWar: 35, relieverSaves: 250, relieverTitles: 3, perRetired: 0.25 };
 
 const fits = (p: Player, n: number) => (isDevelopment(p) ? n >= 100 && n <= 199 : n >= 0 && n <= 99);
 
@@ -41,12 +46,18 @@ function teamNumbers(s: LeagueState, teamId: TeamId) {
     let n: number | undefined;
     if (own != null && fits(p, own) && !taken.has(own) && !retired.has(own)) n = own;
     else {
-      const free = Array.from({ length: isDevelopment(p) ? 100 : 100 }, (_, i) => (isDevelopment(p) ? 100 + i : i)).filter((x) => !taken.has(x) && !retired.has(x));
+      const pool = (from: number) => Array.from({ length: 100 }, (_, i) => from + i).filter((x) => !taken.has(x) && !retired.has(x));
+      // 1.9.9: a club with so many numbers retired that 0–99 run out gives a registered player a free three-digit one.
+      const free = isDevelopment(p) ? pool(100) : pool(0).length ? pool(0) : pool(100);
       const total = free.reduce((a, x) => a + liking(p, x), 0);
       let roll = r() * total;
       n = free.find((x) => (roll -= liking(p, x)) < 0) ?? free[free.length - 1];
     }
-    if (n == null) continue;
+    // 1.9.9: none left at all: no number, rather than an old one (a retired number, or a teammate's) still showing.
+    if (n == null) {
+      delete p.number;
+      continue;
+    }
     p.number = n;
     p.numberTeam = teamId;
     taken.add(n);
@@ -100,8 +111,11 @@ export function maybeRetireNumber(s: LeagueState, p: Player, teamId: TeamId, yea
   if (p.number == null || p.numberTeam !== teamId || isDevelopment(p)) return;
   const here = p.career.filter((c) => c.teamId === teamId && !c.level);
   const war = here.reduce((a, c) => a + c.war, 0);
-  if (war < RETIRE.war || here.length < RETIRE.seasons) return;
   const team = s.teams.find((t) => t.id === teamId);
+  const bar = 1 + RETIRE.perRetired * (team?.retiredNumbers?.length ?? 0);
+  const saves = here.reduce((a, c) => a + (c.pit?.sv ?? 0) + (c.pit?.hld ?? 0), 0);
+  const great = isReliever(p) ? war >= RETIRE.relieverWar * bar || saves >= RETIRE.relieverSaves * bar || bullpenTitles(s, p.id) >= Math.ceil(RETIRE.relieverTitles * bar) : war >= RETIRE.war * bar;
+  if (!great || here.length < RETIRE.seasons) return;
   if (!team || team.retiredNumbers?.some((x) => x.number === p.number)) return;
   (team.retiredNumbers ??= []).push({ number: p.number, playerId: p.id, name: p.name, year });
   if (teamId === s.user?.teamId) {
