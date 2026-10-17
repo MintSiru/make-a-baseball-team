@@ -38,6 +38,7 @@ import { makeSchedule } from './schedule';
 import { addTiebreaker, isTiebreaker } from './tiebreak';
 import { legacySeason } from './legacy1982';
 import { rulesFor } from '../rules/history';
+import { addMeetings } from './matchups';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, registeredIds, type FuturesSeason, type LeagueState, type SeasonLine } from './state';
 import { standings } from './standings';
 import { ENGINE } from './tuning';
@@ -201,11 +202,12 @@ export function record(s: LeagueState, box: TeamBox, date: string, lines: Record
     const line = lineOf(b.id, box.teamId);
     if (!line) continue;
     const bat = (line.bat ??= emptyBat());
-    const { id: _id, pos: _pos, split, sub, bip, fld, ...counts } = b;
+    const { id: _id, pos: _pos, split, sub, bip, fld, spray, ...counts } = b;
     addInto(bat, counts);
     if (bip) addBatted((bat.bip ??= emptyBatted()), bip);
     if (fld) addField((bat.fld ??= emptyField()), fld);
     if (split && lines === s.lines) addSplits(bat, split);
+    if (spray && lines === s.lines) (bat.spray ??= []).push(...spray);
     // Games at a position are the starts there (1.7.0: a substitute's inning or two does not count).
     if (lines === s.lines && !sub) (bat.posG ??= {})[b.pos] = (bat.posG[b.pos] ?? 0) + 1;
     // 1.7.0: a pinch runner or a late glove played in the game too.
@@ -225,6 +227,7 @@ export function record(s: LeagueState, box: TeamBox, date: string, lines: Record
     const consecutive = arm && daysBetween(arm.lastDate, date) === 1 ? arm.streak + 1 : 1;
     s.arms[p.id] = { lastDate: date, lastPitches: p.pitches, streak: consecutive };
   }
+  if (box.vs && lines === s.lines) addMeetings(s, box.vs);
 }
 
 /** Injured players leave the first team; recovered ones come back when they are better than the weakest. */

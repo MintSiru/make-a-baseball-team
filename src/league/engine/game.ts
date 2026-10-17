@@ -8,7 +8,7 @@
 
    Determinism: every draw comes from the `r` passed in, in a fixed order. Changing the order of draws
    changes results and needs a SIM_VERSION bump. */
-import { countBall, drawBall, emptyBatted, groundShift, homeRunShift, type BattedBall, type BipResult } from '../battedball';
+import { countBall, distanceOf, drawBall, emptyBatted, groundShift, homeRunShift, type BattedBall, type BipResult } from '../battedball';
 import { clearance, layoutEffects } from '../layout';
 import { emptyField, FIELDER_DIR, fielderFor } from '../fielding';
 import { ENGINE as E, Z, Zr } from '../tuning';
@@ -233,6 +233,15 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       const now = counts(open.bl);
       const into = [open.bl.split![open.vsPitcher], open.pl.split![open.vsBatter]];
       for (const k of Object.keys(now) as (keyof Split)[]) for (const s of into) s[k] += now[k] - open.before[k];
+      // 2.0.4: the batter against this pitcher.
+      if (game.balls) {
+        const o = open;
+        const d = (k: keyof Split) => now[k] - o.before[k];
+        const key = `${o.bl.id}|${o.pl.id}`;
+        const v = ((bat.box.vs ??= {})[key] ??= [0, 0, 0, 0, 0, 0, 0]);
+        const add = [d('pa'), d('ab'), d('h'), d('tb'), d('hr'), d('bb') + d('hbp'), d('k')];
+        for (let i = 0; i < 7; i++) v[i]! += add[i]!;
+      }
       if (log) {
         const d = (k: keyof Split) => now[k] - open!.before[k];
         const tb = d('tb'),
@@ -411,6 +420,8 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
         bl.pa++;
         bl.sh++;
         pl.bf++;
+        // 2.0.4: a plate appearance against him too (not an at-bat).
+        if (game.balls) ((bat.box.vs ??= {})[`${bl.id}|${pl.id}`] ??= [0, 0, 0, 0, 0, 0, 0])[0]!++;
         pl.pitches += 2;
         pl.outs++;
         outs++;
@@ -466,6 +477,12 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
         countBall((bl.bip ??= emptyBatted()), x, lefty);
         countBall((pl.bip ??= emptyBatted()), x, lefty);
         pa.ball = x;
+        // 2.0.4: where a hit came down, for his spray chart.
+        const hit = res === '1B' ? 0 : res === '2B' ? 1 : res === '3B' ? 2 : res === 'HR' ? 3 : -1;
+        if (hit >= 0) {
+          const carry = x.dist ?? (x.la >= 10 ? Math.min(distanceOf(x.ev, x.la), game.layout ? clearance(game.layout, x.dir) - 2 : 105) : 30 + Math.max(0, x.ev - 110) * 0.45);
+          (bl.spray ??= []).push(x.dir, Math.round(carry), hit);
+        }
       };
       bl.pa++;
       pl.bf++;

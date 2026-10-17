@@ -74755,5 +74755,490 @@
     "line": 991,
     "params": {},
     "locations": []
+  },
+  "ui.leaders.text.2e3d10b9": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 75,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.7f1d8c41": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 77,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.c1acbd2d": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 80,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.cae6196e": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 88,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.32deb74b": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 88,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.0a3d002c": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 109,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.bae99af2": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 117,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.fe259b2f": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 118,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.9fd86f4d": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 119,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.4c8fb2fa": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 120,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.39e6623f": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 121,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.19c79bd9": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 122,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.dc9d3364": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 123,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.e980cd4b": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 125,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.639a1f2f": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 131,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.3cf8c92d": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 138,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.ebd18378": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 139,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.71f609ba": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 140,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.35f72d72": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 141,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.38ddbdc2": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 142,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.9027f379": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 144,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.9aa18e50": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 163,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.58756112": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 164,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.81922a91": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 165,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.be27edb9": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 191,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.bae99af2": {
+    "source": "src/ui/Savant.tsx",
+    "line": 17,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.4c8fb2fa": {
+    "source": "src/ui/Savant.tsx",
+    "line": 18,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.39e6623f": {
+    "source": "src/ui/Savant.tsx",
+    "line": 19,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.0e04dbc3": {
+    "source": "src/ui/Savant.tsx",
+    "line": 20,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.4cb738d8": {
+    "source": "src/ui/Savant.tsx",
+    "line": 21,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.f658f79c": {
+    "source": "src/ui/Savant.tsx",
+    "line": 22,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.fb9c1e5f": {
+    "source": "src/ui/Savant.tsx",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.19c79bd9": {
+    "source": "src/ui/Savant.tsx",
+    "line": 25,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.3cf8c92d": {
+    "source": "src/ui/Savant.tsx",
+    "line": 28,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.ebd18378": {
+    "source": "src/ui/Savant.tsx",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.71f609ba": {
+    "source": "src/ui/Savant.tsx",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.35f72d72": {
+    "source": "src/ui/Savant.tsx",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.38ddbdc2": {
+    "source": "src/ui/Savant.tsx",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.c88675e1": {
+    "source": "src/ui/Savant.tsx",
+    "line": 53,
+    "params": {
+      "label": {
+        "expression": "(pitcher ? pit[r.key] : undefined) ?? labels[r.key]"
+      },
+      "pct": {
+        "expression": "r.pct"
+      }
+    },
+    "locations": []
+  },
+  "ui.savant.text.1822db88": {
+    "source": "src/ui/Savant.tsx",
+    "line": 76,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.bc4313cd": {
+    "source": "src/ui/Savant.tsx",
+    "line": 76,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.4df9a1d0": {
+    "source": "src/ui/Savant.tsx",
+    "line": 76,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.9162d3a3": {
+    "source": "src/ui/Savant.tsx",
+    "line": 76,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.86eebc0a": {
+    "source": "src/ui/Savant.tsx",
+    "line": 82,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.3a75addd": {
+    "source": "src/ui/Savant.tsx",
+    "line": 91,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.0fcb4911": {
+    "source": "src/ui/Savant.tsx",
+    "line": 120,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.04555519": {
+    "source": "src/ui/Savant.tsx",
+    "line": 126,
+    "params": {
+      "year": {
+        "expression": "r.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.savant.text.483f877c": {
+    "source": "src/ui/Savant.tsx",
+    "line": 151,
+    "params": {
+      "year": {
+        "expression": "league.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.savant.text.8a2110bc": {
+    "source": "src/ui/Savant.tsx",
+    "line": 152,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.503d5b84": {
+    "source": "src/ui/Savant.tsx",
+    "line": 153,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.6985c142": {
+    "source": "src/ui/Savant.tsx",
+    "line": 153,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.eeb111e4": {
+    "source": "src/ui/Savant.tsx",
+    "line": 156,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.1ab9d4af": {
+    "source": "src/ui/Savant.tsx",
+    "line": 162,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.50c85ebb": {
+    "source": "src/ui/Savant.tsx",
+    "line": 179,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.fc7fa3d0": {
+    "source": "src/ui/Savant.tsx",
+    "line": 181,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.de766445": {
+    "source": "src/ui/Savant.tsx",
+    "line": 184,
+    "params": {
+      "year": {
+        "expression": "league.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.savant.text.cc902740": {
+    "source": "src/ui/Savant.tsx",
+    "line": 192,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.c861cc40": {
+    "source": "src/ui/Savant.tsx",
+    "line": 192,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.5d24a2fc": {
+    "source": "src/ui/Savant.tsx",
+    "line": 193,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.0a3d002c": {
+    "source": "src/ui/Savant.tsx",
+    "line": 194,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.6e593a9b": {
+    "source": "src/ui/Savant.tsx",
+    "line": 195,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.e9cb0b7d": {
+    "source": "src/ui/Savant.tsx",
+    "line": 198,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.3f349ed1": {
+    "source": "src/ui/Savant.tsx",
+    "line": 199,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.1eb19e0a": {
+    "source": "src/ui/Savant.tsx",
+    "line": 200,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.bb6ef1b2": {
+    "source": "src/ui/Savant.tsx",
+    "line": 201,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.7e66b88d": {
+    "source": "src/ui/Savant.tsx",
+    "line": 202,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.f6efb5dd": {
+    "source": "src/ui/Savant.tsx",
+    "line": 238,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.414dc9c3": {
+    "source": "src/ui/Savant.tsx",
+    "line": 240,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.edeb5759": {
+    "source": "src/ui/Savant.tsx",
+    "line": 248,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.58756112": {
+    "source": "src/ui/Savant.tsx",
+    "line": 254,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.5bbbef90": {
+    "source": "src/ui/Standings.tsx",
+    "line": 87,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.50c85ebb": {
+    "source": "src/ui/Standings.tsx",
+    "line": 88,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.de766445": {
+    "source": "src/ui/Standings.tsx",
+    "line": 90,
+    "params": {
+      "year": {
+        "expression": "league.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.standings.text.fc7fa3d0": {
+    "source": "src/ui/Standings.tsx",
+    "line": 93,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.b1793760": {
+    "source": "src/ui/Standings.tsx",
+    "line": 97,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.d5ce088d": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 99,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.eb71400a": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 100,
+    "params": {},
+    "locations": []
   }
 }

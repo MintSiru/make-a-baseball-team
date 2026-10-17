@@ -7,6 +7,9 @@ import { LEAGUE_NAMES, leagueTables, playoffsOf, seasonSeries, sidesOf, twelveCl
 import { postseasonView, roundName } from '../league/postseason';
 import type { Action } from '../league/actions';
 import { PostseasonBracket } from './Bracket';
+import { HeadToHeadTable } from './Savant';
+import { headToHead, headToHeadAll } from '../league/matchups';
+import { useState } from 'preact/hooks';
 
 type Row = ReturnType<typeof standingsView>[number];
 
@@ -49,6 +52,7 @@ export function Standings({ league, onTeam, onBox, onAct }: { league: LeagueStat
                 : __i18n_t("ui.standings.text.940e69f5")
               : (note ?? __i18n_k("ui.standings.standings.83a72e8d")))}
           </p>
+          <HeadToHead league={league} order={rows.map((r) => r.teamId)} />
           {__i18n_display(rival && league.user && series.w + series.l + series.t > 0 && (
             <p>{__i18n_rich("ui.standings.standings.2196d9ea", { short: rival.short, value: ' ', value2: <strong>{__i18n_t("ui.standings.standings.eae1f95b", { w: series.w, l: series.l, value: series.t ? __i18n_k("ui.standings.standings.136ac74d", { value: series.t }) : '' })}</strong> })}</p>
           ))}
@@ -72,6 +76,26 @@ export function Standings({ league, onTeam, onBox, onAct }: { league: LeagueStat
         </div>
       </div>
     </section>
+  );
+}
+
+/** 2.0.4: each club's record against each other, this season or every season since 2.0.4. */
+function HeadToHead({ league, order }: { league: LeagueState; order: string[] }) {
+  const [all, setAll] = useState(false);
+  return (
+    <details class="h2h">
+      <summary>{__i18n_t("ui.standings.text.5bbbef90")}</summary>
+      <div class="segmented small" role="group" aria-label={__i18n_t("ui.standings.text.50c85ebb")}>
+        <button type="button" aria-pressed={!all} onClick={() => setAll(false)}>
+          {__i18n_t("ui.standings.text.de766445", { year: league.year })}
+        </button>
+        <button type="button" aria-pressed={all} onClick={() => setAll(true)}>
+          {__i18n_t("ui.standings.text.fc7fa3d0")}
+        </button>
+      </div>
+      <HeadToHeadTable league={league} h2h={all ? headToHeadAll(league) : headToHead(league.scores)} order={order} />
+      <p class="muted small">{__i18n_t("ui.standings.text.b1793760")}</p>
+    </details>
   );
 }
 

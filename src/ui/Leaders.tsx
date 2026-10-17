@@ -14,6 +14,8 @@ const f2 = (x: number) => x.toFixed(2);
 export function Leaders({ league, onPlayer, onBox, onAct }: { league: LeagueState; onPlayer: (id: string) => void; onBox?: (id: string) => void; onAct?: (a: Action) => void }) {
   const [view, setView] = useState<View>('leaders');
   const [qualifiedOnly, setQualifiedOnly] = useState(true);
+  // 2.0.4: the batters' and pitchers' tables in two, the basic records and the detail (batted balls, fielding).
+  const [detail, setDetail] = useState(false);
   const data = leaders(league);
   const block = (title: string, rows: { id: string; name: string; team: string; value: string }[]) => (
     <div class="leader-block" key={title}>
@@ -69,13 +71,127 @@ export function Leaders({ league, onPlayer, onBox, onAct }: { league: LeagueStat
           <input type="checkbox" checked={qualifiedOnly} onChange={() => setQualifiedOnly(!qualifiedOnly)} /> {__i18n_t("ui.leaders.leaders.741289ec", { value: view === 'batters' ? __i18n_k("ui.leaders.leaders.0a3d002c") : __i18n_k("ui.leaders.leaders.639a1f2f") })}
         </label>
       ))}
-      {__i18n_display(view === 'batters' && <BatterTable league={league} onPlayer={onPlayer} qualifiedOnly={qualifiedOnly} />)}
-      {__i18n_display(view === 'pitchers' && <PitcherTable league={league} onPlayer={onPlayer} qualifiedOnly={qualifiedOnly} />)}
+      {(view === 'batters' || view === 'pitchers') && (
+        <div class="segmented small" role="group" aria-label={__i18n_t("ui.leaders.text.2e3d10b9")}>
+          <button type="button" aria-pressed={!detail} onClick={() => setDetail(false)}>
+            {__i18n_t("ui.leaders.text.7f1d8c41")}
+          </button>
+          <button type="button" aria-pressed={detail} onClick={() => setDetail(true)}>
+            {__i18n_t("ui.leaders.text.c1acbd2d")}
+          </button>
+        </div>
+      )}
+      {__i18n_display(view === 'batters' && !detail && <BatterTable league={league} onPlayer={onPlayer} qualifiedOnly={qualifiedOnly} />)}
+      {__i18n_display(view === 'pitchers' && !detail && <PitcherTable league={league} onPlayer={onPlayer} qualifiedOnly={qualifiedOnly} />)}
+      {view === 'batters' && detail && <DetailTable rows={seasonStats(league).batters.filter((r) => !qualifiedOnly || r.qualified)} cols={BAT_DETAIL()} first="xwoba" onPlayer={onPlayer} />}
+      {view === 'pitchers' && detail && <DetailTable rows={seasonStats(league).pitchers.filter((r) => !qualifiedOnly || r.qualified)} cols={PIT_DETAIL()} first="xwoba" onPlayer={onPlayer} />}
+      {(view === 'batters' || view === 'pitchers') && detail && <p class="muted small">{view === 'batters' ? __i18n_t("ui.leaders.text.cae6196e") : __i18n_t("ui.leaders.text.32deb74b")}</p>}
     </section>
   );
 }
 
 type Stats = ReturnType<typeof seasonStats>;
+
+/** 2.0.4: a detail column: its heading, its value (null when he has none), how it shows and which way is better. */
+interface DetailCol<R> {
+  key: string;
+  label: string;
+  value: (r: R) => number | null;
+  fmt: (v: number) => string;
+  low?: boolean;
+}
+type BatRow = Stats['batters'][number];
+type PitRow = Stats['pitchers'][number];
+const pct1 = (v: number) => v.toFixed(1);
+const signed = (v: number) => (v > 0 ? `+${v.toFixed(1)}` : v.toFixed(1));
+
+const BAT_DETAIL = (): DetailCol<BatRow>[] => [
+  { key: 'pa', label: __i18n_t("ui.leaders.text.0a3d002c"), value: (r) => r.pa, fmt: String },
+  { key: 'bbPct', label: 'BB%', value: (r) => r.x.bbPct, fmt: pct1 },
+  { key: 'kPct', label: 'K%', value: (r) => r.x.kPct, fmt: pct1, low: true },
+  { key: 'iso', label: 'ISO', value: (r) => r.x.iso, fmt: f3 },
+  { key: 'woba', label: 'wOBA', value: (r) => r.x.woba, fmt: f3 },
+  { key: 'xwoba', label: 'xwOBA', value: (r) => r.x.xwoba, fmt: f3 },
+  { key: 'xba', label: 'xBA', value: (r) => r.x.xba, fmt: f3 },
+  { key: 'xslg', label: 'xSLG', value: (r) => r.x.xslg, fmt: f3 },
+  { key: 'ev', label: __i18n_t("ui.leaders.text.bae99af2"), value: (r) => r.x.ev, fmt: pct1 },
+  { key: 'evMax', label: __i18n_t("ui.leaders.text.fe259b2f"), value: (r) => r.x.evMax, fmt: pct1 },
+  { key: 'la', label: __i18n_t("ui.leaders.text.9fd86f4d"), value: (r) => r.x.la, fmt: pct1 },
+  { key: 'barrel', label: __i18n_t("ui.leaders.text.4c8fb2fa"), value: (r) => r.x.barrel, fmt: pct1 },
+  { key: 'hard', label: __i18n_t("ui.leaders.text.39e6623f"), value: (r) => r.x.hard, fmt: pct1 },
+  { key: 'gb', label: __i18n_t("ui.leaders.text.19c79bd9"), value: (r) => r.x.gb, fmt: pct1 },
+  { key: 'pull', label: __i18n_t("ui.leaders.text.dc9d3364"), value: (r) => r.x.pull, fmt: pct1 },
+  { key: 'oaa', label: 'OAA', value: (r) => r.x.oaa, fmt: signed },
+  { key: 'fldRuns', label: __i18n_t("ui.leaders.text.e980cd4b"), value: (r) => r.x.fldRuns, fmt: signed },
+  { key: 'dwar', label: 'dWAR', value: (r) => r.x.dwar, fmt: signed },
+  { key: 'war', label: 'WAR', value: (r) => r.war, fmt: (v) => v.toFixed(1) },
+];
+
+const PIT_DETAIL = (): DetailCol<PitRow>[] => [
+  { key: 'outs', label: __i18n_t("ui.leaders.text.639a1f2f"), value: (r) => r.outs, fmt: (v) => rates.ip(v) },
+  { key: 'kPct', label: 'K%', value: (r) => r.x.kPct, fmt: pct1 },
+  { key: 'bbPct', label: 'BB%', value: (r) => r.x.bbPct, fmt: pct1, low: true },
+  { key: 'kbb', label: 'K-BB%', value: (r) => r.x.kbb, fmt: pct1 },
+  { key: 'hr9', label: 'HR/9', value: (r) => r.x.hr9, fmt: f2, low: true },
+  { key: 'fip', label: 'FIP', value: (r) => r.fip, fmt: f2, low: true },
+  { key: 'babip', label: 'BABIP', value: (r) => r.babip, fmt: f3, low: true },
+  { key: 'xwoba', label: __i18n_t("ui.leaders.text.3cf8c92d"), value: (r) => r.x.xwoba, fmt: f3, low: true },
+  { key: 'xba', label: __i18n_t("ui.leaders.text.ebd18378"), value: (r) => r.x.xba, fmt: f3, low: true },
+  { key: 'ev', label: __i18n_t("ui.leaders.text.71f609ba"), value: (r) => r.x.ev, fmt: pct1, low: true },
+  { key: 'barrel', label: __i18n_t("ui.leaders.text.35f72d72"), value: (r) => r.x.barrel, fmt: pct1, low: true },
+  { key: 'hard', label: __i18n_t("ui.leaders.text.38ddbdc2"), value: (r) => r.x.hard, fmt: pct1, low: true },
+  { key: 'gb', label: __i18n_t("ui.leaders.text.19c79bd9"), value: (r) => r.x.gb, fmt: pct1 },
+  { key: 'fb', label: __i18n_t("ui.leaders.text.9027f379"), value: (r) => r.x.fb, fmt: pct1 },
+  { key: 'war', label: 'WAR', value: (r) => r.war, fmt: (v) => v.toFixed(1) },
+];
+
+/** The detail table: sortable, a missing value at the bottom on the first click. */
+function DetailTable<R extends { id: string; name: string; team: string; pos: string }>({ rows, cols, first, onPlayer }: { rows: R[]; cols: DetailCol<R>[]; first: string; onPlayer: (id: string) => void }) {
+  const columns: Record<string, { value: (r: R) => string | number; first?: 1 | -1 }> = {
+    name: { value: (r) => r.name },
+    team: { value: (r) => r.team },
+    pos: { value: (r) => positionKey(r.pos), first: 1 },
+  };
+  for (const c of cols) columns[c.key] = { value: (r) => c.value(r) ?? (c.low ? Infinity : -Infinity), first: c.low ? 1 : -1 };
+  const start = cols.find((c) => c.key === first);
+  const { sorted, th } = useSort(rows, columns, { key: first, dir: start?.low ? 1 : -1 });
+  return (
+    <div class="table-wrap" tabIndex={0}>
+      <table class="record-table stats-table">
+        <thead>
+          <tr>
+            {th('name', __i18n_t("ui.leaders.text.9aa18e50"))}
+            {th('team', __i18n_t("ui.leaders.text.58756112"))}
+            {th('pos', __i18n_t("ui.leaders.text.81922a91"))}
+            {cols.map((c) => th(c.key, c.label, true))}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((r) => (
+            <tr key={r.id} class="player-row">
+              <td>
+                <button type="button" class="link" onClick={() => onPlayer(r.id)}>
+                  {r.name}
+                </button>
+              </td>
+              <td>{r.team}</td>
+              <td>{r.pos}</td>
+              {cols.map((c) => {
+                const v = c.value(r);
+                return (
+                  <td key={c.key} class={`num${c.key === first ? ' strong' : ''}`}>
+                    {v == null ? '-' : c.fmt(v)}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {!sorted.length && <p class="muted">{__i18n_t("ui.leaders.text.be27edb9")}</p>}
+    </div>
+  );
+}
 
 function BatterTable({ league, onPlayer, qualifiedOnly }: { league: LeagueState; onPlayer: (id: string) => void; qualifiedOnly: boolean }) {
   const rows = seasonStats(league).batters.filter((r) => !qualifiedOnly || r.qualified);

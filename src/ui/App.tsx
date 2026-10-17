@@ -757,6 +757,7 @@ export function App() {
           league={league}
           id={playerId}
           onClose={() => setPlayerId(null)}
+          onPlayer={setPlayerId}
           onInterview={(pid) => act({ kind: 'interview', id: pid }, __i18n_k("ui.app.app.7296f88b"), false)}
           onAct={(a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false)}
         />

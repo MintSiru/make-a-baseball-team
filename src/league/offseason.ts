@@ -5,6 +5,8 @@ import { k as __i18n_k } from '../i18n/index';
    national-team exemptions → development → retirement → military service → posting → free agency → salaries →
    rookie draft → (expansion special draft) → roster limits → released players → foreign players.
    The user's club can make the game wait at a step for a decision (see OffseasonHooks). */
+import { closeMeetings, headToHead } from './matchups';
+import { seasonMix } from './savant';
 import { historicForeignCap, MODERN_FROM, rulesFor } from '../rules/history';
 import { boardValue, playsHistory } from './era';
 import { boardMeets, committeeMotions, holdMeeting } from './board';
@@ -76,7 +78,9 @@ export function closeSeason(s: LeagueState) {
     const p = s.players[id];
     if (!p) continue;
     const war = (line.bat ? batterWar(line.bat, p.position ?? 'DH', lg) : 0) + (line.pit ? pitcherWar(line.pit, lg) : 0);
-    const rec: SeasonRecord = { year: s.year, teamId: line.teamId, age: ageIn(p, s.year), days: line.days, bat: line.bat, pit: line.pit, war: Math.round(war * 10) / 10 };
+    // 2.0.4: the spray chart is the season's alone (a save stays small); a pitcher's mix and velocity are kept.
+    const { spray: _spray, ...batKept } = line.bat ?? {};
+    const rec: SeasonRecord = { year: s.year, teamId: line.teamId, age: ageIn(p, s.year), days: line.days, bat: line.bat ? (batKept as typeof line.bat) : null, pit: line.pit, war: Math.round(war * 10) / 10, ...(line.pit ? seasonMix(p) : {}) };
     if (line.bat || line.pit || line.days) p.career.push(rec);
     p.service.carriedDays += line.days;
     while (p.service.carriedDays >= KBO_2026.freeAgency.daysPerSeason) {
@@ -134,7 +138,9 @@ export function closeSeason(s: LeagueState) {
     ...(userFutures ? { userFutures } : {}),
     ...(futuresTable ? { futures: futuresTable } : {}),
     ...(sidesOf(s) ? { leagues: { ...sidesOf(s)! } } : {}),
+    h2h: headToHead(s.scores),
   });
+  closeMeetings(s);
   // The business year closes with the baseball one: accounts, fans' mood, AI staff changes.
   const summary = s.history[s.history.length - 1]!;
   seasonAlert(s, s.year);
