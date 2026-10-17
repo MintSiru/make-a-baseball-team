@@ -47,7 +47,22 @@ async function axeCheck(page, label) {
 }
 
 /** Makes every pending decision the way the scouts suggest (draft picks: the first one by hand). */
+/** 1.9.9: a decision left short asks before it is sent (Decision.tsx omission); the run confirms and keeps the question. */
+const warned = [];
 async function decideAll(page, log) {
+  const onDialog = (d) => {
+    warned.push(d.message());
+    void d.accept();
+  };
+  page.on('dialog', onDialog);
+  try {
+    await decideEach(page, log);
+  } finally {
+    page.off('dialog', onDialog);
+  }
+}
+
+async function decideEach(page, log) {
   let handPicked = false;
   for (let i = 0; i < 80; i++) {
     const decision = page.locator('#decision-title');
