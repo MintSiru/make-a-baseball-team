@@ -64,7 +64,7 @@ const live = (round: SeriesResult['round'], high: TeamId, low: TeamId, need: num
 const over = (x: LiveSeries) => x.hw >= x.need || x.lw >= x.need || x.i >= x.homes.length + 3;
 const result = (x: LiveSeries): SeriesResult => ({ round: x.round, high: x.high, low: x.low, highWins: x.hw, lowWins: x.lw, winner: x.hw >= x.need ? x.high : x.low, games: x.games });
 
-/** 1.9.0: a postseason ticket at `home`'s park in `round` (만 원, on average): its regular price times the round's factor. */
+/** 1.8.4: a postseason ticket at `home`'s park in `round` (만 원, on average): its regular price times the round's factor. */
 export const postseasonTicket = (s: LeagueState, home: TeamId, round: SeriesResult['round']) => leaguePrice(s.year) * clubState(s, home).price * POSTSEASON_GATE.price[round];
 
 /** One game of a series on its date. */
@@ -86,7 +86,7 @@ function playSeriesGame(s: LeagueState, x: LiveSeries) {
     // Postseason games sell out; the ticket money goes to the league's pool (RULES.md §13).
     const seats = s.teams.find((t) => t.id === home)!.stadium.capacity;
     const att = Math.round(seats * (0.97 + (i % 3) * 0.01));
-    // 1.9.0: the home club's price raised for the round; the money is split game by game (finance.ts).
+    // 1.8.4: the home club's price raised for the round; the money is split game by game (finance.ts).
     const gate = Math.round(att * postseasonTicket(s, home, x.round));
     s.postseasonGate = (s.postseasonGate ?? 0) + gate;
     x.games.push({ id, date, home, away, hs: out.home.runs, as: out.away.runs, att, gate });

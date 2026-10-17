@@ -1,4 +1,4 @@
-/* 1.9.0: the 1.8 feedback — no postseason prize shares; each game's ticket money goes to the two clubs and the
+/* 1.8.4: the 1.8 feedback — no postseason prize shares; each game's ticket money goes to the two clubs and the
    league by a percentage, and postseason tickets cost more each round. */
 import { describe, expect, it } from 'vitest';
 import { postseasonGateOf, postseasonTakes } from '../src/league/finance';

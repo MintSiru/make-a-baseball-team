@@ -9,7 +9,7 @@ export interface GameScore {
   as: number;
   /** Attendance (regular season, V0.6). */
   att?: number;
-  /** 1.9.0: a postseason game's ticket money (만 원), split between the league and the two clubs. */
+  /** 1.8.4: a postseason game's ticket money (만 원), split between the league and the two clubs. */
   gate?: number;
 }
 

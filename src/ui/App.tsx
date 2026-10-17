@@ -521,7 +521,7 @@ export function App() {
     <>
       <p class="big-game">
         <strong>{__i18n_t("ui.app.text.06ff4ff1", { round: roundName(league, big.round), game: big.game })}</strong> {__i18n_t("ui.app.text.ada6554e", { opp: league.teams.find((t) => t.id === big.opp)?.short ?? big.opp, where: big.home ? __i18n_t("ui.app.text.13a46f96") : __i18n_t("ui.app.text.ef6b033f") })}
-        {/* 1.9.0: the round's ticket price at the home park, and our share of the gate. */}
+        {/* 1.8.4: the round's ticket price at the home park, and our share of the gate. */}
         <span class="muted small">
           {' '}
           {__i18n_t("ui.app.text.a1f1d2fc", {

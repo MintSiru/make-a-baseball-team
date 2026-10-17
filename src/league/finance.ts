@@ -29,11 +29,11 @@ export function broadcastPool(year: number): number {
 }
 
 /**
- * 1.9.0 (the 1.8 feedback): no prize shares by final position. Each postseason game's ticket money is split between
+ * 1.8.4 (the 1.8 feedback): no prize shares by final position. Each postseason game's ticket money is split between
  * the home club, the visitors and the league, and the league's share pays the Korean Series champion a part of the
  * whole postseason's gate (POSTSEASON_GATE). With twelve clubs the NPB rule: the host keeps a game's whole gate
  * before the final, and the final is split as the Japan Series is (the players' pool is theirs, not the clubs').
- * A game played before 1.9.0 has no recorded gate: its money is the old flat price.
+ * A game played before 1.8.4 has no recorded gate: its money is the old flat price.
  */
 export function postseasonTakes(s: LeagueState): Record<TeamId, number> {
   const out: Record<TeamId, number> = {};
@@ -158,7 +158,7 @@ export function parentSupport(s: LeagueState, teamId: TeamId, deficit: number, y
  * what it already spent from the fund, covered by the parent up to its approved support).
  */
 export function settleFinances(s: LeagueState, year: number, _table?: { teamId: TeamId; rank: number }[]) {
-  // 1.9.0: each club's take of the postseason games it played (the final table no longer decides prize shares).
+  // 1.8.4: each club's take of the postseason games it played (the final table no longer decides prize shares).
   const shares = postseasonTakes(s);
   const u = s.user;
   for (const t of s.teams) {

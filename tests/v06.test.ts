@@ -54,7 +54,7 @@ describe('accounts', () => {
     expect(new Set(shares).size).toBe(1);
     expect(shares[0]).toBe(Math.round(broadcastPool(2025) / 10));
   });
-  it('pays the postseason clubs from the gate of the games they played (1.9.0)', () => {
+  it('pays the postseason clubs from the gate of the games they played (1.8.4)', () => {
     const post = Object.values(s.clubs!).map((c) => c.reports.find((r) => r.year === 2025)!.revenue.postseason).filter((x) => x > 0);
     expect(post.length).toBeGreaterThanOrEqual(4);
     expect(postseasonTakes({ ...s, postseason: [] })).toEqual({});

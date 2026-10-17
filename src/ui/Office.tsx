@@ -392,7 +392,7 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
               )))}
             </select>
           </label>
-          {/* 1.9.0: postseason prices follow the regular one, and the gate is split game by game. */}
+          {/* 1.8.4: postseason prices follow the regular one, and the gate is split game by game. */}
           <p class="muted small">
             {__i18n_t("ui.office.text.fa58cf84", {
               wc: priceWon(club.price * POSTSEASON_GATE.price.wildcard).toLocaleString('ko-KR'),
