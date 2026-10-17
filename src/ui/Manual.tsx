@@ -7,7 +7,7 @@ import { EXPANSION_DEFAULTS, KBO_2026 } from '../rules/kbo2026';
 import { DIFFICULTY_LABEL, DIFFICULTY_NOTE } from './Settings';
 import { decisionTips } from './tutorial';
 import { GROWTH_LABELS, GROWTH_NOTES, GROWTH_ORDER } from '../league/traits';
-import { ALL_STAR, COMBINE } from '../league/tuning';
+import { ALL_STAR, COMBINE, POSTSEASON_GATE } from '../league/tuning';
 import { SWEEP } from '../league/sweep';
 
 const K = KBO_2026;
@@ -82,6 +82,8 @@ const GLOSSARY: [string, string][] = [
   [__i18n_t("ui.manual.text.5aa18de4"), __i18n_t("ui.manual.text.af32c9d1")],
   [__i18n_t("ui.manual.text.763fd2e7"), __i18n_t("ui.manual.text.76588ec4")],
   [__i18n_t("ui.manual.text.a53ca2a8"), __i18n_t("ui.manual.text.6e1e1ae1", { years: SWEEP.years, big: eok(SWEEP.threshold.conglomerate), small: eok(SWEEP.threshold.citizen) })],
+  [__i18n_t("ui.manual.text.4190932a"), __i18n_t("ui.manual.text.05cb18ed", { league: Math.round(POSTSEASON_GATE.league * 100), home: Math.round(POSTSEASON_GATE.home * 100), away: Math.round(POSTSEASON_GATE.away * 100), champion: Math.round(POSTSEASON_GATE.champion * 100), wc: POSTSEASON_GATE.price.wildcard, semi: POSTSEASON_GATE.price.semipo, po: POSTSEASON_GATE.price.po, ks: POSTSEASON_GATE.price.ks })],
+  [__i18n_t("ui.manual.text.3a159eee"), __i18n_t("ui.manual.text.cccb2160", { early: Math.round(POSTSEASON_GATE.npb.early.club * 100), league: Math.round(POSTSEASON_GATE.npb.early.league * 100), players: Math.round(POSTSEASON_GATE.npb.early.players * 100), winners: (POSTSEASON_GATE.npb.early.winners * 100).toFixed(1), losers: (POSTSEASON_GATE.npb.early.losers * 100).toFixed(1), late: (POSTSEASON_GATE.npb.late.club * 100).toFixed(1), late_league: Math.round(POSTSEASON_GATE.npb.late.league * 100) })],
 ];
 
 const YEAR: [string, string][] = [

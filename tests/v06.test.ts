@@ -4,7 +4,7 @@ import { apply } from '../src/league/actions';
 import { projectOptions } from '../src/league/ballpark';
 import { autoDecision, EXPANSION_ID } from '../src/league/expansion';
 import { attendance, clubState } from '../src/league/fans';
-import { broadcastPool, postseasonShares } from '../src/league/finance';
+import { broadcastPool, postseasonTakes } from '../src/league/finance';
 import { createLeague } from '../src/league/history';
 import { developPlayer } from '../src/league/offseason';
 import { signSponsor } from '../src/league/parent';
@@ -54,10 +54,10 @@ describe('accounts', () => {
     expect(new Set(shares).size).toBe(1);
     expect(shares[0]).toBe(Math.round(broadcastPool(2025) / 10));
   });
-  it('shares the postseason pool by the KBO rule', () => {
+  it('pays the postseason clubs from the gate of the games they played (1.8.4)', () => {
     const post = Object.values(s.clubs!).map((c) => c.reports.find((r) => r.year === 2025)!.revenue.postseason).filter((x) => x > 0);
     expect(post.length).toBeGreaterThanOrEqual(4);
-    expect(postseasonShares({ ...s, postseasonGate: 0 }, [])).toEqual({});
+    expect(postseasonTakes({ ...s, postseason: [] })).toEqual({});
   });
 });
 

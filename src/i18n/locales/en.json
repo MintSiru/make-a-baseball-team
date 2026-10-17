@@ -7008,5 +7008,16 @@
   "ui.manual.text.a53ca2a8": "The owner takes the surplus",
   "ui.manual.text.6e1e1ae1": "If the club's fund grows {years} seasons running and passes a set amount ({big} for a conglomerate, {small} for a citizen or naming-rights club), the owner (the city for a citizen club, the investors for a naming-rights club) may take part of it as a dividend in the winter: about half of what is above the level it lets the club keep. After that it waits for another {years} seasons of surplus. Building work does not count toward the surplus or the deficit.",
   "ui.decision.text.2512c067": "Clear all picks",
-  "ui.decision.text.6009a51b": "Take back the pick of {name}"
+  "ui.decision.text.6009a51b": "Take back the pick of {name}",
+  "ui.office.text.ffe523e2": "Postseason gate",
+  "ui.office.text.c05f7da6": "Postseason tickets cost a multiple of the regular price: wild card {wc} · semi-playoff {semi} · playoff {po} · Korean Series {ks}. Each game's ticket money is split {home}% to the home club, {away}% to the visitors and {league}% to the league's running costs.",
+  "ui.app.text.a1f1d2fc": "Average ticket {price} · {pct}% of the gate is ours",
+  "ui.manual.text.4190932a": "Postseason gate money",
+  "ui.manual.text.88f40597": "There is no prize money by final position in the postseason. Each game's ticket money is split {league}% to the league's running costs, {home}% to the home club and {away}% to the visitors, so a club earns more the longer it goes and the more games it plays at home. A ticket costs the home club's regular price times the round's factor (wild card ×{wc}, semi-playoff ×{semi}, playoff ×{po}, Korean Series ×{ks}), and postseason games sell out.",
+  "ui.office.text.fa58cf84": "Postseason tickets cost a multiple of the regular price: wild card {wc} · semi-playoff {semi} · playoff {po} · Korean Series {ks}.",
+  "ui.office.text.47b8a7e6": "With twelve clubs the NPB way: before the Korean Series the home club keeps a game's whole gate; in the Korean Series games 1–4 give each club {early}% (the players {players}%, the league {league}%), and from game 5 each club {late}%.",
+  "ui.office.text.736a57d9": "Each game's ticket money goes {home}% to the home club and {away}% to the visitors, and the Korean Series champion also gets {champion}% of the whole postseason's gate (the remaining {league}% covers the league's running costs).",
+  "ui.manual.text.05cb18ed": "There is no prize money by final position in the postseason. Each game's ticket money is split {home}% to the home club and {away}% to the visitors, so a club earns more the longer it goes and the more games it plays at home, and the Korean Series champion also gets {champion}% of the whole postseason's gate (the remaining {league}% covers the league's running costs). A ticket costs the home club's regular price times the round's factor (wild card ×{wc}, semi-playoff ×{semi}, playoff ×{po}, Korean Series ×{ks}), and postseason games sell out.",
+  "ui.manual.text.3a159eee": "Postseason money with twelve clubs (NPB style)",
+  "ui.manual.text.cccb2160": "Once there are twelve clubs the money follows Japanese professional baseball. Before the Korean Series, as in the Climax Series, the home club that hosts a game keeps its whole gate. The Korean Series is split as the Japan Series is: games 1–4 give each club {early}%, the league {league}% and the players {players}% (the winners {winners}%, the losers {losers}%); from game 5 each club gets {late}% and the league {late_league}%. The players' pool is not club income."
 }
