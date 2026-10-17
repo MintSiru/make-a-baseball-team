@@ -35,6 +35,8 @@ export const LEGACY_TRYOUT = 25;
 export interface LegacyState {
   /** The clubs founded in their real years, run by the AI (빙그레, 쌍방울, NC, KT). */
   clubs: FoundingClub[];
+  /** 1.9.6: the foreign players' tryout draft of the winter (tryout.ts). */
+  tryout?: import('./tryout').ForeignTryout;
 }
 
 export const isLegacy = (s: LeagueState) => !!s.historical;

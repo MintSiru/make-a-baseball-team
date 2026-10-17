@@ -42,7 +42,7 @@ import {
   standardSlots,
   type OffseasonStep,
 } from './offseason';
-import { ageIn, currentValue, DRAFT_ROOM_YEAR, isForeign, isPitcher, keepValue, makeForeign, shiftProspect, veteranOnMarket } from './players';
+import { ageIn, currentValue, DRAFT_ROOM_YEAR, isForeign, isPitcher, keepValue, makeForeign, shiftProspect, veteranOnMarket, withEra } from './players';
 import { DIFFICULTY, FOREIGN_TALKS, OFFSEASON, PARENT } from './tuning';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './foreignpool';
 import { marchEvents, nextNationalDecision, novemberEvents } from './national';
@@ -68,6 +68,8 @@ import {
   type AnnualInput,
 } from './userclub';
 import { developmentIds, emptyRoster, firstTeamIds, orgIds, registeredIds, type Decision, type DraftSlot, type ExpansionSettings, type LeagueState, type RivalSettings, type UserClub, aiFoundingClubs } from './state';
+import { openTryout, runTryout, takeTryoutPick, tryoutYear } from './tryout';
+import { historicForeignCap } from '../rules/history';
 
 export const EXPANSION_ID = 'new';
 export const FOUNDING_DATE = '2026-07-01';
@@ -240,12 +242,16 @@ function tryoutPool(s: LeagueState): Player[] {
   const y0 = startYear();
   // The usual calendar keeps its seed (the same tryout as before 1.6.0).
   const seed = `${s.seed}|tryout|${y0}`;
-  const pool = placeClass(
-    generateDraftPool(seed)
-      .players.filter((p) => ['독립구단', '해외독립 복귀', '마이너 복귀', '대졸'].includes(p.pathway) && p.age >= 21)
-      // 1.7.0: born as many years later as the tryout is after Draft Room's (a 2016 game had them ten years too young).
-      .map((p) => fromDraftProspect(shiftProspect(p, y0 - DRAFT_ROOM_YEAR), y0, seed))
-      .map((p) => ({ ...p, id: `t${y0}-${p.origin.sourceId}` })),
+  // 1.9.6: as they were in their time when the league plays history (withEra).
+  const pool = withEra(
+    placeClass(
+      generateDraftPool(seed)
+        .players.filter((p) => ['독립구단', '해외독립 복귀', '마이너 복귀', '대졸'].includes(p.pathway) && p.age >= 21)
+        // 1.7.0: born as many years later as the tryout is after Draft Room's (a 2016 game had them ten years too young).
+        .map((p) => fromDraftProspect(shiftProspect(p, y0 - DRAFT_ROOM_YEAR), y0, seed))
+        .map((p) => ({ ...p, id: `t${y0}-${p.origin.sourceId}` })),
+      seed,
+    ),
     seed,
   )
     .sort((a, b) => keepValue(b, y0 + 1) - keepValue(a, y0 + 1))
@@ -433,6 +439,8 @@ export function foreignReserve(s: LeagueState, teamId: TeamId, next: number): nu
 
 /** New foreign signings for the open slots, or null when every slot is filled. */
 export function foreignSigningDecision(s: LeagueState, next: number): Decision | null {
+  // 1.9.6: 1998–1999 of a history game: the tryout draft instead (tryout.ts).
+  if (tryoutYear(next)) return runTryout(s, next, true);
   const u = user(s);
   const slots = foreignSlots(s, u.teamId, next);
   const have = slotForeigners(s, u.teamId, next);
@@ -440,6 +448,12 @@ export function foreignSigningDecision(s: LeagueState, next: number): Decision |
   const asia = slots.asia - have.filter((p) => p.origin.asiaQuota).length;
   if (regular <= 0 && asia <= 0) return null;
   const candidates = foreignCandidates(s, next);
+  // 1.9.6: under a history game's cap (12만 달러 to 2004, 30만 to 2013) everyone signs at his ask within it, no talks.
+  const cap = historicForeignCap(next);
+  if (cap) {
+    for (const p of candidates) p.contract = foreignContract(EXPANSION_ID, next, p.contract?.usd ?? { bonus: 0, salary: 0, options: 0 }, !!p.origin.asiaQuota, cap);
+    return { kind: 'foreign', candidates: candidates.map((p) => p.id), regular, asia, round: 1 };
+  }
   // 1.3.0: talks, not a price list (foreigntalks.ts): each one's ask, his club's fee, any offer elsewhere.
   const terms = Object.fromEntries(candidates.map((p) => [p.id, termsFor(s.seed, next, p, usdTotal(p.contract))]));
   return { kind: 'foreign', candidates: candidates.map((p) => p.id), regular, asia, terms, round: 1 };
@@ -645,6 +659,12 @@ export const newSigningCap = (p: Player) => (p.origin.asiaQuota ? KBO_2026.forei
 function resolveForeign(s: LeagueState, dd: Extract<Decision, { kind: 'foreign' }>, input: Extract<DecisionInput, { kind: 'foreign' }>, next: number): Decision | null {
   const u = user(s);
   const round = dd.round ?? 1;
+  // 1.9.6: a turn in the tryout draft: our pick (or none), then the clubs after us up to our next turn.
+  if (dd.tryout) {
+    const t = openTryout(s, next);
+    takeTryoutPick(s, t, u.teamId, round, input.ids[0] ?? null);
+    return runTryout(s, next, true);
+  }
   const log: string[] = [];
   const talking = new Set(dd.candidates);
   const signed: Player[] = [];

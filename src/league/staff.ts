@@ -20,6 +20,8 @@ import { alumnusHired, alumnusStaff, legendFired, ownLegend, pickAlumnus } from 
 import type { LeagueState, StaffMember, StaffRole, ManagerStyle } from './state';
 import { clubState } from './fans';
 import { ALUMNI, COMBINE, STAFF, DIFFICULTY } from './tuning';
+import { playsHistory } from './era';
+import { eraName } from './eranames';
 
 const names = DraftNames as unknown as { makeName: (r: () => number, used: Set<string>) => { name: string } };
 
@@ -74,7 +76,8 @@ export function makeStaff(s: LeagueState, role: StaffRole, key: string, year: nu
   const styles = Object.keys(MANAGER_STYLES) as ManagerStyle[];
   const m: StaffMember = {
     id: `st-${key}`,
-    name: names.makeName(r, used).name,
+    // 1.9.6: a name of his decade when the league plays history (eranames.ts).
+    name: playsHistory() ? eraName(names.makeName(r, used).name, year - age, `${s.seed}|staff|${key}`, used) : names.makeName(r, used).name,
     role,
     rating,
     age,

@@ -72059,5 +72059,140 @@
       }
     },
     "locations": []
+  },
+  "league.tryout.text.5b288d5f": {
+    "source": "src/league/tryout.ts",
+    "line": 102,
+    "params": {
+      "team": {
+        "expression": "s.teams.find((y) => y.id === x.teamId)?.name ?? x.teamId"
+      },
+      "round": {
+        "expression": "x.round"
+      },
+      "name": {
+        "expression": "s.players[x.id!]!.name"
+      }
+    },
+    "locations": []
+  },
+  "league.tryout.text.cf53653d": {
+    "source": "src/league/tryout.ts",
+    "line": 122,
+    "params": {
+      "n": {
+        "expression": "signed"
+      }
+    },
+    "locations": []
+  },
+  "league.tryout.text.6ffd3eea": {
+    "source": "src/league/tryout.ts",
+    "line": 123,
+    "params": {
+      "year": {
+        "expression": "t.year"
+      },
+      "team": {
+        "expression": "s.teams.find((y) => y.id === first.teamId)?.name ?? first.teamId"
+      },
+      "name": {
+        "expression": "s.players[first.id!]!.name"
+      },
+      "cap": {
+        "expression": "usd(historicForeignCap(t.year) ?? 120_000)"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.c704cdf0": {
+    "source": "src/ui/Decision.tsx",
+    "line": 595,
+    "params": {
+      "round": {
+        "expression": "d.round ?? 1"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.a2f63499": {
+    "source": "src/ui/Decision.tsx",
+    "line": 601,
+    "params": {},
+    "locations": []
+  },
+  "league.kyopo.text.9b67504f": {
+    "source": "src/league/kyopo.ts",
+    "line": 61,
+    "params": {
+      "n": {
+        "expression": "arrived.length"
+      }
+    },
+    "locations": []
+  },
+  "league.kyopo.text.898d7e0d": {
+    "source": "src/league/kyopo.ts",
+    "line": 65,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "age": {
+        "expression": "ageIn(p, next)"
+      },
+      "from": {
+        "expression": "p.origin.background!.text"
+      },
+      "team": {
+        "expression": "s.teams.find((t) => t.id === p.teamId)?.name ?? ''"
+      }
+    },
+    "locations": []
+  },
+  "league.kyopo.text.91f555e5": {
+    "source": "src/league/kyopo.ts",
+    "line": 66,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "age": {
+        "expression": "ageIn(p, next)"
+      },
+      "from": {
+        "expression": "p.origin.background!.text"
+      }
+    },
+    "locations": []
+  },
+  "league.kyopo.text.74fb91a0": {
+    "source": "src/league/kyopo.ts",
+    "line": 97,
+    "params": {},
+    "locations": []
+  },
+  "league.kyopo.text.8136d32f": {
+    "source": "src/league/kyopo.ts",
+    "line": 98,
+    "params": {
+      "japanese": {
+        "expression": "japanese"
+      },
+      "text": {
+        "expression": "text"
+      }
+    },
+    "locations": []
+  },
+  "league.entry.text.bf471176": {
+    "source": "src/league/entry.ts",
+    "line": 45,
+    "params": {
+      "limit": {
+        "expression": "limit"
+      }
+    },
+    "locations": []
   }
 }

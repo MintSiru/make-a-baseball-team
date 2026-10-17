@@ -591,8 +591,22 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       const picked = [...selected].filter((id) => d.candidates.includes(id));
       body = (
         <>
-          <p>{__i18n_t("ui.decision.decision.6febc0f0", { regular: d.regular, value: d.asia ? __i18n_k("ui.decision.decision.18aec1f8", { asia: d.asia }) : '' })}</p>
-          {__i18n_display((d.round ?? 1) > 1 && (
+          {d.tryout ? (
+            <p>{__i18n_t("ui.decision.text.c704cdf0", { round: d.round ?? 1 })}</p>
+          ) : (
+            <p>{__i18n_t("ui.decision.decision.6febc0f0", { regular: d.regular, value: d.asia ? __i18n_k("ui.decision.decision.18aec1f8", { asia: d.asia }) : '' })}</p>
+          )}
+          {__i18n_display(d.tryout && !!d.log?.length && (
+            <div class="notice">
+              <strong>{__i18n_t("ui.decision.text.a2f63499")}</strong>
+              <ul class="plain small">
+                {__i18n_display(d.log.map((line) => (
+                  <li key={line}>{__i18n_display(line)}</li>
+                )))}
+              </ul>
+            </div>
+          ))}
+          {__i18n_display(!d.tryout && (d.round ?? 1) > 1 && (
             <div class="notice">
               <strong>{__i18n_t("ui.decision.decision.227600ec", { round: d.round })}</strong>
               <ul class="plain small">

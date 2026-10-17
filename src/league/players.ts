@@ -9,6 +9,9 @@ import type { Player } from '../model/types';
 import { FOREIGN } from './tuning';
 import { rollPersonality, rollTraits } from './traits';
 import { makeNorthern } from './north';
+import { playsHistory } from './era';
+import { eraName } from './eranames';
+import { rulesFor } from '../rules/history';
 
 export const ageIn = (p: Player, year: number) => ageOn(p.birthday, `${year}-04-01`);
 export const isPitcher = (p: Pick<Player, 'role'>) => isPitcherRole(p.role);
@@ -70,8 +73,48 @@ export function draftClass(seed: string, draftYear: number, north?: { since: num
     pool.players.map((p) => fromDraftProspect(shiftProspect(p, draftYear - DRAFT_ROOM_YEAR), draftYear, ps)),
     ps,
   );
-  return north && draftYear >= north.since ? withNorth(seed, draftYear, north.since, south) : south;
+  return withEra(north && draftYear >= north.since ? withNorth(seed, draftYear, north.since, south) : south, ps);
 }
+
+/**
+ * 1.9.6, a league that plays history (the 1982 legacy start): amateurs as they were in their time. Names by birth
+ * decade (eranames.ts), and velocity by birth year: a pitcher born in the 1950s threw some ten km/h slower than
+ * today's, one born in the 1990s as hard (a 1992 column called 140 km/h a hard thrower; the four-seamer averaged
+ * 141.3 in 2015, 144.2 in 2023: RULES.md S106). One in fourteen keeps most of today's arm anyway (the 150s of the 1980s). And no one
+ * says he would rather go abroad before clubs abroad watched the draft (1998). Any other game keeps its players as
+ * they are.
+ */
+export function withEra(players: Player[], key: string): Player[] {
+  if (!playsHistory()) return players;
+  const used = new Set(players.map((p) => p.name));
+  return players.map((p) => {
+    const born = Number(p.birthday.slice(0, 4));
+    const name = p.origin.kind === 'foreign' ? p.name : eraName(p.name, born, `${key}|${p.id}`, used);
+    const velocity = p.velocity == null ? null : p.velocity - eraVelocity(born, `${key}|${p.id}`);
+    // No club abroad scouted the KBO's draft before the late 1990s (rules/history.ts overseasDraftInterest).
+    const abroad = p.amateur.intent === 'abroad' && p.origin.draftYear != null && !rulesFor(p.origin.draftYear).overseasDraftInterest;
+    if (name === p.name && velocity === p.velocity && !abroad) return p;
+    return { ...p, name, velocity, ...(abroad ? { amateur: { ...p.amateur, intent: null } } : {}) };
+  });
+}
+
+/** How much slower than today's a pitcher born in `year` throws (km/h); a third of it for the outliers. */
+export function eraVelocity(year: number, key: string): number {
+  const pts = ERA_VELOCITY.points;
+  let v = 0;
+  if (year <= pts[0]![0]) v = pts[0]![1];
+  else
+    for (let i = 1; i < pts.length; i++) {
+      const [y1, v1] = pts[i]!,
+        [y0, v0] = pts[i - 1]!;
+      if (year <= y1) {
+        v = v0 + ((v1 - v0) * (year - y0)) / (y1 - y0);
+        break;
+      }
+    }
+  return Math.round(hashUnit(`${key}|era-velo`) < ERA_VELOCITY.outlier ? v / 3 : v);
+}
+export const ERA_VELOCITY = { outlier: 1 / 14, points: [[1950, 11], [1960, 9], [1970, 6], [1980, 3], [1990, 1], [1995, 0]] as [number, number][] };
 
 /**
  * 1.9.2: the north's amateurs join the class (60% as many again, so sixteen clubs draft from a class as deep as ten

@@ -351,7 +351,7 @@ const logicOnly = new Set(preservedList.filter((p) => /seed|identifier|internal|
 const koValues = new Set(Object.values(ko));
 // Patterns ("API 오류 {value}") cover literals that start like them (`API 오류 ${status}`).
 const koPatterns = Object.values(ko).filter((v) => /\{\w+\}$/.test(v)).map((v) => v.replace(/\{\w+\}$/, ''));
-const NAME_LISTS = /src\/(draftroom\/names\.js|league\/foreign\.ts|league\/north\.ts)$/;
+const NAME_LISTS = /src\/(draftroom\/names\.js|league\/foreign\.ts|league\/north\.ts|league\/eranames\.ts)$/;
 for (const site of [...hangulSites, ...logicSites]) {
   const kept = preserved.has(`${site.file}\u0000${site.text}`) || preserved.has(`${site.file}\u0000${site.full}`);
   // JSX text renders with its line breaks and indentation collapsed to one space.
@@ -375,6 +375,9 @@ for (const s of logicSites) report('logicStrings', '', 'info', s);
   // 1.9.2: the north's given names (north.ts).
   const north = readFileSync(join(ROOT, 'src/league/north.ts'), 'utf8').match(/NORTH_GIVEN = '([^']+)'/)?.[1].split(' ') ?? [];
   korean.push(...north);
+  // 1.9.6: the names by birth decade (eranames.ts).
+  const era = readFileSync(join(ROOT, 'src/league/eranames.ts'), 'utf8');
+  korean.push(...[...era.matchAll(/(?:common|rest): '([^']+)'/g)].flatMap((m) => m[1].split(' ')));
   for (const n of new Set(korean)) if (!tables.korean.has(n)) report('nameCoverage', '', 'major', { table: 'korean', name: n });
   const fn = readFileSync(join(ROOT, 'src/league/foreign.ts'), 'utf8');
   const foreign = [...fn.matchAll(/split\(([`'])([\s\S]*?)\1\)/g)].flatMap((m) => m[2].trim().split(/\s+/));

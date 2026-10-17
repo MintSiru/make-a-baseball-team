@@ -202,6 +202,8 @@ export type Decision =
       terms?: Record<PlayerId, import('./foreigntalks').ForeignTerms>;
       round?: number;
       log?: string[];
+      /** 1.9.6 (tryout.ts): a turn in the foreign players' tryout draft (one pick, the pay fixed). */
+      tryout?: boolean;
     }
   | { kind: 'roster'; candidates: PlayerId[]; release: number; limit: number }
   // Every year (V0.4)

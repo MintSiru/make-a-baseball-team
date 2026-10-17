@@ -220,6 +220,10 @@ export function rulesOfYear(year: number, history = true): YearRules {
     today's terms. */
 export const rulesFor = (calendarYear: number) => (playsHistory() ? rulesOfYear(calendarYear, true) : rulesOfYear(ruleYear(calendarYear), false));
 
+/** 1.9.6: the cap on a foreign player's pay in a game that plays history (12만 달러 1998–2004, 30만 2005–2013), or
+    null for today's caps (every other game, and a history game from 2014). */
+export const historicForeignCap = (calendarYear: number) => (playsHistory() ? rulesFor(calendarYear).foreign.capUsd : null);
+
 /** What changed from one season to the next, for the winter's notice (1.9.5): the fields that differ. */
 export function ruleChanges(from: YearRules, to: YearRules): (keyof YearRules)[] {
   const keys = Object.keys(to) as (keyof YearRules)[];
