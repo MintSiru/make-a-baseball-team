@@ -26,6 +26,7 @@ import type { TraitReport } from '../league/reports';
 import { kboSeasons } from '../league/foreigncap';
 import { extensionCooldown, extensionOptions, extensionProblem } from '../league/extensions';
 import { postRows, postTotals, type PostRow } from '../league/poststats';
+import { FASTBALL_LABELS } from '../league/pitches';
 
 const POSITION_NAMES: Record<string, string> = { C: __i18n_k("ui.playerPanel.pOSITION_NAMES.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("ui.playerPanel.pOSITION_NAMES.sS.3e24c7f1"), LF: __i18n_k("ui.playerPanel.pOSITION_NAMES.lF.73836db2"), CF: __i18n_k("ui.playerPanel.pOSITION_NAMES.cF.56780b2a"), RF: __i18n_k("ui.playerPanel.pOSITION_NAMES.rF.a28a0ef8") };
 
@@ -85,7 +86,8 @@ const RECORD_VIEWS: { key: RecordView; label: string }[] = [
   { key: 'post', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.a0f7a345") },
   { key: 'highs', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.dc5975f8") },
   { key: 'splits', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.1df210e9") },
-  { key: 'mlb', label: 'MLB' },
+  // 1.9.3: MLB, the minors and NPB.
+  { key: 'mlb', label: __i18n_k("ui.playerPanel.text.98a07411") },
 ];
 let lastPart: Part = 'ability';
 let lastRecords: RecordView = 'seasons';
@@ -419,9 +421,9 @@ export function PlayerPanel({
                   </p>
                 ))}
                 <div class="gradebars">
-                  <GradeBar label={__i18n_t("ui.playerPanel.playerPanel.b17dbbc7")} now={s.tools.stuff} note={__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round((1 - card.pitches.reduce((a, x) => a + x.usage, 0)) * 100) })} />
+                  <GradeBar label={`${card.fastball ?? '4SFB'} ${__i18n_displayText(FASTBALL_LABELS[card.fastball ?? '4SFB'])}`} now={s.tools.stuff} note={__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round((1 - card.pitches.reduce((a, x) => a + x.usage, 0)) * 100) })} />
                   {__i18n_display(card.pitches.map((x) => (
-                    <GradeBar key={x.type} label={__i18n_displayText(x.label)} now={x.grade} note={__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round(x.usage * 100) })} />
+                    <GradeBar key={x.type} label={`${x.type} ${__i18n_displayText(x.label)}`} now={x.grade} note={__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round(x.usage * 100) })} />
                   )))}
                 </div>
               </section>

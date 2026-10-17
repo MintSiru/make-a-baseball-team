@@ -55,14 +55,39 @@ const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
 const round3 = (x: number) => Math.round(x * 1000) / 1000;
 const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
 
-/** His season abroad in `year`, from his ability then. */
-export function mlbSeason(p: Player, year: number, club: string): MlbSeason {
-  const r = rng(`mlb|${p.id}|${year}`);
-  const age = ageIn(p, year);
-  const rel = overall(p.hidden.current, p.role) - MLB.par - Math.max(0, age - 31) * MLB.aging + normal(r) * 4;
-  const aaa = rel < MLB.aaaBelow;
-  // How much of the year he spends in the majors.
-  const share = aaa ? clamp(0.1 + (rel - MLB.aaaBelow + 6) * 0.04 + r() * 0.1, 0.03, 0.35) : clamp(0.75 + rel * 0.03 + r() * 0.15, 0.4, 1);
+/** 1.9.3: Japan's NPB, for players who go there (posting.ts, fa.ts): its regulars are a little below the majors'. */
+export const NPB = {
+  par: 58,
+  aaaBelow: -7,
+  maxAge: 38,
+  /** Grade points a player gains against the minors (triple-A, NPB's 2군) over the top league. */
+  minorsEdge: 8,
+};
+
+export const NPB_CLUBS = [
+  __i18n_k("league.mlb.text.7d476897"),
+  __i18n_k("league.mlb.text.4ebfb35b"),
+  __i18n_k("league.mlb.text.aae5b516"),
+  __i18n_k("league.mlb.text.414b89f1"),
+  __i18n_k("league.mlb.text.b5037f42"),
+  __i18n_k("league.mlb.text.76ebb3b3"),
+  __i18n_k("league.mlb.text.3c89b402"),
+  __i18n_k("league.mlb.text.e65262f3"),
+  __i18n_k("league.mlb.text.844e5bfc"),
+  __i18n_k("league.mlb.text.ec0d84a2"),
+  __i18n_k("league.mlb.text.ebc71249"),
+  __i18n_k("league.mlb.text.0b0fe876"),
+];
+
+const npbClubFor = (id: string, from: number) => NPB_CLUBS[Math.floor(hashUnit(`npb-club|${id}|${from}`) * NPB_CLUBS.length)]!;
+
+/** He signs in Japan (1.9.3): his deal and club. */
+export function joinNpb(p: Player, year: number, deal: { years: number; total: number }, via?: 'fa') {
+  p.mlb = { posted: year, years: deal.years, total: deal.total, club: npbClubFor(p.id, year), seasons: [], league: 'npb', ...(via ? { via } : {}) };
+}
+
+/** A line for `share` of a full season at `rel` grade points over the league's regular. */
+function line(p: Player, rel: number, share: number, r: () => number): Pick<MlbSeason, 'bat' | 'pit' | 'war'> {
   if (isPitcher(p)) {
     const starter = p.role === 'SP' && rel > -4;
     const era = clamp(4.2 - rel * 0.1 + normal(r) * 0.55, 1.6, 9);
@@ -74,13 +99,13 @@ export function mlbSeason(p: Player, year: number, club: string): MlbSeason {
     const winShare = clamp(0.5 + (4.2 - era) * 0.07, 0.2, 0.8);
     const w = Math.round(decisions * winShare),
       l = Math.round(decisions * (1 - winShare));
-    const sv = !starter && rel > 5 && !aaa ? Math.round(g * (0.35 + r() * 0.15)) : 0;
+    const sv = !starter && rel > 5 ? Math.round(g * (0.35 + r() * 0.15)) : 0;
     const k = Math.round((outs / 27) * (8.4 + rel * 0.12 + normal(r) * 0.8));
     const war = Math.round(((outs / 3) * (4.6 - era) * 0.011 + (starter ? 0.3 : 0)) * 10) / 10;
-    return { year, club, ...(aaa ? { aaa: true } : {}), pit: { g, gs, ip, w, l, sv, era: Math.round(era * 100) / 100, k }, war };
+    return { pit: { g, gs, ip, w, l, sv, era: Math.round(era * 100) / 100, k }, war };
   }
   const g = Math.max(1, Math.round(150 * share));
-  const pa = Math.round(g * (aaa ? 3 : 3.9));
+  const pa = Math.round(g * (rel < -7 ? 3 : 3.9));
   const t = p.hidden.current;
   const avg = clamp(0.243 + rel * 0.0025 + ((t.contact ?? 50) - 55) * 0.001 + normal(r) * 0.015, 0.12, 0.34);
   const obp = clamp(avg + 0.06 + ((t.eye ?? 50) - 50) * 0.0018 + normal(r) * 0.008, avg + 0.02, 0.46);
@@ -91,7 +116,24 @@ export function mlbSeason(p: Player, year: number, club: string): MlbSeason {
   const ops = obp + avg + iso;
   // Runs above average from the OPS, and the regular's worth over a replacement (a .950 OPS season is about 5).
   const war = Math.round(((ops - 0.71) * pa * 0.022 + (pa / 600) * 1.8) * 10) / 10;
-  return { year, club, ...(aaa ? { aaa: true } : {}), bat: { g, pa, avg: round3(avg), obp: round3(obp), slg: round3(avg + iso), hr, rbi, sb }, war };
+  return { bat: { g, pa, avg: round3(avg), obp: round3(obp), slg: round3(avg + iso), hr, rbi, sb }, war };
+}
+
+/** His season abroad in `year`, from his ability then. 1.9.3: in the majors or NPB (`npb`), and when he spends most
+    of it in the minors (triple-A, NPB's 2군) his line there too; the WAR is the top league's. */
+export function mlbSeason(p: Player, year: number, club: string, npb = false): MlbSeason {
+  const L0 = npb ? NPB : MLB;
+  const r = rng(`${npb ? 'npb' : 'mlb'}|${p.id}|${year}`);
+  const age = ageIn(p, year);
+  const rel = overall(p.hidden.current, p.role) - L0.par - Math.max(0, age - 31) * MLB.aging + normal(r) * 4;
+  const aaa = rel < L0.aaaBelow;
+  // How much of the year he spends in the top league.
+  const share = aaa ? clamp(0.1 + (rel - L0.aaaBelow + 6) * 0.04 + r() * 0.1, 0.03, 0.35) : clamp(0.75 + rel * 0.03 + r() * 0.15, 0.4, 1);
+  const top = line(p, rel, share, r);
+  if (top.pit && aaa) top.pit.sv = 0;
+  if (!aaa) return { year, club, ...top };
+  const minors = line(p, rel + NPB.minorsEdge, Math.max(0.1, 0.9 - share), r);
+  return { year, club, aaa: true, ...top, minors: { ...(minors.bat ? { bat: minors.bat } : {}), ...(minors.pit ? { pit: minors.pit } : {}) } };
 }
 
 /** Posted players abroad in the winter after `year`: last season's line, a new club after the deal. Idempotent. */
@@ -100,13 +142,14 @@ export function mlbWinter(s: LeagueState, year: number) {
     const m = p.mlb;
     if (!m || p.status !== 'overseas' || m.back !== undefined || m.ended !== undefined || year <= m.posted) continue;
     if (m.seasons.some((x) => x.year === year)) continue;
-    if (ageIn(p, year) > MLB.maxAge) {
+    const npb = m.league === 'npb';
+    if (ageIn(p, year) > (npb ? NPB.maxAge : MLB.maxAge)) {
       m.ended = year - 1;
       continue;
     }
     // Past his deal: a one-year deal, often somewhere else.
-    const club = year - m.posted > m.years && hashUnit(`mlb-move|${p.id}|${year}`) < 0.6 ? clubFor(p.id, year) : (m.seasons.at(-1)?.club ?? m.club);
-    m.seasons.push(mlbSeason(p, year, club));
+    const club = year - m.posted > m.years && hashUnit(`mlb-move|${p.id}|${year}`) < 0.6 ? (npb ? npbClubFor(p.id, year) : clubFor(p.id, year)) : (m.seasons.at(-1)?.club ?? m.club);
+    m.seasons.push(mlbSeason(p, year, club, npb));
   }
 }
 
@@ -160,8 +203,8 @@ export function mlbView(s: LeagueState) {
       const m = p.mlb!;
       const from = p.career.filter((c) => !c.level && c.year <= m.posted).at(-1)?.teamId;
       const club = from ? (s.teams.find((t) => t.id === from)?.short ?? from) : '';
-      const status = m.back !== undefined ? (p.teamId ? __i18n_k("league.mlb.text.b2a2812a", { club: s.teams.find((t) => t.id === p.teamId)?.short ?? '' }) : __i18n_k("league.mlb.text.27473dab")) : m.ended !== undefined || p.status === 'retired' ? __i18n_k("league.mlb.text.5b170d3c") : __i18n_k("league.mlb.text.61a94fdb", { club: m.seasons.at(-1)?.club ?? m.club });
-      return { id: p.id, name: p.name, pitcher: isPitcher(p), kboClub: club, kboTeamId: from ?? null, posted: m.posted, years: m.years, total: m.total, club: m.club, status, totals: mlbTotals(p) };
+      const status = m.back !== undefined ? (p.teamId ? __i18n_k("league.mlb.text.b2a2812a", { club: s.teams.find((t) => t.id === p.teamId)?.short ?? '' }) : __i18n_k("league.mlb.text.27473dab")) : m.ended !== undefined || p.status === 'retired' ? __i18n_k("league.mlb.text.5b170d3c") : m.league === 'npb' ? __i18n_k("league.mlb.text.120ad45f", { club: m.seasons.at(-1)?.club ?? m.club }) : __i18n_k("league.mlb.text.61a94fdb", { club: m.seasons.at(-1)?.club ?? m.club });
+      return { id: p.id, name: p.name, pitcher: isPitcher(p), kboClub: club, kboTeamId: from ?? null, posted: m.posted, years: m.years, total: m.total, club: m.club, status, totals: mlbTotals(p), npb: m.league === 'npb' };
     });
 }
 
@@ -188,5 +231,5 @@ export function backfillMlb(s: LeagueState, dealYears: (p: Player) => number) {
 
 /** 1.7.1: seasons written by 1.7.0 read again on the revised scale (it made a KBO star an MLB MVP every year). */
 export function rescoreMlb(s: LeagueState) {
-  for (const p of Object.values(s.players)) if (p.mlb) p.mlb.seasons = p.mlb.seasons.map((x) => mlbSeason(p, x.year, x.club));
+  for (const p of Object.values(s.players)) if (p.mlb) p.mlb.seasons = p.mlb.seasons.map((x) => mlbSeason(p, x.year, x.club, p.mlb!.league === 'npb'));
 }

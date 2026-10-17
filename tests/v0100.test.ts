@@ -145,9 +145,15 @@ describe('life off the field', () => {
     const events = (c.news ?? []).filter((n) => n.id.startsWith('life-'));
     expect(events.length).toBeGreaterThanOrEqual(8);
     expect(events.length).toBeLessThanOrEqual(45);
-    for (const n of events) expect(c.players[n.players[0]!]!.teamId).toBe(EXPANSION_ID);
+    // Ours when it happened: still ours, or gone since — retired, or (1.9.3) abroad (life is kept for the user's players only).
+    for (const n of events) {
+      const p = c.players[n.players[0]!]!;
+      expect(p.teamId === EXPANSION_ID || ((p.status === 'overseas' || p.status === 'retired') && !!p.life)).toBe(true);
+    }
     // (1.6.0: a career-ending injury or a winter unsigned is noted for anyone; those are not life events.)
-    expect(Object.values(c.players).some((p) => p.teamId !== EXPANSION_ID && p.life && Object.keys(p.life).some((k) => k !== 'careerOver' && k !== 'unsigned'))).toBe(false);
+    // Players of other clubs who were never ours (a former player of ours keeps his story).
+    const ours = new Set(events.map((n) => n.players[0]!));
+    expect(Object.values(c.players).some((p) => p.teamId !== EXPANSION_ID && !ours.has(p.id) && p.life && Object.keys(p.life).some((k) => k !== 'careerOver' && k !== 'unsigned'))).toBe(false);
   });
 
   it('family leave (a birth or a loss) is at most five days, on the away list that keeps registered days', () => {

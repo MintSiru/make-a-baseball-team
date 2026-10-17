@@ -330,14 +330,25 @@ export function retirementChance(p: Player, season: number, knownRecords = true)
   return clamp(base, 0, 0.97);
 }
 
+/** 1.9.3: 강철야구 — the veterans who came back to the tryout keep playing through the club's first three seasons. */
+export const STEEL_HOLD = 3;
+
+/** The club whose players don't retire before `season` (강철야구's first seasons), or null. */
+function steelHeld(s: LeagueState, season: number): TeamId | null {
+  const u = s.user;
+  return u?.settings.scenario === 'steel' && season < u.firstTeamYear + STEEL_HOLD ? u.teamId : null;
+}
+
 /** Who decides to retire after `year` (the user's decision and the step draw the same list). */
 export function retiring(s: LeagueState, year: number): PlayerId[] {
   const r = rng(`${s.seed}|retire|${year}`);
   const out: PlayerId[] = [];
+  const held = steelHeld(s, year + 1);
   for (const p of Object.values(s.players)) {
     if (p.status !== 'active' || isForeign(p)) continue;
     // The same draw for everyone, then a career ended by an injury (1.6.0) goes whatever it says.
-    if (r() < retirementChance(p, year + 1) || p.life?.careerOver) out.push(p.id);
+    const wants = r() < retirementChance(p, year + 1);
+    if ((wants && !(held && p.teamId === held)) || p.life?.careerOver) out.push(p.id);
   }
   return out;
 }

@@ -138,14 +138,14 @@ export function ownerAlert(s: LeagueState, year: number, ev: { lines: { label: s
   });
 }
 
-export function postingAlert(s: LeagueState, p: Player, teamId: TeamId, year: number, deal: { years: number; total: string; fee: string } | null) {
+export function postingAlert(s: LeagueState, p: Player, teamId: TeamId, year: number, deal: { years: number; total: string; fee: string } | null, npb = false) {
   if (teamId !== s.user?.teamId) return;
   addAlert(s, {
     id: `posting-${p.id}`,
     date: `${year}-11-10`,
     kind: 'posting',
-    title: deal ? __i18n_k("league.alerts.postingAlert.title.600fe52c", { name: p.name }) : __i18n_k("league.alerts.postingAlert.title.e7f21cb1", { name: p.name }),
-    lines: deal ? [__i18n_k("league.alerts.postingAlert.lines.2eae5956", { years: deal.years, total: deal.total }), __i18n_k("league.alerts.postingAlert.lines.3b73ea6a", { fee: deal.fee })] : [__i18n_k("league.alerts.postingAlert.lines.987a347a")],
+    title: deal ? (npb ? __i18n_k("league.alerts.text.99a787b9", { name: p.name }) : __i18n_k("league.alerts.postingAlert.title.600fe52c", { name: p.name })) : __i18n_k("league.alerts.postingAlert.title.e7f21cb1", { name: p.name }),
+    lines: deal ? [npb ? __i18n_k("league.alerts.text.def00f3f", { years: deal.years, total: deal.total }) : __i18n_k("league.alerts.postingAlert.lines.2eae5956", { years: deal.years, total: deal.total }), __i18n_k("league.alerts.postingAlert.lines.3b73ea6a", { fee: deal.fee })] : [__i18n_k("league.alerts.postingAlert.lines.987a347a")],
     tone: deal ? 'good' : 'bad',
     players: [p.id],
   });

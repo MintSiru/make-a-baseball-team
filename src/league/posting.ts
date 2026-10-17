@@ -17,10 +17,10 @@ import { ageIn, isForeign } from './players';
 import { orgPlayers, type LeagueState } from './state';
 import { logTransaction } from './trade';
 import { milestone, unlock } from './milestones';
-import { POSTING } from './tuning';
+import { NPB_MOVE, POSTING } from './tuning';
 import { postingAlert } from './alerts';
 import { moveNews } from './movenews';
-import { joinMlb } from './mlb';
+import { joinMlb, joinNpb } from './mlb';
 
 const P = KBO_2026.posting;
 
@@ -77,6 +77,16 @@ export function mlbMarket(p: Player, next: number, r: () => number): { years: nu
   return { years, total: Math.round((aav * years) / 250_000) * 250_000 };
 }
 
+/** 1.9.3: what NPB makes of him: a guaranteed deal (smaller and shorter than the majors'), or no taker. */
+export function npbMarket(p: Player, next: number, r: () => number, minGrade: number, chance: number): { years: number; total: number } | null {
+  const g = p.scouting.current;
+  if (g < minGrade || r() > chance) return null;
+  const age = ageIn(p, next);
+  const aav = NPB_MOVE.aavAt60 * Math.exp((g - 60) * NPB_MOVE.aavGrowth) * (age >= 32 ? 0.85 : 1) * (0.85 + r() * 0.3);
+  const years = g >= 66 && age <= 31 ? 3 : 2;
+  return { years, total: Math.round((aav * years) / 100_000) * 100_000 };
+}
+
 /** Posts `id` for his club; he signs abroad or stays. The club receives the fee in 만 원. */
 export function post(s: LeagueState, id: PlayerId, next: number): PostingResult {
   const p = s.players[id]!;
@@ -85,6 +95,24 @@ export function post(s: LeagueState, id: PlayerId, next: number): PostingResult 
   // One try: a player who comes back unsigned waits for free agency.
   p.service.postedIn = next - 1;
   const short = s.teams.find((t) => t.id === teamId)?.short ?? teamId;
+  // 1.9.3: passed over by the majors, he may still go to Japan.
+  const npb = !market ? npbMarket(p, next, rng(`${s.seed}|posting-npb|${next}|${id}`), NPB_MOVE.postMinGrade, NPB_MOVE.postChance) : null;
+  if (!market && npb) {
+    const fee = Math.round(npb.total * NPB_MOVE.fee);
+    logTransaction(s, __i18n_k("league.posting.text.3f703f1c", { short, name: p.name, years: npb.years, usd: usd(npb.total), usd2: usd(fee) }));
+    moveNews(s, { type: 'posting', teamId, id, deal: { ...npb, fee }, npb: true }, `${next - 1}-11-10`);
+    postingAlert(s, p, teamId, next - 1, { years: npb.years, total: usd(npb.total), fee: usd(fee) }, true);
+    const u = s.user;
+    if (u && teamId === u.teamId) {
+      milestone(s, next - 1, __i18n_k("league.posting.text.9160c125", { name: p.name, years: npb.years, usd: usd(npb.total) }));
+      const won = Math.round(fee * MANWON_PER_USD);
+      u.fund += won;
+      u.ledger.push({ year: next - 1, label: __i18n_k("league.posting.post.label.250352bd", { name: p.name }), amount: won });
+    }
+    leaveLeague(s, p, 'overseas');
+    joinNpb(p, next - 1, npb);
+    return { id, teamId, deal: { ...npb, fee } };
+  }
   if (!market) {
     logTransaction(s, __i18n_k("league.posting.post.f6795404", { short: short, name: iga(p.name) }));
     moveNews(s, { type: 'posting', teamId, id, deal: null }, `${next - 1}-11-10`);

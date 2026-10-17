@@ -46195,7 +46195,7 @@
     "line": 502,
     "params": {
       "value": {
-        "expression": "d.kind === 'tryout' && u.settings.scenario === 'steel'\n              ? '은퇴한 선수들과 드래프트에서 지명받지 못한 선수들이 강철 파이터즈의 트라이아웃에 왔습니다. 첫 선수단은 이들로만 꾸립니다(특별지명 없음). 노장은 오래 버티지 못하니 젊은 선수도 함께 고르세요.'\n              : d.kind === 'tryout'\n              ? '독립리그·해외 복귀 선수와 최근 방출된 프로 선수들이 트라이아웃에 왔습니다. 계약할 선수를 고르세요.'\n              : '다른 구단이 방출한 선수들입니다. 신생구단은 다른 구단보다 먼저 계약할 수 있습니다.'"
+        "expression": "d.kind === 'tryout' && u.settings.scenario === 'steel'\n              ? '은퇴한 선수들과 드래프트에서 지명받지 못한 선수들이 강철 파이터즈의 트라이아웃에 왔습니다. 첫 선수단은 이들로만 꾸립니다(특별지명 없음). 노장은 첫 세 시즌 동안 은퇴하지 않지만 그 뒤로는 오래 버티지 못하니 젊은 선수도 함께 고르세요.'\n              : d.kind === 'tryout'\n              ? '독립리그·해외 복귀 선수와 최근 방출된 프로 선수들이 트라이아웃에 왔습니다. 계약할 선수를 고르세요.'\n              : '다른 구단이 방출한 선수들입니다. 신생구단은 다른 구단보다 먼저 계약할 수 있습니다.'"
       },
       "value2": {
         "expression": "' '"
@@ -68551,6 +68551,399 @@
         "expression": "y0"
       }
     },
+    "locations": []
+  },
+  "league.pitches.text.c2a8d278": {
+    "source": "src/league/pitches.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.pitches.text.55a5617c": {
+    "source": "src/league/pitches.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "league.pitches.text.6fc08d14": {
+    "source": "src/league/pitches.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.pitches.text.8939f3cc": {
+    "source": "src/league/pitches.ts",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "league.pitches.text.c91a5e12": {
+    "source": "src/league/pitches.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.pitches.text.716cb4e9": {
+    "source": "src/league/pitches.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "league.pitches.text.7dd88eb5": {
+    "source": "src/league/pitches.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.pitches.text.93c47996": {
+    "source": "src/league/pitches.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.7d476897": {
+    "source": "src/league/mlb.ts",
+    "line": 68,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.4ebfb35b": {
+    "source": "src/league/mlb.ts",
+    "line": 69,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.aae5b516": {
+    "source": "src/league/mlb.ts",
+    "line": 70,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.414b89f1": {
+    "source": "src/league/mlb.ts",
+    "line": 71,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.b5037f42": {
+    "source": "src/league/mlb.ts",
+    "line": 72,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.76ebb3b3": {
+    "source": "src/league/mlb.ts",
+    "line": 73,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.3c89b402": {
+    "source": "src/league/mlb.ts",
+    "line": 74,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.e65262f3": {
+    "source": "src/league/mlb.ts",
+    "line": 75,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.844e5bfc": {
+    "source": "src/league/mlb.ts",
+    "line": 76,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.ec0d84a2": {
+    "source": "src/league/mlb.ts",
+    "line": 77,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.ebc71249": {
+    "source": "src/league/mlb.ts",
+    "line": 78,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.0b0fe876": {
+    "source": "src/league/mlb.ts",
+    "line": 79,
+    "params": {},
+    "locations": []
+  },
+  "league.mlb.text.120ad45f": {
+    "source": "src/league/mlb.ts",
+    "line": 206,
+    "params": {
+      "club": {
+        "expression": "m.seasons.at(-1)?.club ?? m.club"
+      }
+    },
+    "locations": []
+  },
+  "league.posting.text.3f703f1c": {
+    "source": "src/league/posting.ts",
+    "line": 102,
+    "params": {
+      "short": {
+        "expression": "short"
+      },
+      "name": {
+        "expression": "p.name"
+      },
+      "years": {
+        "expression": "npb.years"
+      },
+      "usd": {
+        "expression": "usd(npb.total)"
+      },
+      "usd2": {
+        "expression": "usd(fee)"
+      }
+    },
+    "locations": []
+  },
+  "league.posting.text.9160c125": {
+    "source": "src/league/posting.ts",
+    "line": 107,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "years": {
+        "expression": "npb.years"
+      },
+      "usd": {
+        "expression": "usd(npb.total)"
+      }
+    },
+    "locations": []
+  },
+  "league.alerts.text.99a787b9": {
+    "source": "src/league/alerts.ts",
+    "line": 147,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.alerts.text.def00f3f": {
+    "source": "src/league/alerts.ts",
+    "line": 148,
+    "params": {
+      "years": {
+        "expression": "deal.years"
+      },
+      "total": {
+        "expression": "deal.total"
+      }
+    },
+    "locations": []
+  },
+  "league.movenews.text.73c17476": {
+    "source": "src/league/movenews.ts",
+    "line": 277,
+    "params": {
+      "name": {
+        "expression": "x.name"
+      },
+      "years": {
+        "expression": "d.years"
+      },
+      "usd": {
+        "expression": "usd(d.total)"
+      }
+    },
+    "locations": []
+  },
+  "league.movenews.text.dfbe88c2": {
+    "source": "src/league/movenews.ts",
+    "line": 279,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "iga(x.name)",
+        "particle": "이/가"
+      },
+      "years": {
+        "expression": "d.years"
+      },
+      "usd": {
+        "expression": "usd(d.total)"
+      },
+      "club2": {
+        "expression": "eunneun(club)",
+        "particle": "은/는"
+      },
+      "usd2": {
+        "expression": "usd(d.fee)"
+      },
+      "value": {
+        "expression": "r ? __i18n_k(\"league.movenews.moveNews.body.85330a1d\", { name: x.name, r }) : ''"
+      }
+    },
+    "locations": []
+  },
+  "league.fa.text.ac84d726": {
+    "source": "src/league/fa.ts",
+    "line": 528,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.fa.text.5b7f8326": {
+    "source": "src/league/fa.ts",
+    "line": 529,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      },
+      "npb": {
+        "expression": "p.mlb!.club"
+      },
+      "years": {
+        "expression": "deal.years"
+      },
+      "usd": {
+        "expression": "usd(deal.total)"
+      }
+    },
+    "locations": []
+  },
+  "ui.mlb.text.63b9b962": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 21,
+    "params": {
+      "year": {
+        "expression": "m.posted"
+      },
+      "club": {
+        "expression": "m.club"
+      },
+      "years": {
+        "expression": "m.years"
+      },
+      "money": {
+        "expression": "usd(m.total)"
+      }
+    },
+    "locations": []
+  },
+  "ui.mlb.text.1d6989b6": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 23,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.602ac124": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 74,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.17a44873": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 74,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.41479c1d": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 74,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.abaab60f": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 85,
+    "params": {
+      "n": {
+        "expression": "t.seasons"
+      }
+    },
+    "locations": []
+  },
+  "ui.mlb.text.32bd3043": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 85,
+    "params": {
+      "n": {
+        "expression": "t.seasons"
+      }
+    },
+    "locations": []
+  },
+  "ui.mlb.text.5779fc12": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 116,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.4a43ce6f": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 156,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.8e3315b8": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 159,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.21bffe29": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 164,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.6d7fd269": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 165,
+    "params": {},
+    "locations": []
+  },
+  "ui.mlb.text.7f3e9e67": {
+    "source": "src/ui/Mlb.tsx",
+    "line": 171,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.98a07411": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 89,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.c02cebf4": {
+    "source": "src/ui/History.tsx",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "league.pitches.text.7390f5bb": {
+    "source": "src/league/pitches.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "league.pitches.text.cccce3d7": {
+    "source": "src/league/pitches.ts",
+    "line": 49,
+    "params": {},
     "locations": []
   }
 }

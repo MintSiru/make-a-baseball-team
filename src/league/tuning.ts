@@ -345,6 +345,11 @@ export const SECOND = { minValue: 49 } as const;
  * age. Average salary at grade 60 is $2.5M and grows 22% per grade point (grade 65 ≈ $7.5M, 70 ≈ $22M),
  * close to recent Korean signings.
  */
+/** 1.9.3: Japan's NPB as a way abroad (posting.ts, fa.ts; game assumptions after 이승엽·이대호·오승환·김태균, who went
+    as free agents in their late twenties or thirties). A posted player the majors pass on may sign there; a free agent
+    good enough and not too old may leave for Japan before the market opens. Money in US dollars. */
+export const NPB_MOVE = { postMinGrade: 60, postChance: 0.45, faMinGrade: 63, faMaxAge: 33, faChance: 0.12, aavAt60: 1_200_000, aavGrowth: 0.15, fee: 0.2 } as const;
+
 export const POSTING = { minGrade: 62, maxAge: 30, wants: 0.5, baseChance: 0.45, chancePerGrade: 0.07, agePenalty: 0.1, aavAt60: 2_500_000, aavGrowth: 0.22, aiAllows: 0.55 } as const;
 
 /** Fans and attendance (V0.6, fans.ts). Calibrated to 2025: 17,103 a game (CALIBRATION.md §8). */
@@ -850,9 +855,9 @@ export const PITCH_MIX = {
   jitter: 0.3,
   signature: {
     '장신 커브볼러': { pitch: 'CB', weight: 60 },
-    '포크볼 불펜': { pitch: 'FO', weight: 110 },
+    '포크볼 불펜': { pitch: 'FRK', weight: 110 },
     '체인지업 좌완': { pitch: 'CH', weight: 60 },
-    '땅볼 유도형 선발': { pitch: 'SI', weight: 40 },
+    '땅볼 유도형 선발': { pitch: 'SNK', weight: 40 },
     '좌완 스페셜리스트': { pitch: 'SL', weight: 30 },
     '파워 불펜': { pitch: 'SL', weight: 20 },
     변화구형: { pitch: 'SL', weight: 10 },

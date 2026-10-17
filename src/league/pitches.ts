@@ -17,20 +17,56 @@ import type { Player } from '../model/types';
 import { isForeign } from './players';
 import { PITCH_MIX as M } from './tuning';
 
-export type PitchType = 'SL' | 'SW' | 'CB' | 'CH' | 'FO' | 'CT' | 'SI';
+/** 1.9.3 (the 1.9 plan's 5th edition): 싱커 (SNK), 서클체인지업 (CIR), 스플리터 (SPL), 슬러브 (SLV), 너클볼 (KN), and the old
+    pitches 스크류볼 (SCR), 팜볼 (PLM) and 슈트 (SH), thrown more by pitchers born long ago. The codes are the user's
+    abbreviations (4SFB, the four-seamer, is the fastball itself); 1.9.3 renamed FO, CT and SI (the two-seamer) to FRK, CUT and 2SFB, and added the sinker (SNK). */
+export type PitchType = 'SL' | 'SW' | 'CB' | 'CH' | 'FRK' | 'CUT' | '2SFB' | 'SNK' | 'CIR' | 'SPL' | 'SLV' | 'KN' | 'SCR' | 'PLM' | 'SH';
 
 export const PITCH_LABELS: Record<PitchType, string> = {
   SL: __i18n_k("league.pitches.pITCH_LABELS.sL.18bc88bf"),
   SW: __i18n_k("league.pitches.pITCH_LABELS.sW.6b7ff52a"),
   CB: __i18n_k("league.pitches.pITCH_LABELS.cB.2ab848c1"),
   CH: __i18n_k("league.pitches.pITCH_LABELS.cH.49e1dacd"),
-  FO: __i18n_k("league.pitches.pITCH_LABELS.fO.a8a41ff9"),
-  CT: __i18n_k("league.pitches.pITCH_LABELS.cT.d348e61c"),
-  SI: __i18n_k("league.pitches.pITCH_LABELS.sI.c2a8d278"),
+  FRK: __i18n_k("league.pitches.pITCH_LABELS.fO.a8a41ff9"),
+  CUT: __i18n_k("league.pitches.pITCH_LABELS.cT.d348e61c"),
+  '2SFB': __i18n_k("league.pitches.pITCH_LABELS.sI.c2a8d278"),
+  SNK: __i18n_k("league.pitches.text.7390f5bb"),
+  CIR: __i18n_k("league.pitches.text.55a5617c"),
+  SPL: __i18n_k("league.pitches.text.6fc08d14"),
+  SLV: __i18n_k("league.pitches.text.8939f3cc"),
+  KN: __i18n_k("league.pitches.text.c91a5e12"),
+  SCR: __i18n_k("league.pitches.text.716cb4e9"),
+  PLM: __i18n_k("league.pitches.text.7dd88eb5"),
+  SH: __i18n_k("league.pitches.text.93c47996"),
 };
 
 /** Same-side platoon advantage by best pitch: >1 a wider split, <1 a pitcher who handles both sides. */
-const PLATOON: Record<PitchType, number> = { SL: 1.25, SW: 1.45, CB: 1.05, CH: 0.65, FO: 0.7, CT: 0.9, SI: 1.1 };
+const PLATOON: Record<PitchType, number> = { SL: 1.25, SW: 1.45, CB: 1.05, CH: 0.65, FRK: 0.7, CUT: 0.9, '2SFB': 1.1, SNK: 1.1, CIR: 0.6, SPL: 0.7, SLV: 1.3, KN: 0.85, SCR: 0.55, PLM: 0.75, SH: 1.15 };
+
+/** 1.9.3 (from the 1.9 feedback): the fastball he leans on — a four-seamer (most), a two-seamer that runs to his arm
+    side and sinks, or a cutter. A two-seam or cutter pitcher does not carry the same pitch again as a secondary. */
+export type FastballType = '4SFB' | '2SFB' | 'CUT';
+export const FASTBALL_LABELS: Record<FastballType, string> = { '4SFB': __i18n_k("league.pitches.text.cccce3d7"), '2SFB': __i18n_k("league.pitches.pITCH_LABELS.sI.c2a8d278"), CUT: __i18n_k("league.pitches.pITCH_LABELS.cT.d348e61c") };
+/** Same-side platoon split by fastball, and how much slower than a four-seamer it comes (km/h, on the average). */
+const FASTBALL_PLATOON: Record<FastballType, number> = { '4SFB': 1, '2SFB': 1.05, CUT: 0.95 };
+const FASTBALL_SLOWER: Record<FastballType, number> = { '4SFB': 0, '2SFB': 1, CUT: 3 };
+
+/** His main fastball, fixed per player (seeded by id): two-seamers for ground-ball arms and foreign pitchers more. */
+export function fastballOf(p: Player): FastballType {
+  if (p.hidden.current.breaking == null) return '4SFB';
+  const ground = p.archetype === '땅볼 유도형 선발';
+  const w: [FastballType, number][] = [
+    ['4SFB', 72],
+    ['2SFB', (isForeign(p) ? 20 : 12) + (ground ? 45 : 0)],
+    ['CUT', isForeign(p) ? 10 : 6],
+  ];
+  let x = hashUnit(`fastball-${p.id}`) * w.reduce((a, [, v]) => a + v, 0);
+  for (const [t, v] of w) if ((x -= v) < 0) return t;
+  return '4SFB';
+}
+
+/** Pitches an arm rarely carries together: one slider-type, one changeup-type, one splitter-type, one sinker-type. */
+const FAMILY: Partial<Record<PitchType, string>> = { SL: 'slider', SW: 'slider', SLV: 'slider', CH: 'change', CIR: 'change', FRK: 'split', SPL: 'split', '2SFB': 'sink', SNK: 'sink' };
 
 const WEIGHTS = [0.6, 0.3, 0.1];
 
@@ -46,7 +82,10 @@ type Mix = [PitchType, number][];
 function mixFor(p: Player, first: boolean): Mix {
   const lefty = p.throws === '좌';
   const japan = p.origin.nationality === '일본';
-  const young = Number(p.birthday.slice(0, 4)) >= 1998;
+  const born = Number(p.birthday.slice(0, 4));
+  const young = born >= 1998;
+  // 1.9.3: the old pitches belong to pitchers born long ago (the 1980s and 90s game); the new ones to the young.
+  const old = born < 1975 ? 1 : born < 1985 ? 0.4 : 0.1;
   // His signature pitch is likelier to be the best one.
   const sig = first ? M.signature[p.archetype] : undefined;
   const add = (t: PitchType) => (sig?.pitch === t ? sig.weight : 0);
@@ -55,9 +94,17 @@ function mixFor(p: Player, first: boolean): Mix {
     ['SW', (young || isForeign(p) ? 8 : 2) + add('SW')],
     ['CB', 16 + add('CB')],
     ['CH', (lefty ? 30 : 13) + add('CH')],
-    ['FO', (japan ? 34 : lefty ? 7 : 15) + add('FO')],
-    ['CT', (isForeign(p) ? 12 : 6) + add('CT')],
-    ['SI', (isForeign(p) ? 12 : 5) + add('SI')],
+    ['FRK', (japan ? 34 : lefty ? 7 : 15) + add('FRK')],
+    ['CUT', (isForeign(p) ? 12 : 6) + add('CUT')],
+    ['2SFB', (isForeign(p) ? 12 : 5) + add('2SFB')],
+    ['SNK', (isForeign(p) ? 9 : 5) * (1 - old * 0.5) + add('SNK')],
+    ['CIR', (lefty ? 7 : 3) * (1 - old * 0.6) + add('CIR')],
+    ['SPL', (japan ? 10 : isForeign(p) ? 7 : young ? 6 : 3) * (1 - old * 0.6) + add('SPL')],
+    ['SLV', 3 + old * 2 + add('SLV')],
+    ['KN', 0.4 + old * 0.6 + add('KN')],
+    ['SCR', (lefty ? 1 : 0.3) + old * 4 + add('SCR')],
+    ['PLM', 0.3 + old * 4 + add('PLM')],
+    ['SH', (japan ? 5 : 1) + old * 8 + add('SH')],
   ];
 }
 
@@ -93,14 +140,17 @@ export function repertoire(p: Player): Pitch[] {
   if (hit) return hit;
   const r = rng(`pitches-${p.id}`);
   const count = countOf(p, r);
-  let mix = mixFor(p, true);
+  // His fastball's family is taken (1.9.3).
+  const fb = fastballOf(p);
+  const taken = (x: PitchType) => fb !== '4SFB' && (x === fb || (FAMILY[x] && FAMILY[x] === FAMILY[fb]));
+  let mix = mixFor(p, true).filter(([x]) => !taken(x));
   const types: PitchType[] = [];
   while (types.length < count && mix.length) {
     const t = pick(mix, r);
     types.push(t);
-    // One slider-type pitch at most: a sweeper and a slider rarely share an arm.
-    if (types.length === 1) mix = mixFor(p, false);
-    mix = mix.filter(([x]) => !types.includes(x) && !(types.includes('SW') && x === 'SL') && !(types.includes('SL') && x === 'SW'));
+    // One slider-type pitch at most: a sweeper and a slider rarely share an arm (1.9.3: one of each family).
+    if (types.length === 1) mix = mixFor(p, false).filter(([x]) => !taken(x));
+    mix = mix.filter(([x]) => !types.includes(x) && !(FAMILY[x] && types.some((y) => FAMILY[y] === FAMILY[x])));
   }
   const raw = types.map((_, i) => (i === 0 ? 5 + r() * 5 : i === 1 ? -1 - r() * 5 : -7 - r() * 7));
   // Shift so the weighted grade equals the tool: 0.6·best + 0.3·second + 0.1·(mean of the rest; the second
@@ -129,7 +179,7 @@ export function pitchGrades(p: Player, future = false): { type: PitchType; label
 /** Platoon multiplier the engine applies to the same-side advantage. */
 export function platoonFactor(p: Player): number {
   const best = repertoire(p)[0];
-  return best ? PLATOON[best.type] : 1;
+  return (best ? PLATOON[best.type] : 1) * FASTBALL_PLATOON[fastballOf(p)];
 }
 
 const VELO_PER_STUFF = 0.35;
@@ -145,5 +195,5 @@ export function topVelocity(p: Player): number | null {
 /** Average fastball: a few km/h under the top, less of a gap for relievers. */
 export const averageVelocity = (p: Player) => {
   const top = topVelocity(p);
-  return top == null ? null : Math.round(top - (p.role === 'RP' ? 3 : 4) - hashUnit(p.id) * 1.5);
+  return top == null ? null : Math.round(top - (p.role === 'RP' ? 3 : 4) - hashUnit(p.id) * 1.5 - FASTBALL_SLOWER[fastballOf(p)]);
 };
