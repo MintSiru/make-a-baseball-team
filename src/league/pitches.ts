@@ -16,6 +16,7 @@ import { hashUnit, rng } from '../draftroom';
 import type { Player } from '../model/types';
 import { isForeign } from './players';
 import { PITCH_MIX as M } from './tuning';
+import { slotPlatoon, slotVelocity } from './tracking';
 
 /** 1.9.3 (the 1.9 plan's 5th edition): 싱커 (SNK), 서클체인지업 (CIR), 스플리터 (SPL), 슬러브 (SLV), 너클볼 (KN), and the old
     pitches 스크류볼 (SCR), 팜볼 (PLM) and 슈트 (SH), thrown more by pitchers born long ago. The codes are the user's
@@ -179,7 +180,8 @@ export function pitchGrades(p: Player, future = false): { type: PitchType; label
 /** Platoon multiplier the engine applies to the same-side advantage. */
 export function platoonFactor(p: Player): number {
   const best = repertoire(p)[0];
-  return (best ? PLATOON[best.type] : 1) * FASTBALL_PLATOON[fastballOf(p)];
+  // 2.0.0: a low arm slot widens the split (tracking.ts).
+  return (best ? PLATOON[best.type] : 1) * FASTBALL_PLATOON[fastballOf(p)] * slotPlatoon(p);
 }
 
 const VELO_PER_STUFF = 0.35;
@@ -187,9 +189,11 @@ const VELO_PER_STUFF = 0.35;
 /** Top velocity today: the draft-day reading moved by how much his 구위 has changed since. */
 export function topVelocity(p: Player): number | null {
   if (p.velocity == null) return null;
+  // 2.0.0: his arm slot (tracking.ts): a sidearmer a few km/h under, a submariner well under.
+  const slot = slotVelocity(p);
   const now = p.hidden.current.stuff;
-  if (now == null || p.velocityStuff == null) return p.velocity;
-  return Math.round(Math.max(128, Math.min(163, p.velocity + (now - p.velocityStuff) * VELO_PER_STUFF)));
+  const base = now == null || p.velocityStuff == null ? p.velocity : p.velocity + (now - p.velocityStuff) * VELO_PER_STUFF;
+  return Math.round(Math.max(110, Math.min(163, base + slot)));
 }
 
 /** Average fastball: a few km/h under the top, less of a gap for relievers. */

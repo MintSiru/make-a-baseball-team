@@ -19,11 +19,15 @@ import type { LeagueState } from './state';
 import type { StandingRow } from './standings';
 import { milestone, unlock } from './milestones';
 import { hallAlert } from './alerts';
+import { hashUnit } from '../draftroom';
+import { positionGrades } from './positions';
 
 export interface SeasonAwards {
   mvp: PlayerId | null;
   rookie: PlayerId | null;
   goldenGloves: { pos: string; id: PlayerId }[];
+  /** 2.0.0 (the user's request): the fielding awards (수비상) — the pitcher, each position, and a utility player. */
+  defense?: { pos: string; id: PlayerId }[];
   titles: { label: string; id: PlayerId; value: string }[];
 }
 
@@ -133,7 +137,41 @@ export function computeAwards(s: LeagueState, year: number, table: StandingRow[]
   const dh = best(hitters.filter((r) => posGames(r, 'DH') >= 60), (r) => r.c.war);
   if (dh) goldenGloves.push({ pos: LABEL.DH!, id: dh.p.id });
 
-  return { mvp: mvp?.p.id ?? null, rookie: rookie?.p.id ?? null, goldenGloves, titles };
+  return { mvp: mvp?.p.id ?? null, rookie: rookie?.p.id ?? null, goldenGloves, titles, defense: defenseAwards(s, hitters, pitchers, games) };
+}
+
+/** 2.0.0: the fielding awards (KBO 수비상 since 2023; a utility player as the major leagues have since 2022). Each
+    position goes to the best glove there among those who played half the season at it (the scouts' fielding grade
+    at the position, a little more for more games); the pitcher's to a qualified pitcher by his own fielding (a game
+    estimate from his 제구 and athleticism, until the 2.0 plan's fourth stage measures it); the utility award to the
+    best glove across three positions or more, 20 games or more at each. */
+function defenseAwards(s: LeagueState, hitters: Rec[], pitchers: Rec[], games: number): { pos: string; id: PlayerId }[] {
+  const out: { pos: string; id: PlayerId }[] = [];
+  const posGames = (r: Rec, pos: FieldPos) => r.c.bat?.posG?.[pos] ?? 0;
+  const gradeAt = (r: Rec) => Object.fromEntries(positionGrades(s, r.p).map((x) => [x.pos, x.grade])) as Partial<Record<string, number>>;
+  const qualified = pitchers.filter((r) => (r.c.pit?.outs ?? 0) >= games * 3);
+  const pitcherGlove = (r: Rec) => (r.p.scouting.tools.command ?? 50) * 0.4 + hashUnit(`pitcher-glove|${r.p.id}`) * 30 + Math.min(10, (r.c.pit?.outs ?? 0) / 90);
+  const p = best(qualified, pitcherGlove);
+  if (p) out.push({ pos: __i18n_k("league.awards.text.ef406667"), id: p.p.id });
+  const NAMES: Record<string, string> = { C: __i18n_k("league.awards.text.5f31470d"), '1B': __i18n_k("league.awards.text.b68518b0"), '2B': __i18n_k("league.awards.text.833473d4"), '3B': __i18n_k("league.awards.text.bf8d493f"), SS: __i18n_k("league.awards.text.3e24c7f1"), LF: __i18n_k("league.awards.text.73836db2"), CF: __i18n_k("league.awards.text.56780b2a"), RF: __i18n_k("league.awards.text.a28a0ef8") };
+  for (const pos of ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'] as FieldPos[]) {
+    const top = best(
+      hitters.filter((r) => posGames(r, pos) >= games / 2),
+      (r) => (gradeAt(r)[pos] ?? 0) + posGames(r, pos) / 30,
+    );
+    if (top) out.push({ pos: NAMES[pos]!, id: top.p.id });
+  }
+  const multi = (r: Rec) => (['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'] as FieldPos[]).filter((pos) => posGames(r, pos) >= 20);
+  const utility = best(
+    hitters.filter((r) => multi(r).length >= 3 && !out.some((x) => x.id === r.p.id)),
+    (r) => {
+      const at = gradeAt(r);
+      const list = multi(r);
+      return list.reduce((a, pos) => a + (at[pos] ?? 0), 0) / list.length + list.length * 2;
+    },
+  );
+  if (utility) out.push({ pos: __i18n_k("league.awards.text.51ab685b"), id: utility.p.id });
+  return out;
 }
 
 /** Writes the season's honours on the players. */
@@ -145,6 +183,7 @@ export function awardHonours(s: LeagueState, year: number, a: SeasonAwards) {
   give(a.mvp, 'MVP');
   give(a.rookie, '신인왕');
   for (const g of a.goldenGloves) give(g.id, __i18n_k("league.awards.awardHonours.0d9ed90e", { pos: g.pos }));
+  for (const g of a.defense ?? []) give(g.id, __i18n_k("league.awards.text.54980726", { pos: g.pos }));
   for (const t of a.titles) give(t.id, __i18n_k("league.awards.awardHonours.c6a60592", { label: t.label, value: t.value }));
 }
 

@@ -331,7 +331,28 @@ function derby(s: LeagueState, a: AllStarState, date: string): AllStarGame['derb
   return { date, winner, rounds };
 }
 
+/** An All-Star hurt by the day of the game makes way for a healthy teammate (부상 대체 선수): a hitter for a hitter,
+    an arm for an arm, from his own club when it has one. Without this a side short of nine hitters had no game. */
+function replaceInjured(s: LeagueState, a: AllStarState) {
+  const value = seasonValue(s);
+  for (const side of SIDES) {
+    const squad = a.squads![side];
+    const clubs = Object.keys(a.sides).filter((id) => a.sides[id] === side);
+    squad.forEach((id, i) => {
+      const out = s.players[id];
+      if (out && !s.injuries[id]) return;
+      const kind = out ? isPitcher(out) : false;
+      const pool = clubs
+        .flatMap((c) => (s.rosters[c]?.active ?? []).map((pid) => s.players[pid]!))
+        .filter((p) => p.status === 'active' && !s.injuries[p.id] && !squad.includes(p.id) && isPitcher(p) === kind)
+        .sort((x, y) => Number(y.teamId === out?.teamId) - Number(x.teamId === out?.teamId) || value(y) - value(x));
+      if (pool[0]) squad[i] = pool[0].id;
+    });
+  }
+}
+
 function playAllStar(s: LeagueState, a: AllStarState, date: string) {
+  replaceInjured(s, a);
   const ids = firstTeamIds(s);
   const host = [...ids].sort()[(s.year * 7) % ids.length]!;
   const homeSide = a.sides[host] ?? 'dream';

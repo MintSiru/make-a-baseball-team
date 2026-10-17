@@ -24,6 +24,7 @@ import { avg, babip, babipAllowed, batterWar, era, fip, ip, leagueContext, obp, 
 import { addInto, emptyBat, emptyPit } from './state';
 import { traitsOf } from './traits';
 import { traitReport, type TraitReport } from './reports';
+import { trackingOf } from './tracking';
 
 /** 리더십 from which a senior counts as a clubhouse leader. */
 const LEADER = 68;
@@ -237,6 +238,7 @@ export interface PlayerCard {
   pitches: ReturnType<typeof pitchGrades>;
   /** 1.9.3: his main fastball. */
   fastball: FastballType | null;
+  tracking: import('./tracking').Tracking | null;
   injuries: InjuryRecord[];
   /** Hitters: grade and first-team games at each position he can play. */
   positions: ReturnType<typeof positionGrades>;
@@ -321,6 +323,8 @@ export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
     velocity: top == null ? null : { top, average: averageVelocity(p)! },
     pitches: pitchGrades(p),
     fastball: pitcher ? fastballOf(p) : null,
+    // 2.0.0: his arm slot and what a tracking system reads off his pitches (tracking.ts).
+    tracking: pitcher ? trackingOf(p) : null,
     injuries: [...(p.injuries ?? [])].reverse(),
     positions: positionGrades(s, p),
     report: traitReport(s, p),
@@ -588,6 +592,7 @@ export function awardsView(s: LeagueState) {
       mvp: who(h.awards!.mvp, h.year),
       rookie: who(h.awards!.rookie, h.year),
       gg: h.awards!.goldenGloves.map((g) => ({ pos: g.pos, ...who(g.id, h.year)! })),
+      defense: (h.awards!.defense ?? []).map((g) => ({ pos: g.pos, ...who(g.id, h.year)! })),
       titles: h.awards!.titles.map((t) => ({ label: t.label, value: t.value, ...who(t.id, h.year)! })),
     }));
 }

@@ -73814,5 +73814,220 @@
       }
     },
     "locations": []
+  },
+  "league.nicknames.text.c6c0729a": {
+    "source": "src/league/nicknames.ts",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.6532d628": {
+    "source": "src/league/nicknames.ts",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.9b6909fc": {
+    "source": "src/league/nicknames.ts",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.e96154d3": {
+    "source": "src/league/nicknames.ts",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "league.awards.text.ef406667": {
+    "source": "src/league/awards.ts",
+    "line": 155,
+    "params": {},
+    "locations": []
+  },
+  "league.awards.text.5f31470d": {
+    "source": "src/league/awards.ts",
+    "line": 156,
+    "params": {},
+    "locations": []
+  },
+  "league.awards.text.b68518b0": {
+    "source": "src/league/awards.ts",
+    "line": 156,
+    "params": {},
+    "locations": []
+  },
+  "league.awards.text.833473d4": {
+    "source": "src/league/awards.ts",
+    "line": 156,
+    "params": {},
+    "locations": []
+  },
+  "league.awards.text.bf8d493f": {
+    "source": "src/league/awards.ts",
+    "line": 156,
+    "params": {},
+    "locations": []
+  },
+  "league.awards.text.3e24c7f1": {
+    "source": "src/league/awards.ts",
+    "line": 156,
+    "params": {},
+    "locations": []
+  },
+  "league.awards.text.73836db2": {
+    "source": "src/league/awards.ts",
+    "line": 156,
+    "params": {},
+    "locations": []
+  },
+  "league.awards.text.56780b2a": {
+    "source": "src/league/awards.ts",
+    "line": 156,
+    "params": {},
+    "locations": []
+  },
+  "league.awards.text.a28a0ef8": {
+    "source": "src/league/awards.ts",
+    "line": 156,
+    "params": {},
+    "locations": []
+  },
+  "league.awards.text.51ab685b": {
+    "source": "src/league/awards.ts",
+    "line": 173,
+    "params": {},
+    "locations": []
+  },
+  "league.awards.text.54980726": {
+    "source": "src/league/awards.ts",
+    "line": 186,
+    "params": {
+      "pos": {
+        "expression": "g.pos"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.d5ac5440": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 910,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.c1b3afb7": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 910,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.db8562f5": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 910,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.fecd8c93": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 910,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.e3519768": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 914,
+    "params": {
+      "cm": {
+        "expression": "h"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.2fb60458": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 914,
+    "params": {
+      "cm": {
+        "expression": "-h"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.c2d86648": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 918,
+    "params": {
+      "slot": {
+        "expression": "SLOT_LABEL[t.slot]"
+      },
+      "angle": {
+        "expression": "t.angle"
+      },
+      "release": {
+        "expression": "t.release.toFixed(2)"
+      },
+      "extension": {
+        "expression": "t.extension.toFixed(2)"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.0685b54a": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 924,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.b8c2e079": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 925,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.c2b703dc": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 926,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.b49c6966": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 927,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.9514ce6d": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 928,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.b7347eea": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 929,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.b3c5351e": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 939,
+    "params": {
+      "cm": {
+        "expression": "x.vertical"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.45a4d44e": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 946,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.c736f666": {
+    "source": "src/ui/History.tsx",
+    "line": 84,
+    "params": {},
+    "locations": []
   }
 }

@@ -27,8 +27,9 @@ import type { TraitReport } from '../league/reports';
 import { kboSeasons } from '../league/foreigncap';
 import { extensionCooldown, extensionOptions, extensionProblem } from '../league/extensions';
 import { postRows, postTotals, type PostRow } from '../league/poststats';
-import { FASTBALL_LABELS } from '../league/pitches';
+import { FASTBALL_LABELS, PITCH_LABELS } from '../league/pitches';
 import { LEGACY_START } from '../league/era';
+import type { ArmSlot, Tracking } from '../league/tracking';
 
 const POSITION_NAMES: Record<string, string> = { C: __i18n_k("ui.playerPanel.pOSITION_NAMES.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("ui.playerPanel.pOSITION_NAMES.sS.3e24c7f1"), LF: __i18n_k("ui.playerPanel.pOSITION_NAMES.lF.73836db2"), CF: __i18n_k("ui.playerPanel.pOSITION_NAMES.cF.56780b2a"), RF: __i18n_k("ui.playerPanel.pOSITION_NAMES.rF.a28a0ef8") };
 
@@ -433,6 +434,7 @@ export function PlayerPanel({
                     <GradeBar key={x.type} label={`${x.type} ${__i18n_displayText(x.label)}`} now={x.grade} note={__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round(x.usage * 100) })} />
                   )))}
                 </div>
+                {card.tracking && <TrackingTable t={card.tracking} />}
               </section>
             ))}
           </div>
@@ -901,6 +903,47 @@ function ExtensionOffer({ league, id, onAct }: { league: LeagueState; id: string
           <span class="muted small">{__i18n_t("ui.playerPanel.text.9d415c3d")}</span>
         </>
       )}
+    </div>
+  );
+}
+
+const SLOT_LABEL: Record<ArmSlot, string> = { over: __i18n_t("ui.playerPanel.text.d5ac5440"), three: __i18n_t("ui.playerPanel.text.c1b3afb7"), side: __i18n_t("ui.playerPanel.text.db8562f5"), under: __i18n_t("ui.playerPanel.text.fecd8c93") };
+
+/** 2.0.0: his arm slot and each pitch as a tracking system reads it (tracking.ts). */
+function TrackingTable({ t }: { t: Tracking }) {
+  const side = (h: number) => (h > 0 ? __i18n_t("ui.playerPanel.text.e3519768", { cm: h }) : h < 0 ? __i18n_t("ui.playerPanel.text.2fb60458", { cm: -h }) : '0');
+  return (
+    <div class="tracking">
+      <p class="small">
+        {__i18n_t("ui.playerPanel.text.c2d86648", { slot: SLOT_LABEL[t.slot], angle: t.angle, release: t.release.toFixed(2), extension: t.extension.toFixed(2) })}
+      </p>
+      <div class="table-wrap">
+        <table class="record-table small">
+          <thead>
+            <tr>
+              <th>{__i18n_t("ui.playerPanel.text.0685b54a")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.text.b8c2e079")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.text.c2b703dc")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.text.b49c6966")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.text.9514ce6d")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.text.b7347eea")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {t.pitches.map((x) => (
+              <tr key={x.type}>
+                <td>{x.type === 'FB' ? FASTBALL_LABELS['4SFB'] : PITCH_LABELS[x.type]}</td>
+                <td class="num">{x.velocity}</td>
+                <td class="num">{x.spin.toLocaleString('ko-KR')}</td>
+                <td class="num">{x.axis}</td>
+                <td class="num">{__i18n_t("ui.playerPanel.text.b3c5351e", { cm: x.vertical })}</td>
+                <td class="num">{side(x.horizontal)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="muted small">{__i18n_t("ui.playerPanel.text.45a4d44e")}</p>
     </div>
   );
 }
