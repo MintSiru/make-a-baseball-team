@@ -5,6 +5,7 @@ import { useDark } from './useDisplay';
 import { CITIES, cityById } from '../club/cities';
 import { NORTH_CITIES } from '../league/north';
 import { SCENARIOS, scenarioDef, withScenario, type ScenarioId } from '../league/scenarios';
+import { LEGACY_TAKEN_CITIES } from '../league/legacy1982';
 import { setEra, startYear } from '../league/era';
 import { PARENT_COMPANY_TYPES, type ParentCompanyType } from '../club/types';
 import { existingTeams } from '../league/clubs';
@@ -102,7 +103,8 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
   };
   const city = cityById(cityId)!;
   // 1.9.2: the north's scenarios found the club in one of the north's cities.
-  const cities = locked.has('cityId') ? [city] : def?.north ? NORTH_CITIES : CITIES;
+  // 1.9.5: the legacy start leaves out the cities of the clubs history founds later (전주 — 쌍방울).
+  const cities = locked.has('cityId') ? [city] : def?.north ? NORTH_CITIES : def?.legacy ? CITIES.filter((c) => !LEGACY_TAKEN_CITIES.includes(c.id)) : CITIES;
   // The twelfth club comes once ours is in the first team.
   // 1.6.0: 「백 투 더 패스트」 founds the club ten years earlier.
   // The page has no league yet: the calendar follows the scenario picked (the ballpark years and the risks too).

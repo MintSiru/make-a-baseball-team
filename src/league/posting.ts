@@ -1,3 +1,4 @@
+import { rulesFor } from '../rules/history';
 import { k as __i18n_k } from '../i18n/index';
 /* The posting system (포스팅, RULES.md §4): after seven seasons a player may ask his club to post him
    to the major leagues. A club posts at most one player a winter. If a major league club signs him in
@@ -48,6 +49,8 @@ export function postingFee(total: number): number {
 
 /** Players who could be posted this winter and want to go: seven seasons, good enough, young enough. */
 export function postingCandidates(s: LeagueState, teamId: TeamId, next: number): Player[] {
+  // 1.9.5: no posting before the 1998 Korea–US agreement in a league that plays history.
+  if (!rulesFor(next - 1).posting) return [];
   return orgPlayers(s, teamId)
     .filter(
       (p) =>

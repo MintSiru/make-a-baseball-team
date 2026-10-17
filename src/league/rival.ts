@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { legacyAllocations } from './legacy1982';
 /* The twelfth club, the rival (V0.9). The player designs it (or lets the scouts suggest one) when it is founded:
    in a set winter, or when the board puts a twelfth club to the clubs (and the player may vote it down).
 
@@ -22,7 +23,7 @@ import { addNews } from './news';
 import { developmentContract, leaveLeague, removeFromRoster, rosterLimit, sign, type OffseasonStep } from './offseason';
 import { ageIn, DRAFT_ROOM_YEAR, isForeign, keepValue, shiftProspect } from './players';
 import { MANAGER_STYLES, staffOf } from './staff';
-import { developmentIds, emptyRoster, firstTeamIds, registeredIds, type Decision, type GmStyle, type LeagueState, type ManagerStyle, type RivalSettings, type TwelveState } from './state';
+import { developmentIds, emptyRoster, firstTeamIds, registeredIds, type Decision, type GmStyle, type LeagueState, type ManagerStyle, type RivalSettings, type TwelveState, aiFoundingClubs } from './state';
 import { crossing } from './rivalry';
 import { farewell } from './life';
 import { GM_STYLES, gmValue } from './twelve';
@@ -337,12 +338,14 @@ export function rivalStep(s: LeagueState, step: OffseasonStep) {
   const o = s.offseason;
   if (!o) return;
   const next = o.year + 1;
-  // 1.9.2: the north's clubs (unified.ts), each in turn, after ours.
-  for (const c of s.unified?.clubs ?? []) {
+  // 1.9.2: the north's clubs (unified.ts), each in turn, after ours; 1.9.5 a legacy league's (legacy.ts).
+  for (const c of aiFoundingClubs(s)) {
     if (step === 'special') rivalSpecialDraft(s, next, c);
     if (step === 'released') rivalFill(s, next, c);
     if (step === 'check') rivalTrim(s, next, c);
   }
+  // 1.9.5: a legacy league's new clubs (ours too) get the existing clubs' allocation after the special draft.
+  if (step === 'special') legacyAllocations(s, next);
   if (!s.twelve) return;
   if (step === 'special') rivalSpecialDraft(s, next);
   if (step === 'released') rivalFill(s, next);

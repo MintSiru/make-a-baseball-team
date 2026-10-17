@@ -32,6 +32,9 @@ import { rosterLimit } from './offseason';
 import { finishEvent, marchEvents, nationalTeamBack, nationalTeamCalls, nationalTeamLeaves } from './national';
 import { currentValue, isForeign } from './players';
 import { makeSchedule } from './schedule';
+import { addTiebreaker, isTiebreaker } from './tiebreak';
+import { legacySeason } from './legacy1982';
+import { rulesFor } from '../rules/history';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, registeredIds, type FuturesSeason, type LeagueState, type SeasonLine } from './state';
 import { standings } from './standings';
 import { ENGINE } from './tuning';
@@ -47,6 +50,8 @@ const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 864
 
 export function startSeason(s: LeagueState) {
   s.phase = 'regular';
+  // 1.9.5: a legacy league's opening day — the clubs founded this year, the year's names, the leagues, the rules.
+  legacySeason(s);
   // Twelve clubs (V0.9): two leagues are drawn once, before the first twelve-club season.
   if (s.twelve?.format === 'two' && !s.twelve.leagues && twelveClubs(s)) s.twelve.leagues = assignLeagues(s);
   const teams = firstTeamIds(s);
@@ -55,7 +60,9 @@ export function startSeason(s: LeagueState) {
   // 1.9.1: any other league in two leagues (leagueSides) gets its own pairings.
   const sides = sidesOf(s);
   const twelve = twelveGames(s, teams, s.year);
-  s.schedule = makeSchedule(teams, s.year, s.seed, twelve, undefined, !twelve && sides ? teams.map((id) => (sides[id] === 'dream' ? 0 : 1)) : undefined);
+  // 1.9.5: a league that plays history plays its year's number of games (80 in 1982 … 144 from 2015).
+  const games = s.historical ? rulesFor(s.year).gamesPerClub : undefined;
+  s.schedule = makeSchedule(teams, s.year, s.seed, twelve, games, !twelve && sides ? teams.map((id) => (sides[id] === 'dream' ? 0 : 1)) : undefined);
   s.next = 0;
   s.scores = [];
   s.lines = {};
@@ -295,7 +302,9 @@ export function playDay(s: LeagueState): boolean {
   while (s.next < s.schedule.length && s.schedule[s.next]!.date === date) {
     const g = s.schedule[s.next]!;
     const log: PlayEvent[] | undefined = isUserGame(s, g.home, g.away) ? [] : undefined;
-    const out = playGame(s, g.home, g.away, g.id, date, ENGINE.maxInnings, log);
+    // 1.9.5: a tiebreaker is played until it is decided; a league that plays history stops at its year's limit.
+    const limit = isTiebreaker(g.id) ? null : s.historical ? rulesFor(s.year).extraInnings : ENGINE.maxInnings;
+    const out = playGame(s, g.home, g.away, g.id, date, limit, log);
     s.next++;
     if (!out) continue;
     record(s, out.home, date);
@@ -323,6 +332,8 @@ export function playDay(s: LeagueState): boolean {
   maintainRosters(s, date, day > 0 && Math.floor(s.next / (firstTeamIds(s).length / 2)) % 10 === 0);
   // 1.9.0: who may play in the postseason, once the registration deadlines have passed (postentry.ts).
   noteEligibility(s);
+  // 1.9.5: a tie for first or for the last postseason place is played off the next day (tiebreak.ts).
+  if (s.next >= s.schedule.length) addTiebreaker(s);
   return s.next < s.schedule.length;
 }
 

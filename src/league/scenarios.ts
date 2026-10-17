@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { LEGACY_ERA } from './era';
 /* Scenarios (1.6.0, the scenario mode the roadmap kept a hook for since V0.3): a founding with some conditions fixed,
    a goal and a deadline. The goal is judged each winter after the owner's verdict; once it is won or lost the game
    says so and goes on as a free game. Some scenarios change the money and the owner:
@@ -35,7 +36,7 @@ import { WARD } from './ward';
 
 const FANS_MIN = FANS.priceMin;
 
-export type ScenarioId = 'seoul' | 'comeback' | 'ulleung' | 'raiders' | 'fantasy' | 'past' | 'rescue' | 'recession' | 'unpopular' | 'steel' | 'ward' | 'prodigal' | 'unified' | 'unifiedFree';
+export type ScenarioId = 'seoul' | 'comeback' | 'ulleung' | 'raiders' | 'fantasy' | 'past' | 'rescue' | 'recession' | 'unpopular' | 'steel' | 'ward' | 'prodigal' | 'unified' | 'unifiedFree' | 'legacy';
 
 export interface ScenarioState {
   status: 'active' | 'won' | 'lost';
@@ -79,6 +80,8 @@ export interface ScenarioDef {
   /** 1.9.2, 통일 한국: the home is one of the north's cities, five more northern clubs are founded with ours, and the
       league is sixteen clubs in two leagues (no twelfth club). */
   north?: boolean;
+  /** 1.9.5, 레거시: the KBO's own history from 1982 (the era shift of LEGACY_ERA makes createLeague build it). */
+  legacy?: boolean;
 }
 
 export const SCENARIOS: ScenarioDef[] = [
@@ -283,6 +286,22 @@ export const SCENARIOS: ScenarioDef[] = [
     free: true,
     north: true,
   },
+  {
+    id: 'legacy',
+    title: __i18n_k("league.scenarios.text.49ba0117"),
+    tagline: __i18n_k("league.scenarios.text.f78b7774"),
+    story: [
+      __i18n_k("league.scenarios.text.9b498699"),
+      __i18n_k("league.scenarios.text.dc64ef62"),
+    ],
+    goal: __i18n_k("league.scenarios.text.83c99662"),
+    stars: 3,
+    fixed: { promotion: 'immediate' },
+    locked: ['promotion'],
+    era: LEGACY_ERA,
+    free: true,
+    legacy: true,
+  },
 ];
 
 export const scenarioDef = (id: string | null | undefined) => SCENARIOS.find((x) => x.id === id) ?? null;
@@ -477,8 +496,8 @@ export const withScenario = (settings: ExpansionSettings, id: ScenarioId | null)
   const def = scenarioDef(id);
   if (!def) return { ...settings, scenario: null };
   const locked = Object.fromEntries(def.locked.filter((k) => k in def.fixed).map((k) => [k, def.fixed[k]]));
-  // 1.9.2: the north's scenarios: sixteen clubs, no twelfth club.
-  if (def.north) {
+  // 1.9.2: the north's scenarios: sixteen clubs, no twelfth club. 1.9.5: nor the legacy start (its clubs come in history's years).
+  if (def.north || def.legacy) {
     const { twelve: _twelve, ...rest } = settings;
     return { ...rest, ...locked, scenario: def.id };
   }

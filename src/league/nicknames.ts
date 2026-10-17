@@ -11,12 +11,13 @@ import { ageIn, isForeign, isPitcher } from './players';
 import { fastballOf, repertoire, topVelocity } from './pitches';
 import type { LeagueState } from './state';
 
-export type NickCode = 'legend' | 'mvp' | 'triple' | 'mvp1' | 'hrKing' | 'oneClub' | 'saveKing' | 'hits2000' | 'hr300' | 'w150' | 'hr' | 'hr40' | 'avg' | 'rbi' | 'hits' | 'runs' | 'obp' | 'slg' | 'sb' | 'k' | 'k200' | 'ace' | 'w20' | 'pct' | 'save' | 'catcher' | 'shortstop' | 'outfield' | 'glove' | 'dh' | 'heater' | 'control' | 'ironGames' | 'iron' | 'hold' | 'foreign' | 'knuckle' | 'oldPitch' | 'sinker' | 'cutter' | 'rookie';
+export type NickCode = 'legend' | 'mvp' | 'triple' | 'mvp1' | 'hrKing' | 'oneClub' | 'saveKing' | 'hits2000' | 'hr300' | 'w150' | 'hr' | 'hr40' | 'avg' | 'rbi' | 'hits' | 'runs' | 'obp' | 'slg' | 'sb' | 'k' | 'k200' | 'ace' | 'w20' | 'pct' | 'save' | 'catcher' | 'shortstop' | 'outfield' | 'glove' | 'dh' | 'heater' | 'control' | 'ironGames' | 'iron' | 'hold' | 'foreign' | 'knuckle' | 'oldPitch' | 'sinker' | 'cutter' | 'fake' | 'big' | 'small' | 'rookie';
 
 /** The record a nickname comes from: given in `year`; `team` is the club a "{club}" in it names. */
 export type Nickname = NonNullable<Player['nickname']> & { code: NickCode };
 
-type Names = ((club: string) => string)[];
+/** A name from the club a "{club}" names and the player's given name (1.9.5: 큰·작·짭 + the given name). */
+type Names = ((club: string, given: string) => string)[];
 
 /** Each nickname's tier (a higher one replaces a lower), its names (one drawn per player) and why. */
 const CATALOG: Record<NickCode, { tier: number; names: Names; why: () => string }> = {
@@ -60,6 +61,11 @@ const CATALOG: Record<NickCode, { tier: number; names: Names; why: () => string 
   oldPitch: { tier: 2, names: [() => __i18n_k("league.nicknames.text.2dc02089"), () => __i18n_k("league.nicknames.text.33e8febb"), () => __i18n_k("league.nicknames.text.13d4ee4c")], why: () => __i18n_k("league.nicknames.text.ce265203") },
   sinker: { tier: 1, names: [() => __i18n_k("league.nicknames.text.73d529bc"), () => __i18n_k("league.nicknames.text.9e085d61"), () => __i18n_k("league.nicknames.text.4d4b94fc")], why: () => __i18n_k("league.nicknames.text.08e3820a") },
   cutter: { tier: 1, names: [() => __i18n_k("league.nicknames.text.9df84812"), () => __i18n_k("league.nicknames.text.db633069"), () => __i18n_k("league.nicknames.text.1d2fe275")], why: () => __i18n_k("league.nicknames.text.3682fa89") },
+  // 1.9.5 (the user's request): namesakes. Two players in the league with one name are 큰 (the elder) and 작 (the younger)
+  // + the given name, as fans tell them apart; one who shares a hall-of-famer's name is 짭 + the given name.
+  fake: { tier: 1.6, names: [(_, given) => __i18n_k("league.nicknames.text.6a424078", { given })], why: () => __i18n_k("league.nicknames.text.f4f5781c") },
+  big: { tier: 1.5, names: [(_, given) => __i18n_k("league.nicknames.text.450ed5c3", { given })], why: () => __i18n_k("league.nicknames.text.730d79f4") },
+  small: { tier: 1.5, names: [(_, given) => __i18n_k("league.nicknames.text.f9ef294f", { given })], why: () => __i18n_k("league.nicknames.text.82043aa0") },
   rookie: { tier: 1, names: [() => __i18n_k("league.nicknames.text.0907682a"), () => __i18n_k("league.nicknames.text.21ff9e6f"), () => __i18n_k("league.nicknames.text.c91c8593"), () => __i18n_k("league.nicknames.text.2ede4455"), () => __i18n_k("league.nicknames.text.bf2885ef")], why: () => __i18n_k("league.nicknames.text.9ecfbb08") },
 };
 
@@ -73,13 +79,16 @@ const HEATER = 158;
 const clubShort = (s: Pick<LeagueState, 'teams'>, team: TeamId | undefined) => s.teams.find((t) => t.id === team)?.short ?? '';
 
 /** What the fans call him (the general manager's own nickname first), or null. */
-export function nicknameOf(s: Pick<LeagueState, 'teams'>, p: Pick<Player, 'nickname' | 'nicknameOwn'>): string | null {
+/** The given name: the name without its surname (two letters for a name of four or more). */
+export const givenName = (name: string) => (name.length >= 4 ? name.slice(2) : name.slice(1));
+
+export function nicknameOf(s: Pick<LeagueState, 'teams'>, p: Pick<Player, 'nickname' | 'nicknameOwn' | 'name'>): string | null {
   if (p.nicknameOwn) return p.nicknameOwn;
   const n = p.nickname;
   if (!n) return null;
   const names = CATALOG[n.code as NickCode]?.names;
   if (!names) return null;
-  return names[n.i % names.length]!(clubShort(s, n.team));
+  return names[n.i % names.length]!(clubShort(s, n.team), givenName(p.name));
 }
 
 /** Why he has it ("홈런 1위 2회 이상"), or null for the general manager's own. */
@@ -129,7 +138,7 @@ function counts(s: LeagueState): Map<PlayerId, Counts> {
 const first = (p: Player) => p.career.filter((c) => !c.level && ((c.bat?.pa ?? 0) > 0 || (c.pit?.outs ?? 0) > 0));
 
 /** The nicknames his record earns, best first. */
-function earned(p: Player, c: Counts | undefined, year: number, games: number): NickCode[] {
+function earned(p: Player, c: Counts | undefined, year: number, games: number, kin: Partial<Record<'big' | 'small' | 'fake', boolean>> = {}): NickCode[] {
   const t = (code: string) => c?.titles[awardLabel(code)] ?? 0;
   const gg = (code: string) => c?.gg[awardLabel(code)] ?? 0;
   const rows = first(p);
@@ -184,6 +193,9 @@ function earned(p: Player, c: Counts | undefined, year: number, games: number): 
     oldPitch: best === 'SCR' || best === 'PLM' || best === 'SH',
     sinker: fb === '2SFB' && nowWar >= 3 && nowOuts >= 300,
     cutter: fb === 'CUT' && nowWar >= 3 && nowOuts >= 150,
+    fake: !!kin.fake,
+    big: !!kin.big,
+    small: !!kin.small,
     rookie: (c?.rookie ?? 0) >= 1,
   };
   return ORDER.filter((x) => has[x]).sort((a, b) => CATALOG[b].tier - CATALOG[a].tier || ORDER.indexOf(a) - ORDER.indexOf(b));
@@ -196,12 +208,24 @@ export function nicknameWinter(s: LeagueState, year: number, news = true) {
   // Every game of the season: the most a club played.
   const table = s.history.find((h) => h.year === year)?.table ?? [];
   const games = Math.max(0, ...table.map((r) => r.w + r.l + r.t));
-  for (const p of Object.values(s.players)) {
-    if (p.status !== 'active' || !p.teamId) continue;
-    const best = earned(p, all.get(p.id), year, games)[0];
+  // 1.9.5: namesakes among the league's domestic players, and the names of the hall of fame.
+  const active = Object.values(s.players).filter((p) => p.status === 'active' && p.teamId);
+  const byName = new Map<string, Player[]>();
+  for (const p of active) if (!isForeign(p)) byName.set(p.name, [...(byName.get(p.name) ?? []), p]);
+  const kin = new Map<PlayerId, Partial<Record<'big' | 'small' | 'fake', boolean>>>();
+  for (const same of byName.values()) {
+    if (same.length < 2) continue;
+    const old = [...same].sort((a, b) => a.birthday.localeCompare(b.birthday) || a.id.localeCompare(b.id));
+    kin.set(old[0]!.id, { big: true });
+    kin.set(old.at(-1)!.id, { small: true });
+  }
+  const hall = new Map((s.hallOfFame ?? []).map((h) => [h.name, h.id]));
+  for (const p of active) if (!isForeign(p) && hall.has(p.name) && hall.get(p.name) !== p.id) kin.set(p.id, { ...kin.get(p.id), fake: true });
+  for (const p of active) {
+    const best = earned(p, all.get(p.id), year, games, kin.get(p.id))[0];
     if (!best || (p.nickname && (CATALOG[p.nickname.code as NickCode]?.tier ?? 0) >= CATALOG[best].tier)) continue;
     const names = CATALOG[best].names;
-    p.nickname = { code: best, i: Math.floor(hashUnit(`nick|${p.id}|${best}`) * names.length), year, team: p.teamId };
+    p.nickname = { code: best, i: Math.floor(hashUnit(`nick|${p.id}|${best}`) * names.length), year, team: p.teamId ?? undefined };
     const u = s.user;
     if (!news || !u || p.teamId !== u.teamId || p.nicknameOwn) continue;
     const nick = nicknameOf(s, p)!;

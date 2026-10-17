@@ -20,8 +20,10 @@ import type { PlayEvent } from './engine/types';
 import { leagueTables, playoffsOf, sidesOf } from './twelve';
 import { stopsOf } from './stops';
 import { openEntries, restoreFirstTeams, settleOurEntry } from './postentry';
+import { drawHistoric, historicNext } from './historic';
+import { rulesFor } from '../rules/history';
 
-const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
+export const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 
 /** A series being played (1.3.0: the postseason goes game day by game day, so the user can watch and decide). */
 export interface LiveSeries {
@@ -52,7 +54,9 @@ export interface Bracket {
       1.8.1, 'cross' (the two-league default since): each league's top three, a wild card for a league's 4th with a
       better record than the other league's 3rd, then cross-league semi-playoffs and playoffs (seeds 6 and 7 are the
       two 4ths). A two-league bracket with no style is the 1999–2000 rule it replaced, kept for a postseason under way. */
-  style?: 'npb' | 'cross';
+  style?: 'npb' | 'cross' | 'ladder' | 'halves';
+  /** 1.9.5 (a league that plays history): wins needed in each round, when they are not today's. */
+  needs?: Partial<Record<SeriesResult['round'], number>>;
 }
 
 const five = [true, true, false, false, true];
@@ -61,9 +65,9 @@ const three = [true, true, false];
 /** 1.8.0, NPB: every game of a Climax Series stage at the higher seed's park. */
 const allHome = (n: number) => Array<boolean>(n).fill(true);
 
-const live = (round: SeriesResult['round'], high: TeamId, low: TeamId, need: number, homes: boolean[], date: string, headStart = 0): LiveSeries => ({ round, high, low, need, homes, date, i: 0, hw: headStart, lw: 0, games: [] });
+export const live = (round: SeriesResult['round'], high: TeamId, low: TeamId, need: number, homes: boolean[], date: string, headStart = 0): LiveSeries => ({ round, high, low, need, homes, date, i: 0, hw: headStart, lw: 0, games: [] });
 const over = (x: LiveSeries) => x.hw >= x.need || x.lw >= x.need || x.i >= x.homes.length + 3;
-const result = (x: LiveSeries): SeriesResult => ({ round: x.round, high: x.high, low: x.low, highWins: x.hw, lowWins: x.lw, winner: x.hw >= x.need ? x.high : x.low, games: x.games });
+export const result = (x: LiveSeries): SeriesResult => ({ round: x.round, high: x.high, low: x.low, highWins: x.hw, lowWins: x.lw, winner: x.hw >= x.need ? x.high : x.low, games: x.games });
 
 /** 1.8.4: a postseason ticket at `home`'s park in `round` (만 원, on average): its regular price times the round's factor. */
 export const postseasonTicket = (s: LeagueState, home: TeamId, round: SeriesResult['round']) => leaguePrice(s.year) * clubState(s, home).price * POSTSEASON_GATE.price[round];
@@ -112,6 +116,8 @@ function playSeriesGame(s: LeagueState, x: LiveSeries) {
 /** The next round's series once a round is over, or null when the Korean Series is done. */
 function nextRound(s: LeagueState, b: Bracket, ended: LiveSeries[]): LiveSeries[] | null {
   const end = ended.reduce((m, x) => (x.date > m ? x.date : m), '');
+  // 1.9.5, a league that plays history (historic.ts): the ladder of the top four (or three), and the split season's.
+  if (b.style === 'ladder' || b.style === 'halves') return historicNext(s, b, ended, end);
   if (b.mode === 'one') {
     const winner = result(ended[0]!).winner;
     const [first, second, third] = b.seeds;
@@ -189,6 +195,8 @@ function drawBracket(s: LeagueState) {
   s.phase = 'postseason';
   const last = s.schedule[s.schedule.length - 1]?.date ?? `${s.year}-10-01`;
   const date = addDays(last, 3);
+  // 1.9.5: a league that plays history draws its year's postseason (historic.ts); 2015 on, today's.
+  if (s.historical && rulesFor(s.year).postseason !== 'five') return void (s.bracket = drawHistoric(s, date));
   const sides = sidesOf(s);
   if (sides) {
     const t = leagueTables(currentStandings(s), sides);
@@ -366,6 +374,8 @@ const ROUNDS: SeriesResult['round'][] = ['wildcard', 'semipo', 'po', 'ks'];
 
 /** Wins a round's series needs in this postseason's format. */
 function needOf(b: Bracket | null, round: SeriesResult['round']): number {
+  const own = b?.needs?.[round];
+  if (own) return own;
   if (round === 'ks') return 4;
   if (round === 'wildcard') return 2;
   if (b?.mode !== 'two' || b.style === 'cross') return 3;
@@ -448,7 +458,8 @@ export function bracketView(s: LeagueState): BracketView | null {
   for (const round of ROUNDS) {
     const played = [...done.filter((x) => x.round === round).map(fromResult), ...liveNow.filter((x) => x.round === round).map(fromLive)];
     let series = played;
-    if (!series.length && b) {
+    // 1.9.5: a historic bracket shows the rounds as they are played (historic.ts).
+    if (!series.length && b && b.style !== 'ladder' && b.style !== 'halves') {
       const [s0, s1, s2, s3, s4, s5] = b.seeds;
       if (b.mode === 'one') {
         if (round === 'wildcard') series = [waiting(round, seedLabel(s3, __i18n_k("league.postseason.bracketView.49a435d8")), seedLabel(s4, __i18n_k("league.postseason.bracketView.c8c0358f")), 2)];

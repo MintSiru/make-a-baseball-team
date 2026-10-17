@@ -67,7 +67,7 @@ import {
   yearlyGrant,
   type AnnualInput,
 } from './userclub';
-import { developmentIds, emptyRoster, firstTeamIds, orgIds, registeredIds, type Decision, type DraftSlot, type ExpansionSettings, type LeagueState, type RivalSettings, type UserClub } from './state';
+import { developmentIds, emptyRoster, firstTeamIds, orgIds, registeredIds, type Decision, type DraftSlot, type ExpansionSettings, type LeagueState, type RivalSettings, type UserClub, aiFoundingClubs } from './state';
 
 export const EXPANSION_ID = 'new';
 export const FOUNDING_DATE = '2026-07-01';
@@ -271,7 +271,7 @@ function draftSlots(s: LeagueState, draftYear: number, order: TeamId[]): DraftSl
   const tw = s.twelve;
   if (tw && !order.includes(tw.teamId) && draftYear + 1 <= tw.firstTeam) founding.push({ teamId: tw.teamId, first: draftYear === tw.founded });
   // 1.9.2: the north's clubs, after ours.
-  for (const c of s.unified?.clubs ?? []) if (!order.includes(c.teamId) && draftYear + 1 <= c.firstTeam) founding.push({ teamId: c.teamId, first: draftYear === c.founded });
+  for (const c of aiFoundingClubs(s)) if (!order.includes(c.teamId) && draftYear + 1 <= c.firstTeam) founding.push({ teamId: c.teamId, first: draftYear === c.founded });
   if (!founding.length) return standardSlots(order);
   const slots: DraftSlot[] = [];
   for (const f of founding) if (f.first) for (let i = 0; i < EXPANSION_DEFAULTS.rookiePriorityPicks; i++) slots.push({ teamId: f.teamId, label: __i18n_k("league.expansion.draftSlots.label.b31947fa") });

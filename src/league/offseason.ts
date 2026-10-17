@@ -1,10 +1,13 @@
+import { k as __i18n_k } from '../i18n/index';
 /* Between seasons: close the books, then age every player a year and rebuild the rosters.
 
    Order (fixed; each step has its own random stream): close season, then OFFSEASON_STEPS —
    national-team exemptions → development → retirement → military service → posting → free agency → salaries →
    rookie draft → (expansion special draft) → roster limits → released players → foreign players.
    The user's club can make the game wait at a step for a decision (see OffseasonHooks). */
-import { rulesFor } from '../rules/history';
+import { MODERN_FROM, rulesFor } from '../rules/history';
+import { playsHistory } from './era';
+import { hometownClub } from './fa';
 import { hashUnit, observe, overall, rng, toGrade, type Tools } from '../draftroom';
 import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
@@ -410,7 +413,15 @@ export function enlistAs(s: LeagueState, p: Player, next: number, route: 'sangmu
 
 // ── Free agency and salaries ─────────────────────────────────────────────────────────────────────
 
-const faSeasonsNeeded = (p: Player) => (p.origin.entryCategory === 'college' ? KBO_2026.freeAgency.seasonsCollege : KBO_2026.freeAgency.seasonsHighSchool);
+const faSeasonsNeeded = (p: Player, next: number) => {
+  // 1.9.5: a league that plays history has no free agency before the winter of 1999, then the year's seasons (college
+  // players one fewer from 2011; RULES.md §14).
+  if (playsHistory() && next - 1 < MODERN_FROM) {
+    const n = rulesFor(next - 1).freeAgencySeasons;
+    return n == null ? Infinity : n - (p.origin.entryCategory === 'college' && next - 1 >= 2011 ? 1 : 0);
+  }
+  return p.origin.entryCategory === 'college' ? KBO_2026.freeAgency.seasonsCollege : KBO_2026.freeAgency.seasonsHighSchool;
+};
 
 function isFreeAgent(p: Player, next: number) {
   if (isForeign(p) || p.status !== 'active' || !p.teamId) return false;
@@ -418,7 +429,8 @@ function isFreeAgent(p: Player, next: number) {
   const s = p.service;
   // A declined period option or an opt-out (V0.8) frees him whatever his service.
   if (s.optionFree === next - 1) return true;
-  return s.lastFreeAgencyAt === undefined ? s.creditedSeasons >= faSeasonsNeeded(p) : s.creditedSeasons - s.lastFreeAgencyAt >= KBO_2026.freeAgency.seasonsToRequalify;
+  if (faSeasonsNeeded(p, next) === Infinity) return false;
+  return s.lastFreeAgencyAt === undefined ? s.creditedSeasons >= faSeasonsNeeded(p, next) : s.creditedSeasons - s.lastFreeAgencyAt >= KBO_2026.freeAgency.seasonsToRequalify;
 }
 
 /** A season's pay: salaries and free-agent bonuses spread over their deals (V0.8). */
@@ -469,8 +481,22 @@ export function openDraft(s: LeagueState, draftYear: number, slots: DraftSlot[])
   // Draftees who went abroad and are back after the two-year wait (V0.7.3), ranked among this class.
   const back = draftReturnees(s, draftYear);
   for (const p of back) p.amateur.draftRank = 1 + pool.filter((q) => futureValue(q) > futureValue(p)).length;
-  return { year: draftYear, slots, next: 0, pool: [...pool, ...back].map((p) => p.id), developmentDone: false };
+  return { year: draftYear, slots: [...territorialSlots(s, draftYear, slots), ...slots], next: 0, pool: [...pool, ...back].map((p) => p.id), developmentDone: false };
 }
+
+/** 1.9.5: a league that plays history picks its territorial (1차) players first, up to the year's number each (no limit
+    in the early 1980s: three, a game assumption), from the high schools of its region (RULES.md §14). */
+export const TERRITORIAL_CAP = 3;
+function territorialSlots(s: LeagueState, draftYear: number, slots: DraftSlot[]): DraftSlot[] {
+  if (!s.historical) return [];
+  const n = Math.min(rulesFor(draftYear + 1).territorialPicks, TERRITORIAL_CAP);
+  if (n <= 0) return [];
+  const clubs = [...new Set(slots.map((x) => x.teamId))];
+  return Array.from({ length: n }, () => clubs.map((teamId) => ({ teamId, label: __i18n_k("league.offseason.text.f1f3e66a"), territorial: true }))).flat();
+}
+
+/** A prospect from the club's region (where he went to school or was born). */
+const fromRegion = (s: LeagueState, teamId: TeamId, p: Player) => hometownClub(s, teamId, p.education.region, p.birthplace);
 
 function draftScore(s: LeagueState, p: Player, counts: Record<string, number>, r: () => number, weights: [number, number] = [0.6, 0.4]) {
   const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
@@ -486,8 +512,10 @@ export function aiDraftChoice(s: LeagueState, d: DraftState, teamId: TeamId, pic
   const weights = gmDraftWeights(gmOf(s, teamId));
   let best: Player | null = null,
     bestScore = -Infinity;
+  const territorial = !!d.slots[pickNo - 1]?.territorial;
   for (const id of d.pool) {
     const p = s.players[id]!;
+    if (territorial && (p.origin.entryCategory === 'college' || !fromRegion(s, teamId, p))) continue;
     const v = draftScore(s, p, counts, r, weights);
     if (v > bestScore) {
       bestScore = v;
@@ -516,7 +544,12 @@ export function makePick(s: LeagueState, d: DraftState, p: Player) {
 function runDraft(s: LeagueState, d: DraftState): 'wait' | 'done' {
   while (d.next < d.slots.length) {
     const slot = d.slots[d.next]!;
-    if (slot.teamId === s.user?.teamId) {
+    // 1.9.5: a territorial pick nobody from the region is left for is passed; ours is the scouts' (the region's best).
+    if (slot.territorial && !aiDraftChoice(s, d, slot.teamId, d.next + 1)) {
+      d.next++;
+      continue;
+    }
+    if (slot.teamId === s.user?.teamId && !slot.territorial) {
       s.pending = { kind: 'draftPick', overall: d.next + 1, label: slot.label };
       return 'wait';
     }
@@ -802,7 +835,7 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         return 'waiting';
       }
     }
-    if (hooks.auto && (s.twelve || s.unified) && !o.done.includes(`auto:${step}`)) {
+    if (hooks.auto && (s.twelve || s.unified || s.legacy) && !o.done.includes(`auto:${step}`)) {
       o.done.push(`auto:${step}`);
       hooks.auto(s, step);
     }

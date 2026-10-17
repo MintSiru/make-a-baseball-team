@@ -11,7 +11,7 @@ import { TWELVE_CLUB_SCHEDULE as T } from '../rules/kbo2026';
 import { salaryIn } from './contracts';
 import { ageIn, currentValue, futureValue, isPitcher, keepValue } from './players';
 import type { StandingRow } from './standings';
-import { firstTeamIds, type GmStyle, type LeagueSide, type LeagueState, type SeasonSummary } from './state';
+import { firstTeamIds, type GmStyle, type LeagueSide, type LeagueState, type SeasonSummary, aiFoundingClubs } from './state';
 
 export const LEAGUE_NAMES: Record<LeagueSide, string> = { dream: __i18n_k("league.twelve.lEAGUE_NAMES.dream.6378be04"), magic: __i18n_k("league.twelve.lEAGUE_NAMES.magic.a2ce6db6") };
 
@@ -156,7 +156,7 @@ export const GM_STYLES: Record<GmStyle, { label: string; note: string }> = {
 };
 
 /** The front-office style of a club: only the twelfth club has one of its own. */
-export const gmOf = (s: LeagueState, teamId: TeamId): GmStyle | null => (s.twelve?.teamId === teamId ? s.twelve.gm : (s.unified?.clubs.find((c) => c.teamId === teamId)?.gm ?? null));
+export const gmOf = (s: LeagueState, teamId: TeamId): GmStyle | null => (s.twelve?.teamId === teamId ? s.twelve.gm : (aiFoundingClubs(s).find((c) => c.teamId === teamId)?.gm ?? null));
 
 /** How a front office ranks a player it could take (tryout, special draft, released players). */
 export function gmValue(p: Player, next: number, gm: GmStyle): number {

@@ -24,7 +24,7 @@ import { npbMarket } from './posting';
 import { usd } from './foreign';
 import { addNews } from './news';
 import { ageIn, currentValue, isForeign, isPitcher, keepValue } from './players';
-import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from './state';
+import { firstTeamIds, orgPlayers, registeredIds, type LeagueState, aiFoundingClubs } from './state';
 import { FA, MARKET, DIFFICULTY, NPB_MOVE } from './tuning';
 import { gmAppetite, gmOf } from './twelve';
 import { crossing } from './rivalry';
@@ -506,7 +506,7 @@ function appetite(s: LeagueState, teamId: TeamId, t: FaTalk, p: Player, next: nu
   chance = Math.max(0, Math.min(own ? 1 : MARKET.interest.max, chance * (own ? 1 : style.chance)));
   const need = Math.max(0.8, Math.min(1.25, 0.9 + gain * 0.02)) * style.need;
   // 1.9.2: the north's clubs too (unified.ts).
-  const founding = (s.twelve?.teamId === teamId && s.twelve.firstTeam === next) || !!s.unified?.clubs.some((c) => c.teamId === teamId && c.firstTeam === next);
+  const founding = (s.twelve?.teamId === teamId && s.twelve.firstTeam === next) || aiFoundingClubs(s).some((c) => c.teamId === teamId && c.firstTeam === next);
   const comp = own || t.free || founding ? 1 : FA.ai.compensation[t.grade];
   return { chance, need: need * comp };
 }
@@ -549,7 +549,7 @@ export function openMarket(s: LeagueState, next: number): FaMarket {
     userLimit: entering ? EXPANSION_DEFAULTS.freeAgentSigns : limit,
     userFree: entering,
     ...(s.twelve && s.twelve.firstTeam === next ? { newClub: s.twelve.teamId } : {}),
-    ...(s.unified?.clubs.some((c) => c.firstTeam === next) ? { northClubs: s.unified.clubs.filter((c) => c.firstTeam === next).map((c) => c.teamId) } : {}),
+    ...(aiFoundingClubs(s).some((c) => c.firstTeam === next) ? { northClubs: aiFoundingClubs(s).filter((c) => c.firstTeam === next).map((c) => c.teamId) } : {}),
     talks: {},
     order: [],
     signedOut: {},
