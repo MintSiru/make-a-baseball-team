@@ -550,6 +550,8 @@ try {
   for (const t of ['포스트시즌', '커리어 하이', '좌우 기록', '정규시즌']) await views.getByRole('button', { name: t }).click();
   await page.getByRole('tab', { name: /^부상/ }).click();
   await page.getByRole('tab', { name: '기록' }).click();
+  // 1.9.2: wait for the part to render before counting (the count raced the click on CI).
+  await page.locator('.dialog .record-table.career').first().waitFor({ timeout: 10_000 }).catch(() => undefined);
   check((await page.locator('.dialog .record-table.career').count()) === 1, 'the records part shows the season table');
   // 0.15: the keyboard stays inside the dialog, and Escape hands the focus back to the name that opened it.
   for (let i = 0; i < 40; i++) await page.keyboard.press('Tab');
