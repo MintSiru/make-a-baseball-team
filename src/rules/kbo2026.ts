@@ -19,6 +19,9 @@ export const KBO_2026 = {
     postseasonClubs: 5,
     firstTeam: { registered: 29, active: 28 },
     rosterLimit: 68,
+    /** 1.9.0: the postseason entry (2017~: 30 registered, 28 in uniform each game), handed in before each series.
+        Players registered after July 31 (foreign players: after August 15) cannot play in the postseason (S83). */
+    postseasonEntry: { registered: 30, active: 28, deadline: '07-31', foreignDeadline: '08-15' },
   },
 
   // §1 Futures league: games per club (116 in 2026, 121 from 2027; S30)

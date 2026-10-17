@@ -7019,5 +7019,21 @@
   "ui.office.text.736a57d9": "Each game's ticket money goes {home}% to the home club and {away}% to the visitors, and the Korean Series champion also gets {champion}% of the whole postseason's gate (the remaining {league}% covers the league's running costs).",
   "ui.manual.text.05cb18ed": "There is no prize money by final position in the postseason. Each game's ticket money is split {home}% to the home club and {away}% to the visitors, so a club earns more the longer it goes and the more games it plays at home, and the Korean Series champion also gets {champion}% of the whole postseason's gate (the remaining {league}% covers the league's running costs). A ticket costs the home club's regular price times the round's factor (wild card ×{wc}, semi-playoff ×{semi}, playoff ×{po}, Korean Series ×{ks}), and postseason games sell out.",
   "ui.manual.text.3a159eee": "Postseason money with twelve clubs (NPB style)",
-  "ui.manual.text.cccb2160": "Once there are twelve clubs the money follows Japanese professional baseball. Before the Korean Series, as in the Climax Series, the home club that hosts a game keeps its whole gate. The Korean Series is split as the Japan Series is: games 1–4 give each club {early}%, the league {league}% and the players {players}% (the winners {winners}%, the losers {losers}%); from game 5 each club gets {late}% and the league {late_league}%. The players' pool is not club income."
+  "ui.manual.text.cccb2160": "Once there are twelve clubs the money follows Japanese professional baseball. Before the Korean Series, as in the Climax Series, the home club that hosts a game keeps its whole gate. The Korean Series is split as the Japan Series is: games 1–4 give each club {early}%, the league {league}% and the players {players}% (the winners {winners}%, the losers {losers}%); from game 5 each club gets {late}% and the league {late_league}%. The players' pool is not club income.",
+  "league.postentry.text.6fa5ccf1": "Some of these players cannot be in the entry.",
+  "league.postentry.text.51d475e7": "The entry has room for {max, plural, one {# player} other {# players}} at most.",
+  "league.postentry.text.1716fc61": "The entry needs at least {min, plural, one {# player} other {# players}}.",
+  "league.postentry.text.19606fb4": "It needs at least {pitchers, plural, one {# pitcher} other {# pitchers}} and {hitters, plural, one {# position player} other {# position players}}.",
+  "league.stops.text.3b819fa3": "Before each postseason series (hand in the entry)",
+  "league.advice.text.48de5d15": "It keeps the eligible players of the regular-season first team and fills up to 30 with the best players, about 14 pitchers (5 starters) and two catchers.",
+  "league.advice.text.1889aeca": "players added to the first team",
+  "league.advice.text.dc90c52a": "Postseason games come close together, so fewer pitchers tire the bullpen, and more pitchers leave fewer spots for pinch hitters and defensive replacements.",
+  "ui.decision.text.2bfab379": "Postseason entry",
+  "ui.decision.text.a72848c6": "{round} against {opp}. Hand in an entry of up to {size, plural, one {# player} other {# players}} for this series. Players left out cannot play in it; after the series you hand in the next one's entry.",
+  "ui.decision.text.49fb9fbe": "Chosen: {count} · pitchers {pitchers} · position players {hitters} · foreign {foreign}",
+  "ui.decision.text.38dae898": "Players registered after the deadline (domestic players July 31, foreign players August 15) cannot be in it: {names}",
+  "ui.manual.text.2bfab379": "Postseason entry",
+  "ui.manual.text.f4e79f70": "In the postseason each club hands in a {size}-player entry before every series, and only those players take part in it. In the real KBO {active} of them dress for each game; in the game the whole entry may play. Domestic players must be registered by July 31 and foreign players by August 15 to be in it. When the postseason is over, the regular-season first team comes back.",
+  "ui.tutorial.text.2bfab379": "Postseason entry",
+  "ui.tutorial.text.962095d8": "In the postseason you hand in a 30-player entry before each series. The suggestion is the current first team, filled up to the right number of pitchers and catchers. Players registered after July 31 (foreign players: after August 15) cannot be in it. Turn this stop off in the settings to go straight on with the suggested entry."
 }

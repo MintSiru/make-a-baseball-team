@@ -303,9 +303,9 @@ try {
   await page.getByRole('group', { name: '난이도' }).getByRole('button', { name: '보통', exact: true }).click();
   await page.waitForFunction(() => document.querySelector('[aria-label="난이도"] [aria-pressed="true"]')?.textContent === '보통');
   check(true, 'difficulty switches back and forth');
-  // 1.6.0: the moments a run of days stops for, all on to begin with (1.7.1: and before our postseason games).
+  // 1.6.0: the moments a run of days stops for, all on to begin with (1.7.1: and before our postseason games; 1.9.0: and for our postseason entry).
   const stopsBox = page.getByRole('group', { name: '진행 중 멈출 순간' });
-  check((await stopsBox.getByRole('checkbox').count()) === 5 && (await stopsBox.getByRole('checkbox').first().isChecked()), 'the stops are listed and on');
+  check((await stopsBox.getByRole('checkbox').count()) === 6 && (await stopsBox.getByRole('checkbox').first().isChecked()), 'the stops are listed and on');
   await page.getByRole('button', { name: /결정할 일/ }).click();
   const log = [];
   await decideAll(page, log);

@@ -240,7 +240,9 @@ export type Decision =
   /** The owner's order in the season (1.6.0, scenario 재기): what he said, the trust a refusal costs, his manager. */
   | { kind: 'meddle'; order: import('./scenarios').MeddleOrder; date: string; lines: string[]; refuse: number; manager?: StaffMember }
   /** 판타지 드래프트 (1.6.0, fantasy.ts): our turn. */
-  | { kind: 'fantasyPick'; overall: number; round: number; rounds: number };
+  | { kind: 'fantasyPick'; overall: number; round: number; rounds: number }
+  /** 1.9.0 (postentry.ts): our entry before a postseason series; `late` were registered after the deadline. */
+  | { kind: 'postEntry'; round: SeriesResult['round']; opp: TeamId; candidates: PlayerId[]; late: PlayerId[]; size: number; suggested: PlayerId[] };
 
 // ── The twelfth club (V0.9) ───────────────────────────────────────────────────────────────────────
 
@@ -627,6 +629,8 @@ export interface LeagueState {
   /** This season's home gates, and the postseason ticket money. */
   gate?: Record<TeamId, import('./fans').GateLine>;
   postseasonGate?: number;
+  /** 1.9.0 (postentry.ts): who may play in this postseason, and the first teams the entries replaced. */
+  postEntry?: import('./postentry').PostEntryState;
   /** Box scores and play-by-play logs kept for viewing (V0.7, boxscore.ts). */
   boxes?: Record<string, import('./boxscore').StoredBox>;
   pbp?: Record<string, import('./engine/types').PlayEvent[]>;

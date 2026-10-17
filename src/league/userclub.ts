@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { applyEntry, checkEntry } from './postentry';
 /* The user's club every year (V0.4): the owner's yearly money, military service, its own free agents,
    rookie bonuses (Draft Room's negotiation), development signings and spring-camp plans.
 
@@ -84,6 +85,8 @@ export type AnnualInput =
   | { kind: 'faCompensation'; player: PlayerId | null }
   | { kind: 'salaries'; choices: Record<PlayerId, SalaryChoice> }
   | { kind: 'secondProtect'; ids: PlayerId[] }
+  /** 1.9.0 (postentry.ts): our entry for a postseason series. */
+  | { kind: 'postEntry'; ids: PlayerId[] }
   | { kind: 'secondPick'; id: PlayerId | null }
   /** `offers`: a figure (US dollars a season) and years for any of them (1.3.0; his ask for one year when missing). */
   | { kind: 'foreignRenew'; keep: PlayerId[]; offers?: Record<PlayerId, { amount: number; years: 1 | 2 }> }
@@ -405,6 +408,8 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
       if (cost > 0 && payrollWithout(s, u.teamId, next, dd.rows.map((r) => r.id)) + cost > u.payrollBudget) return __i18n_k("league.userclub.checkAnnual.84d90a10");
       return null;
     }
+    case 'postEntry':
+      return checkEntry(s, u.teamId, input.ids);
     case 'secondProtect': {
       const dd = d as Extract<Decision, { kind: 'secondProtect' }>;
       if (input.ids.some((id) => !dd.candidates.includes(id))) return __i18n_k("league.userclub.checkAnnual.ac069ce3");
@@ -650,6 +655,9 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
       // This winter's postings come next.
       return postingDecision(s, next);
     }
+    case 'postEntry':
+      applyEntry(s, u.teamId, input.ids, (d as Extract<Decision, { kind: 'postEntry' }>).round);
+      return null;
     case 'secondProtect': {
       const sd = s.offseason?.second;
       if (sd) sd.protected[u.teamId] = input.ids;
@@ -797,6 +805,8 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
       return { kind: 'salaries', choices: Object.fromEntries(d.rows.map((r) => [r.id, 'merit' as SalaryChoice])) };
     case 'secondProtect':
       return { kind: 'secondProtect', ids: d.candidates.slice(0, d.protect) };
+    case 'postEntry':
+      return { kind: 'postEntry', ids: d.suggested };
     case 'sponsor': {
       const best = d.offers.reduce((bi, o, i) => (o.annual > d.offers[bi]!.annual ? i : bi), 0);
       return { kind: 'sponsor', index: best };
@@ -851,7 +861,7 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
 }
 
 export const isAnnual = (kind: Decision['kind']) =>
-  ['military', 'rookieBonus', 'development', 'camp', 'faRound', 'faOptions', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting', 'returnee', 'sponsor', 'staff', 'retire', 'national', 'scandal', 'dispute', 'meddle'].includes(kind);
+  ['military', 'rookieBonus', 'development', 'camp', 'faRound', 'faOptions', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting', 'returnee', 'sponsor', 'staff', 'retire', 'national', 'scandal', 'dispute', 'meddle', 'postEntry'].includes(kind);
 
 // ── Salary talks ─────────────────────────────────────────────────────────────────────────────────
 

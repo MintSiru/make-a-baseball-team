@@ -114,6 +114,7 @@ const DECISION_TIPS: Partial<Record<Decision['kind'], { title: string; body: str
   },
   sponsor: { title: __i18n_k("ui.tutorial.sponsor.title.2d7807db"), body: [__i18n_k("ui.tutorial.sponsor.body.b04fc5d2")] },
   secondProtect: { title: __i18n_k("ui.tutorial.secondProtect.title.45c66ae7"), body: [__i18n_k("ui.tutorial.secondProtect.body.fc3a194a")] },
+  postEntry: { title: __i18n_k("ui.tutorial.text.2bfab379"), body: [__i18n_k("ui.tutorial.text.962095d8")] },
   secondPick: { title: __i18n_k("ui.tutorial.secondPick.title.7021a262"), body: [__i18n_k("ui.tutorial.secondPick.body.d7f009e3")] },
   posting: { title: __i18n_k("ui.tutorial.posting.title.6734925e"), body: [__i18n_k("ui.tutorial.posting.body.ab273c92")] },
   // V0.15: the decisions that come after the first-team debut (or rarely) get a tip too; every decision screen

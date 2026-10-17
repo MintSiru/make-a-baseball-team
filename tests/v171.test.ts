@@ -53,6 +53,13 @@ describe('a stop before our postseason games', () => {
     // Ours for this test: the club seeded first, which waits for the earlier rounds.
     const top = s.bracket!.seeds[0]!;
     s.user!.teamId = top;
+    // 1.9.0: our entry is handed in before our series (the scouts' suggestion).
+    const answer = () => {
+      while (s.pending) apply(s, { kind: 'decide', input: autoDecision(s)! });
+    };
+    answer();
+    apply(s, { kind: 'postseason', stops: true });
+    answer();
     apply(s, { kind: 'postseason', stops: true });
     const next = ourNextGame(s)!;
     expect(next).not.toBeNull();

@@ -36,6 +36,7 @@ import { positionKey, useSort, type SortColumn } from './sort';
 import { RivalForm } from './Twelve';
 import { FantasyBoard } from './FantasyDraft';
 import { MEDDLE } from '../league/scenarios';
+import { ROUND_NAME } from '../league/postseason';
 
 interface Props {
   league: LeagueState;
@@ -75,6 +76,7 @@ const TITLES: Record<DecisionT['kind'], string> = {
   dispute: __i18n_k("ui.decision.tITLES.dispute.8cc0c1f5"),
   meddle: __i18n_k("ui.decision.tITLES.meddle.8a1f72de"),
   fantasyPick: __i18n_k("ui.decision.tITLES.fantasyPick.bc92c419"),
+  postEntry: __i18n_t("ui.decision.text.2bfab379"),
 };
 
 /** What the scouts hear about major league interest, from the public grade. */
@@ -349,9 +351,12 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
                 ? String(d.round ?? 1)
                 : d.kind === 'meddle'
                   ? `${d.date}-${d.order}`
-                  : '';
+                  : d.kind === 'postEntry'
+                    ? `${d.round}-${d.opp}`
+                    : '';
   useEffect(() => {
-    setSelected(new Set());
+    // 1.9.0: a postseason entry starts from the scouts' suggestion (the first team as it stands).
+    setSelected(new Set(d.kind === 'postEntry' ? d.suggested : []));
     setSpecial({});
     setChoices({});
     setDevelop(new Set());
@@ -803,6 +808,20 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
               );
             }}
           />
+        </>
+      );
+      break;
+    }
+    case 'postEntry': {
+      const picked = [...selected].map((id) => league.players[id]!).filter(Boolean);
+      const pitchers = picked.filter(isPitcher).length;
+      const foreign = picked.filter((p) => p.origin.kind === 'foreign').length;
+      body = (
+        <>
+          <p>{__i18n_t("ui.decision.text.a72848c6", { round: __i18n_displayText(ROUND_NAME[d.round]), opp: shortName(league, d.opp), size: d.size })}</p>
+          <p class="muted">{__i18n_t("ui.decision.text.49fb9fbe", { count: picked.length, pitchers, hitters: picked.length - pitchers, foreign })}</p>
+          {__i18n_display(d.late.length > 0 && <p class="muted">{__i18n_t("ui.decision.text.38dae898", { names: d.late.map((id) => league.players[id]?.name ?? id).join(', ') })}</p>)}
+          <PlayerTable league={league} players={byValue(d.candidates)} selected={selected} toggle={toggle} onPlayer={onPlayer} max={d.size} />
         </>
       );
       break;
