@@ -74029,5 +74029,207 @@
     "line": 84,
     "params": {},
     "locations": []
+  },
+  "ui.playerPanel.text.f697b0c7": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 93,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.b07fe0a1": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 405,
+    "params": {
+      "pull": {
+        "expression": "PULL_LABEL()[card.batted.profile.pull + 2]!"
+      },
+      "lift": {
+        "expression": "LIFT_LABEL()[card.batted.profile.lift + 2]!"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.e089203f": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 914,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.e6c78e11": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 914,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.b90fdaf4": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 914,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.8ba5121a": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 914,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.e8f4ff7e": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 914,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.0402d4de": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 915,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.2716bc95": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 915,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.2179da2c": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 915,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.2d6dbf09": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 915,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.6f7bed73": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 915,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.d5bc99dd": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 947,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.ecee66d3": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 949,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.50922e57": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 950,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.9fd86f4d": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 951,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.4408711e": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 952,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.4c8fb2fa": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 953,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.9f032c27": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 954,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.27309da6": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 955,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.e3351339": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 956,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.c10f6806": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 960,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.04555519": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 964,
+    "params": {
+      "year": {
+        "expression": "x.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.fc7fa3d0": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 965,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.2d6b42aa": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 970,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.159d875f": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 974,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.32fd6cf4": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 975,
+    "params": {},
+    "locations": []
+  },
+  "league.pitchfeed.text.d0a27f8f": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 254,
+    "params": {
+      "ev": {
+        "expression": "b.ev.toFixed(1)"
+      },
+      "la": {
+        "expression": "b.la"
+      },
+      "dist": {
+        "expression": "b.dist"
+      }
+    },
+    "locations": []
+  },
+  "league.pitchfeed.text.1186ab8b": {
+    "source": "src/league/pitchfeed.ts",
+    "line": 254,
+    "params": {
+      "ev": {
+        "expression": "b.ev.toFixed(1)"
+      },
+      "la": {
+        "expression": "b.la"
+      }
+    },
+    "locations": []
   }
 }

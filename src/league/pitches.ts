@@ -131,14 +131,16 @@ function pick(mix: Mix, r: () => number): PitchType {
   return mix[mix.length - 1]![0];
 }
 
-const cache = new Map<string, Pitch[]>();
+/** 2.0.1: kept on the player object itself — ids repeat from one league to the next (two games in one session read
+    each other's pitch mixes when this was keyed by id). */
+const cache = new WeakMap<Player, { key: string; out: Pitch[] }>();
 
 /** The secondary pitches, best first. Hitters and players without a 변화구 tool have none. */
 export function repertoire(p: Player): Pitch[] {
   if (p.hidden.current.breaking == null) return [];
-  const key = `${p.id}|${p.role}|${p.throws}`;
-  const hit = cache.get(key);
-  if (hit) return hit;
+  const key = `${p.id}|${p.role}|${p.throws}|${p.archetype}`;
+  const hit = cache.get(p);
+  if (hit && hit.key === key) return hit.out;
   const r = rng(`pitches-${p.id}`);
   const count = countOf(p, r);
   // His fastball's family is taken (1.9.3).
@@ -164,7 +166,7 @@ export function repertoire(p: Player): Pitch[] {
   const w = types.map((_, i) => M.decay ** i * (1 - M.jitter + 2 * M.jitter * r()));
   const total = w.reduce((a, b) => a + b, 0);
   const out = types.map((type, i) => ({ type, offset: raw[i]! - mean, usage: (share * w[i]!) / total }));
-  cache.set(key, out);
+  cache.set(p, { key, out });
   return out;
 }
 

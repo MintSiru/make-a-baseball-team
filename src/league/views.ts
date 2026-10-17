@@ -25,6 +25,7 @@ import { addInto, emptyBat, emptyPit } from './state';
 import { traitsOf } from './traits';
 import { traitReport, type TraitReport } from './reports';
 import { trackingOf } from './tracking';
+import { addBatted, battedRates, battingProfile, emptyBatted, type BattingProfile } from './battedball';
 
 /** 리더십 from which a senior counts as a clubhouse leader. */
 const LEADER = 68;
@@ -208,6 +209,20 @@ export interface CareerRow {
   current: boolean;
 }
 
+/** 2.0.1: the batted-ball rows of his first-team seasons (balls he hit, or a pitcher's balls hit off him). */
+function battedView(p: Player, major: CareerRow[], pitcher: boolean): PlayerCard['batted'] {
+  const all = emptyBatted();
+  const seasons: PlayerCard['batted']['seasons'] = [];
+  for (const r of major) {
+    const t = pitcher ? r.pit?.bip : r.bat?.bip;
+    const rates = battedRates(t);
+    if (!t || !rates) continue;
+    addBatted(all, t);
+    seasons.push({ year: r.year, team: r.team, current: r.current, rates });
+  }
+  return { profile: pitcher ? null : battingProfile(p), seasons, career: battedRates(all) };
+}
+
 export function careerView(s: LeagueState, p: Player): CareerRow[] {
   const played = (c: { bat: BatTotals | null; pit: PitTotals | null }) => (c.bat?.g ?? 0) + (c.pit?.g ?? 0) > 0;
   const rows: CareerRow[] = p.career
@@ -239,6 +254,8 @@ export interface PlayerCard {
   /** 1.9.3: his main fastball. */
   fastball: FastballType | null;
   tracking: import('./tracking').Tracking | null;
+  /** 2.0.1: his tendencies (hitters) and his first-team batted balls by season and in all (battedball.ts). */
+  batted: { profile: BattingProfile | null; seasons: { year: number; team: string; current: boolean; rates: NonNullable<ReturnType<typeof battedRates>> }[]; career: ReturnType<typeof battedRates> };
   injuries: InjuryRecord[];
   /** Hitters: grade and first-team games at each position he can play. */
   positions: ReturnType<typeof positionGrades>;
@@ -325,6 +342,7 @@ export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
     fastball: pitcher ? fastballOf(p) : null,
     // 2.0.0: his arm slot and what a tracking system reads off his pitches (tracking.ts).
     tracking: pitcher ? trackingOf(p) : null,
+    batted: battedView(p, major, pitcher),
     injuries: [...(p.injuries ?? [])].reverse(),
     positions: positionGrades(s, p),
     report: traitReport(s, p),

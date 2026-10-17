@@ -10,7 +10,7 @@ import { landmarkOf } from './landmarks';
 import { armAngle } from './tracking';
 
 /** 2.0.0: an arm angle under this is a submariner's (tracking.ts). */
-const SLOT_UNDER = -15;
+const SLOT_UNDER = 0;
 import { clubIn } from './lineage';
 import { addNews } from './news';
 import { ageIn, isForeign, isPitcher } from './players';

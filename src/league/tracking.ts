@@ -2,8 +2,9 @@
    off each of his pitches — the arm slot (오버핸드·스리쿼터·사이드암·언더핸드), and per pitch its speed, spin, spin
    axis and movement, with his release height and extension.
 
-   The arm angle follows Statcast's measure: 90° straight over the top, 0° sidearm, below 0 the submariner's. It is
-   his own (seeded by id), the shares a game estimate for the KBO: sidearmers and submariners more often among the
+   The arm angle follows Statcast's measure: 90° straight over the top, 0° sidearm, below 0 the submariner's. 2.0.1
+   (the user's ranges): 오버핸드 46~60°, 스리쿼터 21~45°, 사이드암 0~20°, 언더핸드 −1~−60°, drawn toward the middle
+   of each so that few arms sit at an end. It is his own (seeded by id), the shares a game estimate for the KBO: sidearmers and submariners more often among the
    domestic arms than the foreign ones, and rarer than they were (RULES.md §9). A low slot costs velocity — a
    submariner throws 130 or so, a sidearmer a few km/h under the rest with wide spread, the odd one into the 150s — and
    widens the split against same-side hitters (the engine reads it through `platoonFactor`).
@@ -19,10 +20,10 @@ export type ArmSlot = 'over' | 'three' | 'side' | 'under';
 
 /** Each slot's range of arm angles (degrees) and its share among domestic and foreign pitchers. */
 const SLOTS: Record<ArmSlot, { from: number; to: number; domestic: number; foreign: number }> = {
-  over: { from: 58, to: 75, domestic: 0.22, foreign: 0.28 },
-  three: { from: 25, to: 58, domestic: 0.6, foreign: 0.64 },
-  side: { from: -5, to: 25, domestic: 0.13, foreign: 0.07 },
-  under: { from: -60, to: -15, domestic: 0.05, foreign: 0.01 },
+  over: { from: 46, to: 60, domestic: 0.22, foreign: 0.28 },
+  three: { from: 21, to: 45, domestic: 0.6, foreign: 0.64 },
+  side: { from: 0, to: 20, domestic: 0.13, foreign: 0.07 },
+  under: { from: -60, to: -1, domestic: 0.05, foreign: 0.01 },
 };
 const ORDER: ArmSlot[] = ['over', 'three', 'side', 'under'];
 
@@ -44,7 +45,9 @@ export function armAngle(p: Pick<Player, 'id' | 'role' | 'origin'>): number | nu
     u -= share;
   }
   const { from, to } = SLOTS[slot];
-  return Math.round(from + (to - from) * hashUnit(`arm-angle|${p.id}`));
+  // The mean of two draws: most arms near the middle of the range, few at its ends.
+  const mid = (hashUnit(`arm-angle|${p.id}`) + hashUnit(`arm-angle2|${p.id}`)) / 2;
+  return Math.round(from + (to - from) * mid);
 }
 
 export const slotOf = (angle: number): ArmSlot => (angle >= SLOTS.over.from ? 'over' : angle >= SLOTS.three.from ? 'three' : angle >= SLOTS.side.from ? 'side' : 'under');
@@ -134,9 +137,9 @@ export function trackingOf(p: Player): Tracking | null {
   const stuff = p.scouting.tools.stuff ?? 50;
   const height = (p.height || 183) / 100;
   // Lower slots: less ride on the fastball, more run; the breaking balls sweep more than they drop.
-  const low = (75 - angle) / 50;
-  // A right-hander's fastball axis: 12:40 over the top, 1:30 at three-quarters, 2:30 sidearm, 4:00 under.
-  const fbAxis = 12 + (90 - angle) / 30;
+  const low = (60 - angle) / 45;
+  // A right-hander's fastball axis: 12:30 over the top, 1:30 at three-quarters, 2:20 sidearm, 4:00 under.
+  const fbAxis = 12.5 + (60 - angle) / 27;
   const track = (type: PitchType | 'FB', grade: number, usage: number): PitchTrack => {
     const s = SHAPE[type];
     const breaking = type !== 'FB' && type !== '2SFB' && type !== 'SNK' && type !== 'CUT';

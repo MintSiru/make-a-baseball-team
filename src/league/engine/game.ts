@@ -8,6 +8,7 @@
 
    Determinism: every draw comes from the `r` passed in, in a fixed order. Changing the order of draws
    changes results and needs a SIM_VERSION bump. */
+import { countBall, drawBall, emptyBatted, groundShift, homeRunShift, type BattedBall, type BipResult } from '../battedball';
 import { ENGINE as E, Z, Zr } from '../tuning';
 import { emptySplit, type BattingLine, type BatterIn, type BenchIn, type BullpenRole, type FieldPos, type GameIn, type GameOut, type PitcherIn, type PitchingLine, type PlayEvent, type PlayResult, type RelieverIn, type Split, type TeamBox, type TeamIn } from './types';
 
@@ -109,7 +110,7 @@ type Sub = { kind: 'PH' | 'PR' | 'DEF'; in: string; out: string; pos: FieldPos |
 function substitute(side: Side, slot: number, b: BenchIn, kind: Sub['kind']): Sub {
   const out = side.lineup[slot]!.id;
   const pos = side.lineup[slot]!.pos;
-  const into: BatterIn = { id: b.id, bats: b.bats, contact: b.contact, power: b.power, eye: b.eye, speed: b.speed, defense: pos === 'DH' ? b.defense : (b.defenseAt[pos] ?? b.defense - 15), pos };
+  const into: BatterIn = { id: b.id, bats: b.bats, contact: b.contact, power: b.power, eye: b.eye, speed: b.speed, defense: pos === 'DH' ? b.defense : (b.defenseAt[pos] ?? b.defense - 15), pos, pull: b.pull, lift: b.lift, edge: b.edge };
   side.lineup[slot] = into;
   side.bench.splice(side.bench.indexOf(b), 1);
   const line = emptyBatting(into);
@@ -199,10 +200,11 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
     const current = () => field.apps[field.apps.length - 1]!;
 
     // The plate appearance in progress, credited to both players' platoon splits once it is over.
-    let open: { bl: BattingLine; pl: PitchingLine; vsPitcher: 'L' | 'R'; vsBatter: 'L' | 'R'; before: Split; runs: number; err: number; gdp: number; rbi: number } | null = null;
+    type OpenPa = { bl: BattingLine; pl: PitchingLine; vsPitcher: 'L' | 'R'; vsBatter: 'L' | 'R'; before: Split; runs: number; err: number; gdp: number; rbi: number; ball?: BattedBall };
+    let open: OpenPa | null = null;
     const scoreNow = (): [number, number] => [away.box.runs, home.box.runs];
-    const record = (o: NonNullable<typeof open>, res: PlayResult) =>
-      log?.push({ k: 'pa', i: inning, top: !isHome, b: o.bl.id, p: o.pl.id, res, runs: bat.box.runs - o.runs, rbi: o.bl.rbi - o.rbi, outs, bases: [!!bases[0], !!bases[1], !!bases[2]], score: scoreNow() });
+    const record = (o: OpenPa, res: PlayResult) =>
+      log?.push({ k: 'pa', i: inning, top: !isHome, b: o.bl.id, p: o.pl.id, res, runs: bat.box.runs - o.runs, rbi: o.bl.rbi - o.rbi, outs, bases: [!!bases[0], !!bases[1], !!bases[2]], score: scoreNow(), ...(o.ball ? { ball: o.ball } : {}) });
     const counts = (l: BattingLine): Split => ({ pa: l.pa, ab: l.ab, h: l.h, tb: l.h + l.d + 2 * l.t + 3 * l.hr, hr: l.hr, bb: l.bb, hbp: l.hbp, k: l.k, sf: l.sf });
     const closePA = () => {
       if (!open) return;
@@ -401,11 +403,22 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       const pHBP = inv(logit(E.base.hbp) + q.hbp.command * command);
       const pK = inv(logit(E.base.k) + b.k.contact * zc + b.k.power * zp + b.k.eye * ze + q.k.stuff * stuff + q.k.breaking * breaking + q.k.command * command + E.platoon.k * same);
       const pHR = inv(
-        logit(E.base.hr) + b.hr.power * zp + b.hr.contact * zc + q.hr.stuff * stuff + q.hr.command * command + q.hr.breaking * breaking + E.platoon.hr * same + E.home.hr * hb + parkHr,
+        logit(E.base.hr) + b.hr.power * zp + b.hr.contact * zc + q.hr.stuff * stuff + q.hr.command * command + q.hr.breaking * breaking + E.platoon.hr * same + E.home.hr * hb + parkHr +
+          homeRunShift(batter.edge ?? 0),
       );
 
       const hitsFrom = batter.bats === 'S' ? (p.throws === 'L' ? 'R' : 'L') : batter.bats;
-      open = { bl, pl, vsPitcher: p.throws, vsBatter: hitsFrom, before: counts(bl), runs: bat.box.runs, err: field.box.errors, gdp: bl.gdp, rbi: bl.rbi };
+      const pa: OpenPa = { bl, pl, vsPitcher: p.throws, vsBatter: hitsFrom, before: counts(bl), runs: bat.box.runs, err: field.box.errors, gdp: bl.gdp, rbi: bl.rbi };
+      open = pa;
+      // 2.0.1: the ball's flight, drawn to fit the play from a stream of its own (battedball.ts).
+      const flight = (res: BipResult) => {
+        if (!game.balls) return;
+        const lefty = hitsFrom === 'L';
+        const x = drawBall(res, zp, { pull: batter.pull ?? 0, lift: batter.lift ?? 0, edge: batter.edge ?? 0 }, lefty, game.balls);
+        countBall((bl.bip ??= emptyBatted()), x, lefty);
+        countBall((pl.bip ??= emptyBatted()), x, lefty);
+        pa.ball = x;
+      };
       bl.pa++;
       pl.bf++;
       const u = r();
@@ -446,6 +459,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
         pl.h++;
         pl.hr++;
         bat.box.hits++;
+        flight('HR');
         for (let i = 2; i >= 0; i--) {
           const x = bases[i];
           if (x) score(x, bl);
@@ -459,6 +473,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
           field.box.errors++;
           errorOuts++;
           me.unearned = true;
+          flight('E');
           // Runs that score because of the error are unearned.
           if (bases[2]) score({ ...bases[2], unearned: true }, null);
           bases[2] = bases[1];
@@ -478,6 +493,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
             const pDouble = inv(logit(T.double.base) + T.double.power * zp + T.double.speed * zs);
             const v = r();
             const A = E.advance;
+            flight(v < pTriple ? '3B' : v < pTriple + pDouble ? '2B' : '1B');
             if (v < pTriple) {
               bl.t++;
               for (let i = 2; i >= 0; i--) {
@@ -523,7 +539,8 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
             // Out in play.
             pitches -= 0.4;
             const O = E.outs;
-            const ground = r() < O.groundShare;
+            const ground = r() < O.groundShare + groundShift(batter.edge ?? 0);
+            flight(ground ? 'GO' : 'FO');
             if (ground) {
               if (bases[0] && outs < 2 && r() < inv(logit(O.doublePlay.base) + O.doublePlay.speed * zs)) {
                 bl.gdp++;

@@ -1,6 +1,7 @@
 /* Game engine inputs and outputs. The engine knows nothing about contracts or rosters: the AI manager
    hands it a lineup, a starter and a bullpen, and it returns a box score. Abilities are hidden
    (continuous 20–80) values; the engine may read them, the UI may not. */
+import type { BattedBall, BattedTotals } from '../battedball';
 
 export type FieldPos = 'C' | '1B' | '2B' | '3B' | 'SS' | 'LF' | 'CF' | 'RF' | 'DH';
 export type Hand = 'L' | 'R' | 'S';
@@ -15,6 +16,12 @@ export interface BatterIn {
   /** Fielding at the position played, after any out-of-position penalty. */
   defense: number;
   pos: FieldPos;
+  /** 2.0.1 (battedball.ts): where he hits the ball (−2 extreme pull … 2 extreme opposite field) and how high (−2
+      extreme ground ball … 2 extreme fly ball). Absent: in the middle. */
+  pull?: number;
+  lift?: number;
+  /** His lift beyond what his bat makes of it (battedball.ts BattingProfile.edge): what moves the plays. */
+  edge?: number;
 }
 
 /** 마무리 · 셋업맨 · 필승조 · 추격조 · 롱릴리프 · 원 포인트 (left-handed specialist). */
@@ -82,6 +89,8 @@ export interface GameIn {
   ghostFrom?: number;
   /** 1.9.9: a reliever faces three batters or ends the inning before he may be taken out. */
   threeBatter?: boolean;
+  /** 2.0.1: the batted-ball stream (battedball.ts); given, every ball in play gets its flight, kept on the lines. */
+  balls?: () => number;
 }
 
 /** One side of a platoon split: plate appearances against left- or right-handers. */
@@ -128,6 +137,8 @@ export interface BattingLine {
   sf: number;
   sh: number;
   gdp: number;
+  /** 2.0.1: his balls in play (with a batted-ball stream). */
+  bip?: BattedTotals;
 }
 
 export interface PitchingLine {
@@ -151,6 +162,8 @@ export interface PitchingLine {
   qs: 0 | 1;
   /** 1.9.8: a complete game (the starter was his side's only pitcher). */
   cg?: 0 | 1;
+  /** 2.0.1: the balls put in play against him. */
+  bip?: BattedTotals;
 }
 
 export interface TeamBox {
@@ -190,6 +203,8 @@ export type PlayEvent =
       outs: number;
       bases: [boolean, boolean, boolean];
       score: [number, number];
+      /** 2.0.1: the ball in play's flight. */
+      ball?: BattedBall;
     }
   | { k: 'pitch'; i: number; top: boolean; p: string; out: string }
   /** 1.7.0: a pinch hitter, pinch runner or defensive replacement (in for out, at his position). */
