@@ -3162,3 +3162,8 @@ fieldset.stops {
 /* 1.7.1: our postseason game is next (App.tsx controls). */
 .big-game { flex-basis: 100%; margin: 0 0 0.2rem; padding: 0.35rem 0.6rem; border-left: 4px solid var(--accent); background: rgba(127, 127, 127, 0.08); border-radius: 4px; }
 .staff-deal { margin-top: 0.25rem; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; }
+
+/* 1.9.8: update notes (settings tab and the dialog after an update). */
+.update-notes > div { margin-top: 0.6rem; }
+.update-notes dd { margin: 0.15rem 0 0; line-height: 1.5; }
+.dialog .update-notes { max-height: 55vh; overflow: auto; }

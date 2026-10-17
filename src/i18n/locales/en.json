@@ -7721,5 +7721,12 @@
   "league.legacy1982.text.a3c77e99": "From the {year} season, {club} play home games at {park} ({seats} seats) instead of {before}.",
   "league.lineage.text.70eae725": "Seoul Sports Complex Baseball Stadium (Jamsil)",
   "league.historic.text.dbe29b06": "The best record over the whole season goes straight to the Korean Series. If that club won neither half, the two half winners play a playoff for the other spot. A club that wins both halves is champion without a Korean Series.",
-  "league.historic.text.7f40b938": "The first-half and second-half winners meet in the Korean Series. If one club wins both halves, it meets the club with the second-best record over the season."
+  "league.historic.text.7f40b938": "The first-half and second-half winners meet in the Korean Series. If one club wins both halves, it meets the club with the second-best record over the season.",
+  "ui.updates.text.b90eb779": "The update notes are written in Korean only.",
+  "ui.updates.text.552800b9": "This is version {release}. What changed in each version, newest first.",
+  "ui.updates.text.483585b1": "Show all earlier versions",
+  "ui.updates.text.0d435c6f": "Update {release}",
+  "ui.updates.text.6654f975": "You can read these again any time under Settings → Update notes.",
+  "ui.updates.text.468266d6": "OK",
+  "ui.settings.text.f59812c4": "Update notes"
 }

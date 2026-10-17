@@ -15,6 +15,7 @@ import type { StorySettings as StorySettingsT } from '../story/settings';
 import { ro } from '../league/josa';
 import { DisplayOptions } from './DisplaySettings';
 import { StoryOptions } from './StorySettings';
+import { UpdateNotes } from './Updates';
 
 const SECTIONS: [string, string][] = [
   ['settings-display', __i18n_k("ui.settings.sECTIONS.43c786f1")],
@@ -23,6 +24,8 @@ const SECTIONS: [string, string][] = [
   ['settings-save', __i18n_k("ui.settings.sECTIONS.1f1712ac")],
   ['settings-story', __i18n_k("ui.settings.sECTIONS.fdc0ffd0")],
   ['settings-about', __i18n_k("ui.settings.sECTIONS.032e3f1f")],
+  // 1.9.8: what changed in each version.
+  ['settings-updates', __i18n_t("ui.settings.text.f59812c4")],
 ];
 
 export const DIFFICULTY_LABEL = { easy: __i18n_k("ui.settings.dIFFICULTY_LABEL.easy.aeb16cc3"), normal: '보통', hard: __i18n_k("ui.settings.dIFFICULTY_LABEL.hard.485e4f6a") } as const;
@@ -109,6 +112,11 @@ export function Settings({ league, store, busy, story, onAct, onExport, onImport
       <section id="settings-story" class={block('settings-story')}>
         <h2>{__i18n_t("ui.settings.settings.fdc0ffd0")}</h2>
         <StoryOptions settings={story.settings} usage={story.usage} pausedUntil={story.pausedUntil} onSave={story.onSave} />
+      </section>
+
+      <section id="settings-updates" class={block('settings-updates')}>
+        <h2>{__i18n_t("ui.settings.text.f59812c4")}</h2>
+        <UpdateNotes />
       </section>
 
       <section id="settings-about" class={block('settings-about')}>

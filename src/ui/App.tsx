@@ -56,6 +56,8 @@ import { PlayerPanel } from './PlayerPanel';
 import { PlayerProfile } from './PlayerProfile';
 import { Standings } from './Standings';
 import { TeamRoster } from './TeamRoster';
+import { UpdateDialog } from './Updates';
+import { markSeen, unseenNotes } from './updates';
 
 const newSeed = () => `kbo-${Math.floor(Math.random() * 36 ** 6).toString(36)}`;
 
@@ -135,6 +137,12 @@ export function App() {
   const [storySettings, setStorySettings] = useState<StorySettingsT>(loadSettings);
   const [storyOpen, setStoryOpen] = useState(false);
   const [displayOpen, setDisplayOpen] = useState(false);
+  // 1.9.8: what changed since this browser last opened the game, once.
+  const [updates, setUpdates] = useState(unseenNotes);
+  const closeUpdates = () => {
+    markSeen();
+    setUpdates([]);
+  };
   const [storyBusy, setStoryBusy] = useState<string | null>(null);
   const usage = useRef({ input: 0, output: 0, articles: 0 });
   // Event pop-ups (V0.7.4): shown when they are on, or when the player opens them from the header.
@@ -435,6 +443,7 @@ export function App() {
           </div>
         </header>
         {__i18n_display(displayOpen && <DisplaySettings onClose={() => setDisplayOpen(false)} />)}
+        {updates.length > 0 && <UpdateDialog notes={updates} onClose={closeUpdates} />}
         {__i18n_display(notice && <p class="notice">{__i18n_display(notice)}</p>)}
         {__i18n_display(recovering && <Recovery title={__i18n_t("ui.app.app.c817428e")} />)}
         <NewGame seed={seed} busy={busy && `${busy}${progress ? ` · ${progress}` : ''}`} onFound={found} onSpectate={spectate} />
@@ -615,6 +624,7 @@ export function App() {
           }}
         />
       ))}
+      {updates.length > 0 && <UpdateDialog notes={updates} onClose={closeUpdates} />}
       {__i18n_display((popups || alertsOpen) && !busy && unseen.length > 0 && (
         <AlertPopup
           key={unseen[0]!.id}

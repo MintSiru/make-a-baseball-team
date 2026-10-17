@@ -7721,5 +7721,12 @@
   "league.legacy1982.text.a3c77e99": "{club} {year}시즌부터 {before} 대신 {park}({seats}석)에서 홈경기를 치릅니다.",
   "league.lineage.text.70eae725": "서울종합운동장 야구장 (잠실)",
   "league.historic.text.dbe29b06": "시즌 통합 승률 1위가 한국시리즈로 바로 갑니다. 통합 1위가 전·후기 우승 팀이 아니면 전기·후기 1위끼리 플레이오프를 치릅니다. 한 팀이 전·후기를 모두 이기면 한국시리즈 없이 우승합니다.",
-  "league.historic.text.7f40b938": "전기 1위와 후기 1위가 한국시리즈에서 맞붙습니다. 한 팀이 둘 다 1위면 시즌 승률 2위 팀과 한국시리즈를 치릅니다."
+  "league.historic.text.7f40b938": "전기 1위와 후기 1위가 한국시리즈에서 맞붙습니다. 한 팀이 둘 다 1위면 시즌 승률 2위 팀과 한국시리즈를 치릅니다.",
+  "ui.updates.text.b90eb779": "업데이트 소식은 한국어로만 적혀 있습니다.",
+  "ui.updates.text.552800b9": "지금 버전은 {release}입니다. 버전마다 바뀐 점을 최근 것부터 보여 줍니다.",
+  "ui.updates.text.483585b1": "이전 버전 모두 보기",
+  "ui.updates.text.0d435c6f": "{release} 업데이트",
+  "ui.updates.text.6654f975": "설정 → 업데이트 소식에서 언제든 다시 볼 수 있습니다.",
+  "ui.updates.text.468266d6": "확인",
+  "ui.settings.text.f59812c4": "업데이트 소식"
 }

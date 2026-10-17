@@ -72587,5 +72587,55 @@
     "line": 123,
     "params": {},
     "locations": []
+  },
+  "ui.updates.text.b90eb779": {
+    "source": "src/ui/Updates.tsx",
+    "line": 11,
+    "params": {},
+    "locations": []
+  },
+  "ui.updates.text.552800b9": {
+    "source": "src/ui/Updates.tsx",
+    "line": 26,
+    "params": {
+      "release": {
+        "expression": "RELEASE"
+      }
+    },
+    "locations": []
+  },
+  "ui.updates.text.483585b1": {
+    "source": "src/ui/Updates.tsx",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "ui.updates.text.0d435c6f": {
+    "source": "src/ui/Updates.tsx",
+    "line": 45,
+    "params": {
+      "release": {
+        "expression": "RELEASE"
+      }
+    },
+    "locations": []
+  },
+  "ui.updates.text.6654f975": {
+    "source": "src/ui/Updates.tsx",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "ui.updates.text.468266d6": {
+    "source": "src/ui/Updates.tsx",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.f59812c4": {
+    "source": "src/ui/Settings.tsx",
+    "line": 28,
+    "params": {},
+    "locations": []
   }
 }
