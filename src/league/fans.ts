@@ -6,7 +6,7 @@ import { k as __i18n_k } from '../i18n/index';
    price, capped by the seats. Calibrated to 2025: 17,103 a game, Samsung 23,101 (96% full) down to
    the smaller markets around 11,000. */
 import { scenarioOf } from './scenarios';
-import { ruleYear, startYear } from './era';
+import { playsHistory, ruleYear, startYear } from './era';
 import { rng } from '../draftroom';
 import type { Player, TeamId } from '../model/types';
 import { cityById } from '../club/cities';
@@ -35,7 +35,15 @@ const POPULARITY: Record<TeamId, number> = {
 const BOOM: Record<number, number> = {
   2015: 0.6, 2016: 0.68, 2017: 0.68, 2018: 0.66, 2019: 0.6, 2020: 0.6, 2021: 0.6, 2022: 0.55, 2023: 0.66, 2024: 0.87, 2025: 1,
 };
-export const boom = (year: number) => BOOM[ruleYear(year)] ?? 1;
+/** 1.9.6, a league that plays history: the per-game average of each season before 2015 against 2025's 17,101 (KBO
+    yearly totals over the games played: 5,995 in 1982, 10,728 at the 1995 peak, 4,382 in 2004, 13,451 in 2012;
+    RULES.md S110). Money stays in today's terms; the parents covered the gap, as they did. */
+const HISTORIC_BOOM: Record<number, number> = {
+  1982: 0.35, 1983: 0.44, 1984: 0.43, 1985: 0.38, 1986: 0.35, 1987: 0.39, 1988: 0.38, 1989: 0.4, 1990: 0.44, 1991: 0.46, 1992: 0.51, 1993: 0.52, 1994: 0.52, 1995: 0.63, 1996: 0.52, 1997: 0.45, 1998: 0.31,
+  1999: 0.36, 2000: 0.28, 2001: 0.33, 2002: 0.26, 2003: 0.3, 2004: 0.26, 2005: 0.39, 2006: 0.35, 2007: 0.48, 2008: 0.61, 2009: 0.65, 2010: 0.65, 2011: 0.75, 2012: 0.79, 2013: 0.65, 2014: 0.66,
+};
+/** The league's attendance boom in `year`: a history game reads its own calendar (today's level from 2026). */
+export const boom = (year: number) => (playsHistory() ? (HISTORIC_BOOM[year] ?? BOOM[year] ?? 1) : (BOOM[ruleYear(year)] ?? 1));
 
 /** Average ticket price (만 원) for the league in `year`: 16,600원 in 2025 (2,046억 / 1,231만), +3% a year up to
     2026. After that the game keeps money in today's terms (V0.16): salaries never inflated, so rising prices

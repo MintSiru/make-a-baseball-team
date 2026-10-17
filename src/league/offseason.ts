@@ -5,7 +5,7 @@ import { k as __i18n_k } from '../i18n/index';
    national-team exemptions → development → retirement → military service → posting → free agency → salaries →
    rookie draft → (expansion special draft) → roster limits → released players → foreign players.
    The user's club can make the game wait at a step for a decision (see OffseasonHooks). */
-import { MODERN_FROM, rulesFor } from '../rules/history';
+import { historicForeignCap, MODERN_FROM, rulesFor } from '../rules/history';
 import { playsHistory } from './era';
 import { hometownClub } from './fa';
 import { hashUnit, observe, overall, rng, toGrade, type Tools } from '../draftroom';
@@ -54,6 +54,8 @@ import { heroInterview } from './interviews';
 import { applyCombine } from './combine';
 import { isFantasyWinter, openFantasy, runFantasy } from './fantasy';
 import type { SeasonAwards } from './awards';
+import { runTryout, tryoutYear } from './tryout';
+import { kyopoWinter } from './kyopo';
 
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
@@ -691,7 +693,9 @@ export function foreignRenewalAsk(p: Player, next: number) {
   const war = lastRecord(p, next - 1)?.war ?? 0;
   const prevUsd = usdTotal(p.contract) || salaryIn(p, next - 1) / MANWON_PER_USD;
   const raise = Math.max(0, war - 2) * 150_000 + 50_000;
-  return Math.round(Math.min(1_800_000, prevUsd + (p.origin.asiaQuota ? Math.min(KBO_2026.foreign.asiaQuotaRaisePerYearUSD, raise) : raise)) / 10_000) * 10_000;
+  // 1.9.6: a history game's cap holds for a renewal too (12만 달러 to 2004).
+  const cap = historicForeignCap(next) ?? 1_800_000;
+  return Math.round(Math.min(cap, prevUsd + (p.origin.asiaQuota ? Math.min(KBO_2026.foreign.asiaQuotaRaisePerYearUSD, raise) : raise)) / 10_000) * 10_000;
 }
 
 /** A star foreign player may leave for MLB or NPB whatever the club offers (chance by his season). */
@@ -751,6 +755,14 @@ export const foreignOn = (s: LeagueState, teamId: TeamId) => orgPlayers(s, teamI
 
 /** Keeps each AI club at three foreign players (two pitchers, one hitter) plus the Asia quota from 2026. */
 export function refreshForeigners(s: LeagueState, next: number, r: () => number) {
+  // 1.9.6: in a tryout year (1998–1999 of a history game) the clubs keep or let go their own first, then draft.
+  if (tryoutYear(next)) {
+    for (const t of s.teams)
+      if (t.firstTeamFrom !== null && t.firstTeamFrom <= next && t.id !== s.user?.teamId && !s.offseason?.foreignRenewed) renewForeigners(s, t.id, next, r);
+    if (s.offseason) s.offseason.foreignRenewed = true;
+    runTryout(s, next, false);
+  }
+  const cap = historicForeignCap(next);
   for (const t of s.teams) {
     if (t.firstTeamFrom === null || t.firstTeamFrom > next) continue; // no foreign players in a futures-only season
     if (t.id === s.user?.teamId) continue; // the user's club renews and signs in its own foreign decision
@@ -767,7 +779,7 @@ export function refreshForeigners(s: LeagueState, next: number, r: () => number)
       const signed = capPlayers(s, t.id, next);
       const left = slots.regular - signed.length - 1;
       const room = foreignCap(s, t.id, next, signed) - signed.reduce((a, p) => a + usdTotal(p.contract), 0) - left * O.foreign.newFloorUSD;
-      return Math.max(O.foreign.newFloorUSD, Math.min(ask, room));
+      return Math.min(cap ?? Infinity, Math.max(O.foreign.newFloorUSD, Math.min(ask, room)));
     };
     const add = (kind: 'pitcher' | 'hitter', asia: boolean) => {
       const id = `f${next}-${t.id}-${k++}`;
@@ -775,12 +787,12 @@ export function refreshForeigners(s: LeagueState, next: number, r: () => number)
       const known = poolChoice(s, kind, asia);
       if (known && aiTakesKnown(`${s.seed}|foreign-pool|${next}|${id}`)) {
         leavePool(s, known.id);
-        sign(s, known, t.id, foreignContract(t.id, next, splitContract(price(foreignPoolAsk(s, known), asia), rng(`${s.seed}|foreign-pool-terms|${next}|${id}`)), asia));
+        sign(s, known, t.id, foreignContract(t.id, next, splitContract(price(foreignPoolAsk(s, known), asia), rng(`${s.seed}|foreign-pool-terms|${next}|${id}`)), asia, cap ?? undefined));
         return;
       }
       // 1.7.0: now and then an old big-league name (players.ts veteranOnMarket).
       const p = makeForeign(s.seed, id, next, { kind, asiaQuota: asia, veteran: !asia && hashUnit(`${s.seed}|ai-veteran|${id}`) < AI_VETERAN });
-      sign(s, p, t.id, foreignContract(t.id, next, splitContract(price(p.origin.background!.ask, asia), r), asia));
+      sign(s, p, t.id, foreignContract(t.id, next, splitContract(price(p.origin.background!.ask, asia), r), asia, cap ?? undefined));
     };
     for (let i = pitchers; i < 2 && regular.length + k < slots.regular; i++) add('pitcher', false);
     while (regular.length + k < slots.regular) add('hitter', false);
@@ -979,6 +991,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
       case 'foreign':
         refreshForeigners(s, next, rng(`${s.seed}|foreign|${year}`));
         expireForeignPool(s, year);
+        // 1.9.6: overseas Korean players of a history game (kyopo.ts).
+        kyopoWinter(s, next);
         break;
       case 'check':
         break; // the user's club over the limit after foreign signings: a user decision (expansion.ts)

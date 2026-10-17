@@ -7655,5 +7655,16 @@
   "league.scenarios.text.83c99662": "No goal: play on without a deadline and leave your mark decade by decade.",
   "league.legacy1982.text.0031dde3": "{club} {name}",
   "league.legacy1982.text.b921195d": "{name} receives {n, plural, one {# player} other {# players}} from the existing clubs",
-  "league.legacy1982.text.d85e6ced": "The existing clubs have shared players with the new club ({per} each from outside their best {keep})."
+  "league.legacy1982.text.d85e6ced": "The existing clubs have shared players with the new club ({per} each from outside their best {keep}).",
+  "league.tryout.text.5b288d5f": "{team}, round {round}: {name}",
+  "league.tryout.text.cf53653d": "Foreign player tryout draft: {n, plural, one {# player} other {# players}} picked",
+  "league.tryout.text.6ffd3eea": "The {year} season's foreign players were chosen in a tryout draft. The first overall pick was {name} of {team}. Every contract is within the cap of {cap}.",
+  "ui.decision.text.c704cdf0": "Foreign player tryout draft, round {round}: our turn. Pick one player, or pass without picking. Pay is fixed within the cap.",
+  "ui.decision.text.a2f63499": "Picks so far",
+  "league.kyopo.text.9b67504f": "{n, plural, one {# Korean-Japanese player comes} other {# Korean-Japanese players come}} to Korea",
+  "league.kyopo.text.898d7e0d": "{name} ({age}, {from}) joins {team}.",
+  "league.kyopo.text.91f555e5": "{name} ({age}, {from}) is looking for a club.",
+  "league.kyopo.text.74fb91a0": "Korean-Japanese",
+  "league.kyopo.text.8136d32f": "Korean-Japanese · Japanese name {japanese} · {text}",
+  "league.entry.text.bf471176": "At most {limit, plural, one {# overseas Korean player} other {# overseas Korean players}} on the first team."
 }

@@ -7655,5 +7655,16 @@
   "league.scenarios.text.83c99662": "목표 없음: 기간 없이 이어 가며 연대별 기록을 남깁니다.",
   "league.legacy1982.text.0031dde3": "{club} {name}",
   "league.legacy1982.text.b921195d": "{name}에 기존 구단 선수 {n}명 지원",
-  "league.legacy1982.text.d85e6ced": "기존 구단들이 신생 구단에 선수를 나눠 줬습니다(구단마다 보호 {keep}명 밖에서 {per}명)."
+  "league.legacy1982.text.d85e6ced": "기존 구단들이 신생 구단에 선수를 나눠 줬습니다(구단마다 보호 {keep}명 밖에서 {per}명).",
+  "league.tryout.text.5b288d5f": "{team} {round}라운드 {name}",
+  "league.tryout.text.cf53653d": "외국인 선수 트라이아웃 드래프트: {n}명 지명",
+  "league.tryout.text.6ffd3eea": "{year}시즌 외국인 선수는 트라이아웃 드래프트로 뽑았습니다. 전체 1순위는 {team}의 {name}입니다. 연봉은 모두 상한 {cap} 이내입니다.",
+  "ui.decision.text.c704cdf0": "외국인 선수 트라이아웃 드래프트 {round}라운드, 우리 차례입니다. 한 명을 지명하거나 고르지 않고 넘깁니다. 연봉은 상한 안에서 정해져 있습니다.",
+  "ui.decision.text.a2f63499": "지금까지의 지명",
+  "league.kyopo.text.9b67504f": "재일교포 선수 {n}명, 한국 무대로",
+  "league.kyopo.text.898d7e0d": "{name}({age}세, {from})는 {team} 유니폼을 입습니다.",
+  "league.kyopo.text.91f555e5": "{name}({age}세, {from})는 입단할 구단을 찾고 있습니다.",
+  "league.kyopo.text.74fb91a0": "재일교포",
+  "league.kyopo.text.8136d32f": "재일교포 · 일본 이름 {japanese} · {text}",
+  "league.entry.text.bf471176": "해외 교포 선수는 1군에 {limit}명까지입니다."
 }

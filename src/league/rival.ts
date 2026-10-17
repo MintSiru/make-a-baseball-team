@@ -21,7 +21,7 @@ import { clubState } from './fans';
 import { milestone } from './milestones';
 import { addNews } from './news';
 import { developmentContract, leaveLeague, removeFromRoster, rosterLimit, sign, type OffseasonStep } from './offseason';
-import { ageIn, DRAFT_ROOM_YEAR, isForeign, keepValue, shiftProspect } from './players';
+import { ageIn, DRAFT_ROOM_YEAR, isForeign, keepValue, shiftProspect, withEra } from './players';
 import { MANAGER_STYLES, staffOf } from './staff';
 import { developmentIds, emptyRoster, firstTeamIds, registeredIds, type Decision, type GmStyle, type LeagueState, type ManagerStyle, type RivalSettings, type TwelveState, aiFoundingClubs } from './state';
 import { crossing } from './rivalry';
@@ -181,14 +181,18 @@ export type FoundingClub = Pick<TwelveState, 'teamId' | 'founded' | 'firstTeam' 
 export function rivalTryout(s: LeagueState, year: number, teamId: TeamId, gm: GmStyle, withReleased = true, north?: { count: number; make: (p: Player) => Player }): number {
   const seed = `${s.seed}|tryout|${teamId}|${year}`;
   const next = year + 1;
-  const pool = placeClass(
-    generateDraftPool(seed)
-      .players.filter((p) => ['독립구단', '해외독립 복귀', '마이너 복귀', '대졸'].includes(p.pathway) && p.age >= 21)
-      // 1.7.0: their ages as of the founding year, not Draft Room's (they were four years too young in 2030).
-      .map((p) => fromDraftProspect(shiftProspect(p, year - DRAFT_ROOM_YEAR), year, seed))
-      .map((p) => ({ ...p, id: teamId === RIVAL_ID ? `rt${year}-${p.origin.sourceId}` : `rt${year}-${teamId}-${p.origin.sourceId}` }))
-      // 1.9.2: the north's clubs try out the north's own adult players (unified.ts).
-      .map((p) => (north ? north.make(p) : p)),
+  // 1.9.6: as they were in their time when the league plays history (withEra).
+  const pool = withEra(
+    placeClass(
+      generateDraftPool(seed)
+        .players.filter((p) => ['독립구단', '해외독립 복귀', '마이너 복귀', '대졸'].includes(p.pathway) && p.age >= 21)
+        // 1.7.0: their ages as of the founding year, not Draft Room's (they were four years too young in 2030).
+        .map((p) => fromDraftProspect(shiftProspect(p, year - DRAFT_ROOM_YEAR), year, seed))
+        .map((p) => ({ ...p, id: teamId === RIVAL_ID ? `rt${year}-${p.origin.sourceId}` : `rt${year}-${teamId}-${p.origin.sourceId}` }))
+        // 1.9.2: the north's clubs try out the north's own adult players (unified.ts).
+        .map((p) => (north ? north.make(p) : p)),
+      seed,
+    ),
     seed,
   );
   // Players let go this year: not for the north's clubs, founded while ours holds its own tryout.

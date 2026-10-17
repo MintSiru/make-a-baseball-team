@@ -13,6 +13,7 @@ import { firstTeamSize } from './manager';
 import { offRoster } from './injuries';
 import { rosterLimit } from './offseason';
 import { isDevelopment, moveTo, registeredIds, squadOf, type LeagueState, type LineupCard, type Squad } from './state';
+import { isKyopo, kyopoLimit } from './kyopo';
 
 export const REREGISTER_DAYS = 10;
 /** The fewest players the general manager may leave on the first team (game assumption). */
@@ -39,6 +40,9 @@ export function canMove(s: LeagueState, id: PlayerId, to: Squad): string | null 
     if (isDevelopment(p)) return __i18n_k("league.entry.canMove.bc9d990b");
     if (offRoster(s, id)) return s.suspended?.[id] ? __i18n_k("league.entry.canMove.c30a1a7f") : s.away[id] ? __i18n_k("league.entry.canMove.603e30f7") : __i18n_k("league.entry.canMove.fc099ae5");
     if (r.active.length >= firstTeamSize(s, u.teamId)) return __i18n_k("league.entry.canMove.80107525", { firstTeamSize: firstTeamSize(s, u.teamId) });
+    // 1.9.6: overseas Korean players on the first team (kyopo.ts).
+    const limit = kyopoLimit(s.year);
+    if (limit !== null && isKyopo(p) && r.active.filter((x) => isKyopo(s.players[x]!)).length >= limit) return __i18n_k("league.entry.text.bf471176", { limit });
     const back = s.demoted?.[id];
     if (back && date < addDays(back, REREGISTER_DAYS)) return __i18n_k("league.entry.canMove.a9a51986", { rEREGISTER_DAYS: REREGISTER_DAYS, addDays: addDays(back, REREGISTER_DAYS) });
   }

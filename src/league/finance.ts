@@ -6,7 +6,7 @@ import { k as __i18n_k } from '../i18n/index';
 
    Only the user's club lives with the result (its fund); AI clubs' parents always cover them, and their
    reports are there to compare. Money in 만 원. */
-import { ruleYear } from './era';
+import { playsHistory, ruleYear } from './era';
 import type { Player, TeamId } from '../model/types';
 import { salaryIn } from './contracts';
 import { isForeign } from './players';
@@ -23,9 +23,24 @@ import { favouritesMerch } from './life';
 /** The league's broadcast money for `year` (990억 for 2024–26; the next deal assumed 10% higher, then flat: V0.16). */
 export function broadcastPool(year: number): number {
   const B = KBO_2026.broadcast;
-  year = ruleYear(year);
+  // 1.9.6: a league that plays history reads its own calendar, the rights small before 2015 (HISTORIC_BROADCAST).
+  if (playsHistory() && year < 2015) return Math.round(B.annual2024 * historicBroadcast(year));
+  year = playsHistory() ? year : ruleYear(year);
   if (year <= 2026) return Math.round(B.annual2024 * (year >= 2024 ? 1 : 0.55 + (year - 2015) * 0.04));
   return Math.round(B.annual2024 * B.nextDeal * (1 + B.growth) ** (year - 2027));
+}
+
+/** 1.9.6: the broadcast rights before 2015 as a share of 2024's 990억: a game estimate (no yearly figures found), from
+    a few 억 in the 1980s through some 100억 around 2000 to 400억 or so with the new media by 2014 (RULES.md §9). */
+const HISTORIC_BROADCAST: [number, number][] = [[1982, 0.02], [1990, 0.04], [1995, 0.06], [2000, 0.1], [2005, 0.13], [2010, 0.2], [2014, 0.42]];
+function historicBroadcast(year: number): number {
+  const pts = HISTORIC_BROADCAST;
+  if (year <= pts[0]![0]) return pts[0]![1];
+  const i = pts.findIndex(([y]) => y >= year);
+  if (i < 0) return pts.at(-1)![1];
+  const [y0, v0] = pts[i - 1]!,
+    [y1, v1] = pts[i]!;
+  return v0 + ((v1 - v0) * (year - y0)) / (y1 - y0);
 }
 
 /**

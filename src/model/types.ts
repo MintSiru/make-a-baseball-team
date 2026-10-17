@@ -148,6 +148,8 @@ export interface PlayerOrigin {
   /** Nationality for foreign players. */
   nationality?: string;
   asiaQuota?: boolean;
+  /** 1.9.6 (kyopo.ts): an overseas Korean player (재일교포), a domestic player with a Japanese-league past. */
+  kyopo?: boolean;
   /** Foreign players: where he played before and what he asked for when he came (US dollars). */
   background?: { level: ForeignLevel; text: string; ask: number; /** 1.7.0: an old big-league name. */ veteran?: boolean };
 }

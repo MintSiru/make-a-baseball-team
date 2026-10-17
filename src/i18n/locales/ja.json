@@ -7655,5 +7655,16 @@
   "league.scenarios.text.83c99662": "目標なし：期限なく続け、年代ごとの記録を残します。",
   "league.legacy1982.text.0031dde3": "{club} {name}",
   "league.legacy1982.text.b921195d": "{name}に既存球団の選手{n}人を支援",
-  "league.legacy1982.text.d85e6ced": "既存球団が新球団に選手を分けました（各球団、保護{keep}人の外から{per}人）。"
+  "league.legacy1982.text.d85e6ced": "既存球団が新球団に選手を分けました（各球団、保護{keep}人の外から{per}人）。",
+  "league.tryout.text.5b288d5f": "{team} {round}巡目 {name}",
+  "league.tryout.text.cf53653d": "外国人選手トライアウトドラフト：{n}人指名",
+  "league.tryout.text.6ffd3eea": "{year}年シーズンの外国人選手はトライアウトドラフトで選ばれました。全体1位は{team}の{name}です。年俸はすべて上限{cap}以内です。",
+  "ui.decision.text.c704cdf0": "外国人選手トライアウトドラフト{round}巡目、こちらの番です。1人を指名するか、指名せずにパスします。年俸は上限内で決まっています。",
+  "ui.decision.text.a2f63499": "これまでの指名",
+  "league.kyopo.text.9b67504f": "在日コリアン選手{n}人、韓国の舞台へ",
+  "league.kyopo.text.898d7e0d": "{name}（{age}歳、{from}）は{team}のユニフォームを着ます。",
+  "league.kyopo.text.91f555e5": "{name}（{age}歳、{from}）は入団先を探しています。",
+  "league.kyopo.text.74fb91a0": "在日コリアン",
+  "league.kyopo.text.8136d32f": "在日コリアン · 日本名 {japanese} · {text}",
+  "league.entry.text.bf471176": "海外僑胞選手は1軍に{limit}人までです。"
 }

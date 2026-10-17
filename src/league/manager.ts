@@ -18,6 +18,7 @@ import { formOf } from './life';
 import { adaptPenalty } from './adapt';
 import { bigGameEdge } from './traits';
 import { inWard, WARD } from './ward';
+import { isKyopo, kyopoLimit } from './kyopo';
 
 const STARTER_LIMIT = ENGINE.starterLimit;
 
@@ -48,11 +49,23 @@ export function chooseActive(s: LeagueState, teamId: TeamId, opts?: { size?: num
   const pitchersWanted = opts?.pitchers ?? (size >= 29 ? 14 : 13);
   // Development players cannot be registered until they are converted (RULES.md §6). 1.9.0: a postseason entry
   // chooses from the players eligible for it (`from`, postentry.ts).
-  const pool = (opts?.from ?? registeredIds(s, teamId))
-    .map((id) => s.players[id]!)
-    .filter((p) => !offRoster(s, p.id) && p.status === 'active');
   const perf = (p: Player) => performanceNudge(s, p);
   const val = (p: Player) => currentValue(p) * 0.8 + keepValue(p, s.year) * 0.2 + perf(p) + (isForeign(p) ? 30 : 0);
+  // 1.9.6: at most so many overseas Korean players on the first team (kyopo.ts), the best of them.
+  const limit = kyopoLimit(s.year);
+  const kyopo = new Set(
+    limit === null
+      ? []
+      : (opts?.from ?? registeredIds(s, teamId))
+          .map((id) => s.players[id]!)
+          .filter(isKyopo)
+          .sort((a, b) => val(b) - val(a))
+          .slice(limit)
+          .map((p) => p.id),
+  );
+  const pool = (opts?.from ?? registeredIds(s, teamId))
+    .map((id) => s.players[id]!)
+    .filter((p) => !offRoster(s, p.id) && p.status === 'active' && !kyopo.has(p.id));
   const pitchers = pool.filter(isPitcher).sort((a, b) => val(b) - val(a));
   const hitters = pool.filter((p) => !isPitcher(p)).sort((a, b) => val(b) - val(a));
   const chosen: Player[] = [];
