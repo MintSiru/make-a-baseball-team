@@ -79,6 +79,17 @@ function Awards({ league, onPlayer }: { league: LeagueState; onPlayer: (id: stri
               </span>
             )))}
           </p>
+          {y.defense.length > 0 && (
+            <p class="small">
+              <strong>{__i18n_t("ui.history.text.c736f666")}</strong>{' '}
+              {y.defense.map((g, i) => (
+                <span key={i}>
+                  {g.pos} <Who x={g} onPlayer={onPlayer} />
+                  {i < y.defense.length - 1 ? ' · ' : ''}
+                </span>
+              ))}
+            </p>
+          )}
           <p class="small">
             <strong>{__i18n_t("ui.history.awards.9557702b")}</strong>{__i18n_display(' ')}
             {__i18n_display(y.titles.map((t, i) => (
