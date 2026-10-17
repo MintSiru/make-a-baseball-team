@@ -6,7 +6,7 @@ import { apply, regularOver } from '../src/league/actions';
 import { autoDecision } from '../src/league/expansion';
 import { createLeague } from '../src/league/history';
 import { LEGACY_ERA, LEGACY_START, ruleNoticeLines } from '../src/league/legacy1982';
-import { givenName, nicknameOf, nicknameWinter } from '../src/league/nicknames';
+import { givenName, NAMESAKE_DAYS, nicknameOf, nicknameWinter } from '../src/league/nicknames';
 import { withScenario } from '../src/league/scenarios';
 import { firstTeamIds, type ExpansionSettings, type LeagueState } from '../src/league/state';
 import { addTiebreaker } from '../src/league/tiebreak';
@@ -116,7 +116,9 @@ describe('namesakes', () => {
     expect(givenName('이병규')).toBe('병규');
     expect(givenName('남궁민수')).toBe('민수');
     const base = createLeague('v195-names');
-    const ps = Object.values(base.players).filter((p) => p.status === 'active' && p.teamId && p.origin.kind !== 'foreign' && !p.nickname).slice(0, 3);
+    const year = base.history.at(-1)!.year;
+    // Fans tell apart the namesakes they see: most of the season on a first team.
+    const ps = Object.values(base.players).filter((p) => p.status === 'active' && p.teamId && p.origin.kind !== 'foreign' && !p.nickname && p.career.some((r) => r.year === year && !r.level && r.days >= NAMESAKE_DAYS)).slice(0, 3);
     const [old, young, other] = ps as [Player, Player, Player];
     old.name = '이병규';
     old.birthday = '1990-01-01';
@@ -124,7 +126,7 @@ describe('namesakes', () => {
     young.birthday = '1999-01-01';
     other.name = '장효조';
     base.hallOfFame = [{ id: 'gone', name: '장효조', year: 2020, war: 60, seasons: 15, teams: [], line: '' }];
-    nicknameWinter(base, base.history.at(-1)!.year, false);
+    nicknameWinter(base, year, false);
     expect(nicknameOf(base, old)).toBe('큰병규');
     expect(nicknameOf(base, young)).toBe('작병규');
     expect(nicknameOf(base, other)).toBe('짭효조');

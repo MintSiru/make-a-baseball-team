@@ -73,6 +73,8 @@ const CATALOG: Record<NickCode, { tier: number; names: Names; why: () => string 
 const ORDER = Object.keys(CATALOG) as NickCode[];
 
 export const NICKNAME_MAX = 12;
+/** First-team days a namesake needs in the season for the fans to tell him apart (1.9.5). */
+export const NAMESAKE_DAYS = 100;
 /** A fastball this fast (km/h, his top), thrown on a first team that season. */
 const HEATER = 158;
 
@@ -208,10 +210,12 @@ export function nicknameWinter(s: LeagueState, year: number, news = true) {
   // Every game of the season: the most a club played.
   const table = s.history.find((h) => h.year === year)?.table ?? [];
   const games = Math.max(0, ...table.map((r) => r.w + r.l + r.t));
-  // 1.9.5: namesakes among the league's domestic players, and the names of the hall of fame.
+  // 1.9.5: namesakes among the league's domestic players, and the names of the hall of fame. Fans tell apart the ones
+  // they see: players who spent most of the season on a first team (NAMESAKE_DAYS registered days).
   const active = Object.values(s.players).filter((p) => p.status === 'active' && p.teamId);
+  const seen = (p: Player) => p.career.some((r) => r.year === year && !r.level && r.days >= NAMESAKE_DAYS);
   const byName = new Map<string, Player[]>();
-  for (const p of active) if (!isForeign(p)) byName.set(p.name, [...(byName.get(p.name) ?? []), p]);
+  for (const p of active) if (!isForeign(p) && seen(p)) byName.set(p.name, [...(byName.get(p.name) ?? []), p]);
   const kin = new Map<PlayerId, Partial<Record<'big' | 'small' | 'fake', boolean>>>();
   for (const same of byName.values()) {
     if (same.length < 2) continue;
@@ -220,7 +224,7 @@ export function nicknameWinter(s: LeagueState, year: number, news = true) {
     kin.set(old.at(-1)!.id, { small: true });
   }
   const hall = new Map((s.hallOfFame ?? []).map((h) => [h.name, h.id]));
-  for (const p of active) if (!isForeign(p) && hall.has(p.name) && hall.get(p.name) !== p.id) kin.set(p.id, { ...kin.get(p.id), fake: true });
+  for (const p of active) if (!isForeign(p) && seen(p) && hall.has(p.name) && hall.get(p.name) !== p.id) kin.set(p.id, { ...kin.get(p.id), fake: true });
   for (const p of active) {
     const best = earned(p, all.get(p.id), year, games, kin.get(p.id))[0];
     if (!best || (p.nickname && (CATALOG[p.nickname.code as NickCode]?.tier ?? 0) >= CATALOG[best].tier)) continue;
