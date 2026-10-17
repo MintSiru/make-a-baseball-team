@@ -18,6 +18,7 @@ import { ageIn, isForeign, keepValue } from './players';
 import type { LeagueState } from './state';
 import { traitsOf } from './traits';
 import { DIFFICULTY } from './tuning';
+import { featureClosed } from './features';
 
 export const EXTENSION = {
   years: [2, 3, 4, 5, 6] as const,
@@ -53,6 +54,9 @@ export function extensionProblem(s: LeagueState, id: PlayerId): string | null {
   const p = s.players[id];
   if (!u || !p || p.teamId !== u.teamId) return __i18n_k("league.extensions.text.184c07ee");
   if (isForeign(p)) return __i18n_k("league.extensions.text.a34a68b4");
+  // 1.9.7: a history game has non-FA multi-year deals only from 2022 (features.ts).
+  const closed = featureClosed('extension', startOf(s));
+  if (closed) return closed;
   if (p.contract?.kind === 'development' || p.status !== 'active') return __i18n_k("league.extensions.text.026f3688");
   if (p.service.lastFreeAgencyAt !== undefined || faSeasons(p) - p.service.creditedSeasons <= 0) return __i18n_k("league.extensions.text.68d7e4c9");
   const start = startOf(s);

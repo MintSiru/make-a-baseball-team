@@ -141,6 +141,12 @@ export interface PlayerOrigin {
   entryCategory: string;
   /** Draft pick in the league draft (overall), when drafted by a club. */
   overallPick?: number;
+  /** 1.9.7 (a legacy game): a territorial (1차) pick, or his number among the other picks (2차) in a draft that had
+      territorial picks first. */
+  territorial?: boolean;
+  secondPick?: number;
+  /** 1.9.7: in the league before the KBO began (the legacy start's first players): no draft of his on record. */
+  preLeague?: boolean;
   /** 1.7.0: the public future grade when he was drafted (the draft-day expectation). */
   draftGrade?: number;
   /** Drafted with a pick another club traded away (V0.7.8): he cannot be traded in his first season. */

@@ -2,13 +2,14 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 /* The club's story (V0.7): news with quotes (a language model's version when there is one), the club
    timeline, achievements and the clubhouse mood. */
 import { useState } from 'preact/hooks';
-import { ACHIEVEMENTS } from '../league/milestones';
+import { achievementsFor } from '../league/milestones';
 import type { NewsItem } from '../league/news';
 import type { LeagueState } from '../league/state';
 import { clubhouse } from '../league/views';
+import { clubIn } from '../league/lineage';
 import { AlertList } from './Alerts';
 
-type View = 'news' | 'timeline' | 'achievements' | 'alerts';
+type View = 'news' | 'timeline' | 'league' | 'achievements' | 'alerts';
 type Filter = 'all' | 'game' | 'move' | 'injury' | 'review' | 'interview' | 'allstar';
 const FILTERS: [Filter, string, NewsItem['kind'][]][] = [
   ['all', __i18n_k("ui.story.fILTERS.934dd25e"), []],
@@ -114,7 +115,7 @@ export function Story({ league, onRewrite, onRevert, busyId }: { league: LeagueS
         <div class="card">
           <p class="card-label">{__i18n_t("ui.story.story.62850cd4")}</p>
           <p class="card-value">
-            {__i18n_display(done.size)} / {__i18n_display(ACHIEVEMENTS.length)}
+            {__i18n_display(done.size)} / {__i18n_display(achievementsFor(league).length)}
           </p>
         </div>
       </div>
@@ -123,6 +124,8 @@ export function Story({ league, onRewrite, onRevert, busyId }: { league: LeagueS
           [
             ['news', __i18n_k("ui.story.story.3a465d8d")],
             ['timeline', __i18n_k("ui.story.story.77b369cb")],
+            // 1.9.7: the legacy start's league timeline.
+            ...(league.legacy ? ([['league', __i18n_t("ui.story.text.2cddacf9")]] as [View, string][]) : []),
             ['achievements', __i18n_k("ui.story.story.62850cd4")],
             ['alerts', __i18n_k("ui.story.story.e29d147e")],
           ] as [View, string][]
@@ -161,9 +164,10 @@ export function Story({ league, onRewrite, onRevert, busyId }: { league: LeagueS
           )))}
         </ol>
       ))}
+      {view === 'league' && <LeagueTimeline league={league} />}
       {__i18n_display(view === 'achievements' && (
         <div class="achievements">
-          {__i18n_display(ACHIEVEMENTS.map((a) => (
+          {__i18n_display(achievementsFor(league).map((a) => (
             <div key={a.id} class={`achievement ${done.has(a.id) ? 'done' : ''}`}>
               <strong>{__i18n_display(a.label)}</strong>
               <span class="muted small">{__i18n_display(a.note)}</span>
@@ -173,5 +177,32 @@ export function Story({ league, onRewrite, onRevert, busyId }: { league: LeagueS
         </div>
       ))}
     </>
+  );
+}
+
+/** 1.9.7: the league's own timeline in a legacy game: each season's champion and the year's events, newest first. */
+function LeagueTimeline({ league }: { league: LeagueState }) {
+  const events = league.legacy?.events ?? [];
+  const years = [...new Set([...events.map((e) => e.year), ...league.history.map((h) => h.year)])].sort((a, b) => b - a);
+  const name = (id: string, year: number) => clubIn(id, year)?.name ?? league.teams.find((t) => t.id === id)?.name ?? id;
+  return (
+    <ol class="plain timeline">
+      {years.map((year) => {
+        const champion = league.history.find((h) => h.year === year)?.champion;
+        return (
+          <li key={year}>
+            <span class="num strong">{__i18n_display(year)}</span>{' '}
+            {champion && <strong>{__i18n_t("ui.story.text.2df9c9ba", { team: name(champion, year) })}</strong>}
+            {events
+              .filter((e) => e.year === year)
+              .map((e, i) => (
+                <div key={i} class="small">
+                  {__i18n_display(e.text)}
+                </div>
+              ))}
+          </li>
+        );
+      })}
+    </ol>
   );
 }

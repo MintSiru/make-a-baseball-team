@@ -401,8 +401,8 @@ function Drafts({ league, onPlayer }: { league: LeagueState; onPlayer: (id: stri
             {rows.map((x) => (
               <tr key={x.id} class={x.teamId === me ? 'mine' : undefined}>
                 <td class="num">
-                  {x.overall}
-                  {x.label && <span class="muted small"> {x.label}</span>}
+                  {x.territorial ? '' : (x.second ?? x.overall)}
+                  {x.label && <span class="muted small"> {x.territorial ? x.label : x.second ? __i18n_t("ui.history.text.c6ce788b", { label: x.label }) : x.label}</span>}
                 </td>
                 <td>{x.club}</td>
                 <td>

@@ -147,3 +147,45 @@ export const firstTeamClubsIn = (year: number): TeamId[] => LINEAGE.filter((l) =
 
 /** The existing clubs founded in `year` (they join the futures, or the league, that year). */
 export const foundedIn = (year: number): TeamId[] => LINEAGE.filter((l) => l.founded === year).map((l) => l.id);
+
+/** 1.9.7 (the user's request): a club's home ballpark from a season on — the name, the seats then and its run factor;
+    `null` for the park the club plays in today (clubs.ts). Seats of the old parks are rough figures, the run factors
+    game estimates (small old parks gave up more runs: RULES.md §14). */
+export interface ParkEra {
+  from: number;
+  park: { name: string; seats: number; factor: number } | null;
+}
+
+const park = (from: number, name: string, seats: number, factor: number): ParkEra => ({ from, park: { name, seats, factor } });
+const today = (from: number): ParkEra => ({ from, park: null });
+
+/** 잠실 (MBC from its first season; OB from its move to Seoul in 1985): its seats over the years, today's from 2027. */
+const JAMSIL = (from: number): ParkEra[] => [
+  park(from, __i18n_k("league.lineage.text.70eae725"), 30_500, 0.94),
+  park(2010, __i18n_k("league.lineage.text.70eae725"), 27_000, 0.94),
+  park(2014, __i18n_k("league.lineage.text.70eae725"), 25_000, 0.94),
+  park(2022, __i18n_k("league.lineage.text.70eae725"), 23_750, 0.94),
+  today(2027),
+];
+
+export const PARKS: Record<TeamId, ParkEra[]> = {
+  samsung: [park(1982, __i18n_k("league.lineage.text.01ce704f"), 10_000, 1.08), today(2016)],
+  lotte: [park(1982, __i18n_k("league.lineage.text.5eb6dc59"), 18_000, 1.02), today(1987)],
+  lg: [...JAMSIL(1982)],
+  doosan: [park(1982, __i18n_k("league.lineage.text.ed33e3ba"), 10_500, 1.06), ...JAMSIL(1985)],
+  kia: [park(1982, __i18n_k("league.lineage.text.3f6477b4"), 12_500, 1.03), today(2014)],
+  kiwoom: [park(1982, __i18n_k("league.lineage.text.bac657f3"), 15_000, 1.03), park(2000, __i18n_k("league.lineage.text.7ddc350e"), 14_000, 1.0), park(2008, __i18n_k("league.lineage.text.5a4b31e1"), 12_500, 1.08), today(2016)],
+  hanwha: [park(1985, __i18n_k("league.lineage.text.ed33e3ba"), 10_500, 1.06), today(2025)],
+  ssg: [park(1990, __i18n_k("league.lineage.text.b0606c63"), 10_000, 1.0), park(2000, __i18n_k("league.lineage.text.48eeed9f"), 15_000, 1.03), today(2002)],
+  nc: [park(2011, __i18n_k("league.lineage.text.7924944d"), 11_000, 1.04), today(2019)],
+  kt: [today(2013)],
+};
+
+/** The club's ballpark in `year` (null: today's). */
+export function parkIn(id: TeamId, year: number): ParkEra['park'] {
+  const eras = PARKS[id];
+  if (!eras) return null;
+  let out: ParkEra['park'] = eras[0]!.park;
+  for (const e of eras) if (year >= e.from) out = e.park;
+  return out;
+}

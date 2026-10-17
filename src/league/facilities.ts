@@ -11,6 +11,7 @@ import { k as __i18n_k } from '../i18n/index';
 import type { Player, TeamId } from '../model/types';
 import type { FacilityKind, LeagueState } from './state';
 import { ageIn } from './players';
+import { FEATURE_FROM, featureClosed, type Feature } from './features';
 
 export interface FacilityLevel {
   /** 만 원. */
@@ -182,7 +183,11 @@ export function facilityOptions(s: LeagueState): FacilityOption[] {
     const level = facilityLevel(s, kind) + 1;
     if (level > spec.levels.length) return [];
     const L = spec.levels[level - 1]!;
-    const blocked = busy
+    // 1.9.7: a history game builds the newer facilities only from their years (features.ts).
+    const era = kind in FEATURE_FROM ? featureClosed(kind as Feature, next) : null;
+    const blocked = era
+      ? era
+      : busy
       ? __i18n_k("league.facilities.facilityOptions.blocked.a7a8d6a5")
       : s.phase !== 'offseason'
         ? __i18n_k("league.facilities.facilityOptions.blocked.df97ea07")

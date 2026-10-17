@@ -15,6 +15,7 @@ import { playsHistory } from './era';
 import { splitContract, usd } from './foreign';
 import { foreignSlots } from './manager';
 import { addNews } from './news';
+import { leagueEvent } from './leagueevents';
 import { foreignOn, sign } from './offseason';
 import { currentValue, isPitcher, makeForeign } from './players';
 import { firstTeamIds, type Decision, type LeagueState } from './state';
@@ -116,6 +117,7 @@ function closeTryout(s: LeagueState, t: ForeignTryout) {
   const signed = t.picks.filter((x) => x.id).length;
   if (!signed) return;
   const first = t.picks.find((x) => x.id)!;
+  leagueEvent(s, t.year, __i18n_k("league.tryout.text.cf53653d", { n: signed }));
   addNews(s, {
     id: `foreign-tryout-${t.year}`,
     date: `${t.year - 1}-12-15`,

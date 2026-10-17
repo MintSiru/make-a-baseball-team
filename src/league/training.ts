@@ -18,6 +18,7 @@ import { ageIn, isForeign, isPitcher } from './players';
 import { staffEdge, staffRating } from './staff';
 import { moveTo, type LeagueState, type SiteId, type TrainingTrip } from './state';
 import { TRAINING as T } from './tuning';
+import { featureClosed } from './features';
 
 export interface Site {
   name: string;
@@ -123,6 +124,9 @@ export function checkTrip(s: LeagueState, id: PlayerId, site: SiteId): string | 
   if (!u || !p || p.teamId !== u.teamId) return __i18n_k("league.training.checkTrip.60e00321");
   if (!S) return __i18n_k("league.training.checkTrip.33324eb5");
   const when = tripSeason(s);
+  // 1.9.7: a history game sends players abroad only from 2014 (features.ts).
+  const closed = when && featureClosed('trip', when.season);
+  if (closed) return closed;
   if (!when) return s.phase === 'regular' ? __i18n_k("league.training.checkTrip.da145061", { lastStartText: lastStartText }) : __i18n_k("league.training.checkTrip.644bd1b0");
   if (p.status !== 'active') return __i18n_k("league.training.checkTrip.52c49e05");
   if (isForeign(p)) return __i18n_k("league.training.checkTrip.35394cc3");

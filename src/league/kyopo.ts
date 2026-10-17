@@ -16,6 +16,8 @@ import { playsHistory } from './era';
 import { eraName } from './eranames';
 import { foreignName } from './foreign';
 import { addNews } from './news';
+import { addAlert } from './alerts';
+import { leagueEvent } from './leagueevents';
 import { sign } from './offseason';
 import { ageIn, keepValue, makeForeign } from './players';
 import { firstTeamIds, orgPlayers, type LeagueState } from './state';
@@ -55,6 +57,7 @@ export function kyopoWinter(s: LeagueState, next: number) {
     else (s.pool ??= []).push(p.id);
   }
   if (!arrived.length) return;
+  if (!Object.values(s.players).some((p) => isKyopo(p) && p.proSince < next)) leagueEvent(s, next, __i18n_k("league.kyopo.text.f14aaf8c", { name: arrived[0]!.name }));
   addNews(s, {
     id: `kyopo-${next}`,
     date: `${next - 1}-12-20`,
@@ -72,6 +75,16 @@ export function kyopoWinter(s: LeagueState, next: number) {
     players: arrived.map((p) => p.id),
     mine: false,
   });
+  // Ours to sign too: the ones still looking, in the market's unattached players (시장 → 방출·자유계약).
+  const free = arrived.filter((p) => !p.teamId);
+  if (s.user && free.length)
+    addAlert(s, {
+      id: `kyopo-${next}`,
+      date: `${next - 1}-12-20`,
+      kind: 'move',
+      title: __i18n_k("league.kyopo.text.4224db84", { n: free.length }),
+      lines: [...free.map((p) => `${p.name} · ${p.origin.background!.text}`), __i18n_k("league.kyopo.text.8042589f")],
+    });
 }
 
 function signKyopo(s: LeagueState, p: Player, teamId: TeamId, next: number) {

@@ -532,7 +532,13 @@ export function PlayerPanel({
               <div>
                 <dt>{__i18n_t("ui.playerPanel.playerPanel.81af228b")}</dt>
                 <dd>
-                  {__i18n_display(p.origin.overallPick
+                  {__i18n_display(p.origin.preLeague
+                    ? __i18n_t("ui.playerPanel.text.03bc4d29")
+                    : p.origin.territorial
+                    ? __i18n_t("ui.playerPanel.text.5c04ff7e", { draftYear: p.origin.draftYear })
+                    : p.origin.secondPick
+                    ? __i18n_t("ui.playerPanel.text.384f9d5e", { draftYear: p.origin.draftYear, n: p.origin.secondPick })
+                    : p.origin.overallPick
                     ? __i18n_k("ui.playerPanel.playerPanel.083f725c", { draftYear: p.origin.draftYear, overallPick: p.origin.overallPick })
                     : foreign
                       ? __i18n_k("ui.playerPanel.playerPanel.117bde8b", { proSince: p.proSince })
