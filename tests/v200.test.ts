@@ -17,6 +17,16 @@ describe('arm slots and tracking', () => {
     expect(share('under')).toBeGreaterThan(0.01);
     expect(share('under')).toBeLessThan(share('side'));
     expect(armAngle(Object.values(s.players).find((p) => !isPitcher(p))!)).toBeNull();
+    // 2.0.1 (the user's ranges): 46~60 overhand, 21~45 three-quarters, 0~20 sidearm, −1~−60 underhand, few at the ends.
+    const angles = pitchers.map((p) => armAngle(p)!);
+    expect(Math.max(...angles)).toBeLessThanOrEqual(60);
+    expect(Math.min(...angles)).toBeGreaterThanOrEqual(-60);
+    expect(slotOf(48)).toBe('over');
+    expect(slotOf(45)).toBe('three');
+    expect(slotOf(20)).toBe('side');
+    expect(slotOf(-1)).toBe('under');
+    const over = angles.filter((a) => a >= 46);
+    expect(over.filter((a) => a >= 58).length).toBeLessThan(over.filter((a) => a >= 51 && a <= 55).length);
   });
 
   it('throws slower and splits wider from a low slot', () => {
