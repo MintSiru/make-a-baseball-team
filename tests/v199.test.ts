@@ -13,6 +13,8 @@ import { withScenario } from '../src/league/scenarios';
 import type { ExpansionSettings, LeagueState } from '../src/league/state';
 import { rulesFor } from '../src/rules/history';
 import { salaryCapFor } from '../src/rules/kbo2026';
+import { historicCosts } from '../src/league/finance';
+import { LEGACY_ERA } from '../src/league/legacy1982';
 import { playGame } from '../src/league/season';
 
 const settings = (board: boolean): ExpansionSettings => ({ name: '청주 독수리', short: '독수리', color: '#1f6fb2', cityId: 'cheongju', parentType: 'conglomerate', parentName: '청주그룹', stadium: 'existing', promotion: 'immediate', difficulty: 'normal', scenario: null, ...(board ? { board: true } : {}) });
@@ -170,5 +172,16 @@ describe('important decisions left short', () => {
     const f = { kind: 'foreign' as const, candidates: ['x'], regular: 2, asia: 0 };
     expect(omission(f, { kind: 'foreign', ids: [] })).toContain('2');
     expect(omission(f, { kind: 'foreign', ids: ['x'] })).toBeNull();
+  });
+});
+
+describe('a legacy club’s running costs', () => {
+  it('runs at the era’s scale as its gates do, today’s from 2015 and in every other game', () => {
+    setEra({ era: LEGACY_ERA, historical: true });
+    expect(historicCosts(1983)).toBeLessThan(0.4);
+    expect(historicCosts(1995)).toBeGreaterThan(historicCosts(1985));
+    expect(historicCosts(2015)).toBe(1);
+    setEra(0);
+    expect(historicCosts(1983)).toBe(1);
   });
 });
