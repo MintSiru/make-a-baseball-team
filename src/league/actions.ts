@@ -14,6 +14,7 @@ import { makeTrade, releasePlayer, replaceForeign, signFromPool } from './trade'
 import { movePlayer, registerPlayer, setLineupCard, setRole } from './entry';
 import type { BullpenRole } from './engine/types';
 import { ensureNumbers, setNumber } from './numbers';
+import { setNickname } from './nicknames';
 import { openProjects, startProject, type ProjectKind } from './ballpark';
 import { clubState } from './fans';
 import { FANS } from './tuning';
@@ -104,6 +105,8 @@ export type Action =
   | { kind: 'facility'; facility: FacilityKind }
   /** The general manager gives one of our players a uniform number (V0.12). */
   | { kind: 'number'; id: PlayerId; number: number }
+  /** 1.9.3 (nicknames.ts): the general manager's own nickname for one of our players (empty: the fans' again). */
+  | { kind: 'nickname'; id: PlayerId; text: string }
   /** The club's own doping test on one of our players (V0.12). */
   | { kind: 'inspect'; id: PlayerId }
   /** 1.2.0: a drive for our All-Star candidates' fan ballots. */
@@ -128,7 +131,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -312,6 +315,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'number':
       setNumber(s, action.id, action.number);
+      break;
+    case 'nickname':
+      setNickname(s, action.id, action.text);
       break;
     case 'extend':
       offerExtension(s, action.id, action.years);

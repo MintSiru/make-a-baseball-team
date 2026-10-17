@@ -18,6 +18,7 @@ import { rollPersonality, rollTraits } from '../league/traits';
 import { FOREIGN_TYPES, foreignTypeOf } from '../league/players';
 import { backfillDraftLog } from '../league/draftlog';
 import { backfillMlb, rescoreMlb } from '../league/mlb';
+import { nicknameWinter } from '../league/nicknames';
 import { dealYears } from '../league/returnees';
 import { logGrades } from '../league/offseason';
 
@@ -134,6 +135,8 @@ export function migrateState(raw: unknown, from: string): LeagueState {
   // a season past the deadlines lets everyone in this year, and a postseason under way plays its round as it stands.
   const stops = s.user?.settings.stops;
   if (stops?.includes('bigGame') && !stops.includes('postEntry')) stops.push('postEntry');
+  // 1.9.3: the fans' nicknames from the record so far (no news for them).
+  if (s.history.length) nicknameWinter(s, s.history.at(-1)!.year, false);
   // The ability graph starts from today's report.
   for (const p of Object.values(s.players)) if (!p.gradeLog && (p.status === 'active' || p.status === 'military' || p.status === 'freeAgent')) logGrades(p, p.scouting.season);
   s.sim = SIM_VERSION;

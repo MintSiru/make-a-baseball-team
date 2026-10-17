@@ -11,6 +11,10 @@ import { retiring, STEEL_HOLD } from '../src/league/offseason';
 import { fastballOf, PITCH_LABELS, repertoire, type PitchType } from '../src/league/pitches';
 import { isPitcher } from '../src/league/players';
 import { withScenario } from '../src/league/scenarios';
+import { checkNickname, NICKNAME_MAX, nicknameOf, nicknameWhy, nicknameWinter, setNickname } from '../src/league/nicknames';
+import { parseSave } from '../src/save/format';
+import { readFileSync } from 'node:fs';
+import { gunzipSync } from 'node:zlib';
 import type { ExpansionSettings, LeagueState } from '../src/league/state';
 
 const CODES = ['SL', 'SW', 'SLV', 'CB', 'CH', 'CIR', 'FRK', 'SPL', 'CUT', '2SFB', 'SNK', 'KN', 'SCR', 'PLM', 'SH'];
@@ -79,6 +83,48 @@ describe('the overseas record', () => {
     const rows = mlbView(base());
     expect(rows.some((r) => r.npb)).toBe(true);
     expect(rows.some((r) => !r.npb)).toBe(true);
+  });
+});
+
+describe('nicknames', () => {
+  it('the fans give some players one from the record, each with its reason; once more changes nothing', () => {
+    const s = base();
+    const named = Object.values(s.players).filter((p) => p.nickname && p.status === 'active');
+    const active = Object.values(s.players).filter((p) => p.status === 'active' && p.teamId);
+    expect(named.length).toBeGreaterThan(active.length * 0.02);
+    expect(named.length).toBeLessThan(active.length * 0.2);
+    for (const p of named) {
+      expect(nicknameOf(s, p)!.length).toBeGreaterThan(0);
+      expect(nicknameOf(s, p)).not.toContain('{');
+      expect(nicknameWhy(p)).toBeTruthy();
+    }
+    // More than one kind.
+    expect(new Set(named.map((p) => p.nickname!.code)).size).toBeGreaterThan(8);
+    const before = JSON.stringify(named.map((p) => p.nickname));
+    nicknameWinter(s, s.history.at(-1)!.year, false);
+    expect(JSON.stringify(named.map((p) => p.nickname))).toBe(before);
+  });
+
+  it('the general manager names our players (his own shows instead; empty gives the fans’ back)', () => {
+    const src = Object.values(base().players).find((p) => p.nickname && p.status === 'active')!;
+    const p: Player = { ...src };
+    const s = { ...base(), players: { ...base().players, [p.id]: p }, user: { teamId: p.teamId } } as unknown as LeagueState;
+    const fans = nicknameOf(s, p);
+    expect(checkNickname(s, p.id, 'ㄱ'.repeat(NICKNAME_MAX + 1))).not.toBeNull();
+    setNickname(s, p.id, '  우리 집 막내 ');
+    expect(nicknameOf(s, p)).toBe('우리 집 막내');
+    expect(nicknameWhy(p)).toBeNull();
+    setNickname(s, p.id, '');
+    expect(nicknameOf(s, p)).toBe(fans);
+    // Not someone else's player.
+    const other = Object.values(base().players).find((x) => x.teamId && x.teamId !== p.teamId)!;
+    expect(checkNickname(s, other.id, '남의 선수')).not.toBeNull();
+  });
+
+  it('a 1.9.0 save gets the nicknames its record earned', () => {
+    const save = parseSave(gunzipSync(readFileSync(new URL('./fixtures/save-1.9.0.json.gz', import.meta.url))).toString('utf8'));
+    const s = save.snapshot!.state as LeagueState;
+    expect(Object.values(s.players).some((p) => p.nickname)).toBe(true);
   });
 });
 

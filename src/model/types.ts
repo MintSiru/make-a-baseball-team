@@ -263,6 +263,10 @@ export interface Player {
   post?: PostRecord[];
   /** Awards and titles ("2027 MVP", "2027 홈런 1위 (38개)"). */
   honors?: string[];
+  /** 1.9.3 (nicknames.ts): the fans' nickname — which one (code, index into its names), the winter it came and the
+      club a "{club}" in it names — and the general manager's own for our player, which shows instead. */
+  nickname?: { code: string; i: number; year: number; team?: TeamId };
+  nicknameOwn?: string;
   /** Injuries so far (first team and futures). */
   injuries?: InjuryRecord[];
   /** 1.7.0 (adapt.ts): the season he failed to adapt to the KBO, and the grade points his main tools lose in games. */

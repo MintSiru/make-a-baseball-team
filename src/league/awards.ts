@@ -29,6 +29,30 @@ export interface SeasonAwards {
 
 type Rec = { p: Player; c: SeasonRecord };
 
+/** 1.9.3: the titles' and two golden gloves' labels as stored in the award lists (nicknames.ts reads them back). */
+const LABELS = {
+  avg: __i18n_k("league.awards.computeAwards.1eb19e0a"),
+  hr: __i18n_k("league.awards.computeAwards.9162d3a3"),
+  rbi: __i18n_k("league.awards.computeAwards.fed1c588"),
+  r: __i18n_k("league.awards.computeAwards.4b4a98b9"),
+  h: '안타',
+  obp: __i18n_k("league.awards.computeAwards.bb6ef1b2"),
+  slg: __i18n_k("league.awards.computeAwards.7e66b88d"),
+  pct: __i18n_k("league.awards.computeAwards.82cc030f"),
+  ggC: __i18n_k("league.awards.lABEL.c.5f31470d"),
+  ggSs: __i18n_k("league.awards.lABEL.sS.3e24c7f1"),
+  ggOf: __i18n_k("league.awards.computeAwards.pos.7435120b"),
+  sb: __i18n_k("league.awards.computeAwards.91e54831"),
+  w: __i18n_k("league.awards.computeAwards.a6eedf9a"),
+  era: __i18n_k("league.awards.computeAwards.f0f9146b"),
+  k: __i18n_k("league.awards.computeAwards.3e23c769"),
+  sv: '세이브',
+  hld: __i18n_k("league.awards.computeAwards.9329045a"),
+  ggPitcher: '투수',
+  ggDh: __i18n_k("league.awards.lABEL.dH.8eba4676"),
+} as const;
+export const awardLabel = (code: string): string => (LABELS as Record<string, string>)[code] ?? code;
+
 const f3 = (x: number) => x.toFixed(3).replace(/^0/, '');
 const ip = (outs: number) => `${Math.floor(outs / 3)}${outs % 3 ? ` ${outs % 3}/3` : ''}`;
 

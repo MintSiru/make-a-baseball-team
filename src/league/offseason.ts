@@ -30,6 +30,7 @@ import { driftPotential, futureBefore, winterReport } from './scouting';
 import { logPick } from './draftlog';
 import { applyDemotionCuts, settleFinances } from './finance';
 import { awardHonours, computeAwards, hallOfFameCheck } from './awards';
+import { nicknameWinter } from './nicknames';
 import { seasonMoments } from './milestones';
 import { addNews, seasonNews } from './news';
 import { seasonFans } from './fans';
@@ -133,6 +134,7 @@ export function closeSeason(s: LeagueState) {
   seasonAlert(s, s.year);
   summary.awards = computeAwards(s, s.year, summary.table, summary.champion);
   awardHonours(s, s.year, summary.awards);
+  nicknameWinter(s, s.year);
   awardAlert(s, s.year, summary.awards);
   awardInterview(s, s.year, summary.awards);
   settleFinances(s, s.year, summary.table);

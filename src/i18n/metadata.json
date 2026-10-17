@@ -68945,5 +68945,1458 @@
     "line": 49,
     "params": {},
     "locations": []
+  },
+  "league.nicknames.text.bf8187e7": {
+    "source": "src/league/nicknames.ts",
+    "line": 22,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.400f1864": {
+    "source": "src/league/nicknames.ts",
+    "line": 22,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.72075069": {
+    "source": "src/league/nicknames.ts",
+    "line": 22,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.896908f4": {
+    "source": "src/league/nicknames.ts",
+    "line": 22,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.35e6f1f3": {
+    "source": "src/league/nicknames.ts",
+    "line": 23,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.4b47db32": {
+    "source": "src/league/nicknames.ts",
+    "line": 23,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.5b44ab89": {
+    "source": "src/league/nicknames.ts",
+    "line": 23,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.53e2ce84": {
+    "source": "src/league/nicknames.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.3b9bdba2": {
+    "source": "src/league/nicknames.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.88678a90": {
+    "source": "src/league/nicknames.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.72ed7454": {
+    "source": "src/league/nicknames.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.77dfd824": {
+    "source": "src/league/nicknames.ts",
+    "line": 25,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.32f7e058": {
+    "source": "src/league/nicknames.ts",
+    "line": 25,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.cd526bf0": {
+    "source": "src/league/nicknames.ts",
+    "line": 25,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.60e9f92b": {
+    "source": "src/league/nicknames.ts",
+    "line": 25,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.876f733f": {
+    "source": "src/league/nicknames.ts",
+    "line": 26,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.150c64db": {
+    "source": "src/league/nicknames.ts",
+    "line": 26,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.61bf0260": {
+    "source": "src/league/nicknames.ts",
+    "line": 26,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.5123d97a": {
+    "source": "src/league/nicknames.ts",
+    "line": 26,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.89e5b73a": {
+    "source": "src/league/nicknames.ts",
+    "line": 27,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.f8bc7046": {
+    "source": "src/league/nicknames.ts",
+    "line": 27,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.bf2ae07b": {
+    "source": "src/league/nicknames.ts",
+    "line": 27,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.e74ea0c8": {
+    "source": "src/league/nicknames.ts",
+    "line": 27,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.797b2584": {
+    "source": "src/league/nicknames.ts",
+    "line": 28,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.32087d90": {
+    "source": "src/league/nicknames.ts",
+    "line": 28,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.33874b72": {
+    "source": "src/league/nicknames.ts",
+    "line": 28,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.2f2dc8c8": {
+    "source": "src/league/nicknames.ts",
+    "line": 28,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.fa38ca53": {
+    "source": "src/league/nicknames.ts",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.4c2e8a5e": {
+    "source": "src/league/nicknames.ts",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.fce91d12": {
+    "source": "src/league/nicknames.ts",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.65624f66": {
+    "source": "src/league/nicknames.ts",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.884ab20d": {
+    "source": "src/league/nicknames.ts",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.2d3441f3": {
+    "source": "src/league/nicknames.ts",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.b8df828c": {
+    "source": "src/league/nicknames.ts",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.edbdf38e": {
+    "source": "src/league/nicknames.ts",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.4f9eb883": {
+    "source": "src/league/nicknames.ts",
+    "line": 31,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.9c8069c6": {
+    "source": "src/league/nicknames.ts",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.44045880": {
+    "source": "src/league/nicknames.ts",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.b281e484": {
+    "source": "src/league/nicknames.ts",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.4f1e3fa1": {
+    "source": "src/league/nicknames.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.29ad170a": {
+    "source": "src/league/nicknames.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.5d857bac": {
+    "source": "src/league/nicknames.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.daf4d623": {
+    "source": "src/league/nicknames.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.80ef74b5": {
+    "source": "src/league/nicknames.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.a0471ab7": {
+    "source": "src/league/nicknames.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.47abeef5": {
+    "source": "src/league/nicknames.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.b387de31": {
+    "source": "src/league/nicknames.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.0f43dced": {
+    "source": "src/league/nicknames.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.cdf98f2d": {
+    "source": "src/league/nicknames.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.744811eb": {
+    "source": "src/league/nicknames.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.e1b293f0": {
+    "source": "src/league/nicknames.ts",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.7d20f8e3": {
+    "source": "src/league/nicknames.ts",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.23d1b328": {
+    "source": "src/league/nicknames.ts",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.cbe85715": {
+    "source": "src/league/nicknames.ts",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.26b2de5d": {
+    "source": "src/league/nicknames.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.3902089d": {
+    "source": "src/league/nicknames.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.8aec620c": {
+    "source": "src/league/nicknames.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.5355207c": {
+    "source": "src/league/nicknames.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.e70d808e": {
+    "source": "src/league/nicknames.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.2f591371": {
+    "source": "src/league/nicknames.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.04acd87e": {
+    "source": "src/league/nicknames.ts",
+    "line": 37,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.0605fc64": {
+    "source": "src/league/nicknames.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.ffc72ae8": {
+    "source": "src/league/nicknames.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.18acdc99": {
+    "source": "src/league/nicknames.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.1ca201f3": {
+    "source": "src/league/nicknames.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.c9fde957": {
+    "source": "src/league/nicknames.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.0907682a": {
+    "source": "src/league/nicknames.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.21ff9e6f": {
+    "source": "src/league/nicknames.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.c91c8593": {
+    "source": "src/league/nicknames.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.9ecfbb08": {
+    "source": "src/league/nicknames.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.2b9f9d66": {
+    "source": "src/league/nicknames.ts",
+    "line": 146,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "nick": {
+        "expression": "nick"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.abba8145": {
+    "source": "src/league/nicknames.ts",
+    "line": 147,
+    "params": {
+      "club": {
+        "expression": "clubShort(s, p.teamId)"
+      },
+      "name": {
+        "expression": "p.name"
+      },
+      "nick": {
+        "expression": "nick"
+      },
+      "why": {
+        "expression": "CATALOG[best].why()"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.3d832159": {
+    "source": "src/league/nicknames.ts",
+    "line": 159,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.327ea555": {
+    "source": "src/league/nicknames.ts",
+    "line": 160,
+    "params": {
+      "n": {
+        "expression": "NICKNAME_MAX"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.b144acf5": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 498,
+    "params": {
+      "nickname": {
+        "expression": "nickname"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.06bea072": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 498,
+    "params": {
+      "why": {
+        "expression": "nicknameWhy(p)!"
+      },
+      "year": {
+        "expression": "p.nickname!.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.0aceafa3": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 853,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.4a49fb33": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 857,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.13627b09": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 857,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.b88d4106": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 859,
+    "params": {
+      "fans": {
+        "expression": "fans"
+      },
+      "why": {
+        "expression": "nicknameWhy({ ...p, nicknameOwn: undefined }) ?? ''"
+      },
+      "year": {
+        "expression": "p.nickname!.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.f6fc8202": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 859,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.9cda7809": {
+    "source": "src/league/nicknames.ts",
+    "line": 23,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.a96961b0": {
+    "source": "src/league/nicknames.ts",
+    "line": 23,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.b7674e16": {
+    "source": "src/league/nicknames.ts",
+    "line": 23,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.f69335ff": {
+    "source": "src/league/nicknames.ts",
+    "line": 23,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.3980c706": {
+    "source": "src/league/nicknames.ts",
+    "line": 23,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.1c4ddf42": {
+    "source": "src/league/nicknames.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.70a99f74": {
+    "source": "src/league/nicknames.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.1f2b3bdb": {
+    "source": "src/league/nicknames.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.75a0b461": {
+    "source": "src/league/nicknames.ts",
+    "line": 25,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.3b993e89": {
+    "source": "src/league/nicknames.ts",
+    "line": 25,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.443d65cd": {
+    "source": "src/league/nicknames.ts",
+    "line": 26,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.9a7037c9": {
+    "source": "src/league/nicknames.ts",
+    "line": 26,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.11dccbc1": {
+    "source": "src/league/nicknames.ts",
+    "line": 26,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.e62661ba": {
+    "source": "src/league/nicknames.ts",
+    "line": 26,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.105caf78": {
+    "source": "src/league/nicknames.ts",
+    "line": 26,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.7307ca11": {
+    "source": "src/league/nicknames.ts",
+    "line": 27,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.840295f1": {
+    "source": "src/league/nicknames.ts",
+    "line": 27,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.c53811ee": {
+    "source": "src/league/nicknames.ts",
+    "line": 28,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.906fc8e3": {
+    "source": "src/league/nicknames.ts",
+    "line": 28,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.2112ca45": {
+    "source": "src/league/nicknames.ts",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.0da80aac": {
+    "source": "src/league/nicknames.ts",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.9ed8a3ff": {
+    "source": "src/league/nicknames.ts",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.3db7ccf1": {
+    "source": "src/league/nicknames.ts",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.1cfc2a9f": {
+    "source": "src/league/nicknames.ts",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.fd9990be": {
+    "source": "src/league/nicknames.ts",
+    "line": 30,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.0c999e42": {
+    "source": "src/league/nicknames.ts",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.3b0147c6": {
+    "source": "src/league/nicknames.ts",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.99bcd40c": {
+    "source": "src/league/nicknames.ts",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.0ddcb21f": {
+    "source": "src/league/nicknames.ts",
+    "line": 31,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.71cdc639": {
+    "source": "src/league/nicknames.ts",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.1f6956d1": {
+    "source": "src/league/nicknames.ts",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.c6e716e8": {
+    "source": "src/league/nicknames.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.955eaee2": {
+    "source": "src/league/nicknames.ts",
+    "line": 32,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.9c7c884f": {
+    "source": "src/league/nicknames.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.2fbd689d": {
+    "source": "src/league/nicknames.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.527396e8": {
+    "source": "src/league/nicknames.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.f94340f5": {
+    "source": "src/league/nicknames.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.cd63a1f6": {
+    "source": "src/league/nicknames.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.cc9211e8": {
+    "source": "src/league/nicknames.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.6716992d": {
+    "source": "src/league/nicknames.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.99f9b122": {
+    "source": "src/league/nicknames.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.e42aef3c": {
+    "source": "src/league/nicknames.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.f0a32856": {
+    "source": "src/league/nicknames.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.05ac7984": {
+    "source": "src/league/nicknames.ts",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.e3b2c537": {
+    "source": "src/league/nicknames.ts",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.3f399485": {
+    "source": "src/league/nicknames.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.2672eda9": {
+    "source": "src/league/nicknames.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.87d41670": {
+    "source": "src/league/nicknames.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.3c81368a": {
+    "source": "src/league/nicknames.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.46672e13": {
+    "source": "src/league/nicknames.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.490bbb1f": {
+    "source": "src/league/nicknames.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.e6797497": {
+    "source": "src/league/nicknames.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.7f9f3a3f": {
+    "source": "src/league/nicknames.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.4c03dbad": {
+    "source": "src/league/nicknames.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.25cc6919": {
+    "source": "src/league/nicknames.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.0a9dbd6e": {
+    "source": "src/league/nicknames.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.4ee0c0b3": {
+    "source": "src/league/nicknames.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.17724412": {
+    "source": "src/league/nicknames.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.7addf5ff": {
+    "source": "src/league/nicknames.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.5af2e330": {
+    "source": "src/league/nicknames.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.b7d3ffdd": {
+    "source": "src/league/nicknames.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.9e2c0437": {
+    "source": "src/league/nicknames.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.15e0cec4": {
+    "source": "src/league/nicknames.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.a36481ab": {
+    "source": "src/league/nicknames.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.209ab2a2": {
+    "source": "src/league/nicknames.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.695e57a2": {
+    "source": "src/league/nicknames.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.a7cd6108": {
+    "source": "src/league/nicknames.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.b8275c0c": {
+    "source": "src/league/nicknames.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.7a7b6779": {
+    "source": "src/league/nicknames.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.cdafbf8a": {
+    "source": "src/league/nicknames.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.1da58dca": {
+    "source": "src/league/nicknames.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.4a083719": {
+    "source": "src/league/nicknames.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.7d034fc9": {
+    "source": "src/league/nicknames.ts",
+    "line": 42,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.d0dd3fac": {
+    "source": "src/league/nicknames.ts",
+    "line": 42,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.79d8f028": {
+    "source": "src/league/nicknames.ts",
+    "line": 43,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.f191b006": {
+    "source": "src/league/nicknames.ts",
+    "line": 43,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.c1cf5fa2": {
+    "source": "src/league/nicknames.ts",
+    "line": 43,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.421cabcd": {
+    "source": "src/league/nicknames.ts",
+    "line": 43,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.df6310ae": {
+    "source": "src/league/nicknames.ts",
+    "line": 44,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.a32579c4": {
+    "source": "src/league/nicknames.ts",
+    "line": 44,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.12efaf1a": {
+    "source": "src/league/nicknames.ts",
+    "line": 45,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.7c8fe1d8": {
+    "source": "src/league/nicknames.ts",
+    "line": 45,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.1c4fc3cd": {
+    "source": "src/league/nicknames.ts",
+    "line": 45,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.a19f4599": {
+    "source": "src/league/nicknames.ts",
+    "line": 45,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.668f1377": {
+    "source": "src/league/nicknames.ts",
+    "line": 46,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.c80cc3a9": {
+    "source": "src/league/nicknames.ts",
+    "line": 46,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.8d59c0e6": {
+    "source": "src/league/nicknames.ts",
+    "line": 46,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.c6a798b4": {
+    "source": "src/league/nicknames.ts",
+    "line": 46,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.d9b5abb6": {
+    "source": "src/league/nicknames.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.2ba04135": {
+    "source": "src/league/nicknames.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.c5b6630a": {
+    "source": "src/league/nicknames.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.1fbf2c87": {
+    "source": "src/league/nicknames.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.4e315d40": {
+    "source": "src/league/nicknames.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.3b2dac19": {
+    "source": "src/league/nicknames.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.67f521ae": {
+    "source": "src/league/nicknames.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.8405ef4a": {
+    "source": "src/league/nicknames.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.8284c14e": {
+    "source": "src/league/nicknames.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.8c18249e": {
+    "source": "src/league/nicknames.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.d6ba8d04": {
+    "source": "src/league/nicknames.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.ded7d733": {
+    "source": "src/league/nicknames.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.7c181cc9": {
+    "source": "src/league/nicknames.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.14813a3b": {
+    "source": "src/league/nicknames.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.8273df60": {
+    "source": "src/league/nicknames.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.37a1b748": {
+    "source": "src/league/nicknames.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.8bff19d3": {
+    "source": "src/league/nicknames.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.37e36092": {
+    "source": "src/league/nicknames.ts",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.443431ad": {
+    "source": "src/league/nicknames.ts",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.66dc12c6": {
+    "source": "src/league/nicknames.ts",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.ece4397d": {
+    "source": "src/league/nicknames.ts",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.27269e1e": {
+    "source": "src/league/nicknames.ts",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.7a5f1801": {
+    "source": "src/league/nicknames.ts",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.d6f8a48f": {
+    "source": "src/league/nicknames.ts",
+    "line": 53,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.b08f3e93": {
+    "source": "src/league/nicknames.ts",
+    "line": 53,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.59a3c5dd": {
+    "source": "src/league/nicknames.ts",
+    "line": 53,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.67c94da4": {
+    "source": "src/league/nicknames.ts",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.c4a00276": {
+    "source": "src/league/nicknames.ts",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.9eb02a98": {
+    "source": "src/league/nicknames.ts",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.fcac2e86": {
+    "source": "src/league/nicknames.ts",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.01d2cae3": {
+    "source": "src/league/nicknames.ts",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.3ec6bbe3": {
+    "source": "src/league/nicknames.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.1db38f03": {
+    "source": "src/league/nicknames.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.bd21d353": {
+    "source": "src/league/nicknames.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.2ee0e24d": {
+    "source": "src/league/nicknames.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.38b86773": {
+    "source": "src/league/nicknames.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.eae3f936": {
+    "source": "src/league/nicknames.ts",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.2054db51": {
+    "source": "src/league/nicknames.ts",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.6bae7a8e": {
+    "source": "src/league/nicknames.ts",
+    "line": 57,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.0d93b9ef": {
+    "source": "src/league/nicknames.ts",
+    "line": 57,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.3d76d4a6": {
+    "source": "src/league/nicknames.ts",
+    "line": 58,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.4a07773b": {
+    "source": "src/league/nicknames.ts",
+    "line": 58,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.84ea2ab1": {
+    "source": "src/league/nicknames.ts",
+    "line": 59,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.2dc02089": {
+    "source": "src/league/nicknames.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.33e8febb": {
+    "source": "src/league/nicknames.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.13d4ee4c": {
+    "source": "src/league/nicknames.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.ce265203": {
+    "source": "src/league/nicknames.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.73d529bc": {
+    "source": "src/league/nicknames.ts",
+    "line": 61,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.9e085d61": {
+    "source": "src/league/nicknames.ts",
+    "line": 61,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.4d4b94fc": {
+    "source": "src/league/nicknames.ts",
+    "line": 61,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.08e3820a": {
+    "source": "src/league/nicknames.ts",
+    "line": 61,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.9df84812": {
+    "source": "src/league/nicknames.ts",
+    "line": 62,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.db633069": {
+    "source": "src/league/nicknames.ts",
+    "line": 62,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.1d2fe275": {
+    "source": "src/league/nicknames.ts",
+    "line": 62,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.3682fa89": {
+    "source": "src/league/nicknames.ts",
+    "line": 62,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.2ede4455": {
+    "source": "src/league/nicknames.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.bf2885ef": {
+    "source": "src/league/nicknames.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
   }
 }

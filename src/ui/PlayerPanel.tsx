@@ -9,6 +9,7 @@ import type { Split, Splits } from '../league/engine/types';
 import type { Action } from '../league/actions';
 import { wagwa } from '../league/josa';
 import { checkNumber, numberHolder } from '../league/numbers';
+import { checkNickname, NICKNAME_MAX, nicknameOf, nicknameWhy } from '../league/nicknames';
 import { checkInspect } from '../league/scandals';
 import { SCANDAL } from '../league/tuning';
 import type { LeagueState } from '../league/state';
@@ -331,6 +332,7 @@ export function PlayerPanel({
   const foreign = p.origin.kind === 'foreign';
   const ours = !!league.user && p.teamId === league.user.teamId;
   const wearing = p.number != null && p.numberTeam === p.teamId ? p.number : null;
+  const nickname = nicknameOf(league, p);
   const hurtDays = card.injuries.reduce((a, x) => a + x.days, 0);
   // Life off the field (V0.10): today's form and his trips abroad.
   const today = league.phase === 'regular' ? (league.schedule[league.next]?.date ?? `${league.year}-10-01`) : `${league.year}-12-31`;
@@ -354,6 +356,7 @@ export function PlayerPanel({
               {__i18n_display(p.name)}
               {__i18n_display(p.contract?.kind === 'development' && <span class="tag">{__i18n_t("ui.playerPanel.playerPanel.818f3b79")}</span>)}
             </h2>
+            {__i18n_display(nickname && <p class="profile-nickname" title={__i18n_displayText(nicknameWhy(p) ?? '')}>“{__i18n_display(nickname)}”</p>)}
           </div>
         </div>
         <SummaryStrip card={card} pitcher={pitcher} titles={postSum.titles} />
@@ -491,6 +494,10 @@ export function PlayerPanel({
         {__i18n_display(shown === 'profile' && (
           <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.032e3f1f")}>
             {__i18n_display(onAct && ours && <NumberField key={`${p.id}-${wearing ?? ''}`} league={league} id={p.id} current={wearing} onAct={onAct} />)}
+            {__i18n_display(nickname && !(onAct && ours) && (
+              <p class="small">{__i18n_display(__i18n_t("ui.playerPanel.text.b144acf5", { nickname }))}{__i18n_display(nicknameWhy(p) ? __i18n_t("ui.playerPanel.text.06bea072", { why: nicknameWhy(p)!, year: p.nickname!.year }) : '')}</p>
+            ))}
+            {onAct && ours && <NicknameField key={`${p.id}-${p.nicknameOwn ?? ''}`} league={league} id={p.id} onAct={onAct} />}
             {onAct && ours && <ExtensionOffer league={league} id={p.id} onAct={onAct} />}
             {__i18n_display(onAct && ours && (p.life?.suspicion?.signs ?? 0) > 0 && (
               <p class="inline-form">
@@ -830,6 +837,26 @@ function NumberField({ league, id, current, onAct }: { league: LeagueState; id: 
         {__i18n_display(holder ? __i18n_k("ui.playerPanel.numberField.0e4ceea3", { name: wagwa(holder.name) }) : __i18n_k("ui.playerPanel.numberField.75b73b7f"))}
       </button>
       {__i18n_display(problem && text.trim() !== '' && <span class="muted small">{__i18n_display(problem)}</span>)}
+    </p>
+  );
+}
+
+/** 1.9.3: our player's nickname — the fans' (and why), or one the general manager gives him. */
+function NicknameField({ league, id, onAct }: { league: LeagueState; id: string; onAct: (a: Action) => void }) {
+  const p = league.players[id]!;
+  const [text, setText] = useState(p.nicknameOwn ?? '');
+  const problem = checkNickname(league, id, text);
+  const fans = p.nickname ? nicknameOf(league, { ...p, nicknameOwn: undefined }) : null;
+  return (
+    <p class="inline-form nickname-form">
+      <label>
+        {__i18n_t("ui.playerPanel.text.0aceafa3")}
+        <input type="text" maxLength={NICKNAME_MAX} value={text} placeholder={fans ?? ''} aria-label={__i18n_t("ui.playerPanel.text.0aceafa3")} onInput={(e) => setText((e.currentTarget as HTMLInputElement).value)} />
+      </label>
+      <button type="button" disabled={!!problem || text.trim() === (p.nicknameOwn ?? '')} onClick={() => onAct({ kind: 'nickname', id, text })}>
+        {text.trim() ? __i18n_t("ui.playerPanel.text.4a49fb33") : __i18n_t("ui.playerPanel.text.13627b09")}
+      </button>
+      <span class="muted small">{__i18n_display(problem ?? (fans ? __i18n_t("ui.playerPanel.text.b88d4106", { fans, why: nicknameWhy({ ...p, nicknameOwn: undefined }) ?? '', year: p.nickname!.year }) : __i18n_t("ui.playerPanel.text.f6fc8202")))}</span>
     </p>
   );
 }
