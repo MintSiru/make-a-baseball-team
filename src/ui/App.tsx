@@ -39,11 +39,11 @@ import { Games } from './Games';
 import { DraftBoard } from './DraftBoard';
 import { History } from './History';
 import { Leaders } from './Leaders';
-import { lastOurGame, ourNextGame, postseasonStatus, roundName } from '../league/postseason';
+import { lastOurGame, ourNextGame, postseasonStatus, postseasonTicket, roundName } from '../league/postseason';
 import { stopsOf } from '../league/stops';
 import { applyCombine, attends, checkWorkout, combineHeld, combineLines, workoutsOf } from '../league/combine';
 import { traitReport } from '../league/reports';
-import { COMBINE } from '../league/tuning';
+import { COMBINE, POSTSEASON_GATE } from '../league/tuning';
 import { money } from './format';
 import { applyHere, applyInWorker, createInWorker } from './leagueClient';
 import { Market } from './Market';
@@ -520,6 +520,14 @@ export function App() {
     <>
       <p class="big-game">
         <strong>{__i18n_t("ui.app.text.06ff4ff1", { round: roundName(league, big.round), game: big.game })}</strong> {__i18n_t("ui.app.text.ada6554e", { opp: league.teams.find((t) => t.id === big.opp)?.short ?? big.opp, where: big.home ? __i18n_t("ui.app.text.13a46f96") : __i18n_t("ui.app.text.ef6b033f") })}
+        {/* 1.9.0: the round's ticket price at the home park, and our share of the gate. */}
+        <span class="muted small">
+          {' '}
+          {__i18n_t("ui.app.text.a1f1d2fc", {
+            price: Math.round(postseasonTicket(league, big.home ? league.user!.teamId : big.opp, big.round) * 10000).toLocaleString('ko-KR'),
+            pct: Math.round((big.home ? POSTSEASON_GATE.home : POSTSEASON_GATE.away) * 100),
+          })}
+        </span>
       </p>
       <button type="button" class="primary" onClick={watchLive}>{__i18n_t("ui.app.text.1fe38266")}</button>
       <button type="button" onClick={() => act({ kind: 'postseasonDay' }, __i18n_k("ui.app.app.controls.e39c3d6f"), false)}>{__i18n_t("ui.app.text.1a3c3146")}</button>

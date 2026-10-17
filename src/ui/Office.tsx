@@ -17,7 +17,7 @@ import { AlumnusTag } from './Alumni';
 import { firstTeamIds, type ClubReport, type LeagueState, type StaffRole } from '../league/state';
 import { booksOf } from '../league/foreigncap';
 import { usd } from '../league/foreign';
-import { FANS } from '../league/tuning';
+import { FANS, POSTSEASON_GATE } from '../league/tuning';
 import { checkStadiumName, STADIUM_NAME_MAX } from '../league/userclub';
 import { salaryCapFor } from '../rules/kbo2026';
 import { money } from './format';
@@ -52,7 +52,7 @@ const REVENUE: [keyof ClubReport['revenue'], string][] = [
   ['naming', __i18n_k("ui.office.rEVENUE.07ad0206")],
   ['merchandise', __i18n_k("ui.office.rEVENUE.a4c284ac")],
   ['concessions', __i18n_k("ui.office.rEVENUE.555b670f")],
-  ['postseason', __i18n_k("ui.office.rEVENUE.bd1bbac3")],
+  ['postseason', __i18n_t("ui.office.text.ffe523e2")],
 ];
 const EXPENSES: [keyof ClubReport['expenses'], string][] = [
   ['players', __i18n_k("ui.office.eXPENSES.13aa5c72")],
@@ -391,6 +391,18 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
               )))}
             </select>
           </label>
+          {/* 1.9.0: postseason prices follow the regular one, and the gate is split game by game. */}
+          <p class="muted small">
+            {__i18n_t("ui.office.text.c05f7da6", {
+              wc: priceWon(club.price * POSTSEASON_GATE.price.wildcard).toLocaleString('ko-KR'),
+              semi: priceWon(club.price * POSTSEASON_GATE.price.semipo).toLocaleString('ko-KR'),
+              po: priceWon(club.price * POSTSEASON_GATE.price.po).toLocaleString('ko-KR'),
+              ks: priceWon(club.price * POSTSEASON_GATE.price.ks).toLocaleString('ko-KR'),
+              home: Math.round(POSTSEASON_GATE.home * 100),
+              away: Math.round(POSTSEASON_GATE.away * 100),
+              league: Math.round(POSTSEASON_GATE.league * 100),
+            })}
+          </p>
           <h3>{__i18n_t("ui.office.office.9e4505ff")}</h3>
           <p class="muted">{__i18n_t("ui.office.office.627a6285", { value: tickets ? __i18n_k("ui.office.office.57f49a0f", { value: tickets.sold.toLocaleString('ko-KR'), value2: Math.round(tickets.discount * 100), money: money(tickets.paid) }) : '' })}</p>
           <label class="inline-form">

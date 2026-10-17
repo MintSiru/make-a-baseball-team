@@ -376,8 +376,18 @@ export const FANS = {
   priceMax: 1.6,
   marketing: { base: 200_000, effect: 0.08, min: 0, max: 800_000 },
   newClub: { base: 6_000, perMarket: 100, novelty: 0.3 },
-  /** Postseason tickets cost about three times a regular-season seat. */
+  /** Postseason tickets cost about three times a regular-season seat (before 1.9.0; games played before it). */
   postseasonPrice: 3,
+} as const;
+
+/** 1.9.0 (the 1.8 feedback): postseason money by the gate, not by prize shares. Each game's ticket money is split:
+    the league's running costs, the home club and the visitors; tickets cost the home club's own price times the
+    round's factor (a Korean Series seat about three times a regular-season one). */
+export const POSTSEASON_GATE = {
+  league: 0.3,
+  home: 0.4,
+  away: 0.3,
+  price: { wildcard: 1.8, semipo: 2.2, po: 2.6, ks: 3.2 },
 } as const;
 
 /** Club accounts (V0.6, finance.ts), 만 원 a year unless noted. */

@@ -67590,5 +67590,86 @@
       }
     },
     "locations": []
+  },
+  "ui.office.text.ffe523e2": {
+    "source": "src/ui/Office.tsx",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.c05f7da6": {
+    "source": "src/ui/Office.tsx",
+    "line": 396,
+    "params": {
+      "wc": {
+        "expression": "priceWon(club.price * POSTSEASON_GATE.price.wildcard).toLocaleString('ko-KR')"
+      },
+      "semi": {
+        "expression": "priceWon(club.price * POSTSEASON_GATE.price.semipo).toLocaleString('ko-KR')"
+      },
+      "po": {
+        "expression": "priceWon(club.price * POSTSEASON_GATE.price.po).toLocaleString('ko-KR')"
+      },
+      "ks": {
+        "expression": "priceWon(club.price * POSTSEASON_GATE.price.ks).toLocaleString('ko-KR')"
+      },
+      "home": {
+        "expression": "Math.round(POSTSEASON_GATE.home * 100)"
+      },
+      "away": {
+        "expression": "Math.round(POSTSEASON_GATE.away * 100)"
+      },
+      "league": {
+        "expression": "Math.round(POSTSEASON_GATE.league * 100)"
+      }
+    },
+    "locations": []
+  },
+  "ui.app.text.a1f1d2fc": {
+    "source": "src/ui/App.tsx",
+    "line": 526,
+    "params": {
+      "price": {
+        "expression": "Math.round(postseasonTicket(league, big.home ? league.user!.teamId : big.opp, big.round) * 10000).toLocaleString('ko-KR')"
+      },
+      "pct": {
+        "expression": "Math.round((big.home ? POSTSEASON_GATE.home : POSTSEASON_GATE.away) * 100)"
+      }
+    },
+    "locations": []
+  },
+  "ui.manual.text.4190932a": {
+    "source": "src/ui/Manual.tsx",
+    "line": 85,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.88f40597": {
+    "source": "src/ui/Manual.tsx",
+    "line": 85,
+    "params": {
+      "league": {
+        "expression": "Math.round(POSTSEASON_GATE.league * 100)"
+      },
+      "home": {
+        "expression": "Math.round(POSTSEASON_GATE.home * 100)"
+      },
+      "away": {
+        "expression": "Math.round(POSTSEASON_GATE.away * 100)"
+      },
+      "wc": {
+        "expression": "POSTSEASON_GATE.price.wildcard"
+      },
+      "semi": {
+        "expression": "POSTSEASON_GATE.price.semipo"
+      },
+      "po": {
+        "expression": "POSTSEASON_GATE.price.po"
+      },
+      "ks": {
+        "expression": "POSTSEASON_GATE.price.ks"
+      }
+    },
+    "locations": []
   }
 }

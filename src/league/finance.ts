@@ -15,7 +15,7 @@ import { boom, clubState, leaguePrice } from './fans';
 import { payroll } from './offseason';
 import { staffCost } from './staff';
 import { firstTeamIds, orgPlayers, type ClubReport, type LeagueState } from './state';
-import { DEMOTION, FANS, FINANCE as F } from './tuning';
+import { DEMOTION, FANS, FINANCE as F, POSTSEASON_GATE } from './tuning';
 import { concessionsShare, facilityUpkeep, premiumShare } from './facilities';
 import { favouritesMerch } from './life';
 
@@ -27,35 +27,28 @@ export function broadcastPool(year: number): number {
   return Math.round(B.annual2024 * B.nextDeal * (1 + B.growth) ** (year - 2027));
 }
 
-/** Postseason pool: ticket money of every postseason game, less the league's costs. */
-export function postseasonPool(s: LeagueState): number {
-  const P = KBO_2026.postseasonShares;
-  return Math.round((s.postseasonGate ?? 0) * (1 - P.costs));
+/**
+ * 1.9.0 (the 1.8 feedback): no prize shares. Each postseason game's ticket money is split between the league's
+ * running costs, the home club and the visitors (POSTSEASON_GATE), so a club earns from every game it plays, more at
+ * home and more the deeper it goes (tickets cost more each round). A game played before 1.9.0 has no recorded gate:
+ * its money is the old flat price.
+ */
+export function postseasonTakes(s: LeagueState): Record<TeamId, number> {
+  const G = POSTSEASON_GATE;
+  const out: Record<TeamId, number> = {};
+  for (const x of s.postseason)
+    for (const g of x.games) {
+      const gate = g.gate ?? Math.round((g.att ?? 0) * leaguePrice(s.year) * FANS.postseasonPrice);
+      out[g.home] = (out[g.home] ?? 0) + Math.round(gate * G.home);
+      out[g.away] = (out[g.away] ?? 0) + Math.round(gate * G.away);
+    }
+  return out;
 }
 
-/** Each postseason club's share of the pool (KBO 규정 제47조): the regular-season winner takes 20% first. */
-export function postseasonShares(s: LeagueState, table: { teamId: TeamId; rank: number }[]): Record<TeamId, number> {
-  const P = KBO_2026.postseasonShares;
-  const pool = postseasonPool(s);
-  const out: Record<TeamId, number> = {};
-  if (!pool || !s.postseason.length) return out;
-  const first = table.find((r) => r.rank === 1)?.teamId;
-  if (first) out[first] = Math.round(pool * P.regularSeasonWinner);
-  const rest = pool * (1 - P.regularSeasonWinner);
-  const ks = s.postseason.find((x) => x.round === 'ks');
-  const loser = (x?: { high: TeamId; low: TeamId; winner: TeamId }) => (x ? (x.winner === x.high ? x.low : x.high) : null);
-  const rank = (id: TeamId) => table.find((r) => r.teamId === id)?.rank ?? 99;
-  const out_ = (round: string) => s.postseason.filter((x) => x.round === round).map((x) => loser(x)!).sort((a, b) => rank(a) - rank(b));
-  // Third and fourth to the clubs out in the last rounds before the final, the fifth share to the rest (shared
-  // when two leagues send two clubs out in the semi-playoffs).
-  const ladder = [...out_('po'), ...out_('semipo'), ...out_('wildcard')];
-  const places: [TeamId | null, number][] = [
-    [ks?.winner ?? null, P.champion],
-    [loser(ks), P.runnerUp],
-    ...ladder.map((id, i): [TeamId, number] => [id, i === 0 ? P.third : i === 1 ? P.fourth : P.fifth / Math.max(1, ladder.length - 2)]),
-  ];
-  for (const [id, share] of places) if (id) out[id] = (out[id] ?? 0) + Math.round(rest * share);
-  return out;
+/** One club's postseason in money: games at home and away and what it took from them (for the club's report). */
+export function postseasonGateOf(s: LeagueState, teamId: TeamId) {
+  const games = s.postseason.flatMap((x) => x.games).filter((g) => g.home === teamId || g.away === teamId);
+  return { home: games.filter((g) => g.home === teamId).length, away: games.filter((g) => g.away === teamId).length, take: postseasonTakes(s)[teamId] ?? 0 };
 }
 
 /** Naming-rights fee a sponsor pays a club without a parent (키움증권: 110억 a year from 2024). */
@@ -150,8 +143,9 @@ export function parentSupport(s: LeagueState, teamId: TeamId, deficit: number, y
  * After the season: reports for every club, the user's fund settles (the year's operating result plus
  * what it already spent from the fund, covered by the parent up to its approved support).
  */
-export function settleFinances(s: LeagueState, year: number, table: { teamId: TeamId; rank: number }[]) {
-  const shares = postseasonShares(s, table);
+export function settleFinances(s: LeagueState, year: number, _table?: { teamId: TeamId; rank: number }[]) {
+  // 1.9.0: each club's take of the postseason games it played (the final table no longer decides prize shares).
+  const shares = postseasonTakes(s);
   const u = s.user;
   for (const t of s.teams) {
     if (!s.rosters[t.id]) continue;
