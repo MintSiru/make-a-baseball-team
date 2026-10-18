@@ -46,7 +46,7 @@ import { applyCombine, attends, checkWorkout, combineHeld, combineLines, workout
 import { traitReport } from '../league/reports';
 import { COMBINE } from '../league/tuning';
 import { gameShares } from '../league/finance';
-import { money } from './format';
+import { money, setMoneyYear } from './format';
 import { applyHere, applyInWorker, createInWorker } from './leagueClient';
 import { Market } from './Market';
 import { autoDecision, checkDecision } from '../league/expansion';
@@ -584,6 +584,8 @@ export function App() {
 
   // 1.9.9: what the page shows (the league before our game while it is watched live).
   const shown = shield ?? league;
+  // 2.0.19 (format.ts): nominal amounts show at this season's prices.
+  setMoneyYear(shown.year);
   const userTeam = league.user ? league.teams.find((t) => t.id === league.user!.teamId) : null;
   // The club colour as the accent, made readable on this page (V0.15).
   const accent = userTeam ? readableAccent(userTeam.color, dark) : null;

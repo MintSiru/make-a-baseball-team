@@ -1,6 +1,7 @@
 import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* Display settings (V0.7.6): the colours of the ability bars by 20–80 tier, a preview, whether the grades in
    the tables are coloured too, and the event pop-ups. Changes show at once and stay in this browser. */
+import { INFLATION_RATES } from '../league/pricelevel';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useFocusTrap } from './modal';
 import { PopupSettings } from './Alerts';
@@ -160,6 +161,30 @@ export function DisplayOptions() {
         ))}
       </div>
       <p class="muted small">{__i18n_t("ui.displaySettings.text.6de37e5a")}</p>
+
+      {/* 2.0.19 (pricelevel.ts): inflation, shown on the amounts only. */}
+      <h3>{__i18n_t("ui.displaySettings.text.651a7bbc")}</h3>
+      <div class="segmented" role="group" aria-label={__i18n_displayText(__i18n_t("ui.displaySettings.text.651a7bbc"))}>
+        <button type="button" aria-pressed={p.money === 'real'} onClick={() => set({ ...p, money: 'real' })}>
+          {__i18n_t("ui.displaySettings.text.4e3e0efc")}
+        </button>
+        <button type="button" aria-pressed={p.money === 'nominal'} onClick={() => set({ ...p, money: 'nominal' })}>
+          {__i18n_t("ui.displaySettings.text.f712f9a4")}
+        </button>
+      </div>
+      {p.money === 'nominal' && (
+        <label>
+          {__i18n_t("ui.displaySettings.text.7254ecbf")}{' '}
+          <select value={String(p.inflation)} onChange={(e) => set({ ...p, inflation: Number((e.currentTarget as HTMLSelectElement).value) })}>
+            {INFLATION_RATES.map((r) => (
+              <option key={r} value={String(r)}>
+                {`${r}%`}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      <p class="muted small">{__i18n_t("ui.displaySettings.text.d925e49c")}</p>
 
       <h3>{__i18n_t("ui.displaySettings.text.93bec45d")}</h3>
       <div class="segmented" role="group" aria-label={__i18n_t("ui.displaySettings.text.93bec45d")}>

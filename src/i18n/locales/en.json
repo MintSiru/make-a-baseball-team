@@ -8486,5 +8486,10 @@
   "ui.market.text.501fb802": "Injury",
   "ui.market.text.2a2b8688": "Stand-in deal",
   "ui.market.text.6698e588": "{usd} · {archetype}",
-  "ui.market.text.ef53c2a6": "Sign stand-in"
+  "ui.market.text.ef53c2a6": "Sign stand-in",
+  "ui.displaySettings.text.651a7bbc": "Money value (inflation)",
+  "ui.displaySettings.text.4e3e0efc": "2026 won (real)",
+  "ui.displaySettings.text.f712f9a4": "That year's prices (nominal)",
+  "ui.displaySettings.text.7254ecbf": "Yearly inflation from 2026",
+  "ui.displaySettings.text.d925e49c": "Nominal shows amounts at that year's prices: before 2026 at the prices of the time (1982 about a fifth of today's), after it rising each year by the rate chosen. The game's economy and balance stay as they are, and money fields take amounts at the same prices."
 }
