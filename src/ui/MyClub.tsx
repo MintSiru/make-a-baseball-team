@@ -27,11 +27,12 @@ import { startYear } from '../league/era';
 import { Lineup } from './Lineup';
 import { Story } from './Story';
 import { Training } from './Training';
+import { Payroll } from './Payroll';
 import type { NewsItem } from '../league/news';
 import type { BriefGo } from '../league/briefing';
 import { Briefing } from './Briefing';
 
-export type View = 'overview' | 'squad' | 'lineup' | 'training' | 'story' | 'records' | 'office';
+export type View = 'overview' | 'squad' | 'payroll' | 'lineup' | 'training' | 'story' | 'records' | 'office';
 
 export interface StoryHooks {
   onRewrite?: (item: NewsItem) => void;
@@ -77,6 +78,8 @@ export function MyClub({
             [
               ['overview', __i18n_k("ui.myClub.myClub.476966c5")],
               ['squad', __i18n_k("ui.myClub.myClub.5b9daec2")],
+              // 2.0.10: the payroll at a glance.
+              ['payroll', __i18n_t("ui.myClub.text.5d364b3d")],
               ['lineup', __i18n_k("ui.myClub.myClub.4c31ef82")],
               ['training', __i18n_k("ui.myClub.myClub.b4927759")],
               ['story', __i18n_k("ui.myClub.myClub.d77486d9")],
@@ -107,6 +110,7 @@ export function MyClub({
         </>
       ))}
       {__i18n_display(view === 'squad' && <Management league={league} onPlayer={onPlayer} onAct={onAct} setMsg={setMsg} />)}
+      {view === 'payroll' && <Payroll league={league} onPlayer={onPlayer} />}
       {__i18n_display(view === 'lineup' && <Lineup league={league} teamId={u.teamId} onPlayer={onPlayer} onAct={onAct} />)}
       {__i18n_display(view === 'training' && <Training league={league} onAct={onAct} onPlayer={onPlayer} />)}
       {__i18n_display(view === 'story' && <Story league={league} {...story} />)}

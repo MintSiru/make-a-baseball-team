@@ -12,13 +12,13 @@ import { LEARN, learnable, learnChance } from '../league/newpitch';
 import { PITCH_LABELS, repertoire, type PitchType } from '../league/pitches';
 import { positionLabel } from '../league/views';
 import { money } from './format';
+import { positionKey, useSort } from './sort';
 
 const focusText = (keys: ToolKey[] | undefined) => (keys ?? []).map((k) => TOOL_LABELS[k] ?? k).join('·');
 
 export function Training({ league, onAct, onPlayer }: { league: LeagueState; onAct: (a: Action) => void; onPlayer: (id: string) => void }) {
   const u = league.user!;
   const [site, setSite] = useState<SiteId>('tokyo');
-  const [pick, setPick] = useState('');
   const when = tripSeason(league);
   const S = SITES[site];
   const year = when?.season ?? league.year;
@@ -29,8 +29,20 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
         .sort((a, b) => ageIn(a, year) - ageIn(b, year) || (shownFuture(b) ?? 0) - (shownFuture(a) ?? 0)),
     [league, site, year],
   );
-  const chosen = fits.find((p) => p.id === pick) ? pick : '';
-  const problem = chosen ? checkTrip(league, chosen, site) : __i18n_k("ui.training.training.problem.b1b73e32");
+  const r = league.rosters[u.teamId];
+  const squadOf = (id: string) => (r?.active.includes(id) ? __i18n_t("ui.training.text.ef2caeba") : r?.futures.includes(id) ? __i18n_t("ui.training.text.e6607847") : r?.third.includes(id) ? __i18n_t("ui.training.text.0dce8d6b") : '');
+  const { sorted, th } = useSort(
+    fits,
+    {
+      name: { value: (p) => p.name },
+      pos: { value: (p) => positionKey(positionLabel(p)), first: 1 },
+      squad: { value: (p) => squadOf(p.id) },
+      age: { value: (p) => ageIn(p, year), first: 1 },
+      current: { value: (p) => p.scouting.current },
+      future: { value: (p) => shownFuture(p) ?? -1 },
+    },
+    { key: 'age', dir: 1 },
+  );
   const dates = tripDates(league, site);
   const trips = [...(u.trips ?? [])].reverse();
   const away = trips.filter((t) => !t.result);
@@ -56,21 +68,52 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
           );
         }))}
       </div>
-      <div class="inline-form trip-form">
-        <label>
-          보낼 선수
-          <select value={chosen} onChange={(e) => setPick((e.currentTarget as HTMLSelectElement).value)}>
-            <option value="">{__i18n_t("ui.training.training.b77e609c")}</option>
-            {__i18n_display(fits.map((p) => (
-              <option key={p.id} value={p.id}>{__i18n_t("ui.training.training.1cf929e7", { name: p.name, positionLabel: positionLabel(p), ageIn: ageIn(p, year), current: p.scouting.current, futureValue: shownFuture(p) ?? '-' })}</option>
-            )))}
-          </select>
-        </label>
-        <button type="button" class="primary" disabled={!!problem} onClick={() => chosen && onAct({ kind: 'trip', id: chosen, site })}>{__i18n_t("ui.training.training.ac4e4bae", { name: S.name })}</button>
+      {/* 2.0.10 (the user's request): the players to send in a sortable table, one click each, instead of a list box. */}
+      <p class="inline-form trip-form">
         {__i18n_display(dates && <span class="muted small">{__i18n_display(dates.from)} ~ {__i18n_display(dates.until)}</span>)}
         <span class="muted small">{__i18n_t("ui.training.training.c2eefb9f", { money: money(u.fund) })}</span>
+      </p>
+      <div class="table-wrap trip-pick" tabIndex={0}>
+        <table class="record-table">
+          <thead>
+            <tr>
+              <th aria-label={__i18n_t("ui.training.text.f4cba30a")} />
+              {th('name', __i18n_t("ui.training.text.9aa18e50"))}
+              {th('pos', __i18n_t("ui.training.text.81922a91"))}
+              {th('squad', __i18n_t("ui.training.text.5d24a2fc"))}
+              {th('age', __i18n_t("ui.training.text.6c620e5c"), true)}
+              {th('current', __i18n_t("ui.training.text.001e4be2"), true)}
+              {th('future', __i18n_t("ui.training.text.6e0caec5"), true)}
+              <th>{__i18n_t("ui.training.text.109239e5")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((p) => {
+              const why = checkTrip(league, p.id, site);
+              return (
+                <tr key={p.id} class="player-row">
+                  <td>
+                    <button type="button" class="primary" disabled={!!why} onClick={() => onAct({ kind: 'trip', id: p.id, site })}>
+                      {__i18n_t("ui.training.text.f4cba30a")}
+                    </button>
+                  </td>
+                  <td>
+                    <button type="button" class="link" onClick={() => onPlayer(p.id)}>
+                      {p.name}
+                    </button>
+                  </td>
+                  <td>{__i18n_display(positionLabel(p))}</td>
+                  <td>{__i18n_display(squadOf(p.id))}</td>
+                  <td class="num">{ageIn(p, year)}</td>
+                  <td class="num">{p.scouting.current}</td>
+                  <td class="num">{shownFuture(p) ?? '-'}</td>
+                  <td class="muted small">{__i18n_display(why ?? '')}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
-      {__i18n_display(problem && chosen && <p class="notice inline">{__i18n_display(problem)}</p>)}
       {__i18n_display(!when && <p class="muted">{__i18n_t("ui.training.training.2614f6be", { value: league.phase === 'regular' ? __i18n_k("ui.training.training.20dc2991") : __i18n_k("ui.training.training.c4026615") })}</p>)}
 
       <h3>{__i18n_t("ui.training.training.ad7b1c1f")}</h3>
