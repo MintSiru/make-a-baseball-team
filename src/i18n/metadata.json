@@ -77637,5 +77637,23 @@
     "line": 402,
     "params": {},
     "locations": []
+  },
+  "ui.squad.text.62cb0192": {
+    "source": "src/ui/Squad.tsx",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.62cb0192": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 389,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerSearch.text.62cb0192": {
+    "source": "src/ui/PlayerSearch.tsx",
+    "line": 213,
+    "params": {},
+    "locations": []
   }
 }

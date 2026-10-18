@@ -8385,5 +8385,8 @@
   "ui.settings.text.4318792a": "규칙 직접 정하기",
   "ui.settings.text.46bafba5": "이사회를 끄면 단장이 리그 규칙을 정합니다. 바꾼 규칙은 {season} 시즌부터 적용됩니다.",
   "ui.settings.text.8f13d839": "켬",
-  "ui.settings.text.66770937": "끔"
+  "ui.settings.text.66770937": "끔",
+  "ui.squad.text.62cb0192": "이도류",
+  "ui.playerPanel.text.62cb0192": "이도류",
+  "ui.playerSearch.text.62cb0192": "이도류"
 }

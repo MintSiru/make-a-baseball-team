@@ -8385,5 +8385,8 @@
   "ui.settings.text.4318792a": "Set the Rules",
   "ui.settings.text.46bafba5": "With the board off, the GM sets the league rules. Changes apply from the {season} season.",
   "ui.settings.text.8f13d839": "On",
-  "ui.settings.text.66770937": "Off"
+  "ui.settings.text.66770937": "Off",
+  "ui.squad.text.62cb0192": "Two-way",
+  "ui.playerPanel.text.62cb0192": "Two-way",
+  "ui.playerSearch.text.62cb0192": "Two-way"
 }
