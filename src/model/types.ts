@@ -280,6 +280,10 @@ export interface Player {
   /** 1.7.0: the public report at the start of each season since 1.7.0 (season, overall, each ability), for the
       graph on his screen. */
   gradeLog?: GradeLogEntry[];
+  /** 2.0.6 (pitches.ts developPitches): how far each secondary pitch has gone its own way, and the grades of his
+      pitches a season ago (for the change on his screen). */
+  pitchDev?: Record<string, number>;
+  pitchLast?: { season: number; grades: Record<string, number> };
   career: SeasonRecord[];
   /** 1.4.0: postseason lines, one a year he played in it (not in `career`, so season totals stay as they were). */
   post?: PostRecord[];

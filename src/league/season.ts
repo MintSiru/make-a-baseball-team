@@ -48,6 +48,7 @@ import { assignLeagues, sidesOf, twelveClubs, twelveGames } from './twelve';
 import { finishTrips } from './training';
 import { lifeDay } from './life';
 import { alumniDay } from './alumni';
+import { familyDay, familyGame, pruneFamilies } from './family';
 import { boardValue } from './era';
 import { boardLeagues } from './board';
 
@@ -55,6 +56,8 @@ const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.p
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 
 export function startSeason(s: LeagueState) {
+  // 2.0.6: family ties to men gone from the records over the winter.
+  pruneFamilies(s);
   s.phase = 'regular';
   // 1.9.5: a legacy league's opening day — the clubs founded this year, the year's names, the leagues, the rules.
   legacySeason(s);
@@ -297,6 +300,8 @@ export function playDay(s: LeagueState): boolean {
   lifeDay(s, date);
   // Our former-player manager and coaches (1.4.0).
   alumniDay(s, date);
+  // 2.0.6: twins on the first team together, a manager's struggling son.
+  familyDay(s, date);
   // Now and then something worse (V0.12): the club answers before the next day.
   scandalDay(s, date);
   // Scenario 재기 (1.6.0): the owner calls.
@@ -335,6 +340,8 @@ export function playDay(s: LeagueState): boolean {
     const att = attendance(s, { id: g.id, date, home: g.home, away: g.away });
     recordGate(s, g.home, att);
     s.scores.push({ id: g.id, date, home: g.home, away: g.away, hs: out.home.runs, as: out.away.runs, att });
+    // 2.0.6: relatives on the two sides.
+    familyGame(s, out.home, out.away, date);
     const box = compactBox(out, g.id, date, att);
     keepBox(s, box, log);
     if (log) {

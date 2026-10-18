@@ -6,6 +6,7 @@ import type { FieldTotals } from '../league/fielding';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useFocusTrap } from './modal';
 import { MeetingsView, SavantView } from './Savant';
+import { familyOf } from '../league/family';
 import { TOOL_LABELS } from '../draftroom';
 import type { Split, Splits } from '../league/engine/types';
 import type { Action } from '../league/actions';
@@ -103,6 +104,9 @@ const RECORD_VIEWS: { key: RecordView; label: string }[] = [
 ];
 let lastPart: Part = 'ability';
 let lastRecords: RecordView = 'seasons';
+
+/** 2.0.6: a grade's change since last season, "▲5" or "▼5" (nothing when unchanged or unknown). */
+const changeMark = (now: number | undefined, last: number | undefined) => (now == null || last == null || now === last ? '' : now > last ? ` ▲${now - last}` : ` ▼${last - now}`);
 
 const splitRates = (x: Split) => ({
   avg: x.ab ? x.h / x.ab : 0,
@@ -457,11 +461,12 @@ export function PlayerPanel({
                   </p>
                 ))}
                 <div class="gradebars">
-                  <GradeBar label={`${card.fastball ?? '4SFB'} ${__i18n_displayText(FASTBALL_LABELS[card.fastball ?? '4SFB'])}`} now={s.tools.stuff} note={__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round((1 - card.pitches.reduce((a, x) => a + x.usage, 0)) * 100) })} />
+                  <GradeBar label={`${card.fastball ?? '4SFB'} ${__i18n_displayText(FASTBALL_LABELS[card.fastball ?? '4SFB'])}`} now={s.tools.stuff} future={showsFutureDetail(p) ? s.futureTools.stuff : undefined} note={`${__i18n_displayText(__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round((1 - card.pitches.reduce((a, x) => a + x.usage, 0)) * 100) }))}${changeMark(s.tools.stuff, card.pitchLast?.grades.FB)}`} />
                   {__i18n_display(card.pitches.map((x) => (
-                    <GradeBar key={x.type} label={`${x.type} ${__i18n_displayText(x.label)}`} now={x.grade} note={__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round(x.usage * 100) })} />
+                    <GradeBar key={x.type} label={`${x.type} ${__i18n_displayText(x.label)}`} now={x.grade} future={showsFutureDetail(p) ? card.pitchesFuture[x.type] : undefined} note={`${__i18n_displayText(__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round(x.usage * 100) }))}${changeMark(x.grade, card.pitchLast?.grades[x.type])}`} />
                   )))}
                 </div>
+                {card.pitchLast && <p class="muted small">{__i18n_t("ui.playerPanel.text.da7d248d", { season: card.pitchLast.season })}</p>}
                 {card.pitchingLift !== null && <p class="small">{__i18n_t("ui.playerPanel.text.41757042", { kind: PITCH_LIFT_LABEL()[card.pitchingLift + 2]! })}</p>}
                 {card.tracking && <TrackingTable t={card.tracking} />}
               </section>
@@ -554,6 +559,28 @@ export function PlayerPanel({
                 <dt>{__i18n_t("ui.playerPanel.playerPanel.98633e27")}</dt>
                 <dd>{__i18n_display(p.birthplace)}</dd>
               </div>
+              {/* 2.0.6: his relatives in the game. */}
+              {familyOf(league, p.id).length > 0 && (
+                <div>
+                  <dt>{__i18n_t("ui.playerPanel.text.0fc79d30")}</dt>
+                  <dd>
+                    {familyOf(league, p.id).map((f, i) => (
+                      <span key={f.id}>
+                        {i > 0 && ' · '}
+                        {__i18n_displayText(f.relation)}{' '}
+                        {onPlayer ? (
+                          <button type="button" class="link" onClick={() => onPlayer(f.id)}>
+                            {f.name}
+                          </button>
+                        ) : (
+                          f.name
+                        )}
+                        {f.team && <span class="muted small"> ({__i18n_displayText(f.team)})</span>}
+                      </span>
+                    ))}
+                  </dd>
+                </div>
+              )}
               <div>
                 <dt>{__i18n_t("ui.playerPanel.playerPanel.691a855d")}</dt>
                 <dd>
