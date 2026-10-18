@@ -20,6 +20,8 @@ export interface FieldingRatings {
   arm: number;
   /** A catcher's game-calling; null for one who does not catch. */
   lead: number | null;
+  /** 2.0.17: a catcher's framing (the pitches the umpire calls strikes); null for one who does not catch. */
+  frame: number | null;
 }
 
 /** A season's (or a game's) fielding, summed. OAA, arm runs and caught-stealing above average are kept in
@@ -39,12 +41,14 @@ export interface FieldTotals {
   csaa: number;
   cpa: number;
   lead: number;
+  /** 2.0.17: the runs his framing saved (hundred-thousandths), while the umpires call the pitches. */
+  frame?: number;
 }
 
-export const emptyField = (): FieldTotals => ({ ch: 0, po: 0, e: 0, oaa: 0, arm: 0, sba: 0, cs: 0, csaa: 0, cpa: 0, lead: 0 });
+export const emptyField = (): FieldTotals => ({ ch: 0, po: 0, e: 0, oaa: 0, arm: 0, sba: 0, cs: 0, csaa: 0, cpa: 0, lead: 0, frame: 0 });
 
 export function addField(into: FieldTotals, f: Partial<FieldTotals>) {
-  for (const k of Object.keys(into) as (keyof FieldTotals)[]) into[k] += f[k] ?? 0;
+  for (const k of new Set([...Object.keys(into), ...Object.keys(f)]) as Set<keyof FieldTotals>) into[k] = (into[k] ?? 0) + (f[k] ?? 0);
   return into;
 }
 
@@ -59,6 +63,7 @@ export function fieldingFrom(id: string, defense: number, speed: number, catcher
     hands: clamp(defense + 6 * normalOf(`hands|${id}`)),
     arm: clamp(defense + 8 * normalOf(`arm|${id}`)),
     lead: catcher ? clamp(44 + 0.3 * (defense - 50) + 9 * normalOf(`lead|${id}`)) : null,
+    frame: catcher ? clamp(45 + 0.35 * (defense - 50) + 10 * normalOf(`frame|${id}`)) : null,
   };
 }
 
@@ -86,7 +91,7 @@ export const popTime = (p: Pick<Player, 'id' | 'hidden' | 'position' | 'alt'>) =
 /** Runs a fielding line is worth: OAA at 0.8 a play, the arm and catching runs as kept. */
 export function fieldingRuns(f: FieldTotals | undefined): number {
   if (!f) return 0;
-  return (f.oaa * 0.8 + f.arm + f.csaa * 0.6 + f.lead / 100) / 1000;
+  return (f.oaa * 0.8 + f.arm + f.csaa * 0.6 + f.lead / 100 + (f.frame ?? 0) / 100) / 1000;
 }
 
 /** Whose ball it is: the share of balls in play each fielder takes, infield and outfield, by a right-handed hitter's

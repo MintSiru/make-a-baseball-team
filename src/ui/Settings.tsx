@@ -16,7 +16,7 @@ import { ro } from '../league/josa';
 import { DisplayOptions } from './DisplaySettings';
 import { StoryOptions } from './StorySettings';
 import { UpdateNotes } from './Updates';
-import { BOARD_ITEMS, boardLine, currentValue, items, motionText, ruleLabel, ruleSeason, type BoardItem } from '../league/board';
+import { BOARD_ITEMS, boardLine, currentValue, items, motionText, ruleLabel, ruleSeason, ruleValueText, type BoardItem } from '../league/board';
 
 const SECTIONS: [string, string][] = [
   ['settings-display', __i18n_k("ui.settings.sECTIONS.43c786f1")],
@@ -399,7 +399,7 @@ function RuleEditor({ league, busy, onAct }: { league: LeagueState; busy: boolea
               <select value={String(now)} disabled={busy} onChange={(e) => onAct({ kind: 'leagueRule', item, value: Number((e.currentTarget as HTMLSelectElement).value) })}>
                 {valuesOf(item).map((v) => (
                   <option key={v} value={String(v)}>
-                    {onOff(item) ? (v ? __i18n_t("ui.settings.text.8f13d839") : __i18n_t("ui.settings.text.66770937")) : String(v)}
+                    {__i18n_display(ruleValueText(item, v) ?? (onOff(item) ? (v ? __i18n_t("ui.settings.text.8f13d839") : __i18n_t("ui.settings.text.66770937")) : String(v)))}
                   </option>
                 ))}
               </select>

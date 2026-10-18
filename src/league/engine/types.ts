@@ -29,6 +29,8 @@ export interface BatterIn {
   hands?: number;
   arm?: number;
   lead?: number;
+  /** 2.0.17: a catcher's framing (counts only as far as the umpires call the pitches: GameIn `framing`). */
+  frame?: number;
 }
 
 /** 마무리 · 셋업맨 · 필승조 · 추격조 · 롱릴리프 · 원 포인트 (left-handed specialist). */
@@ -103,6 +105,9 @@ export interface GameIn {
   /** 2.0.2: the home park's fences (layout.ts): its home-run and gap effects in place of `park`'s, and a home run
       clears the fence where it goes. */
   layout?: import('../layout').ParkLayout;
+  /** 2.0.17 (board.ts ABS): how much a catcher's framing counts — 1 with the umpires calling, 0.5 with challenges,
+      absent or 0 with the full ABS. */
+  framing?: number;
 }
 
 /** One side of a platoon split: plate appearances against left- or right-handers. */

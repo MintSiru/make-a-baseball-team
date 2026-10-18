@@ -48,7 +48,7 @@ export const ENGINE = {
     defense: 0.7,
   },
   /** 2.0.3: a catcher's game-calling on his pitchers' strikeouts and walks (logit per z). */
-  catcher: { lead: 0.015 },
+  catcher: { lead: 0.015, frame: 0.05 },
   /** Batter against a pitcher of the same hand (switch hitters never). */
   platoon: { k: 0.12, bb: -0.06, hr: -0.15, babip: -0.045 },
   home: { babip: 0.012, hr: 0.03 },
@@ -684,6 +684,8 @@ export const SCANDAL = {
 export const NATIONAL = {
   fans: { called: 2, champion: 4 },
   titleBuzz: 0.02,
+  /** 2.0.17: how far down the table of finishes a team managed by a club's manager as well (겸임) draws (board.ts). */
+  concurrentManager: 0.06,
   springInjury: {
     chance: 0.03,
     days: [14, 35] as [number, number],

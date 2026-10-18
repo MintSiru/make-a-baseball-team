@@ -16,6 +16,7 @@ import { twoWayWinter } from './twoway';
 import { historicForeignCap, MODERN_FROM, rulesFor } from '../rules/history';
 import { boardValue, playsHistory } from './era';
 import { boardMeets, committeeMotions, holdMeeting } from './board';
+import { lotteryNews, lotteryOrder } from './lottery';
 import { hometownClub } from './fa';
 import { hashUnit, observe, overall, rng, toGrade, type Tools } from '../draftroom';
 import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
@@ -1009,7 +1010,13 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         }
         if (!o.draft) {
           const table = s.history[s.history.length - 1]?.table ?? [];
-          const order = table.length ? [...table].reverse().map((row) => row.teamId) : firstTeamIds(s, year);
+          let order = table.length ? [...table].reverse().map((row) => row.teamId) : firstTeamIds(s, year);
+          // 2.0.17: the board's draft lottery (lottery.ts).
+          if (table.length && boardValue('lottery', year + 1) === 1) {
+            const res = lotteryOrder(s, year, order);
+            order = res.after;
+            lotteryNews(s, res);
+          }
           // Picks traded during the year (V0.7.8) go to the clubs that hold them.
           const slots = applyPickTrades(s, year, applyForeignPickDrop(s, year, applyPickDrop(s, year, hooks.draftSlots?.(s, year, order) ?? standardSlots(order, year))));
           o.draft = openDraft(s, year, slots);

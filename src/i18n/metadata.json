@@ -78007,5 +78007,163 @@
     "line": 198,
     "params": {},
     "locations": []
+  },
+  "league.board.text.4fd36767": {
+    "source": "src/league/board.ts",
+    "line": 447,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.16a5ede4": {
+    "source": "src/league/board.ts",
+    "line": 447,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.2877ed40": {
+    "source": "src/league/board.ts",
+    "line": 449,
+    "params": {
+      "now": {
+        "expression": "absText(now)"
+      },
+      "value": {
+        "expression": "absText(value)"
+      }
+    },
+    "locations": []
+  },
+  "league.board.text.86c35ec6": {
+    "source": "src/league/board.ts",
+    "line": 451,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.5a49352e": {
+    "source": "src/league/board.ts",
+    "line": 451,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.eeec9e36": {
+    "source": "src/league/board.ts",
+    "line": 456,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.9a5d4538": {
+    "source": "src/league/board.ts",
+    "line": 456,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.87e8ddfa": {
+    "source": "src/league/board.ts",
+    "line": 456,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.bbc60e87": {
+    "source": "src/league/board.ts",
+    "line": 461,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.73764add": {
+    "source": "src/league/board.ts",
+    "line": 461,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.ec5ee8c6": {
+    "source": "src/league/board.ts",
+    "line": 585,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.4391b573": {
+    "source": "src/league/board.ts",
+    "line": 587,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.cb0d5e9f": {
+    "source": "src/league/board.ts",
+    "line": 589,
+    "params": {},
+    "locations": []
+  },
+  "league.lottery.text.99764c50": {
+    "source": "src/league/lottery.ts",
+    "line": 48,
+    "params": {
+      "n": {
+        "expression": "i + 1"
+      },
+      "club": {
+        "expression": "short(id)"
+      },
+      "was": {
+        "expression": "res.before.indexOf(id) + 1"
+      }
+    },
+    "locations": []
+  },
+  "league.lottery.text.b9733d2e": {
+    "source": "src/league/lottery.ts",
+    "line": 49,
+    "params": {
+      "year": {
+        "expression": "res.year"
+      },
+      "club": {
+        "expression": "short(res.after[0]!)"
+      }
+    },
+    "locations": []
+  },
+  "league.lottery.text.4444a6c6": {
+    "source": "src/league/lottery.ts",
+    "line": 54,
+    "params": {
+      "was": {
+        "expression": "res.before.indexOf(me) + 1"
+      },
+      "now": {
+        "expression": "res.after.indexOf(me) + 1"
+      }
+    },
+    "locations": []
+  },
+  "league.legacy.text.bbd1335b": {
+    "source": "src/league/legacy.ts",
+    "line": 147,
+    "params": {
+      "club": {
+        "expression": "shortName(s, e.coach.teamId)"
+      },
+      "name": {
+        "expression": "e.coach.name ? ` (${e.coach.name})` : ''"
+      }
+    },
+    "locations": []
+  },
+  "league.legacy.text.b62dac0f": {
+    "source": "src/league/legacy.ts",
+    "line": 147,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.af94ca7f": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 471,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.7b3b0a34": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 471,
+    "params": {},
+    "locations": []
   }
 }

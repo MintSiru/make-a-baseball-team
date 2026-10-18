@@ -58,6 +58,8 @@ interface Side {
   /** 2.0.3: the nine's sure hands, and the catcher's game-calling (z). */
   handsZ: number;
   leadZ: number;
+  /** 2.0.17: the catcher's framing (z). */
+  frameZ: number;
 }
 
 /** 2.0.3: how much a pitcher's ground-ball or fly-ball step weighs against a hitter's. */
@@ -75,7 +77,7 @@ function emptyPitching(id: string, starter: boolean): PitchingLine {
 }
 
 /** Team fielding and the catcher's arm from the nine on the field now (2.0.3: range, hands and arm in parts). */
-function fielding(side: Pick<Side, 'lineup' | 'team' | 'fieldZ' | 'catcherZ' | 'handsZ' | 'leadZ'>) {
+function fielding(side: Pick<Side, 'lineup' | 'team' | 'fieldZ' | 'catcherZ' | 'handsZ' | 'leadZ' | 'frameZ'>) {
   let w = 0,
     sum = 0,
     hands = 0;
@@ -90,6 +92,7 @@ function fielding(side: Pick<Side, 'lineup' | 'team' | 'fieldZ' | 'catcherZ' | '
   side.handsZ = w ? hands / w : 0;
   side.catcherZ = catcher ? Z(catcher.arm ?? catcher.defense) : 0;
   side.leadZ = catcher?.lead !== undefined ? Z(catcher.lead) : 0;
+  side.frameZ = catcher?.frame !== undefined ? Z(catcher.frame) : 0;
 }
 
 /** 2.0.3: a fielder's line in this game. */
@@ -114,6 +117,7 @@ function makeSide(team: TeamIn): Side {
     catcherZ: 0,
     handsZ: 0,
     leadZ: 0,
+    frameZ: 0,
   };
   fielding(side);
   side.apps.push({ arm: team.starter, role: 'SP', line: emptyPitching(team.starter.id, true), entryLead: 0, entryRunners: 0, minLead: 0, exitLead: 0 });
@@ -131,7 +135,7 @@ function substitute(side: Side, slot: number, b: BenchIn, kind: Sub['kind']): Su
   // 2.0.3: his fielding parts lose what his grade loses away from his own positions.
   const off = b.defense - defense;
   const part = (x: number | undefined) => (x === undefined ? undefined : x - off);
-  const into: BatterIn = { id: b.id, bats: b.bats, contact: b.contact, power: b.power, eye: b.eye, speed: b.speed, defense, pos, pull: b.pull, lift: b.lift, edge: b.edge, range: part(b.range), hands: part(b.hands), arm: part(b.arm), ...(pos === 'C' && b.lead !== undefined ? { lead: b.lead } : {}) };
+  const into: BatterIn = { id: b.id, bats: b.bats, contact: b.contact, power: b.power, eye: b.eye, speed: b.speed, defense, pos, pull: b.pull, lift: b.lift, edge: b.edge, range: part(b.range), hands: part(b.hands), arm: part(b.arm), ...(pos === 'C' && b.lead !== undefined ? { lead: b.lead } : {}), ...(pos === 'C' && b.frame !== undefined ? { frame: b.frame } : {}) };
   side.lineup[slot] = into;
   side.bench.splice(side.bench.indexOf(b), 1);
   const line = emptyBatting(into);
@@ -445,9 +449,11 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
         zs = Zr(batter.speed);
       // 2.0.3: the catcher's game-calling, a little on the strikeouts and walks.
       const callZ = game.balls ? field.leadZ : 0;
-      const pBB = inv(logit(E.base.bb) + b.bb.eye * ze + b.bb.contact * zc + q.bb.command * command + q.bb.stuff * stuff + E.platoon.bb * same - E.catcher.lead * callZ);
+      // 2.0.17: with the umpires calling the pitches (no ABS, or challenges), the catcher's framing too.
+      const frameZ = (game.framing ?? 0) * field.frameZ;
+      const pBB = inv(logit(E.base.bb) + b.bb.eye * ze + b.bb.contact * zc + q.bb.command * command + q.bb.stuff * stuff + E.platoon.bb * same - E.catcher.lead * callZ - E.catcher.frame * frameZ);
       const pHBP = inv(logit(E.base.hbp) + q.hbp.command * command);
-      const pK = inv(logit(E.base.k) + b.k.contact * zc + b.k.power * zp + b.k.eye * ze + q.k.stuff * stuff + q.k.breaking * breaking + q.k.command * command + E.platoon.k * same + E.catcher.lead * callZ);
+      const pK = inv(logit(E.base.k) + b.k.contact * zc + b.k.power * zp + b.k.eye * ze + q.k.stuff * stuff + q.k.breaking * breaking + q.k.command * command + E.platoon.k * same + E.catcher.lead * callZ + E.catcher.frame * frameZ);
       const pHR = inv(
         logit(E.base.hr) + b.hr.power * zp + b.hr.contact * zc + q.hr.stuff * stuff + q.hr.command * command + q.hr.breaking * breaking + E.platoon.hr * same + E.home.hr * hb + parkHr +
           homeRunShift(batter.edge ?? 0) +
@@ -464,6 +470,8 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
           const f = fieldLine(field, cslot);
           f.cpa++;
           f.lead += Math.round(field.leadZ * 50);
+          // 2.0.17: framing, about 0.0032 of a run a plate appearance per z with the umpires calling.
+          if (frameZ) f.frame = (f.frame ?? 0) + Math.round(frameZ * 320);
         }
       }
       // 2.0.1: the ball's flight, drawn to fit the play from a stream of its own (battedball.ts).

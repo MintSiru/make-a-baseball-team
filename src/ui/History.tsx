@@ -342,7 +342,10 @@ function National({ league, onPlayer, onBox }: { league: LeagueState; onPlayer: 
             {__i18n_display(v.rows.map((r) => (
               <tr key={r.id}>
                 <td class="num">{__i18n_display(r.year)}</td>
-                <td>{__i18n_display(r.name)}</td>
+                <td>
+                  {__i18n_display(r.name)}
+                  {r.coach && <span class="muted small"> · {__i18n_display(r.coach)}</span>}
+                </td>
                 <td class={r.result === '우승' || r.result === '금메달' ? 'strong' : ''}>
                   {__i18n_display(r.result)}
                   {__i18n_display(r.medal && <span class="tag">{__i18n_t("ui.history.national.de7fcbc3")}</span>)}

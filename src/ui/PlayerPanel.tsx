@@ -9,6 +9,7 @@ import { MeetingsView, SavantView } from './Savant';
 import { NationalLines } from './NationalLines';
 import { VenueTable } from './Venues';
 import { playerPark } from '../league/venues';
+import { absLevel } from '../league/board';
 import { nationalLinesOf } from '../league/nationalgames';
 import { familyOf } from '../league/family';
 import { checkSwitch, otherGrade, peekOther } from '../league/twoway';
@@ -466,6 +467,8 @@ export function PlayerPanel({
                   <GradeBar label={__i18n_t("ui.playerPanel.text.f06721a0")} now={card.fielding.parts.hands} />
                   <GradeBar label={__i18n_t("ui.playerPanel.text.5894110d")} now={card.fielding.parts.arm} />
                   {card.fielding.parts.lead !== null && <GradeBar label={__i18n_t("ui.playerPanel.text.f94f5492")} now={card.fielding.parts.lead} />}
+                  {/* 2.0.17: framing, shown while the umpires call the pitches (the board took the ABS away or left challenges). */}
+                  {card.fielding.parts.frame !== null && absLevel(league.year) < 2 && <GradeBar label={__i18n_t("ui.playerPanel.text.af94ca7f")} now={card.fielding.parts.frame} note={__i18n_t("ui.playerPanel.text.7b3b0a34")} />}
                 </div>
                 <p class="small">
                   {__i18n_t("ui.playerPanel.text.e8f50717", { ms: card.fielding.sprint.toFixed(2), fts: (card.fielding.sprint / 0.3048).toFixed(1) })}
@@ -1166,6 +1169,8 @@ function FieldingTable({ fielding }: { fielding: NonNullable<PlayerCard['fieldin
   const one = (x: number) => (x / 1000).toFixed(1);
   const signed = (x: number) => (x > 0 ? `+${x.toFixed(1)}` : x.toFixed(1));
   const catcher = fielding.seasons.some((x) => x.f.cpa > 0);
+  // 2.0.17: framing runs, for the seasons the umpires called the pitches.
+  const framed = fielding.seasons.some((x) => (x.f.frame ?? 0) !== 0);
   const row = (key: string, label: string, pos: string, f: FieldTotals, runs: number, dwar: number | null) => (
     <tr key={key}>
       <td>{label}</td>
@@ -1178,6 +1183,7 @@ function FieldingTable({ fielding }: { fielding: NonNullable<PlayerCard['fieldin
       {catcher && <td class="num">{f.sba ? `${f.cs}/${f.sba}` : '-'}</td>}
       {catcher && <td class="num">{signed(f.csaa / 1000)}</td>}
       {catcher && <td class="num">{signed(f.lead / 100000)}</td>}
+      {framed && <td class="num">{signed((f.frame ?? 0) / 100000)}</td>}
       <td class="num">{signed(runs)}</td>
       <td class="num">{dwar === null ? '-' : signed(dwar)}</td>
     </tr>
@@ -1199,6 +1205,7 @@ function FieldingTable({ fielding }: { fielding: NonNullable<PlayerCard['fieldin
                 {catcher && <th class="num">{__i18n_t("ui.playerPanel.text.482a43eb")}</th>}
                 {catcher && <th class="num">{__i18n_t("ui.playerPanel.text.bb6b6d8a")}</th>}
                 {catcher && <th class="num">{__i18n_t("ui.playerPanel.text.2f4b81c5")}</th>}
+                {framed && <th class="num">{__i18n_t("ui.playerPanel.text.af94ca7f")}</th>}
                 <th class="num">{__i18n_t("ui.playerPanel.text.e980cd4b")}</th>
                 <th class="num">dWAR</th>
               </tr>

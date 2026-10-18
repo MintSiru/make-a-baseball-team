@@ -11,7 +11,7 @@ import { k as __i18n_k } from '../i18n/index';
    sandbox) never meets, and every rule stays as it was. */
 import { rng } from '../draftroom';
 import type { TeamId } from '../model/types';
-import { boardValue, setEraBoard } from './era';
+import { boardValue, playsHistory, setEraBoard } from './era';
 import { addAlert } from './alerts';
 import { leagueEvent } from './leagueevents';
 import { addNews } from './news';
@@ -42,7 +42,12 @@ export type BoardItem =
   | 'draftRounds'
   | 'secondDraft'
   | 'territorial'
-  | 'twoLeagues';
+  | 'twoLeagues'
+  // 2.0.17 (the user's request): a draft lottery, the automatic ball-strike system (2 full, 1 challenges, 0 none: the
+  // umpires call it and a catcher's framing counts), and a full-time national-team manager (1) or a club's (0).
+  | 'lottery'
+  | 'abs'
+  | 'nationalManager';
 export type BoardVote = 'yes' | 'no' | 'abstain';
 
 /** A rule change in force from season `from` (cap: the cap in percent of today's; postseason: the clubs in it). */
@@ -103,6 +108,9 @@ export const BOARD_ITEMS: Record<BoardItem, { min: number; max: number; step: nu
   cap: { min: 80, max: 130, step: 10 },
   faSeasons: { min: 7, max: 9, step: 1 },
   twoLeagues: { min: 0, max: 1, step: 1 },
+  lottery: { min: 0, max: 1, step: 1 },
+  abs: { min: 0, max: 2, step: 1 },
+  nationalManager: { min: 0, max: 1, step: 1 },
 };
 
 /** The legacy start's board meets from the winter of today's game (before, the KBO's own history). */
@@ -149,8 +157,22 @@ export function currentValue(s: LeagueState, item: BoardItem, season: number): n
       return boardValue(item, season) ?? 0;
     case 'territorial':
       return r.territorialPicks > 0 ? 1 : 0;
+    case 'lottery':
+      return boardValue(item, season) ?? 0;
+    case 'abs':
+      return absLevel(season);
+    case 'nationalManager':
+      return fullTimeManager(season) ? 1 : 0;
   }
 }
+
+/** 2.0.17: the ball-strike system in `season` — the KBO's full ABS from 2024 (a history game before: the umpires),
+    or the board's. */
+export const absLevel = (season: number): number => boardValue('abs', season) ?? (playsHistory() && season < 2024 ? 0 : 2);
+/** How much a catcher's framing counts: all of it with the umpires calling, half with challenges, none with ABS. */
+export const framingWeight = (season: number) => [1, 0.5, 0][absLevel(season)] ?? 0;
+/** 2.0.17: a full-time national-team manager (the KBO's from 2017; a history game before: a club's). */
+export const fullTimeManager = (season: number) => (boardValue('nationalManager', season) ?? (playsHistory() && season < 2017 ? 0 : 1)) === 1;
 
 /** The items this league may vote on: two leagues only with an even number of clubs (and its postseason then fixed),
     the number of games not with the twelve-club schedule. */
@@ -239,6 +261,15 @@ function stance(item: BoardItem, up: boolean, c: { strength: number; rich: numbe
       // A territorial pick: the big cities' clubs, with the most high schools at home, gain; the others lose
       // the best of the class to them.
       return d * (0.6 * (c.rich - 0.5) + 0.05);
+    case 'lottery':
+      // A lottery: the clubs at the bottom lose the sure first pick; the middle ones may jump the queue.
+      return d * (0.6 * c.strength - 0.25);
+    case 'abs':
+      // The machine's zone: most like it fair; the clubs with a good framer behind the plate would rather not.
+      return d * 0.1;
+    case 'nationalManager':
+      // A full-time manager: no club's manager is taken away; the strong clubs, whose manager it would be, most.
+      return d * (0.1 + 0.3 * c.strength);
   }
 }
 
@@ -301,6 +332,9 @@ export function committeeMotions(s: LeagueState, year: number): BoardMotion[] {
     { item: 'draftRounds', up: r() < 0.5, weight: 0.4, push: 0.05 },
     { item: 'secondDraft', up: currentValue(s, 'secondDraft', next) === 0, weight: 0.3, push: 0.05 },
     { item: 'territorial', up: currentValue(s, 'territorial', next) === 0, weight: 0.4, push: 0.05 },
+    { item: 'lottery', up: currentValue(s, 'lottery', next) === 0, weight: 0.4, push: 0.1 },
+    { item: 'abs', up: currentValue(s, 'abs', next) < 2 && r() < 0.7, weight: 0.4, push: 0.05 },
+    { item: 'nationalManager', up: currentValue(s, 'nationalManager', next) === 0, weight: 0.3, push: 0.1 },
   ];
   const open = items(s, next);
   const out: BoardMotion[] = [];
@@ -409,7 +443,23 @@ export function motionText(m: Pick<BoardMotion, 'item' | 'value' | 'now'>): stri
       return value ? __i18n_k("league.board.text.1f5b0fb2") : __i18n_k("league.board.text.9e38c80a");
     case 'territorial':
       return value ? __i18n_k("league.board.text.ed851f8b") : __i18n_k("league.board.text.44d5ae3d");
+    case 'lottery':
+      return value ? __i18n_k("league.board.text.4fd36767") : __i18n_k("league.board.text.16a5ede4");
+    case 'abs':
+      return __i18n_k("league.board.text.2877ed40", { now: absText(now), value: absText(value) });
+    case 'nationalManager':
+      return value ? __i18n_k("league.board.text.86c35ec6") : __i18n_k("league.board.text.5a49352e");
   }
+}
+
+/** 2.0.17: the ball-strike system in words. */
+export const absText = (v: number) => (v >= 2 ? __i18n_k("league.board.text.eeec9e36") : v === 1 ? __i18n_k("league.board.text.9a5d4538") : __i18n_k("league.board.text.87e8ddfa"));
+
+/** A rule's value in words for the settings (null: the number itself, or on/off). */
+export function ruleValueText(item: BoardItem, v: number): string | null {
+  if (item === 'abs') return absText(v);
+  if (item === 'nationalManager') return v ? __i18n_k("league.board.text.bbc60e87") : __i18n_k("league.board.text.73764add");
+  return null;
 }
 
 // ── Our club at the meeting ──────────────────────────────────────────────────────────────────────
@@ -531,6 +581,12 @@ export function ruleLabel(item: BoardItem): string {
       return __i18n_k("league.board.text.f1f3e66a");
     case 'twoLeagues':
       return __i18n_k("league.board.text.997dd883");
+    case 'lottery':
+      return __i18n_k("league.board.text.ec5ee8c6");
+    case 'abs':
+      return __i18n_k("league.board.text.4391b573");
+    case 'nationalManager':
+      return __i18n_k("league.board.text.cb0d5e9f");
   }
 }
 
