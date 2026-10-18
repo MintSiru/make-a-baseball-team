@@ -603,6 +603,8 @@ export interface LeagueState {
   arms: Record<PlayerId, ArmState>;
   rotation: Record<TeamId, number>;
   injuries: Record<PlayerId, Injury>;
+  /** 2.0.18 (tempforeign.ts): stand-ins for injured foreign players this season. */
+  tempForeign?: import('./tempforeign').TempForeign[];
   /** Away with the national team until this date (registered days still count); since V0.10 also on family
       leave (경조사 휴가), which the KBO counts the same way. */
   away: Record<PlayerId, string>;

@@ -40,7 +40,7 @@ export const slotForeigners = (s: LeagueState, teamId: TeamId, season: number) =
 
 /** The club's regular foreign players under contract for `season` (the veterans the rule exempts aside). */
 export const capPlayers = (s: LeagueState, teamId: TeamId, season: number) =>
-  slotForeigners(s, teamId, season).filter((p) => !p.origin.asiaQuota && p.contract?.salaries.some((x) => x.season === season));
+  slotForeigners(s, teamId, season).filter((p) => !p.origin.asiaQuota && !p.contract?.temp && p.contract?.salaries.some((x) => x.season === season));
 
 /** The club's cap for `season` with these players: $4M, the tenure raises, and an expansion club's extra slot. */
 export function foreignCap(s: LeagueState, teamId: TeamId, season: number, players = capPlayers(s, teamId, season)): number {

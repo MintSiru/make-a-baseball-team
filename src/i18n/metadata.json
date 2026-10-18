@@ -78165,5 +78165,195 @@
     "line": 471,
     "params": {},
     "locations": []
+  },
+  "league.tempforeign.text.bff9d532": {
+    "source": "src/league/tempforeign.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "league.tempforeign.text.d457abc2": {
+    "source": "src/league/tempforeign.ts",
+    "line": 66,
+    "params": {},
+    "locations": []
+  },
+  "league.tempforeign.text.7b8ea04f": {
+    "source": "src/league/tempforeign.ts",
+    "line": 67,
+    "params": {},
+    "locations": []
+  },
+  "league.tempforeign.text.170a2e0c": {
+    "source": "src/league/tempforeign.ts",
+    "line": 95,
+    "params": {},
+    "locations": []
+  },
+  "league.tempforeign.text.868c4b32": {
+    "source": "src/league/tempforeign.ts",
+    "line": 111,
+    "params": {
+      "club": {
+        "expression": "short(s, teamId)"
+      },
+      "injured": {
+        "expression": "injured.name"
+      },
+      "name": {
+        "expression": "p.name"
+      },
+      "usd": {
+        "expression": "price.toLocaleString('en-US')"
+      }
+    },
+    "locations": []
+  },
+  "league.tempforeign.text.bc78cf62": {
+    "source": "src/league/tempforeign.ts",
+    "line": 135,
+    "params": {
+      "club": {
+        "expression": "short(s, t.teamId)"
+      },
+      "name": {
+        "expression": "wagwa(temp.name)",
+        "particle": "과/와"
+      },
+      "injured": {
+        "expression": "injured.name"
+      }
+    },
+    "locations": []
+  },
+  "league.tempforeign.text.921b34ac": {
+    "source": "src/league/tempforeign.ts",
+    "line": 139,
+    "params": {
+      "club": {
+        "expression": "short(s, t.teamId)"
+      },
+      "injured": {
+        "expression": "injured.name"
+      },
+      "name": {
+        "expression": "temp.name"
+      }
+    },
+    "locations": []
+  },
+  "league.tempforeign.text.a23fff60": {
+    "source": "src/league/tempforeign.ts",
+    "line": 139,
+    "params": {
+      "club": {
+        "expression": "short(s, t.teamId)"
+      },
+      "name": {
+        "expression": "temp.name"
+      }
+    },
+    "locations": []
+  },
+  "league.trade.text.2a130e0c": {
+    "source": "src/league/trade.ts",
+    "line": 518,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.d98daee8": {
+    "source": "src/ui/Market.tsx",
+    "line": 467,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.fcbd7280": {
+    "source": "src/ui/Market.tsx",
+    "line": 468,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.5ea34e6b": {
+    "source": "src/ui/Market.tsx",
+    "line": 480,
+    "params": {
+      "date": {
+        "expression": "league.injuries[inj.id]!.until.slice(5)"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.1b0fe9f1": {
+    "source": "src/ui/Market.tsx",
+    "line": 483,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.f38011f6": {
+    "source": "src/ui/Market.tsx",
+    "line": 485,
+    "params": {
+      "name": {
+        "expression": "inj.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.7f36fa1f": {
+    "source": "src/ui/Market.tsx",
+    "line": 486,
+    "params": {
+      "name": {
+        "expression": "temp.name"
+      },
+      "injured": {
+        "expression": "inj.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.d30bf57d": {
+    "source": "src/ui/Market.tsx",
+    "line": 498,
+    "params": {
+      "part": {
+        "expression": "league.injuries[p.id]?.part ?? L('부상')"
+      },
+      "date": {
+        "expression": "league.injuries[p.id]?.until.slice(5) ?? ''"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.501fb802": {
+    "source": "src/ui/Market.tsx",
+    "line": 498,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.2a2b8688": {
+    "source": "src/ui/Market.tsx",
+    "line": 508,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.6698e588": {
+    "source": "src/ui/Market.tsx",
+    "line": 508,
+    "params": {
+      "usd": {
+        "expression": "usd(tempPrice(league, p, shown))"
+      },
+      "archetype": {
+        "expression": "p.archetype"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.ef53c2a6": {
+    "source": "src/ui/Market.tsx",
+    "line": 511,
+    "params": {},
+    "locations": []
   }
 }

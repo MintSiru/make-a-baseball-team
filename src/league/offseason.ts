@@ -17,6 +17,7 @@ import { historicForeignCap, MODERN_FROM, rulesFor } from '../rules/history';
 import { boardValue, playsHistory } from './era';
 import { boardMeets, committeeMotions, holdMeeting } from './board';
 import { lotteryNews, lotteryOrder } from './lottery';
+import { endTemps } from './tempforeign';
 import { hometownClub } from './fa';
 import { hashUnit, observe, overall, rng, toGrade, type Tools } from '../draftroom';
 import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
@@ -74,6 +75,8 @@ export const rosterLimit = (season: number) => rulesFor(season).rosterLimit;
 
 /** Moves finished-season lines into careers, credits service days and stores the season summary. */
 export function closeSeason(s: LeagueState) {
+  // 2.0.18: the stand-ins still standing in leave with the season (tempforeign.ts).
+  endTemps(s);
   const bat = emptyBat(),
     pit = emptyPit();
   for (const line of Object.values(s.lines)) {

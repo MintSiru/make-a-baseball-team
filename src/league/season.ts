@@ -26,6 +26,7 @@ import { attendance, clubState, recordGate } from './fans';
 import { staffOf } from './staff';
 import { setGoals } from './parent';
 import { aiDeadlineDeals, aiForeignChanges, aiTrades, processWaivers } from './trade';
+import { tempForeignDay } from './tempforeign';
 import { allStarDay } from './allstar';
 import { draftClass } from './players';
 import { applyCombine, combineDay } from './combine';
@@ -315,6 +316,8 @@ export function playDay(s: LeagueState): boolean {
   nationalTeamBack(s, date);
   processWaivers(s, date);
   marketEvents(s, date);
+  // 2.0.18: stand-ins for foreign players out six weeks or more (tempforeign.ts).
+  tempForeignDay(s, date);
   // The All-Star voting and game (1.2.0), the draft combine (1.3.0).
   allStarDay(s, date);
   combineDay(s, date, () => applyCombine(s.seed, s.year, draftClass(s.seed, s.year, s.unified)));

@@ -104,6 +104,8 @@ export interface Contract {
   usd?: { bonus: number; salary: number; options: number; fee?: number };
   /** Domestic free-agent deals (V0.8): incentives, a period option and promises beyond the money. */
   fa?: FaTerms;
+  /** 2.0.18 (tempforeign.ts): a stand-in's contract, for the injured foreign player with this id. */
+  temp?: PlayerId;
 }
 
 /** How a free-agent deal's incentives are earned each season: games for a hitter, innings for a starter, games for a reliever. */
