@@ -38,12 +38,13 @@ beforeAll(() => {
   while (pending()) apply(s, { kind: 'decide', input: autoDecision(s)! });
   endRegular(s);
   apply(s, { kind: 'postseason' });
-  // Two of our veterans want to retire this winter: one is talked round, the other goes.
+  // Our veterans want to retire this winter: one is talked round, another goes. (2.0.6: three of them, since even at 41
+  // the chance is 97%: the first two whose wish comes are the ones.)
   const next = s.year + 1;
   const vets = orgPlayers(s, EXPANSION_ID)
     // (Service done: a player still owing it may be enlisted that winter instead.)
     .filter((p) => p.status === 'active' && p.origin.kind !== 'foreign' && p.service.military !== 'pending')
-    .slice(0, 2);
+    .slice(0, 3);
   for (const p of vets) {
     at(p, 41, next);
     // Faded too, and the scouts' report says so (the retirement roll reads the report; with a good one a 41-year-old
@@ -51,12 +52,13 @@ beforeAll(() => {
     for (const k of Object.keys(p.hidden.current) as (keyof typeof p.hidden.current)[]) p.hidden.current[k] = 30;
     p.scouting.current = 30;
   }
-  [talked, left] = [vets[0]!.id, vets[1]!.id];
   apply(s, { kind: 'nextSeason' });
   while (pending()) {
     const d = pending()!;
     if (d.kind === 'retire') {
       retireSeen = d.rows.map((r) => ({ ...r }));
+      const wishing = vets.map((p) => p.id).filter((id) => d.rows.some((r) => r.id === id));
+      [talked, left] = [wishing[0] ?? null, wishing[1] ?? null];
       for (const r of d.rows) r.chance = r.id === talked ? 1 : r.chance;
       apply(s, { kind: 'decide', input: { kind: 'retire', ids: [talked!] } });
     } else apply(s, { kind: 'decide', input: autoDecision(s)! });
