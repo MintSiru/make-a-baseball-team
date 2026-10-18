@@ -485,7 +485,7 @@ try {
   await tripPick.selectOption({ index: 1 });
   await page.getByRole('button', { name: '도쿄 모션 베이스에 보내기' }).click();
   await page.waitForFunction(() => document.querySelectorAll('.training .record-table tbody tr').length >= 1);
-  check((await page.locator('.training .record-table').textContent())?.includes('연수 중'), 'the player is away on his programme');
+  check((await page.locator('.training .record-table').first().textContent())?.includes('연수 중'), 'the player is away on his programme');
 
   // 4d. The club's story, the AI article settings (no key: nothing is sent), the record room.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();

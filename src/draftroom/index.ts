@@ -106,8 +106,18 @@ export const DRAFT_ROOM_DRAFT_DATE = B.DRAFT_DATE;
 export const generateDraftPool = (seed: string): DraftPool => P.generatePool(seed);
 /** Draft Room's seeded PRNG: string seed → FNV-1a → mulberry32. */
 export const rng = (seed: string): (() => number) => P.rng(seed);
-/** FNV-1a hash of a string mapped to [0, 1). */
-export const hashUnit = (s: string): number => P.hash(s) / 4294967296;
+/** A string's hash mapped to [0, 1). 2.0.8: Draft Room's FNV-1a hash, finished with MurmurHash3's mix: FNV-1a alone barely moves its top bits when only a
+    key's last character changes, so keys in a row ("game-12", "game-13") drew nearly the same value (the play-by-play
+    told the same play batter after batter). */
+export const hashUnit = (s: string): number => {
+  let h = P.hash(s);
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b);
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35);
+  h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+};
 
 const SERVED_AT_DRAFT = (Tuning as unknown as { TUNING: { service: { servedAtDraft: Record<string, number> } } }).TUNING.service.servedAtDraft;
 /** Whether the prospect finished military service before the draft, decided as Draft Room's career.create does. */

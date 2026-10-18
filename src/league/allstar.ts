@@ -153,7 +153,13 @@ function nominate(s: LeagueState, sides: Record<TeamId, AllStarSide>): AllStarCa
     add('CL', best(relievers.filter((p) => roles[p.id] === 'CL')).concat(relievers.some((p) => roles[p.id] === 'CL') ? [] : best(relievers)));
     add('RP', best(relievers));
     const hitters = roster.filter((p) => !isPitcher(p));
-    for (const pos of ['C', '1B', '2B', '3B', 'SS'] as const) add(pos, best(hitters.filter((p) => p.position === pos)));
+    // 2.0.8: a club with nobody listed at a spot puts up the man who has played it (or lists it among his others).
+    const at = (pos: 'C' | '1B' | '2B' | '3B' | 'SS') => {
+      const own = hitters.filter((p) => p.position === pos);
+      if (own.length) return own;
+      return hitters.filter((p) => (s.lines[p.id]?.bat?.posG?.[pos] ?? 0) > 0 || (p.alt ?? []).includes(pos));
+    };
+    for (const pos of ['C', '1B', '2B', '3B', 'SS'] as const) add(pos, best(at(pos)));
     add('OF', best(hitters.filter((p) => p.position === 'LF' || p.position === 'CF' || p.position === 'RF'), 3));
     add('DH', best(hitters));
   }
