@@ -16,7 +16,7 @@ import { ro } from '../league/josa';
 import { DisplayOptions } from './DisplaySettings';
 import { StoryOptions } from './StorySettings';
 import { UpdateNotes } from './Updates';
-import { boardLine, motionText } from '../league/board';
+import { BOARD_ITEMS, boardLine, currentValue, items, motionText, ruleLabel, ruleSeason, type BoardItem } from '../league/board';
 
 const SECTIONS: [string, string][] = [
   ['settings-display', __i18n_k("ui.settings.sECTIONS.43c786f1")],
@@ -375,6 +375,42 @@ function SaveOptions({ league, store, busy, onExport, onImport }: { league: Leag
   );
 }
 
+/** 2.0.13 (board.ts setRule): the board off, the rules by hand, each from the coming season. */
+function RuleEditor({ league, busy, onAct }: { league: LeagueState; busy: boolean; onAct: (a: Action) => void }) {
+  const season = ruleSeason(league);
+  const list = items(league, season);
+  const valuesOf = (item: BoardItem) => {
+    const r = BOARD_ITEMS[item];
+    const out: number[] = [];
+    for (let v = r.min; v <= r.max; v += r.step) out.push(v);
+    return out;
+  };
+  const onOff = (item: BoardItem) => BOARD_ITEMS[item].min === 0 && BOARD_ITEMS[item].max === 1;
+  return (
+    <fieldset class="rule-editor">
+      <legend>{__i18n_t("ui.settings.text.4318792a")}</legend>
+      <p class="muted small">{__i18n_t("ui.settings.text.46bafba5", { season })}</p>
+      <div class="rule-grid">
+        {list.map((item) => {
+          const now = currentValue(league, item, season);
+          return (
+            <label key={item}>
+              {__i18n_display(ruleLabel(item))}
+              <select value={String(now)} disabled={busy} onChange={(e) => onAct({ kind: 'leagueRule', item, value: Number((e.currentTarget as HTMLSelectElement).value) })}>
+                {valuesOf(item).map((v) => (
+                  <option key={v} value={String(v)}>
+                    {onOff(item) ? (v ? __i18n_t("ui.settings.text.8f13d839") : __i18n_t("ui.settings.text.66770937")) : String(v)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
 /** 1.9.9: the board on or off (from the coming winter), the rules it changed and its votes. */
 function BoardOptions({ league, busy, onAct }: { league: LeagueState; busy: boolean; onAct: (a: Action) => void }) {
   const b = league.board;
@@ -388,6 +424,8 @@ function BoardOptions({ league, busy, onAct }: { league: LeagueState; busy: bool
           <input type="checkbox" checked={on} disabled={busy} onChange={(e) => onAct({ kind: 'board', on: (e.currentTarget as HTMLInputElement).checked })} /> {__i18n_t("ui.settings.text.11864af0")}
         </label>
       )}
+      {/* 2.0.13: with the board off, the general manager sets the rules. */}
+      {league.user && !on && <RuleEditor league={league} busy={busy} onAct={onAct} />}
       {!!b?.changes.length && (
         <>
           <h3>{__i18n_t("ui.settings.text.11028e1d")}</h3>

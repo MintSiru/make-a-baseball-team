@@ -77442,5 +77442,200 @@
     "line": 358,
     "params": {},
     "locations": []
+  },
+  "league.board.text.9449b000": {
+    "source": "src/league/board.ts",
+    "line": 495,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.74f290f1": {
+    "source": "src/league/board.ts",
+    "line": 497,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.2c75d56a": {
+    "source": "src/league/board.ts",
+    "line": 499,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.fecd6261": {
+    "source": "src/league/board.ts",
+    "line": 501,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.28621d80": {
+    "source": "src/league/board.ts",
+    "line": 503,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.4a59f9bc": {
+    "source": "src/league/board.ts",
+    "line": 505,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.134d9ac9": {
+    "source": "src/league/board.ts",
+    "line": 507,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.faa5f0b0": {
+    "source": "src/league/board.ts",
+    "line": 509,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.7ccc7479": {
+    "source": "src/league/board.ts",
+    "line": 511,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.ac86b705": {
+    "source": "src/league/board.ts",
+    "line": 513,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.21f26ef9": {
+    "source": "src/league/board.ts",
+    "line": 515,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.69a60c9d": {
+    "source": "src/league/board.ts",
+    "line": 517,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.f0773e73": {
+    "source": "src/league/board.ts",
+    "line": 519,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.b1720721": {
+    "source": "src/league/board.ts",
+    "line": 521,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.b551d014": {
+    "source": "src/league/board.ts",
+    "line": 523,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.2966e220": {
+    "source": "src/league/board.ts",
+    "line": 525,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.70daeacb": {
+    "source": "src/league/board.ts",
+    "line": 527,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.7021a262": {
+    "source": "src/league/board.ts",
+    "line": 529,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.f1f3e66a": {
+    "source": "src/league/board.ts",
+    "line": 531,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.997dd883": {
+    "source": "src/league/board.ts",
+    "line": 533,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.e7e6c495": {
+    "source": "src/league/board.ts",
+    "line": 542,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.92aafcd6": {
+    "source": "src/league/board.ts",
+    "line": 543,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.a9648bbe": {
+    "source": "src/league/board.ts",
+    "line": 545,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.130e5c83": {
+    "source": "src/league/board.ts",
+    "line": 546,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.0786e319": {
+    "source": "src/league/board.ts",
+    "line": 562,
+    "params": {
+      "what": {
+        "expression": "what"
+      }
+    },
+    "locations": []
+  },
+  "league.board.text.ec999e16": {
+    "source": "src/league/board.ts",
+    "line": 562,
+    "params": {
+      "season": {
+        "expression": "from"
+      },
+      "what": {
+        "expression": "what"
+      }
+    },
+    "locations": []
+  },
+  "ui.settings.text.4318792a": {
+    "source": "src/ui/Settings.tsx",
+    "line": 391,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.46bafba5": {
+    "source": "src/ui/Settings.tsx",
+    "line": 392,
+    "params": {
+      "season": {
+        "expression": "season"
+      }
+    },
+    "locations": []
+  },
+  "ui.settings.text.8f13d839": {
+    "source": "src/ui/Settings.tsx",
+    "line": 402,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.66770937": {
+    "source": "src/ui/Settings.tsx",
+    "line": 402,
+    "params": {},
+    "locations": []
   }
 }

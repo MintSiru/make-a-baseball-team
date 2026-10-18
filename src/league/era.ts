@@ -26,6 +26,11 @@ export function setEra(from: { era?: number; historical?: boolean; board?: { cha
   board = (typeof from === 'object' && from?.board?.changes) || [];
 }
 
+/** 2.0.13 (board.ts setRule): the board's changes alone, for a moment, keeping the calendar. */
+export function setEraBoard(changes: readonly { from: number; item: string; value: number }[]) {
+  board = changes;
+}
+
 /** 1.9.9: the value the board set for `item` in force in `season` (the latest voted when omitted: a winter's signings
     are for the season the change starts), or undefined when it never changed it. */
 export function boardValue(item: string, season = Infinity): number | undefined {

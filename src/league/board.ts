@@ -11,7 +11,7 @@ import { k as __i18n_k } from '../i18n/index';
    sandbox) never meets, and every rule stays as it was. */
 import { rng } from '../draftroom';
 import type { TeamId } from '../model/types';
-import { boardValue } from './era';
+import { boardValue, setEraBoard } from './era';
 import { addAlert } from './alerts';
 import { leagueEvent } from './leagueevents';
 import { addNews } from './news';
@@ -50,6 +50,8 @@ export interface BoardChange {
   from: number;
   item: BoardItem;
   value: number;
+  /** 2.0.13: set by the general manager with the board off, not voted. */
+  manual?: boolean;
 }
 
 export interface BoardMotion {
@@ -152,7 +154,7 @@ export function currentValue(s: LeagueState, item: BoardItem, season: number): n
 
 /** The items this league may vote on: two leagues only with an even number of clubs (and its postseason then fixed),
     the number of games not with the twelve-club schedule. */
-function items(s: LeagueState, season: number): BoardItem[] {
+export function items(s: LeagueState, season: number): BoardItem[] {
   const clubs = firstTeamIds(s, season).length;
   const two = currentValue(s, 'twoLeagues', season) === 1;
   return (Object.keys(BOARD_ITEMS) as BoardItem[]).filter((item) => {
@@ -480,4 +482,95 @@ export function setBoardOn(s: LeagueState, on: boolean) {
     return;
   }
   s.board.on = on;
+}
+
+// ── 2.0.13: the rules by hand ────────────────────────────────────────────────────────────────────
+// The user's request: with the board off, the general manager sets the rules the board would vote on, each from the
+// coming season (the same changes the board makes, so everything that reads them follows).
+
+/** A rule's name for the settings. */
+export function ruleLabel(item: BoardItem): string {
+  switch (item) {
+    case 'foreign':
+      return __i18n_k("league.board.text.9449b000");
+    case 'asiaQuota':
+      return __i18n_k("league.board.text.74f290f1");
+    case 'foreignCap':
+      return __i18n_k("league.board.text.2c75d56a");
+    case 'foreignTotal':
+      return __i18n_k("league.board.text.fecd6261");
+    case 'foreignChanges':
+      return __i18n_k("league.board.text.28621d80");
+    case 'firstTeam':
+      return __i18n_k("league.board.text.4a59f9bc");
+    case 'rosterLimit':
+      return __i18n_k("league.board.text.134d9ac9");
+    case 'games':
+      return __i18n_k("league.board.text.faa5f0b0");
+    case 'postseason':
+      return __i18n_k("league.board.text.7ccc7479");
+    case 'extras':
+      return __i18n_k("league.board.text.ac86b705");
+    case 'ghostRunner':
+      return __i18n_k("league.board.text.21f26ef9");
+    case 'threeBatter':
+      return __i18n_k("league.board.text.69a60c9d");
+    case 'cap':
+      return __i18n_k("league.board.text.f0773e73");
+    case 'minSalary':
+      return __i18n_k("league.board.text.b1720721");
+    case 'faSeasons':
+      return __i18n_k("league.board.text.b551d014");
+    case 'postingSeasons':
+      return __i18n_k("league.board.text.2966e220");
+    case 'draftRounds':
+      return __i18n_k("league.board.text.70daeacb");
+    case 'secondDraft':
+      return __i18n_k("league.board.text.7021a262");
+    case 'territorial':
+      return __i18n_k("league.board.text.f1f3e66a");
+    case 'twoLeagues':
+      return __i18n_k("league.board.text.997dd883");
+  }
+}
+
+/** The season the rules set now start in. */
+export const ruleSeason = (s: LeagueState) => (s.offseason?.year ?? s.year) + 1;
+
+/** Why this rule cannot be set (null if it can). */
+export function checkRule(s: LeagueState, item: BoardItem, value: number): string | null {
+  if (!s.user) return __i18n_k("league.board.text.e7e6c495");
+  if (s.board?.on) return __i18n_k("league.board.text.92aafcd6");
+  const range = BOARD_ITEMS[item];
+  if (!range || !items(s, ruleSeason(s)).includes(item)) return __i18n_k("league.board.text.a9648bbe");
+  if (value < range.min || value > range.max || (value - range.min) % range.step !== 0) return __i18n_k("league.board.text.130e5c83");
+  return null;
+}
+
+/** Sets a rule from the coming season (the same value again cancels a change not yet in force). */
+export function setRule(s: LeagueState, item: BoardItem, value: number) {
+  if (checkRule(s, item, value)) return;
+  const from = ruleSeason(s);
+  const b = (s.board ??= { on: false, since: from - 1, changes: [], log: [] });
+  const before = b.changes.filter((c) => c.from < from || c.item !== item);
+  // What it is without a change from `from` on: the latest earlier change, or the rule book.
+  const earlier = [...before].reverse().find((c) => c.item === item && c.from <= from);
+  const now = earlier?.value ?? baseValue(s, item, from);
+  b.changes = before;
+  if (value !== now) b.changes.push({ from, item, value, manual: true });
+  const what = motionText({ item, value, now });
+  addNews(s, { id: `rule-${from}-${item}-${b.changes.length}`, date: `${from - 1}-12-01`, kind: 'season', title: __i18n_k("league.board.text.0786e319", { what }), body: __i18n_k("league.board.text.ec999e16", { season: from, what }), quotes: [], facts: { season: from }, players: [], mine: false });
+}
+
+/** A rule's value from the rule book alone (no change by the board or by hand). */
+function baseValue(s: LeagueState, item: BoardItem, season: number): number {
+  const kept = [...(s.board?.changes ?? [])];
+  if (s.board) s.board.changes = [];
+  setEraBoard([]);
+  try {
+    return currentValue(s, item, season);
+  } finally {
+    if (s.board) s.board.changes = kept;
+    setEraBoard(kept);
+  }
 }
