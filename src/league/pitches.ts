@@ -188,11 +188,42 @@ export function repertoire(p: Player): Pitch[] {
 
 const clampGrade = (x: number) => Math.max(20, Math.min(80, Math.round(x / 5) * 5));
 
-/** Public grades of each pitch (scouting 변화구 plus the pitch's offset). */
+/** Public grades of each pitch (scouting 변화구 plus the pitch's offset and, from 2.0.6, its own course). */
 export function pitchGrades(p: Player, future = false): { type: PitchType; label: string; grade: number; usage: number }[] {
   const base = (future ? p.scouting.futureTools : p.scouting.tools).breaking;
   if (base == null) return [];
-  return repertoire(p).map((x) => ({ type: x.type, label: PITCH_LABELS[x.type], grade: clampGrade(base + x.offset), usage: x.usage }));
+  return repertoire(p).map((x) => ({ type: x.type, label: PITCH_LABELS[x.type], grade: clampGrade(base + x.offset + (p.pitchDev?.[x.type] ?? 0)), usage: x.usage }));
+}
+
+/** The grades a pitcher's pitches stood at (the fastball as "FB", his 구위), for the change shown next season. */
+export const pitchSnapshot = (p: Player): Record<string, number> => ({
+  ...(p.scouting.tools.stuff != null ? { FB: p.scouting.tools.stuff } : {}),
+  ...Object.fromEntries(pitchGrades(p).map((x) => [x.type, x.grade])),
+});
+
+const PITCH_DEV = { step: 2, catchUp: 0.15, fade: 0.12, max: 10 };
+const normalOf = (key: string) => (hashUnit(`${key}|a`) + hashUnit(`${key}|b`) + hashUnit(`${key}|c`) - 1.5) * 2;
+
+/** 2.0.6 (the user's request): each secondary pitch on a course of its own, a winter at a time. A step either way (his
+    own, seeded by the year); a young arm's weaker pitches catch up, an old arm's best one fades first. The steps are
+    centred on his mix (weighted by use), so together they still make his 변화구 grade — what the engine reads — and the
+    grade's own growth and decline move them all. */
+export function developPitches(p: Player, year: number, age: number) {
+  const rep = repertoire(p);
+  if (rep.length < 2) return;
+  const dev = p.pitchDev ?? {};
+  const steps = rep.map((x) => {
+    const now = x.offset + (dev[x.type] ?? 0);
+    return normalOf(`pitch-dev|${p.id}|${year}|${x.type}`) * PITCH_DEV.step + (age <= 27 ? -now * PITCH_DEV.catchUp : 0) - (age >= 33 ? Math.max(0, now) * PITCH_DEV.fade : 0);
+  });
+  const total = rep.reduce((a, x) => a + x.usage, 0) || 1;
+  const next = rep.map((x, i) => (dev[x.type] ?? 0) + steps[i]!);
+  // Centred (twice: the bounds can pull it off), and only his pitches of today kept (a new role brings a new mix).
+  for (let pass = 0; pass < 3; pass++) {
+    const mean = rep.reduce((a, x, i) => a + x.usage * next[i]!, 0) / total;
+    for (let i = 0; i < next.length; i++) next[i] = Math.max(-PITCH_DEV.max, Math.min(PITCH_DEV.max, next[i]! - mean));
+  }
+  p.pitchDev = Object.fromEntries(rep.map((x, i) => [x.type, Math.round(next[i]! * 10) / 10]));
 }
 
 /** Platoon multiplier the engine applies to the same-side advantage. */

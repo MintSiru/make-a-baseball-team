@@ -270,6 +270,9 @@ export interface PlayerCard {
   splits: { season: Splits | null; career: Splits | null };
   velocity: { top: number; average: number } | null;
   pitches: ReturnType<typeof pitchGrades>;
+  /** 2.0.6: each pitch's potential grade, and the grades of his pitches a season ago ("FB" the fastball). */
+  pitchesFuture: Record<string, number>;
+  pitchLast: { season: number; grades: Record<string, number> } | null;
   /** 1.9.3: his main fastball. */
   fastball: FastballType | null;
   tracking: import('./tracking').Tracking | null;
@@ -369,6 +372,9 @@ export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
     splits: { season: line ? (side(line) ?? null) : null, career: sumSplits(major.map(side)) },
     velocity: top == null ? null : { top, average: averageVelocity(p)! },
     pitches: pitchGrades(p),
+    // 2.0.6 (the user's request): each pitch's potential and its change since last season.
+    pitchesFuture: Object.fromEntries(pitchGrades(p, true).map((x) => [x.type, x.grade])),
+    pitchLast: p.pitchLast ?? null,
     fastball: pitcher ? fastballOf(p) : null,
     // 2.0.0: his arm slot and what a tracking system reads off his pitches (tracking.ts).
     tracking: pitcher ? trackingOf(p) : null,

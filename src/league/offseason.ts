@@ -6,8 +6,10 @@ import { k as __i18n_k } from '../i18n/index';
    rookie draft → (expansion special draft) → roster limits → released players → foreign players.
    The user's club can make the game wait at a step for a decision (see OffseasonHooks). */
 import { seasonStaff } from './clubrecords';
+import { familyAtPick, familySeason, pruneFamilies } from './family';
 import { closeMeetings, headToHead } from './matchups';
 import { seasonMix } from './savant';
+import { developPitches, pitchSnapshot } from './pitches';
 import { historicForeignCap, MODERN_FROM, rulesFor } from '../rules/history';
 import { boardValue, playsHistory } from './era';
 import { boardMeets, committeeMotions, holdMeeting } from './board';
@@ -81,7 +83,7 @@ export function closeSeason(s: LeagueState) {
     const war = (line.bat ? batterWar(line.bat, p.position ?? 'DH', lg) : 0) + (line.pit ? pitcherWar(line.pit, lg) : 0);
     // 2.0.4: the spray chart is the season's alone (a save stays small); a pitcher's mix and velocity are kept.
     const { spray: _spray, ...batKept } = line.bat ?? {};
-    const rec: SeasonRecord = { year: s.year, teamId: line.teamId, age: ageIn(p, s.year), days: line.days, bat: line.bat ? (batKept as typeof line.bat) : null, pit: line.pit, war: Math.round(war * 10) / 10, ...(line.pit ? seasonMix(p) : {}) };
+    const rec: SeasonRecord = { year: s.year, teamId: line.teamId, age: ageIn(p, s.year), days: line.days, bat: line.bat ? (batKept as typeof line.bat) : null, pit: line.pit, war: Math.round(war * 10) / 10, ...(line.pit ? seasonMix(p, s.year) : {}) };
     if (line.bat || line.pit || line.days) p.career.push(rec);
     p.service.carriedDays += line.days;
     while (p.service.carriedDays >= KBO_2026.freeAgency.daysPerSeason) {
@@ -142,6 +144,8 @@ export function closeSeason(s: LeagueState) {
     h2h: headToHead(s.scores),
     staff: seasonStaff(s),
   });
+  // 2.0.6: a son past his father's career home runs or wins.
+  familySeason(s);
   closeMeetings(s);
   // The business year closes with the baseball one: accounts, fans' mood, AI staff changes.
   const summary = s.history[s.history.length - 1]!;
@@ -209,6 +213,8 @@ export function coachingFor(s: LeagueState, p: Player, year: number): Coaching {
 /** `slower`: share off the late-career decline (the user's gym, V0.10). */
 export function developPlayer(p: Player, year: number, lostDays: number, r: () => number, scale = 1, coaching: Coaching = {}, slower = 0) {
   const age = ageIn(p, year);
+  // 2.0.6: his pitches as they stood, for the change shown next season.
+  const pitchesBefore = isPitcher(p) ? pitchSnapshot(p) : null;
   const yearIndex = Math.max(0, year - p.proSince);
   const h = p.hidden;
   if (p.velocity != null && h.current.stuff != null) p.velocityStuff ??= h.current.stuff;
@@ -241,8 +247,10 @@ export function developPlayer(p: Player, year: number, lostDays: number, r: () =
       next[k] = clamp(next[k]! - extra * f + normal(r) * 0.6, 20, 80);
     }
   h.current = next;
+  if (pitchesBefore) developPitches(p, year, age);
   rescout(p, year + 1, yearIndex + 1, r);
   logGrades(p, year + 1);
+  if (pitchesBefore && Object.keys(pitchesBefore).length) p.pitchLast = { season: year, grades: pitchesBefore };
 }
 
 /** Abilities in a grade log entry (1.7.0), after the season and the overall grade. */
@@ -558,6 +566,8 @@ export function makePick(s: LeagueState, d: DraftState, p: Player) {
   if (slot.territorial) p.origin.territorial = true;
   else if (before) p.origin.secondPick = overall - before;
   logPick(s, p, slot.teamId, d.year, overall, slot.label);
+  // 2.0.6: now and then a coach's son, a player's younger brother or a twin.
+  familyAtPick(s, p, slot.teamId, d.year, overall, (s.draftLog ?? []).filter((x) => x.year === d.year && x.id !== p.id).map((x) => x.id));
   logGrades(p, d.year + 1);
   if (slot.via) p.origin.pickVia = slot.via;
   d.pool = d.pool.filter((id) => id !== p.id);
@@ -622,6 +632,7 @@ function runDraft(s: LeagueState, d: DraftState): 'wait' | 'done' {
   }
   for (const id of d.pool) delete s.players[id];
   d.pool = [];
+  pruneFamilies(s);
   return 'done';
 }
 

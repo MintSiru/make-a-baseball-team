@@ -640,6 +640,9 @@ export interface LeagueState {
       before it for the men still playing. */
   matchups?: Record<string, number[]>;
   matchupsAll?: Record<string, number[]>;
+  /** 2.0.6 (family.ts): players tied by family, and the family stories already told. */
+  families?: import('./family').FamilyTie[];
+  familyDone?: string[];
   international: NationalEntry[];
   /** Players serving a KBO suspension or ban (V0.12, scandals.ts). */
   suspended?: Record<PlayerId, import('./scandals').Suspension>;

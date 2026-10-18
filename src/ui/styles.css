@@ -3290,13 +3290,20 @@ fieldset.stops {
 }
 .pitch-mix-bar {
   display: flex;
-  height: 0.9rem;
+  height: 1.25rem;
+  font-size: 0.68rem;
+  line-height: 1.25rem;
   border-radius: 0.2rem;
   overflow: hidden;
   background: var(--rule);
 }
 .pitch-mix-velo {
   text-align: right;
+}
+.pitch-mix-bar > span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
 }
 .h2h summary {
   cursor: pointer;

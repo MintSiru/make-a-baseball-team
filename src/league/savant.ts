@@ -4,6 +4,7 @@
 
    Everything here reads what the season lines and careers already hold (battedball.ts, fielding.ts); nothing new is
    drawn, so the plays do not move. */
+import { hashUnit } from '../draftroom';
 import type { FieldPos } from './engine/types';
 import type { BatTotals, Player, PitTotals, SeasonRecord } from '../model/types';
 import { battedRates } from './battedball';
@@ -207,14 +208,21 @@ export function sprayOf(s: LeagueState, id: string): SprayPoint[] {
   return out;
 }
 
-/** A pitcher's mix (percent of his pitches, the fastball first) and average velocity as he throws today. */
-export function seasonMix(p: Player): Pick<SeasonRecord, 'mix' | 'velo'> {
+/** A pitcher's mix that season (percent of his pitches, the fastball first) and average velocity. 2.0.6: the season
+    moves it a little — a few points of fastballs either way, each secondary pitch up or down a little (seeded by the
+    year), and an arm past 31 leaning a point a year more on his secondary stuff. */
+export function seasonMix(p: Player, year: number): Pick<SeasonRecord, 'mix' | 'velo'> {
   const rep = repertoire(p);
   const velo = averageVelocity(p);
   if (!rep.length && velo == null) return {};
   const pct = (x: number) => Math.round(x * 1000) / 10;
-  const second = rep.reduce((a, x) => a + x.usage, 0);
-  return { mix: [[fastballOf(p), pct(1 - second)], ...rep.map((x): [string, number] => [x.type, pct(x.usage)])], ...(velo != null ? { velo } : {}) };
+  const base = rep.reduce((a, x) => a + x.usage, 0);
+  const age = year - Number(p.birthday.slice(0, 4));
+  const drift = (hashUnit(`mix|${p.id}|${year}`) - 0.5) * 0.08 + Math.max(0, age - 31) * 0.01;
+  const second = rep.length ? Math.max(0.08, Math.min(0.8, base + drift)) : 0;
+  const tilt = rep.map((x) => x.usage * (1 + (hashUnit(`mix|${p.id}|${year}|${x.type}`) - 0.5) * 0.3));
+  const total = tilt.reduce((a, b) => a + b, 0) || 1;
+  return { mix: [[fastballOf(p), pct(1 - second)], ...rep.map((x, i): [string, number] => [x.type, pct((second * tilt[i]!) / total)])], ...(velo != null ? { velo } : {}) };
 }
 
 /** His mix by first-team season (kept since 2.0.4), this season's as he throws today. */
@@ -222,7 +230,7 @@ export function mixBySeason(s: LeagueState, p: Player): { year: number; current:
   const out = p.career.filter((r) => !r.level && r.pit && r.mix).map((r) => ({ year: r.year, current: false, mix: r.mix!, velo: r.velo ?? null }));
   const line = s.lines[p.id];
   if (line?.pit && !p.career.some((r) => r.year === s.year && !r.level)) {
-    const now = seasonMix(p);
+    const now = seasonMix(p, s.year);
     if (now.mix) out.push({ year: s.year, current: true, mix: now.mix, velo: now.velo ?? null });
   }
   return out;

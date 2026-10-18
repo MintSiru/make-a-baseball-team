@@ -111,6 +111,12 @@ function Spray({ league, id }: { league: LeagueState; id: string }) {
 }
 
 const PITCH_COLOR: Record<string, string> = { '4SFB': '#d22d49', '2SFB': '#fe9d00', CUT: '#933f2c', SNK: '#fe9d00', SL: '#eee716', SW: '#ddb33a', SLV: '#c3bd0e', CB: '#00d1ed', CH: '#1dbe3a', CIR: '#3bacac', FRK: '#55ccab', SPL: '#3bacac', KN: '#867a08', SCR: '#6236cd', PLM: '#4cc9f0', SH: '#888' };
+/** Dark or light text, whichever reads on the colour. */
+const inkOn = (hex: string) => {
+  const n = parseInt(hex.slice(1), 16);
+  const y = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+  return y > 150 ? '#1b1b1b' : '#fff';
+};
 const pitchName = (t: string) => __i18n_displayText((FASTBALL_LABELS as Record<string, string>)[t] ?? PITCH_LABELS[t as PitchType] ?? t);
 
 /** A pitcher's mix by season: one bar a season, his average velocity beside it. */
@@ -121,17 +127,7 @@ function Mix({ league, id }: { league: LeagueState; id: string }) {
   const types = [...new Set(rows.flatMap((r) => r.mix.map(([t]) => t)))];
   return (
     <div class="pitch-mix">
-      {rows.map((r) => (
-        <div key={r.year} class="pitch-mix-row">
-          <span class="pitch-mix-year">{r.current ? __i18n_t("ui.savant.text.04555519", { year: r.year }) : String(r.year)}</span>
-          <span class="pitch-mix-bar" role="img" aria-label={r.mix.map(([t, x]) => `${pitchName(t)} ${x}%`).join(', ')}>
-            {r.mix.map(([t, x]) => (
-              <span key={t} style={{ width: `${x}%`, background: PITCH_COLOR[t] ?? '#999' }} title={`${pitchName(t)} ${x}%`} />
-            ))}
-          </span>
-          <span class="pitch-mix-velo num">{r.velo == null ? '-' : `${r.velo}km/h`}</span>
-        </div>
-      ))}
+      {/* 2.0.6: the key on top, each piece of a bar with its share (and its name where it fits). */}
       <p class="small">
         {types.map((t) => (
           <span key={t} class="spray-key">
@@ -139,6 +135,19 @@ function Mix({ league, id }: { league: LeagueState; id: string }) {
           </span>
         ))}
       </p>
+      {rows.map((r) => (
+        <div key={r.year} class="pitch-mix-row">
+          <span class="pitch-mix-year">{r.current ? __i18n_t("ui.savant.text.04555519", { year: r.year }) : String(r.year)}</span>
+          <span class="pitch-mix-bar" role="img" aria-label={r.mix.map(([t, x]) => `${pitchName(t)} ${x}%`).join(', ')}>
+            {r.mix.map(([t, x]) => (
+              <span key={t} style={{ width: `${x}%`, background: PITCH_COLOR[t] ?? '#999', color: inkOn(PITCH_COLOR[t] ?? '#999') }} title={`${pitchName(t)} ${x}%`}>
+                {x >= 16 ? `${pitchName(t)} ${Math.round(x)}%` : x >= 6 ? `${Math.round(x)}` : ''}
+              </span>
+            ))}
+          </span>
+          <span class="pitch-mix-velo num">{r.velo == null ? '-' : `${r.velo}km/h`}</span>
+        </div>
+      ))}
     </div>
   );
 }
