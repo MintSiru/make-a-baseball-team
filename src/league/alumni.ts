@@ -476,7 +476,8 @@ function passMark(s: LeagueState, date: string, boss: StaffMember, mp: Player, a
 
 /** First-team career total so far, this season included. */
 function careerOf(s: LeagueState, p: Player, pick: (c: { bat: Player['career'][number]['bat']; pit: Player['career'][number]['pit'] }) => number): number {
-  const line = s.lines[p.id];
+  // 2.0.10: not twice once the season is closed into his career (its lines stay until the next season starts).
+  const line = p.career.some((c) => c.year === s.year && !c.level) ? undefined : s.lines[p.id];
   return firstTeam(p).reduce((a, c) => a + pick(c), 0) + (line ? pick(line) : 0);
 }
 

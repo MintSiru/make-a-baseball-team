@@ -247,10 +247,13 @@ export function careerView(s: LeagueState, p: Player): CareerRow[] {
   const rows: CareerRow[] = p.career
     .filter(played)
     .map((c: SeasonRecord) => ({ year: c.year, team: shortName(s, c.teamId), futures: c.level === 'futures', age: c.age, days: c.days, bat: c.bat, pit: c.pit, war: c.war, current: false }));
+  // 2.0.10: once the season is closed its record is in the career while its lines stay until the next season
+  // starts; the season showed twice (and counted twice in the totals).
+  const closed = (futures: boolean) => p.career.some((c) => c.year === s.year && (c.level === 'futures') === futures);
   const line = s.lines[p.id];
-  if (line && played(line)) rows.push({ year: s.year, team: shortName(s, line.teamId), futures: false, age: ageIn(p, s.year), days: line.days, bat: line.bat, pit: line.pit, war: NaN, current: true });
+  if (line && played(line) && !closed(false)) rows.push({ year: s.year, team: shortName(s, line.teamId), futures: false, age: ageIn(p, s.year), days: line.days, bat: line.bat, pit: line.pit, war: NaN, current: true });
   const fline = s.futures?.lines[p.id];
-  if (fline && played(fline)) rows.push({ year: s.year, team: shortName(s, fline.teamId), futures: true, age: ageIn(p, s.year), days: 0, bat: fline.bat, pit: fline.pit, war: NaN, current: true });
+  if (fline && played(fline) && !closed(true)) rows.push({ year: s.year, team: shortName(s, fline.teamId), futures: true, age: ageIn(p, s.year), days: 0, bat: fline.bat, pit: fline.pit, war: NaN, current: true });
   return rows;
 }
 
