@@ -21,7 +21,8 @@ import { SANGMU } from './futures';
 import { cardFor, lineupFor, managerLean, penRoles, PEN_ROLE_LABELS, rotationFor } from './manager';
 import { isDevelopment, type LeagueState } from './state';
 import { captaincyLift } from './captains';
-import { avg, babip, babipAllowed, batterWar, defensiveWar, era, fip, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
+import { avg, babip, babipAllowed, batterWar, defensiveWar, era, eraMinus, fip, fipMinus, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
+import { playerPark } from './venues';
 import { addInto, emptyBat, emptyPit } from './state';
 import { traitsOf } from './traits';
 import { traitReport, type TraitReport } from './reports';
@@ -205,6 +206,8 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
 export interface CareerRow {
   year: number;
   team: string;
+  /** 2.0.15: the club (for its park factor). */
+  teamId: TeamId;
   futures: boolean;
   age: number;
   days: number;
@@ -248,14 +251,14 @@ export function careerView(s: LeagueState, p: Player): CareerRow[] {
   const played = (c: { bat: BatTotals | null; pit: PitTotals | null }) => (c.bat?.g ?? 0) + (c.pit?.g ?? 0) > 0;
   const rows: CareerRow[] = p.career
     .filter(played)
-    .map((c: SeasonRecord) => ({ year: c.year, team: shortName(s, c.teamId), futures: c.level === 'futures', age: c.age, days: c.days, bat: c.bat, pit: c.pit, war: c.war, current: false }));
+    .map((c: SeasonRecord) => ({ year: c.year, team: shortName(s, c.teamId), teamId: c.teamId, futures: c.level === 'futures', age: c.age, days: c.days, bat: c.bat, pit: c.pit, war: c.war, current: false }));
   // 2.0.10: once the season is closed its record is in the career while its lines stay until the next season
   // starts; the season showed twice (and counted twice in the totals).
   const closed = (futures: boolean) => p.career.some((c) => c.year === s.year && (c.level === 'futures') === futures);
   const line = s.lines[p.id];
-  if (line && played(line) && !closed(false)) rows.push({ year: s.year, team: shortName(s, line.teamId), futures: false, age: ageIn(p, s.year), days: line.days, bat: line.bat, pit: line.pit, war: NaN, current: true });
+  if (line && played(line) && !closed(false)) rows.push({ year: s.year, team: shortName(s, line.teamId), teamId: line.teamId, futures: false, age: ageIn(p, s.year), days: line.days, bat: line.bat, pit: line.pit, war: NaN, current: true });
   const fline = s.futures?.lines[p.id];
-  if (fline && played(fline) && !closed(true)) rows.push({ year: s.year, team: shortName(s, fline.teamId), futures: true, age: ageIn(p, s.year), days: 0, bat: fline.bat, pit: fline.pit, war: NaN, current: true });
+  if (fline && played(fline) && !closed(true)) rows.push({ year: s.year, team: shortName(s, fline.teamId), teamId: fline.teamId, futures: true, age: ageIn(p, s.year), days: 0, bat: fline.bat, pit: fline.pit, war: NaN, current: true });
   return rows;
 }
 
@@ -392,7 +395,7 @@ export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
   };
 }
 
-export const rates = { avg, obp, slg, ops, era, ip, fmt3, whip, fip, babip, babipAllowed, wrcPlus, per9, woba };
+export const rates = { avg, obp, slg, ops, era, ip, fmt3, whip, fip, babip, babipAllowed, wrcPlus, per9, woba, eraMinus, fipMinus };
 
 /** League totals of the season being played (first team). */
 export function seasonTotals(s: LeagueState) {
@@ -431,7 +434,7 @@ export function seasonStats(s: LeagueState) {
       batters.push({
         ...base,
         g: b.g, pa: b.pa, avg: avg(b), obp: obp(b), slg: slg(b), ops: ops(b), hr: b.hr, rbi: b.rbi, r: b.r, sb: b.sb, bb: b.bb, k: b.k,
-        babip: babip(b), wrc: wrcPlus(b, rc), war: batterWar(b, p.position ?? 'DH', lg), qualified: b.pa >= teamGames * 3.1,
+        babip: babip(b), wrc: wrcPlus(b, rc, playerPark(s, line.teamId, s.year)), war: batterWar(b, p.position ?? 'DH', lg), qualified: b.pa >= teamGames * 3.1,
         // 2.0.4: the detail tab's numbers (savant.ts).
         x: batDetail(b, p.position ?? 'DH'),
       });
@@ -440,6 +443,8 @@ export function seasonStats(s: LeagueState) {
       pitchers.push({
         ...base,
         g: q.g, gs: q.gs, w: q.w, l: q.l, sv: q.sv, hld: q.hld, outs: q.outs, era: era(q), whip: whip(q), fip: fip(q, rc), k: q.k, bb: q.bb,
+        // 2.0.15: park-adjusted, 100 = average.
+        eraMinus: eraMinus(q, rc, playerPark(s, line.teamId, s.year)), fipMinus: fipMinus(q, rc, playerPark(s, line.teamId, s.year)),
         k9: per9(q.k, q.outs), bb9: per9(q.bb, q.outs), babip: babipAllowed(q), war: pitcherWar(q, lg), qualified: q.outs >= teamGames * 3,
         x: pitDetail(q),
       });

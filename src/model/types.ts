@@ -293,6 +293,8 @@ export interface Player {
       turned around. */
   other?: import('../league/twoway').OtherSide;
   switched?: { year: number; to: 'pitcher' | 'hitter' }[];
+  /** 2.0.15 (venues.ts): his career at home and on the road, and at each ballpark (from 2.0.15). */
+  venues?: import('../league/venues').Venues;
   career: SeasonRecord[];
   /** 1.4.0: postseason lines, one a year he played in it (not in `career`, so season totals stay as they were). */
   post?: PostRecord[];

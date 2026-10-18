@@ -5,6 +5,7 @@ import { k as __i18n_k } from '../i18n/index';
    national-team exemptions → development → retirement → military service → posting → free agency → salaries →
    rookie draft → (expansion special draft) → roster limits → released players → foreign players.
    The user's club can make the game wait at a step for a decision (see OffseasonHooks). */
+import { addVenues, emptyVenues } from './venues';
 import { seasonStaff } from './clubrecords';
 import { familyAtPick, familySeason, pruneFamilies } from './family';
 import { closeMeetings, headToHead } from './matchups';
@@ -87,6 +88,8 @@ export function closeSeason(s: LeagueState) {
     const { spray: _spray, ...batKept } = line.bat ?? {};
     const rec: SeasonRecord = { year: s.year, teamId: line.teamId, age: ageIn(p, s.year), days: line.days, bat: line.bat ? (batKept as typeof line.bat) : null, pit: line.pit, war: Math.round(war * 10) / 10, ...(line.pit ? seasonMix(p, s.year) : {}) };
     if (line.bat || line.pit || line.days) p.career.push(rec);
+    // 2.0.15: the season's venues join his career's.
+    if (line.venues) addVenues((p.venues ??= emptyVenues()), line.venues);
     p.service.carriedDays += line.days;
     while (p.service.carriedDays >= KBO_2026.freeAgency.daysPerSeason) {
       p.service.carriedDays -= KBO_2026.freeAgency.daysPerSeason;

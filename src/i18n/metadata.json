@@ -77655,5 +77655,123 @@
     "line": 213,
     "params": {},
     "locations": []
+  },
+  "ui.venues.text.13a46f96": {
+    "source": "src/ui/Venues.tsx",
+    "line": 11,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.ef6b033f": {
+    "source": "src/ui/Venues.tsx",
+    "line": 12,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.639a1f2f": {
+    "source": "src/ui/Venues.tsx",
+    "line": 72,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.b68b86a7": {
+    "source": "src/ui/Venues.tsx",
+    "line": 72,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.bf21ab80": {
+    "source": "src/ui/Venues.tsx",
+    "line": 72,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.21e0537f": {
+    "source": "src/ui/Venues.tsx",
+    "line": 72,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.3f349ed1": {
+    "source": "src/ui/Venues.tsx",
+    "line": 72,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.0a3d002c": {
+    "source": "src/ui/Venues.tsx",
+    "line": 72,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.1822db88": {
+    "source": "src/ui/Venues.tsx",
+    "line": 72,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.9162d3a3": {
+    "source": "src/ui/Venues.tsx",
+    "line": 72,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.1eb19e0a": {
+    "source": "src/ui/Venues.tsx",
+    "line": 72,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.bb6ef1b2": {
+    "source": "src/ui/Venues.tsx",
+    "line": 72,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.7e66b88d": {
+    "source": "src/ui/Venues.tsx",
+    "line": 72,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.af2feed6": {
+    "source": "src/ui/Venues.tsx",
+    "line": 79,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.626ced4e": {
+    "source": "src/ui/Venues.tsx",
+    "line": 93,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.de766445": {
+    "source": "src/ui/Venues.tsx",
+    "line": 103,
+    "params": {
+      "year": {
+        "expression": "league.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.venues.text.fc7fa3d0": {
+    "source": "src/ui/Venues.tsx",
+    "line": 104,
+    "params": {},
+    "locations": []
+  },
+  "ui.venues.text.a3ffc7b4": {
+    "source": "src/ui/Venues.tsx",
+    "line": 105,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.f07795d7": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 105,
+    "params": {},
+    "locations": []
   }
 }
