@@ -667,8 +667,10 @@ try {
   await page.getByRole('tab', { name: '기록' }).click();
   // 1.9.2: wait for the part to render before counting (the count raced the click on CI). 1.9.4: wait for the
   // count itself — the first table showing was not enough once (the part was still being redrawn).
-  await page.waitForFunction(() => document.querySelectorAll('.dialog .record-table.career').length === 1, null, { timeout: 10_000 }).catch(() => undefined);
-  check((await page.locator('.dialog .record-table.career').count()) === 1, 'the records part shows the season table');
+  // 2.0.18: a two-way (or turned-around) player has a second table for his other side (2.0.12): one or two.
+  await page.waitForFunction(() => document.querySelectorAll('.dialog .record-table.career').length >= 1, null, { timeout: 10_000 }).catch(() => undefined);
+  const seasonTables = await page.locator('.dialog .record-table.career').count();
+  check(seasonTables >= 1 && seasonTables <= 2, 'the records part shows the season table');
   // 0.15: the keyboard stays inside the dialog, and Escape hands the focus back to the name that opened it.
   for (let i = 0; i < 40; i++) await page.keyboard.press('Tab');
   check(await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]')), 'Tab stays inside the player dialog');
