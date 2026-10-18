@@ -6,7 +6,10 @@ import { useState } from 'preact/hooks';
 import { layoutOf, angleOf, type ParkLayout } from '../league/layout';
 import { meetingRates, meetingsOf, type HeadToHead } from '../league/matchups';
 import { FASTBALL_LABELS, PITCH_LABELS, type PitchType } from '../league/pitches';
-import { mixBySeason, percentilesOf, sprayOf, type PercentileKey } from '../league/savant';
+import { mixBySeason, percentilesOf, sprayOf, valuesOf, type PercentileKey, type ValueKey, type ValueRow } from '../league/savant';
+import type { PitchValue } from '../league/runvalue';
+import { trackingOf } from '../league/tracking';
+import { hashUnit } from '../draftroom';
 import type { LeagueState } from '../league/state';
 import { shortName } from '../league/views';
 
@@ -152,11 +155,139 @@ function Mix({ league, id }: { league: LeagueState; id: string }) {
   );
 }
 
+const VALUE_LABEL = (): Record<ValueKey, string> => ({
+  pitching: __i18n_t("ui.savant.text.8ccdea88"),
+  fastball: __i18n_t("ui.savant.text.215f9f1c"),
+  breaking: __i18n_t("ui.savant.text.c358998f"),
+  offspeed: __i18n_t("ui.savant.text.56da2f08"),
+  batting: __i18n_t("ui.savant.text.2d6864a8"),
+  running: __i18n_t("ui.savant.text.f3a206d8"),
+  fielding: __i18n_t("ui.savant.text.13345d2a"),
+});
+const signed = (x: number) => (x > 0 ? `+${x.toFixed(1)}` : x.toFixed(1));
+
+/** 2.0.7 (the user's request): the Value section — run values with their percentile among the regulars. */
+function Values({ rows }: { rows: ValueRow[] }) {
+  const labels = VALUE_LABEL();
+  return (
+    <ul class="savant-bars">
+      {rows.map((r) => (
+        <li key={r.key}>
+          <span class="savant-label">{labels[r.key]}</span>
+          <span class="savant-track" role="img" aria-label={__i18n_t("ui.savant.text.c88675e1", { label: labels[r.key], pct: r.pct })}>
+            <span class="savant-fill" style={{ width: `${r.pct}%`, background: shade(r.pct) }} />
+            <span class="savant-dot" style={{ left: `${r.pct}%`, background: shade(r.pct) }}>
+              {r.pct}
+            </span>
+          </span>
+          <span class="savant-value num">{signed(r.value)}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** 2.0.7: each pitch's movement as the tracking reads it (from the catcher's view: toward first base left, third
+    base right), a cloud around his average, the league's average for the pitch as a ring. */
+function Movement({ league, id }: { league: LeagueState; id: string }) {
+  const p = league.players[id]!;
+  const t = trackingOf(p);
+  if (!t) return null;
+  const lefty = p.throws === '좌';
+  // The league's average movement of each pitch (this season's pitchers), seen from the same side.
+  const avg: Record<string, { v: number; h: number; n: number }> = {};
+  for (const [pid, l] of Object.entries(league.lines)) {
+    const q = league.players[pid];
+    if (!l.pit || !q || q.throws !== p.throws) continue;
+    for (const x of trackingOf(q)?.pitches ?? []) {
+      const a = (avg[x.type] ??= { v: 0, h: 0, n: 0 });
+      a.v += x.vertical;
+      a.h += x.horizontal;
+      a.n++;
+    }
+  }
+  const R = 110,
+    C = 130,
+    K = R / 60;
+  const at = (h: number, v: number): [number, number] => [C + (lefty ? -h : h) * K, C - v * K];
+  return (
+    <figure class="movement">
+      <svg viewBox="0 0 260 260" role="img" aria-label={__i18n_t("ui.savant.text.80252fe7")}>
+        {[15, 30, 45, 60].map((r) => (
+          <circle key={r} cx={C} cy={C} r={r * K} fill={r === 60 ? 'var(--paper-2)' : 'none'} stroke="var(--rule)" stroke-width="0.8" />
+        ))}
+        <line x1={C - R} y1={C} x2={C + R} y2={C} stroke="var(--rule)" stroke-width="0.8" />
+        <line x1={C} y1={C - R} x2={C} y2={C + R} stroke="var(--rule)" stroke-width="0.8" />
+        {t.pitches.map((x) => {
+          const a = avg[x.type];
+          if (!a?.n) return null;
+          const [ax, ay] = at(a.h / a.n, a.v / a.n);
+          return <circle key={`avg-${x.type}`} cx={ax} cy={ay} r={9} fill="none" stroke={PITCH_COLOR[x.type === 'FB' ? '4SFB' : x.type] ?? '#999'} stroke-dasharray="2 2" stroke-width="1.2" />;
+        })}
+        {t.pitches.flatMap((x) =>
+          Array.from({ length: Math.max(3, Math.round(x.usage * 30)) }, (_, i) => {
+            const jitter = (k: string) => (hashUnit(`${id}|move|${x.type}|${i}|${k}`) - 0.5) * 10;
+            const [cx, cy] = at(x.horizontal + jitter('h'), x.vertical + jitter('v'));
+            return <circle key={`${x.type}-${i}`} cx={cx} cy={cy} r={3.2} fill={PITCH_COLOR[x.type === 'FB' ? '4SFB' : x.type] ?? '#999'} fill-opacity="0.8" />;
+          }),
+        )}
+        <text x={C - R} y={14} class="movement-axis">{__i18n_t("ui.savant.text.948f776c")}</text>
+        <text x={C + R} y={14} text-anchor="end" class="movement-axis">{__i18n_t("ui.savant.text.2dac8e09")}</text>
+        <text x={4} y={C - 6} class="movement-axis">{__i18n_t("ui.savant.text.cef43857")}</text>
+        <text x={4} y={C + 14} class="movement-axis">{__i18n_t("ui.savant.text.8b2cc719")}</text>
+      </svg>
+      <figcaption class="small muted">{__i18n_t("ui.savant.text.2e1e03e8", { angle: t.angle })}</figcaption>
+    </figure>
+  );
+}
+
+/** 2.0.7: his mix against left- and right-handed hitters, each pitch's run value and speed. */
+function Usage({ league, id, pitches, usage }: { league: LeagueState; id: string; pitches: PitchValue[]; usage: { vsL: Record<string, number>; vsR: Record<string, number> } }) {
+  const t = trackingOf(league.players[id]!);
+  const speed = (type: string) => t?.pitches.find((x) => (x.type === 'FB' ? '4SFB' : x.type) === type)?.velocity;
+  return (
+    <div class="table-wrap">
+      <table class="record-table small pitch-usage">
+        <thead>
+          <tr>
+            <th class="num">{__i18n_t("ui.savant.text.85efe664")}</th>
+            <th>{__i18n_t("ui.savant.text.0685b54a")}</th>
+            <th class="num">{__i18n_t("ui.savant.text.5fbf2d64")}</th>
+            <th class="num">{__i18n_t("ui.savant.text.9f7370d0")}</th>
+            <th class="num">{__i18n_t("ui.savant.text.1de9048e")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pitches.map((x) => (
+            <tr key={x.type}>
+              <td class="num">{usage.vsL[x.type]}%</td>
+              <td>
+                <span class="spray-swatch" style={{ background: PITCH_COLOR[x.type] ?? '#999' }} /> {pitchName(x.type)}
+              </td>
+              <td class={`num${x.rv >= 0.5 ? ' good' : x.rv <= -0.5 ? ' bad' : ''}`}>{signed(x.rv)}</td>
+              <td class="num">{usage.vsR[x.type]}%</td>
+              <td class="num">{speed(x.type) ?? '-'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export function SavantView({ league, id, pitcher }: { league: LeagueState; id: string; pitcher: boolean }) {
   const pc = percentilesOf(league, id);
   const rows = pitcher ? pc.pitching : pc.batting;
+  const values = valuesOf(league, id);
   return (
     <div class="savant">
+      {values && (
+        <>
+          <h4>{__i18n_t("ui.savant.text.354dec5d", { year: league.year })}</h4>
+          <Values rows={values.rows} />
+          <p class="muted small">{pitcher ? __i18n_t("ui.savant.text.a2e6548f") : __i18n_t("ui.savant.text.fa5d5502")}</p>
+        </>
+      )}
       <h4>{__i18n_t("ui.savant.text.483f877c", { year: league.year })}</h4>
       {rows ? <Bars rows={rows} pitcher={pitcher} /> : <p class="muted small">{__i18n_t("ui.savant.text.8a2110bc")}</p>}
       <p class="muted small">{pitcher ? __i18n_t("ui.savant.text.503d5b84") : __i18n_t("ui.savant.text.6985c142")}</p>
@@ -164,6 +295,18 @@ export function SavantView({ league, id, pitcher }: { league: LeagueState; id: s
         <>
           <h4>{__i18n_t("ui.savant.text.eeb111e4")}</h4>
           <Spray league={league} id={id} />
+        </>
+      )}
+      {pitcher && values?.pitches && values.usage && (
+        <>
+          <h4>{__i18n_t("ui.savant.text.11bd01bb", { year: league.year })}</h4>
+          <Usage league={league} id={id} pitches={values.pitches} usage={values.usage} />
+        </>
+      )}
+      {pitcher && (
+        <>
+          <h4>{__i18n_t("ui.savant.text.80252fe7")}</h4>
+          <Movement league={league} id={id} />
         </>
       )}
       {pitcher && (

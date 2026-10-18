@@ -16,6 +16,7 @@ import { AUTO_SLOT, autosaveHold, BACKUP_EVERY, openStore, rotateBackups, setAsi
 import { autoSaver, type AutoSaver } from '../save/autosave';
 import { readSaveFile } from '../save/compress';
 import { BoxScore } from './BoxScore';
+import { NewGameDialog } from './NewGameDialog';
 import { StorySettings } from './StorySettings';
 import { DisplaySettings } from './DisplaySettings';
 import { LanguagePicker } from './LanguagePicker';
@@ -138,6 +139,7 @@ export function App() {
   // AI articles (V0.7): settings and keys stay outside the league state.
   const [storySettings, setStorySettings] = useState<StorySettingsT>(loadSettings);
   const [storyOpen, setStoryOpen] = useState(false);
+  const [newGameAsk, setNewGameAsk] = useState(false);
   const [displayOpen, setDisplayOpen] = useState(false);
   // 1.9.8: what changed since this browser last opened the game, once.
   const [updates, setUpdates] = useState(unseenNotes);
@@ -497,10 +499,8 @@ export function App() {
     setNotice(__i18n_k("ui.app.app.saveStory.cc20ba25"));
   };
 
-  const newGame = () => {
-    if (!window.confirm(__i18n_k("ui.app.app.newGame.869a8dfd"))) return;
-    setLeague(null);
-  };
+  // 2.0.7 (the user's request): a warning to save first, in a dialog of its own.
+  const newGame = () => setNewGameAsk(true);
 
   // On narrow screens the scouting report sits below the whole list, so bring it into view.
   const selectProspect = (id: PlayerId) => {
@@ -631,6 +631,20 @@ export function App() {
           <p class="muted small">{__i18n_display(DISCLAIMER)}</p>
         </footer>
       </aside>
+      {newGameAsk && (
+        <NewGameDialog
+          onClose={() => setNewGameAsk(false)}
+          onSaveAndStart={() => {
+            exportSave();
+            setNewGameAsk(false);
+            setLeague(null);
+          }}
+          onStart={() => {
+            setNewGameAsk(false);
+            setLeague(null);
+          }}
+        />
+      )}
       {__i18n_display(storyOpen && (
         <StorySettings
           settings={storySettings}

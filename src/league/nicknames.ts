@@ -17,7 +17,7 @@ import { ageIn, isForeign, isPitcher } from './players';
 import { fastballOf, repertoire, topVelocity } from './pitches';
 import type { LeagueState } from './state';
 
-export type NickCode = 'legend' | 'mvp' | 'triple' | 'mvp1' | 'hrKing' | 'oneClub' | 'saveKing' | 'hits2000' | 'hr300' | 'w150' | 'hr' | 'hr40' | 'avg' | 'rbi' | 'hits' | 'runs' | 'obp' | 'slg' | 'sb' | 'k' | 'k200' | 'ace' | 'w20' | 'pct' | 'save' | 'catcher' | 'shortstop' | 'outfield' | 'glove' | 'dh' | 'heater' | 'control' | 'ironGames' | 'iron' | 'hold' | 'foreign' | 'knuckle' | 'oldPitch' | 'sinker' | 'cutter' | 'fake' | 'big' | 'small' | 'rookie' | 'walkOn' | 'bomber' | 'workhorse' | 'phoenix' | 'evergreen' | 'crafty' | 'pitchMix' | 'submarine';
+export type NickCode = 'legend' | 'mvp' | 'triple' | 'mvp1' | 'hrKing' | 'oneClub' | 'saveKing' | 'hits2000' | 'hr300' | 'w150' | 'hr' | 'hr40' | 'avg' | 'rbi' | 'hits' | 'runs' | 'obp' | 'slg' | 'sb' | 'k' | 'k200' | 'ace' | 'w20' | 'pct' | 'save' | 'catcher' | 'shortstop' | 'outfield' | 'glove' | 'dh' | 'heater' | 'control' | 'ironGames' | 'iron' | 'hold' | 'foreign' | 'knuckle' | 'oldPitch' | 'sinker' | 'cutter' | 'fake' | 'big' | 'small' | 'rookie' | 'walkOn' | 'bomber' | 'workhorse' | 'phoenix' | 'evergreen' | 'crafty' | 'pitchMix' | 'submarine' | 'perfect' | 'noHitter' | 'cycle' | 'hrStreak' | 'immaculate';
 
 /** The record a nickname comes from: given in `year`; `team` is the club a "{club}" in it names. */
 export type Nickname = NonNullable<Player['nickname']> & { code: NickCode };
@@ -79,6 +79,12 @@ const CATALOG: Record<NickCode, { tier: number; names: Names; why: () => string 
   pitchMix: { tier: 2, names: [() => __i18n_k("league.nicknames.text.ad0a48cc"), () => __i18n_k("league.nicknames.text.591f5d3d"), () => __i18n_k("league.nicknames.text.17bc2445")], why: () => __i18n_k("league.nicknames.text.cdf144ce") },
   // 2.0.0: an underhand pitcher who wins (이강철 「핵잠수함」): his arm slot from tracking.ts.
   submarine: { tier: 2, names: [() => __i18n_k("league.nicknames.text.c6c0729a"), () => __i18n_k("league.nicknames.text.6532d628"), () => __i18n_k("league.nicknames.text.9b6909fc")], why: () => __i18n_k("league.nicknames.text.e96154d3") },
+  // 2.0.7 (the user's request): the great single-game feats (feats.ts).
+  perfect: { tier: 4, names: [() => __i18n_k("league.nicknames.text.b6247b5d"), () => __i18n_k("league.nicknames.text.c81829b8"), (club) => __i18n_k("league.nicknames.text.4a0c3acc", { club }), () => __i18n_k("league.nicknames.text.0784798d")], why: () => __i18n_k("league.nicknames.text.ce5342e4") },
+  noHitter: { tier: 3, names: [() => __i18n_k("league.nicknames.text.31f361fc"), () => __i18n_k("league.nicknames.text.dcd04827"), (club) => __i18n_k("league.nicknames.text.ff607674", { club }), () => __i18n_k("league.nicknames.text.868555f3")], why: () => __i18n_k("league.nicknames.text.b1faa7c8") },
+  cycle: { tier: 3, names: [() => __i18n_k("league.nicknames.text.7c6af36b"), () => __i18n_k("league.nicknames.text.4a5f8e98"), () => __i18n_k("league.nicknames.text.d4c80c75"), (club) => __i18n_k("league.nicknames.text.0f93e0f0", { club })], why: () => __i18n_k("league.nicknames.text.2fd46a6d") },
+  hrStreak: { tier: 3, names: [() => __i18n_k("league.nicknames.text.fbf64703"), () => __i18n_k("league.nicknames.text.f5840534"), () => __i18n_k("league.nicknames.text.3f0fb907"), (club) => __i18n_k("league.nicknames.text.448cdf3b", { club })], why: () => __i18n_k("league.nicknames.text.333419ef") },
+  immaculate: { tier: 2, names: [() => __i18n_k("league.nicknames.text.49b2a938"), () => __i18n_k("league.nicknames.text.bb87dd13"), () => __i18n_k("league.nicknames.text.72b43499"), () => __i18n_k("league.nicknames.text.0e630db7")], why: () => __i18n_k("league.nicknames.text.17fb66f7") },
   // 1.9.5 (the user's request): namesakes. Two players in the league with one name are 큰 (the elder) and 작 (the younger)
   // + the given name, as fans tell them apart; one who shares a hall-of-famer's name is 짭 + the given name.
   fake: { tier: 1.6, names: [(_, given) => __i18n_k("league.nicknames.text.6a424078", { given })], why: () => __i18n_k("league.nicknames.text.f4f5781c") },
@@ -240,6 +246,11 @@ function earned(p: Player, c: Counts | undefined, year: number, games: number, k
     crafty: pitcher && (topVelocity(p) ?? 0) > 0 && topVelocity(p)! <= CRAFTY && (t('era') >= 1 || rows.some((r) => (r.pit?.w ?? 0) >= 15)),
     pitchMix: pitcher && repertoire(p).length >= 6 && nowWar >= 3 && nowOuts >= 300,
     submarine: pitcher && (armAngle(p) ?? 90) < SLOT_UNDER && nowWar >= 2,
+    perfect: !!p.feats?.some((f) => f.kind === 'perfect'),
+    noHitter: !!p.feats?.some((f) => f.kind === 'noHitter'),
+    cycle: !!p.feats?.some((f) => f.kind === 'cycle'),
+    hrStreak: !!p.feats?.some((f) => f.kind === 'hrStreak' && (f.n ?? 0) >= 3),
+    immaculate: !!p.feats?.some((f) => f.kind === 'immaculate'),
     fake: !!kin.fake,
     big: !!kin.big,
     small: !!kin.small,

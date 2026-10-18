@@ -278,6 +278,8 @@ try {
   await page.addLocatorHandler(
     page.getByRole('alertdialog'),
     async (dialog) => {
+      // 2.0.7: the new-game warning is the test's own to answer.
+      if ((await dialog.getAttribute('aria-labelledby').catch(() => null)) === 'new-game-title') return;
       for (let k = 0; k < 20 && (await dialog.isVisible().catch(() => false)); k++) {
         const all = dialog.getByRole('button', { name: '모두 확인' });
         const one = dialog.getByRole('button', { name: '확인', exact: true });
@@ -575,6 +577,13 @@ try {
   for (const v of ['구단 통산 순위', '구단 단일 시즌 기록', '영구결번·명예의 전당', '연도별 성적']) await page.getByRole('group', { name: '역대 기록 보기' }).getByRole('button', { name: v, exact: true }).click();
   await page.screenshot({ path: join(shots, 'club-records.png'), fullPage: false });
   await page.getByRole('group', { name: '우리 구단 보기' }).getByRole('button', { name: '개요', exact: true }).click().catch(() => undefined);
+  // 2.0.7: a new game asks to save this one first; cancelling keeps the game.
+  await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
+  await page.getByRole('button', { name: '새 게임', exact: true }).click();
+  const ask = page.getByRole('alertdialog', { name: '새 게임을 시작하기 전에 저장하세요' });
+  check((await ask.count()) === 1, 'a new game asks to save first');
+  await ask.getByRole('button', { name: '취소', exact: true }).click();
+  check((await page.locator('nav.tabs').count()) === 1, 'cancelling a new game keeps the game');
   for (const tab of ['기록', '구단', '역대', '드래프트 후보', '우리 구단']) await page.getByRole('button', { name: tab, exact: true }).click();
   await page.getByRole('button', { name: '선수단', exact: true }).click();
   await page.locator('.squad-table .link').first().click();

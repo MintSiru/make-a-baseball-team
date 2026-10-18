@@ -11,8 +11,9 @@ import { battedRates } from './battedball';
 import { fieldingRuns, sprintSpeed } from './fielding';
 import { averageVelocity, fastballOf, repertoire } from './pitches';
 import { isPitcher } from './players';
-import type { LeagueState } from './state';
-import { defensiveWar, woba } from './stats';
+import { batterValues, groupValues, pitchingRunValue, pitchValues, usageBySide, type PitchValue } from './runvalue';
+import { addInto, emptyBat, emptyPit, type LeagueState } from './state';
+import { defensiveWar, leagueContext, woba } from './stats';
 
 const share = (n: number, d: number) => (d ? (n / d) * 100 : 0);
 
@@ -234,4 +235,66 @@ export function mixBySeason(s: LeagueState, p: Player): { year: number; current:
     if (now.mix) out.push({ year: s.year, current: true, mix: now.mix, velo: now.velo ?? null });
   }
   return out;
+}
+
+// ── 2.0.7: run values (runvalue.ts) ─────────────────────────────────────────────────────────────────
+
+export type ValueKey = 'pitching' | 'fastball' | 'breaking' | 'offspeed' | 'batting' | 'running' | 'fielding';
+
+export interface ValueRow {
+  key: ValueKey;
+  /** Runs (one decimal). */
+  value: number;
+  /** 1 … 100 among the regulars (more runs better). */
+  pct: number;
+}
+
+/** His run values this season and where they stand among the regulars (the pool of `percentilesOf`). */
+export function valuesOf(s: LeagueState, id: string): { rows: ValueRow[]; pitches: PitchValue[] | null; usage: ReturnType<typeof usageBySide> | null } | null {
+  const p = s.players[id];
+  const line = s.lines[id];
+  if (!p || !line) return null;
+  const games = teamGames(s);
+  const bat = emptyBat(),
+    pit = emptyPit();
+  for (const l of Object.values(s.lines)) {
+    if (l.bat) addInto(bat, l.bat);
+    if (l.pit) addInto(pit, l.pit);
+  }
+  const lg = leagueContext(bat, pit);
+  const rank = (v: number, pool: number[]) => {
+    if (!pool.length) return 50;
+    const below = pool.filter((x) => x < v).length,
+      tied = pool.filter((x) => x === v).length;
+    return Math.max(1, Math.min(100, Math.round(((below + tied / 2) / pool.length) * 100)));
+  };
+  const round = (x: number) => Math.round(x * 10) / 10;
+  if (isPitcher(p)) {
+    if (!line.pit?.bf) return null;
+    const mine = pitchValues(p, line.pit, lg);
+    const groups = groupValues(mine);
+    const pool = Object.entries(s.lines)
+      .filter(([pid, l]) => l.pit && l.pit.outs >= games * 2 && s.players[pid])
+      .map(([pid, l]) => {
+        const rows = pitchValues(s.players[pid]!, l.pit!, lg);
+        return { total: pitchingRunValue(l.pit!, lg), ...groupValues(rows) };
+      });
+    const rows: ValueRow[] = [{ key: 'pitching', value: round(pitchingRunValue(line.pit, lg)), pct: rank(pitchingRunValue(line.pit, lg), pool.map((x) => x.total)) }];
+    for (const g of ['fastball', 'breaking', 'offspeed'] as const) {
+      const v = groups[g];
+      if (v == null) continue;
+      rows.push({ key: g, value: round(v), pct: rank(v, pool.map((x) => x[g]).filter((x): x is number => x != null)) });
+    }
+    return { rows, pitches: mine, usage: usageBySide(p, mine) };
+  }
+  if (!line.bat?.pa) return null;
+  const mine = batterValues(line.bat, lg);
+  const pool = Object.entries(s.lines)
+    .filter(([pid, l]) => l.bat && l.bat.pa >= games * 2 && s.players[pid] && !isPitcher(s.players[pid]!))
+    .map(([, l]) => batterValues(l.bat!, lg));
+  return {
+    rows: (['batting', 'running', 'fielding'] as const).map((k) => ({ key: k, value: round(mine[k]), pct: rank(mine[k], pool.map((x) => x[k])) })),
+    pitches: null,
+    usage: null,
+  };
 }
