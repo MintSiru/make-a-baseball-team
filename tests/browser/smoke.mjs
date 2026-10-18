@@ -573,7 +573,17 @@ try {
   await found.first().getByRole('button', { name: '트레이드', exact: true }).click();
   check((await page.locator('.trade-bar').textContent())?.includes('받음: 선수 1명'), `the search puts ${target} into a trade proposal`);
   await page.screenshot({ path: join(shots, 'search.png'), fullPage: false });
-  for (const v of ['방출 · 자유계약', '외국인 교체', '이적 소식']) await page.getByRole('button', { name: v, exact: true }).click();
+  for (const v of ['방출 · 자유계약', '외국인 교체']) await page.getByRole('button', { name: v, exact: true }).click();
+  // 2.0.19 (the user's report): a foreign candidate not yet signed opens in the player window too (preview.ts).
+  const candidate = page.locator('.pick-table .link').last();
+  if (await candidate.count()) {
+    const who = ((await candidate.textContent()) ?? '').trim();
+    await candidate.click();
+    await page.getByRole('dialog').waitFor({ timeout: 10_000 }).catch(() => undefined);
+    check((await page.locator('.dialog h2').first().textContent())?.includes(who) ?? false, `a foreign market candidate (${who}) opens in the player window`);
+    await page.keyboard.press('Escape');
+  }
+  await page.getByRole('button', { name: '이적 소식', exact: true }).click();
 
   // 1.2.0: the All-Star page (the years before ours are on record), and the optional foreign veteran rule.
   await page.locator('nav.tabs').getByRole('button', { name: '기록', exact: true }).click();

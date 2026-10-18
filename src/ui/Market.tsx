@@ -10,6 +10,7 @@ import { eulreul } from '../league/josa';
 import { ageIn, isForeign } from '../league/players';
 import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from '../league/state';
 import { booksOf } from '../league/foreigncap';
+import { previewPlayers } from './preview';
 import { checkTemp, tempEligible, tempMarket, tempPrice, tempsOf, tempWindow } from '../league/tempforeign';
 import {
   canRelease,
@@ -391,6 +392,8 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
   const u = league.user!;
   const mine = registeredIds(league, u.teamId).map((id) => league.players[id]!).filter(isForeign);
   const market = useMemo(() => foreignMarket(league, u.teamId), [league, league.foreignChanges?.[u.teamId]]);
+  // The candidates not yet in the league open in the player window too (preview.ts).
+  previewPlayers(market);
   const [out, setOut] = useState<PlayerId | null>(null);
   const [inId, setIn] = useState<string | null>(null);
   const closed = foreignWindow(league, u.teamId);
@@ -431,7 +434,7 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
       <PickList
         league={league}
         players={market}
-        onPlayer={(id) => poolEntry(league, id) && onPlayer(id)}
+        onPlayer={onPlayer}
         extra={{
           title: __i18n_k("ui.market.foreign.title.b4de910d"),
           value: (p) => __i18n_k("ui.market.foreign.value.48bbb81b", { usd: usd(foreignPriceNow(league, p)), value: p.origin.asiaQuota ? __i18n_k("ui.market.foreign.value.55b0ea0f") : p.origin.background?.veteran ? __i18n_t("ui.market.text.f2667506") : '', archetype: p.archetype, value2: poolEntry(league, p.id) ? kboLine(league, p) : (p.origin.background?.text ?? '') }),
@@ -460,6 +463,7 @@ function TempForeign({ league, onPlayer, onAct }: { league: LeagueState; onPlaye
   const [forId, setFor] = useState<PlayerId | null>(null);
   const shown = forId && injured.some((p) => p.id === forId) ? forId : (injured[0]?.id ?? null);
   const market = useMemo(() => (shown ? tempMarket(league, u.teamId, shown) : []), [league, shown]);
+  previewPlayers(market);
   if (!injured.length && !temps.length) return null;
   const closed = shown ? tempWindow(league, u.teamId, shown) : null;
   return (
@@ -504,7 +508,7 @@ function TempForeign({ league, onPlayer, onAct }: { league: LeagueState; onPlaye
             <PickList
               league={league}
               players={market}
-              onPlayer={() => undefined}
+              onPlayer={onPlayer}
               extra={{ title: __i18n_t("ui.market.text.2a2b8688"), value: (p) => __i18n_t("ui.market.text.6698e588", { usd: usd(tempPrice(league, p, shown)), archetype: p.archetype }), sort: (p) => tempPrice(league, p, shown) }}
               action={(p) => (
                 <button type="button" disabled={!!checkTemp(league, u.teamId, shown, p.id)} onClick={() => onAct({ kind: 'tempSign', for: shown, in: p.id })}>

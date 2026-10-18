@@ -54,6 +54,7 @@ import { FRESH_KEY, Guard, Recovery } from './Recovery';
 import { MyClub } from './MyClub';
 import { NewGame } from './NewGame';
 import { PlayerPanel } from './PlayerPanel';
+import { withPreview } from './preview';
 import { PlayerProfile } from './PlayerProfile';
 import { Standings } from './Standings';
 import { TeamRoster } from './TeamRoster';
@@ -770,12 +771,13 @@ export function App() {
       ))}
       {__i18n_display(playerId && league && (
         <PlayerPanel
-          league={league}
+          league={withPreview(league, playerId)}
           id={playerId}
           onClose={() => setPlayerId(null)}
           onPlayer={setPlayerId}
-          onInterview={(pid) => act({ kind: 'interview', id: pid }, __i18n_k("ui.app.app.7296f88b"), false)}
-          onAct={(a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false)}
+          // A market candidate not yet signed (preview.ts): to look at only.
+          onInterview={league.players[playerId] ? (pid) => act({ kind: 'interview', id: pid }, __i18n_k("ui.app.app.7296f88b"), false) : undefined}
+          onAct={league.players[playerId] ? (a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false) : undefined}
         />
       ))}
     </div>
