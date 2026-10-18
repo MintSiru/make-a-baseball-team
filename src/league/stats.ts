@@ -84,6 +84,8 @@ export const per9 = (n: number, outs: number) => (outs ? (27 * n) / outs : 0);
 /** League constants for FIP and wRC+ from a season's totals. */
 export interface RateContext {
   fipConstant: number;
+  /** 2.0.15: the league's ERA (ERA- and FIP- against it). */
+  era?: number;
   woba: number;
   wobaScale: number;
   runsPerPa: number;
@@ -92,12 +94,17 @@ export interface RateContext {
 export function rateContext(bat: BatTotals, pit: PitTotals): RateContext {
   const innings = pit.outs / 3 || 1;
   const raw = (13 * pit.hr + 3 * (pit.bb + pit.hbp) - 2 * pit.k) / innings;
-  return { fipConstant: era(pit) - raw, woba: woba(bat) || 0.33, wobaScale: 1.2, runsPerPa: bat.pa ? bat.r / bat.pa : 0.12 };
+  return { fipConstant: era(pit) - raw, era: era(pit) || 4.5, woba: woba(bat) || 0.33, wobaScale: 1.2, runsPerPa: bat.pa ? bat.r / bat.pa : 0.12 };
 }
 
 /** Fielding-independent pitching: home runs, walks and strikeouts only, on the ERA scale. */
 export const fip = (p: PitTotals, c: RateContext) => (p.outs ? (13 * p.hr + 3 * (p.bb + p.hbp) - 2 * p.k) / (p.outs / 3) + c.fipConstant : 0);
 
-/** Runs created per plate appearance against the league, 100 = average (no park adjustment). */
-export const wrcPlus = (b: BatTotals, c: RateContext) =>
-  b.pa ? Math.round((100 * ((woba(b) - c.woba) / c.wobaScale + c.runsPerPa)) / c.runsPerPa) : 0;
+/** Runs created per plate appearance against the league, 100 = average. 2.0.15: `pf` is his park factor (venues.ts
+    playerPark: half his home park's): a hitter in a hitters' park gives some back, one in a pitchers' park gains. */
+export const wrcPlus = (b: BatTotals, c: RateContext, pf = 1) =>
+  b.pa ? Math.round((100 * ((woba(b) - c.woba) / c.wobaScale + c.runsPerPa + (c.runsPerPa - pf * c.runsPerPa))) / c.runsPerPa) : 0;
+
+/** 2.0.15: ERA- and FIP-: against the league's ERA in his park, 100 = average, lower is better. */
+export const eraMinus = (p: PitTotals, c: RateContext, pf = 1) => (p.outs && c.era ? Math.round((100 * era(p)) / (c.era * pf)) : 0);
+export const fipMinus = (p: PitTotals, c: RateContext, pf = 1) => (p.outs && c.era ? Math.round((100 * fip(p, c)) / (c.era * pf)) : 0);

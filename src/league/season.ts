@@ -1,5 +1,6 @@
 import { k as __i18n_k } from '../i18n/index';
 /* The regular season, one game day at a time: registered days, games, injuries and roster moves. */
+import { recordVenues } from './venues';
 import { addBatted, emptyBatted } from './battedball';
 import { addField, emptyField } from './fielding';
 import { layoutOf } from './layout';
@@ -336,6 +337,9 @@ export function playDay(s: LeagueState): boolean {
     if (!out) continue;
     record(s, out.home, date);
     record(s, out.away, date);
+    // 2.0.15: home and road, and the ballpark.
+    recordVenues(s.lines, out.home, true, g.home);
+    recordVenues(s.lines, out.away, false, g.home);
     serveSuspensions(s, g.home);
     serveSuspensions(s, g.away);
     const att = attendance(s, { id: g.id, date, home: g.home, away: g.away });

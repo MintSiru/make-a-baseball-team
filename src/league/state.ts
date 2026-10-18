@@ -44,6 +44,8 @@ export interface SeasonLine {
   lost: number;
   bat: BatTotals | null;
   pit: PitTotals | null;
+  /** 2.0.15 (venues.ts): home and road, and each ballpark (first-team regular season). */
+  venues?: import('./venues').Venues;
 }
 
 // ── Front office (V0.6) ───────────────────────────────────────────────────────────────────────────

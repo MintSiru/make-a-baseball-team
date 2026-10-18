@@ -659,6 +659,9 @@ try {
   check((await page.locator('.dialog .savant').count()) === 1, 'the analysis view shows');
   await views.getByRole('button', { name: '상대 전적', exact: true }).click();
   check((await page.locator('.dialog .meetings').count()) === 1, 'the head-to-head view shows');
+  // 2.0.15: home and road, and each ballpark.
+  await views.getByRole('button', { name: '홈·원정·구장', exact: true }).click();
+  check((await page.locator('.dialog .record-table.venues').count()) === 2, 'the venues view shows the season and the career');
   for (const t of ['포스트시즌', '커리어 하이', '좌우 기록', '정규시즌']) await views.getByRole('button', { name: t }).click();
   await page.getByRole('tab', { name: /^부상/ }).click();
   await page.getByRole('tab', { name: '기록' }).click();

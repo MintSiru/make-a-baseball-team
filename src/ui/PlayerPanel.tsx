@@ -7,6 +7,8 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { useFocusTrap } from './modal';
 import { MeetingsView, SavantView } from './Savant';
 import { NationalLines } from './NationalLines';
+import { VenueTable } from './Venues';
+import { playerPark } from '../league/venues';
 import { nationalLinesOf } from '../league/nationalgames';
 import { familyOf } from '../league/family';
 import { checkSwitch, otherGrade, peekOther } from '../league/twoway';
@@ -86,7 +88,7 @@ export function TraitReportBox({ report }: { report: TraitReport }) {
    with the records split again into the regular season, the postseason, career highs and left/right. The part
    last opened stays open for the next player. */
 type Part = 'ability' | 'records' | 'report' | 'profile' | 'injuries';
-type RecordView = 'seasons' | 'post' | 'highs' | 'splits' | 'batted' | 'fielding' | 'savant' | 'meetings' | 'national' | 'mlb';
+type RecordView = 'seasons' | 'post' | 'highs' | 'splits' | 'venues' | 'batted' | 'fielding' | 'savant' | 'meetings' | 'national' | 'mlb';
 const PARTS: { key: Part; label: string }[] = [
   { key: 'ability', label: __i18n_k("ui.playerPanel.pARTS.label.9e9117d0") },
   { key: 'records', label: __i18n_k("ui.playerPanel.pARTS.label.d84b6f4b") },
@@ -99,6 +101,8 @@ const RECORD_VIEWS: { key: RecordView; label: string }[] = [
   { key: 'post', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.a0f7a345") },
   { key: 'highs', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.dc5975f8") },
   { key: 'splits', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.1df210e9") },
+  // 2.0.15: home and road, and each ballpark.
+  { key: 'venues', label: __i18n_k("ui.playerPanel.text.f07795d7") },
   // 2.0.1: batted-ball data.
   { key: 'batted', label: __i18n_k("ui.playerPanel.text.f697b0c7") },
   // 2.0.3: fielding.
@@ -107,7 +111,7 @@ const RECORD_VIEWS: { key: RecordView; label: string }[] = [
   { key: 'savant', label: __i18n_k("ui.playerPanel.text.d5ce088d") },
   { key: 'meetings', label: __i18n_k("ui.playerPanel.text.eb71400a") },
   // 2.0.11: his national-team lines.
-  { key: 'national', label: __i18n_t("ui.playerPanel.text.3243618b") },
+  { key: 'national', label: __i18n_k("ui.playerPanel.text.3243618b") },
   // 1.9.3: MLB, the minors and NPB.
   { key: 'mlb', label: __i18n_k("ui.playerPanel.text.98a07411") },
 ];
@@ -200,6 +204,9 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
               <th class="num">ERA</th>
               <th class="num">WHIP</th>
               <th class="num">FIP</th>
+              {/* 2.0.15: park-adjusted, 100 = average. */}
+              <th class="num">ERA-</th>
+              <th class="num">FIP-</th>
               <th class="num">K/9</th>
               <th class="num">WAR</th>
             </tr>
@@ -226,6 +233,8 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
                   <td class="num strong">{__i18n_display(r.pit?.outs ? rates.era(r.pit).toFixed(2) : '-')}</td>
                   <td class="num">{__i18n_display(r.pit?.outs ? rates.whip(r.pit).toFixed(2) : '-')}</td>
                   <td class="num">{__i18n_display(r.pit?.outs && rc ? rates.fip(r.pit, rc).toFixed(2) : '-')}</td>
+                  <td class="num">{r.pit?.outs && rc && !r.futures ? rates.eraMinus(r.pit, rc, playerPark(league, r.teamId, r.year)) : '-'}</td>
+                  <td class="num">{r.pit?.outs && rc && !r.futures ? rates.fipMinus(r.pit, rc, playerPark(league, r.teamId, r.year)) : '-'}</td>
                   <td class="num">{__i18n_display(r.pit?.outs ? rates.per9(r.pit.k, r.pit.outs).toFixed(1) : '-')}</td>
                   <td class="num">{__i18n_display(r.current || r.futures ? '-' : r.war.toFixed(1))}</td>
                 </tr>
@@ -247,6 +256,8 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
                 <td class="num">{__i18n_display(t.pit.bb)}</td>
                 <td class="num strong">{__i18n_display(t.pit.outs ? rates.era(t.pit).toFixed(2) : '-')}</td>
                 <td class="num">{__i18n_display(t.pit.outs ? rates.whip(t.pit).toFixed(2) : '-')}</td>
+                <td class="num">-</td>
+                <td class="num">-</td>
                 <td class="num">-</td>
                 <td class="num">{__i18n_display(t.pit.outs ? rates.per9(t.pit.k, t.pit.outs).toFixed(1) : '-')}</td>
                 <td class="num">{__i18n_display(t.war.toFixed(1))}</td>
@@ -297,7 +308,7 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
                 <td class="num">{__i18n_display(r.bat?.rbi ?? 0)}</td>
                 <td class="num">{__i18n_display(r.bat?.sb ?? 0)}</td>
                 <td class="num strong">{__i18n_display(r.bat?.pa ? rates.fmt3(rates.ops(r.bat)) : '-')}</td>
-                <td class="num">{__i18n_display(r.bat?.pa && rc && !r.futures ? rates.wrcPlus(r.bat, rc) : '-')}</td>
+                <td class="num">{__i18n_display(r.bat?.pa && rc && !r.futures ? rates.wrcPlus(r.bat, rc, playerPark(league, r.teamId, r.year)) : '-')}</td>
                 <td class="num">{__i18n_display(r.current || r.futures ? '-' : r.war.toFixed(1))}</td>
               </tr>
             );
@@ -536,6 +547,7 @@ export function PlayerPanel({
             {records === 'savant' && <SavantView league={league} id={id} pitcher={pitcher} />}
             {records === 'meetings' && <MeetingsView league={league} id={id} pitcher={pitcher} onPlayer={onPlayer} />}
             {records === 'national' && <NationalLines league={league} id={id} pitcher={pitcher} />}
+            {records === 'venues' && <VenueTable league={league} id={id} pitcher={pitcher} />}
             {records === 'fielding' && (card.fielding ? <FieldingTable fielding={card.fielding} /> : <p class="muted">{__i18n_t("ui.playerPanel.text.189e71c9")}</p>)}
             {__i18n_display(records === 'splits' &&
               (card.splits.season || card.splits.career ? (
