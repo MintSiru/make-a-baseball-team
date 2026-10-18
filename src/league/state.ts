@@ -410,6 +410,8 @@ export interface NationalEntry {
   /** 2.0.11 (nationalgames.ts): each player's line for the event and the games played (absent before 2.0.11). */
   lines?: Record<PlayerId, import('./nationalgames').NationalLine>;
   games?: number;
+  /** 2.0.16: the games to watch (absent before 2.0.16). */
+  watch?: import('./nationalgames').NationalWatch;
 }
 
 export interface LineupSlot {

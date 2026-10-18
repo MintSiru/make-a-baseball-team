@@ -2,6 +2,7 @@ import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n
 import { startYear } from '../league/era';
 import { useState } from 'preact/hooks';
 import { nationalView, retiredNumbersView } from '../league/legacy';
+import { nationalGamesOf } from '../league/nationalgames';
 import type { LeagueState } from '../league/state';
 import { awardsView, recordRoom, shortName, teamOf } from '../league/views';
 import { avg, era, ip, obp, ops, slg } from '../league/stats';
@@ -11,7 +12,7 @@ import { MlbList } from './Mlb';
 
 type View = 'seasons' | 'awards' | 'records' | 'hall' | 'retired' | 'national' | 'draft' | 'mlb';
 
-export function History({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
+export function History({ league, onPlayer, onBox }: { league: LeagueState; onPlayer: (id: string) => void; onBox?: (id: string) => void }) {
   const [view, setView] = useState<View>('seasons');
   return (
     <section aria-labelledby="history-title">
@@ -39,7 +40,7 @@ export function History({ league, onPlayer }: { league: LeagueState; onPlayer: (
       {__i18n_display(view === 'records' && <Records league={league} onPlayer={onPlayer} />)}
       {__i18n_display(view === 'hall' && <Hall league={league} onPlayer={onPlayer} />)}
       {__i18n_display(view === 'retired' && <Retired league={league} onPlayer={onPlayer} />)}
-      {__i18n_display(view === 'national' && <National league={league} onPlayer={onPlayer} />)}
+      {__i18n_display(view === 'national' && <National league={league} onPlayer={onPlayer} onBox={onBox} />)}
       {view === 'draft' && <Drafts league={league} onPlayer={onPlayer} />}
       {view === 'mlb' && <MlbList league={league} onPlayer={onPlayer} />}
     </section>
@@ -312,8 +313,10 @@ function Retired({ league, onPlayer }: { league: LeagueState; onPlayer: (id: str
 }
 
 /** The national team (1.0.1): every finished tournament, the result, where the squad came from, ours. */
-function National({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
+function National({ league, onPlayer, onBox }: { league: LeagueState; onPlayer: (id: string) => void; onBox?: (id: string) => void }) {
   const v = nationalView(league);
+  const [open, setOpen] = useState<string | null>(null);
+  const games = open ? nationalGamesOf(league, open) : null;
   if (!v.rows.length) return <p class="muted">{__i18n_t("ui.history.national.f3f55aff")}</p>;
   return (
     <>
@@ -331,6 +334,8 @@ function National({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
               <th scope="col">{__i18n_t("ui.history.national.0298c997")}</th>
               {/* 2.0.11: the event's best hitter and pitcher. */}
               <th scope="col">{__i18n_t("ui.history.text.42c6e6a6")}</th>
+              {/* 2.0.16: its games, to watch. */}
+              <th scope="col">{__i18n_t("ui.history.text.e0cee61a")}</th>
             </tr>
           </thead>
           <tbody>
@@ -369,11 +374,59 @@ function National({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
                       ))
                     : '-'}
                 </td>
+                <td>
+                  {nationalGamesOf(league, r.id) ? (
+                    <button type="button" aria-pressed={open === r.id} onClick={() => setOpen(open === r.id ? null : r.id)}>
+                      {__i18n_t("ui.history.text.e0c3bdf8")}
+                    </button>
+                  ) : (
+                    '-'
+                  )}
+                </td>
               </tr>
             )))}
           </tbody>
         </table>
       </div>
+      {games && open && (
+        <div class="table-wrap" tabIndex={0}>
+          <table class="record-table national-games">
+            <caption>{__i18n_display(v.rows.find((r) => r.id === open)?.name ?? '')}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{__i18n_t("ui.history.text.5caa75a8")}</th>
+                <th scope="col">{__i18n_t("ui.history.text.0e685c7c")}</th>
+                <th scope="col">{__i18n_t("ui.history.text.0e33b0bd")}</th>
+                <th scope="col" class="num">{__i18n_t("ui.history.text.67d2cf6b")}</th>
+                <th scope="col">{__i18n_t("ui.history.text.71d855ac")}</th>
+                <th scope="col">{__i18n_t("ui.history.text.58d6978a")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {games.map((g) => (
+                <tr key={g.id}>
+                  <td>{g.date.slice(5).replace('-', '/')}</td>
+                  <td>{__i18n_display(g.stageText)}</td>
+                  <td>
+                    {__i18n_display(g.opp)} <span class="muted small">{g.home ? __i18n_t("ui.history.text.13a46f96") : __i18n_t("ui.history.text.ef6b033f")}</span>
+                  </td>
+                  <td class="num">{`${g.us}-${g.them}`}</td>
+                  <td class={g.us > g.them ? 'strong' : ''}>{__i18n_display(g.result)}</td>
+                  <td>
+                    {g.box && onBox ? (
+                      <button type="button" onClick={() => onBox(g.id)}>
+                        {g.pbp ? __i18n_t("ui.history.text.b17cadfe") : __i18n_t("ui.history.text.36f7d0fe")}
+                      </button>
+                    ) : (
+                      <span class="muted small">{__i18n_t("ui.history.text.6705909c")}</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   );
 }

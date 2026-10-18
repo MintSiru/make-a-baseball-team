@@ -707,7 +707,7 @@ export function App() {
         {__i18n_display(tab === 'standings' && <Standings league={shown} onTeam={openTeam} onBox={setBoxId} onAct={shown.user ? (a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false) : undefined} />)}
         {__i18n_display(tab === 'leaders' && <Leaders league={shown} onPlayer={setPlayerId} onBox={setBoxId} onAct={shown.user ? (a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false) : undefined} />)}
         {__i18n_display(tab === 'team' && <TeamRoster league={shown} teamId={teamId} onTeam={openTeam} onPlayer={setPlayerId} />)}
-        {__i18n_display(tab === 'history' && <History league={shown} onPlayer={setPlayerId} />)}
+        {__i18n_display(tab === 'history' && <History league={shown} onPlayer={setPlayerId} onBox={setBoxId} />)}
         {__i18n_display(tab === 'settings' && (
           <Settings
             league={shown}
