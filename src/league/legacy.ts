@@ -5,7 +5,8 @@ import type { BatTotals, PitTotals, Player, PlayerId, TeamId } from '../model/ty
 import { finishText } from './international';
 import { isForeign, isPitcher } from './players';
 import { addInto, emptyBat, emptyPit, type LeagueState } from './state';
-import { positionLabel, shortName, teamOf } from './views';
+import { avg, era, ip, ops } from './stats';
+import { positionLabel, rates, shortName, teamOf } from './views';
 
 export interface RetiredNumber {
   teamId: TeamId;
@@ -102,6 +103,19 @@ export interface NationalRow {
   squad: number;
   clubs: { team: string; n: number }[];
   ours: { id: PlayerId; name: string }[];
+  /** 2.0.11: the event's best hitter and pitcher by their lines (absent before 2.0.11). */
+  stars: { id: PlayerId; name: string; text: string }[];
+}
+
+/** 2.0.11: an event's best hitter (OPS, eight plate appearances or more) and pitcher (ERA, three innings or more). */
+function nationalStars(s: LeagueState, e: LeagueState['international'][number]): NationalRow['stars'] {
+  const lines = Object.entries(e.lines ?? {});
+  const out: NationalRow['stars'] = [];
+  const bat = lines.filter(([, l]) => (l.bat?.pa ?? 0) >= 8).sort(([, a], [, b]) => ops(b.bat!) - ops(a.bat!))[0];
+  if (bat && s.players[bat[0]]) out.push({ id: bat[0], name: s.players[bat[0]]!.name, text: __i18n_k("league.legacy.text.16111fb7", { avg: rates.fmt3(avg(bat[1].bat!)), hr: bat[1].bat!.hr, rbi: bat[1].bat!.rbi }) });
+  const pit = lines.filter(([, l]) => (l.pit?.outs ?? 0) >= 9).sort(([, a], [, b]) => era(a.pit!) - era(b.pit!) || b.pit!.outs - a.pit!.outs)[0];
+  if (pit && s.players[pit[0]]) out.push({ id: pit[0], name: s.players[pit[0]]!.name, text: __i18n_k("league.legacy.text.8b840b48", { era: era(pit[1].pit!).toFixed(2), ip: ip(pit[1].pit!.outs) }) });
+  return out;
 }
 
 /** The national team's finished tournaments, newest first, with a tally of results. */
@@ -126,6 +140,7 @@ export function nationalView(s: LeagueState) {
         squad: e.squad.length,
         clubs: [...count].map(([team, n]) => ({ team, n })).sort((a, b) => Number(a.team === '그 밖') - Number(b.team === '그 밖') || b.n - a.n),
         ours: ours.map((id) => ({ id, name: s.players[id]!.name })),
+        stars: nationalStars(s, e),
       };
     })
     .reverse();

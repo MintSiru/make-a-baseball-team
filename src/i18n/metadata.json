@@ -77131,5 +77131,170 @@
     "line": 87,
     "params": {},
     "locations": []
+  },
+  "league.legacy.text.16111fb7": {
+    "source": "src/league/legacy.ts",
+    "line": 115,
+    "params": {
+      "avg": {
+        "expression": "rates.fmt3(avg(bat[1].bat!))"
+      },
+      "hr": {
+        "expression": "bat[1].bat!.hr"
+      },
+      "rbi": {
+        "expression": "bat[1].bat!.rbi"
+      }
+    },
+    "locations": []
+  },
+  "league.legacy.text.8b840b48": {
+    "source": "src/league/legacy.ts",
+    "line": 117,
+    "params": {
+      "era": {
+        "expression": "era(pit[1].pit!).toFixed(2)"
+      },
+      "ip": {
+        "expression": "ip(pit[1].pit!.outs)"
+      }
+    },
+    "locations": []
+  },
+  "ui.nationalLines.text.bd86da0e": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 9,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.d5bc99dd": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.042b946b": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.d3bb3576": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.e0cee61a": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.3b1908b7": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.36260e2c": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.a3fa83d2": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.639a1f2f": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.3f349ed1": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.21e0537f": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.56c06a59": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.8856852b": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 57,
+    "params": {
+      "n": {
+        "expression": "rows.length"
+      }
+    },
+    "locations": []
+  },
+  "ui.nationalLines.text.0a3d002c": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 89,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.1822db88": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 90,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.1eb19e0a": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 91,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.9162d3a3": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 92,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.fed1c588": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 93,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.91e54831": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 94,
+    "params": {},
+    "locations": []
+  },
+  "ui.nationalLines.text.6461e185": {
+    "source": "src/ui/NationalLines.tsx",
+    "line": 104,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.3243618b": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 108,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.42c6e6a6": {
+    "source": "src/ui/History.tsx",
+    "line": 333,
+    "params": {},
+    "locations": []
   }
 }

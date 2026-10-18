@@ -405,6 +405,9 @@ export interface NationalEntry {
   excused?: PlayerId[];
   left?: boolean;
   asked?: boolean;
+  /** 2.0.11 (nationalgames.ts): each player's line for the event and the games played (absent before 2.0.11). */
+  lines?: Record<PlayerId, import('./nationalgames').NationalLine>;
+  games?: number;
 }
 
 export interface LineupSlot {
