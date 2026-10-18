@@ -613,6 +613,7 @@ try {
   await page.locator('.player-editor .row-actions .primary').click();
   await page.waitForFunction(() => [...document.querySelectorAll('.dialog dd')].some((d) => d.textContent === '한양'), null, { timeout: 10_000 }).catch(() => undefined);
   check(await page.evaluate(() => [...document.querySelectorAll('.dialog dd')].some((d) => d.textContent === '한양')), 'the editor changes his hometown');
+  check((await page.locator('.player-editor[open]').count()) === 1, 'the editor stays open after applying');
   await page.screenshot({ path: join(shots, 'player.png') });
   await page.getByRole('tab', { name: '기록' }).click();
   const views = page.getByRole('group', { name: '기록 보기' });

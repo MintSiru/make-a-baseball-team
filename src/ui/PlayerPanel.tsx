@@ -705,7 +705,7 @@ export function PlayerPanel({
               </>
             ))}
             {/* 2.0.9: the editor (no abilities). */}
-            {onAct && <PlayerEditor key={`${p.id}|${p.name}|${p.birthplace}|${p.education.school}|${p.nicknameOwn ?? ''}`} league={league} id={p.id} onAct={onAct} />}
+            {onAct && <PlayerEditor league={league} id={p.id} onAct={onAct} />}
           </div>
         ))}
 
@@ -955,10 +955,13 @@ function NicknameField({ league, id, onAct }: { league: LeagueState; id: string;
 function PlayerEditor({ league, id, onAct }: { league: LeagueState; id: string; onAct: (a: Action) => void }) {
   const p = league.players[id]!;
   const [draft, setDraft] = useState<PlayerEdit>(() => editOf(p));
+  // Applied (or another player opened): start again from what he has now, the editor staying open.
+  const current = JSON.stringify(editOf(p));
+  useEffect(() => setDraft(editOf(p)), [current]);
   const [rel, setRel] = useState<Relation>('brother');
   const [query, setQuery] = useState('');
   const problem = checkPlayerEdit(league, id, draft);
-  const changed = JSON.stringify(draft) !== JSON.stringify(editOf(p));
+  const changed = JSON.stringify(draft) !== current;
   const set = (k: keyof PlayerEdit, v: string) => setDraft((d) => ({ ...d, [k]: v }));
   const fans = p.nickname ? nicknameOf(league, { ...p, nicknameOwn: undefined }) : null;
   const fields: [keyof PlayerEdit, string, number][] = [
