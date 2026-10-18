@@ -16,6 +16,7 @@ import { addAlert } from './alerts';
 import { clubState } from './fans';
 import { INTERNATIONAL, announceDate, eventById, eventsIn, exempts, finishText, ODDS, timing, type Finish, type InternationalEvent } from './international';
 import { iga } from './josa';
+import { playNationalGames } from './nationalgames';
 import { addNews } from './news';
 import { isForeign, isPitcher } from './players';
 import type { Decision, LeagueState, NationalEntry } from './state';
@@ -86,6 +87,8 @@ export function finishEvent(s: LeagueState, e: InternationalEvent) {
   const finish: Finish = (e.year < startYear() ? e.finish : null) ?? ODDS[e.kind].find(([, w]) => (x -= w) < 0)?.[0] ?? ODDS[e.kind].at(-1)![0];
   entry.finish = finish;
   entry.medal = exempts(e, finish);
+  // 2.0.11: the event's games, for each player's line (their own random stream).
+  playNationalGames(s, e, entry);
   const players = entry.squad.map((id) => s.players[id]).filter((p): p is Player => !!p);
   if (entry.medal)
     for (const p of players) {

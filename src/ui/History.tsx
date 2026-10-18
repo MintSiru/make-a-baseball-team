@@ -329,6 +329,8 @@ function National({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
               <th scope="col" class="num">{__i18n_t("ui.history.national.175e75de")}</th>
               <th scope="col">{__i18n_t("ui.history.national.3cb4e46d")}</th>
               <th scope="col">{__i18n_t("ui.history.national.0298c997")}</th>
+              {/* 2.0.11: the event's best hitter and pitcher. */}
+              <th scope="col">{__i18n_t("ui.history.text.42c6e6a6")}</th>
             </tr>
           </thead>
           <tbody>
@@ -353,6 +355,19 @@ function National({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
                         </span>
                       ))
                     : '-')}
+                </td>
+                <td class="small">
+                  {r.stars.length
+                    ? r.stars.map((x, i) => (
+                        <span key={x.id}>
+                          {i > 0 && ' · '}
+                          <button type="button" class="link" onClick={() => onPlayer(x.id)}>
+                            {x.name}
+                          </button>{' '}
+                          {__i18n_display(x.text)}
+                        </span>
+                      ))
+                    : '-'}
                 </td>
               </tr>
             )))}

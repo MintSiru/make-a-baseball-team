@@ -6,6 +6,8 @@ import type { FieldTotals } from '../league/fielding';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useFocusTrap } from './modal';
 import { MeetingsView, SavantView } from './Savant';
+import { NationalLines } from './NationalLines';
+import { nationalLinesOf } from '../league/nationalgames';
 import { familyOf } from '../league/family';
 import { checkPlayerEdit, checkTie, EDIT, editOf, findPlayers, type PlayerEdit, type Relation } from '../league/editor';
 import { featsOf, featText } from '../league/feats';
@@ -82,7 +84,7 @@ export function TraitReportBox({ report }: { report: TraitReport }) {
    with the records split again into the regular season, the postseason, career highs and left/right. The part
    last opened stays open for the next player. */
 type Part = 'ability' | 'records' | 'report' | 'profile' | 'injuries';
-type RecordView = 'seasons' | 'post' | 'highs' | 'splits' | 'batted' | 'fielding' | 'savant' | 'meetings' | 'mlb';
+type RecordView = 'seasons' | 'post' | 'highs' | 'splits' | 'batted' | 'fielding' | 'savant' | 'meetings' | 'national' | 'mlb';
 const PARTS: { key: Part; label: string }[] = [
   { key: 'ability', label: __i18n_k("ui.playerPanel.pARTS.label.9e9117d0") },
   { key: 'records', label: __i18n_k("ui.playerPanel.pARTS.label.d84b6f4b") },
@@ -102,6 +104,8 @@ const RECORD_VIEWS: { key: RecordView; label: string }[] = [
   // 2.0.4: his percentiles, spray chart and pitch mix; his head-to-head records.
   { key: 'savant', label: __i18n_k("ui.playerPanel.text.d5ce088d") },
   { key: 'meetings', label: __i18n_k("ui.playerPanel.text.eb71400a") },
+  // 2.0.11: his national-team lines.
+  { key: 'national', label: __i18n_t("ui.playerPanel.text.3243618b") },
   // 1.9.3: MLB, the minors and NPB.
   { key: 'mlb', label: __i18n_k("ui.playerPanel.text.98a07411") },
 ];
@@ -480,7 +484,7 @@ export function PlayerPanel({
         {__i18n_display(shown === 'records' && (
           <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.d84b6f4b")}>
             <div class="segmented record-views" role="group" aria-label={__i18n_t("ui.playerPanel.playerPanel.493c08af")}>
-              {__i18n_display(RECORD_VIEWS.filter((x) => x.key !== 'mlb' || p.mlb).map((x) => (
+              {__i18n_display(RECORD_VIEWS.filter((x) => (x.key !== 'mlb' || p.mlb) && (x.key !== 'national' || nationalLinesOf(league, p.id).length > 0)).map((x) => (
                 <button key={x.key} type="button" aria-pressed={records === x.key} onClick={() => setRecords(x.key)}>
                   {__i18n_display(x.label)}
                   {__i18n_display(x.key === 'post' && post.length > 0 && <span class="count">{__i18n_display(post.length)}</span>)}
@@ -518,6 +522,7 @@ export function PlayerPanel({
             {records === 'batted' && <BattedTable batted={card.batted} pitcher={pitcher} />}
             {records === 'savant' && <SavantView league={league} id={id} pitcher={pitcher} />}
             {records === 'meetings' && <MeetingsView league={league} id={id} pitcher={pitcher} onPlayer={onPlayer} />}
+            {records === 'national' && <NationalLines league={league} id={id} pitcher={pitcher} />}
             {records === 'fielding' && (card.fielding ? <FieldingTable fielding={card.fielding} /> : <p class="muted">{__i18n_t("ui.playerPanel.text.189e71c9")}</p>)}
             {__i18n_display(records === 'splits' &&
               (card.splits.season || card.splits.career ? (

@@ -118,6 +118,10 @@ const SHAPE: Record<PitchType | 'FB', { slower: number; spin: number; v: number;
   SH: { slower: 6, spin: 2100, v: 18, h: 30, axis: 1 },
 };
 
+/** 2.0.11: how far a grade point moves a pitch's break away from the fastball (a 70 breaks a fifth more than a 50),
+    within bounds, and the spin it adds (or takes off a low-spin pitch). */
+export const MOVE = { perGrade: 0.01, min: 0.6, max: 1.4, spin: 15 };
+
 /** A spin axis (hours from 12 on a clock, from the catcher's view) as "H:MM". */
 const clock = (h: number) => {
   const m = Math.round((((h % 12) + 12) % 12) * 60);
@@ -143,13 +147,19 @@ export function trackingOf(p: Player): Tracking | null {
   const track = (type: PitchType | 'FB', grade: number, usage: number): PitchTrack => {
     const s = SHAPE[type];
     const breaking = type !== 'FB' && type !== '2SFB' && type !== 'SNK' && type !== 'CUT';
-    const v = type === 'KN' ? noise(12) : s.v * (type === 'FB' ? 1 : 1) + (type === 'FB' ? (stuff - 50) * 0.15 : 0) - (breaking ? low * 4 : low * 6) + noise(2.5);
-    const h = type === 'KN' ? noise(12) : s.h * (1 + (breaking && s.h < 0 ? low * 0.35 : low * 0.25)) + noise(3);
+    // 2.0.11 (the user's request): a better pitch moves further from his fastball — its grade (his 변화구 and how the
+    // pitch has gone its own way, 2.0.6) stretches or shrinks its break away from the fastball's.
+    const sep = type === 'FB' ? 1 : Math.max(MOVE.min, Math.min(MOVE.max, 1 + (grade - 50) * MOVE.perGrade));
+    const sv = SHAPE.FB.v + (s.v - SHAPE.FB.v) * sep,
+      sh = SHAPE.FB.h + (s.h - SHAPE.FB.h) * sep;
+    const v = type === 'KN' ? noise(12) : sv + (type === 'FB' ? (stuff - 50) * 0.15 : 0) - (breaking ? low * 4 : low * 6) + noise(2.5);
+    const h = type === 'KN' ? noise(12) : sh * (1 + (breaking && sh < 0 ? low * 0.35 : low * 0.25)) + noise(3);
     const axisH = fbAxis + s.axis + noise(0.2);
     return {
       type,
       velocity: Math.round(avg - s.slower + (grade - 50) * 0.05 + noise(1)),
-      spin: Math.max(150, Math.round(s.spin + (grade - 50) * 12 + noise(80))),
+      // Spin pitches gain spin with the grade; the low-spin ones (changeups, splitters, forkballs, palmballs) lose it.
+      spin: Math.max(150, Math.round(s.spin + (grade - 50) * (s.spin >= SHAPE.FB.spin ? MOVE.spin : -MOVE.spin) + noise(80))),
       axis: clock(lefty ? 24 - axisH : axisH),
       vertical: Math.round(v),
       horizontal: Math.round(h),

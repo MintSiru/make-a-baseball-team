@@ -535,6 +535,20 @@ try {
   // 1.0.1: the national team's tournaments and the clubs' retired numbers have pages of their own.
   await page.getByRole('group', { name: '역대' }).getByRole('button', { name: '국가대표', exact: true }).click();
   check((await page.locator('table:has(caption) tbody tr').count()) > 0, 'the national team page lists the tournaments');
+  // 2.0.11: each tournament's best hitter and pitcher, and a player's national-team lines.
+  check((await page.locator('table:has(caption) thead').textContent())?.includes('대표팀 활약'), 'the national team page shows its best players');
+  const star = page.locator('table:has(caption) tbody td:last-child .link').first();
+  if (await star.count()) {
+    await star.click();
+    await page.getByRole('dialog').waitFor();
+    await page.getByRole('tab', { name: '기록' }).click();
+    await page.getByRole('group', { name: '기록 보기' }).getByRole('button', { name: '국가대표', exact: true }).click();
+    check((await page.locator('.dialog .national-lines').count()) === 1, 'a player shows his national-team lines');
+    // The panel remembers its part and record view: leave them as the later checks expect.
+    await page.getByRole('group', { name: '기록 보기' }).getByRole('button', { name: '정규시즌', exact: true }).click();
+    await page.getByRole('tab', { name: '능력치' }).click();
+    await page.keyboard.press('Escape');
+  }
   await page.screenshot({ path: join(shots, 'national.png'), fullPage: false });
   await page.getByRole('group', { name: '역대' }).getByRole('button', { name: '영구결번', exact: true }).click();
   check((await page.locator('.retired-card').count()) > 0 || (await page.locator('main').textContent())?.includes('아직 영구결번이 없습니다'), 'the retired numbers page opens');
