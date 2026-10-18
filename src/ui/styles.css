@@ -3395,3 +3395,22 @@ button.danger {
 .editor-ties li {
   padding: 2px 0;
 }
+/* 2.0.13: the rules by hand (settings, the board off). */
+.rule-editor {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 6px 12px 10px;
+  margin: 10px 0;
+}
+.rule-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 6px 14px;
+}
+.rule-grid label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}

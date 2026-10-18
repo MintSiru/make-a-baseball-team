@@ -17,6 +17,7 @@ import { ensureNumbers, setNumber } from './numbers';
 import { setNickname } from './nicknames';
 import { addTie, editPlayer, removeTie, type PlayerEdit, type Relation } from './editor';
 import { switchPlayer } from './twoway';
+import { setBoardOn, setRule, type BoardItem } from './board';
 import { openProjects, startProject, type ProjectKind } from './ballpark';
 import { clubState } from './fans';
 import { FANS } from './tuning';
@@ -37,7 +38,6 @@ import { workout } from './combine';
 import { openFacilities, startFacility } from './facilities';
 import { offerExtension } from './extensions';
 import { setCaptains } from './captains';
-import { setBoardOn } from './board';
 import { planLearn } from './newpitch';
 
 export type Action =
@@ -121,6 +121,8 @@ export type Action =
   | { kind: 'familyTie'; id: PlayerId; other: PlayerId; rel: Relation | null }
   /** 2.0.12 (twoway.ts): turn one of our players around (pitcher ↔ hitter, the winter only), or start or stop two-way play. */
   | { kind: 'switchSide'; id: PlayerId; what: 'convert' | 'twoWayOn' | 'twoWayOff' }
+  /** 2.0.13 (board.ts): with the board off, a league rule set by hand from the coming season. */
+  | { kind: 'leagueRule'; item: BoardItem; value: number }
   /** The club's own doping test on one of our players (V0.12). */
   | { kind: 'inspect'; id: PlayerId }
   /** 1.2.0: a drive for our All-Star candidates' fan ballots. */
@@ -145,7 +147,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -348,6 +350,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'switchSide':
       switchPlayer(s, action.id, action.what);
+      break;
+    case 'leagueRule':
+      setRule(s, action.item, action.value);
       break;
     case 'extend':
       offerExtension(s, action.id, action.years);

@@ -505,6 +505,8 @@ try {
   await page.screenshot({ path: join(shots, 'story.png'), fullPage: false });
   // 0.13: AI settings in the settings tab. A key typed there must never reach a save (the autosave or a file).
   await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
+  // 2.0.13: with the board off, the rules by hand.
+  if (!(await page.locator('#settings-board input[type=checkbox]').isChecked().catch(() => true))) check((await page.locator('#settings-board .rule-editor select').count()) > 10, 'the board off, the rules can be set by hand');
   const storyBlock = page.locator('#settings-story');
   await storyBlock.getByLabel('제공자').selectOption('gemini');
   const SECRET = 'test-key-never-saved-0130';
