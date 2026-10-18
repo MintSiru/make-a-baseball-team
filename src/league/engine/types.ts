@@ -156,6 +156,8 @@ export interface BattingLine {
   /** 2.0.4: where his hits came down, three numbers each: direction (°, left field negative), distance (m) and the
       hit (0 single … 3 home run). */
   spray?: number[];
+  /** 2.0.7: his at-bats in order, 1 for a home run (with a batted-ball stream). */
+  hrSeq?: number[];
 }
 
 export interface PitchingLine {

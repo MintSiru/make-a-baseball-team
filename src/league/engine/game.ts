@@ -241,6 +241,8 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
         const v = ((bat.box.vs ??= {})[key] ??= [0, 0, 0, 0, 0, 0, 0]);
         const add = [d('pa'), d('ab'), d('h'), d('tb'), d('hr'), d('bb') + d('hbp'), d('k')];
         for (let i = 0; i < 7; i++) v[i]! += add[i]!;
+        // 2.0.7: each at-bat, a home run or not (consecutive home runs, feats.ts).
+        if (d('ab') > 0) (o.bl.hrSeq ??= []).push(d('hr') > 0 ? 1 : 0);
       }
       if (log) {
         const d = (k: keyof Split) => now[k] - open!.before[k];

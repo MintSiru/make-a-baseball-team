@@ -49,6 +49,7 @@ import { finishTrips } from './training';
 import { lifeDay } from './life';
 import { alumniDay } from './alumni';
 import { familyDay, familyGame, pruneFamilies } from './family';
+import { featsGame } from './feats';
 import { boardValue } from './era';
 import { boardLeagues } from './board';
 
@@ -205,7 +206,7 @@ export function record(s: LeagueState, box: TeamBox, date: string, lines: Record
     const line = lineOf(b.id, box.teamId);
     if (!line) continue;
     const bat = (line.bat ??= emptyBat());
-    const { id: _id, pos: _pos, split, sub, bip, fld, spray, ...counts } = b;
+    const { id: _id, pos: _pos, split, sub, bip, fld, spray, hrSeq: _hrSeq, ...counts } = b;
     addInto(bat, counts);
     if (bip) addBatted((bat.bip ??= emptyBatted()), bip);
     if (fld) addField((bat.fld ??= emptyField()), fld);
@@ -342,6 +343,8 @@ export function playDay(s: LeagueState): boolean {
     s.scores.push({ id: g.id, date, home: g.home, away: g.away, hs: out.home.runs, as: out.away.runs, att });
     // 2.0.6: relatives on the two sides.
     familyGame(s, out.home, out.away, date);
+    // 2.0.7: perfect games, no-hitters, cycles, home runs in a row.
+    featsGame(s, out, date);
     const box = compactBox(out, g.id, date, att);
     keepBox(s, box, log);
     if (log) {

@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { useFocusTrap } from './modal';
 import { MeetingsView, SavantView } from './Savant';
 import { familyOf } from '../league/family';
+import { featsOf, featText } from '../league/feats';
 import { TOOL_LABELS } from '../draftroom';
 import type { Split, Splits } from '../league/engine/types';
 import type { Action } from '../league/actions';
@@ -559,6 +560,19 @@ export function PlayerPanel({
                 <dt>{__i18n_t("ui.playerPanel.playerPanel.98633e27")}</dt>
                 <dd>{__i18n_display(p.birthplace)}</dd>
               </div>
+              {/* 2.0.7: his great single-game feats. */}
+              {featsOf(league, p.id).length > 0 && (
+                <div>
+                  <dt>{__i18n_t("ui.playerPanel.text.1e2a5100")}</dt>
+                  <dd>
+                    <ul class="plain feats">
+                      {featsOf(league, p.id).map((f, i) => (
+                        <li key={i}>{featText(league, f)}</li>
+                      ))}
+                    </ul>
+                  </dd>
+                </div>
+              )}
               {/* 2.0.6: his relatives in the game. */}
               {familyOf(league, p.id).length > 0 && (
                 <div>

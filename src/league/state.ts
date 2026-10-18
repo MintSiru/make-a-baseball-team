@@ -643,6 +643,8 @@ export interface LeagueState {
   /** 2.0.6 (family.ts): players tied by family, and the family stories already told. */
   families?: import('./family').FamilyTie[];
   familyDone?: string[];
+  /** 2.0.7 (feats.ts): home runs in a row each batter has going (at-bats, across games). */
+  hrRuns?: Record<PlayerId, number>;
   international: NationalEntry[];
   /** Players serving a KBO suspension or ban (V0.12, scandals.ts). */
   suspended?: Record<PlayerId, import('./scandals').Suspension>;

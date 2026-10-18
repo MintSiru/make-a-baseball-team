@@ -146,6 +146,8 @@ export function closeSeason(s: LeagueState) {
   });
   // 2.0.6: a son past his father's career home runs or wins.
   familySeason(s);
+  // 2.0.7: home runs in a row end with the season.
+  delete s.hrRuns;
   closeMeetings(s);
   // The business year closes with the baseball one: accounts, fans' mood, AI staff changes.
   const summary = s.history[s.history.length - 1]!;
