@@ -1252,7 +1252,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       ];
       body = (
         <>
-          <p>{__i18n_t("ui.decision.decision.a787e695", { value: p ? (
+          <p>{__i18n_rich("ui.decision.decision.a787e695", { value: p ? (
               <button type="button" class="link" onClick={() => onPlayer(p.id)}>
                 {__i18n_display(p.name)}
               </button>

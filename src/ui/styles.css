@@ -3357,3 +3357,41 @@ button.danger {
 .pitch-usage td.bad {
   color: var(--bad);
 }
+/* 2.0.9: the player editor on his info tab. */
+.player-editor {
+  margin-top: 14px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+.player-editor summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.editor-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 6px 12px;
+  margin: 8px 0;
+}
+.editor-fields label {
+  display: grid;
+  grid-template-columns: 5.5em minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.editor-fields input {
+  min-width: 0;
+}
+.player-editor h4 {
+  margin: 12px 0 4px;
+}
+.editor-found {
+  max-height: 220px;
+  overflow-y: auto;
+}
+.editor-found li,
+.editor-ties li {
+  padding: 2px 0;
+}

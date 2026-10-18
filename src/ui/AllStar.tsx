@@ -1,4 +1,4 @@
-import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, rich as __i18n_rich, t as __i18n_t } from '../i18n/index';
 /* The All-Star page (1.2.0) in the 기록 tab: the voting as it stands (each spot on each side, the leaders first and our
    candidates marked), our club's voting drive, the squads once the 베스트12 are in, the game and the home run race,
    and every year before. */
@@ -31,7 +31,7 @@ export function AllStar({ league, onPlayer, onBox, onAct }: { league: LeagueStat
           <p>
             {__i18n_display(a.elected ? __i18n_k("ui.allStar.allStar.3d6212fa", { md: md(v.dates.close) }) : a.tallies.length ? __i18n_k("ui.allStar.allStar.cdb7daf2", { length: a.tallies.length, md: md(a.tallies.at(-1)!) }) : __i18n_k("ui.allStar.allStar.7374e1a2"))}
             {__i18n_display(a.game && (
-              <>{__i18n_t("ui.allStar.allStar.3e91ca92", { value: ' ', dream: a.game.runs.dream, nanum: a.game.runs.nanum, value2: a.game.mvp && <>{__i18n_t("ui.allStar.allStar.0500abec", { who: who(a.game.mvp) })}</>, who: who(a.game.derby.winner), value3: ' ', value4: onBox && (
+              <>{__i18n_rich("ui.allStar.allStar.3e91ca92", { value: ' ', dream: a.game.runs.dream, nanum: a.game.runs.nanum, value2: a.game.mvp && <>{__i18n_t("ui.allStar.allStar.0500abec", { who: who(a.game.mvp) })}</>, who: who(a.game.derby.winner), value3: ' ', value4: onBox && (
                   <button type="button" onClick={() => onBox(a.game!.boxId)}>{__i18n_t("ui.allStar.allStar.8fcc8f9a")}</button>
                 ) })}</>
             ))}

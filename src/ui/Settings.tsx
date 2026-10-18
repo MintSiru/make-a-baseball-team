@@ -260,7 +260,8 @@ const FIELDS: { key: keyof ClubLabel; label: string; range: { min: number; max: 
 ];
 
 function ClubNames({ league, busy, onAct }: { league: LeagueState; busy: boolean; onAct: (a: Action) => void }) {
-  const existing = league.teams.filter((t) => t.kind === 'existing');
+  // 2.0.9: every club, ours and the new ones included.
+  const existing = league.teams;
   const current = () => Object.fromEntries(existing.map((t) => [t.id, labelOf(t)]));
   const [draft, setDraft] = useState<Record<string, ClubLabel>>(current);
   const key = existing.map((t) => JSON.stringify(labelOf(t))).join('|');

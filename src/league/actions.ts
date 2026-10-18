@@ -15,6 +15,7 @@ import { movePlayer, registerPlayer, setLineupCard, setRole } from './entry';
 import type { BullpenRole } from './engine/types';
 import { ensureNumbers, setNumber } from './numbers';
 import { setNickname } from './nicknames';
+import { addTie, editPlayer, removeTie, type PlayerEdit, type Relation } from './editor';
 import { openProjects, startProject, type ProjectKind } from './ballpark';
 import { clubState } from './fans';
 import { FANS } from './tuning';
@@ -113,6 +114,10 @@ export type Action =
   | { kind: 'number'; id: PlayerId; number: number }
   /** 1.9.3 (nicknames.ts): the general manager's own nickname for one of our players (empty: the fans' again). */
   | { kind: 'nickname'; id: PlayerId; text: string }
+  /** 2.0.9 (editor.ts): any player's name, hometown, school and nickname. */
+  | { kind: 'editPlayer'; id: PlayerId; edit: PlayerEdit }
+  /** 2.0.9: ties `other` to him as his `rel` (null unties them). */
+  | { kind: 'familyTie'; id: PlayerId; other: PlayerId; rel: Relation | null }
   /** The club's own doping test on one of our players (V0.12). */
   | { kind: 'inspect'; id: PlayerId }
   /** 1.2.0: a drive for our All-Star candidates' fan ballots. */
@@ -137,7 +142,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -330,6 +335,13 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'nickname':
       setNickname(s, action.id, action.text);
+      break;
+    case 'editPlayer':
+      editPlayer(s, action.id, action.edit);
+      break;
+    case 'familyTie':
+      if (action.rel) addTie(s, action.id, action.other, action.rel);
+      else removeTie(s, action.id, action.other);
       break;
     case 'extend':
       offerExtension(s, action.id, action.years);
