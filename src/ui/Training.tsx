@@ -1,4 +1,4 @@
-import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* Training abroad (V0.10): the four centres, sending a player, and who went where and what came of it. */
 import { shownFuture } from './grades';
 import { useMemo, useState } from 'preact/hooks';
@@ -8,6 +8,8 @@ import { ageIn, isPitcher } from '../league/players';
 import { orgPlayers, type LeagueState, type SiteId } from '../league/state';
 import { checkTrip, lastStartText, SITE_IDS, SITES, tripDates, tripSeason } from '../league/training';
 import { TRAINING } from '../league/tuning';
+import { LEARN, learnable, learnChance } from '../league/newpitch';
+import { PITCH_LABELS, repertoire, type PitchType } from '../league/pitches';
 import { positionLabel } from '../league/views';
 import { money } from './format';
 
@@ -113,6 +115,86 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
         <p class="muted">{__i18n_t("ui.training.training.7ba8c700")}</p>
       ))}
       {__i18n_display(away.length > 0 && <p class="muted small">{__i18n_t("ui.training.training.bb74e8bf", { value: away.map((t) => league.players[t.id]?.name).join(', ') })}</p>)}
+      <LearnPitch league={league} onAct={onAct} onPlayer={onPlayer} />
     </div>
+  );
+}
+
+/** 2.0.8 (the user's request): a new pitch for some of our pitchers to learn this winter (newpitch.ts). */
+function LearnPitch({ league, onAct, onPlayer }: { league: LeagueState; onAct: (a: Action) => void; onPlayer: (id: string) => void }) {
+  const u = league.user!;
+  const plans = u.pitchPlans ?? {};
+  const year = league.year;
+  const arms = orgPlayers(league, u.teamId)
+    .filter((p) => p.status === 'active' && isPitcher(p) && (learnable(p).length > 0 || plans[p.id]))
+    .sort((a, b) => Number(!!plans[b.id]) - Number(!!plans[a.id]) || ageIn(a, year) - ageIn(b, year));
+  const [choice, setChoice] = useState<Record<string, PitchType>>({});
+  const full = Object.keys(plans).length >= LEARN.perWinter;
+  return (
+    <section class="learn-pitch">
+      <h3>{__i18n_t("ui.training.text.c8bbde22")}</h3>
+      <p class="muted small">{__i18n_t("ui.training.text.b9d78d0c", { n: LEARN.perWinter })}</p>
+      {arms.length ? (
+        <div class="table-wrap" tabIndex={0}>
+          <table class="record-table small">
+            <thead>
+              <tr>
+                <th>{__i18n_t("ui.training.text.ef406667")}</th>
+                <th class="num">{__i18n_t("ui.training.text.6c620e5c")}</th>
+                <th class="num">{__i18n_t("ui.training.text.49ce2b15")}</th>
+                <th>{__i18n_t("ui.training.text.28718197")}</th>
+                <th class="num">{__i18n_t("ui.training.text.c59895ed")}</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {arms.map((p) => {
+                const planned = plans[p.id];
+                const can = learnable(p);
+                const pick = planned ?? choice[p.id] ?? can[0];
+                return (
+                  <tr key={p.id}>
+                    <td>
+                      <button type="button" class="link" onClick={() => onPlayer(p.id)}>
+                        {p.name}
+                      </button>
+                    </td>
+                    <td class="num">{ageIn(p, year)}</td>
+                    <td class="num">{repertoire(p).length + 1}</td>
+                    <td>
+                      {planned ? (
+                        <strong>{__i18n_displayText(PITCH_LABELS[planned])}</strong>
+                      ) : (
+                        <select aria-label={__i18n_t("ui.training.text.5ac483bb", { name: p.name })} value={pick} onChange={(e) => setChoice({ ...choice, [p.id]: (e.currentTarget as HTMLSelectElement).value as PitchType })}>
+                          {can.map((t) => (
+                            <option key={t} value={t}>
+                              {__i18n_displayText(PITCH_LABELS[t])}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </td>
+                    <td class="num">{Math.round(learnChance(league, p, year) * 100)}%</td>
+                    <td>
+                      {planned ? (
+                        <button type="button" onClick={() => onAct({ kind: 'learnPitch', id: p.id, type: null })}>
+                          {__i18n_t("ui.training.text.19b2d19b")}
+                        </button>
+                      ) : (
+                        <button type="button" disabled={full || !pick} onClick={() => pick && onAct({ kind: 'learnPitch', id: p.id, type: pick })}>
+                          {__i18n_t("ui.training.text.eed2369a")}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p class="muted">{__i18n_t("ui.training.text.9908e755")}</p>
+      )}
+    </section>
   );
 }

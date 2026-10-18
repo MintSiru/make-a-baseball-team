@@ -5,6 +5,7 @@
 import { era, setEra, startYear } from './era';
 import { rng } from '../draftroom';
 import { SIM_VERSION } from '../core/version';
+import { learnWinter } from './newpitch';
 import type { Player } from '../model/types';
 import { existingTeams } from './clubs';
 import { LEGACY_ERA, LEGACY_START, legacyTeams } from './legacy1982';
@@ -82,6 +83,8 @@ function fastOffseason(s: LeagueState) {
   const year = s.year,
     next = year + 1;
   applyInternational(s, year);
+  // 2.0.8: other clubs' young arms now and then learn a pitch.
+  learnWinter(s, year);
   for (const p of Object.values(s.players)) {
     if (p.status !== 'active' && p.status !== 'military') continue;
     if (p.proSince > year) continue;

@@ -83,9 +83,12 @@ export function fastballOf(p: Player): FastballType {
 }
 
 /** Pitches an arm rarely carries together: one slider-type, one changeup-type, one splitter-type, one sinker-type. */
-const FAMILY: Partial<Record<PitchType, string>> = { SL: 'slider', SW: 'slider', SLV: 'slider', CH: 'change', CIR: 'change', FRK: 'split', SPL: 'split', '2SFB': 'sink', SNK: 'sink' };
+export const FAMILY: Partial<Record<PitchType, string>> = { SL: 'slider', SW: 'slider', SLV: 'slider', CH: 'change', CIR: 'change', FRK: 'split', SPL: 'split', '2SFB': 'sink', SNK: 'sink' };
 
 const WEIGHTS = [0.6, 0.3, 0.1];
+
+/** 2.0.8: the share of his pitches a learned pitch takes. */
+export const LEARNED_USAGE = 0.08;
 
 export interface Pitch {
   type: PitchType;
@@ -154,7 +157,7 @@ const cache = new WeakMap<Player, { key: string; out: Pitch[] }>();
 /** The secondary pitches, best first. Hitters and players without a 변화구 tool have none. */
 export function repertoire(p: Player): Pitch[] {
   if (p.hidden.current.breaking == null) return [];
-  const key = `${p.id}|${p.role}|${p.throws}|${p.archetype}`;
+  const key = `${p.id}|${p.role}|${p.throws}|${p.archetype}|${(p.learned ?? []).map((x) => `${x.type}${x.offset}`).join(',')}`;
   const hit = cache.get(p);
   if (hit && hit.key === key) return hit.out;
   const r = rng(`pitches-${p.id}`);
@@ -182,6 +185,8 @@ export function repertoire(p: Player): Pitch[] {
   const w = types.map((_, i) => M.decay ** i * (1 - M.jitter + 2 * M.jitter * r()));
   const total = w.reduce((a, b) => a + b, 0);
   const out = types.map((type, i) => ({ type, offset: raw[i]! - mean, usage: (share * w[i]!) / total }));
+  // 2.0.8 (newpitch.ts): pitches he learned over a winter, after his own, at a small share.
+  for (const x of p.learned ?? []) if (!out.some((y) => y.type === x.type)) out.push({ type: x.type, offset: x.offset, usage: LEARNED_USAGE });
   cache.set(p, { key, out });
   return out;
 }

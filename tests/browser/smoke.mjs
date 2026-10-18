@@ -478,14 +478,14 @@ try {
 
   // 4c. V0.10: a player to a training centre abroad during the season.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
-  await page.getByRole('button', { name: '해외 연수', exact: true }).click();
+  await page.getByRole('button', { name: '훈련·연수', exact: true }).click();
   check((await page.locator('.training .choice').count()) === 4, 'three American centres and one Japanese');
   await page.getByRole('button', { name: /^도쿄 모션 베이스 일본/ }).click();
   const tripPick = page.getByLabel('보낼 선수');
   await tripPick.selectOption({ index: 1 });
   await page.getByRole('button', { name: '도쿄 모션 베이스에 보내기' }).click();
   await page.waitForFunction(() => document.querySelectorAll('.training .record-table tbody tr').length >= 1);
-  check((await page.locator('.training .record-table').textContent())?.includes('연수 중'), 'the player is away on his programme');
+  check((await page.locator('.training .record-table').first().textContent())?.includes('연수 중'), 'the player is away on his programme');
 
   // 4d. The club's story, the AI article settings (no key: nothing is sent), the record room.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
@@ -577,6 +577,10 @@ try {
   for (const v of ['구단 통산 순위', '구단 단일 시즌 기록', '영구결번·명예의 전당', '연도별 성적']) await page.getByRole('group', { name: '역대 기록 보기' }).getByRole('button', { name: v, exact: true }).click();
   await page.screenshot({ path: join(shots, 'club-records.png'), fullPage: false });
   await page.getByRole('group', { name: '우리 구단 보기' }).getByRole('button', { name: '개요', exact: true }).click().catch(() => undefined);
+  // 2.0.8: the winter's new pitches, planned from the training view.
+  await page.locator('nav.tabs').getByRole('button', { name: '우리 구단', exact: true }).click();
+  await page.getByRole('group', { name: '우리 구단 보기' }).getByRole('button', { name: '훈련·연수', exact: true }).click();
+  check((await page.locator('.learn-pitch').count()) === 1, 'the training view plans new pitches');
   // 2.0.7: a new game asks to save this one first; cancelling keeps the game.
   await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
   await page.getByRole('button', { name: '새 게임', exact: true }).click();

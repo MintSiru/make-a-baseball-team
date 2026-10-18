@@ -17,7 +17,8 @@ describe('pitches', () => {
   it('splits the breaking-ball grade into pitches that average back to it', () => {
     const pitchers = Object.values(s.players).filter((p) => isPitcher(p) && p.status === 'active');
     for (const p of pitchers.slice(0, 50)) {
-      const r = repertoire(p);
+      // (2.0.8: pitches learned over a winter come after, outside the split.)
+      const r = repertoire(p).filter((x) => !p.learned?.some((l) => l.type === x.type));
       // 1.1.0: a two-pitch pitcher has one breaking ball, at the tool's grade.
       expect(r.length).toBeGreaterThanOrEqual(1);
       expect(new Set(r.map((x) => x.type)).size).toBe(r.length);

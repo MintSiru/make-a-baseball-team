@@ -286,6 +286,9 @@ export interface Player {
   pitchLast?: { season: number; grades: Record<string, number> };
   /** 2.0.7 (feats.ts): his great single-game feats (perfect game, no-hitter, cycle, home runs in a row…). */
   feats?: import('../league/feats').Feat[];
+  /** 2.0.8 (newpitch.ts): pitches he learned over a winter — the winter, and the grade against his 변화구 (rising for a
+      few winters). */
+  learned?: { type: import('../league/pitches').PitchType; year: number; offset: number }[];
   career: SeasonRecord[];
   /** 1.4.0: postseason lines, one a year he played in it (not in `career`, so season totals stay as they were). */
   post?: PostRecord[];
