@@ -76882,5 +76882,254 @@
     "line": 1042,
     "params": {},
     "locations": []
+  },
+  "league.payroll.text.95c461d4": {
+    "source": "src/league/payroll.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.payroll.text.2c117ac9": {
+    "source": "src/league/payroll.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.payroll.text.5bd804b7": {
+    "source": "src/league/payroll.ts",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "league.payroll.text.74f290f1": {
+    "source": "src/league/payroll.ts",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "league.payroll.text.818f3b79": {
+    "source": "src/league/payroll.ts",
+    "line": 58,
+    "params": {},
+    "locations": []
+  },
+  "league.payroll.text.cbf383ec": {
+    "source": "src/league/payroll.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "league.payroll.text.ef2caeba": {
+    "source": "src/league/payroll.ts",
+    "line": 71,
+    "params": {},
+    "locations": []
+  },
+  "league.payroll.text.e6607847": {
+    "source": "src/league/payroll.ts",
+    "line": 71,
+    "params": {},
+    "locations": []
+  },
+  "league.payroll.text.0dce8d6b": {
+    "source": "src/league/payroll.ts",
+    "line": 71,
+    "params": {},
+    "locations": []
+  },
+  "league.payroll.text.285374d7": {
+    "source": "src/league/payroll.ts",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "ui.payroll.text.e528b78e": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "ui.payroll.text.2a7e1be8": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 37,
+    "params": {
+      "season": {
+        "expression": "book.seasons[0]!"
+      },
+      "total": {
+        "expression": "money(book.cap.total)"
+      },
+      "cap": {
+        "expression": "money(book.cap.cap)"
+      }
+    },
+    "locations": []
+  },
+  "ui.payroll.text.e7c9e70c": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 38,
+    "params": {
+      "floor": {
+        "expression": "money(book.cap.floor)"
+      }
+    },
+    "locations": []
+  },
+  "ui.payroll.text.4a58680f": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 40,
+    "params": {
+      "n": {
+        "expression": "money(book.cap.total - book.cap.cap)"
+      }
+    },
+    "locations": []
+  },
+  "ui.payroll.text.921fae13": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 40,
+    "params": {
+      "n": {
+        "expression": "money(book.cap.cap - book.cap.total)"
+      }
+    },
+    "locations": []
+  },
+  "ui.payroll.text.9aa18e50": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "ui.payroll.text.81922a91": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "ui.payroll.text.6c620e5c": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "ui.payroll.text.5d24a2fc": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "ui.payroll.text.b4116369": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "ui.payroll.text.378cea54": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "ui.payroll.text.f64694ca": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "ui.payroll.text.eb55a24f": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "ui.payroll.text.ed5fa245": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 77,
+    "params": {
+      "seasons": {
+        "expression": "r.service.seasons"
+      },
+      "days": {
+        "expression": "r.service.days"
+      }
+    },
+    "locations": []
+  },
+  "ui.payroll.text.9f794f1d": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 87,
+    "params": {
+      "n": {
+        "expression": "book.rows.length"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.5d364b3d": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 82,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.ef2caeba": {
+    "source": "src/ui/Training.tsx",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.e6607847": {
+    "source": "src/ui/Training.tsx",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.0dce8d6b": {
+    "source": "src/ui/Training.tsx",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.f4cba30a": {
+    "source": "src/ui/Training.tsx",
+    "line": 80,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.9aa18e50": {
+    "source": "src/ui/Training.tsx",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.81922a91": {
+    "source": "src/ui/Training.tsx",
+    "line": 82,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.5d24a2fc": {
+    "source": "src/ui/Training.tsx",
+    "line": 83,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.001e4be2": {
+    "source": "src/ui/Training.tsx",
+    "line": 85,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.6e0caec5": {
+    "source": "src/ui/Training.tsx",
+    "line": 86,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.109239e5": {
+    "source": "src/ui/Training.tsx",
+    "line": 87,
+    "params": {},
+    "locations": []
   }
 }

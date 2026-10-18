@@ -481,11 +481,19 @@ try {
   await page.getByRole('button', { name: '훈련·연수', exact: true }).click();
   check((await page.locator('.training .choice').count()) === 4, 'three American centres and one Japanese');
   await page.getByRole('button', { name: /^도쿄 모션 베이스 일본/ }).click();
-  const tripPick = page.getByLabel('보낼 선수');
-  await tripPick.selectOption({ index: 1 });
-  await page.getByRole('button', { name: '도쿄 모션 베이스에 보내기' }).click();
-  await page.waitForFunction(() => document.querySelectorAll('.training .record-table tbody tr').length >= 1);
-  check((await page.locator('.training .record-table').first().textContent())?.includes('연수 중'), 'the player is away on his programme');
+  // 2.0.10: the players in a sortable table, one button each.
+  const pickTable = page.locator('.trip-pick');
+  check((await pickTable.locator('tbody tr').count()) > 3, 'the training view lists the players to send');
+  await pickTable.getByRole('button', { name: '나이', exact: false }).click();
+  await pickTable.locator('tbody button.primary:not([disabled])').first().click();
+  await page.waitForFunction(() => [...document.querySelectorAll('.training .record-table')].some((t) => t.textContent?.includes('연수 중')), null, { timeout: 10_000 }).catch(() => undefined);
+  check(await page.evaluate(() => [...document.querySelectorAll('.training .record-table')].some((t) => t.textContent?.includes('연수 중'))), 'the player is away on his programme');
+  // 2.0.10: the payroll at a glance.
+  await page.getByRole('group', { name: '우리 구단 보기' }).getByRole('button', { name: '연봉표', exact: true }).click();
+  check((await page.locator('.payroll-table tbody tr').count()) > 20, 'the payroll lists the whole club');
+  check((await page.locator('.payroll-table tfoot').count()) === 1, 'the payroll shows the totals');
+  await page.locator('.payroll-table thead').getByRole('button', { name: 'FA 시기' }).click();
+  await page.screenshot({ path: join(shots, 'payroll.png') });
 
   // 4d. The club's story, the AI article settings (no key: nothing is sent), the record room.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
