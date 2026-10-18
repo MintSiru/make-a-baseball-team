@@ -278,6 +278,8 @@ try {
   await page.addLocatorHandler(
     page.getByRole('alertdialog'),
     async (dialog) => {
+      // 2.0.7: the new-game warning is the test's own to answer.
+      if ((await dialog.getAttribute('aria-labelledby').catch(() => null)) === 'new-game-title') return;
       for (let k = 0; k < 20 && (await dialog.isVisible().catch(() => false)); k++) {
         const all = dialog.getByRole('button', { name: '모두 확인' });
         const one = dialog.getByRole('button', { name: '확인', exact: true });
