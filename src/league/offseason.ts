@@ -10,6 +10,7 @@ import { familyAtPick, familySeason, pruneFamilies } from './family';
 import { closeMeetings, headToHead } from './matchups';
 import { seasonMix } from './savant';
 import { developPitches, pitchSnapshot } from './pitches';
+import { learnWinter } from './newpitch';
 import { historicForeignCap, MODERN_FROM, rulesFor } from '../rules/history';
 import { boardValue, playsHistory } from './era';
 import { boardMeets, committeeMotions, holdMeeting } from './board';
@@ -904,6 +905,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         break;
       case 'develop': {
         const futuresLeague = !!s.history.find((h) => h.year === year)?.futures;
+        // 2.0.8: new pitches learned over the winter (ours as planned, other clubs' now and then).
+        learnWinter(s, year);
         // 1.7.0: the future grade moves once a season, here; our young players' moves make one report.
         const before = futureBefore(s);
         for (const p of Object.values(s.players)) {

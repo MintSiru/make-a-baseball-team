@@ -452,6 +452,8 @@ export interface UserClub {
   extensionTalks?: Record<PlayerId, string>;
   /** 1.7.0 (captains.ts): the captain and his vice-captains, and the season they were named. */
   captains?: { captain: PlayerId | null; vice: PlayerId[]; since: number };
+  /** 2.0.8 (newpitch.ts): the pitch each of our pitchers is to learn this winter. */
+  pitchPlans?: Record<PlayerId, import('./pitches').PitchType>;
   /** 1.4.0 (alumni.ts): events with our former-player staff already told ("2028|lesson-p12", "ever|mark-p12-홈런"). */
   alumniDone?: string[];
   /** 1.3.0: our plan for the next postseason game — the starter he chose (cleared after the game) and the all-out

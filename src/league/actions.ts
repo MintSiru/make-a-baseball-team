@@ -36,6 +36,7 @@ import { openFacilities, startFacility } from './facilities';
 import { offerExtension } from './extensions';
 import { setCaptains } from './captains';
 import { setBoardOn } from './board';
+import { planLearn } from './newpitch';
 
 export type Action =
   /** `stops` (1.6.0): end the run early at the moments the user asked to stop for (stops.ts). */
@@ -105,6 +106,8 @@ export type Action =
   | { kind: 'twoLeaguePlayoffs'; style: 'kbo' | 'npb' }
   // Players and facilities (V0.10)
   | { kind: 'trip'; id: PlayerId; site: SiteId }
+  /** 2.0.8: a pitch for one of our pitchers to learn this winter (null cancels). */
+  | { kind: 'learnPitch'; id: PlayerId; type: import('./pitches').PitchType | null }
   | { kind: 'facility'; facility: FacilityKind }
   /** The general manager gives one of our players a uniform number (V0.12). */
   | { kind: 'number'; id: PlayerId; number: number }
@@ -315,6 +318,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'trip':
       sendTrip(s, action.id, action.site);
+      break;
+    case 'learnPitch':
+      planLearn(s, action.id, action.type);
       break;
     case 'facility':
       startFacility(s, action.facility);

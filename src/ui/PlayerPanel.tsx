@@ -8,6 +8,7 @@ import { useFocusTrap } from './modal';
 import { MeetingsView, SavantView } from './Savant';
 import { familyOf } from '../league/family';
 import { featsOf, featText } from '../league/feats';
+import { learnedNote } from '../league/newpitch';
 import { TOOL_LABELS } from '../draftroom';
 import type { Split, Splits } from '../league/engine/types';
 import type { Action } from '../league/actions';
@@ -464,7 +465,7 @@ export function PlayerPanel({
                 <div class="gradebars">
                   <GradeBar label={`${card.fastball ?? '4SFB'} ${__i18n_displayText(FASTBALL_LABELS[card.fastball ?? '4SFB'])}`} now={s.tools.stuff} future={showsFutureDetail(p) ? s.futureTools.stuff : undefined} note={`${__i18n_displayText(__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round((1 - card.pitches.reduce((a, x) => a + x.usage, 0)) * 100) }))}${changeMark(s.tools.stuff, card.pitchLast?.grades.FB)}`} />
                   {__i18n_display(card.pitches.map((x) => (
-                    <GradeBar key={x.type} label={`${x.type} ${__i18n_displayText(x.label)}`} now={x.grade} future={showsFutureDetail(p) ? card.pitchesFuture[x.type] : undefined} note={`${__i18n_displayText(__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round(x.usage * 100) }))}${changeMark(x.grade, card.pitchLast?.grades[x.type])}`} />
+                    <GradeBar key={x.type} label={`${x.type} ${__i18n_displayText(x.label)}`} now={x.grade} future={showsFutureDetail(p) ? card.pitchesFuture[x.type] : undefined} note={`${__i18n_displayText(__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round(x.usage * 100) }))}${changeMark(x.grade, card.pitchLast?.grades[x.type])}${learnedNote(league.players[p.id]!, x.type) ? ` · ${__i18n_displayText(learnedNote(league.players[p.id]!, x.type)!)}` : ''}`} />
                   )))}
                 </div>
                 {card.pitchLast && <p class="muted small">{__i18n_t("ui.playerPanel.text.da7d248d", { season: card.pitchLast.season })}</p>}

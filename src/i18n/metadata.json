@@ -76502,5 +76502,172 @@
     "line": 27,
     "params": {},
     "locations": []
+  },
+  "league.newpitch.text.98e9fc45": {
+    "source": "src/league/newpitch.ts",
+    "line": 57,
+    "params": {},
+    "locations": []
+  },
+  "league.newpitch.text.ebb0ad19": {
+    "source": "src/league/newpitch.ts",
+    "line": 58,
+    "params": {},
+    "locations": []
+  },
+  "league.newpitch.text.d3e8adb3": {
+    "source": "src/league/newpitch.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "league.newpitch.text.2320937e": {
+    "source": "src/league/newpitch.ts",
+    "line": 62,
+    "params": {
+      "n": {
+        "expression": "LEARN.perWinter"
+      }
+    },
+    "locations": []
+  },
+  "league.newpitch.text.2d69c235": {
+    "source": "src/league/newpitch.ts",
+    "line": 94,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "pitch": {
+        "expression": "pitch"
+      }
+    },
+    "locations": []
+  },
+  "league.newpitch.text.ec2996e2": {
+    "source": "src/league/newpitch.ts",
+    "line": 94,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "pitch": {
+        "expression": "pitch"
+      }
+    },
+    "locations": []
+  },
+  "league.newpitch.text.531305b4": {
+    "source": "src/league/newpitch.ts",
+    "line": 95,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "pitch": {
+        "expression": "iga(pitch)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.newpitch.text.868119ab": {
+    "source": "src/league/newpitch.ts",
+    "line": 95,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      },
+      "pitch": {
+        "expression": "eulreul(pitch)",
+        "particle": "을/를"
+      }
+    },
+    "locations": []
+  },
+  "league.newpitch.text.de2f38a6": {
+    "source": "src/league/newpitch.ts",
+    "line": 116,
+    "params": {
+      "year": {
+        "expression": "x.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.training.text.c8bbde22": {
+    "source": "src/ui/Training.tsx",
+    "line": 135,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.b9d78d0c": {
+    "source": "src/ui/Training.tsx",
+    "line": 136,
+    "params": {
+      "n": {
+        "expression": "LEARN.perWinter"
+      }
+    },
+    "locations": []
+  },
+  "ui.training.text.ef406667": {
+    "source": "src/ui/Training.tsx",
+    "line": 142,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.6c620e5c": {
+    "source": "src/ui/Training.tsx",
+    "line": 143,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.49ce2b15": {
+    "source": "src/ui/Training.tsx",
+    "line": 144,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.28718197": {
+    "source": "src/ui/Training.tsx",
+    "line": 145,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.c59895ed": {
+    "source": "src/ui/Training.tsx",
+    "line": 146,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.5ac483bb": {
+    "source": "src/ui/Training.tsx",
+    "line": 168,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.training.text.19b2d19b": {
+    "source": "src/ui/Training.tsx",
+    "line": 181,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.eed2369a": {
+    "source": "src/ui/Training.tsx",
+    "line": 185,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.9908e755": {
+    "source": "src/ui/Training.tsx",
+    "line": 196,
+    "params": {},
+    "locations": []
   }
 }
