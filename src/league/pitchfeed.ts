@@ -12,6 +12,7 @@ import type { PlayEvent } from './engine/types';
 import { averageVelocity, FASTBALL_LABELS, fastballOf, repertoire, PITCH_LABELS, type PitchType } from './pitches';
 import { halfLabel, playText } from './playtext';
 import type { LeagueState } from './state';
+import { nationalLog, nationalName } from './nationalgames';
 
 /** How much slower than his fastball each pitch comes (km/h). */
 const PITCH_DROP: Record<PitchType, number> = { CB: 25, CH: 17, FRK: 17, CUT: 5, '2SFB': 5, SL: 13, SW: 13, SNK: 3, CIR: 17, SPL: 12, SLV: 18, KN: 38, SCR: 20, PLM: 27, SH: 4 };
@@ -204,9 +205,9 @@ const CALL_TEXT = (): Record<Call | 'ball4' | 'hbp' | 'swingK' | 'lookingK', str
 
 /** Every pitch of one of our games (null when its play-by-play is not kept). */
 export function pitchFeed(s: LeagueState, id: string): PitchFrame[] | null {
-  const log = s.pbp?.[id];
+  const log = s.pbp?.[id] ?? nationalLog(s, id);
   if (!log) return null;
-  const name = (pid: string) => s.players[pid]?.name ?? '?';
+  const name = (pid: string) => s.players[pid]?.name ?? nationalName(s, pid) ?? '?';
   const words = CALL_TEXT();
   const host = s.teams.find((t) => t.id === s.boxes?.[id]?.home);
   const park = host ? layoutOf(host) : undefined;

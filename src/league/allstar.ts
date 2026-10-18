@@ -59,7 +59,14 @@ export interface AllStarGame {
   host: TeamId;
   runs: Record<AllStarSide, number>;
   mvp: PlayerId | null;
-  derby: { date: string; winner: PlayerId; rounds: { id: PlayerId; first: number; final?: number }[] };
+  derby: {
+    date: string;
+    winner: PlayerId;
+    rounds: { id: PlayerId; first: number; final?: number }[];
+    /** 2.0.16: the bracket — round 1 the first (quarter-finals with eight), the last the final; home runs each, and
+        swing-offs when tied. */
+    bracket?: { round: number; a: PlayerId; b: PlayerId; ha: number; hb: number; winner: PlayerId; swingOff?: [number, number] }[];
+  };
 }
 
 export interface AllStarState {
@@ -324,18 +331,45 @@ function derby(s: LeagueState, a: AllStarState, date: string): AllStarGame['derb
     .slice(0, A.derby.field);
   if (hitters.length < 2) return null;
   const r = rng(`${s.seed}|derby|${s.year}`);
-  const swing = (p: Player) => {
+  const swing = (p: Player, outs = A.derby.outs) => {
     const chance = Math.max(A.derby.min, Math.min(A.derby.max, A.derby.base + ((p.hidden.current.power ?? 40) - 50) * A.derby.perPower));
     let hr = 0;
-    for (let outs = 0; outs < A.derby.outs; ) if (r() < chance) hr++;
-    else outs++;
+    for (let o = 0; o < outs; ) if (r() < chance) hr++;
+    else o++;
     return hr;
   };
-  const rounds = hitters.map((p) => ({ id: p.id, first: swing(p) } as { id: PlayerId; first: number; final?: number }));
-  const top = [...rounds].sort((x, y) => y.first - x.first || (s.players[y.id]!.hidden.current.power ?? 0) - (s.players[x.id]!.hidden.current.power ?? 0)).slice(0, 2);
-  for (const t of top) t.final = swing(s.players[t.id]!);
-  const winner = [...top].sort((x, y) => y.final! - x.final! || y.first - x.first)[0]!.id;
-  return { date, winner, rounds };
+  // 2.0.16 (the user's request): a bracket, the seeds by this season's home runs — 1 against 8, 4 against 5, 2 against
+  // 7, 3 against 6 — then the semi-finals and the final; a tie is settled by swing-offs of three outs each.
+  const size = hitters.length >= 8 ? 8 : hitters.length >= 4 ? 4 : 2;
+  const seeds = hitters.slice(0, size);
+  const order = size === 8 ? [0, 7, 3, 4, 1, 6, 2, 5] : size === 4 ? [0, 3, 1, 2] : [0, 1];
+  let alive = order.map((i) => seeds[i]!);
+  const bracket: NonNullable<AllStarGame['derby']['bracket']> = [];
+  const first = new Map<PlayerId, number>();
+  let finalHr: Record<PlayerId, number> = {};
+  for (let round = 1; alive.length > 1; round++) {
+    const next: Player[] = [];
+    for (let i = 0; i < alive.length; i += 2) {
+      const x = alive[i]!,
+        y = alive[i + 1]!;
+      const ha = swing(x),
+        hb = swing(y);
+      let winner = ha > hb ? x : hb > ha ? y : null;
+      let off: [number, number] | undefined;
+      for (let t = 0; !winner && t < 5; t++) {
+        off = [swing(x, 3), swing(y, 3)];
+        winner = off[0] > off[1] ? x : off[1] > off[0] ? y : null;
+      }
+      winner ??= x; // still level after five swing-offs: the higher seed
+      if (round === 1) first.set(x.id, ha).set(y.id, hb);
+      if (alive.length === 2) finalHr = { [x.id]: ha, [y.id]: hb };
+      bracket.push({ round, a: x.id, b: y.id, ha, hb, winner: winner.id, ...(off ? { swingOff: off } : {}) });
+      next.push(winner);
+    }
+    alive = next;
+  }
+  const rounds = seeds.map((p) => ({ id: p.id, first: first.get(p.id) ?? 0, ...(finalHr[p.id] !== undefined ? { final: finalHr[p.id]! } : {}) }));
+  return { date, winner: alive[0]!.id, rounds, bracket };
 }
 
 /** An All-Star hurt by the day of the game makes way for a healthy teammate (부상 대체 선수): a hitter for a hitter,

@@ -36,6 +36,7 @@ export function AllStar({ league, onPlayer, onBox, onAct }: { league: LeagueStat
                 ) })}</>
             ))}
           </p>
+          {a.game?.derby.bracket && <DerbyBracket league={league} bracket={a.game.derby.bracket} who={who} />}
           {__i18n_display(league.user && !a.elected && onAct && (
             <p class="inline-form">
               <button type="button" disabled={!!blocked} title={__i18n_displayText(blocked ?? '')} onClick={() => onAct({ kind: 'allStarCampaign' })}>{__i18n_t("ui.allStar.allStar.b3b449a4", { money: money(ALL_STAR.campaign.cost) })}</button>
@@ -154,5 +155,47 @@ function Squads({ league, who }: { league: LeagueState; who: (id: string) => pre
       )))}
       <p class="muted small">{__i18n_t("ui.allStar.squads.efc8f238")}</p>
     </div>
+  );
+}
+
+type Bracket = NonNullable<NonNullable<NonNullable<ReturnType<typeof allStarView>['state']>['game']>['derby']['bracket']>;
+
+/** 2.0.16 (the user's request): the home run derby as a bracket — each round a column, the winner of each match in bold
+    and the swing-offs under a tie. */
+function DerbyBracket({ league, bracket, who }: { league: LeagueState; bracket: Bracket; who: (id: string) => preact.JSX.Element }) {
+  const rounds = Math.max(...bracket.map((m) => m.round));
+  const title = (r: number) => (r === rounds ? __i18n_t("ui.allStar.text.adf4229b") : r === rounds - 1 ? __i18n_t("ui.allStar.text.1d0103f0") : __i18n_t("ui.allStar.text.bea9cec6"));
+  const mine = league.user?.teamId;
+  const side = (id: string, hr: number, won: boolean, off?: number) => (
+    <li class={`${won ? 'won' : ''}${league.players[id]?.teamId === mine ? ' mine' : ''}`}>
+      <span class="who">
+        {who(id)} <span class="muted small">{__i18n_display(shortName(league, league.players[id]?.teamId ?? ''))}</span>
+      </span>
+      <span class="num">
+        {hr}
+        {off !== undefined && <span class="muted small">{` (${off})`}</span>}
+      </span>
+    </li>
+  );
+  return (
+    <section class="derby-bracket" aria-label={__i18n_displayText(__i18n_t("ui.allStar.text.033513cf"))}>
+      <h3>{__i18n_t("ui.allStar.text.033513cf")}</h3>
+      <div class="derby-rounds">
+        {Array.from({ length: rounds }, (_, i) => i + 1).map((r) => (
+          <div key={r} class="derby-round">
+            <h4>{title(r)}</h4>
+            {bracket
+              .filter((m) => m.round === r)
+              .map((m, i) => (
+                <ul key={i} class="derby-match">
+                  {side(m.a, m.ha, m.winner === m.a, m.swingOff?.[0])}
+                  {side(m.b, m.hb, m.winner === m.b, m.swingOff?.[1])}
+                </ul>
+              ))}
+          </div>
+        ))}
+      </div>
+      <p class="muted small">{__i18n_t("ui.allStar.text.1ea70ab4")}</p>
+    </section>
   );
 }

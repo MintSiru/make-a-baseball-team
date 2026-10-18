@@ -30,6 +30,7 @@ import { trackingOf } from './tracking';
 import { addBatted, battedRates, battingProfile, emptyBatted, type BattingProfile } from './battedball';
 import type { FieldPos } from './engine/types';
 import { addField, emptyField, fieldingRuns, popTime, scoutedFielding, sprintSpeed, type FieldingRatings, type FieldTotals } from './fielding';
+import { nationalBox, nationalLog, nationalName, nationalTeamName } from './nationalgames';
 
 /** 리더십 from which a senior counts as a clubhouse leader. */
 const LEADER = 68;
@@ -460,16 +461,18 @@ const POS_KO: Record<string, string> = { C: __i18n_k("league.views.pOS_KO.c.c611
 const SUB_KO: Record<string, string> = { PH: __i18n_k("league.views.text.4fe00bd7"), PR: __i18n_k("league.views.text.ac615d38"), DEF: __i18n_k("league.views.text.46160651") };
 
 export function boxView(s: LeagueState, id: string) {
-  const b = s.boxes?.[id];
+  // 2.0.16: or a national team's game (kept on its event).
+  const b = s.boxes?.[id] ?? nationalBox(s, id);
   if (!b) return null;
-  const name = (pid: string) => s.players[pid]?.name ?? '?';
+  const name = (pid: string) => s.players[pid]?.name ?? nationalName(s, pid) ?? '?';
   const side = (i: 0 | 1) => {
     const teamId = i === 0 ? b.away : b.home;
+    const nation = teamOf(s, teamId) ? undefined : nationalTeamName(s, teamId);
     return {
       teamId,
-      name: teamOf(s, teamId)?.name ?? (teamId === 'dream' ? __i18n_k("league.views.side.name.58e7ade7") : teamId === 'nanum' ? __i18n_k("league.views.side.name.6f46ad29") : teamId),
-      short: shortName(s, teamId),
-      color: teamOf(s, teamId)?.color ?? (teamId === 'dream' ? '#2563eb' : teamId === 'nanum' ? '#dc2626' : '#888'),
+      name: teamOf(s, teamId)?.name ?? nation ?? (teamId === 'dream' ? __i18n_k("league.views.side.name.58e7ade7") : teamId === 'nanum' ? __i18n_k("league.views.side.name.6f46ad29") : teamId),
+      short: nation ?? shortName(s, teamId),
+      color: teamOf(s, teamId)?.color ?? (teamId === 'KOR' ? '#0f3b8c' : teamId === 'dream' ? '#2563eb' : teamId === 'nanum' ? '#dc2626' : '#888'),
       line: b.line[i],
       rhe: b.rhe[i],
       bat: (() => {
@@ -485,7 +488,7 @@ export function boxView(s: LeagueState, id: string) {
       pit: b.pit[i].map(([pid, outs, h, r, er, bb, k, hr, pitches, dec]) => ({ id: pid, name: name(pid), ip: ip(outs), h, r, er, bb, k, hr, pitches, dec: ({ W: '승', L: '패', S: __i18n_k("league.views.dec.s.c5e4d00d"), H: __i18n_k("league.views.dec.h.10a4423a") } as Record<string, string>)[dec] ?? '' })),
     };
   };
-  const log = s.pbp?.[id];
+  const log = s.pbp?.[id] ?? nationalLog(s, id);
   const plays = log?.map((ev, n) => ({ ev, text: playText(ev, `${id}-${n}`, name), half: halfLabel(ev.i, ev.top) }));
   return { id, date: b.date, innings: b.innings, att: b.att, away: side(0), home: side(1), plays: plays ?? null };
 }

@@ -2699,6 +2699,44 @@ main.page:focus {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+/* 2.0.16: the home run derby bracket */
+.derby-rounds {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.derby-round {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 8px;
+  min-width: 170px;
+}
+.derby-round h4 {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.derby-match {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+.derby-match li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 8px;
+}
+.derby-match li + li {
+  border-top: 1px solid var(--rule);
+}
+.derby-match li.won {
+  font-weight: 600;
+}
 
 /* 1.3.0: the postseason game by game */
 .live-postseason {
