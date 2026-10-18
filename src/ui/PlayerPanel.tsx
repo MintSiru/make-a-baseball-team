@@ -9,6 +9,8 @@ import { MeetingsView, SavantView } from './Savant';
 import { NationalLines } from './NationalLines';
 import { nationalLinesOf } from '../league/nationalgames';
 import { familyOf } from '../league/family';
+import { checkSwitch, otherGrade, peekOther } from '../league/twoway';
+import { isPitcher } from '../league/players';
 import { checkPlayerEdit, checkTie, EDIT, editOf, findPlayers, type PlayerEdit, type Relation } from '../league/editor';
 import { featsOf, featText } from '../league/feats';
 import { learnedNote } from '../league/newpitch';
@@ -478,6 +480,8 @@ export function PlayerPanel({
                 {card.tracking && <TrackingTable t={card.tracking} />}
               </section>
             ))}
+            {/* 2.0.12: the other side — a two-way player's, or ours to turn around. */}
+            <TwoWaySection league={league} id={p.id} onAct={onAct} />
           </div>
         ))}
 
@@ -495,6 +499,13 @@ export function PlayerPanel({
             {__i18n_display((records === 'seasons' || (records === 'mlb' && !p.mlb)) && (
               <>
                 <SeasonTable league={league} card={card} pitcher={pitcher} />
+                {/* 2.0.12: a two-way player's (or a turned-around player's) other side too. */}
+                {card.career.some((r) => !r.futures && (pitcher ? (r.bat?.pa ?? 0) > 0 : (r.pit?.outs ?? 0) > 0)) && (
+                  <>
+                    <h4>{pitcher ? __i18n_t("ui.playerPanel.text.d110c34f") : __i18n_t("ui.playerPanel.text.493471fa")}</h4>
+                    <SeasonTable league={league} card={{ ...card, career: card.career.filter((r) => (pitcher ? (r.bat?.pa ?? 0) > 0 : (r.pit?.outs ?? 0) > 0)) }} pitcher={!pitcher} />
+                  </>
+                )}
                 <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.7e2cbab5")}</p>
               </>
             ))}
@@ -1056,6 +1067,48 @@ function PlayerEditor({ league, id, onAct }: { league: LeagueState; id: string; 
         </ul>
       )}
     </details>
+  );
+}
+
+/** 2.0.12 (twoway.ts): a two-way player's other side (public), and for ours the scouts' read of it with the choices:
+    turn him around in the winter, or start or stop two-way play. */
+function TwoWaySection({ league, id, onAct }: { league: LeagueState; id: string; onAct?: (a: Action) => void }) {
+  const p = league.players[id];
+  if (!p || p.status === 'retired') return null;
+  const ours = !!league.user && p.teamId === league.user.teamId;
+  if (!p.twoWay && !ours && !p.switched?.length) return null;
+  const o = peekOther(p);
+  const convert = checkSwitch(league, id, 'convert');
+  const start = checkSwitch(league, id, p.twoWay ? 'twoWayOff' : 'twoWayOn');
+  return (
+    <section class="two-way-side">
+      <h3>{p.twoWay ? __i18n_t("ui.playerPanel.text.a48acae7") : __i18n_t("ui.playerPanel.text.097bc996")}</h3>
+      {(p.twoWay || ours) && (
+        <div class="gradebars">
+          {toolKeysFor(o.role).map((k) => (
+            <GradeBar key={k} label={__i18n_displayText(TOOL_LABELS[k])} now={o.tools[k]!} />
+          ))}
+          <GradeBar label={__i18n_t("ui.playerPanel.text.513dde66")} now={otherGrade(p)} />
+        </div>
+      )}
+      {o.velocity && isPitcher(p) === false && <p class="small">{__i18n_t("ui.playerPanel.text.558fd868", { v: o.velocity })}</p>}
+      {(p.switched ?? []).map((x) => (
+        <p key={x.year} class="muted small">
+          {x.to === 'pitcher' ? __i18n_t("ui.playerPanel.text.263832fa", { year: x.year }) : __i18n_t("ui.playerPanel.text.62c13080", { year: x.year })}
+        </p>
+      ))}
+      {ours && onAct && (
+        <div class="row-actions">
+          <button type="button" disabled={!!convert} onClick={() => onAct({ kind: 'switchSide', id, what: 'convert' })}>
+            {isPitcher(p) ? __i18n_t("ui.playerPanel.text.182d5f0f") : __i18n_t("ui.playerPanel.text.b6343da6")}
+          </button>
+          <button type="button" disabled={!!start} onClick={() => onAct({ kind: 'switchSide', id, what: p.twoWay ? 'twoWayOff' : 'twoWayOn' })}>
+            {p.twoWay ? __i18n_t("ui.playerPanel.text.fc2f4b16") : __i18n_t("ui.playerPanel.text.f6d88d41")}
+          </button>
+          <span class="muted small">{__i18n_display(convert ?? start ?? __i18n_t("ui.playerPanel.text.8ffc8419"))}</span>
+        </div>
+      )}
+    </section>
   );
 }
 
