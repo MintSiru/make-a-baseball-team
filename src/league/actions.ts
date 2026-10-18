@@ -11,6 +11,7 @@ import { playPostseason, postseasonDay, postseasonRound, startPostseason } from 
 import { playDay, startSeason } from './season';
 import type { PlayerId, TeamId } from '../model/types';
 import { makeTrade, releasePlayer, replaceForeign, signFromPool } from './trade';
+import { setTempKeep, signTemp } from './tempforeign';
 import { movePlayer, registerPlayer, setLineupCard, setRole } from './entry';
 import type { BullpenRole } from './engine/types';
 import { ensureNumbers, setNumber } from './numbers';
@@ -95,6 +96,9 @@ export type Action =
   | { kind: 'release'; id: PlayerId }
   | { kind: 'signPool'; id: PlayerId }
   | { kind: 'foreignSwap'; out: PlayerId; in: string }
+  // 2.0.18: a stand-in for an injured foreign player, and whom to keep when he is back.
+  | { kind: 'tempSign'; for: PlayerId; in: string }
+  | { kind: 'tempKeep'; id: PlayerId; keep: 'injured' | 'temp' }
   /** 1.7.0: a multi-year deal before free agency (extensions.ts). */
   | { kind: 'extend'; id: PlayerId; years: number }
   /** 1.7.0: the captain and vice-captains (captains.ts). */
@@ -325,6 +329,12 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'foreignSwap':
       if (s.user) replaceForeign(s, s.user.teamId, action.out, action.in);
+      break;
+    case 'tempSign':
+      if (s.user) signTemp(s, s.user.teamId, action.for, action.in);
+      break;
+    case 'tempKeep':
+      setTempKeep(s, action.id, action.keep);
       break;
     case 'trip':
       sendTrip(s, action.id, action.site);

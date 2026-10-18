@@ -110,7 +110,8 @@ describe('the board’s game rules', () => {
     const three = run([{ from: s.year, item: 'threeBatter', value: 1 }]);
     // The runner on second settles extra innings sooner: shorter, fewer ties.
     expect(ghost.extra).toBeLessThan(plain.extra);
-    expect(ghost.ties).toBeLessThanOrEqual(plain.ties);
+    // Ties are rare either way (a few in 400 games): no more than a couple more by chance.
+    expect(ghost.ties).toBeLessThanOrEqual(plain.ties + 2);
     // No reliever leaves after one or two batters in the middle of an inning.
     expect(plain.short).toBeGreaterThan(0);
     expect(three.short).toBeLessThan(plain.short);

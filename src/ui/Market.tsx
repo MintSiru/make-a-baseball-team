@@ -10,6 +10,7 @@ import { eulreul } from '../league/josa';
 import { ageIn, isForeign } from '../league/players';
 import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from '../league/state';
 import { booksOf } from '../league/foreigncap';
+import { checkTemp, tempEligible, tempMarket, tempPrice, tempsOf, tempWindow } from '../league/tempforeign';
 import {
   canRelease,
   canReplaceForeign,
@@ -409,6 +410,7 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
         <p class={books.spent + adds > books.cap ? 'notice warn' : 'muted'}>{__i18n_t("ui.market.foreign.34be7dc7", { year: league.year, usd: usd(books.spent), value: adds ? __i18n_k("ui.market.foreign.774cb355", { usd: usd(adds) }) : '', usd2: usd(books.cap), value2: books.spent + adds > books.cap ? __i18n_k("ui.market.foreign.72ed3aca") : '' })}</p>
       ))}
       <Help title={__i18n_t("ui.market.foreign.2909108b")}>{__i18n_t("ui.market.foreign.6558e0af", { used: used })}</Help>
+      <TempForeign league={league} onPlayer={onPlayer} onAct={onAct} />
       {__i18n_display(closed && <p class="notice">{__i18n_display(closed)}</p>)}
       <h3>{__i18n_t("ui.market.foreign.58f7280f")}</h3>
       <div class="choice-grid">
@@ -446,6 +448,74 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
         <button type="button" class="primary" disabled={!chosen || !inId || !!problem || !!closed} onClick={() => chosen && inId && onAct({ kind: 'foreignSwap', out, in: inId })}>{__i18n_display(out === OPEN_SLOT ? __i18n_t("ui.market.text.7994e59f") : __i18n_k("ui.market.foreign.c49c1d92"))}</button>
       </div>
     </>
+  );
+}
+
+/** 2.0.18 (tempforeign.ts): stand-ins for our foreign players out six weeks or more, and whom we keep when they are
+    back. */
+function TempForeign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void }) {
+  const u = league.user!;
+  const injured = tempEligible(league, u.teamId);
+  const temps = tempsOf(league, u.teamId);
+  const [forId, setFor] = useState<PlayerId | null>(null);
+  const shown = forId && injured.some((p) => p.id === forId) ? forId : (injured[0]?.id ?? null);
+  const market = useMemo(() => (shown ? tempMarket(league, u.teamId, shown) : []), [league, shown]);
+  if (!injured.length && !temps.length) return null;
+  const closed = shown ? tempWindow(league, u.teamId, shown) : null;
+  return (
+    <section class="temp-foreign">
+      <h3>{__i18n_t("ui.market.text.d98daee8")}</h3>
+      <p class="muted small">{__i18n_t("ui.market.text.fcbd7280")}</p>
+      {temps.map((t) => {
+        const temp = league.players[t.id],
+          inj = league.players[t.for];
+        if (!temp || !inj) return null;
+        return (
+          <p key={t.id} class="inline-form">
+            <span>
+              <button type="button" class="link" onClick={() => onPlayer(temp.id)}>
+                {__i18n_display(temp.name)}
+              </button>
+              {' ← '}
+              {__i18n_display(inj.name)} <span class="muted small">{__i18n_display(league.injuries[inj.id] ? __i18n_t("ui.market.text.5ea34e6b", { date: league.injuries[inj.id]!.until.slice(5) }) : '')}</span>
+            </span>
+            <label>
+              {__i18n_t("ui.market.text.1b0fe9f1")}{' '}
+              <select value={t.keep ?? 'injured'} onChange={(e) => onAct({ kind: 'tempKeep', id: t.id, keep: (e.currentTarget as HTMLSelectElement).value as 'injured' | 'temp' })}>
+                <option value="injured">{__i18n_display(__i18n_t("ui.market.text.f38011f6", { name: inj.name }))}</option>
+                <option value="temp">{__i18n_display(__i18n_t("ui.market.text.7f36fa1f", { name: temp.name, injured: inj.name }))}</option>
+              </select>
+            </label>
+          </p>
+        );
+      })}
+      {injured.length > 0 && (
+        <>
+          <div class="choice-grid">
+            {injured.map((p) => (
+              <button key={p.id} type="button" class="choice" aria-pressed={shown === p.id} onClick={() => setFor(p.id)}>
+                <strong>{__i18n_display(p.name)}</strong>
+                <span class="muted">{__i18n_display(__i18n_t("ui.market.text.d30bf57d", { part: league.injuries[p.id]?.part ?? __i18n_t("ui.market.text.501fb802"), date: league.injuries[p.id]?.until.slice(5) ?? '' }))}</span>
+              </button>
+            ))}
+          </div>
+          {closed && <p class="notice">{__i18n_display(closed)}</p>}
+          {shown && (
+            <PickList
+              league={league}
+              players={market}
+              onPlayer={() => undefined}
+              extra={{ title: __i18n_t("ui.market.text.2a2b8688"), value: (p) => __i18n_t("ui.market.text.6698e588", { usd: usd(tempPrice(league, p, shown)), archetype: p.archetype }), sort: (p) => tempPrice(league, p, shown) }}
+              action={(p) => (
+                <button type="button" disabled={!!checkTemp(league, u.teamId, shown, p.id)} onClick={() => onAct({ kind: 'tempSign', for: shown, in: p.id })}>
+                  {__i18n_t("ui.market.text.ef53c2a6")}
+                </button>
+              )}
+            />
+          )}
+        </>
+      )}
+    </section>
   );
 }
 

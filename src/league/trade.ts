@@ -364,7 +364,7 @@ export function releasePlayer(s: LeagueState, id: PlayerId) {
 }
 
 /** A foreign player his club lets go: onto the market of KBO-experienced foreigners, or home. */
-function leaveForeign(s: LeagueState, p: Player, from: TeamId | null = p.teamId) {
+export function leaveForeign(s: LeagueState, p: Player, from: TeamId | null = p.teamId) {
   s.pool = (s.pool ?? []).filter((x) => x !== p.id);
   s.waivers = (s.waivers ?? []).filter((w) => w.id !== p.id);
   if (from) p.teamId = from;
@@ -515,6 +515,7 @@ export function canReplaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId,
   }
   const old = s.players[out];
   if (!old || old.teamId !== teamId || !isForeign(old)) return __i18n_k("league.trade.canReplaceForeign.e3af4ea8");
+  if (old.contract?.temp) return __i18n_k("league.trade.text.2a130e0c");
   const cand = foreignMarket(s, teamId).find((p) => p.id === inId);
   if (!cand) return __i18n_k("league.trade.canReplaceForeign.668bfef3");
   if (!!cand.origin.asiaQuota !== !!old.origin.asiaQuota) return __i18n_k("league.trade.canReplaceForeign.4d3ebfe2");
@@ -555,8 +556,10 @@ export function replaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, in
 export function aiForeignChanges(s: LeagueState, date: string, r: () => number) {
   for (const teamId of firstTeamIds(s)) {
     if (teamId === s.user?.teamId || foreignWindow(s, teamId)) continue;
+    // 2.0.18: not a stand-in, nor a player with one (tempforeign.ts).
+    const covered = new Set((s.tempForeign ?? []).flatMap((t) => [t.id, t.for]));
     const bad = orgPlayers(s, teamId)
-      .filter(isForeign)
+      .filter((p) => isForeign(p) && !covered.has(p.id))
       .find((p) => {
         const line = s.lines[p.id];
         const inj = s.injuries[p.id];
