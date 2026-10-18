@@ -569,9 +569,11 @@ export function lineupView(s: LeagueState, teamId: TeamId, vs: 'L' | 'R') {
 
 type RecordRow = { id: PlayerId; name: string; team: string; year?: number; value: string; key: number };
 
-export function recordRoom(s: LeagueState) {
+/** The records room: single-season and career leaders; with `teamId` (2.0.5), a club's own — its seasons only, a
+    career counting what he did for it — and its career average and ERA leaders. */
+export function recordRoom(s: LeagueState, teamId?: TeamId) {
   const seasons: { p: Player; c: SeasonRecord }[] = [];
-  for (const p of Object.values(s.players)) for (const c of p.career) if (!c.level) seasons.push({ p, c });
+  for (const p of Object.values(s.players)) for (const c of p.career) if (!c.level && (!teamId || c.teamId === teamId)) seasons.push({ p, c });
   const top = (rows: RecordRow[], n: number, low = false) => rows.sort((a, b) => (low ? a.key - b.key : b.key - a.key)).slice(0, n);
   const season = (label: string, pick: (c: SeasonRecord, p: Player) => number | null, show: (v: number) => string, low = false) => ({
     label,
@@ -593,11 +595,16 @@ export function recordRoom(s: LeagueState) {
     t.last = c.teamId;
     totals.set(p.id, t);
   }
-  const career = (label: string, pick: (t: { bat: BatTotals; pit: PitTotals; war: number }) => number, show: (v: number) => string) => ({
+  // A pick of null leaves him off (short of a rate's bar); `low`: the smallest first.
+  const career = (label: string, pick: (t: { bat: BatTotals; pit: PitTotals; war: number }) => number | null, show: (v: number) => string, low = false) => ({
     label,
     rows: top(
-      [...totals.values()].map((t) => ({ id: t.p.id, name: t.p.name, team: shortName(s, t.last), value: show(pick(t)), key: pick(t) })).filter((r) => r.key > 0),
+      [...totals.values()].flatMap((t) => {
+        const v = pick(t);
+        return v == null || (!low && v <= 0) ? [] : [{ id: t.p.id, name: t.p.name, team: shortName(s, t.last), value: show(v), key: v }];
+      }),
       10,
+      low,
     ),
   });
   const n = (v: number) => String(v);
@@ -625,6 +632,13 @@ export function recordRoom(s: LeagueState) {
       career('세이브', (t) => t.pit.sv, (v) => __i18n_k("league.views.recordRoom.career.6bef80d8", { v: v })),
       career(__i18n_k("league.views.recordRoom.career.9329045a"), (t) => t.pit.hld, (v) => __i18n_k("league.views.recordRoom.career.6bef80d8", { v: v })),
       career('WAR', (t) => Math.round(t.war * 10) / 10, (v) => v.toFixed(1)),
+      ...(teamId
+        ? [
+            // 2.0.5: rates over a long stay (2,000 plate appearances, 500 innings).
+            career(__i18n_k("league.views.text.05617cd3"), (t) => (t.bat.pa >= 2000 ? avg(t.bat) : null), fmt3),
+            career(__i18n_k("league.views.text.f0630841"), (t) => (t.pit.outs >= 1500 ? era(t.pit) : null), (v) => v.toFixed(2), true),
+          ]
+        : []),
     ],
   };
 }
