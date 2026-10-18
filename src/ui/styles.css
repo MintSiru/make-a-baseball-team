@@ -3414,3 +3414,9 @@ button.danger {
   gap: 8px;
   font-size: 13px;
 }
+/* 2.0.14: two-way players stand out wherever they are listed. */
+.tag.two-way {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}

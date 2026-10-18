@@ -385,6 +385,8 @@ export function PlayerPanel({
             <h2 id="player-name" tabIndex={-1} ref={heading}>
               {__i18n_display(p.name)}
               {__i18n_display(p.contract?.kind === 'development' && <span class="tag">{__i18n_t("ui.playerPanel.playerPanel.818f3b79")}</span>)}
+              {/* 2.0.14: a two-way player, plain to see. */}
+              {p.twoWay && <span class="tag two-way">{__i18n_t("ui.playerPanel.text.62cb0192")}</span>}
             </h2>
             {__i18n_display(nickname && <p class="profile-nickname" title={__i18n_displayText(nicknameWhy(p) ?? '')}>“{__i18n_display(nickname)}”</p>)}
           </div>

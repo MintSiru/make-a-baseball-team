@@ -210,6 +210,7 @@ export function PlayerSearch({
                       </button>
                       {__i18n_display(p.contract?.kind === 'development' && <span class="tag">{__i18n_t("ui.playerSearch.playerSearch.818f3b79")}</span>)}
                       {__i18n_display(isForeign(p) && <span class="tag">{__i18n_t("ui.playerSearch.playerSearch.5bd804b7")}</span>)}
+                      {p.twoWay && <span class="tag two-way">{__i18n_t("ui.playerSearch.text.62cb0192")}</span>}
                     </td>
                     <td>{__i18n_display(pool ? __i18n_k("ui.playerSearch.playerSearch.50b7405a") : shortName(league, p.teamId!))}</td>
                     <td>

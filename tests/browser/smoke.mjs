@@ -628,10 +628,21 @@ try {
   // 0.12: the general manager gives him a number (a teammate wearing it swaps).
   await page.getByRole('tab', { name: '정보' }).click();
   const numberBox = page.getByRole('spinbutton', { name: '등번호' });
-  await numberBox.fill('77');
-  await page.locator('.number-form button').click();
-  await page.waitForFunction(() => document.querySelector('.profile-number')?.textContent === '77');
-  check((await page.locator('.profile-number').textContent()) === '77', 'the uniform number can be set');
+  // The league's seed is random: the number may be his already or retired by the club, so try until one is free.
+  let wanted = null;
+  for (const n of ['77', '78', '79', '86', '87', '88', '93', '94', '95', '96']) {
+    await numberBox.fill(n);
+    if (await page.locator('.number-form button').isEnabled()) {
+      wanted = n;
+      break;
+    }
+  }
+  check(wanted !== null, 'a free uniform number can be chosen');
+  if (wanted) {
+    await page.locator('.number-form button').click();
+    await page.waitForFunction((n) => document.querySelector('.profile-number')?.textContent === n, wanted);
+    check((await page.locator('.profile-number').textContent()) === wanted, 'the uniform number can be set');
+  }
   // 2.0.9: the editor — his hometown changes, his abilities do not.
   await page.locator('.player-editor summary').click();
   const town = page.locator('.player-editor .editor-fields input').nth(1);

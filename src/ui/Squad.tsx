@@ -38,6 +38,7 @@ function Name({ r, onPlayer }: { r: Row; onPlayer: (id: string) => void }) {
       )}
       {__i18n_display(r.foreign && <span class="tag">{__i18n_t("ui.squad.name.5bd804b7")}</span>)}
       {__i18n_display(r.development && <span class="tag">{__i18n_t("ui.squad.name.818f3b79")}</span>)}
+      {r.twoWay && <span class="tag two-way">{__i18n_t("ui.squad.text.62cb0192")}</span>}
       {__i18n_display(r.injured && (
         <span class="tag warn" title={__i18n_displayText(r.injury)}>{__i18n_t("ui.squad.name.501fb802")}</span>
       ))}

@@ -8385,5 +8385,8 @@
   "ui.settings.text.4318792a": "規則を直接決める",
   "ui.settings.text.46bafba5": "理事会をオフにすると、GMがリーグの規則を決めます。変更は{season}シーズンから適用されます。",
   "ui.settings.text.8f13d839": "オン",
-  "ui.settings.text.66770937": "オフ"
+  "ui.settings.text.66770937": "オフ",
+  "ui.squad.text.62cb0192": "二刀流",
+  "ui.playerPanel.text.62cb0192": "二刀流",
+  "ui.playerSearch.text.62cb0192": "二刀流"
 }

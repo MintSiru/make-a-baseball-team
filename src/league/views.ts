@@ -154,6 +154,8 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
       number: p.numberTeam === teamId ? (p.number ?? null) : null,
       foreign: isForeign(p),
       development: isDevelopment(p),
+      /** 2.0.14: a two-way player (pitches and hits, twoway.ts). */
+      twoWay: p.twoWay,
       /** 1.7.0: our captain ('C') or a vice-captain ('VC'). */
       captain: u?.captains?.captain === id ? ('C' as const) : u?.captains?.vice.includes(id) ? ('VC' as const) : null,
       pitcher: isPitcher(p),
