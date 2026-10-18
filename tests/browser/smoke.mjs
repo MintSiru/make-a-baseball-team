@@ -606,6 +606,13 @@ try {
   await page.locator('.number-form button').click();
   await page.waitForFunction(() => document.querySelector('.profile-number')?.textContent === '77');
   check((await page.locator('.profile-number').textContent()) === '77', 'the uniform number can be set');
+  // 2.0.9: the editor — his hometown changes, his abilities do not.
+  await page.locator('.player-editor summary').click();
+  const town = page.locator('.player-editor .editor-fields input').nth(1);
+  await town.fill('한양');
+  await page.locator('.player-editor .row-actions .primary').click();
+  await page.waitForFunction(() => [...document.querySelectorAll('.dialog dd')].some((d) => d.textContent === '한양'), null, { timeout: 10_000 }).catch(() => undefined);
+  check(await page.evaluate(() => [...document.querySelectorAll('.dialog dd')].some((d) => d.textContent === '한양')), 'the editor changes his hometown');
   await page.screenshot({ path: join(shots, 'player.png') });
   await page.getByRole('tab', { name: '기록' }).click();
   const views = page.getByRole('group', { name: '기록 보기' });

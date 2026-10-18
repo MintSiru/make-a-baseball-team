@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { useFocusTrap } from './modal';
 import { MeetingsView, SavantView } from './Savant';
 import { familyOf } from '../league/family';
+import { checkPlayerEdit, checkTie, EDIT, editOf, findPlayers, type PlayerEdit, type Relation } from '../league/editor';
 import { featsOf, featText } from '../league/feats';
 import { learnedNote } from '../league/newpitch';
 import { TOOL_LABELS } from '../draftroom';
@@ -18,7 +19,7 @@ import { checkNickname, NICKNAME_MAX, nicknameOf, nicknameWhy } from '../league/
 import { checkInspect } from '../league/scandals';
 import { SCANDAL } from '../league/tuning';
 import type { LeagueState } from '../league/state';
-import { playerCard, positionLabel, rateContextFor, rates, type PlayerCard } from '../league/views';
+import { playerCard, positionLabel, rateContextFor, rates, shortName, type PlayerCard } from '../league/views';
 import { usdTotal } from '../league/contracts';
 import { fanAffinity, hometownOf, isMarried } from '../league/life';
 import { SITES } from '../league/training';
@@ -703,6 +704,8 @@ export function PlayerPanel({
                 </ul>
               </>
             ))}
+            {/* 2.0.9: the editor (no abilities). */}
+            {onAct && <PlayerEditor key={`${p.id}|${p.name}|${p.birthplace}|${p.education.school}|${p.nicknameOwn ?? ''}`} league={league} id={p.id} onAct={onAct} />}
           </div>
         ))}
 
@@ -945,6 +948,106 @@ function NicknameField({ league, id, onAct }: { league: LeagueState; id: string;
       </button>
       <span class="muted small">{__i18n_display(problem ?? (fans ? __i18n_t("ui.playerPanel.text.b88d4106", { fans, why: nicknameWhy({ ...p, nicknameOwn: undefined }) ?? '', year: p.nickname!.year }) : __i18n_t("ui.playerPanel.text.f6fc8202")))}</span>
     </p>
+  );
+}
+
+/** 2.0.9 (editor.ts): any player's name, hometown, school and nickname, and his family ties — not his abilities. */
+function PlayerEditor({ league, id, onAct }: { league: LeagueState; id: string; onAct: (a: Action) => void }) {
+  const p = league.players[id]!;
+  const [draft, setDraft] = useState<PlayerEdit>(() => editOf(p));
+  const [rel, setRel] = useState<Relation>('brother');
+  const [query, setQuery] = useState('');
+  const problem = checkPlayerEdit(league, id, draft);
+  const changed = JSON.stringify(draft) !== JSON.stringify(editOf(p));
+  const set = (k: keyof PlayerEdit, v: string) => setDraft((d) => ({ ...d, [k]: v }));
+  const fans = p.nickname ? nicknameOf(league, { ...p, nicknameOwn: undefined }) : null;
+  const fields: [keyof PlayerEdit, string, number][] = [
+    ['name', __i18n_t("ui.playerPanel.text.9aa18e50"), EDIT.name.max],
+    ['birthplace', __i18n_t("ui.playerPanel.text.71479e57"), EDIT.birthplace.max],
+    ['school', __i18n_t("ui.playerPanel.text.add2f441"), EDIT.school.max],
+    ['nickname', __i18n_t("ui.playerPanel.text.0aceafa3"), NICKNAME_MAX],
+  ];
+  const relations: [Relation, string][] = [
+    ['brother', __i18n_t("ui.playerPanel.text.fb1a4346")],
+    ['twin', __i18n_t("ui.playerPanel.text.f6c8856c")],
+    ['father', __i18n_t("ui.playerPanel.text.7e3ccf68")],
+    ['son', __i18n_t("ui.playerPanel.text.bb28b624")],
+  ];
+  const ties = familyOf(league, id);
+  const found = findPlayers(league, query, id);
+  return (
+    <details class="player-editor">
+      <summary>{__i18n_t("ui.playerPanel.text.6caa09f7")}</summary>
+      <p class="muted small">{__i18n_t("ui.playerPanel.text.4f0d937d")}</p>
+      <div class="editor-fields">
+        {fields.map(([k, label, max]) => (
+          <label key={k}>
+            {__i18n_display(label)}
+            <input type="text" value={draft[k]} maxLength={max} placeholder={k === 'nickname' ? (fans ?? '') : ''} onInput={(e) => set(k, (e.currentTarget as HTMLInputElement).value)} />
+          </label>
+        ))}
+      </div>
+      {problem && (
+        <p class="notice warn small" role="alert">
+          {__i18n_display(problem)}
+        </p>
+      )}
+      <div class="row-actions">
+        <button type="button" class="primary" disabled={!changed || !!problem} onClick={() => onAct({ kind: 'editPlayer', id, edit: draft })}>
+          {__i18n_t("ui.playerPanel.text.e01dd02f")}
+        </button>
+        <button type="button" disabled={!changed} onClick={() => setDraft(editOf(p))}>
+          {__i18n_t("ui.playerPanel.text.8bd9b45e")}
+        </button>
+      </div>
+      <h4>{__i18n_t("ui.playerPanel.text.38576d81")}</h4>
+      {ties.length > 0 ? (
+        <ul class="plain small editor-ties">
+          {ties.map((f) => (
+            <li key={f.id}>
+              {__i18n_displayText(f.relation)} {f.name}{' '}
+              <button type="button" class="link" onClick={() => onAct({ kind: 'familyTie', id, other: f.id, rel: null })}>
+                {__i18n_t("ui.playerPanel.text.d1278f7c")}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="muted small">{__i18n_t("ui.playerPanel.text.c2b7072b")}</p>
+      )}
+      <p class="inline-form">
+        <label>
+          {__i18n_t("ui.playerPanel.text.84be6e37")}
+          <select value={rel} onChange={(e) => setRel((e.currentTarget as HTMLSelectElement).value as Relation)}>
+            {relations.map(([k, label]) => (
+              <option key={k} value={k}>
+                {__i18n_display(label)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <input type="search" value={query} placeholder={__i18n_t("ui.playerPanel.text.869e9874")} aria-label={__i18n_t("ui.playerPanel.text.869e9874")} onInput={(e) => setQuery((e.currentTarget as HTMLInputElement).value)} />
+      </p>
+      {found.length > 0 && (
+        <ul class="plain small editor-found">
+          {found.map((o) => {
+            const why = checkTie(league, id, o.id, rel);
+            return (
+              <li key={o.id}>
+                {o.name}{' '}
+                <span class="muted">
+                  ({o.birthday.slice(0, 4)} · {__i18n_display(o.status === 'retired' ? __i18n_t("ui.playerPanel.text.5b170d3c") : shortName(league, o.teamId))})
+                </span>{' '}
+                <button type="button" disabled={!!why} onClick={() => onAct({ kind: 'familyTie', id, other: o.id, rel })}>
+                  {__i18n_t("ui.playerPanel.text.9e4bc2a2")}
+                </button>
+                {why && <span class="muted"> {__i18n_display(why)}</span>}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </details>
   );
 }
 
