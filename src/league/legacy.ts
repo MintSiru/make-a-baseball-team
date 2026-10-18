@@ -105,6 +105,8 @@ export interface NationalRow {
   ours: { id: PlayerId; name: string }[];
   /** 2.0.11: the event's best hitter and pitcher by their lines (absent before 2.0.11). */
   stars: { id: PlayerId; name: string; text: string }[];
+  /** 2.0.17: who managed it ('' before 2.0.17). */
+  coach: string;
 }
 
 /** 2.0.11: an event's best hitter (OPS, eight plate appearances or more) and pitcher (ERA, three innings or more). */
@@ -141,6 +143,8 @@ export function nationalView(s: LeagueState) {
         clubs: [...count].map(([team, n]) => ({ team, n })).sort((a, b) => Number(a.team === '그 밖') - Number(b.team === '그 밖') || b.n - a.n),
         ours: ours.map((id) => ({ id, name: s.players[id]!.name })),
         stars: nationalStars(s, e),
+        // 2.0.17: a full-time manager or a club's (겸임).
+        coach: !e.coach ? '' : e.coach.teamId ? __i18n_k("league.legacy.text.bbd1335b", { club: shortName(s, e.coach.teamId), name: e.coach.name ? ` (${e.coach.name})` : '' }) : __i18n_k("league.legacy.text.b62dac0f"),
       };
     })
     .reverse();

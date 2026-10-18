@@ -17,6 +17,7 @@ import { clubState } from './fans';
 import { INTERNATIONAL, announceDate, eventById, eventsIn, exempts, finishText, ODDS, timing, type Finish, type InternationalEvent } from './international';
 import { iga } from './josa';
 import { playNationalGames } from './nationalgames';
+import { fullTimeManager } from './board';
 import { addNews } from './news';
 import { isForeign, isPitcher } from './players';
 import type { Decision, LeagueState, NationalEntry } from './state';
@@ -83,6 +84,14 @@ export function finishEvent(s: LeagueState, e: InternationalEvent) {
   if (entry.finish) return entry;
   const r = rng(`${s.seed}|international|${e.id}`);
   let x = r();
+  // 2.0.17 (board.ts): a club's manager leading the team as well (겸임) has less time to prepare it than a full-time
+  // one: a little further down the table of finishes. He is last season's champion's.
+  if (!fullTimeManager(e.year)) {
+    x = Math.min(0.9999, x + N.concurrentManager);
+    const champ = s.history.find((h) => h.year === e.year - 1)?.champion ?? null;
+    const name = champ ? s.clubs?.[champ]?.staff?.manager?.name : undefined;
+    entry.coach = { teamId: champ, ...(name ? { name } : {}) };
+  } else entry.coach = { teamId: null };
   // The real result only for events before the game starts (1.6.0: a game from 2016 plays the 2017 WBC itself).
   const finish: Finish = (e.year < startYear() ? e.finish : null) ?? ODDS[e.kind].find(([, w]) => (x -= w) < 0)?.[0] ?? ODDS[e.kind].at(-1)![0];
   entry.finish = finish;

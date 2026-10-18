@@ -43,7 +43,7 @@ const t = (p: Player, k: string) => (p.hidden.current as Record<string, number>)
 /** 2.0.3: range, hands and arm at a position, `off` lower for playing away from his own; a catcher's game-calling. */
 function fieldParts(p: Player, off: number, pos: FieldPos) {
   const f = fieldingOf(p);
-  return { range: f.range - off, hands: f.hands - off, arm: f.arm - off, ...(pos === 'C' && f.lead !== null ? { lead: f.lead } : {}) };
+  return { range: f.range - off, hands: f.hands - off, arm: f.arm - off, ...(pos === 'C' && f.lead !== null ? { lead: f.lead } : {}), ...(pos === 'C' && f.frame !== null ? { frame: f.frame } : {}) };
 }
 const pub = (p: Player, k: string) => (p.scouting.tools as Record<string, number>)[k] ?? 30;
 

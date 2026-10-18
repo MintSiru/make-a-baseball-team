@@ -52,7 +52,7 @@ import { alumniDay } from './alumni';
 import { familyDay, familyGame, pruneFamilies } from './family';
 import { featsGame } from './feats';
 import { boardValue } from './era';
-import { boardLeagues } from './board';
+import { boardLeagues, framingWeight } from './board';
 
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
@@ -285,7 +285,9 @@ export function playGame(s: LeagueState, homeId: TeamId, awayId: TeamId, id: str
   // 2.0.2: the home park's fences (layout.ts).
   const host = s.teams.find((t) => t.id === homeId);
   const layout = host ? layoutOf(host) : undefined;
-  return simulateGame({ gameId: id, home, away, maxInnings, park, balls, ...(layout ? { layout } : {}), ...(ghost ? { ghostFrom: 10 } : {}), ...(three ? { threeBatter: true } : {}) }, gameRng(s, id), log);
+  // 2.0.17: the umpires (no ABS or challenges) let a catcher's framing count.
+  const framing = framingWeight(s.year);
+  return simulateGame({ gameId: id, home, away, maxInnings, park, balls, ...(layout ? { layout } : {}), ...(ghost ? { ghostFrom: 10 } : {}), ...(three ? { threeBatter: true } : {}), ...(framing ? { framing } : {}) }, gameRng(s, id), log);
 }
 
 /** Plays every game on the next date. Returns false when the regular season is over. */
