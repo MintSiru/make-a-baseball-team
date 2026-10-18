@@ -78355,5 +78355,35 @@
     "line": 511,
     "params": {},
     "locations": []
+  },
+  "ui.displaySettings.text.651a7bbc": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 166,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.4e3e0efc": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 169,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.f712f9a4": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 172,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.7254ecbf": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 177,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.d925e49c": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 187,
+    "params": {},
+    "locations": []
   }
 }

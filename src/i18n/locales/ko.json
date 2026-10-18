@@ -8486,5 +8486,10 @@
   "ui.market.text.501fb802": "부상",
   "ui.market.text.2a2b8688": "대체 계약",
   "ui.market.text.6698e588": "{usd} · {archetype}",
-  "ui.market.text.ef53c2a6": "대체 영입"
+  "ui.market.text.ef53c2a6": "대체 영입",
+  "ui.displaySettings.text.651a7bbc": "화폐 가치(인플레이션)",
+  "ui.displaySettings.text.4e3e0efc": "2026년 원(실질)",
+  "ui.displaySettings.text.f712f9a4": "그해 물가(명목)",
+  "ui.displaySettings.text.7254ecbf": "2026년부터 해마다 물가 상승률",
+  "ui.displaySettings.text.d925e49c": "명목으로 보면 금액이 그해 물가로 바뀝니다: 2026년 전은 그때의 물가(1982년은 지금의 약 5분의 1), 그 뒤로는 고른 비율로 해마다 오릅니다. 게임 속 경제와 균형은 그대로이고, 금액을 입력하는 칸도 같은 물가로 받습니다."
 }

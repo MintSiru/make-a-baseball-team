@@ -35,7 +35,7 @@ export function Payroll({ league, onPlayer }: { league: LeagueState; onPlayer: (
       <p class="muted">{__i18n_t('ui.payroll.text.e528b78e')}</p>
       {book.cap && (
         <p>
-          {__i18n_t('ui.payroll.text.2a7e1be8', { season: book.seasons[0]!, total: money(book.cap.total), cap: money(book.cap.cap) })}
+          {__i18n_t('ui.payroll.text.2a7e1be8', { season: book.seasons[0]!, total: money(book.cap.total, book.seasons[0]), cap: money(book.cap.cap, book.seasons[0]) })}
           {book.cap.floor !== null && __i18n_t('ui.payroll.text.e7c9e70c', { floor: money(book.cap.floor) })}{' '}
           <strong class={book.cap.total > book.cap.cap ? 'minus' : 'plus'}>
             {book.cap.total > book.cap.cap
@@ -73,7 +73,7 @@ export function Payroll({ league, onPlayer }: { league: LeagueState; onPlayer: (
                 <td>{__i18n_display(r.kind)}</td>
                 {r.pay.map((x, i) => (
                   <td key={i} class={`num${x ? '' : ' muted'}`}>
-                    {x ? moneyShort(x) : '-'}
+                    {x ? moneyShort(x, book.seasons[i]) : '-'}
                   </td>
                 ))}
                 <td class="num">{r.until ?? '-'}</td>
@@ -91,7 +91,7 @@ export function Payroll({ league, onPlayer }: { league: LeagueState; onPlayer: (
               </td>
               {book.totals.map((x, i) => (
                 <td key={i} class="num strong">
-                  {moneyShort(x)}
+                  {moneyShort(x, book.seasons[i])}
                 </td>
               ))}
               <td colSpan={3} />

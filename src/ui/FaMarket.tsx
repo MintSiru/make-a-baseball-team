@@ -35,7 +35,7 @@ import { FA } from '../league/tuning';
 import { positionLabel, shortName, statLine } from '../league/views';
 import type { FaPromise, PlayerId } from '../model/types';
 import { salaryCapFor } from '../rules/kbo2026';
-import { money, moneyShort, parseEok } from './format';
+import { money, moneyShort, parseEok, shownLevel } from './format';
 import { gradeClass, shownFuture } from './grades';
 import { positionKey, useSort } from './sort';
 
@@ -308,13 +308,16 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
 /** A money field in 억 that keeps what is typed until it is a number (a phone keyboard types "12." on the way to
     "12.5"), with one-tap steps either side. */
 function MoneyField({ label, value, onChange, step = 1, hint }: { label: string; value: number; onChange: (manwon: number) => void; step?: number; hint?: string }) {
-  const show = (v: number) => String(eok(v));
+  // 2.0.19: typed and shown at the year's prices when amounts are nominal (format.ts), kept in today's won.
+  const level = shownLevel();
+  const show = (v: number) => String(eok(v * level));
+  const real = (x: number) => manwon(x / level);
   const [text, setText] = useState(show(value));
   const [editing, setEditing] = useState(false);
   useEffect(() => {
     if (!editing) setText(show(value));
   }, [value, editing]);
-  const bump = (d: number) => onChange(manwon(Math.max(0, eok(value) + d)));
+  const bump = (d: number) => onChange(real(Math.max(0, eok(value * level) + d)));
   return (
     <div class="money-field">
       <span>
@@ -334,14 +337,14 @@ function MoneyField({ label, value, onChange, step = 1, hint }: { label: string;
           onBlur={() => {
             setEditing(false);
             const x = parseEok(text);
-            if (x !== null) onChange(manwon(x));
+            if (x !== null) onChange(real(x));
             else setText(show(value));
           }}
           onInput={(e) => {
             const v = (e.currentTarget as HTMLInputElement).value;
             setText(v);
             const x = parseEok(v);
-            if (x !== null && !v.endsWith('.')) onChange(manwon(x));
+            if (x !== null && !v.endsWith('.')) onChange(real(x));
           }}
           onKeyDown={(e) => e.key === 'Enter' && (e.currentTarget as HTMLInputElement).blur()}
         />
