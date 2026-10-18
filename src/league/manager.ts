@@ -1,4 +1,5 @@
 import { rulesFor } from '../rules/history';
+import { asOther } from './twoway';
 import { fieldingOf } from './fielding';
 import { battingProfile } from './battedball';
 import { k as __i18n_k } from '../i18n/index';
@@ -224,7 +225,12 @@ export interface LineupOptions {
 const MUST_PLAY = 10_000;
 
 export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none, pitchersBat = false, vs?: 'L' | 'R', opts: LineupOptions = {}): BatterIn[] {
-  let hitters = ids.map((id) => s.players[id]!).filter((p) => !isPitcher(p) && available(s, p.id));
+  // 2.0.12: a two-way pitcher bats too (his bat in place of his arm, twoway.ts).
+  let hitters = ids
+    .map((id) => s.players[id]!)
+    .map((p) => (isPitcher(p) && p.twoWay ? asOther(p) : p))
+    .filter((p) => !isPitcher(p) && available(s, p.id));
+  const byId = new Map(hitters.map((p) => [p.id, p]));
   // The general manager's fixed spots, for the players who can play (and play once, at one position each). 1.7.0: a
   // spot may fix the order only (no position), and a player may be fixed at a position only (`places`).
   const fixed = new Map<number, LineupSlot>();
@@ -293,7 +299,7 @@ export function lineupFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none
   const mustPlay = new Set([...fixed.values()].filter((x) => !placed.has(x.id)).map((x) => x.id));
   const pick = assign(openPos.map((pos) => free.map((p) => fieldValue(p, pos) + (mustPlay.has(p.id) ? MUST_PLAY : 0))));
   const slots = [
-    ...[...placed].map(([id, pos]) => ({ p: s.players[id]!, pos })),
+    ...[...placed].map(([id, pos]) => ({ p: byId.get(id) ?? s.players[id]!, pos })),
     ...openPos.map((pos, i) => ({ p: free[pick[i]!], pos })).filter((x): x is { p: Player; pos: FieldPos } => !!x.p),
   ];
 
@@ -481,7 +487,11 @@ export function penRoles(s: LeagueState, teamId: TeamId, relievers: Player[], pr
 
 /** Relievers who can pitch today, with their bullpen roles. */
 export function bullpenFor(s: LeagueState, teamId: TeamId, ids: PlayerId[], date: string, exclude: Set<PlayerId>, prefer: Prefer = none, allOut = false): RelieverIn[] {
-  const pen = ids.map((id) => s.players[id]!).filter((p) => isPitcher(p) && !exclude.has(p.id));
+  // 2.0.12: a two-way hitter pitches in relief (his arm, twoway.ts).
+  const pen = ids
+    .map((id) => s.players[id]!)
+    .map((p) => (!isPitcher(p) && p.twoWay ? asOther(p) : p))
+    .filter((p) => isPitcher(p) && !exclude.has(p.id));
   const roles = penRoles(s, teamId, pen, prefer);
   const arms = pen.filter((p) => available(s, p.id));
   const rested = arms.filter((p) => {

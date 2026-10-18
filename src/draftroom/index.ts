@@ -71,6 +71,8 @@ export interface DraftProspect {
   record: AmateurRecord;
   awards: string[];
   twoWay: boolean;
+  /** The other side (a pitcher's bat, a hitter's arm): hidden and the scouts' tools. */
+  alt?: { role: Role; trueTools: Tools; potentialTools: Tools; tools: Tools; velocity: number | null };
   proExperience: { level: string; [k: string]: unknown } | null;
   // Hidden ability (continuous)
   trueTools: Tools;
@@ -128,6 +130,16 @@ export const DRAFT_GROWTH = (
       growth: { speedShare: number; noise: number; minGain: number; maxGain: number; ageTaper: { floor: number }; agingPerYear: { speed: number; other: number } };
       health: { growthDays: number; heavyInjuryDays: number; heavyInjuryGrowthPenalty: number };
       focus: { chosen: number; others: number };
+    };
+  }
+).TUNING;
+
+/** 2.0.12 (league/twoway.ts): Draft Room's other-side talent and velocity constants. */
+export const TUNING = (
+  Tuning as unknown as {
+    TUNING: {
+      altTalent: { base: [number, number]; athleticism: number; twoWay: { below: [number, number] } };
+      generation: { velocity: { base: number; pivot: number; perStuff: number; min: number; max: number } };
     };
   }
 ).TUNING;

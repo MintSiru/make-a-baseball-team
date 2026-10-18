@@ -615,6 +615,8 @@ try {
   await page.locator('.squad-table .link').first().click();
   await page.getByRole('dialog').waitFor();
   check((await page.locator('.velocity').count()) === 1, 'pitcher profile shows velocity');
+  // 2.0.12: our player's other side, to turn him around or start two-way play.
+  check((await page.locator('.two-way-side').count()) === 1, 'our player shows his other side');
   // 1.4.0: one part at a time; 1.1.0: our coaches' read of his hidden side, and the growth type among it.
   check((await page.locator('.trait-report').count()) === 0, 'the player page shows one part at a time');
   await page.getByRole('tab', { name: '코치 평가' }).click();

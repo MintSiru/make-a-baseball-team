@@ -289,6 +289,10 @@ export interface Player {
   /** 2.0.8 (newpitch.ts): pitches he learned over a winter — the winter, and the grade against his 변화구 (rising for a
       few winters). */
   learned?: { type: import('../league/pitches').PitchType; year: number; offset: number }[];
+  /** 2.0.12 (twoway.ts): his other side (a pitcher's bat, a hitter's arm), kept once known, and the winters he was
+      turned around. */
+  other?: import('../league/twoway').OtherSide;
+  switched?: { year: number; to: 'pitcher' | 'hitter' }[];
   career: SeasonRecord[];
   /** 1.4.0: postseason lines, one a year he played in it (not in `career`, so season totals stay as they were). */
   post?: PostRecord[];

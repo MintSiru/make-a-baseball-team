@@ -33,6 +33,8 @@ export function fromDraftProspect(p: DraftProspect, draftYear: number, poolSeed:
     personality: p.personality,
     velocity: p.velocity,
     twoWay: p.twoWay,
+    // 2.0.12: a two-way prospect brings his other side (twoway.ts draws anyone else's when needed).
+    ...(p.twoWay && p.alt ? { other: { role: p.alt.role, current: p.alt.trueTools, potential: p.alt.potentialTools, tools: p.alt.tools, velocity: p.alt.velocity } } : {}),
     origin: { kind: 'draftClass', draftYear, sourceId: p.id, pathway: p.pathway, entryCategory: p.entryCategory },
     education: {
       qualification: p.qualification,
