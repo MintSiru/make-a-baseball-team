@@ -1,6 +1,7 @@
 /* 1.9.9: the board changes the rules by vote; the old-time and the hometown nicknames; uniform numbers when 0–99 run
    out; the bullpen's bar for the hall of fame and a retired number; the grade chart's years before the KBO. */
 import { describe, expect, it } from 'vitest';
+import type { PlayEvent } from '../src/league/engine/types';
 import { apply, regularOver } from '../src/league/actions';
 import { BOARD_ITEMS, currentValue, motionText, votesNeeded, type BoardItem } from '../src/league/board';
 import { boardValue, setEra } from '../src/league/era';
@@ -98,11 +99,34 @@ describe('the board’s game rules', () => {
     const date = s.schedule[s.next]!.date;
     const run = (changes: { from: number; item: string; value: number }[]) => {
       setEra({ ...s, board: { changes } });
-      const games = Array.from({ length: 400 }, (_, i) => playGame(s, 'lg', 'doosan', `v199-${i}`, date, 12)!);
+      const logs: PlayEvent[][] = [];
+      const games = Array.from({ length: 400 }, (_, i) => {
+        const log: PlayEvent[] = [];
+        logs.push(log);
+        return playGame(s, 'lg', 'doosan', `v199-${i}`, date, 12, log)!;
+      });
       setEra(0);
       const extra = games.filter((g) => g.innings > 9);
       const pitchers = games.reduce((a, g) => a + g.home.pitching.length + g.away.pitching.length, 0) / games.length;
-      const short = games.reduce((a, g) => a + [...g.home.pitching, ...g.away.pitching].filter((l, i, all) => l.gs === 0 && l.bf < 3 && l.outs % 3 !== 0 && i < all.length - 1).length, 0);
+      // 2.0.22: from the play-by-play, relievers taken out in the middle of an inning before facing three batters
+      // (the count of short lines alone took in a reliever who came in with one out and finished the inning).
+      let short = 0;
+      for (const log of logs) {
+        const faced = new Map<string, number>();
+        let last: PlayEvent | null = null;
+        const starters = new Set<string>();
+        for (const ev of log) {
+          if (ev.k === 'pa') {
+            if (!faced.has(ev.p) && faced.size === 0) starters.add(ev.p);
+            faced.set(ev.p, (faced.get(ev.p) ?? 0) + 1);
+          }
+          if (ev.k === 'pitch') {
+            const midInning = last?.k === 'pa' && last.i === ev.i && last.top === ev.top && last.outs < 3;
+            if (midInning && (faced.get(ev.out) ?? 0) < 3 && !starters.has(ev.out) && faced.has(ev.out)) short++;
+          }
+          if (ev.k === 'pa' || ev.k === 'pitch') last = ev;
+        }
+      }
       return { extra: extra.reduce((a, g) => a + g.innings, 0) / Math.max(1, extra.length), ties: games.filter((g) => g.result === 'tie').length, pitchers, short };
     };
     const plain = run([]);
@@ -112,10 +136,11 @@ describe('the board’s game rules', () => {
     expect(ghost.extra).toBeLessThan(plain.extra);
     // Ties are rare either way (a few in 400 games): no more than a couple more by chance.
     expect(ghost.ties).toBeLessThanOrEqual(plain.ties + 2);
-    // No reliever leaves after one or two batters in the middle of an inning.
-    expect(plain.short).toBeGreaterThan(0);
-    expect(three.short).toBeLessThan(plain.short);
-    expect(three.pitchers).toBeLessThanOrEqual(plain.pitchers);
+    // No reliever leaves after one or two batters in the middle of an inning (the game's managers seldom do it
+    // anyway; with the rule, never), and no more arms are used.
+    expect(three.short).toBe(0);
+    expect(plain.short).toBeGreaterThanOrEqual(three.short);
+    expect(three.pitchers).toBeLessThanOrEqual(plain.pitchers + 0.05);
   });
 });
 

@@ -304,7 +304,7 @@ export interface Player {
   honors?: string[];
   /** 1.9.3 (nicknames.ts): the fans' nickname — which one (code, index into its names), the winter it came and the
       club a "{club}" in it names — and the general manager's own for our player, which shows instead. */
-  nickname?: { code: string; i: number; year: number; team?: TeamId };
+  nickname?: { code: string; i: number; year: number; team?: TeamId; /** 2.0.22: from the foreign players' names (nicknames.ts FOREIGN_NAMES). */ foreign?: boolean };
   nicknameOwn?: string;
   /** Injuries so far (first team and futures). */
   injuries?: InjuryRecord[];

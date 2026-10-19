@@ -27,6 +27,7 @@ import { staffOf } from './staff';
 import { setGoals } from './parent';
 import { aiDeadlineDeals, aiForeignChanges, aiTrades, processWaivers } from './trade';
 import { tempForeignDay } from './tempforeign';
+import { tired, travelCost } from './travel';
 import { allStarDay } from './allstar';
 import { draftClass } from './players';
 import { applyCombine, combineDay } from './combine';
@@ -275,8 +276,12 @@ function gameRng(s: LeagueState, id: string) {
 }
 
 export function playGame(s: LeagueState, homeId: TeamId, awayId: TeamId, id: string, date: string, maxInnings: number | null, log?: PlayEvent[]): GameOut | null {
-  const { home, away } = matchInputs(s, date, { teamId: homeId }, { teamId: awayId });
-  if (!home || !away) return null;
+  const { home: home0, away: away0 } = matchInputs(s, date, { teamId: homeId }, { teamId: awayId });
+  if (!home0 || !away0) return null;
+  // 2.0.22: a side that came from another city for this series plays its first game tired (travel.ts).
+  const trip = travelCost(s, id, homeId, awayId);
+  const home = tired(home0, trip.home),
+    away = tired(away0, trip.away);
   const park = s.teams.find((t) => t.id === homeId)?.stadium.park ?? parkFactor(homeId);
   // 1.9.9: the board's game rules (board.ts), the 승부치기 in the regular season only.
   const ghost = maxInnings !== null ? boardValue('ghostRunner', s.year) : undefined;
