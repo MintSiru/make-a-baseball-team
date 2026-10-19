@@ -57,7 +57,7 @@ import { autoNational, marchEvents, nextNationalDecision, novemberEvents, resolv
 import { autoScandal, resolveScandal } from './scandals';
 import { autoDispute, resolveDispute } from './dispute';
 import { conditionMoney } from './conditions';
-import { DYNAMIC, handicap, measureHandicap } from './dynamic';
+import { DYNAMIC, handicap, setHandicap } from './dynamic';
 import { autoMeddle, resolveMeddle, scenarioWinter, supportFactor } from './scenarios';
 import { canRelease, releasePlayer } from './trade';
 
@@ -205,7 +205,7 @@ export function yearlyGrant(s: LeagueState) {
   ownerSweep(s, year);
   const k = DIFFICULTY_MONEY[u.settings.difficulty];
   // 2.0.25: the dynamic difficulty's level for the season ahead (dynamic.ts).
-  if (s.dynamicDifficulty) u.handicap = measureHandicap(s, year);
+  setHandicap(s, year);
   const h = handicap(s);
   const b = nextBudget(
     // 2.0.23: and the conditions added to the game (conditions.ts).

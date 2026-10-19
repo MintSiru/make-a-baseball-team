@@ -6,6 +6,7 @@ import { currentValue } from '../src/league/board';
 import { dynastyOf, dynastyWinter, tradeBarred } from '../src/league/dynasty';
 import { createLeague } from '../src/league/history';
 import { setEra } from '../src/league/era';
+import { measureHandicap, setHandicap, squadRank } from '../src/league/dynamic';
 import type { LeagueState } from '../src/league/state';
 
 const found = (s: LeagueState, board = false) => {
@@ -60,5 +61,33 @@ describe('the players’ strike', () => {
     expect(strikes).toBeLessThan(40);
     expect((s.news ?? []).some((n) => n.id.startsWith('strike-'))).toBe(true);
     setEra(0);
+  });
+});
+
+describe('the dynamic difficulty (2.0.26)', () => {
+  it('counts the squad and tells us when the level moves', () => {
+    const s = createLeague('v2026-dynamic');
+    found(s);
+    s.dynamicDifficulty = true;
+    const me = s.user!.teamId;
+    const year = s.year + 1; // the founded club plays on the first team from the next season
+    const sq = squadRank(s, year);
+    expect(sq).not.toBeNull();
+    if (!sq) return;
+    expect(sq.rank).toBeGreaterThanOrEqual(1);
+    expect(sq.rank).toBeLessThanOrEqual(sq.clubs);
+    // Three titles and the league's best squad: the level goes up, with an alert. (A new club's squad is drafted
+    // later; borrow one.)
+    s.rosters[me]!.active = s.rosters.lg!.active.slice();
+    for (const id of s.rosters[me]!.active) for (const k of Object.keys(s.players[id]!.hidden.current)) (s.players[id]!.hidden.current as unknown as Record<string, number>)[k] = 80;
+    expect(squadRank(s, year)!.rank).toBe(1);
+    const base = s.history.at(-1)!;
+    const table = [{ ...base.table[0]!, teamId: me, rank: 1 }, ...base.table.slice(1)];
+    for (const y of [year - 2, year - 1, year]) s.history.push({ ...base, year: y, champion: me, table });
+    s.user!.handicap = 0;
+    expect(measureHandicap(s, year)).toBe(3);
+    setHandicap(s, year);
+    expect(s.user!.handicap).toBe(3);
+    expect(s.alerts?.some((a) => a.id === `handicap-${year}`)).toBe(true);
   });
 });

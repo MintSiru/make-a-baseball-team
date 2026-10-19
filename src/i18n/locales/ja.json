@@ -8671,5 +8671,8 @@
   "league.board.text.7ce11e65": "「{what}」が選手会の反対にもかかわらず施行されることになり、選手会はストライキを決議しました。",
   "league.board.text.fa11ae7d": "KBO総裁が仲裁に乗り出しましたが、両者は最後まで合意できませんでした。",
   "league.board.text.d72ea6f4": "{season}シーズンは開幕が遅れ、1球団{games}試合に短縮されます（その次のシーズンは元通り）。ファンの失望も大きいです。",
-  "league.board.text.54861480": "{season}シーズンの開幕が遅れ、ファンの失望が大きいです。"
+  "league.board.text.54861480": "{season}シーズンの開幕が遅れ、ファンの失望が大きいです。",
+  "league.dynamic.text.3c248b6c": "変動難易度アップ：リーグが我が球団を牽制します",
+  "league.dynamic.text.fcc34ad1": "変動難易度ダウン：我が球団に救いの手",
+  "league.dynamic.text.cdd3964f": "段階 {before} → {after}（直近3シーズンの優勝・順位・資金・戦力で決定）"
 }

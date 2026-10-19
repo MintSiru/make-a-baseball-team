@@ -8672,5 +8672,8 @@ export const koSource = {
   "league.board.text.7ce11e65": "「{what}」이 선수협의 반대에도 그대로 시행되자 선수협이 파업을 결의했습니다.",
   "league.board.text.fa11ae7d": "KBO 총재가 중재에 나섰지만 양측은 끝내 합의하지 못했습니다.",
   "league.board.text.d72ea6f4": "{season}시즌은 개막이 늦어져 팀당 {games}경기로 줄어듭니다(그다음 시즌은 원래대로). 팬들의 실망도 큽니다.",
-  "league.board.text.54861480": "{season}시즌 개막이 늦어지고 팬들의 실망이 큽니다."
+  "league.board.text.54861480": "{season}시즌 개막이 늦어지고 팬들의 실망이 큽니다.",
+  "league.dynamic.text.3c248b6c": "유동 난이도 상승: 리그가 우리 구단을 견제합니다",
+  "league.dynamic.text.fcc34ad1": "유동 난이도 하락: 우리 구단에 도움의 손길이",
+  "league.dynamic.text.cdd3964f": "단계 {before} → {after} (지난 3시즌 우승·순위·자금·선수단 전력으로 정함)"
 } as const;

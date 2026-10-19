@@ -8671,5 +8671,8 @@
   "league.board.text.7ce11e65": "With “{what}” going ahead over its objection, the players' association voted to strike.",
   "league.board.text.fa11ae7d": "The KBO commissioner stepped in to mediate, but the two sides never agreed.",
   "league.board.text.d72ea6f4": "The {season} season opens late and is cut to {games} games a club (the season after is back to normal). The fans are bitterly disappointed.",
-  "league.board.text.54861480": "The {season} season opens late, and the fans are bitterly disappointed."
+  "league.board.text.54861480": "The {season} season opens late, and the fans are bitterly disappointed.",
+  "league.dynamic.text.3c248b6c": "Dynamic difficulty up: the league reins our club in",
+  "league.dynamic.text.fcc34ad1": "Dynamic difficulty down: a helping hand for our club",
+  "league.dynamic.text.cdd3964f": "Level {before} → {after} (set from the last three seasons' titles, standings, money and squad strength)"
 }

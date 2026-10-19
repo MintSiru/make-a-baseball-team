@@ -79814,5 +79814,30 @@
       }
     },
     "locations": []
+  },
+  "league.dynamic.text.3c248b6c": {
+    "source": "src/league/dynamic.ts",
+    "line": 76,
+    "params": {},
+    "locations": []
+  },
+  "league.dynamic.text.fcc34ad1": {
+    "source": "src/league/dynamic.ts",
+    "line": 76,
+    "params": {},
+    "locations": []
+  },
+  "league.dynamic.text.cdd3964f": {
+    "source": "src/league/dynamic.ts",
+    "line": 77,
+    "params": {
+      "before": {
+        "expression": "before"
+      },
+      "after": {
+        "expression": "u.handicap"
+      }
+    },
+    "locations": []
   }
 }
