@@ -56,6 +56,7 @@ import { lifeWinter } from './life';
 import { autoNational, marchEvents, nextNationalDecision, novemberEvents, resolveNational } from './national';
 import { autoScandal, resolveScandal } from './scandals';
 import { autoDispute, resolveDispute } from './dispute';
+import { conditionMoney } from './conditions';
 import { autoMeddle, resolveMeddle, scenarioWinter, supportFactor } from './scenarios';
 import { canRelease, releasePlayer } from './trade';
 
@@ -203,7 +204,8 @@ export function yearlyGrant(s: LeagueState) {
   ownerSweep(s, year);
   const k = DIFFICULTY_MONEY[u.settings.difficulty];
   const b = nextBudget(
-    { support: baseSupport(u.settings.parentType) * k * supportFactor(u.settings), payroll: (budgetFor(u.settings).payrollBudget * salaryCapFor(next)) / salaryCapFor(startYear() + 1) },
+    // 2.0.23: and the conditions added to the game (conditions.ts).
+    { support: baseSupport(u.settings.parentType) * k * supportFactor(u.settings) * conditionMoney(s, 'support'), payroll: (budgetFor(u.settings).payrollBudget * salaryCapFor(next) * conditionMoney(s, 'payroll')) / salaryCapFor(startYear() + 1) },
     u.budgetScale ?? 1,
     event,
   );

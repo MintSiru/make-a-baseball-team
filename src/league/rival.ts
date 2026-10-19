@@ -221,7 +221,8 @@ export const specialEligible = (s: LeagueState, teamId: TeamId, next: number): P
 
 /** The winter before the twelfth club's first first-team season: the user's club protects its 20. */
 export function rivalProtectDecision(s: LeagueState, next: number): Decision | null {
-  const tw = s.twelve,
+  // 2.0.23: or the north's clubs' (a unified condition added to a game under way, conditions.ts), one list for all five.
+  const tw = s.twelve?.firstTeam === next ? s.twelve : s.unified?.clubs.find((c) => c.firstTeam === next),
     u = s.user;
   if (!tw || !u || tw.firstTeam !== next || tw.picks || !firstTeamIds(s, next - 1).includes(u.teamId)) return null;
   const P = EXPANSION_DEFAULTS.specialDraft;

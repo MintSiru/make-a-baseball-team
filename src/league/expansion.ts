@@ -48,7 +48,7 @@ import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './fore
 import { marchEvents, nextNationalDecision, novemberEvents } from './national';
 import { disputeDecision } from './dispute';
 import { homecomings } from './returnees';
-import { foundNorthClubs } from './unified';
+import { conditionUnified, foundNorthClubs } from './unified';
 import { autoProtect, checkRival, checkRivalProtect, resolveRival, resolveRivalProtect, rivalDecision, rivalProtectDecision, rivalStep } from './rival';
 import {
   autoAnnual,
@@ -362,6 +362,8 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
     case 'develop':
       // The twelfth club (V0.9): founded this winter, or offered by the board; a naming-rights club's rare
       // shareholder dispute (V0.12).
+      // 2.0.23: the north's clubs for a unified condition added this year (unified.ts).
+      conditionUnified(s, o.year);
       return rivalDecision(s, o.year) ?? disputeDecision(s, o.year);
     case 'retire':
       // Staff first; our players who want to retire follow (V0.11, userclub.ts).

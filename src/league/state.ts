@@ -636,6 +636,8 @@ export interface LeagueState {
   retiredBarRise?: boolean;
   /** 2.0.22 (travel.ts): false — no tiredness from the road. */
   travelFatigue?: boolean;
+  /** 2.0.23 (conditions.ts): other scenarios' conditions added to the game under way, in the order added. */
+  conditions?: import('./conditions').Condition[];
   /** 1.2.0 (allstar.ts): this season's All-Star voting and game, and every finished year. */
   allStar?: import('./allstar').AllStarState;
   allStarHistory?: import('./allstar').AllStarRecord[];

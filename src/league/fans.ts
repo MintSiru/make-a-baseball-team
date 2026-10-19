@@ -5,6 +5,7 @@ import { k as __i18n_k } from '../i18n/index';
    A home game draws popularity × the league's boom for that year × mood × day × month × opponent ×
    price, capped by the seats. Calibrated to 2025: 17,103 a game, Samsung 23,101 (96% full) down to
    the smaller markets around 11,000. */
+import { conditionCrowd } from './conditions';
 import { scenarioOf } from './scenarios';
 import { playsHistory, ruleYear, startYear } from './era';
 import { rng } from '../draftroom';
@@ -116,7 +117,7 @@ export function attendance(s: LeagueState, g: Pick<GameScore, 'id' | 'date' | 'h
   // The user's new scoreboard (V0.10).
   const venue = 1 + scoreboardDemand(s, g.home);
   // 1.6.0, scenario 불인기 종목: the whole league's crowds are down.
-  const demand = home.popularity * boom(s.year) * (scenarioOf(s)?.crowd ?? 1) * Math.max(0.45, 1 + FANS.moodWeight * mood) * day * month * visitors * rivalry * venue * home.price ** -FANS.elasticity * (0.92 + r() * 0.16);
+  const demand = home.popularity * boom(s.year) * (scenarioOf(s)?.crowd ?? 1) * conditionCrowd(s) * Math.max(0.45, 1 + FANS.moodWeight * mood) * day * month * visitors * rivalry * venue * home.price ** -FANS.elasticity * (0.92 + r() * 0.16);
   // Season-ticket holders come whatever the record (V0.12, the user's club).
   const holders = g.home === s.user?.teamId && home.seasonTickets?.year === s.year ? home.seasonTickets.sold * FINANCE.seasonTickets.show : 0;
   return Math.round(Math.min(team.stadium.capacity, Math.max(demand, holders)));

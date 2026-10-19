@@ -925,7 +925,11 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
     case 'rivalProtect':
       body = (
         <>
-          <p>{__i18n_t("ui.decision.decision.b82fa189", { name: league.teams.find((t) => t.id === league.twelve?.teamId)?.name, protect: d.protect, size: selected.size, value: ' ', money: money(d.fee) })}</p>
+          {league.twelve ? (
+            <p>{__i18n_t("ui.decision.decision.b82fa189", { name: league.teams.find((t) => t.id === league.twelve?.teamId)?.name, protect: d.protect, size: selected.size, value: ' ', money: money(d.fee) })}</p>
+          ) : (
+            <p>{__i18n_t("ui.decision.text.5ba5d51a", { protect: d.protect, size: selected.size, money: money(d.fee) })}</p>
+          )}
           <PlayerTable league={league} players={d.candidates.map((id) => league.players[id]!)} selected={selected} toggle={toggle} onPlayer={onPlayer} max={d.protect} />
         </>
       );
