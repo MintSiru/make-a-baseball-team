@@ -5,7 +5,7 @@ import { displayText as __i18n_displayText, t as __i18n_t } from '../i18n/index'
 import { useState } from 'preact/hooks';
 import { layoutOf, angleOf, type ParkLayout } from '../league/layout';
 import { meetingRates, meetingsOf, type HeadToHead } from '../league/matchups';
-import { FASTBALL_LABELS, PITCH_LABELS, type PitchType } from '../league/pitches';
+import { FASTBALL_LABELS, PITCH_LABELS, pitchLabel, type PitchType } from '../league/pitches';
 import { mixBySeason, percentilesOf, sprayOf, valuesOf, type PercentileKey, type ValueKey, type ValueRow } from '../league/savant';
 import type { PitchValue } from '../league/runvalue';
 import { trackingOf } from '../league/tracking';
@@ -113,7 +113,7 @@ function Spray({ league, id }: { league: LeagueState; id: string }) {
   );
 }
 
-const PITCH_COLOR: Record<string, string> = { '4SFB': '#d22d49', '2SFB': '#fe9d00', CUT: '#933f2c', SNK: '#fe9d00', SL: '#eee716', SW: '#ddb33a', SLV: '#c3bd0e', CB: '#00d1ed', CH: '#1dbe3a', CIR: '#3bacac', FRK: '#55ccab', SPL: '#3bacac', KN: '#867a08', SCR: '#6236cd', PLM: '#4cc9f0', SH: '#888' };
+const PITCH_COLOR: Record<string, string> = { '4SFB': '#d22d49', '2SFB': '#fe9d00', CUT: '#933f2c', SNK: '#fe9d00', SL: '#eee716', SW: '#ddb33a', SLV: '#c3bd0e', CB: '#00d1ed', KC: '#6f8fd8', CH: '#1dbe3a', CIR: '#3bacac', FRK: '#55ccab', SPL: '#3bacac', KN: '#867a08', SCR: '#6236cd', PLM: '#4cc9f0', SH: '#888' };
 /** Dark or light text, whichever reads on the colour. */
 const inkOn = (hex: string) => {
   const n = parseInt(hex.slice(1), 16);
@@ -262,7 +262,7 @@ function Usage({ league, id, pitches, usage }: { league: LeagueState; id: string
             <tr key={x.type}>
               <td class="num">{usage.vsL[x.type]}%</td>
               <td>
-                <span class="spray-swatch" style={{ background: PITCH_COLOR[x.type] ?? '#999' }} /> {pitchName(x.type)}
+                <span class="spray-swatch" style={{ background: PITCH_COLOR[x.type] ?? '#999' }} /> {x.type !== '4SFB' && league.players[id] ? __i18n_displayText(pitchLabel(league.players[id]!, x.type)) : pitchName(x.type)}
               </td>
               <td class={`num${x.rv >= 0.5 ? ' good' : x.rv <= -0.5 ? ' bad' : ''}`}>{signed(x.rv)}</td>
               <td class="num">{usage.vsR[x.type]}%</td>

@@ -14,7 +14,7 @@
 import { hashUnit, rng } from '../draftroom';
 import type { Player } from '../model/types';
 import { isForeign, isPitcher } from './players';
-import { averageVelocity, fastballOf, pitchGrades, type PitchType } from './pitches';
+import { averageVelocity, fastballOf, pitchGrades, pitchVariant, type PitchType, type PitchVariant } from './pitches';
 
 export type ArmSlot = 'over' | 'three' | 'side' | 'under';
 
@@ -77,6 +77,8 @@ export function slotPlatoon(p: Pick<Player, 'id' | 'role' | 'origin'>): number {
 
 export interface PitchTrack {
   type: PitchType | 'FB';
+  /** 2.0.24: the kind of slider or curve (pitches.ts), shaped as below. */
+  variant?: PitchVariant;
   /** km/h on average. */
   velocity: number;
   /** Spin rate (rpm) and the spin axis as a clock from the catcher's view ("1:30"). */
@@ -116,6 +118,17 @@ const SHAPE: Record<PitchType | 'FB', { slower: number; spin: number; v: number;
   SCR: { slower: 15, spin: 1900, v: 5, h: 35, axis: 1.5 },
   PLM: { slower: 20, spin: 1100, v: 8, h: 20, axis: 0.5 },
   SH: { slower: 6, spin: 2100, v: 18, h: 30, axis: 1 },
+  KC: { slower: 16, spin: 2600, v: -32, h: -9, axis: -5.4 },
+};
+
+/** 2.0.24: the kinds of slider and curve — a vertical slider drops with little sweep, a sweeping one breaks across;
+    a drop curve falls 12-to-6, a slow one loops with less spin, a power curve comes harder and spins most. */
+const VARIANT_SHAPE: Record<PitchVariant, { slower: number; spin: number; v: number; h: number; axis: number }> = {
+  vertSL: { slower: 10, spin: 2350, v: -6, h: -7, axis: -4.6 },
+  sweepSL: { slower: 12, spin: 2450, v: 6, h: -24, axis: -3.1 },
+  drop: { slower: 19, spin: 2550, v: -38, h: -6, axis: -5.8 },
+  slow: { slower: 27, spin: 2250, v: -32, h: -16, axis: -5 },
+  power: { slower: 14, spin: 2800, v: -26, h: -15, axis: -4.6 },
 };
 
 /** 2.0.11: how far a grade point moves a pitch's break away from the fastball (a 70 breaks a fifth more than a 50),
@@ -145,7 +158,8 @@ export function trackingOf(p: Player): Tracking | null {
   // A right-hander's fastball axis: 12:30 over the top, 1:30 at three-quarters, 2:20 sidearm, 4:00 under.
   const fbAxis = 12.5 + (60 - angle) / 27;
   const track = (type: PitchType | 'FB', grade: number, usage: number): PitchTrack => {
-    const s = SHAPE[type];
+    const variant = type === 'FB' ? null : pitchVariant(p, type);
+    const s = variant ? VARIANT_SHAPE[variant] : SHAPE[type];
     const breaking = type !== 'FB' && type !== '2SFB' && type !== 'SNK' && type !== 'CUT';
     // 2.0.11 (the user's request): a better pitch moves further from his fastball — its grade (his 변화구 and how the
     // pitch has gone its own way, 2.0.6) stretches or shrinks its break away from the fastball's.
@@ -157,6 +171,7 @@ export function trackingOf(p: Player): Tracking | null {
     const axisH = fbAxis + s.axis + noise(0.2);
     return {
       type,
+      ...(variant ? { variant } : {}),
       velocity: Math.round(avg - s.slower + (grade - 50) * 0.05 + noise(1)),
       // Spin pitches gain spin with the grade; the low-spin ones (changeups, splitters, forkballs, palmballs) lose it.
       spin: Math.max(150, Math.round(s.spin + (grade - 50) * (s.spin >= SHAPE.FB.spin ? MOVE.spin : -MOVE.spin) + noise(80))),

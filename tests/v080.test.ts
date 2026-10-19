@@ -78,7 +78,8 @@ describe('the market opens', () => {
       expect(t.price.bonus).toBeLessThan(guaranteed(t.price));
       expect(t.ask).toBeGreaterThan(offerValue(t.price));
       expect(t.floor).toBeLessThan(t.ask);
-      expect(t.demands.length).toBeLessThanOrEqual(3);
+      // 2.0.24: three wants at most; the superteam he will not join is his nature, beside them.
+      expect(t.demands.filter((d) => d.kind !== 'noSuperteam').length).toBeLessThanOrEqual(3);
     }
     // Several kinds of demands across the class.
     expect(new Set(m.order.flatMap((id) => m.talks[id]!.demands.map((d) => d.kind))).size).toBeGreaterThan(2);

@@ -221,6 +221,26 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
             ))}
           </div>
           <p class="muted small">{__i18n_t("ui.settings.text.9f43c22c")}</p>
+          {/* 2.0.24 (cap.ts): first-round picks lost for breaking the salary cap. */}
+          <h3>{__i18n_t("ui.settings.text.bf57ac8c")}</h3>
+          <div class="segmented" role="group" aria-label={__i18n_displayText(__i18n_t("ui.settings.text.bf57ac8c"))}>
+            {([true, false] as const).map((on) => (
+              <button key={String(on)} type="button" aria-pressed={!!league.capForfeit === on} disabled={busy} onClick={() => !!league.capForfeit !== on && onAct({ kind: 'capForfeit', on })}>
+                {on ? __i18n_t("ui.settings.text.8f13d839") : __i18n_t("ui.settings.text.66770937")}
+              </button>
+            ))}
+          </div>
+          <p class="muted small">{__i18n_t("ui.settings.text.2c7e2493")}</p>
+          {/* 2.0.24 (posting.ts): how many players a club may post in a winter. */}
+          <h3>{__i18n_t("ui.settings.text.42be6e39")}</h3>
+          <div class="segmented" role="group" aria-label={__i18n_displayText(__i18n_t("ui.settings.text.42be6e39"))}>
+            {([null, 2, 3, 99] as const).map((n) => (
+              <button key={String(n)} type="button" aria-pressed={(league.postingMax ?? null) === n} disabled={busy} onClick={() => (league.postingMax ?? null) !== n && onAct({ kind: 'postingMax', max: n })}>
+                {n === null ? __i18n_t("ui.settings.text.3ea599b1") : n === 99 ? __i18n_t("ui.settings.text.4efeea41") : __i18n_t("ui.settings.text.c876675f", { n })}
+              </button>
+            ))}
+          </div>
+          <p class="muted small">{__i18n_t("ui.settings.text.98696377")}</p>
           {/* 2.0.23 (conditions.ts): another scenario's conditions added to the game under way. */}
           <h3>{__i18n_t("ui.settings.text.e6dc2e38")}</h3>
           <p class="muted small">{__i18n_t("ui.settings.text.a25ffd42")}</p>

@@ -44,7 +44,7 @@ import { changePosition, positionMove } from './positions';
 import { STAFF_LABELS, STAFF_ROLES, staffCandidates, staffOf } from './staff';
 import { defaultYears, signingBonus, yearsFor } from './staffdeals';
 import { alumnusHired, employedAlumni, legendFired } from './alumni';
-import { post, postingCandidates, postingNote } from './posting';
+import { post, postingCandidates, postingMax, postingNote } from './posting';
 import { toForeignPool } from './foreignpool';
 import { goAbroad, releaseReturnee, signReturnee } from './returnees';
 import { ownerAlert } from './alerts';
@@ -92,7 +92,7 @@ export type AnnualInput =
   | { kind: 'secondPick'; id: PlayerId | null }
   /** `offers`: a figure (US dollars a season) and years for any of them (1.3.0; his ask for one year when missing). */
   | { kind: 'foreignRenew'; keep: PlayerId[]; offers?: Record<PlayerId, { amount: number; years: 1 | 2 }> }
-  | { kind: 'posting'; id: PlayerId | null }
+  | { kind: 'posting'; id: PlayerId | null; /** 2.0.24: several, when the game allows more than one. */ ids?: PlayerId[] }
   | { kind: 'returnee'; ids: PlayerId[] }
   | { kind: 'sponsor'; index: number }
   | { kind: 'staff'; hires: Partial<Record<StaffRole, string>>; /** 1.8.0: contract years for a hire or renewal. */ terms?: Partial<Record<StaffRole, number>> }
@@ -294,11 +294,14 @@ export function sponsorDecision(s: LeagueState, year: number): Decision | null {
 }
 
 /** Players who ask to be posted to the majors this winter (the club may post one). */
+/** The players our club posts: one (`id`) or, 2.0.24, several (`ids`). */
+const postedIds = (input: Extract<AnnualInput, { kind: 'posting' }>) => input.ids ?? (input.id ? [input.id] : []);
+
 export function postingDecision(s: LeagueState, next: number): Decision | null {
   const u = s.user!;
   if (next <= u.firstTeamYear) return null;
   const candidates = postingCandidates(s, u.teamId, next).map((p) => p.id);
-  return candidates.length ? { kind: 'posting', candidates, max: KBO_2026.posting.perClubPerWinter } : null;
+  return candidates.length ? { kind: 'posting', candidates, max: postingMax(s) } : null;
 }
 
 /** Our players who have decided to retire this winter (V0.11): the club may ask them to play one more season. */
@@ -358,7 +361,9 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
     }
     case 'posting': {
       const dd = d as Extract<Decision, { kind: 'posting' }>;
-      if (input.id && !dd.candidates.includes(input.id)) return __i18n_k("league.userclub.checkAnnual.d13f7582");
+      const ids = postedIds(input);
+      if (ids.some((id) => !dd.candidates.includes(id))) return __i18n_k("league.userclub.checkAnnual.d13f7582");
+      if (ids.length > dd.max) return __i18n_k("league.userclub.text.763f08b5", { max: dd.max });
       return null;
     }
     case 'retire': {
@@ -636,9 +641,10 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
     }
     case 'posting': {
       const dd = d as Extract<Decision, { kind: 'posting' }>;
+      const ids = postedIds(input);
       for (const id of dd.candidates) {
         const name = s.players[id]!.name;
-        if (id === input.id) note(u, year, postingNote(s, post(s, id, next), name));
+        if (ids.includes(id)) note(u, year, postingNote(s, post(s, id, next), name));
         else note(u, year, __i18n_k("league.userclub.resolveAnnual.eb03e1bd", { name: name }));
       }
       return null;

@@ -9,7 +9,7 @@ import { k as __i18n_k } from '../i18n/index';
 
    The market runs in rounds a few days apart; the user's club makes and changes its offers between rounds.
    Compensation follows each signing as before (market.ts). Money in 만 원. */
-import { rng } from '../draftroom';
+import { hashUnit, rng } from '../draftroom';
 import type { FaPromise, FaSpot, FaTerms, IncentiveKind, Player, PlayerId, TeamId } from '../model/types';
 import { EXPANSION_DEFAULTS, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { addAlert } from './alerts';
@@ -64,7 +64,9 @@ export type FaDemand =
   | { kind: 'reinforce'; spot: FaSpot }
   | { kind: 'contender' }
   | { kind: 'hometown'; region: string }
-  | { kind: 'optOut' };
+  | { kind: 'optOut' }
+  /** 2.0.24 (the user's request): he will not join the strongest or the richest club — he means to beat them. */
+  | { kind: 'noSuperteam' };
 
 /** One free agent's winter. */
 export interface FaTalk {
@@ -245,6 +247,22 @@ export function wouldStart(s: LeagueState, teamId: TeamId, p: Player) {
 }
 
 /** Last season's place (the last place for a club with none). */
+/** 2.0.24: a player who will not join a superteam (his own, seeded by id): a few, more of the fiercely competitive. */
+export const ANTI_SUPERTEAM = { share: 0.06, challenger: 0.14, penalty: 0.9, underdog: 0.04 };
+export const antiSuperteam = (p: Player) => hashUnit(`anti-superteam|${p.id}`) < (p.personality === '승부욕 강한 도전자' ? ANTI_SUPERTEAM.challenger : ANTI_SUPERTEAM.share);
+
+/** The league's superteam going into `next`: last season's champion, and the club that paid the most under the cap. */
+export function superteams(s: LeagueState, next: number): TeamId[] {
+  const out = new Set<TeamId>();
+  const champ = s.history.find((h) => h.year === next - 1)?.champion;
+  if (champ) out.add(champ);
+  const pay = Object.entries(s.cap ?? {})
+    .map(([id, rows]) => [id, rows.find((r) => r.year === next - 1)?.total ?? 0] as const)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
+  if (pay && pay[1] > 0) out.add(pay[0]);
+  return [...out];
+}
+
 function lastRank(s: LeagueState, teamId: TeamId, next: number) {
   const table = s.history.at(-1)?.table ?? [];
   return table.find((r) => r.teamId === teamId)?.rank ?? clubsOf(s, next).length;
@@ -339,6 +357,16 @@ export function fitOf(s: LeagueState, t: FaTalk, teamId: TeamId, o: FaOffer, nex
           good.push(__i18n_k("league.fa.fitOf.6107d8d8"));
         }
         break;
+      case 'noSuperteam':
+        // Never his own club's offer (he is already there): only the move to a superteam.
+        if (teamId !== t.from && superteams(s, next).includes(teamId)) {
+          k -= ANTI_SUPERTEAM.penalty;
+          wants.push(__i18n_k("league.fa.text.83a96b11"));
+        } else if (lastRank(s, teamId, next) > clubsOf(s, next).length / 2) {
+          k += ANTI_SUPERTEAM.underdog;
+          good.push(__i18n_k("league.fa.text.5090da74"));
+        }
+        break;
       case 'optOut':
         if (o.extra?.holder !== 'player') {
           k -= D.optOut;
@@ -349,7 +377,8 @@ export function fitOf(s: LeagueState, t: FaTalk, teamId: TeamId, o: FaOffer, nex
   }
   if (teamId === t.from) k += t.loyalty;
   if (user) k += DIFFICULTY.faFit[s.user!.settings.difficulty] - doubt;
-  return { k, wants, good };
+  // 2.0.24: never nothing (the clubs' offers are priced by it).
+  return { k: Math.max(0.05, k), wants, good };
 }
 
 /** An offer's worth to him from this club, demands included. */
@@ -459,8 +488,10 @@ function demandsFor(s: LeagueState, p: Player, price: FaOffer, next: number, r: 
     if (s.teams.some((t) => s.rosters[t.id] && hometownClub(s, t.id, region, p.birthplace))) out.push({ kind: 'hometown', region });
   }
   if (age <= 31 && star && chance(0.2, [who === '큰 무대를 즐기는 대담형', 0.25])) out.push({ kind: 'optOut' });
-  // Three things at most besides the money.
-  return out.slice(0, 3);
+  // Three things at most besides the money; 2.0.24: and, his own nature (not a want), the superteam he will not join.
+  const kept = out.slice(0, 3);
+  if (antiSuperteam(p)) return [...kept.filter((d) => d.kind !== 'contender'), { kind: 'noSuperteam' }];
+  return kept;
 }
 
 /** What an offer counts against next season's cap: salary, the bonus spread, incentives half earned. */
@@ -500,6 +531,8 @@ function appetite(s: LeagueState, teamId: TeamId, t: FaTalk, p: Player, next: nu
   const cost = guaranteed(t.price) / t.price.years;
   if (!own && capRoomFor(s, teamId, next, onMarket) < cost) chance *= MARKET.interest.overCap;
   if (!own && ageIn(p, next) >= 34) chance *= 0.6;
+  // 2.0.24: a superteam does not chase a player who would never come.
+  if (!own && t.demands.some((d) => d.kind === 'noSuperteam') && superteams(s, next).includes(teamId)) chance = 0;
   // The twelfth club's front office (V0.9) goes after free agents in its own way; in its founding winter it
   // owes no compensation.
   const style = gmAppetite(gmOf(s, teamId), ageIn(p, next));

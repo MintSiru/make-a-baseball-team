@@ -1263,6 +1263,11 @@ h3 {
 .nickname-form input {
   width: 10em;
 }
+.jersey {
+  width: 64px;
+  height: 59px;
+  flex: none;
+}
 .profile-number {
   min-width: 56px;
   height: 56px;
@@ -3376,6 +3381,25 @@ button.danger {
 }
 
 /* 2.0.7: the movement profile and the usage table (Savant.tsx). */
+.arm-angle {
+  margin: 0.4rem 0;
+  max-width: 9rem;
+}
+.arm-angle svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.arm-angle-label {
+  font-size: 11px;
+  fill: var(--ink);
+  opacity: 0.7;
+}
+.arm-angle-value {
+  font-size: 18px;
+  font-weight: 700;
+  fill: var(--ink);
+}
 .movement {
   margin: 0.4rem 0;
   max-width: 22rem;

@@ -40,7 +40,7 @@ import type { TraitReport } from '../league/reports';
 import { kboSeasons } from '../league/foreigncap';
 import { extensionCooldown, extensionOptions, extensionProblem } from '../league/extensions';
 import { postRows, postTotals, type PostRow } from '../league/poststats';
-import { FASTBALL_LABELS, PITCH_LABELS } from '../league/pitches';
+import { FASTBALL_LABELS, PITCH_LABELS, VARIANT_LABELS } from '../league/pitches';
 import { LEGACY_START } from '../league/era';
 import type { ArmSlot, Tracking } from '../league/tracking';
 
@@ -388,7 +388,8 @@ export function PlayerPanel({
       <div class="dialog profile" role="dialog" aria-modal="true" aria-labelledby="player-name" ref={box}>
         <button type="button" class="close" onClick={onClose} aria-label={__i18n_t("ui.playerPanel.playerPanel.94b7dba1")}>{__i18n_t("ui.playerPanel.playerPanel.94b7dba1")}</button>
         <div class="profile-head">
-          {__i18n_display(wearing != null && <span class="profile-number">{__i18n_display(wearing)}</span>)}
+          {/* 2.0.24 (the user's request): his uniform, the back with his name and number in the club's colour. */}
+          {wearing != null && <Jersey name={__i18n_displayText(p.name)} foreign={foreign} number={wearing} color={league.teams.find((t) => t.id === p.teamId)?.color ?? '#555'} />}
           <div>
             <p class="muted">
               {__i18n_display(card.team)} · {__i18n_display(positionLabel(p))} · {__i18n_display(handedness(p))}
@@ -401,6 +402,8 @@ export function PlayerPanel({
               {p.twoWay && <span class="tag two-way">{__i18n_t("ui.playerPanel.text.62cb0192")}</span>}
             </h2>
             {__i18n_display(nickname && <p class="profile-nickname" title={__i18n_displayText(nicknameWhy(p) ?? '')}>“{__i18n_display(nickname)}”</p>)}
+            {/* 2.0.24: a foreign player registered under a shorter name. */}
+            {p.fullName && <p class="muted small">{__i18n_t("ui.playerPanel.text.f5dc3a10", { full: __i18n_displayText(p.fullName) })}</p>}
           </div>
         </div>
         <SummaryStrip card={card} pitcher={pitcher} titles={postSum.titles} />
@@ -493,7 +496,7 @@ export function PlayerPanel({
                 </div>
                 {card.pitchLast && <p class="muted small">{__i18n_t("ui.playerPanel.text.da7d248d", { season: card.pitchLast.season })}</p>}
                 {card.pitchingLift !== null && <p class="small">{__i18n_t("ui.playerPanel.text.41757042", { kind: PITCH_LIFT_LABEL()[card.pitchingLift + 2]! })}</p>}
-                {card.tracking && <TrackingTable t={card.tracking} />}
+                {card.tracking && <TrackingTable t={card.tracking} lefty={p.throws === '좌'} />}
               </section>
             ))}
             {/* 2.0.12: the other side — a two-way player's, or ours to turn around. */}
@@ -997,8 +1000,11 @@ function PlayerEditor({ league, id, onAct }: { league: LeagueState; id: string; 
   const changed = JSON.stringify(draft) !== current;
   const set = (k: keyof PlayerEdit, v: string) => setDraft((d) => ({ ...d, [k]: v }));
   const fans = p.nickname ? nicknameOf(league, { ...p, nicknameOwn: undefined }) : null;
+  // 2.0.24: a foreign player's name is his registered name (등록명), with his full name's parts to pick from.
+  const foreign = p.origin.kind === 'foreign';
+  const full = p.fullName ?? p.name;
   const fields: [keyof PlayerEdit, string, number][] = [
-    ['name', __i18n_t("ui.playerPanel.text.9aa18e50"), EDIT.name.max],
+    ['name', foreign ? __i18n_t("ui.playerPanel.text.63ba8b02") : __i18n_t("ui.playerPanel.text.9aa18e50"), EDIT.name.max],
     ['birthplace', __i18n_t("ui.playerPanel.text.71479e57"), EDIT.birthplace.max],
     ['school', __i18n_t("ui.playerPanel.text.add2f441"), EDIT.school.max],
     ['nickname', __i18n_t("ui.playerPanel.text.0aceafa3"), NICKNAME_MAX],
@@ -1023,6 +1029,16 @@ function PlayerEditor({ league, id, onAct }: { league: LeagueState; id: string; 
           </label>
         ))}
       </div>
+      {foreign && (
+        <p class="small editor-regname">
+          {__i18n_t("ui.playerPanel.text.35a55ec8", { full })}{' '}
+          {[...new Set([full, ...full.split(/\s+/).filter((x) => x.length > 1)])].map((x) => (
+            <button key={x} type="button" aria-pressed={draft.name === x} onClick={() => set('name', x)}>
+              {x}
+            </button>
+          ))}
+        </p>
+      )}
       {problem && (
         <p class="notice warn small" role="alert">
           {__i18n_display(problem)}
@@ -1294,11 +1310,72 @@ function BattedTable({ batted, pitcher }: { batted: PlayerCard['batted']; pitche
 
 const SLOT_LABEL: Record<ArmSlot, string> = { over: __i18n_t("ui.playerPanel.text.d5ac5440"), three: __i18n_t("ui.playerPanel.text.c1b3afb7"), side: __i18n_t("ui.playerPanel.text.db8562f5"), under: __i18n_t("ui.playerPanel.text.fecd8c93") };
 
+/** A dark or light ink, whichever reads on the colour. */
+const inkFor = (hex: string) => {
+  const n = parseInt(hex.replace('#', '').padEnd(6, '0').slice(0, 6), 16);
+  return 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255) > 150 ? '#1b1b1b' : '#fff';
+};
+
+/** The name on his back: a Korean player's whole name, a foreign player's family name. */
+export function backName(name: string, foreign: boolean): string {
+  if (!foreign) return name;
+  return name.split(/\s+/).filter(Boolean).at(-1) ?? name;
+}
+
+/** 2.0.24 (the user's request): his uniform from behind — the club's colour, his name and his number. */
+export function Jersey({ name, foreign, number, color }: { name: string; foreign: boolean; number: number; color: string }) {
+  const ink = inkFor(color);
+  const back = backName(name, foreign);
+  return (
+    <svg class="jersey" viewBox="0 0 100 92" role="img" aria-label={__i18n_displayText(__i18n_t("ui.playerPanel.text.54a9d386", { number, name }))}>
+      <path d="M30,6 Q50,14 70,6 L94,20 L86,40 L76,35 L76,88 L24,88 L24,35 L14,40 L6,20 Z" fill={color} stroke="var(--rule)" stroke-width="1.2" stroke-linejoin="round" />
+      <text x="50" y="30" text-anchor="middle" fill={ink} font-size={back.length > 5 ? 8 : 10} font-weight="700" textLength={back.length > 6 ? 44 : undefined} lengthAdjust="spacingAndGlyphs">{back}</text>
+      <text x="50" y="70" text-anchor="middle" fill={ink} font-size="34" font-weight="800" class="jersey-number">{number}</text>
+    </svg>
+  );
+}
+
+/** 2.0.24 (the user's request, after the Savant picture): his arm angle drawn — a pitcher from behind with his throwing
+    arm at the angle against the level of his shoulder (a lefty's mirrored). */
+export function ArmAngleFigure({ angle, lefty }: { angle: number; lefty: boolean }) {
+  const dir = lefty ? -1 : 1;
+  const sx = 80 + 9 * dir,
+    sy = 52;
+  const rad = (angle * Math.PI) / 180;
+  const arm = 52,
+    arc = 36;
+  const ex = sx + Math.cos(rad) * arm * dir,
+    ey = sy - Math.sin(rad) * arm;
+  const ax = sx + Math.cos(rad) * arc * dir,
+    ay = sy - Math.sin(rad) * arc;
+  // The wedge between the shoulder's level and the arm (above it, or below for a submariner).
+  const sweep = (angle >= 0) === !lefty ? 0 : 1;
+  return (
+    <figure class="arm-angle">
+      <svg viewBox="0 0 160 150" role="img" aria-label={__i18n_displayText(__i18n_t("ui.playerPanel.text.2d54da20", { angle }))}>
+        <path d={`M${sx},${sy} L${sx + arc * dir},${sy} A${arc},${arc} 0 0 ${sweep} ${ax},${ay} Z`} fill="var(--accent)" fill-opacity="0.28" />
+        <line x1={sx} y1={sy} x2={sx + (arm + 6) * dir} y2={sy} stroke="var(--rule)" stroke-width="1.5" />
+        <g fill="var(--ink)" fill-opacity="0.22" stroke="none">
+          <circle cx="80" cy="34" r="10" />
+          <path d={`M66,46 Q80,42 94,46 L92,92 Q80,96 68,92 Z`} />
+          <path d={`M70,90 L62,140 L70,141 L80,100 L90,141 L98,140 L90,90 Z`} />
+          <path d={`M${80 - 12 * dir},50 L${80 - 24 * dir},78 L${80 - 18 * dir},80 L${80 - 8 * dir},56 Z`} />
+        </g>
+        <line x1={sx} y1={sy} x2={ex} y2={ey} stroke="var(--ink)" stroke-width="7" stroke-linecap="round" />
+        <circle cx={ex} cy={ey} r="4.5" fill="var(--paper)" stroke="var(--ink)" stroke-width="2" />
+        <text x={lefty ? 156 : 4} y="128" text-anchor={lefty ? 'end' : 'start'} class="arm-angle-label">{__i18n_displayText(__i18n_t("ui.playerPanel.text.8a79b296"))}</text>
+        <text x={lefty ? 156 : 4} y="146" text-anchor={lefty ? 'end' : 'start'} class="arm-angle-value">{angle}°</text>
+      </svg>
+    </figure>
+  );
+}
+
 /** 2.0.0: his arm slot and each pitch as a tracking system reads it (tracking.ts). */
-function TrackingTable({ t }: { t: Tracking }) {
+function TrackingTable({ t, lefty }: { t: Tracking; lefty: boolean }) {
   const side = (h: number) => (h > 0 ? __i18n_t("ui.playerPanel.text.e3519768", { cm: h }) : h < 0 ? __i18n_t("ui.playerPanel.text.2fb60458", { cm: -h }) : '0');
   return (
     <div class="tracking">
+      <ArmAngleFigure angle={t.angle} lefty={lefty} />
       <p class="small">
         {__i18n_t("ui.playerPanel.text.c2d86648", { slot: SLOT_LABEL[t.slot], angle: t.angle, release: t.release.toFixed(2), extension: t.extension.toFixed(2) })}
       </p>
@@ -1317,7 +1394,7 @@ function TrackingTable({ t }: { t: Tracking }) {
           <tbody>
             {t.pitches.map((x) => (
               <tr key={x.type}>
-                <td>{x.type === 'FB' ? FASTBALL_LABELS['4SFB'] : PITCH_LABELS[x.type]}</td>
+                <td>{x.type === 'FB' ? FASTBALL_LABELS['4SFB'] : x.variant ? VARIANT_LABELS[x.variant] : PITCH_LABELS[x.type]}</td>
                 <td class="num">{x.velocity}</td>
                 <td class="num">{x.spin.toLocaleString('ko-KR')}</td>
                 <td class="num">{x.axis}</td>

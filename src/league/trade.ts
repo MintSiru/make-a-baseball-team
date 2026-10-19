@@ -449,17 +449,35 @@ export function clearPool(s: LeagueState) {
 
 // ── Foreign players during the season ───────────────────────────────────────────────────────────
 
-export function foreignWindow(s: LeagueState, teamId: TeamId): string | null {
+/** 2.0.24 (the user's request): the Asia quota player is replaced on a count of his own (once a year, RULES.md §5),
+    apart from the other foreign players' replacements. */
+export const asiaReplacements = () => KBO_2026.foreign.asiaQuotaReplacementsPerYear;
+export const replacementsLeft = (s: LeagueState, teamId: TeamId) => ({
+  regular: Math.max(0, foreignReplacements() - (s.foreignChanges?.[teamId] ?? 0)),
+  asia: Math.max(0, asiaReplacements() - (s.asiaChanges?.[teamId] ?? 0)),
+});
+
+/** Why the club cannot replace a foreign player now: of the Asia quota (`asia` true), of the others (false), or any
+    (left out: closed only when both counts are spent). */
+export function foreignWindow(s: LeagueState, teamId: TeamId, asia?: boolean): string | null {
   if (s.phase !== 'regular') return __i18n_k("league.trade.foreignWindow.8f1829b0");
   if (today(s) > `${s.year}-${KBO_2026.foreign.replacementDeadline}`) return __i18n_k("league.trade.foreignWindow.0d58f649");
-  if ((s.foreignChanges?.[teamId] ?? 0) >= foreignReplacements()) return __i18n_k("league.trade.foreignWindow.1f6cbcf8", { replacementsPerSeason: foreignReplacements() });
+  const left = replacementsLeft(s, teamId);
+  if (asia === true && !left.asia) return __i18n_k("league.trade.text.0786eecf", { n: asiaReplacements() });
+  if (asia !== true && !left.regular && (asia === false || !left.asia)) return __i18n_k("league.trade.foreignWindow.1f6cbcf8", { replacementsPerSeason: foreignReplacements() });
   return null;
+}
+
+/** Counts one replacement against the right count. */
+export function countReplacement(s: LeagueState, teamId: TeamId, asia: boolean) {
+  const counts = asia ? (s.asiaChanges ??= {}) : (s.foreignChanges ??= {});
+  counts[teamId] = (counts[teamId] ?? 0) + 1;
 }
 
 /** Candidates for a mid-season signing (the same list until the club uses a replacement), and the
     foreign players with KBO experience other clubs let go (foreignpool.ts). */
 export function foreignMarket(s: LeagueState, teamId: TeamId): Player[] {
-  const used = s.foreignChanges?.[teamId] ?? 0;
+  const used = (s.foreignChanges?.[teamId] ?? 0) + (s.asiaChanges?.[teamId] ?? 0);
   const out: Player[] = [];
   const specs: ['pitcher' | 'hitter', boolean, number][] = [
     ['pitcher', false, 5],
@@ -510,6 +528,8 @@ export function canReplaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId,
   if (out === OPEN_SLOT) {
     const cand = foreignMarket(s, teamId).find((p) => p.id === inId);
     if (!cand) return __i18n_k("league.trade.canReplaceForeign.668bfef3");
+    const spent = foreignWindow(s, teamId, !!cand.origin.asiaQuota);
+    if (spent) return spent;
     const open = openForeign(s, teamId);
     return (cand.origin.asiaQuota ? open.asia : open.regular) > 0 ? null : cand.origin.asiaQuota ? __i18n_k("league.trade.text.e55cc372") : __i18n_k("league.trade.text.09801599");
   }
@@ -519,7 +539,7 @@ export function canReplaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId,
   const cand = foreignMarket(s, teamId).find((p) => p.id === inId);
   if (!cand) return __i18n_k("league.trade.canReplaceForeign.668bfef3");
   if (!!cand.origin.asiaQuota !== !!old.origin.asiaQuota) return __i18n_k("league.trade.canReplaceForeign.4d3ebfe2");
-  return null;
+  return foreignWindow(s, teamId, !!cand.origin.asiaQuota);
 }
 
 /** Replaces a foreign player: the old one leaves (his guaranteed pay is still owed), the new one signs for the rest of the year. */
@@ -543,7 +563,7 @@ export function replaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, in
   s.players[p.id] = p;
   chargeForeign(s, teamId, p);
   s.rosters[teamId]![wasActive ? 'active' : 'futures'].push(p.id);
-  (s.foreignChanges ??= {})[teamId] = (s.foreignChanges[teamId] ?? 0) + 1;
+  countReplacement(s, teamId, !!p.origin.asiaQuota);
   const text = old
     ? __i18n_k("league.trade.replaceForeign.text.979c0f32", { shortOf: shortOf(s, teamId), name: old.name, name2: p.name, text: p.origin.background!.text })
     : __i18n_k("league.trade.text.c476cd4b", { shortOf: shortOf(s, teamId), name: p.name, text: p.origin.background!.text });
@@ -571,7 +591,7 @@ export function aiForeignChanges(s: LeagueState, date: string, r: () => number) 
         const ops = (b.h + b.bb + b.hbp) / Math.max(1, b.ab + b.bb + b.hbp + b.sf) + (b.h + b.d + 2 * b.t + 3 * b.hr) / Math.max(1, b.ab);
         return ops < TRADES.foreign.badOps;
       });
-    if (!bad || r() > TRADES.foreign.chance) continue;
+    if (!bad || foreignWindow(s, teamId, !!bad.origin.asiaQuota) || r() > TRADES.foreign.chance) continue;
     const pick = foreignMarket(s, teamId)
       .filter((p) => !!p.origin.asiaQuota === !!bad.origin.asiaQuota && isPitcher(p) === isPitcher(bad))
       .sort((a, b) => b.scouting.current - a.scouting.current)[0];

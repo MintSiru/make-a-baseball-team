@@ -16,6 +16,8 @@ import { positionKey, useSort } from './sort';
 
 const focusText = (keys: ToolKey[] | undefined) => (keys ?? []).map((k) => TOOL_LABELS[k] ?? k).join('·');
 
+type Squad = 'active' | 'futures' | 'third' | 'all';
+
 export function Training({ league, onAct, onPlayer }: { league: LeagueState; onAct: (a: Action) => void; onPlayer: (id: string) => void }) {
   const u = league.user!;
   const [site, setSite] = useState<SiteId>('tokyo');
@@ -30,9 +32,13 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
     [league, site, year],
   );
   const r = league.rosters[u.teamId];
+  // 2.0.24 (the user's request): the first team, the futures and the reserves shown apart.
+  const [squad, setSquad] = useState<Squad>('all');
+  const squadKey = (id: string): Squad => (r?.active.includes(id) ? 'active' : r?.futures.includes(id) ? 'futures' : r?.third.includes(id) ? 'third' : 'all');
   const squadOf = (id: string) => (r?.active.includes(id) ? __i18n_t("ui.training.text.ef2caeba") : r?.futures.includes(id) ? __i18n_t("ui.training.text.e6607847") : r?.third.includes(id) ? __i18n_t("ui.training.text.0dce8d6b") : '');
+  const shown = squad === 'all' ? fits : fits.filter((p) => squadKey(p.id) === squad);
   const { sorted, th } = useSort(
-    fits,
+    shown,
     {
       name: { value: (p) => p.name },
       pos: { value: (p) => positionKey(positionLabel(p)), first: 1 },
@@ -73,6 +79,13 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
         {__i18n_display(dates && <span class="muted small">{__i18n_display(dates.from)} ~ {__i18n_display(dates.until)}</span>)}
         <span class="muted small">{__i18n_t("ui.training.training.c2eefb9f", { money: money(u.fund) })}</span>
       </p>
+      <div class="segmented" role="group" aria-label={__i18n_t("ui.training.text.5d24a2fc")}>
+        {(['all', 'active', 'futures', 'third'] as const).map((k) => (
+          <button key={k} type="button" aria-pressed={squad === k} onClick={() => setSquad(k)}>
+            {k === 'active' ? __i18n_t("ui.training.text.ef2caeba") : k === 'futures' ? __i18n_t("ui.training.text.e6607847") : k === 'third' ? __i18n_t("ui.training.text.0dce8d6b") : __i18n_t("ui.training.text.934dd25e")} <span class="count">{k === 'all' ? fits.length : fits.filter((p) => squadKey(p.id) === k).length}</span>
+          </button>
+        ))}
+      </div>
       <div class="table-wrap trip-pick" tabIndex={0}>
         <table class="record-table">
           <thead>

@@ -619,6 +619,8 @@ export interface LeagueState {
   foreignPool?: ForeignPoolEntry[];
   /** Foreign replacements used this season, by club. */
   foreignChanges?: Record<TeamId, number>;
+  /** 2.0.24: the Asia quota players replaced this season, on their own count (trade.ts). */
+  asiaChanges?: Record<TeamId, number>;
   /** League moves for the news feed: trades, waiver claims, foreign changes. */
   transactions?: { date: string; text: string }[];
   /** 1.7.0 (draftlog.ts): every rookie draft pick, kept after the player leaves the league. */
@@ -636,6 +638,12 @@ export interface LeagueState {
   retiredBarRise?: boolean;
   /** 2.0.22 (travel.ts): false — no tiredness from the road. */
   travelFatigue?: boolean;
+  /** 2.0.24 (posting.ts): the players a club may post in a winter, when not the KBO's one. */
+  postingMax?: number;
+  /** 2.0.24 (cap.ts): a game option — clubs far or long over the salary cap lose their next first-round pick. */
+  capForfeit?: boolean;
+  /** The first-round picks lost so, by draft year. */
+  pickForfeit?: Record<number, TeamId[]>;
   /** 2.0.23 (conditions.ts): other scenarios' conditions added to the game under way, in the order added. */
   conditions?: import('./conditions').Condition[];
   /** 1.2.0 (allstar.ts): this season's All-Star voting and game, and every finished year. */

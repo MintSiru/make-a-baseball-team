@@ -306,6 +306,9 @@ export interface Player {
       club a "{club}" in it names — and the general manager's own for our player, which shows instead. */
   nickname?: { code: string; i: number; year: number; team?: TeamId; /** 2.0.22: from the foreign players' names (nicknames.ts FOREIGN_NAMES). */ foreign?: boolean };
   nicknameOwn?: string;
+  /** 2.0.24 (the user's request): a foreign player's full name when the club registered him under a shorter one
+      (`name` is then the registered name, 등록명). */
+  fullName?: string;
   /** Injuries so far (first team and futures). */
   injuries?: InjuryRecord[];
   /** 1.7.0 (adapt.ts): the season he failed to adapt to the KBO, and the grade points his main tools lose in games. */

@@ -87,6 +87,7 @@ export function startSeason(s: LeagueState) {
   s.demoted = {};
   s.waivers = [];
   s.foreignChanges = {};
+  delete s.asiaChanges;
   s.marketDone = [];
   s.postseason = [];
   s.countedThrough = null;

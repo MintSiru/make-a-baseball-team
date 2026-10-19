@@ -17,12 +17,12 @@ import { hashUnit, rng } from '../draftroom';
 import type { Player } from '../model/types';
 import { isForeign } from './players';
 import { PITCH_MIX as M } from './tuning';
-import { slotPlatoon, slotVelocity } from './tracking';
+import { armAngle, slotPlatoon, slotVelocity } from './tracking';
 
 /** 1.9.3 (the 1.9 plan's 5th edition): 싱커 (SNK), 서클체인지업 (CIR), 스플리터 (SPL), 슬러브 (SLV), 너클볼 (KN), and the old
     pitches 스크류볼 (SCR), 팜볼 (PLM) and 슈트 (SH), thrown more by pitchers born long ago. The codes are the user's
     abbreviations (4SFB, the four-seamer, is the fastball itself); 1.9.3 renamed FO, CT and SI (the two-seamer) to FRK, CUT and 2SFB, and added the sinker (SNK). */
-export type PitchType = 'SL' | 'SW' | 'CB' | 'CH' | 'FRK' | 'CUT' | '2SFB' | 'SNK' | 'CIR' | 'SPL' | 'SLV' | 'KN' | 'SCR' | 'PLM' | 'SH';
+export type PitchType = 'SL' | 'SW' | 'CB' | 'CH' | 'FRK' | 'CUT' | '2SFB' | 'SNK' | 'CIR' | 'SPL' | 'SLV' | 'KN' | 'SCR' | 'PLM' | 'SH' | 'KC';
 
 export const PITCH_LABELS: Record<PitchType, string> = {
   SL: __i18n_k("league.pitches.pITCH_LABELS.sL.18bc88bf"),
@@ -40,10 +40,50 @@ export const PITCH_LABELS: Record<PitchType, string> = {
   SCR: __i18n_k("league.pitches.text.716cb4e9"),
   PLM: __i18n_k("league.pitches.text.7dd88eb5"),
   SH: __i18n_k("league.pitches.text.93c47996"),
+  KC: __i18n_k("league.pitches.text.32a7eeb6"),
 };
 
+/** 2.0.24 (the user's request): the kinds of slider and curveball, told apart on the tracking screen by their spin and
+    break — a vertical slider (종슬라이더) that drops more than it sweeps, a sweeping one (횡슬라이더); a 12-to-6 drop
+    curve, a big slow one, a hard power curve. His own (seeded by id): a higher arm slot throws the slider more
+    downward, a harder thrower the curve harder. */
+export type PitchVariant = 'vertSL' | 'sweepSL' | 'drop' | 'slow' | 'power';
+export const VARIANT_LABELS: Record<PitchVariant, string> = {
+  vertSL: __i18n_k("league.pitches.text.96463a9e"),
+  sweepSL: __i18n_k("league.pitches.text.99427d9b"),
+  drop: __i18n_k("league.pitches.text.4979ca84"),
+  slow: __i18n_k("league.pitches.text.3bb0253d"),
+  power: __i18n_k("league.pitches.text.bdebc467"),
+};
+
+const clamp01 = (x: number) => Math.max(0.05, Math.min(0.95, x));
+
+/** The kind of his slider or curveball (null for every other pitch, and for a hitter). */
+export function pitchVariant(p: Pick<Player, 'id' | 'role' | 'origin' | 'velocity'>, type: PitchType): PitchVariant | null {
+  if (type !== 'SL' && type !== 'CB') return null;
+  const angle = armAngle(p);
+  if (angle == null) return null;
+  const u = hashUnit(`variant|${p.id}|${type}`);
+  if (type === 'SL') return u < clamp01(0.45 + (angle - 40) * 0.012) ? 'vertSL' : 'sweepSL';
+  const v = p.velocity ?? 142;
+  const power = clamp01(0.2 + (v - 145) * 0.03),
+    slow = clamp01(0.3 - (v - 145) * 0.025);
+  return u < power ? 'power' : u < power + slow ? 'slow' : 'drop';
+}
+
+/** What to call his pitch: the kind of slider or curve when it has one. */
+export const pitchLabel = (p: Pick<Player, 'id' | 'role' | 'origin' | 'velocity'>, type: PitchType) => {
+  const v = pitchVariant(p, type);
+  return v ? VARIANT_LABELS[v] : PITCH_LABELS[type];
+};
+
+/** 2.0.24: how often a curveballer's curve is a knuckle curve (more among the foreign arms and the young). */
+const KC_SHARE = { domestic: 0.2, foreign: 0.35, young: 0.1 };
+
 /** Same-side platoon advantage by best pitch: >1 a wider split, <1 a pitcher who handles both sides. */
-const PLATOON: Record<PitchType, number> = { SL: 1.25, SW: 1.45, CB: 1.05, CH: 0.65, FRK: 0.7, CUT: 0.9, '2SFB': 1.1, SNK: 1.1, CIR: 0.6, SPL: 0.7, SLV: 1.3, KN: 0.85, SCR: 0.55, PLM: 0.75, SH: 1.15 };
+const PLATOON: Record<PitchType, number> = { SL: 1.25, SW: 1.45, CB: 1.05, CH: 0.65, FRK: 0.7, CUT: 0.9, '2SFB': 1.1, SNK: 1.1, CIR: 0.6, SPL: 0.7, SLV: 1.3, KN: 0.85, SCR: 0.55, PLM: 0.75, SH: 1.15, KC: 1 };
+/** 2.0.24: the kind changes it — a sweeper-like slider is harder on same-side hitters than one that drops. */
+const VARIANT_PLATOON: Record<PitchVariant, number> = { vertSL: 1.12, sweepSL: 1.35, drop: 1.02, slow: 0.98, power: 1.12 };
 
 /** 1.9.3 (from the 1.9 feedback): the fastball he leans on — a four-seamer (most), a two-seamer that runs to his arm
     side and sinks, or a cutter. A two-seam or cutter pitcher does not carry the same pitch again as a secondary. */
@@ -63,7 +103,7 @@ export function pitchingLift(p: Player): number {
   if (p.archetype === '땅볼 유도형 선발') up -= 0.15;
   for (const x of repertoire(p)) {
     if (x.type === 'SNK' || x.type === 'SPL' || x.type === 'FRK' || x.type === 'SH' || x.type === '2SFB') up -= 0.8 * x.usage;
-    else if (x.type === 'CB' || x.type === 'SW' || x.type === 'KN') up += 0.3 * x.usage;
+    else if (x.type === 'CB' || x.type === 'KC' || x.type === 'SW' || x.type === 'KN') up += 0.3 * x.usage;
   }
   // Centred on the league's arms (the sinkers and splitters would otherwise tip it to the ground).
   return pitcherLift(p.id, up + 0.11);
@@ -83,7 +123,7 @@ export function fastballOf(p: Player): FastballType {
 }
 
 /** Pitches an arm rarely carries together: one slider-type, one changeup-type, one splitter-type, one sinker-type. */
-export const FAMILY: Partial<Record<PitchType, string>> = { SL: 'slider', SW: 'slider', SLV: 'slider', CH: 'change', CIR: 'change', FRK: 'split', SPL: 'split', '2SFB': 'sink', SNK: 'sink' };
+export const FAMILY: Partial<Record<PitchType, string>> = { SL: 'slider', SW: 'slider', SLV: 'slider', CH: 'change', CIR: 'change', FRK: 'split', SPL: 'split', '2SFB': 'sink', SNK: 'sink', CB: 'curve', KC: 'curve' };
 
 const WEIGHTS = [0.6, 0.3, 0.1];
 
@@ -174,6 +214,9 @@ export function repertoire(p: Player): Pitch[] {
     if (types.length === 1) mix = mixFor(p, false).filter(([x]) => !taken(x));
     mix = mix.filter(([x]) => !types.includes(x) && !(FAMILY[x] && types.some((y) => FAMILY[y] === FAMILY[x])));
   }
+  // 2.0.24: some curveballers grip it as a knuckle curve (his own, outside the mix's draws).
+  const kc = (isForeign(p) ? KC_SHARE.foreign : KC_SHARE.domestic) + (Number(p.birthday.slice(0, 4)) >= 1998 ? KC_SHARE.young : 0);
+  for (let i = 0; i < types.length; i++) if (types[i] === 'CB' && hashUnit(`knuckle-curve|${p.id}`) < kc) types[i] = 'KC';
   const raw = types.map((_, i) => (i === 0 ? 5 + r() * 5 : i === 1 ? -1 - r() * 5 : -7 - r() * 7));
   // Shift so the weighted grade equals the tool: 0.6·best + 0.3·second + 0.1·(mean of the rest; the second
   // again for a pitcher with two). A pitcher with one breaking ball throws it at the tool's grade.
@@ -191,13 +234,16 @@ export function repertoire(p: Player): Pitch[] {
   return out;
 }
 
+/** His pitch's own course (2.0.6); a curve turned knuckle curve in 2.0.24 keeps the curve's. */
+const devOf = (p: Player, type: PitchType) => p.pitchDev?.[type] ?? (type === 'KC' ? (p.pitchDev?.CB ?? 0) : 0);
+
 const clampGrade = (x: number) => Math.max(20, Math.min(80, Math.round(x / 5) * 5));
 
 /** Public grades of each pitch (scouting 변화구 plus the pitch's offset and, from 2.0.6, its own course). */
 export function pitchGrades(p: Player, future = false): { type: PitchType; label: string; grade: number; usage: number }[] {
   const base = (future ? p.scouting.futureTools : p.scouting.tools).breaking;
   if (base == null) return [];
-  return repertoire(p).map((x) => ({ type: x.type, label: PITCH_LABELS[x.type], grade: clampGrade(base + x.offset + (p.pitchDev?.[x.type] ?? 0)), usage: x.usage }));
+  return repertoire(p).map((x) => ({ type: x.type, label: pitchLabel(p, x.type), grade: clampGrade(base + x.offset + devOf(p, x.type)), usage: x.usage }));
 }
 
 /** The grades a pitcher's pitches stood at (the fastball as "FB", his 구위), for the change shown next season. */
@@ -218,11 +264,11 @@ export function developPitches(p: Player, year: number, age: number) {
   if (rep.length < 2) return;
   const dev = p.pitchDev ?? {};
   const steps = rep.map((x) => {
-    const now = x.offset + (dev[x.type] ?? 0);
+    const now = x.offset + devOf(p, x.type);
     return normalOf(`pitch-dev|${p.id}|${year}|${x.type}`) * PITCH_DEV.step + (age <= 27 ? -now * PITCH_DEV.catchUp : 0) - (age >= 33 ? Math.max(0, now) * PITCH_DEV.fade : 0);
   });
   const total = rep.reduce((a, x) => a + x.usage, 0) || 1;
-  const next = rep.map((x, i) => (dev[x.type] ?? 0) + steps[i]!);
+  const next = rep.map((x, i) => devOf(p, x.type) + steps[i]!);
   // Centred (twice: the bounds can pull it off), and only his pitches of today kept (a new role brings a new mix).
   for (let pass = 0; pass < 3; pass++) {
     const mean = rep.reduce((a, x, i) => a + x.usage * next[i]!, 0) / total;
@@ -234,8 +280,9 @@ export function developPitches(p: Player, year: number, age: number) {
 /** Platoon multiplier the engine applies to the same-side advantage. */
 export function platoonFactor(p: Player): number {
   const best = repertoire(p)[0];
+  const variant = best ? pitchVariant(p, best.type) : null;
   // 2.0.0: a low arm slot widens the split (tracking.ts).
-  return (best ? PLATOON[best.type] : 1) * FASTBALL_PLATOON[fastballOf(p)] * slotPlatoon(p);
+  return (best ? (variant ? VARIANT_PLATOON[variant] : PLATOON[best.type]) : 1) * FASTBALL_PLATOON[fastballOf(p)] * slotPlatoon(p);
 }
 
 const VELO_PER_STUFF = 0.35;

@@ -3,7 +3,7 @@ import { k as __i18n_k } from '../i18n/index';
    what was seen, why it matters, what could be done about it at what cost, and a button to the screen that does
    it. Everything comes from what the club can see — scouting grades, the numbers, injuries, the books, the owner's
    goals — never from players' hidden abilities, and nothing here decides anything. */
-import { foreignReplacements, KBO_2026 } from '../rules/kbo2026';
+import { KBO_2026 } from '../rules/kbo2026';
 import type { FieldPos } from './engine/types';
 import { today } from './entry';
 import { projectedPayroll } from './expansion';
@@ -11,7 +11,7 @@ import { slotForeigners } from './foreigncap';
 import { foreignSlots } from './manager';
 import { ageIn, isPitcher } from './players';
 import { firstTeamIds, orgPlayers, type LeagueState } from './state';
-import { poolAsk } from './trade';
+import { poolAsk, replacementsLeft } from './trade';
 import { rates, standingsView } from './views';
 import type { Player, PlayerId, TeamId } from '../model/types';
 
@@ -164,7 +164,8 @@ export function briefing(s: LeagueState): BriefItem[] {
     const slots = foreignSlots(s, me, s.year);
     const used = slotForeigners(s, me, s.year).length;
     const open = slots.regular + slots.asia - used;
-    const changes = foreignReplacements() - (s.foreignChanges?.[me] ?? 0);
+    const left = replacementsLeft(s, me);
+    const changes = left.regular + left.asia;
     if (open > 0 && changes > 0)
       items.push({
         id: 'foreign-open',

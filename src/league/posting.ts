@@ -140,12 +140,15 @@ export function post(s: LeagueState, id: PlayerId, next: number): PostingResult 
 }
 
 /** AI clubs: each lets its most wanted candidate go, most of the time. */
+/** 2.0.24 (the user's request): how many players a club may post in a winter — the KBO's one unless the game says
+    more (settings). */
+export const postingMax = (s: Pick<LeagueState, 'postingMax'>) => s.postingMax ?? KBO_2026.posting.perClubPerWinter;
+
 export function runAiPosting(s: LeagueState, next: number) {
   const r = rng(`${s.seed}|posting-ai|${next}`);
   for (const t of s.teams) {
     if (!s.rosters[t.id] || t.id === s.user?.teamId) continue;
-    const best = postingCandidates(s, t.id, next)[0];
-    if (best && r() < POSTING.aiAllows) post(s, best.id, next);
+    for (const p of postingCandidates(s, t.id, next).slice(0, postingMax(s))) if (r() < POSTING.aiAllows) post(s, p.id, next);
   }
 }
 

@@ -14,7 +14,7 @@ import { rng } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
 import { addAlert } from './alerts';
 import { clubState } from './fans';
-import { INTERNATIONAL, announceDate, eventById, eventsIn, exempts, finishText, ODDS, timing, type Finish, type InternationalEvent } from './international';
+import { CROWD_EFFECT, INTERNATIONAL, announceDate, eventById, eventsIn, exempts, finishText, ODDS, timing, type Finish, type InternationalEvent } from './international';
 import { iga } from './josa';
 import { playNationalGames } from './nationalgames';
 import { fullTimeManager } from './board';
@@ -126,6 +126,14 @@ export function finishEvent(s: LeagueState, e: InternationalEvent) {
       hurt.push(p);
     }
   if (finish === 'champion' && s.user) clubState(s, s.user.teamId).interest += N.titleBuzz;
+  // 2.0.24: the country's mood after it — the league's crowds for the year to come (international.ts).
+  const crowd = CROWD_EFFECT[e.kind][finish] ?? 0;
+  if (Math.abs(crowd) >= 0.03) {
+    const pct = Math.round(Math.abs(crowd) * 100);
+    const title = crowd > 0 ? __i18n_k("league.national.text.f142bc40", { name: e.name }) : __i18n_k("league.national.text.058c04f2", { name: e.name });
+    const body = crowd > 0 ? __i18n_k("league.national.text.14293bdf", { name: e.name, pct }) : __i18n_k("league.national.text.e6ea7a3b", { name: e.name, pct });
+    addNews(s, { id: `crowd-${e.id}`, date: e.dates.to, kind: 'season', title, body, quotes: [], facts: { event: e.name, crowd: `${crowd > 0 ? '+' : '−'}${pct}%` }, players: [], mine: false });
+  }
   resultAlert(s, e, entry, hurt);
   return entry;
 }

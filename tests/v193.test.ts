@@ -17,7 +17,7 @@ import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import type { ExpansionSettings, LeagueState } from '../src/league/state';
 
-const CODES = ['SL', 'SW', 'SLV', 'CB', 'CH', 'CIR', 'FRK', 'SPL', 'CUT', '2SFB', 'SNK', 'KN', 'SCR', 'PLM', 'SH'];
+const CODES = ['SL', 'SW', 'SLV', 'CB', 'CH', 'CIR', 'FRK', 'SPL', 'CUT', '2SFB', 'SNK', 'KN', 'SCR', 'PLM', 'SH', 'KC'];
 const FAMILY: Record<string, string> = { SL: 's', SW: 's', SLV: 's', CH: 'c', CIR: 'c', FRK: 'f', SPL: 'f', '2SFB': 'k', SNK: 'k' };
 const OLD: PitchType[] = ['SCR', 'PLM', 'SH'];
 
