@@ -3383,7 +3383,7 @@ button.danger {
 /* 2.0.7: the movement profile and the usage table (Savant.tsx). */
 .arm-angle {
   margin: 0.4rem 0;
-  max-width: 9rem;
+  max-width: 13rem;
 }
 .arm-angle svg {
   display: block;
@@ -3391,12 +3391,13 @@ button.danger {
   height: auto;
 }
 .arm-angle-label {
-  font-size: 11px;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
   fill: var(--ink);
-  opacity: 0.7;
+  opacity: 0.65;
 }
 .arm-angle-value {
-  font-size: 18px;
+  font-size: 26px;
   font-weight: 700;
   fill: var(--ink);
 }

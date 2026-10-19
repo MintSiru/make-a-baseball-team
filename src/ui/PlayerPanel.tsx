@@ -1338,33 +1338,49 @@ export function Jersey({ name, foreign, number, color }: { name: string; foreign
 /** 2.0.24 (the user's request, after the Savant picture): his arm angle drawn — a pitcher from behind with his throwing
     arm at the angle against the level of his shoulder (a lefty's mirrored). */
 export function ArmAngleFigure({ angle, lefty }: { angle: number; lefty: boolean }) {
-  const dir = lefty ? -1 : 1;
-  const sx = 80 + 9 * dir,
-    sy = 52;
+  // Drawn for a right-hander seen from behind, mirrored for a left-hander; the labels stay unmirrored.
+  const sx = 126,
+    sy = 60;
   const rad = (angle * Math.PI) / 180;
-  const arm = 52,
-    arc = 36;
-  const ex = sx + Math.cos(rad) * arm * dir,
+  const arm = 58,
+    arc = 30;
+  const ex = sx + Math.cos(rad) * arm,
     ey = sy - Math.sin(rad) * arm;
-  const ax = sx + Math.cos(rad) * arc * dir,
+  const ax = sx + Math.cos(rad) * arc,
     ay = sy - Math.sin(rad) * arc;
   // The wedge between the shoulder's level and the arm (above it, or below for a submariner).
-  const sweep = (angle >= 0) === !lefty ? 0 : 1;
+  const sweep = angle >= 0 ? 0 : 1;
+  const tx = lefty ? 208 : 6;
+  const anchor = lefty ? 'end' : 'start';
   return (
     <figure class="arm-angle">
-      <svg viewBox="0 0 160 150" role="img" aria-label={__i18n_displayText(__i18n_t("ui.playerPanel.text.2d54da20", { angle }))}>
-        <path d={`M${sx},${sy} L${sx + arc * dir},${sy} A${arc},${arc} 0 0 ${sweep} ${ax},${ay} Z`} fill="var(--accent)" fill-opacity="0.28" />
-        <line x1={sx} y1={sy} x2={sx + (arm + 6) * dir} y2={sy} stroke="var(--rule)" stroke-width="1.5" />
-        <g fill="var(--ink)" fill-opacity="0.22" stroke="none">
-          <circle cx="80" cy="34" r="10" />
-          <path d={`M66,46 Q80,42 94,46 L92,92 Q80,96 68,92 Z`} />
-          <path d={`M70,90 L62,140 L70,141 L80,100 L90,141 L98,140 L90,90 Z`} />
-          <path d={`M${80 - 12 * dir},50 L${80 - 24 * dir},78 L${80 - 18 * dir},80 L${80 - 8 * dir},56 Z`} />
+      <svg viewBox="0 -6 214 166" role="img" aria-label={__i18n_displayText(__i18n_t("ui.playerPanel.text.2d54da20", { angle }))}>
+        <g transform={lefty ? 'translate(214,0) scale(-1,1)' : undefined}>
+          <circle cx={sx} cy={sy} r="70" fill="var(--accent)" fill-opacity="0.07" stroke="var(--accent)" stroke-opacity="0.3" />
+          <g opacity="0.26" fill="var(--ink)" stroke="var(--ink)" stroke-linecap="round" stroke-linejoin="round">
+            <ellipse cx="111" cy="34" rx="9.5" ry="11" stroke="none" />
+            <path d="M98,50 C106,44 120,46 128,54 C132,62 128,72 124,80 C122,90 122,98 120,104 L98,104 C96,94 94,84 92,74 C90,62 92,54 98,50 Z" stroke="none" />
+            <path d="M96,56 L84,76 L94,90" fill="none" stroke-width="9" />
+            <circle cx="96" cy="90" r="6.5" stroke="none" />
+            <path d="M98,102 L121,102 C124,108 124,114 122,118 L96,118 C94,112 95,106 98,102 Z" stroke="none" />
+            <path d="M102,114 L98,136" fill="none" stroke-width="13" />
+            <path d="M98,136 L96,153" fill="none" stroke-width="10" />
+            <path d="M116,114 L124,134" fill="none" stroke-width="13" />
+            <path d="M124,134 L118,151" fill="none" stroke-width="10" />
+            <ellipse cx="93" cy="156" rx="8" ry="3.5" stroke="none" />
+            <ellipse cx="114" cy="154" rx="6.5" ry="3" stroke="none" />
+          </g>
+          <g opacity="0.1" fill="var(--ink)">
+            <path d="M98,50 C102,47 106,46 110,46 C104,52 100,62 98,74 C95,66 94,56 98,50 Z" />
+            <path d="M104,104 L121,104 L122,118 L106,118 Z" />
+          </g>
+          <line x1={sx} y1={sy} x2={sx + 80} y2={sy} stroke="var(--rule)" stroke-width="1.5" />
+          <path d={`M${sx},${sy} L${sx + arc},${sy} A${arc},${arc} 0 0 ${sweep} ${ax},${ay} Z`} fill="var(--accent)" fill-opacity="0.3" />
+          <line x1={sx} y1={sy} x2={ex} y2={ey} stroke="var(--ink)" stroke-width="8" stroke-linecap="round" />
+          <circle cx={ex} cy={ey} r="5" fill="var(--paper)" stroke="var(--ink)" stroke-width="2.5" />
         </g>
-        <line x1={sx} y1={sy} x2={ex} y2={ey} stroke="var(--ink)" stroke-width="7" stroke-linecap="round" />
-        <circle cx={ex} cy={ey} r="4.5" fill="var(--paper)" stroke="var(--ink)" stroke-width="2" />
-        <text x={lefty ? 156 : 4} y="128" text-anchor={lefty ? 'end' : 'start'} class="arm-angle-label">{__i18n_displayText(__i18n_t("ui.playerPanel.text.8a79b296"))}</text>
-        <text x={lefty ? 156 : 4} y="146" text-anchor={lefty ? 'end' : 'start'} class="arm-angle-value">{angle}°</text>
+        <text x={tx} y="122" text-anchor={anchor} class="arm-angle-label">{__i18n_displayText(__i18n_t("ui.playerPanel.text.8a79b296"))}</text>
+        <text x={tx} y="150" text-anchor={anchor} class="arm-angle-value">{angle}°</text>
       </svg>
     </figure>
   );
