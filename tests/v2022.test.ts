@@ -33,7 +33,8 @@ describe('the retired-number bar', () => {
     team.retiredNumbers = [];
     // Two greats with the same career there, WAR 65 each: the second clears the bar only when it does not rise.
     const greats = Object.values(s.players)
-      .filter((p) => p.teamId === team.id && p.number != null && p.number < 100 && p.numberTeam === team.id && p.role !== 'RP')
+      // Hitters: a pitcher's copied season could read as a reliever's (a lower bar), whatever the league's history.
+      .filter((p) => p.teamId === team.id && p.number != null && p.number < 100 && p.numberTeam === team.id && p.role !== 'RP' && p.role !== 'SP' && !p.twoWay)
       .slice(0, 2);
     for (const p of greats) {
       p.career = Array.from({ length: 13 }, (_, i) => ({ ...(p.career[0] ?? ({} as never)), year: 2000 + i, teamId: team.id, level: undefined, war: 5 }));

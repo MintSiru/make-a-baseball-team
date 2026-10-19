@@ -68,6 +68,8 @@ export interface BoardMotion {
   by: TeamId | null;
   /** The committee's reason (a pull on every club's vote). */
   push: number;
+  /** 2.0.25: put by the players' association (선수협). */
+  union?: true;
 }
 
 export interface BoardRecord extends BoardMotion {
@@ -76,6 +78,8 @@ export interface BoardRecord extends BoardMotion {
   yes: number;
   need: number;
   passed: boolean;
+  /** 2.0.25: carried, then taken back after the players' association's protest. */
+  withdrawn?: true;
 }
 
 export interface BoardState {
@@ -273,6 +277,46 @@ function stance(item: BoardItem, up: boolean, c: { strength: number; rich: numbe
   }
 }
 
+/** 2.0.25 (the user's request: the players' side against the board): the players' association (프로야구선수협회) on
+    each rule — for the players (1) or against them (−1). Its word weighs on the clubs' votes (public opinion, the
+    players in their own clubhouse); it puts a motion of its own most winters; and a rule against the players carried
+    over its protest is now and then taken back after talks. */
+export const UNION = { pressure: 0.1, motion: 0.6, withdraw: 0.35, against: -0.5 };
+export function playersView(item: BoardItem, up: boolean): number {
+  const d = up ? 1 : -1;
+  switch (item) {
+    case 'foreign':
+    case 'asiaQuota':
+      return -d; // fewer places for the home-grown
+    case 'foreignCap':
+    case 'foreignTotal':
+      return -0.5 * d;
+    case 'foreignChanges':
+      return -0.3 * d;
+    case 'firstTeam':
+    case 'rosterLimit':
+    case 'cap':
+    case 'minSalary':
+      return d; // more places, more pay
+    case 'faSeasons':
+    case 'postingSeasons':
+      return -d; // freedom later
+    case 'games':
+      return -0.5 * d; // more work for the same pay
+    case 'secondDraft':
+      return 0.5 * d; // a way out for the blocked
+    case 'postseason':
+      return 0.3 * d;
+    case 'ghostRunner':
+      return 0.3 * d;
+    case 'extras':
+      return -0.3 * d;
+    default:
+      return 0;
+  }
+}
+const unionPush = (m: Pick<BoardMotion, 'item' | 'value' | 'now'>) => UNION.pressure * playersView(m.item, m.value > m.now);
+
 const VOTE_EDGE = 0.05;
 /** The executive committee's motions come pre-agreed: a pull on every club's vote. */
 const COMMITTEE_PULL = 0.12;
@@ -281,7 +325,7 @@ const voteOf = (score: number): BoardVote => (score > VOTE_EDGE ? 'yes' : score 
 /** What each club means to vote, before the day's chance (the committee's mood, shown to our club). */
 export function expectedVotes(s: LeagueState, year: number, m: BoardMotion): Record<TeamId, BoardVote> {
   const sides = clubSides(s, year);
-  return Object.fromEntries(Object.entries(sides).map(([id, c]) => [id, id === m.by ? 'yes' : voteOf(stance(m.item, m.value > m.now, c) + m.push)]));
+  return Object.fromEntries(Object.entries(sides).map(([id, c]) => [id, id === m.by ? 'yes' : voteOf(stance(m.item, m.value > m.now, c) + m.push + (s.board?.on ? unionPush(m) : 0))]));
 }
 
 /** Votes needed: two thirds of the first-team clubs, rounded up (7 of 10, 8 of 11 or 12, 11 of 16). */
@@ -349,6 +393,15 @@ export function committeeMotions(s: LeagueState, year: number): BoardMotion[] {
     const m = pick && motion(s, next, pick.item, pick.up, null, pick.push + COMMITTEE_PULL);
     if (m) out.push(m);
   }
+  // 2.0.25: the players' association's own motion, most winters (a stream of its own).
+  const ru = rng(`${s.seed}|board-union|${year}`);
+  if (ru() < UNION.motion) {
+    const wants: [BoardItem, boolean][] = [['minSalary', true], ['faSeasons', false], ['cap', true], ['rosterLimit', true], ['firstTeam', true], ['postingSeasons', false], ['foreign', false]];
+    const left = wants.filter(([item]) => open.includes(item) && !resting(s, year, item) && !out.some((m) => m.item === item));
+    const pick = left[Math.floor(ru() * left.length)];
+    const m = pick && motion(s, next, pick[0], pick[1], null, 0);
+    if (m) out.push({ ...m, union: true });
+  }
   return out;
 }
 
@@ -377,11 +430,13 @@ export function holdMeeting(s: LeagueState, year: number, motions: BoardMotion[]
     const votes: Record<TeamId, BoardVote> = {};
     for (const id of ids) {
       const chance = (r() - 0.5) * 0.5;
-      votes[id] = id === me && ids.includes(me) ? (m.by === me ? 'yes' : (ours[i] ?? 'abstain')) : id === m.by ? 'yes' : voteOf(stance(m.item, m.value > m.now, sides[id]!) + m.push + chance);
+      votes[id] = id === me && ids.includes(me) ? (m.by === me ? 'yes' : (ours[i] ?? 'abstain')) : id === m.by ? 'yes' : voteOf(stance(m.item, m.value > m.now, sides[id]!) + m.push + unionPush(m) + chance);
     }
     const yes = Object.values(votes).filter((v) => v === 'yes').length;
     const rec: BoardRecord = { ...m, year, votes, yes, need, passed: yes >= need };
-    if (rec.passed) b.changes.push({ from: year + 1, item: m.item, value: m.value });
+    // 2.0.25: carried over the players' protest: now and then taken back after talks (a stream of its own).
+    if (rec.passed && playersView(m.item, m.value > m.now) <= UNION.against && rng(`${s.seed}|board-union-protest|${year}|${m.item}`)() < UNION.withdraw) rec.withdrawn = true;
+    if (rec.passed && !rec.withdrawn) b.changes.push({ from: year + 1, item: m.item, value: m.value });
     b.log.push(rec);
     return rec;
   });
@@ -390,13 +445,17 @@ export function holdMeeting(s: LeagueState, year: number, motions: BoardMotion[]
   const title = records.some((x) => x.passed) ? __i18n_k("league.board.text.24c660da") : __i18n_k("league.board.text.51346f04");
   addNews(s, { id: `board-${year}`, date: `${year}-11-01`, kind: 'season', title, body: lines.join(' '), quotes: [], facts: { motions: records.length }, players: [], mine: false });
   if (me) addAlert(s, { id: `board-${year}`, date: `${year}-11-01`, kind: 'season', title, lines });
-  if (s.legacy) for (const x of records.filter((x) => x.passed)) leagueEvent(s, year, boardLine(s, x));
+  if (s.legacy) for (const x of records.filter((x) => x.passed && !x.withdrawn)) leagueEvent(s, year, boardLine(s, x));
 }
 
 /** One motion as a line: what, the vote, carried or not. */
 export function boardLine(s: LeagueState, x: BoardRecord): string {
-  const what = motionText(x);
-  return x.passed ? __i18n_k("league.board.text.e9db9a88", { what, yes: x.yes, need: x.need, season: x.year + 1 }) : __i18n_k("league.board.text.a52b1514", { what, yes: x.yes, need: x.need });
+  const what = (x.union ? __i18n_k("league.board.text.2e079ed8") : '') + motionText(x);
+  // 2.0.25: the players' association's word on it.
+  const view = playersView(x.item, x.value > x.now);
+  const union = view >= 0.5 ? __i18n_k("league.board.text.c18acbde") : view <= UNION.against ? __i18n_k("league.board.text.b9443ba2") : '';
+  if (x.withdrawn) return __i18n_k("league.board.text.8762dc42", { what, yes: x.yes });
+  return (x.passed ? __i18n_k("league.board.text.e9db9a88", { what, yes: x.yes, need: x.need, season: x.year + 1 }) : __i18n_k("league.board.text.a52b1514", { what, yes: x.yes, need: x.need })) + union;
 }
 
 /** What a motion changes, in words. */

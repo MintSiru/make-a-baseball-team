@@ -57,6 +57,7 @@ import { autoNational, marchEvents, nextNationalDecision, novemberEvents, resolv
 import { autoScandal, resolveScandal } from './scandals';
 import { autoDispute, resolveDispute } from './dispute';
 import { conditionMoney } from './conditions';
+import { DYNAMIC, handicap, measureHandicap } from './dynamic';
 import { autoMeddle, resolveMeddle, scenarioWinter, supportFactor } from './scenarios';
 import { canRelease, releasePlayer } from './trade';
 
@@ -203,9 +204,12 @@ export function yearlyGrant(s: LeagueState) {
   // 1.8.2: after seasons of surplus the owner may take part of a large fund back (sweep.ts).
   ownerSweep(s, year);
   const k = DIFFICULTY_MONEY[u.settings.difficulty];
+  // 2.0.25: the dynamic difficulty's level for the season ahead (dynamic.ts).
+  if (s.dynamicDifficulty) u.handicap = measureHandicap(s, year);
+  const h = handicap(s);
   const b = nextBudget(
     // 2.0.23: and the conditions added to the game (conditions.ts).
-    { support: baseSupport(u.settings.parentType) * k * supportFactor(u.settings) * conditionMoney(s, 'support'), payroll: (budgetFor(u.settings).payrollBudget * salaryCapFor(next) * conditionMoney(s, 'payroll')) / salaryCapFor(startYear() + 1) },
+    { support: baseSupport(u.settings.parentType) * k * supportFactor(u.settings) * conditionMoney(s, 'support') * (1 - DYNAMIC.support * h), payroll: (budgetFor(u.settings).payrollBudget * salaryCapFor(next) * conditionMoney(s, 'payroll') * (1 - DYNAMIC.payroll * h)) / salaryCapFor(startYear() + 1) },
     u.budgetScale ?? 1,
     event,
   );

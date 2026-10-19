@@ -18,6 +18,7 @@ import { StoryOptions } from './StorySettings';
 import { UpdateNotes } from './Updates';
 import { BOARD_ITEMS, boardLine, currentValue, items, motionText, ruleLabel, ruleSeason, ruleValueText, type BoardItem } from '../league/board';
 import { scenarioDef } from '../league/scenarios';
+import { handicapText } from '../league/dynamic';
 import { CONDITIONS, checkCondition, conditionText, hasCondition } from '../league/conditions';
 
 const SECTIONS: [string, string][] = [
@@ -221,6 +222,17 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
             ))}
           </div>
           <p class="muted small">{__i18n_t("ui.settings.text.9f43c22c")}</p>
+          {/* 2.0.25 (dynamic.ts): the difficulty that moves with our club. */}
+          <h3>{__i18n_t("ui.settings.text.8636eb2a")}</h3>
+          <div class="segmented" role="group" aria-label={__i18n_displayText(__i18n_t("ui.settings.text.8636eb2a"))}>
+            {([true, false] as const).map((on) => (
+              <button key={String(on)} type="button" aria-pressed={!!league.dynamicDifficulty === on} disabled={busy} onClick={() => !!league.dynamicDifficulty !== on && onAct({ kind: 'dynamicDifficulty', on })}>
+                {on ? __i18n_t("ui.settings.text.8f13d839") : __i18n_t("ui.settings.text.66770937")}
+              </button>
+            ))}
+          </div>
+          <p class="muted small">{__i18n_t("ui.settings.text.4cb5ffb6")}</p>
+          {league.dynamicDifficulty && <p class="small">{__i18n_t("ui.settings.text.f43cf6e0", { text: handicapText(league.user?.handicap ?? 0) })}</p>}
           {/* 2.0.24 (cap.ts): first-round picks lost for breaking the salary cap. */}
           <h3>{__i18n_t("ui.settings.text.bf57ac8c")}</h3>
           <div class="segmented" role="group" aria-label={__i18n_displayText(__i18n_t("ui.settings.text.bf57ac8c"))}>

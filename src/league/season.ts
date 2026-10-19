@@ -32,6 +32,7 @@ import { allStarDay } from './allstar';
 import { draftClass } from './players';
 import { applyCombine, combineDay } from './combine';
 import { scandalDay, serveSuspensions } from './scandals';
+import { brawlGame } from './brawl';
 import { meddleDay } from './scenarios';
 import { openBooks } from './finance';
 import { rosterLimit } from './offseason';
@@ -87,6 +88,7 @@ export function startSeason(s: LeagueState) {
   s.demoted = {};
   s.waivers = [];
   s.foreignChanges = {};
+  delete s.brawls;
   delete s.asiaChanges;
   s.marketDone = [];
   s.postseason = [];
@@ -360,6 +362,8 @@ export function playDay(s: LeagueState): boolean {
     familyGame(s, out.home, out.away, date);
     // 2.0.7: perfect games, no-hitters, cycles, home runs in a row.
     featsGame(s, out, date);
+    // 2.0.25: a hit batter, a pitch thrown back, the benches clearing (brawl.ts).
+    brawlGame(s, out, g.id, date);
     const box = compactBox(out, g.id, date, att);
     keepBox(s, box, log);
     if (log) {

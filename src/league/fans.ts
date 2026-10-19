@@ -15,7 +15,7 @@ import { cityById } from '../club/cities';
 import { ageIn, isForeign } from './players';
 import type { GameScore } from './standings';
 import { firstTeamIds, orgPlayers, type ClubState, type LeagueState } from './state';
-import { FANS, FINANCE, PARENT, RIVAL } from './tuning';
+import { BALLPARK, FANS, FINANCE, PARENT, RIVAL } from './tuning';
 import { isRivalry } from './twelve';
 import { premiumShare, scoreboardDemand } from './facilities';
 
@@ -111,7 +111,9 @@ export function attendance(s: LeagueState, g: Pick<GameScore, 'id' | 'date' | 'h
   const mood = home.interest + (pct - 0.5) * FANS.inSeasonWin * Math.min(1, games / 40);
   const r = rng(`${s.seed}|gate|${g.id}`);
   const day = DAY_FACTOR[new Date(`${g.date}T12:00:00Z`).getUTCDay()]!;
-  const month = MONTH_FACTOR[Number(g.date.slice(5, 7))] ?? 1;
+  // 2.0.25: a dome keeps the summer's rain and heat out (BALLPARK.domeGate, tuning.ts).
+  const domed = s.teams.find((t) => t.id === g.home)?.stadium.size === 'dome';
+  const month = domed ? Math.max(1, MONTH_FACTOR[Number(g.date.slice(5, 7))] ?? 1) * BALLPARK.domeGate : (MONTH_FACTOR[Number(g.date.slice(5, 7))] ?? 1);
   const visitors = 1 + ((away.popularity - FANS.averagePopularity) / FANS.averagePopularity) * FANS.visitorWeight;
   // The rivalry (V0.9) draws more.
   const rivalry = isRivalry(s, g.home, g.away) ? RIVAL.rivalry.gate : 1;

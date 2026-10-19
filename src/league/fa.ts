@@ -31,6 +31,7 @@ import { gmAppetite, gmOf } from './twelve';
 import { crossing } from './rivalry';
 import { farewell } from './life';
 import { traitsOf } from './traits';
+import { DYNAMIC, handicap } from './dynamic';
 
 // ── Offers ───────────────────────────────────────────────────────────────────────────────────────
 
@@ -376,7 +377,8 @@ export function fitOf(s: LeagueState, t: FaTalk, teamId: TeamId, o: FaOffer, nex
     }
   }
   if (teamId === t.from) k += t.loyalty;
-  if (user) k += DIFFICULTY.faFit[s.user!.settings.difficulty] - doubt;
+  // 2.0.25: and the dynamic difficulty's level (dynamic.ts).
+  if (user) k += DIFFICULTY.faFit[s.user!.settings.difficulty] - doubt - DYNAMIC.faFit * handicap(s);
   // 2.0.24: never nothing (the clubs' offers are priced by it).
   return { k: Math.max(0.05, k), wants, good };
 }

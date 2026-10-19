@@ -365,7 +365,8 @@ function PitchRelay({ league, id, away, home, ours, onAt }: { league: LeagueStat
       </div>
       <ol class="plain pitch-log" reversed>
         {recent.map((x, k) => (
-          <li key={k} class={x.kind === 'result' ? 'strong' : x.kind === 'up' || x.kind === 'change' ? 'muted' : undefined}>
+          <li key={k} class={x.kind === 'result' ? 'strong' : x.kind === 'talk' ? 'talk' : x.kind === 'up' || x.kind === 'change' ? 'muted' : undefined}>
+            {x.kind === 'talk' && <span class="talk-who">{__i18n_t("ui.boxScore.text.9871640b")}</span>}
             {x.text}
           </li>
         ))}

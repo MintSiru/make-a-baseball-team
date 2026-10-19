@@ -13,6 +13,7 @@ import { averageVelocity, FASTBALL_LABELS, fastballOf, pitchLabel, pitchVariant,
 import { halfLabel, playText } from './playtext';
 import type { LeagueState } from './state';
 import { nationalLog, nationalName } from './nationalgames';
+import { afterPlay, beforePlay, onChange } from './commentary';
 
 /** How much slower than his fastball each pitch comes (km/h). */
 const PITCH_DROP: Record<PitchType, number> = { CB: 25, CH: 17, FRK: 17, CUT: 5, '2SFB': 5, SL: 13, SW: 13, SNK: 3, CIR: 17, SPL: 12, SLV: 18, KN: 38, SCR: 20, PLM: 27, SH: 4, KC: 22 };
@@ -34,8 +35,8 @@ export interface PitchFrame {
   score: [number, number];
   /** "직구 147km/h · 볼", "타석: 김민준", the play itself on the last pitch. */
   text: string;
-  /** The first frame of a plate appearance (no pitch yet) or a pitching change. */
-  kind: 'up' | 'pitch' | 'result' | 'change';
+  /** The first frame of a plate appearance (no pitch yet) or a pitching change; 2.0.25, a line from the booth. */
+  kind: 'up' | 'pitch' | 'result' | 'change' | 'talk';
   /** 1.7.1: where a pitch crossed the plate (the strike zone is −1…1 each way, up and the first-base side positive). */
   loc?: PitchLoc;
   /** 1.7.1: where a ball in play came down (metres from home plate, degrees off the centre-field line, right positive). */
@@ -233,7 +234,11 @@ export function pitchFeed(s: LeagueState, id: string): PitchFrame[] | null {
       return;
     }
     if (ev.k === 'pitch') {
-      frames.push({ ...base, batter: '', pitcher: name(ev.p), balls: 0, strikes: 0, outs, bases: [...bases], score: [...score], text: playText(ev, `${id}-${n}`, name), kind: 'change' });
+      const change = { ...base, batter: '', pitcher: name(ev.p), balls: 0, strikes: 0, outs, bases: [...bases] as [boolean, boolean, boolean], score: [...score] as [number, number] };
+      frames.push({ ...change, text: playText(ev, `${id}-${n}`, name), kind: 'change' });
+      // 2.0.25: the booth on the new arm (commentary.ts).
+      const talk = onChange(name(ev.p), `${id}-${n}`);
+      if (talk) frames.push({ ...change, text: talk, kind: 'talk' });
       return;
     }
     const r = rng(`${id}|pitches|${n}`);
@@ -246,6 +251,8 @@ export function pitchFeed(s: LeagueState, id: string): PitchFrame[] | null {
     let b = 0,
       st = 0;
     frames.push({ ...base, ...who, balls: 0, strikes: 0, outs, bases: [...bases], score: [...score], text: __i18n_k("league.pitchfeed.text.8f578dfd", { name: who.batter }), kind: 'up' });
+    const upTalk = beforePlay(ev, score, `${id}-${n}`, name, (s.players[ev.b]?.scouting.current ?? 0) >= 70);
+    if (upTalk) frames.push({ ...base, ...who, balls: 0, strikes: 0, outs, bases: [...bases], score: [...score], text: upTalk, kind: 'talk' });
     for (const c of calls) {
       if (c === 'ball') b++;
       else if (c !== 'foul' || st < 2) st = Math.min(2, st + 1);
@@ -257,6 +264,7 @@ export function pitchFeed(s: LeagueState, id: string): PitchFrame[] | null {
     const pitch = pitchOf(s, ev.p, r);
     const lastText = last === 'play' ? __i18n_k("league.pitchfeed.text.d6233f39", { pitch }) : __i18n_k("league.pitchfeed.text.d9ea4c15", { pitch, call: words[last as keyof typeof words] });
     frames.push({ ...base, ...who, balls: Math.min(fb, 4), strikes: Math.min(fs, 3), outs, bases: [...bases], score: [...score], text: lastText, kind: 'pitch', loc: locOf(last, rl) });
+    const before = { score: [...score] as [number, number], bases: [...bases] as [boolean, boolean, boolean] };
     outs = ev.outs;
     bases = [...ev.bases];
     score = [...ev.score];
@@ -265,6 +273,9 @@ export function pitchFeed(s: LeagueState, id: string): PitchFrame[] | null {
     const flew = ev.ball;
     const read = flew ? (flew.dist ? __i18n_k("league.pitchfeed.text.d0a27f8f", { ev: flew.ev.toFixed(1), la: flew.la, dist: flew.dist }) : __i18n_k("league.pitchfeed.text.1186ab8b", { ev: flew.ev.toFixed(1), la: flew.la })) : '';
     frames.push({ ...base, ...who, balls: 0, strikes: 0, outs, bases: [...bases], score: [...score], text: text + read, kind: 'result', ...(spot ? { hit: spot } : {}) });
+    // 2.0.25: the booth on the play.
+    const talk = afterPlay(ev, before.score, before.bases, `${id}-${n}`, name, last === 'ball4' && st === 2);
+    if (talk) frames.push({ ...base, ...who, balls: 0, strikes: 0, outs, bases: [...bases], score: [...score], text: talk, kind: 'talk' });
   });
   return frames;
 }
