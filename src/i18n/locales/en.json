@@ -8491,5 +8491,7 @@
   "ui.displaySettings.text.4e3e0efc": "2026 won (real)",
   "ui.displaySettings.text.f712f9a4": "That year's prices (nominal)",
   "ui.displaySettings.text.7254ecbf": "Yearly inflation from 2026",
-  "ui.displaySettings.text.d925e49c": "Nominal shows amounts at that year's prices: before 2026 at the prices of the time (1982 about a fifth of today's), after it rising each year by the rate chosen. The game's economy and balance stay as they are, and money fields take amounts at the same prices."
+  "ui.displaySettings.text.d925e49c": "Nominal shows amounts at that year's prices: before 2026 at the prices of the time (1982 about a fifth of today's), after it rising each year by the rate chosen. The game's economy and balance stay as they are, and money fields take amounts at the same prices.",
+  "ui.faMarket.text.7e44855e": "The top forty salaries (foreign players out) plus free-agent bonuses spread over their deals. Players not yet through salary talks count at the pay they can expect, and the free agents on this market at your offers. It is the same sum the season's settlement uses.",
+  "ui.manual.text.b12755bb": "The ceiling on total payroll for the top {topPlayers} highest-paid domestic players (foreign players out) ({season}: {eok}). Exceeding it incurs a {value} penalty on the overage (depending on consecutive years); {pickDropFrom, plural, one {# consecutive year} other {# consecutive years}} drops the 1st-round draft pick by {pickDrop, plural, one {# spot} other {# spots}}."
 }

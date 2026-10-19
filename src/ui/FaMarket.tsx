@@ -170,7 +170,7 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
         </div>
         <div>
           <dt>{__i18n_t("ui.faMarket.faMarket.c868d2a2", { next: next })}</dt>
-          <dd class={capNow + capAdd > cap ? 'minus' : ''}>
+          <dd class={capNow + capAdd > cap ? 'minus' : ''} title={__i18n_displayText(__i18n_t("ui.faMarket.text.7e44855e"))}>
             {__i18n_display(moneyShort(Math.round(capNow + capAdd)))} / {__i18n_display(moneyShort(cap))}
           </dd>
         </div>
