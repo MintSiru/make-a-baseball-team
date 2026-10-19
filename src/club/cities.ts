@@ -51,4 +51,19 @@ export const SCENARIO_CITIES: City[] = [
   { id: 'ulleung', name: __i18n_k("club.cities.sCENARIO_CITIES.name.e2971049"), province: __i18n_k("club.cities.sCENARIO_CITIES.province.9c479e8f"), population: 9_000, stadium: { name: __i18n_k("club.cities.stadium.name.cc8463f9"), seats: 3_000, real: false }, market: 4, competition: __i18n_k("club.cities.sCENARIO_CITIES.competition.f5759ff0"), note: __i18n_k("club.cities.sCENARIO_CITIES.note.e55b2828") },
 ];
 
-export const cityById = (id: string) => CITIES.find((c) => c.id === id) ?? SCENARIO_CITIES.find((c) => c.id === id) ?? NORTH_CITIES.find((c) => c.id === id);
+/** 2.0.22 (the user's request): the homes of the clubs already in the league, shared with them. The club starts at
+    a temporary ground in the city (the club's own park is theirs; the seats are a game assumption) and its fans are
+    the ones the old club has not already won: a big city, but a crowded one. Populations 2022, rounded. 서울 is the
+    scenario 「서울의 왕」's own (목동). Not in a legacy game (history founds the clubs there itself). */
+export const REAL_CLUB_CITIES: City[] = [
+  SCENARIO_CITIES.find((c) => c.id === 'seoul')!,
+  { id: 'incheon-new', name: __i18n_k("club.cities.text.41402f7e"), province: __i18n_k("club.cities.text.4f20da2a"), population: 2_970_000, stadium: { name: __i18n_k("club.cities.text.a55037a9"), seats: 7_000, real: false }, market: 64, competition: __i18n_k("club.cities.text.6fd5eb0c"), note: __i18n_k("club.cities.text.4b99a060") },
+  { id: 'busan', name: __i18n_k("club.cities.text.25f016f2"), province: __i18n_k("club.cities.text.c6caac65"), population: 3_310_000, stadium: { name: __i18n_k("club.cities.text.2fc13a4f"), seats: 8_000, real: false }, market: 74, competition: __i18n_k("club.cities.text.9627a40a"), note: __i18n_k("club.cities.text.4b99a060") },
+  { id: 'daegu', name: __i18n_k("club.cities.text.604f78d4"), province: __i18n_k("club.cities.text.9392b593"), population: 2_370_000, stadium: { name: __i18n_k("club.cities.text.d309064b"), seats: 8_000, real: false }, market: 64, competition: __i18n_k("club.cities.text.734b13dd"), note: __i18n_k("club.cities.text.4b99a060") },
+  { id: 'gwangju', name: __i18n_k("club.cities.text.ad0d7d4b"), province: __i18n_k("club.cities.text.eb82a68b"), population: 1_430_000, stadium: { name: __i18n_k("club.cities.text.c1c5a38e"), seats: 7_000, real: false }, market: 56, competition: __i18n_k("club.cities.text.063320f9"), note: __i18n_k("club.cities.text.4b99a060") },
+  { id: 'daejeon', name: __i18n_k("club.cities.text.1e783cc6"), province: __i18n_k("club.cities.text.ed9208b5"), population: 1_440_000, stadium: { name: __i18n_k("club.cities.text.39510630"), seats: 7_000, real: false }, market: 58, competition: __i18n_k("club.cities.text.1611a5ea"), note: __i18n_k("club.cities.text.4b99a060") },
+  { id: 'suwon', name: __i18n_k("club.cities.text.08ccbbe9"), province: __i18n_k("club.cities.text.bfcc2516"), population: 1_190_000, stadium: { name: __i18n_k("club.cities.text.b139cd39"), seats: 7_000, real: false }, market: 58, competition: __i18n_k("club.cities.text.16c34f15"), note: __i18n_k("club.cities.text.4b99a060") },
+  { id: 'changwon', name: __i18n_k("club.cities.text.d517715a"), province: __i18n_k("club.cities.text.a1097f3c"), population: 1_010_000, stadium: { name: __i18n_k("club.cities.text.6900d532"), seats: 7_000, real: false }, market: 50, competition: __i18n_k("club.cities.text.c92f511a"), note: __i18n_k("club.cities.text.4b99a060") },
+];
+
+export const cityById = (id: string) => CITIES.find((c) => c.id === id) ?? SCENARIO_CITIES.find((c) => c.id === id) ?? REAL_CLUB_CITIES.find((c) => c.id === id) ?? NORTH_CITIES.find((c) => c.id === id);

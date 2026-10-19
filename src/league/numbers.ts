@@ -112,7 +112,8 @@ export function maybeRetireNumber(s: LeagueState, p: Player, teamId: TeamId, yea
   const here = p.career.filter((c) => c.teamId === teamId && !c.level);
   const war = here.reduce((a, c) => a + c.war, 0);
   const team = s.teams.find((t) => t.id === teamId);
-  const bar = 1 + RETIRE.perRetired * (team?.retiredNumbers?.length ?? 0);
+  // 2.0.22 (the user's request): the rising bar can be turned off in the settings (each number at the same bar).
+  const bar = s.retiredBarRise === false ? 1 : 1 + RETIRE.perRetired * (team?.retiredNumbers?.length ?? 0);
   const saves = here.reduce((a, c) => a + (c.pit?.sv ?? 0) + (c.pit?.hld ?? 0), 0);
   const great = isReliever(p) ? war >= RETIRE.relieverWar * bar || saves >= RETIRE.relieverSaves * bar || bullpenTitles(s, p.id) >= Math.ceil(RETIRE.relieverTitles * bar) : war >= RETIRE.war * bar;
   if (!great || here.length < RETIRE.seasons) return;

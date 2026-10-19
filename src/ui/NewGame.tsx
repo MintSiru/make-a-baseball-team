@@ -2,7 +2,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 import { useState } from 'preact/hooks';
 import { accentStyle } from './display';
 import { useDark } from './useDisplay';
-import { CITIES, cityById } from '../club/cities';
+import { CITIES, cityById, REAL_CLUB_CITIES } from '../club/cities';
 import { NORTH_CITIES } from '../league/north';
 import { SCENARIOS, scenarioDef, withScenario, type ScenarioId } from '../league/scenarios';
 import { LEGACY_TAKEN_CITIES } from '../league/legacy1982';
@@ -79,7 +79,7 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
     if (before?.name) setName('');
     if (before?.short) setShort('');
     if (before?.parentName) setParentName('');
-    if (before?.cityId && !CITIES.some((c) => c.id === before.cityId)) setCityId('ulsan');
+    if (before?.cityId && !CITIES.some((c) => c.id === before.cityId) && !REAL_CLUB_CITIES.some((c) => c.id === before.cityId)) setCityId('ulsan');
     // Its other conditions go back to where a new form starts.
     if (before?.parentType) setParentType('conglomerate');
     if (before?.difficulty) setDifficulty('normal');
@@ -107,6 +107,8 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
   // 1.9.2: the north's scenarios found the club in one of the north's cities.
   // 1.9.5: the legacy start leaves out the cities of the clubs history founds later (전주 — 쌍방울).
   const cities = locked.has('cityId') ? [city] : def?.north ? NORTH_CITIES : def?.legacy ? CITIES.filter((c) => !LEGACY_TAKEN_CITIES.includes(c.id)) : CITIES;
+  // 2.0.22: the homes of the clubs already in the league too (not in a legacy or northern start).
+  const shared = locked.has('cityId') || def?.north || def?.legacy ? [] : REAL_CLUB_CITIES;
   // The twelfth club comes once ours is in the first team.
   // 1.6.0: 「백 투 더 패스트」 founds the club ten years earlier.
   // The page has no league yet: the calendar follows the scenario picked (the ballpark years and the risks too).
@@ -221,6 +223,20 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
             </button>
           )))}
         </div>
+        {shared.length > 0 && (
+          <>
+            <h4>{__i18n_t("ui.newGame.text.17033e45")}</h4>
+            <div class="choice-grid">
+              {shared.map((c) => (
+                <button key={c.id} type="button" class="choice" aria-pressed={c.id === cityId} onClick={() => setCityId(c.id)}>
+                  <strong>{__i18n_display(c.name)}</strong>
+                  <span class="muted">{__i18n_t("ui.newGame.newGame.e6bc2339", { value: Math.round(c.population / 10000), market: c.market })}</span>
+                  <span class="muted">{__i18n_t("ui.newGame.newGame.67b862d4", { name: c.stadium.name, value: c.stadium.seats.toLocaleString('ko-KR'), value2: c.stadium.real ? '' : __i18n_k("ui.newGame.newGame.a1d2d5e8") })}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
         <p class="muted">
           {__i18n_display(city.competition)}. {__i18n_display(city.note)}
         </p>

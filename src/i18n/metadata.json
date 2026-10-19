@@ -78416,5 +78416,345 @@
       }
     },
     "locations": []
+  },
+  "club.cities.text.a55037a9": {
+    "source": "src/club/cities.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.6fd5eb0c": {
+    "source": "src/club/cities.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.4b99a060": {
+    "source": "src/club/cities.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.25f016f2": {
+    "source": "src/club/cities.ts",
+    "line": 61,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.c6caac65": {
+    "source": "src/club/cities.ts",
+    "line": 61,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.2fc13a4f": {
+    "source": "src/club/cities.ts",
+    "line": 61,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.9627a40a": {
+    "source": "src/club/cities.ts",
+    "line": 61,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.604f78d4": {
+    "source": "src/club/cities.ts",
+    "line": 62,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.9392b593": {
+    "source": "src/club/cities.ts",
+    "line": 62,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.d309064b": {
+    "source": "src/club/cities.ts",
+    "line": 62,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.734b13dd": {
+    "source": "src/club/cities.ts",
+    "line": 62,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.ad0d7d4b": {
+    "source": "src/club/cities.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.eb82a68b": {
+    "source": "src/club/cities.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.c1c5a38e": {
+    "source": "src/club/cities.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.063320f9": {
+    "source": "src/club/cities.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.1e783cc6": {
+    "source": "src/club/cities.ts",
+    "line": 64,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.ed9208b5": {
+    "source": "src/club/cities.ts",
+    "line": 64,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.39510630": {
+    "source": "src/club/cities.ts",
+    "line": 64,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.1611a5ea": {
+    "source": "src/club/cities.ts",
+    "line": 64,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.08ccbbe9": {
+    "source": "src/club/cities.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.b139cd39": {
+    "source": "src/club/cities.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.16c34f15": {
+    "source": "src/club/cities.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.d517715a": {
+    "source": "src/club/cities.ts",
+    "line": 66,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.6900d532": {
+    "source": "src/club/cities.ts",
+    "line": 66,
+    "params": {},
+    "locations": []
+  },
+  "club.cities.text.c92f511a": {
+    "source": "src/club/cities.ts",
+    "line": 66,
+    "params": {},
+    "locations": []
+  },
+  "ui.newGame.text.17033e45": {
+    "source": "src/ui/NewGame.tsx",
+    "line": 228,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.5348a154": {
+    "source": "src/ui/Settings.tsx",
+    "line": 203,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.9f43c22c": {
+    "source": "src/ui/Settings.tsx",
+    "line": 211,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.0d58aa7c": {
+    "source": "src/ui/Settings.tsx",
+    "line": 203,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.de632662": {
+    "source": "src/ui/Settings.tsx",
+    "line": 211,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.aa628aa3": {
+    "source": "src/league/nicknames.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.629d0b46": {
+    "source": "src/league/nicknames.ts",
+    "line": 65,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.9f101a8c": {
+    "source": "src/league/nicknames.ts",
+    "line": 103,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.cbf362e7": {
+    "source": "src/league/nicknames.ts",
+    "line": 103,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.23e36842": {
+    "source": "src/league/nicknames.ts",
+    "line": 103,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.ab36babc": {
+    "source": "src/league/nicknames.ts",
+    "line": 103,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.07a1aa8a": {
+    "source": "src/league/nicknames.ts",
+    "line": 103,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.bc298926": {
+    "source": "src/league/nicknames.ts",
+    "line": 104,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.101590bb": {
+    "source": "src/league/nicknames.ts",
+    "line": 104,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.b4eb36c5": {
+    "source": "src/league/nicknames.ts",
+    "line": 104,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.e8315f7c": {
+    "source": "src/league/nicknames.ts",
+    "line": 104,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.e5194531": {
+    "source": "src/league/nicknames.ts",
+    "line": 105,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.32843294": {
+    "source": "src/league/nicknames.ts",
+    "line": 105,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.11e3dc75": {
+    "source": "src/league/nicknames.ts",
+    "line": 105,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.9a46ab31": {
+    "source": "src/league/nicknames.ts",
+    "line": 106,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.9bbc5db8": {
+    "source": "src/league/nicknames.ts",
+    "line": 106,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.9569fe10": {
+    "source": "src/league/nicknames.ts",
+    "line": 106,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.4e7ddb18": {
+    "source": "src/league/nicknames.ts",
+    "line": 106,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.6fc0bea4": {
+    "source": "src/league/nicknames.ts",
+    "line": 107,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.257f91bd": {
+    "source": "src/league/nicknames.ts",
+    "line": 107,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.nicknames.text.6db682fc": {
+    "source": "src/league/nicknames.ts",
+    "line": 108,
+    "params": {},
+    "locations": []
+  },
+  "league.nicknames.text.5333cf87": {
+    "source": "src/league/nicknames.ts",
+    "line": 108,
+    "params": {},
+    "locations": []
   }
 }

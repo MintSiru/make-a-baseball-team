@@ -1,4 +1,4 @@
-import { display as __i18n_display, k as __i18n_k, rich as __i18n_rich, t as __i18n_t } from '../i18n/index';
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, rich as __i18n_rich, t as __i18n_t } from '../i18n/index';
 /* The settings tab (V0.13): everything the player sets in one place — display, the game, the clubs' names,
    saves, AI articles and what the game is. Display and AI settings stay in this browser; the game and the
    clubs' names travel with the save. */
@@ -199,6 +199,26 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
             )))}
           </div>
           <p class="muted small">{__i18n_t("ui.settings.gameOptions.132bf02d")}</p>
+          {/* 2.0.22 (travel.ts): tiredness from the road. */}
+          <h3>{__i18n_t("ui.settings.text.0d58aa7c")}</h3>
+          <div class="segmented" role="group" aria-label={__i18n_displayText(__i18n_t("ui.settings.text.0d58aa7c"))}>
+            {([true, false] as const).map((on) => (
+              <button key={String(on)} type="button" aria-pressed={(league.travelFatigue !== false) === on} disabled={busy} onClick={() => (league.travelFatigue !== false) !== on && onAct({ kind: 'travelFatigue', on })}>
+                {on ? __i18n_t("ui.settings.text.8f13d839") : __i18n_t("ui.settings.text.66770937")}
+              </button>
+            ))}
+          </div>
+          <p class="muted small">{__i18n_t("ui.settings.text.de632662")}</p>
+          {/* 2.0.22 (numbers.ts): the retired-number bar rising with each number the club retires, or not. */}
+          <h3>{__i18n_t("ui.settings.text.5348a154")}</h3>
+          <div class="segmented" role="group" aria-label={__i18n_displayText(__i18n_t("ui.settings.text.5348a154"))}>
+            {([true, false] as const).map((rise) => (
+              <button key={String(rise)} type="button" aria-pressed={(league.retiredBarRise !== false) === rise} disabled={busy} onClick={() => (league.retiredBarRise !== false) !== rise && onAct({ kind: 'retiredBar', rise })}>
+                {rise ? __i18n_t("ui.settings.text.8f13d839") : __i18n_t("ui.settings.text.66770937")}
+              </button>
+            ))}
+          </div>
+          <p class="muted small">{__i18n_t("ui.settings.text.9f43c22c")}</p>
         </>
       ))}
       {__i18n_display(u ? (

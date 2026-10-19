@@ -133,6 +133,8 @@ export type Action =
   | { kind: 'allStarCampaign' }
   /** 1.2.0: the optional foreign veteran rule (seasons, or off). */
   | { kind: 'foreignVeteran'; seasons: number | null }
+  | { kind: 'retiredBar'; rise: boolean }
+  | { kind: 'travelFatigue'; on: boolean }
   /** The season-ticket discount for the coming season (V0.12). */
   | { kind: 'seasonTickets'; discount: number };
 
@@ -151,7 +153,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'retiredBar', 'travelFatigue', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -392,6 +394,18 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       milestone(s, s.offseason?.year ?? s.year, action.seasons ? __i18n_k("league.actions.apply.e689101c", { seasons: action.seasons }) : __i18n_k("league.actions.apply.a4c1dacc"));
       break;
     }
+    case 'travelFatigue':
+      // 2.0.22: tiredness from the road on or off (travel.ts).
+      if (!s.user) break;
+      if (action.on) delete s.travelFatigue;
+      else s.travelFatigue = false;
+      break;
+    case 'retiredBar':
+      // 2.0.22: the rising retired-number bar on or off (numbers.ts).
+      if (!s.user) break;
+      if (action.rise) delete s.retiredBarRise;
+      else s.retiredBarRise = false;
+      break;
     case 'workout':
       workout(s, action.draftYear, action.id, action.name);
       break;

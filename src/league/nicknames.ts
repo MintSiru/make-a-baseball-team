@@ -62,7 +62,7 @@ const CATALOG: Record<NickCode, { tier: number; names: Names; why: () => string 
   ironGames: { tier: 2, names: [() => __i18n_k("league.nicknames.text.3ec6bbe3"), () => __i18n_k("league.nicknames.text.1db38f03"), () => __i18n_k("league.nicknames.text.bd21d353"), () => __i18n_k("league.nicknames.text.2ee0e24d")], why: () => __i18n_k("league.nicknames.text.38b86773") },
   iron: { tier: 2, names: [() => __i18n_k("league.nicknames.text.e1b293f0"), () => __i18n_k("league.nicknames.text.7d20f8e3"), () => __i18n_k("league.nicknames.text.23d1b328"), () => __i18n_k("league.nicknames.text.eae3f936"), () => __i18n_k("league.nicknames.text.2054db51")], why: () => __i18n_k("league.nicknames.text.cbe85715") },
   hold: { tier: 2, names: [() => __i18n_k("league.nicknames.text.26b2de5d"), () => __i18n_k("league.nicknames.text.3902089d"), () => __i18n_k("league.nicknames.text.8aec620c"), () => __i18n_k("league.nicknames.text.6bae7a8e"), () => __i18n_k("league.nicknames.text.0d93b9ef")], why: () => __i18n_k("league.nicknames.text.5355207c") },
-  foreign: { tier: 2, names: [() => __i18n_k("league.nicknames.text.e70d808e"), () => __i18n_k("league.nicknames.text.2f591371"), (club) => __i18n_k("league.nicknames.text.04acd87e", { club }), () => __i18n_k("league.nicknames.text.3d76d4a6"), () => __i18n_k("league.nicknames.text.4a07773b")], why: () => __i18n_k("league.nicknames.text.0605fc64") },
+  foreign: { tier: 2, names: [() => __i18n_k("league.nicknames.text.e70d808e"), () => __i18n_k("league.nicknames.text.2f591371"), (club) => __i18n_k("league.nicknames.text.04acd87e", { club }), () => __i18n_k("league.nicknames.text.3d76d4a6"), () => __i18n_k("league.nicknames.text.4a07773b"), () => __i18n_k("league.nicknames.text.aa628aa3"), (club) => __i18n_k("league.nicknames.text.629d0b46", { club })], why: () => __i18n_k("league.nicknames.text.0605fc64") },
   knuckle: { tier: 2, names: [() => __i18n_k("league.nicknames.text.ffc72ae8"), () => __i18n_k("league.nicknames.text.18acdc99"), () => __i18n_k("league.nicknames.text.1ca201f3"), () => __i18n_k("league.nicknames.text.84ea2ab1")], why: () => __i18n_k("league.nicknames.text.c9fde957") },
   oldPitch: { tier: 2, names: [() => __i18n_k("league.nicknames.text.2dc02089"), () => __i18n_k("league.nicknames.text.33e8febb"), () => __i18n_k("league.nicknames.text.13d4ee4c")], why: () => __i18n_k("league.nicknames.text.ce265203") },
   sinker: { tier: 1, names: [() => __i18n_k("league.nicknames.text.73d529bc"), () => __i18n_k("league.nicknames.text.9e085d61"), () => __i18n_k("league.nicknames.text.4d4b94fc")], why: () => __i18n_k("league.nicknames.text.08e3820a") },
@@ -96,6 +96,27 @@ const CATALOG: Record<NickCode, { tier: number; names: Names; why: () => string 
 /** Codes in the order they are tried at the same tier. */
 const ORDER = Object.keys(CATALOG) as NickCode[];
 
+/** 2.0.22 (the user's report: a foreign ace called 「토종 에이스」): the names only a home-grown player can have,
+    by their place in the list, and the foreign players' own names for the titles they win most. */
+const DOMESTIC_ONLY: Partial<Record<NickCode, number[]>> = { ace: [4], legend: [4], bomber: [3], oneClub: [5] };
+const FOREIGN_NAMES: Partial<Record<NickCode, Names>> = {
+  ace: [() => __i18n_k("league.nicknames.text.9f101a8c"), (club) => __i18n_k("league.nicknames.text.cbf362e7", { club }), () => __i18n_k("league.nicknames.text.23e36842"), () => __i18n_k("league.nicknames.text.ab36babc"), (club) => __i18n_k("league.nicknames.text.07a1aa8a", { club })],
+  hr: [() => __i18n_k("league.nicknames.text.bc298926"), (club) => __i18n_k("league.nicknames.text.101590bb", { club }), () => __i18n_k("league.nicknames.text.b4eb36c5"), () => __i18n_k("league.nicknames.text.e8315f7c")],
+  hrKing: [() => __i18n_k("league.nicknames.text.e5194531"), () => __i18n_k("league.nicknames.text.32843294"), (club) => __i18n_k("league.nicknames.text.11e3dc75", { club })],
+  legend: [() => __i18n_k("league.nicknames.text.9a46ab31"), (club) => __i18n_k("league.nicknames.text.9bbc5db8", { club }), () => __i18n_k("league.nicknames.text.9569fe10"), () => __i18n_k("league.nicknames.text.4e7ddb18")],
+  mvp1: [() => __i18n_k("league.nicknames.text.6fc0bea4"), (club) => __i18n_k("league.nicknames.text.257f91bd", { club }), () => __i18n_k("league.nicknames.text.aa628aa3")],
+  k: [() => __i18n_k("league.nicknames.text.6db682fc"), () => __i18n_k("league.nicknames.text.5333cf87")],
+};
+
+/** A name for him from the list: a foreign player's own if there is one, never a home-grown one's. */
+function pick(p: Player, code: NickCode): { i: number; foreign?: boolean } {
+  const own = isForeign(p) ? FOREIGN_NAMES[code] : undefined;
+  const names = own ?? CATALOG[code].names;
+  const allowed = names.map((_, i) => i).filter((i) => own || !isForeign(p) || !(DOMESTIC_ONLY[code] ?? []).includes(i));
+  const i = allowed[Math.floor(hashUnit(`nick|${p.id}|${code}`) * allowed.length)] ?? 0;
+  return own ? { i, foreign: true } : { i };
+}
+
 export const NICKNAME_MAX = 12;
 /** First-team days a namesake needs in the season for the fans to tell him apart (1.9.5). */
 export const NAMESAKE_DAYS = 100;
@@ -119,7 +140,7 @@ export function nicknameOf(s: Pick<LeagueState, 'teams'>, p: Pick<Player, 'nickn
   if (p.nicknameOwn) return p.nicknameOwn;
   const n = p.nickname;
   if (!n) return null;
-  const names = CATALOG[n.code as NickCode]?.names;
+  const names = (n.foreign ? FOREIGN_NAMES[n.code as NickCode] : undefined) ?? CATALOG[n.code as NickCode]?.names;
   if (!names) return null;
   return names[n.i % names.length]!(clubShort(s, n.team), givenName(p.name), placeOf(s, n.team, n.year));
 }
@@ -281,11 +302,17 @@ export function nicknameWinter(s: LeagueState, year: number, news = true) {
   }
   const hall = new Map((s.hallOfFame ?? []).map((h) => [h.name, h.id]));
   for (const p of active) if (!isForeign(p) && seen(p) && hall.has(p.name) && hall.get(p.name) !== p.id) kin.set(p.id, { ...kin.get(p.id), fake: true });
+  // 2.0.22: a foreign player given a home-grown player's name before (「토종 에이스」) keeps the title under another.
+  for (const p of active) {
+    const n = p.nickname;
+    if (!n || !isForeign(p) || n.foreign || !CATALOG[n.code as NickCode]) continue;
+    const code = n.code as NickCode;
+    if ((DOMESTIC_ONLY[code] ?? []).includes(n.i % CATALOG[code].names.length)) p.nickname = { ...n, ...pick(p, code) };
+  }
   for (const p of active) {
     const best = earned(p, all.get(p.id), year, games, kin.get(p.id))[0];
     if (!best || (p.nickname && (CATALOG[p.nickname.code as NickCode]?.tier ?? 0) >= CATALOG[best].tier)) continue;
-    const names = CATALOG[best].names;
-    p.nickname = { code: best, i: Math.floor(hashUnit(`nick|${p.id}|${best}`) * names.length), year, team: p.teamId ?? undefined };
+    p.nickname = { code: best, ...pick(p, best), year, team: p.teamId ?? undefined };
     const u = s.user;
     if (!news || !u || p.teamId !== u.teamId || p.nicknameOwn) continue;
     const nick = nicknameOf(s, p)!;

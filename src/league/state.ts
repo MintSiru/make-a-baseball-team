@@ -632,6 +632,10 @@ export interface LeagueState {
   /** 1.2.0, an optional league rule (off when missing): a foreign player with this many first-team seasons in the
       league no longer takes a foreign slot or counts against the foreign salary cap (NPB's way; foreigncap.ts). */
   foreignVeteran?: number | null;
+  /** 2.0.22 (numbers.ts): false — each retired number at the same bar, not a quarter higher for each one before. */
+  retiredBarRise?: boolean;
+  /** 2.0.22 (travel.ts): false — no tiredness from the road. */
+  travelFatigue?: boolean;
   /** 1.2.0 (allstar.ts): this season's All-Star voting and game, and every finished year. */
   allStar?: import('./allstar').AllStarState;
   allStarHistory?: import('./allstar').AllStarRecord[];
