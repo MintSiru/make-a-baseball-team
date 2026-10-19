@@ -154,7 +154,7 @@ export interface Evaluation {
 
 export interface StadiumProject {
   /** 'fences': a run factor of before 2.0.2; 'layout': the 2.0.2 editor's fences. */
-  kind: 'expand' | 'fences' | 'layout' | 'newPark';
+  kind: 'expand' | 'fences' | 'layout' | 'newPark' | 'dome';
   label: string;
   /** Opens before this season. */
   opens: number;
@@ -521,6 +521,8 @@ export interface UserClub {
   /** Facilities built (level by kind) and under construction (V0.10, facilities.ts). */
   facilities?: Partial<Record<FacilityKind, number>>;
   facilityWorks?: { kind: FacilityKind; level: number; opens: number; cost: number }[];
+  /** 2.0.25 (dynamic.ts): this season's level, −2 (a hand up) to 3 (the others close ranks). */
+  handicap?: number;
 }
 
 /** A private training centre abroad (V0.10). */
@@ -642,6 +644,8 @@ export interface LeagueState {
   postingMax?: number;
   /** 2.0.24 (cap.ts): a game option — clubs far or long over the salary cap lose their next first-round pick. */
   capForfeit?: boolean;
+  /** 2.0.25 (dynamic.ts): a game option — the difficulty moves with how our club is doing. */
+  dynamicDifficulty?: boolean;
   /** The first-round picks lost so, by draft year. */
   pickForfeit?: Record<number, TeamId[]>;
   /** 2.0.23 (conditions.ts): other scenarios' conditions added to the game under way, in the order added. */
@@ -675,6 +679,8 @@ export interface LeagueState {
   international: NationalEntry[];
   /** Players serving a KBO suspension or ban (V0.12, scandals.ts). */
   suspended?: Record<PlayerId, import('./scandals').Suspension>;
+  /** 2.0.25 (brawl.ts): the benches cleared, this season. */
+  brawls?: import('./brawl').Brawl[];
   /** News articles (V0.7, news.ts). */
   news?: import('./news').NewsItem[];
   /** Pop-up alerts for the user's club (V0.7.4, alerts.ts). */

@@ -12,6 +12,7 @@ import { trackingOf } from '../league/tracking';
 import { hashUnit } from '../draftroom';
 import type { LeagueState } from '../league/state';
 import { shortName } from '../league/views';
+import { hitterZones, pitcherZones } from '../league/zones';
 
 const BAT_LABEL = (): Record<PercentileKey, string> => ({
   xwoba: 'xwOBA',
@@ -275,6 +276,36 @@ function Usage({ league, id, pitches, usage }: { league: LeagueState; id: string
   );
 }
 
+/** 2.0.25 (zones.ts): the strike zone in nine, hot red and cold blue, from the catcher's view. */
+function HotZones({ league, id, pitcher }: { league: LeagueState; id: string; pitcher: boolean }) {
+  const p = league.players[id];
+  if (!p) return null;
+  const grid = pitcher ? pitcherZones(league, p) : hitterZones(league, p);
+  const all = grid.flat();
+  const lo = Math.min(...all),
+    hi = Math.max(...all);
+  // For a pitcher a low average is good: his cold zones are the batters' cold zones, coloured the same way.
+  const pct = (x: number) => (hi === lo ? 50 : ((x - lo) / (hi - lo)) * 100);
+  return (
+    <figure class="hot-zones">
+      <svg viewBox="0 0 150 166" role="img" aria-label={__i18n_displayText(__i18n_t("ui.savant.text.9b467d5f", { value: grid.map((r) => r.map(avg3).join(' ')).join(' / ') }))}>
+        {grid.map((row, r) =>
+          row.map((x, c) => (
+            <g key={`${r}-${c}`}>
+              <rect x={15 + c * 40} y={8 + r * 46} width="40" height="46" fill={shade(pct(x))} stroke="var(--paper)" stroke-width="1.5" />
+              <text x={35 + c * 40} y={36 + r * 46} text-anchor="middle" class="zone-avg">
+                {avg3(x)}
+              </text>
+            </g>
+          )),
+        )}
+        <polygon points="45,156 105,156 105,160 75,165 45,160" fill="var(--rule)" />
+      </svg>
+      <figcaption class="small muted">{pitcher ? __i18n_t("ui.savant.text.40622003") : __i18n_t("ui.savant.text.7c60b5e8")}</figcaption>
+    </figure>
+  );
+}
+
 export function SavantView({ league, id, pitcher }: { league: LeagueState; id: string; pitcher: boolean }) {
   const pc = percentilesOf(league, id);
   const rows = pitcher ? pc.pitching : pc.batting;
@@ -291,6 +322,8 @@ export function SavantView({ league, id, pitcher }: { league: LeagueState; id: s
       <h4>{__i18n_t("ui.savant.text.483f877c", { year: league.year })}</h4>
       {rows ? <Bars rows={rows} pitcher={pitcher} /> : <p class="muted small">{__i18n_t("ui.savant.text.8a2110bc")}</p>}
       <p class="muted small">{pitcher ? __i18n_t("ui.savant.text.503d5b84") : __i18n_t("ui.savant.text.6985c142")}</p>
+      <h4>{__i18n_t("ui.savant.text.af746949")}</h4>
+      <HotZones league={league} id={id} pitcher={pitcher} />
       {!pitcher && (
         <>
           <h4>{__i18n_t("ui.savant.text.eeb111e4")}</h4>

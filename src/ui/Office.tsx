@@ -527,7 +527,7 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
             </label>
             <button type="submit">{__i18n_t("ui.office.office.75b73b7f")}</button>
           </form>
-          {__i18n_display((building || u.projects?.some((p) => p.kind === 'newPark' && p.opens > league.year)) && (
+          {__i18n_display((building || u.projects?.some((p) => (p.kind === 'newPark' || p.kind === 'dome') && p.opens > league.year)) && (
             <form class="inline-form" onSubmit={rename(future, 'new')}>
               <label>
                 새 구장 이름

@@ -37,7 +37,7 @@ import { RivalForm } from './Twelve';
 import { FantasyBoard } from './FantasyDraft';
 import { MEDDLE } from '../league/scenarios';
 import { ROUND_NAME } from '../league/postseason';
-import { motionText, type BoardVote } from '../league/board';
+import { motionText, playersView, type BoardVote } from '../league/board';
 
 interface Props {
   league: LeagueState;
@@ -1200,6 +1200,13 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
             return (
               <section key={i} class="board-motion">
                 <h3>{motionText(m)}</h3>
+                {/* 2.0.25: the players' association's motion, and its word on each. */}
+                {(m.union || Math.abs(playersView(m.item, m.value > m.now)) >= 0.5) && (
+                  <p class="small">
+                    {m.union ? __i18n_t("ui.decision.text.1114304a") : ''}
+                    {playersView(m.item, m.value > m.now) >= 0.5 ? __i18n_t("ui.decision.text.adb9f811") : playersView(m.item, m.value > m.now) <= -0.5 ? __i18n_t("ui.decision.text.8c6c9468") : ''}
+                  </p>
+                )}
                 <p class="muted small">
                   {__i18n_t("ui.decision.text.abf35d90", { yes, need: d.need })}
                 </p>

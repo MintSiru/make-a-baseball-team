@@ -79172,5 +79172,471 @@
     "line": 71,
     "params": {},
     "locations": []
+  },
+  "league.brawl.text.52902162": {
+    "source": "src/league/brawl.ts",
+    "line": 102,
+    "params": {},
+    "locations": []
+  },
+  "league.brawl.text.0fa1bdba": {
+    "source": "src/league/brawl.ts",
+    "line": 102,
+    "params": {},
+    "locations": []
+  },
+  "league.brawl.text.078d81ca": {
+    "source": "src/league/brawl.ts",
+    "line": 102,
+    "params": {},
+    "locations": []
+  },
+  "league.brawl.text.2ab9515a": {
+    "source": "src/league/brawl.ts",
+    "line": 109,
+    "params": {},
+    "locations": []
+  },
+  "league.brawl.text.b95f16a8": {
+    "source": "src/league/brawl.ts",
+    "line": 114,
+    "params": {
+      "pair": {
+        "expression": "pair"
+      },
+      "victim": {
+        "expression": "victim.name"
+      }
+    },
+    "locations": []
+  },
+  "league.brawl.text.bdce29c5": {
+    "source": "src/league/brawl.ts",
+    "line": 116,
+    "params": {
+      "pair": {
+        "expression": "pair"
+      }
+    },
+    "locations": []
+  },
+  "league.brawl.text.ded639c1": {
+    "source": "src/league/brawl.ts",
+    "line": 117,
+    "params": {
+      "pair": {
+        "expression": "pair"
+      }
+    },
+    "locations": []
+  },
+  "league.brawl.text.61e5c545": {
+    "source": "src/league/brawl.ts",
+    "line": 121,
+    "params": {
+      "victim": {
+        "expression": "victim.name"
+      },
+      "avenger": {
+        "expression": "iga(avenger.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.brawl.text.d1d6fb43": {
+    "source": "src/league/brawl.ts",
+    "line": 122,
+    "params": {
+      "thrower": {
+        "expression": "thrower?.name ?? ''"
+      },
+      "victim": {
+        "expression": "victim.name"
+      }
+    },
+    "locations": []
+  },
+  "league.brawl.text.1c2809b7": {
+    "source": "src/league/brawl.ts",
+    "line": 124,
+    "params": {},
+    "locations": []
+  },
+  "league.brawl.text.892b6d1b": {
+    "source": "src/league/brawl.ts",
+    "line": 127,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "club": {
+        "expression": "short(s, x.teamId)"
+      },
+      "games": {
+        "expression": "x.games"
+      },
+      "fine": {
+        "expression": "x.fine.toLocaleString('ko-KR')"
+      }
+    },
+    "locations": []
+  },
+  "league.brawl.text.7b8c67d8": {
+    "source": "src/league/brawl.ts",
+    "line": 129,
+    "params": {
+      "fine": {
+        "expression": "BRAWL.clubFine"
+      }
+    },
+    "locations": []
+  },
+  "league.commentary.text.7e61bb9b": {
+    "source": "src/league/commentary.ts",
+    "line": 14,
+    "params": {
+      "n": {
+        "expression": "n"
+      }
+    },
+    "locations": []
+  },
+  "league.commentary.text.e0791534": {
+    "source": "src/league/commentary.ts",
+    "line": 15,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.b5d80fab": {
+    "source": "src/league/commentary.ts",
+    "line": 16,
+    "params": {
+      "n": {
+        "expression": "n"
+      }
+    },
+    "locations": []
+  },
+  "league.commentary.text.ba36d0e9": {
+    "source": "src/league/commentary.ts",
+    "line": 17,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.a3da607d": {
+    "source": "src/league/commentary.ts",
+    "line": 20,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.d4128ab5": {
+    "source": "src/league/commentary.ts",
+    "line": 21,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.45c6482c": {
+    "source": "src/league/commentary.ts",
+    "line": 22,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.ecf97507": {
+    "source": "src/league/commentary.ts",
+    "line": 25,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.e5365194": {
+    "source": "src/league/commentary.ts",
+    "line": 26,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.20af4aeb": {
+    "source": "src/league/commentary.ts",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.05b0aa5f": {
+    "source": "src/league/commentary.ts",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.7aada43a": {
+    "source": "src/league/commentary.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.60c9cb4d": {
+    "source": "src/league/commentary.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.0930bdb4": {
+    "source": "src/league/commentary.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.e13284e0": {
+    "source": "src/league/commentary.ts",
+    "line": 35,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.f192f528": {
+    "source": "src/league/commentary.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.9085576b": {
+    "source": "src/league/commentary.ts",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.ca8af3e1": {
+    "source": "src/league/commentary.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.e5668d16": {
+    "source": "src/league/commentary.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.commentary.text.cee200d7": {
+    "source": "src/league/commentary.ts",
+    "line": 42,
+    "params": {
+      "n": {
+        "expression": "n"
+      }
+    },
+    "locations": []
+  },
+  "league.commentary.text.44e86835": {
+    "source": "src/league/commentary.ts",
+    "line": 42,
+    "params": {
+      "n": {
+        "expression": "n"
+      }
+    },
+    "locations": []
+  },
+  "league.commentary.text.111b2a0d": {
+    "source": "src/league/commentary.ts",
+    "line": 43,
+    "params": {
+      "n": {
+        "expression": "n"
+      }
+    },
+    "locations": []
+  },
+  "league.commentary.text.383ece68": {
+    "source": "src/league/commentary.ts",
+    "line": 43,
+    "params": {
+      "n": {
+        "expression": "n"
+      }
+    },
+    "locations": []
+  },
+  "ui.boxScore.text.9871640b": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 369,
+    "params": {},
+    "locations": []
+  },
+  "league.ballpark.text.01f40aa1": {
+    "source": "src/league/ballpark.ts",
+    "line": 55,
+    "params": {
+      "seats": {
+        "expression": "B.domeSeats.toLocaleString('ko-KR')"
+      }
+    },
+    "locations": []
+  },
+  "league.ballpark.text.15b22bf3": {
+    "source": "src/league/ballpark.ts",
+    "line": 58,
+    "params": {
+      "opens": {
+        "expression": "next + B.domeYears - 1"
+      }
+    },
+    "locations": []
+  },
+  "league.ballpark.text.bb64c0a7": {
+    "source": "src/league/ballpark.ts",
+    "line": 59,
+    "params": {},
+    "locations": []
+  },
+  "league.ballpark.text.0cece9d0": {
+    "source": "src/league/ballpark.ts",
+    "line": 112,
+    "params": {
+      "region": {
+        "expression": "team.region"
+      }
+    },
+    "locations": []
+  },
+  "ui.savant.text.9b467d5f": {
+    "source": "src/ui/Savant.tsx",
+    "line": 291,
+    "params": {
+      "value": {
+        "expression": "grid.map((r) => r.map(avg3).join(' ')).join(' / ')"
+      }
+    },
+    "locations": []
+  },
+  "ui.savant.text.40622003": {
+    "source": "src/ui/Savant.tsx",
+    "line": 304,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.7c60b5e8": {
+    "source": "src/ui/Savant.tsx",
+    "line": 304,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.af746949": {
+    "source": "src/ui/Savant.tsx",
+    "line": 325,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.2e079ed8": {
+    "source": "src/league/board.ts",
+    "line": 453,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.c18acbde": {
+    "source": "src/league/board.ts",
+    "line": 456,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.b9443ba2": {
+    "source": "src/league/board.ts",
+    "line": 456,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.8762dc42": {
+    "source": "src/league/board.ts",
+    "line": 457,
+    "params": {
+      "what": {
+        "expression": "what"
+      },
+      "yes": {
+        "expression": "x.yes"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.1114304a": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1206,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.adb9f811": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1207,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.8c6c9468": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1207,
+    "params": {},
+    "locations": []
+  },
+  "league.dynamic.text.73814c6e": {
+    "source": "src/league/dynamic.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.dynamic.text.e5eba92d": {
+    "source": "src/league/dynamic.ts",
+    "line": 44,
+    "params": {
+      "level": {
+        "expression": "level"
+      },
+      "support": {
+        "expression": "pct(DYNAMIC.support)"
+      },
+      "payroll": {
+        "expression": "pct(DYNAMIC.payroll)"
+      },
+      "fa": {
+        "expression": "pct(DYNAMIC.faFit)"
+      }
+    },
+    "locations": []
+  },
+  "league.dynamic.text.81dac229": {
+    "source": "src/league/dynamic.ts",
+    "line": 45,
+    "params": {
+      "level": {
+        "expression": "-level"
+      },
+      "support": {
+        "expression": "pct(DYNAMIC.support)"
+      },
+      "payroll": {
+        "expression": "pct(DYNAMIC.payroll)"
+      },
+      "fa": {
+        "expression": "pct(DYNAMIC.faFit)"
+      }
+    },
+    "locations": []
+  },
+  "ui.settings.text.8636eb2a": {
+    "source": "src/ui/Settings.tsx",
+    "line": 226,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.4cb5ffb6": {
+    "source": "src/ui/Settings.tsx",
+    "line": 234,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.f43cf6e0": {
+    "source": "src/ui/Settings.tsx",
+    "line": 235,
+    "params": {
+      "text": {
+        "expression": "handicapText(league.user?.handicap ?? 0)"
+      }
+    },
+    "locations": []
   }
 }

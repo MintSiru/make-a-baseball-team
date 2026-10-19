@@ -542,6 +542,14 @@ export const BALLPARK = {
   newYears: 3,
   newParkBuzz: 0.25,
   expandBuzz: 0.05,
+  /** 2.0.25 (the user's request): a domed ballpark built with the city — the club's share (1,000억, two and a half
+      new parks: 고척's roof alone cost the city some 2,000억), four seasons to build, the summer's rain and heat kept
+      out (no July–August dip at the gate, a little more all season) and a dearer upkeep (finance.ts). */
+  domeSeats: 23_000,
+  domeCost: 10_000_000,
+  domeYears: 4,
+  domeBuzz: 0.35,
+  domeGate: 1.03,
 } as const;
 
 /** Injuries (V0.7.7, injuries.ts). Chances per game appearance for a player of average hidden risk

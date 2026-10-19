@@ -41,6 +41,7 @@ import { offerExtension } from './extensions';
 import { setCaptains } from './captains';
 import { planLearn } from './newpitch';
 import { addCondition } from './conditions';
+import { measureHandicap } from './dynamic';
 
 export type Action =
   /** `stops` (1.6.0): end the run early at the moments the user asked to stop for (stops.ts). */
@@ -138,6 +139,7 @@ export type Action =
   | { kind: 'travelFatigue'; on: boolean }
   | { kind: 'postingMax'; max: number | null }
   | { kind: 'capForfeit'; on: boolean }
+  | { kind: 'dynamicDifficulty'; on: boolean }
   | { kind: 'addCondition'; id: import('./conditions').ConditionId }
   /** The season-ticket discount for the coming season (V0.12). */
   | { kind: 'seasonTickets'; discount: number };
@@ -157,7 +159,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -403,6 +405,14 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       if (!s.user) break;
       if (action.on) delete s.travelFatigue;
       else s.travelFatigue = false;
+      break;
+    case 'dynamicDifficulty':
+      // 2.0.25: the difficulty that moves with our club (dynamic.ts); measured now, then each winter.
+      if (!s.user) break;
+      if (action.on) {
+        s.dynamicDifficulty = true;
+        s.user.handicap = measureHandicap(s, s.offseason?.year ?? s.year - 1);
+      } else delete s.dynamicDifficulty;
       break;
     case 'capForfeit':
       // 2.0.24: the salary cap's pick forfeiture on or off (cap.ts).

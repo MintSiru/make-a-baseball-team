@@ -163,7 +163,8 @@ describe('the relay a pitch at a time', () => {
     expect(frames.filter((f) => f.kind === 'result')).toHaveLength(pas.length);
     for (const [n, e] of log.entries()) {
       if (e.k !== 'pa') continue;
-      const mine = frames.filter((f) => f.play === n);
+      // 2.0.25: the booth's lines (commentary.ts) aside.
+      const mine = frames.filter((f) => f.play === n && f.kind !== 'talk');
       const lastPitch = mine.filter((f) => f.kind === 'pitch').at(-1)!;
       if (e.res === 'K') expect(lastPitch.strikes).toBe(3);
       if (e.res === 'BB') expect(lastPitch.balls).toBe(4);

@@ -3482,3 +3482,34 @@ button.danger {
   color: var(--accent);
   font-weight: 600;
 }
+
+/* 2.0.25: the booth's lines in the live relay. */
+.pitch-log li.talk {
+  font-style: italic;
+  color: var(--accent);
+}
+.pitch-log .talk-who {
+  font-style: normal;
+  font-size: 0.8em;
+  font-weight: 700;
+  margin-right: 0.4em;
+  padding: 0 0.3em;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+}
+
+/* 2.0.25: hot and cold zones (Savant.tsx). */
+.hot-zones {
+  margin: 0.4rem 0;
+  max-width: 12rem;
+}
+.hot-zones svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.hot-zones .zone-avg {
+  font-size: 11px;
+  font-weight: 700;
+  fill: #fff;
+}
