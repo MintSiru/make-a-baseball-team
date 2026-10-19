@@ -582,6 +582,11 @@ try {
     await page.getByRole('dialog').waitFor({ timeout: 10_000 }).catch(() => undefined);
     check((await page.locator('.dialog h2').first().textContent())?.includes(who) ?? false, `a foreign market candidate (${who}) opens in the player window`);
     await page.keyboard.press('Escape');
+    // 2.0.23: on a slow runner the window may still be open: wait, or close it with its button.
+    await page.locator('.overlay').waitFor({ state: 'detached', timeout: 5_000 }).catch(async () => {
+      await page.locator('.dialog .close').first().click({ timeout: 5_000 }).catch(() => undefined);
+      await page.locator('.overlay').waitFor({ state: 'detached', timeout: 5_000 }).catch(() => undefined);
+    });
   }
   await page.getByRole('button', { name: '이적 소식', exact: true }).click();
 
