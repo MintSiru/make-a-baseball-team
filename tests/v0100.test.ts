@@ -178,7 +178,10 @@ describe('life off the field', () => {
     const side = game.home === EXPANSION_ID ? 'home' : 'away';
     const spec = { teamId: EXPANSION_ID };
     const other = { teamId: game.home === EXPANSION_ID ? game.away : game.home };
+    // Picking the starters moves the rotation on; put it back so both calls face the same starters.
+    const rotation = structuredClone(c.rotation);
     const before = matchInputs(c, game.date, side === 'home' ? spec : other, side === 'home' ? other : spec)[side]!;
+    c.rotation = rotation;
     const b = before.lineup[0]!;
     const p = c.players[b.id]!;
     (p.life ??= {}).form = { delta: 2.5, until: game.date, why: 'test' };
