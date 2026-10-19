@@ -78385,5 +78385,36 @@
     "line": 187,
     "params": {},
     "locations": []
+  },
+  "ui.faMarket.text.7e44855e": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 173,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.b12755bb": {
+    "source": "src/ui/Manual.tsx",
+    "line": 49,
+    "params": {
+      "topPlayers": {
+        "expression": "K.salaryCap.topPlayers"
+      },
+      "season": {
+        "expression": "K.season"
+      },
+      "eok": {
+        "expression": "eok(capNow)"
+      },
+      "value": {
+        "expression": "K.salaryCap.levies.map(pct).join('·')"
+      },
+      "pickDropFrom": {
+        "expression": "K.salaryCap.pickDropFrom"
+      },
+      "pickDrop": {
+        "expression": "K.salaryCap.pickDrop"
+      }
+    },
+    "locations": []
   }
 }

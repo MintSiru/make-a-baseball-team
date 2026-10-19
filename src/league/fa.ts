@@ -14,6 +14,7 @@ import type { FaPromise, FaSpot, FaTerms, IncentiveKind, Player, PlayerId, TeamI
 import { EXPANSION_DEFAULTS, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { addAlert } from './alerts';
 import { bonusShare, renewSalary, salaryIn } from './contracts';
+import { capTotal } from './cap';
 import { eulreul, iga, ro, wagwa } from './josa';
 import { clubState } from './fans';
 import { aiCompensation, compensationCash, externalLimit, faGrades, moneyFor, parentGiftFor, projectedPayroll, protectedBy, type FaGrade, type FaQueueItem } from './market';
@@ -469,10 +470,8 @@ export const capHit = (o: FaOffer) => o.annual + o.bonus / o.years + (o.options 
     season's pay for foreign players still to be re-signed or replaced) and bonuses spread. Free agents still on
     the market (`without`) are left out: whoever signs them counts them then. */
 export function capRoomFor(s: LeagueState, teamId: TeamId, next: number, without?: Set<PlayerId>) {
-  const pay = orgPlayers(s, teamId)
-    .filter((p) => !without?.has(p.id))
-    .reduce((a, p) => a + (salaryIn(p, next) || (isForeign(p) ? salaryIn(p, next - 1) : renewSalary(p, next))) + bonusShare(p, next), 0);
-  return salaryCapFor(next) - pay;
+  // 2.0.21: the same top-40 total, foreign players out, as the season's settlement (cap.ts).
+  return salaryCapFor(next) - capTotal(s, teamId, next, { estimate: true, ...(without ? { without } : {}) });
 }
 
 /** How much better he is than what the club has at his spot (public grades). */

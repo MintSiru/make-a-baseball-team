@@ -4,9 +4,10 @@ import { k as __i18n_k } from '../i18n/index';
    100% from the third plus the next draft's first-round pick nine places later. From 2027 there is a
    floor too; the game has a club under it pay the shortfall (game assumption). Only the user's club
    pays money (clubs' finances come in V0.6); the pick penalty applies to everyone. */
-import type { TeamId } from '../model/types';
+import type { PlayerId, TeamId } from '../model/types';
 import { KBO_2026, salaryCapFor } from '../rules/kbo2026';
-import { capPay } from './contracts';
+import { bonusShare, capPay, renewSalary } from './contracts';
+import { isForeign } from './players';
 import { firstTeamIds, orgPlayers, type LeagueState } from './state';
 
 const C = KBO_2026.salaryCap;
@@ -17,11 +18,17 @@ export function capFloorFor(year: number): number | null {
 }
 
 /** A club's top-40 total for `year` (its players and soldiers under contract that season): salaries, free-agent
-    bonuses spread over their deals and incentives paid (V0.8). The KBO leaves foreign players and rookies out;
-    the game keeps them in, its pay being lower than the league's (RULES.md §9). */
-export function capTotal(s: LeagueState, teamId: TeamId, year: number) {
+    bonuses spread over their deals and incentives paid (V0.8). 2.0.21 (the user's request): foreign players are
+    left out, as the KBO leaves them out (rookies stay in, the game's pay being lower than the league's; RULES.md §9).
+    `estimate` (the winter, before the salary talks): a player not yet signed for `year` counts at the raise he can
+    expect; `without`: players to leave out (the free agents on the market, whose offers count instead). The FA
+    market's cap line and the season's settlement read the same total. */
+export function capTotal(s: LeagueState, teamId: TeamId, year: number, opts: { estimate?: boolean; without?: Set<PlayerId> } = {}) {
   const soldiers = Object.values(s.players).filter((p) => p.teamId === teamId && p.status === 'military');
-  const pay = [...orgPlayers(s, teamId), ...soldiers].map((p) => capPay(p, year)).sort((a, b) => b - a);
+  const pay = [...orgPlayers(s, teamId), ...soldiers]
+    .filter((p) => !isForeign(p) && !opts.without?.has(p.id))
+    .map((p) => capPay(p, year) || (opts.estimate ? renewSalary(p, year) + bonusShare(p, year) : 0))
+    .sort((a, b) => b - a);
   return pay.slice(0, C.topPlayers).reduce((a, b) => a + b, 0);
 }
 
