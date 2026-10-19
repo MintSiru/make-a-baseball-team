@@ -67,6 +67,8 @@ export function demandText(d: FaDemand) {
       return __i18n_k("ui.faMarket.demandText.6fa45db3", { region: d.region });
     case 'optOut':
       return __i18n_k("ui.faMarket.demandText.25e57a72");
+    case 'noSuperteam':
+      return __i18n_t("ui.faMarket.text.08a91917");
   }
 }
 

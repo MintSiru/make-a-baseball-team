@@ -484,6 +484,11 @@ try {
   // 2.0.10: the players in a sortable table, one button each.
   const pickTable = page.locator('.trip-pick');
   check((await pickTable.locator('tbody tr').count()) > 3, 'the training view lists the players to send');
+  // 2.0.24: the first team, the futures and the reserves apart.
+  const all = await pickTable.locator('tbody tr').count();
+  await page.getByRole('group', { name: '소속' }).getByRole('button', { name: /^퓨처스/ }).click();
+  check((await pickTable.locator('tbody tr').count()) < all, 'the training view shows the futures apart');
+  await page.getByRole('group', { name: '소속' }).getByRole('button', { name: /^전체/ }).click();
   await pickTable.getByRole('button', { name: '나이', exact: false }).click();
   await pickTable.locator('tbody button.primary:not([disabled])').first().click();
   await page.waitForFunction(() => [...document.querySelectorAll('.training .record-table')].some((t) => t.textContent?.includes('연수 중')), null, { timeout: 10_000 }).catch(() => undefined);
@@ -655,8 +660,8 @@ try {
   check(wanted !== null, 'a free uniform number can be chosen');
   if (wanted) {
     await page.locator('.number-form button').click();
-    await page.waitForFunction((n) => document.querySelector('.profile-number')?.textContent === n, wanted);
-    check((await page.locator('.profile-number').textContent()) === wanted, 'the uniform number can be set');
+    await page.waitForFunction((n) => document.querySelector('.jersey-number')?.textContent === n, wanted);
+    check((await page.locator('.jersey-number').textContent()) === wanted, 'the uniform number can be set');
   }
   // 2.0.9: the editor — his hometown changes, his abilities do not.
   await page.locator('.player-editor summary').click();

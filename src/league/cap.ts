@@ -6,6 +6,7 @@ import { k as __i18n_k } from '../i18n/index';
    pays money (clubs' finances come in V0.6); the pick penalty applies to everyone. */
 import type { PlayerId, TeamId } from '../model/types';
 import { KBO_2026, salaryCapFor } from '../rules/kbo2026';
+import { addAlert } from './alerts';
 import { bonusShare, capPay, renewSalary } from './contracts';
 import { isForeign } from './players';
 import { firstTeamIds, orgPlayers, type LeagueState } from './state';
@@ -42,6 +43,9 @@ export interface CapRecord {
   levy: number;
 }
 
+/** 2.0.24: the option's bar for losing a first-round pick — over the cap three seasons running, or by a tenth of it. */
+export const FORFEIT = { streak: 3, share: 0.1 };
+
 /** Measures every club after the season and applies the sanctions. */
 export function settleCap(s: LeagueState, year: number) {
   if (year < C.from) return;
@@ -58,6 +62,10 @@ export function settleCap(s: LeagueState, year: number) {
     levy += short;
     ((s.cap ??= {})[teamId] ??= []).push({ year, total, cap, over, streak, levy });
     if (streak >= C.pickDropFrom) ((s.pickDrop ??= {})[year + 1] ??= []).push(teamId);
+    // 2.0.24 (the user's request, a game option): a club far over the cap, or over it three seasons running, loses its
+    // next first-round pick outright.
+    const forfeit = !!s.capForfeit && over > 0 && (streak >= FORFEIT.streak || over >= cap * FORFEIT.share);
+    if (forfeit) ((s.pickForfeit ??= {})[year + 1] ??= []).push(teamId);
     const u = s.user;
     if (u && teamId === u.teamId && levy > 0) {
       u.fund -= levy;
@@ -66,6 +74,11 @@ export function settleCap(s: LeagueState, year: number) {
         year,
         text: over > 0 ? __i18n_k("league.cap.settleCap.text.5233d51f", { value: streak >= C.pickDropFrom ? __i18n_k("league.cap.settleCap.text.284072e6") : '' }) : __i18n_k("league.cap.settleCap.text.980ebad7"),
       });
+      if (forfeit) {
+        const text = __i18n_k("league.cap.text.0c580fdc", { year: year + 1 });
+        u.log!.push({ year, text });
+        addAlert(s, { id: `cap-forfeit-${year}`, date: `${year}-12-20`, kind: 'owner', title: text, lines: [__i18n_k("league.cap.text.5d5212f4", { pct: Math.round((over / cap) * 100), streak })], tone: 'bad' });
+      }
     }
   }
 }
@@ -73,8 +86,15 @@ export function settleCap(s: LeagueState, year: number) {
 /** A club's first-round pick drops nine places when it was over the cap three seasons running. */
 export function applyPickDrop<T extends { teamId: TeamId }>(s: LeagueState, draftYear: number, slots: T[]): T[] {
   const drop = s.pickDrop?.[draftYear];
-  if (!drop?.length) return slots;
+  const forfeit = s.pickForfeit?.[draftYear] ?? [];
+  if (!drop?.length && !forfeit.length) return slots;
   const out = [...slots];
+  // 2.0.24: a forfeited first-round pick is gone (its first pick of the draft).
+  for (const teamId of forfeit) {
+    const i = out.findIndex((x) => x.teamId === teamId);
+    if (i >= 0) out.splice(i, 1);
+  }
+  if (!drop?.length) return out;
   for (const teamId of drop) {
     const i = out.findIndex((x) => x.teamId === teamId);
     if (i < 0) continue;

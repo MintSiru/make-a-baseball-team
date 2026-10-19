@@ -30,6 +30,7 @@ export const PITCH_GROUP: Record<PitchType | '4SFB', PitchGroup> = {
   SW: 'breaking',
   SLV: 'breaking',
   CB: 'breaking',
+  KC: 'breaking',
   CH: 'offspeed',
   CIR: 'offspeed',
   SPL: 'offspeed',

@@ -24,6 +24,7 @@ import {
   foreignMarket,
   foreignPriceNow,
   foreignWindow,
+  asiaReplacements,
   OPEN_SLOT,
   openForeign,
   poolAsk,
@@ -31,6 +32,7 @@ import {
   tradeValue,
   tradeWindow,
 } from '../league/trade';
+import { foreignReplacements } from '../rules/kbo2026';
 import { positionLabel, shortName } from '../league/views';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { money } from './format';
@@ -402,6 +404,8 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
   // 1.7.0: an open place is signed into directly, nobody let go.
   const open = league.phase === 'regular' ? openForeign(league, u.teamId) : { regular: 0, asia: 0 };
   const used = league.foreignChanges?.[u.teamId] ?? 0;
+  // 2.0.24: the Asia quota on its own count.
+  const asiaUsed = league.asiaChanges?.[u.teamId] ?? 0;
   // The foreign salary cap this season (V0.7.8): what is on the books and what the pick would add.
   const inFirst = firstTeamIds(league).includes(u.teamId);
   const books = inFirst && league.phase === 'regular' ? booksOf(league, u.teamId) : null;
@@ -412,7 +416,7 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
       {__i18n_display(books && (
         <p class={books.spent + adds > books.cap ? 'notice warn' : 'muted'}>{__i18n_t("ui.market.foreign.34be7dc7", { year: league.year, usd: usd(books.spent), value: adds ? __i18n_k("ui.market.foreign.774cb355", { usd: usd(adds) }) : '', usd2: usd(books.cap), value2: books.spent + adds > books.cap ? __i18n_k("ui.market.foreign.72ed3aca") : '' })}</p>
       ))}
-      <Help title={__i18n_t("ui.market.foreign.2909108b")}>{__i18n_t("ui.market.foreign.6558e0af", { used: used })}</Help>
+      <Help title={__i18n_t("ui.market.foreign.2909108b")}>{__i18n_t("ui.market.text.61fa26e8", { regular: foreignReplacements(), asia: asiaReplacements(), used, asiaUsed })}</Help>
       <TempForeign league={league} onPlayer={onPlayer} onAct={onAct} />
       {__i18n_display(closed && <p class="notice">{__i18n_display(closed)}</p>)}
       <h3>{__i18n_t("ui.market.foreign.58f7280f")}</h3>

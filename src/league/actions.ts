@@ -136,6 +136,8 @@ export type Action =
   | { kind: 'foreignVeteran'; seasons: number | null }
   | { kind: 'retiredBar'; rise: boolean }
   | { kind: 'travelFatigue'; on: boolean }
+  | { kind: 'postingMax'; max: number | null }
+  | { kind: 'capForfeit'; on: boolean }
   | { kind: 'addCondition'; id: import('./conditions').ConditionId }
   /** The season-ticket discount for the coming season (V0.12). */
   | { kind: 'seasonTickets'; discount: number };
@@ -155,7 +157,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'retiredBar', 'travelFatigue', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -401,6 +403,18 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       if (!s.user) break;
       if (action.on) delete s.travelFatigue;
       else s.travelFatigue = false;
+      break;
+    case 'capForfeit':
+      // 2.0.24: the salary cap's pick forfeiture on or off (cap.ts).
+      if (!s.user) break;
+      if (action.on) s.capForfeit = true;
+      else delete s.capForfeit;
+      break;
+    case 'postingMax':
+      // 2.0.24: how many players a club may post in a winter (posting.ts); null the KBO's one.
+      if (!s.user || (action.max !== null && ![2, 3, 99].includes(action.max))) break;
+      if (action.max === null) delete s.postingMax;
+      else s.postingMax = action.max;
       break;
     case 'addCondition':
       // 2.0.23: another scenario's conditions added to the game under way (conditions.ts).

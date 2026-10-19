@@ -8,6 +8,7 @@ import type { Player, PlayerId } from '../model/types';
 import { type FamilyKind, tiesOf } from './family';
 import { eunneun } from './josa';
 import { NICKNAME_MAX } from './nicknames';
+import { isForeign } from './players';
 import type { LeagueState } from './state';
 
 export const EDIT = { name: { min: 1, max: 20 }, birthplace: { min: 1, max: 20 }, school: { min: 1, max: 24 }, ties: 8, fatherGap: 16, brotherGap: 25 };
@@ -63,7 +64,14 @@ export function editPlayer(s: LeagueState, id: PlayerId, e: PlayerEdit) {
 }
 
 function rename(s: LeagueState, id: PlayerId, name: string) {
-  s.players[id]!.name = name;
+  const p = s.players[id]!;
+  // 2.0.24: a foreign player's registered name (등록명) keeps his full name beside it.
+  if (isForeign(p)) {
+    const full = p.fullName ?? p.name;
+    if (name === full) delete p.fullName;
+    else p.fullName = full;
+  }
+  p.name = name;
   const fix = (x: { name: string }) => (x.name = name);
   for (const t of s.teams) for (const r of t.retiredNumbers ?? []) if (r.playerId === id) fix(r);
   for (const d of s.draftLog ?? []) if (d.id === id) fix(d);

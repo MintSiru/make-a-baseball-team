@@ -11,7 +11,7 @@ import { k as __i18n_k } from '../i18n/index';
    market screen and says beforehand which of the two it keeps (the injured player, unless it says otherwise). */
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
-import { foreignReplacements, KBO_2026 } from '../rules/kbo2026';
+import { KBO_2026 } from '../rules/kbo2026';
 import { foreignContract } from './contracts';
 import { today } from './entry';
 import { addAlert } from './alerts';
@@ -19,7 +19,7 @@ import { wagwa } from './josa';
 import { firstTeamSize } from './manager';
 import { isForeign, isPitcher, makeForeign } from './players';
 import { firstTeamIds, orgPlayers, type LeagueState } from './state';
-import { leaveForeign, logTransaction } from './trade';
+import { countReplacement, leaveForeign, logTransaction, replacementsLeft } from './trade';
 
 export const TEMP_FOREIGN = {
   /** The shortest layoff that allows a stand-in (days). */
@@ -132,7 +132,7 @@ function settle(s: LeagueState, t: TempForeign, keepTemp: boolean, seasonOver = 
     delete temp.contract?.temp;
     leaveForeign(s, injured);
     removeFrom(s, t.teamId, injured.id);
-    (s.foreignChanges ??= {})[t.teamId] = (s.foreignChanges[t.teamId] ?? 0) + 1;
+    countReplacement(s, t.teamId, !!injured.origin.asiaQuota);
     text = __i18n_k("league.tempforeign.text.bc78cf62", { club: short(s, t.teamId), name: wagwa(temp.name), injured: injured.name });
   } else {
     removeFrom(s, t.teamId, temp.id);
@@ -161,7 +161,7 @@ export function tempForeignDay(s: LeagueState, date: string) {
     if (!back) continue;
     const mine = t.teamId === s.user?.teamId;
     const temp = s.players[t.id];
-    const windowOpen = date <= `${s.year}-${KBO_2026.foreign.replacementDeadline}` && (s.foreignChanges?.[t.teamId] ?? 0) < foreignReplacements();
+    const windowOpen = date <= `${s.year}-${KBO_2026.foreign.replacementDeadline}` && !!injured && (injured.origin.asiaQuota ? replacementsLeft(s, t.teamId).asia : replacementsLeft(s, t.teamId).regular) > 0;
     const better = !!temp && !!injured && temp.scouting.current >= injured.scouting.current + TEMP_FOREIGN.keepMargin;
     settle(s, t, !!injured && injured.teamId === t.teamId && windowOpen && (mine ? t.keep === 'temp' : better));
   }

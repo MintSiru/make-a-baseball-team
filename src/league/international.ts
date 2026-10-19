@@ -124,6 +124,31 @@ function later(until: number): InternationalEvent[] {
 export const INTERNATIONAL: InternationalEvent[] = [...REAL, ...later(2400)].sort((a, b) => a.dates.from.localeCompare(b.dates.from));
 
 export const eventById = (id: string) => INTERNATIONAL.find((e) => e.id === id);
+
+/** 2.0.24 (the user's request): what a national team's finish does to the league's crowds for the year after it —
+    a world title draws them in (the 2006 and 2009 WBCs, the 2008 Olympics), a first-round exit at the WBC sends
+    some away (2013, 2017, 2023). An Asian Games gold is expected and moves little. Game estimates. */
+export const CROWD_EFFECT: Record<EventKind, Partial<Record<Finish, number>>> = {
+  wbc: { champion: 0.1, runnerUp: 0.07, third: 0.03, fourth: 0.01, second: 0, first: -0.06 },
+  olympics: { champion: 0.09, runnerUp: 0.04, third: 0.02, fourth: -0.02 },
+  premier12: { champion: 0.05, runnerUp: 0.02, third: 0.01, second: -0.02, first: -0.04 },
+  asianGames: { champion: 0.01, runnerUp: -0.03, third: -0.04, fourth: -0.05 },
+  apbc: { champion: 0.02, runnerUp: 0.01, third: 0, fourth: -0.01 },
+};
+
+/** The league's crowds × this on `date`, from the national team's finishes in the year before (fading over it). */
+export function internationalCrowd(entries: { id: string; finish?: Finish }[], date: string): number {
+  let k = 1;
+  const now = Date.parse(date);
+  for (const x of entries) {
+    const e = eventById(x.id);
+    if (!e || !x.finish) continue;
+    const days = (now - Date.parse(e.dates.to)) / 86400000;
+    if (days < 0 || days > 365) continue;
+    k *= 1 + (CROWD_EFFECT[e.kind][x.finish] ?? 0) * (1 - days / 365);
+  }
+  return k;
+}
 export const eventsIn = (year: number) => INTERNATIONAL.filter((e) => e.year === year);
 
 /** When the event falls: before the season (March), in it (the squad leaves its clubs), or after it. */

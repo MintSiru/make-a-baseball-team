@@ -466,6 +466,8 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         return { kind: 'foreign', ids, offers: offersFor(league, ids, d.terms, choices) };
       }
       case 'posting':
+        // 2.0.24: several when the game allows more than one a winter.
+        if (d.max > 1) return { kind: 'posting', id: null, ids: d.candidates.filter((id) => choices[`post:${id}`] === '1') };
         return { kind: 'posting', id: choices.pick && choices.pick !== 'none' ? choices.pick : null };
       case 'sponsor':
         return { kind: 'sponsor', index: Number(choices.pick ?? 0) };
@@ -527,7 +529,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         setSelected(new Set(a.keep));
         break;
       case 'posting':
-        setChoices({ pick: a.id ?? 'none' });
+        setChoices({ pick: a.id ?? 'none', ...Object.fromEntries((a.ids ?? (a.id ? [a.id] : [])).map((id) => [`post:${id}`, '1'])) });
         break;
       case 'sponsor':
         setChoices({ pick: String(a.index) });
@@ -1126,7 +1128,19 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
             players={d.candidates.map((id) => league.players[id]!)}
             onPlayer={onPlayer}
             extra={{ title: __i18n_k("ui.decision.decision.title.11ab7c2a"), value: (p) => `${mlbInterest(p)} · ${money(salaryIn(p, next - 1))}`, sort: (p) => p.scouting.current }}
-            control={(p) => (
+            control={(p) =>
+              d.max > 1 ? (
+                <label class="check">
+                  <input
+                    type="checkbox"
+                    checked={choices[`post:${p.id}`] === '1'}
+                    disabled={choices[`post:${p.id}`] !== '1' && d.candidates.filter((id) => choices[`post:${id}`] === '1').length >= d.max}
+                    onChange={(e) => choose(`post:${p.id}`, (e.currentTarget as HTMLInputElement).checked ? '1' : '0')}
+                    aria-label={__i18n_displayText(__i18n_k("ui.decision.decision.fd515c2c", { name: p.name }))}
+                  />{' '}
+                  포스팅
+                </label>
+              ) : (
               <label class="check">
                 <input type="radio" name="posting" checked={pick === p.id} onChange={() => choose('pick', p.id)} aria-label={__i18n_displayText(__i18n_k("ui.decision.decision.fd515c2c", { name: p.name }))} /> 포스팅
               </label>
