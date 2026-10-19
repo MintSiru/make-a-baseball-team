@@ -78756,5 +78756,152 @@
     "line": 108,
     "params": {},
     "locations": []
+  },
+  "league.conditions.text.2fa9615a": {
+    "source": "src/league/conditions.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.conditions.text.8a17c470": {
+    "source": "src/league/conditions.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.conditions.text.733025ce": {
+    "source": "src/league/conditions.ts",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "league.conditions.text.2befe98b": {
+    "source": "src/league/conditions.ts",
+    "line": 53,
+    "params": {},
+    "locations": []
+  },
+  "league.conditions.text.0a76c05b": {
+    "source": "src/league/conditions.ts",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "league.conditions.text.5b7fa9cd": {
+    "source": "src/league/conditions.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.conditions.text.e80a6259": {
+    "source": "src/league/conditions.ts",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "league.conditions.text.fba5a77f": {
+    "source": "src/league/conditions.ts",
+    "line": 57,
+    "params": {},
+    "locations": []
+  },
+  "league.conditions.text.43a37a10": {
+    "source": "src/league/conditions.ts",
+    "line": 71,
+    "params": {
+      "title": {
+        "expression": "def.title"
+      }
+    },
+    "locations": []
+  },
+  "league.conditions.text.2e127e72": {
+    "source": "src/league/conditions.ts",
+    "line": 83,
+    "params": {},
+    "locations": []
+  },
+  "league.conditions.text.2c0801a0": {
+    "source": "src/league/conditions.ts",
+    "line": 85,
+    "params": {},
+    "locations": []
+  },
+  "league.conditions.text.fb016e56": {
+    "source": "src/league/conditions.ts",
+    "line": 87,
+    "params": {},
+    "locations": []
+  },
+  "league.conditions.text.a987f399": {
+    "source": "src/league/conditions.ts",
+    "line": 89,
+    "params": {
+      "year": {
+        "expression": "year"
+      },
+      "first": {
+        "expression": "year + 2"
+      }
+    },
+    "locations": []
+  },
+  "ui.settings.text.e6dc2e38": {
+    "source": "src/ui/Settings.tsx",
+    "line": 225,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.a25ffd42": {
+    "source": "src/ui/Settings.tsx",
+    "line": 226,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.d726f01d": {
+    "source": "src/ui/Settings.tsx",
+    "line": 234,
+    "params": {
+      "title": {
+        "expression": "def.title"
+      }
+    },
+    "locations": []
+  },
+  "ui.settings.text.dde1413e": {
+    "source": "src/ui/Settings.tsx",
+    "line": 235,
+    "params": {
+      "title": {
+        "expression": "def.title"
+      }
+    },
+    "locations": []
+  },
+  "ui.settings.text.5f2644a4": {
+    "source": "src/ui/Settings.tsx",
+    "line": 235,
+    "params": {
+      "title": {
+        "expression": "def.title"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.5ba5d51a": {
+    "source": "src/ui/Decision.tsx",
+    "line": 931,
+    "params": {
+      "protect": {
+        "expression": "d.protect"
+      },
+      "size": {
+        "expression": "selected.size"
+      },
+      "money": {
+        "expression": "money(d.fee)"
+      }
+    },
+    "locations": []
   }
 }

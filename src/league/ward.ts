@@ -18,4 +18,5 @@ export const WARD = {
 } as const;
 
 /** This club is the one under the trainer's programme. */
-export const inWard = (s: LeagueState, teamId: TeamId | null | undefined) => !!teamId && s.user?.settings.scenario === 'ward' && s.user.teamId === teamId;
+// 2.0.23: or the condition added to a game under way (conditions.ts).
+export const inWard = (s: LeagueState, teamId: TeamId | null | undefined) => !!teamId && (s.user?.settings.scenario === 'ward' || !!s.conditions?.some((c) => c.id === 'ward')) && s.user?.teamId === teamId;

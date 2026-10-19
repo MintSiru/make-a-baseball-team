@@ -17,6 +17,8 @@ import { DisplayOptions } from './DisplaySettings';
 import { StoryOptions } from './StorySettings';
 import { UpdateNotes } from './Updates';
 import { BOARD_ITEMS, boardLine, currentValue, items, motionText, ruleLabel, ruleSeason, ruleValueText, type BoardItem } from '../league/board';
+import { scenarioDef } from '../league/scenarios';
+import { CONDITIONS, checkCondition, conditionText, hasCondition } from '../league/conditions';
 
 const SECTIONS: [string, string][] = [
   ['settings-display', __i18n_k("ui.settings.sECTIONS.43c786f1")],
@@ -219,6 +221,24 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
             ))}
           </div>
           <p class="muted small">{__i18n_t("ui.settings.text.9f43c22c")}</p>
+          {/* 2.0.23 (conditions.ts): another scenario's conditions added to the game under way. */}
+          <h3>{__i18n_t("ui.settings.text.e6dc2e38")}</h3>
+          <p class="muted small">{__i18n_t("ui.settings.text.a25ffd42")}</p>
+          <ul class="plain">
+            {CONDITIONS.map((id) => {
+              const def = scenarioDef(id)!;
+              const why = checkCondition(league, id);
+              const on = hasCondition(league, id);
+              return (
+                <li key={id}>
+                  <button type="button" disabled={busy || !!why} title={why ?? undefined} onClick={() => window.confirm(__i18n_t("ui.settings.text.d726f01d", { title: def.title })) && onAct({ kind: 'addCondition', id })}>
+                    {on ? __i18n_t("ui.settings.text.dde1413e", { title: def.title }) : __i18n_t("ui.settings.text.5f2644a4", { title: def.title })}
+                  </button>{' '}
+                  <span class="muted small">{conditionText(id, league.offseason?.year ?? league.year)}</span>
+                </li>
+              );
+            })}
+          </ul>
         </>
       ))}
       {__i18n_display(u ? (

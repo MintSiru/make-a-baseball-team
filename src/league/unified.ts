@@ -17,7 +17,7 @@ import { clubState } from './fans';
 import { milestone } from './milestones';
 import { iga } from './josa';
 import { addNews } from './news';
-import { makeNorthern, NORTH_CITIES, NORTH_COLORS, NORTH_COMPANIES, NORTH_NICKNAMES } from './north';
+import { isNorthCity, makeNorthern, NORTH_CITIES, NORTH_COLORS, NORTH_COMPANIES, NORTH_NICKNAMES } from './north';
 import { rivalTryout, type FoundingClub } from './rival';
 import { MANAGER_STYLES, staffOf } from './staff';
 import { emptyRoster, firstTeamIds, type GmStyle, type LeagueSide, type LeagueState, type ManagerStyle } from './state';
@@ -86,6 +86,14 @@ export function foundNorthClubs(s: LeagueState, year: number, firstTeam: number,
   milestone(s, year, title, 'unified');
 }
 
+/** 2.0.23 (conditions.ts): the winter's development step founds the north's clubs for a unified condition added to a
+    game already under way — this winter, their first team the season after next. */
+export function conditionUnified(s: LeagueState, year: number) {
+  const u = s.user;
+  if (!u || s.unified || s.twelve || s.legacy || s.leagueSides || !s.conditions?.some((c) => c.id === 'unified')) return;
+  foundNorthClubs(s, year, year + 2, u.settings.cityId);
+}
+
 /**
  * The two leagues of eight, drawn once before the first sixteen-club season: our club in the 드림리그, the north's
  * clubs three and three (ours counted), the ten old clubs five and five down last season's table.
@@ -93,7 +101,8 @@ export function foundNorthClubs(s: LeagueState, year: number, firstTeam: number,
 export function assignUnifiedLeagues(s: LeagueState) {
   const u = s.unified;
   if (!u || s.leagueSides) return;
-  const me = s.user?.teamId;
+  // 2.0.23: our club is one of the north's only when its home is there (a unified condition added to a southern club's game).
+  const me = s.user && isNorthCity(s.user.settings.cityId) ? s.user.teamId : undefined;
   const ids = firstTeamIds(s);
   const north = [...(me ? [me] : []), ...u.clubs.map((c) => c.teamId)].filter((id) => ids.includes(id));
   if (north.length < u.clubs.length) return;
