@@ -28,6 +28,7 @@ import { firstTeamSize, foreignSlots } from './manager';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry, toForeignPool } from './foreignpool';
 import { featureOpen } from './features';
 import { rulesFor } from '../rules/history';
+import { allianceAgainst, tradeBarred } from './dynasty';
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 const shortOf = (s: LeagueState, id: TeamId | null) => s.teams.find((t) => t.id === id)?.short ?? '-';
@@ -126,6 +127,8 @@ export function checkTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get
   const closed = tradeWindow(s);
   if (closed) return no(closed);
   if (teamId === u.teamId || !s.rosters[teamId]) return no(__i18n_k("league.trade.checkTrade.70fee747"));
+  // 2.0.26: the anti-dynasty alliance (dynasty.ts).
+  if (tradeBarred(s, u.teamId, teamId)) return no(allianceAgainst(s, u.teamId) ? __i18n_k("league.trade.text.76f21ef9") : __i18n_k("league.trade.text.0db9f0c2"));
   const cashOut = extras.cashOut ?? 0,
     cashIn = extras.cashIn ?? 0,
     picksOut = extras.picksOut ?? [],
@@ -277,7 +280,7 @@ export function aiTrades(s: LeagueState, r: () => number) {
     if (r() > TRADES.ai.chance) continue;
     const a = clubs[Math.floor(r() * clubs.length)]!;
     const b = clubs[Math.floor(r() * clubs.length)]!;
-    if (a === b) continue;
+    if (a === b || tradeBarred(s, a, b)) continue;
     // A's third-best at some spot for B's surplus at another, within 15% of each other's value.
     const fromA = spots(a)
       .filter((p) => spots(a).filter((q) => groupOf(q) === groupOf(p) && currentValue(q) >= currentValue(p)).length >= 3)

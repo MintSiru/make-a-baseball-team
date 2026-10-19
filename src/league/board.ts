@@ -15,6 +15,7 @@ import { boardValue, playsHistory, setEraBoard } from './era';
 import { addAlert } from './alerts';
 import { leagueEvent } from './leagueevents';
 import { addNews } from './news';
+import { clubState } from './fans';
 import { payroll } from './offseason';
 import { isForeign } from './players';
 import { rulesFor } from '../rules/history';
@@ -80,6 +81,8 @@ export interface BoardRecord extends BoardMotion {
   passed: boolean;
   /** 2.0.25: carried, then taken back after the players' association's protest. */
   withdrawn?: true;
+  /** 2.0.26: carried and kept: the players struck, and the next season was cut short. */
+  strike?: true;
 }
 
 export interface BoardState {
@@ -281,7 +284,7 @@ function stance(item: BoardItem, up: boolean, c: { strength: number; rich: numbe
     each rule — for the players (1) or against them (−1). Its word weighs on the clubs' votes (public opinion, the
     players in their own clubhouse); it puts a motion of its own most winters; and a rule against the players carried
     over its protest is now and then taken back after talks. */
-export const UNION = { pressure: 0.1, motion: 0.6, withdraw: 0.35, against: -0.5 };
+export const UNION = { pressure: 0.1, motion: 0.6, withdraw: 0.35, against: -0.5, strike: 0.3, strikeGames: 8, strikeFans: 0.05 };
 export function playersView(item: BoardItem, up: boolean): number {
   const d = up ? 1 : -1;
   switch (item) {
@@ -437,15 +440,43 @@ export function holdMeeting(s: LeagueState, year: number, motions: BoardMotion[]
     // 2.0.25: carried over the players' protest: now and then taken back after talks (a stream of its own).
     if (rec.passed && playersView(m.item, m.value > m.now) <= UNION.against && rng(`${s.seed}|board-union-protest|${year}|${m.item}`)() < UNION.withdraw) rec.withdrawn = true;
     if (rec.passed && !rec.withdrawn) b.changes.push({ from: year + 1, item: m.item, value: m.value });
+    // 2.0.26 (the user's request: a strike, the players against the commissioner): kept over their protest, the
+    // players now and then strike — the next season opens late, a few series short (a stream of its own).
+    if (rec.passed && !rec.withdrawn && playersView(m.item, m.value > m.now) <= UNION.against && rng(`${s.seed}|board-union-strike|${year}|${m.item}`)() < UNION.strike) rec.strike = true;
     b.log.push(rec);
     return rec;
   });
   if (!records.length) return;
+  const struck = records.find((x) => x.strike);
+  if (struck) strike(s, year, struck);
   const lines = records.map((x) => boardLine(s, x));
   const title = records.some((x) => x.passed) ? __i18n_k("league.board.text.24c660da") : __i18n_k("league.board.text.51346f04");
   addNews(s, { id: `board-${year}`, date: `${year}-11-01`, kind: 'season', title, body: lines.join(' '), quotes: [], facts: { motions: records.length }, players: [], mine: false });
   if (me) addAlert(s, { id: `board-${year}`, date: `${year}-11-01`, kind: 'season', title, lines });
   if (s.legacy) for (const x of records.filter((x) => x.passed && !x.withdrawn)) leagueEvent(s, year, boardLine(s, x));
+}
+
+/** 2.0.26: the players strike over a rule kept against them: the next season loses a few series (the season after
+    is back to its length), every club's fans cool, and the papers tell of the commissioner's failed mediation. */
+function strike(s: LeagueState, year: number, x: BoardRecord) {
+  const b = s.board!;
+  const now = currentValue(s, 'games', year + 1);
+  const short = Math.max(BOARD_ITEMS.games.min, now - UNION.strikeGames);
+  if (short < now) {
+    b.changes.push({ from: year + 1, item: 'games', value: short });
+    b.changes.push({ from: year + 2, item: 'games', value: now });
+  }
+  for (const id of firstTeamIds(s, year)) clubState(s, id).interest -= UNION.strikeFans;
+  const what = motionText(x);
+  const title = __i18n_k("league.board.text.612d1027", { season: year + 1 });
+  const lines = [
+    __i18n_k("league.board.text.7ce11e65", { what }),
+    __i18n_k("league.board.text.fa11ae7d"),
+    short < now ? __i18n_k("league.board.text.d72ea6f4", { season: year + 1, games: short }) : __i18n_k("league.board.text.54861480", { season: year + 1 }),
+  ];
+  addNews(s, { id: `strike-${year}`, date: `${year}-12-15`, kind: 'season', title, body: lines.join(' '), quotes: [], facts: { games: short }, players: [], mine: false });
+  if (s.user) addAlert(s, { id: `strike-${year}`, date: `${year}-12-15`, kind: 'season', title, lines, tone: 'bad' });
+  if (s.legacy) leagueEvent(s, year, title);
 }
 
 /** One motion as a line: what, the vote, carried or not. */

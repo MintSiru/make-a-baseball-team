@@ -32,6 +32,7 @@ import { crossing } from './rivalry';
 import { farewell } from './life';
 import { traitsOf } from './traits';
 import { DYNAMIC, handicap } from './dynamic';
+import { balanceBoost } from './dynasty';
 
 // ── Offers ───────────────────────────────────────────────────────────────────────────────────────
 
@@ -539,7 +540,10 @@ function appetite(s: LeagueState, teamId: TeamId, t: FaTalk, p: Player, next: nu
   // owes no compensation.
   const style = gmAppetite(gmOf(s, teamId), ageIn(p, next));
   chance = Math.max(0, Math.min(own ? 1 : MARKET.interest.max, chance * (own ? 1 : style.chance)));
-  const need = Math.max(0.8, Math.min(1.25, 0.9 + gain * 0.02)) * style.need;
+  // 2.0.26: a share of the balance fund makes a club bolder (dynasty.ts).
+  const boost = own ? 1 : balanceBoost(s, teamId);
+  chance = Math.min(own ? 1 : MARKET.interest.max, chance * boost);
+  const need = Math.max(0.8, Math.min(1.25, 0.9 + gain * 0.02)) * style.need * (1 + (boost - 1) / 3);
   // 1.9.2: the north's clubs too (unified.ts).
   const founding = (s.twelve?.teamId === teamId && s.twelve.firstTeam === next) || aiFoundingClubs(s).some((c) => c.teamId === teamId && c.firstTeam === next);
   const comp = own || t.free || founding ? 1 : FA.ai.compensation[t.grade];

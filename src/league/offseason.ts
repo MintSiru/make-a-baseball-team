@@ -33,6 +33,7 @@ import { queuedDecision } from './market';
 import { closeMarket, judgeReinforcePromises, judgeStarterPromises, openMarket, payIncentives, playRound, roundDecision, settlePeriodOptions } from './fa';
 import { aiTrades, applyPickTrades, clearPool } from './trade';
 import { applyPickDrop, settleCap } from './cap';
+import { dynastyWinter } from './dynasty';
 import { applyForeignPickDrop, asiaCapFor, capPlayers, foreignCap, settleForeignCap, slotExempt, slotForeigners } from './foreigncap';
 import { isSecondDraftYear, openSecondDraft, runSecondDraft, secondProtectDecision } from './seconddraft';
 import { standings } from './standings';
@@ -167,6 +168,8 @@ export function closeSeason(s: LeagueState) {
   awardAlert(s, s.year, summary.awards);
   awardInterview(s, s.year, summary.awards);
   settleFinances(s, s.year, summary.table);
+  // 2.0.26: the anti-dynasty alliance and the balance fund (dynasty.ts).
+  dynastyWinter(s, s.year);
   seasonMoments(s, s.year, summary.awards);
   seasonNews(s, s.year);
   seasonFans(s, s.year, summary.table, summary.champion);

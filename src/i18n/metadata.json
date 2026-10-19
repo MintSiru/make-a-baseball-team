@@ -79638,5 +79638,206 @@
       }
     },
     "locations": []
+  },
+  "league.dynasty.text.af84a389": {
+    "source": "src/league/dynasty.ts",
+    "line": 65,
+    "params": {
+      "club": {
+        "expression": "short(s, a.target)"
+      }
+    },
+    "locations": []
+  },
+  "league.dynasty.text.0981bff3": {
+    "source": "src/league/dynasty.ts",
+    "line": 75,
+    "params": {
+      "club": {
+        "expression": "short(s, king)"
+      }
+    },
+    "locations": []
+  },
+  "league.dynasty.text.8bf0e00b": {
+    "source": "src/league/dynasty.ts",
+    "line": 77,
+    "params": {
+      "club": {
+        "expression": "short(s, king)"
+      }
+    },
+    "locations": []
+  },
+  "league.dynasty.text.06e206ed": {
+    "source": "src/league/dynasty.ts",
+    "line": 77,
+    "params": {
+      "club": {
+        "expression": "short(s, king)"
+      }
+    },
+    "locations": []
+  },
+  "league.dynasty.text.04f42f97": {
+    "source": "src/league/dynasty.ts",
+    "line": 78,
+    "params": {
+      "club": {
+        "expression": "short(s, king)"
+      },
+      "window": {
+        "expression": "DYNASTY.window"
+      },
+      "titles": {
+        "expression": "titles"
+      },
+      "seasons": {
+        "expression": "DYNASTY.seasons"
+      },
+      "eok": {
+        "expression": "DYNASTY.contribution / 10_000"
+      }
+    },
+    "locations": []
+  },
+  "league.dynasty.text.a6c10ff4": {
+    "source": "src/league/dynasty.ts",
+    "line": 79,
+    "params": {},
+    "locations": []
+  },
+  "league.dynasty.text.0e95bea2": {
+    "source": "src/league/dynasty.ts",
+    "line": 99,
+    "params": {},
+    "locations": []
+  },
+  "league.dynasty.text.54eab073": {
+    "source": "src/league/dynasty.ts",
+    "line": 112,
+    "params": {},
+    "locations": []
+  },
+  "league.dynasty.text.9b4844d1": {
+    "source": "src/league/dynasty.ts",
+    "line": 114,
+    "params": {
+      "eok": {
+        "expression": "Math.round(pool / 10_000)"
+      },
+      "n": {
+        "expression": "bottom.length"
+      }
+    },
+    "locations": []
+  },
+  "league.dynasty.text.f1886c6d": {
+    "source": "src/league/dynasty.ts",
+    "line": 115,
+    "params": {
+      "dynasty": {
+        "expression": "contribution ? L('과 반독주 연맹 분담금') : ''"
+      },
+      "eok": {
+        "expression": "Math.round(pool / 10_000)"
+      },
+      "clubs": {
+        "expression": "bottom.map((id) => short(s, id)).join(', ')"
+      }
+    },
+    "locations": []
+  },
+  "league.dynasty.text.43fcbad4": {
+    "source": "src/league/dynasty.ts",
+    "line": 115,
+    "params": {},
+    "locations": []
+  },
+  "league.trade.text.76f21ef9": {
+    "source": "src/league/trade.ts",
+    "line": 131,
+    "params": {},
+    "locations": []
+  },
+  "league.trade.text.0db9f0c2": {
+    "source": "src/league/trade.ts",
+    "line": 131,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.612d1027": {
+    "source": "src/league/board.ts",
+    "line": 471,
+    "params": {
+      "season": {
+        "expression": "year + 1"
+      }
+    },
+    "locations": []
+  },
+  "league.board.text.7ce11e65": {
+    "source": "src/league/board.ts",
+    "line": 473,
+    "params": {
+      "what": {
+        "expression": "what"
+      }
+    },
+    "locations": []
+  },
+  "league.board.text.fa11ae7d": {
+    "source": "src/league/board.ts",
+    "line": 474,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.d72ea6f4": {
+    "source": "src/league/board.ts",
+    "line": 475,
+    "params": {
+      "season": {
+        "expression": "year + 1"
+      },
+      "games": {
+        "expression": "short"
+      }
+    },
+    "locations": []
+  },
+  "league.board.text.54861480": {
+    "source": "src/league/board.ts",
+    "line": 475,
+    "params": {
+      "season": {
+        "expression": "year + 1"
+      }
+    },
+    "locations": []
+  },
+  "league.dynamic.text.3c248b6c": {
+    "source": "src/league/dynamic.ts",
+    "line": 76,
+    "params": {},
+    "locations": []
+  },
+  "league.dynamic.text.fcc34ad1": {
+    "source": "src/league/dynamic.ts",
+    "line": 76,
+    "params": {},
+    "locations": []
+  },
+  "league.dynamic.text.cdd3964f": {
+    "source": "src/league/dynamic.ts",
+    "line": 77,
+    "params": {
+      "before": {
+        "expression": "before"
+      },
+      "after": {
+        "expression": "u.handicap"
+      }
+    },
+    "locations": []
   }
 }
