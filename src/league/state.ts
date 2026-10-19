@@ -646,6 +646,9 @@ export interface LeagueState {
   capForfeit?: boolean;
   /** 2.0.25 (dynamic.ts): a game option — the difficulty moves with how our club is doing. */
   dynamicDifficulty?: boolean;
+  /** 2.0.26 (dynasty.ts): the anti-dynasty alliance standing, and this winter's balance fund shares. */
+  alliance?: import('./dynasty').Alliance;
+  balanceShare?: Record<TeamId, number>;
   /** The first-round picks lost so, by draft year. */
   pickForfeit?: Record<number, TeamId[]>;
   /** 2.0.23 (conditions.ts): other scenarios' conditions added to the game under way, in the order added. */
