@@ -8675,5 +8675,17 @@ export const koSource = {
   "league.board.text.54861480": "{season}시즌 개막이 늦어지고 팬들의 실망이 큽니다.",
   "league.dynamic.text.3c248b6c": "유동 난이도 상승: 리그가 우리 구단을 견제합니다",
   "league.dynamic.text.fcc34ad1": "유동 난이도 하락: 우리 구단에 도움의 손길이",
-  "league.dynamic.text.cdd3964f": "단계 {before} → {after} (지난 3시즌 우승·순위·자금·선수단 전력으로 정함)"
+  "league.dynamic.text.cdd3964f": "단계 {before} → {after} (지난 3시즌 우승·순위·자금·선수단 전력으로 정함)",
+  "league.brawl.text.e579b0cc": "보복성 몸에 맞는 공을 던져",
+  "league.brawl.text.dd00e16b": "마운드로 달려가 몸싸움을 벌여",
+  "league.brawl.text.56b644b2": "난투극에서 주먹을 휘둘러",
+  "league.brawl.text.1ec8015c": "{otherClub} {thrower}의 공에 {hitClub} {victim} 맞은 뒤, {hitClub} 투수 {avenger} {otherClub} {victim2} 맞히자 양 팀 선수들이 그라운드로 쏟아져 나왔습니다.",
+  "league.brawl.text.9076f037": "{otherClub} 투수 {thrower}의 공이 {hitClub} {victim}의 몸에 맞자 양 팀 선수들이 그라운드로 쏟아져 나왔습니다.",
+  "league.brawl.text.504348a9": "{name}({club}){particle} {why} 퇴장당했고, KBO 상벌위원회는 출장 정지 {games}경기와 제재금 {fine}만 원을 내렸습니다.",
+  "league.family.text.27659aed": "{dad}의 아들 {son}, {club} 유니폼 — 2대째 프로야구",
+  "league.family.text.a6111524": "{club} 은퇴 선수 {dad}의 아들 {son} 지명했다. 아버지는 현역 시절 1군에서 {seasons}시즌을 뛰었다.",
+  "league.userclub.text.034bd9ee": "신인 계약 결렬: {n}명이 계약을 거부했습니다",
+  "league.userclub.text.6b8af682": "외국인 재계약 결렬: {n}명",
+  "league.userclub.text.874afdaa": "재계약이 결렬된 선수는 시장에 나와도 우리 구단이 다시 영입할 수 없습니다.",
+  "league.trade.text.0e5d0da3": "FA 미아는 시즌이 개막한 뒤에 영입할 수 있습니다."
 } as const;

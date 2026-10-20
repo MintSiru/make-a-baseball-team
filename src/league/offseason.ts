@@ -750,10 +750,11 @@ export function foreignRenewalAsk(p: Player, next: number) {
   return Math.round(Math.min(cap, prevUsd + (p.origin.asiaQuota ? Math.min(KBO_2026.foreign.asiaQuotaRaisePerYearUSD, raise) : raise)) / 10_000) * 10_000;
 }
 
-/** A star foreign player may leave for MLB or NPB whatever the club offers (chance by his season). */
+/** A star foreign player may leave for MLB or NPB whatever the club offers (chance by his season). 2.0.27: less
+    often (most of the KBO's best foreigners stay a few seasons), and a player past 35 may still sign on. */
 export function foreignLeaves(s: LeagueState, p: Player, next: number) {
   const war = lastRecord(p, next - 1)?.war ?? 0;
-  const chance = ageIn(p, next) > 35 ? 1 : war >= 6 ? 0.5 : war >= 4 ? 0.2 : 0.03;
+  const chance = ageIn(p, next) > 35 ? 0.6 : war >= 6 ? 0.35 : war >= 4 ? 0.12 : 0.03;
   return rng(`${s.seed}|foreign-abroad|${next}|${p.id}`)() < chance;
 }
 

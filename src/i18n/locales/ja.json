@@ -8674,5 +8674,17 @@
   "league.board.text.54861480": "{season}シーズンの開幕が遅れ、ファンの失望が大きいです。",
   "league.dynamic.text.3c248b6c": "変動難易度アップ：リーグが我が球団を牽制します",
   "league.dynamic.text.fcc34ad1": "変動難易度ダウン：我が球団に救いの手",
-  "league.dynamic.text.cdd3964f": "段階 {before} → {after}（直近3シーズンの優勝・順位・資金・戦力で決定）"
+  "league.dynamic.text.cdd3964f": "段階 {before} → {after}（直近3シーズンの優勝・順位・資金・戦力で決定）",
+  "league.brawl.text.e579b0cc": "報復の死球を与えたこと",
+  "league.brawl.text.dd00e16b": "マウンドに詰め寄りもみ合ったこと",
+  "league.brawl.text.56b644b2": "乱闘で拳を振るったこと",
+  "league.brawl.text.1ec8015c": "{otherClub}の{thrower}の投球が{hitClub}の{victim}に当たった後、{hitClub}の投手{avenger}が{otherClub}の{victim2}に当てると、両チームの選手がグラウンドになだれ込みました。",
+  "league.brawl.text.9076f037": "{otherClub}の投手{thrower}の投球が{hitClub}の{victim}に当たると、両チームの選手がグラウンドになだれ込みました。",
+  "league.brawl.text.504348a9": "{name}（{club}）{particle}{why}で退場となり、KBO賞罰委員会は出場停止{games}試合と制裁金{fine}万ウォンを科しました。",
+  "league.family.text.27659aed": "{dad}の息子{son}、{club}のユニフォームに — 親子2代のプロ野球",
+  "league.family.text.a6111524": "{club}が元選手{dad}の息子{son}を指名した。父は現役時代、一軍で{seasons}シーズンプレーした。",
+  "league.userclub.text.034bd9ee": "新人契約決裂：{n}人が契約を拒否しました",
+  "league.userclub.text.6b8af682": "外国人再契約決裂：{n}人",
+  "league.userclub.text.874afdaa": "再契約が決裂した選手は、市場に出ても我が球団は再獲得できません。",
+  "league.trade.text.0e5d0da3": "FA浪人は開幕後に獲得できます。"
 }

@@ -397,6 +397,8 @@ export interface PlayerLife {
   hiding?: { date: string; found: string };
   /** 1.6.0: a free agent nobody signed that winter (FA 미아), waiting in the unattached pool. */
   unsigned?: number;
+  /** 2.0.27: what he asked a year in the market (만원, ×0.7) — the least he signs for as an unattached player. */
+  unsignedAsk?: number;
   /** 1.6.0: an injury that ended his career (the date): he retires after the season, however he is asked. */
   careerOver?: string;
   suspicion?: { since: string; signs: number; real: boolean; next: string; boost?: { tool: 'stuff' | 'power'; delta: number } };

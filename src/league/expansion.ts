@@ -336,7 +336,7 @@ function foreignCandidates(s: LeagueState, next: number): Player[] {
     out.unshift(p);
   }
   // Foreign players with KBO experience other clubs let go (V0.7.3): the same cap, priced by their KBO record.
-  for (const p of foreignPoolPlayers(s)) {
+  for (const p of foreignPoolPlayers(s, EXPANSION_ID)) {
     p.contract = foreignContract(EXPANSION_ID, next, splitContract(foreignPoolAsk(s, p), rng(`${s.seed}|foreign-pool-offer|${next}|${p.id}`)), !!p.origin.asiaQuota);
     out.push(p);
   }

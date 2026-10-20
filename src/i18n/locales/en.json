@@ -8674,5 +8674,17 @@
   "league.board.text.54861480": "The {season} season opens late, and the fans are bitterly disappointed.",
   "league.dynamic.text.3c248b6c": "Dynamic difficulty up: the league reins our club in",
   "league.dynamic.text.fcc34ad1": "Dynamic difficulty down: a helping hand for our club",
-  "league.dynamic.text.cdd3964f": "Level {before} → {after} (set from the last three seasons' titles, standings, money and squad strength)"
+  "league.dynamic.text.cdd3964f": "Level {before} → {after} (set from the last three seasons' titles, standings, money and squad strength)",
+  "league.brawl.text.e579b0cc": "throwing at a batter in retaliation",
+  "league.brawl.text.dd00e16b": "charging the mound and scuffling",
+  "league.brawl.text.56b644b2": "throwing punches in the brawl",
+  "league.brawl.text.1ec8015c": "After {hitClub}'s {victim} was hit by a pitch from {otherClub}'s {thrower}, {hitClub} pitcher {avenger} hit {otherClub}'s {victim2}, and both teams poured onto the field.",
+  "league.brawl.text.9076f037": "When a pitch from {otherClub} pitcher {thrower} hit {hitClub}'s {victim}, both teams poured onto the field.",
+  "league.brawl.text.504348a9": "{name} ({club}){particle} was ejected for {why}, and the KBO's disciplinary committee handed down a {games}-game suspension and a fine of ₩{fine}×10,000.",
+  "league.family.text.27659aed": "{dad}'s son {son} joins {club}: a second generation in pro baseball",
+  "league.family.text.a6111524": "{club} drafted {son}, son of former player {dad}. His father played {seasons} seasons on a first team.",
+  "league.userclub.text.034bd9ee": "Rookie talks failed: {n} draftee(s) refused to sign",
+  "league.userclub.text.6b8af682": "Foreign re-signings that fell through: {n}",
+  "league.userclub.text.874afdaa": "A player whose re-signing failed cannot be signed back by our club from the market.",
+  "league.trade.text.0e5d0da3": "An unsigned free agent can be signed only after the season opens."
 }

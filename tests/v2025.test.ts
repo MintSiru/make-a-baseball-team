@@ -42,10 +42,11 @@ describe('the benches clearing', () => {
         }
       }
     }
-    expect(single).toBeGreaterThan(5);
-    expect(single).toBeLessThan(120);
+    // (2.0.27: about half as often as at first.)
+    expect(single).toBeGreaterThan(3);
+    expect(single).toBeLessThan(60);
     expect(both).toBeGreaterThan(single * 2);
-    expect(paid).toBeGreaterThan(50);
+    expect(paid).toBeGreaterThan(20);
     expect(Object.keys(s.suspended).length).toBeGreaterThan(0);
     expect(Object.values(s.suspended).every((x) => (x.games ?? 0) >= 3)).toBe(true);
     expect((s.news ?? []).some((n) => n.id.startsWith('brawl-'))).toBe(true);

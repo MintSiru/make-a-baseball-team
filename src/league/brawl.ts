@@ -14,18 +14,19 @@ import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import type { GameOut, TeamBox } from './engine/types';
 import { addAlert } from './alerts';
-import { iga } from './josa';
+import { eulreul, eunneun, iga } from './josa';
 import { addNews } from './news';
 import { isPitcher } from './players';
 import type { LeagueState } from './state';
 
 export const BRAWL = {
-  /** A single hit batter brings the benches out this often (a star hit: this much more). */
-  single: 0.012,
-  star: { grade: 65, extra: 0.02 },
+  /** A single hit batter brings the benches out this often (a star hit: this much more). 2.0.27: about half as often
+      as before, so a league season has some six to nine (the KBO's own count), most of them stand-offs. */
+  single: 0.006,
+  star: { grade: 65, extra: 0.012 },
   /** Both sides hit someone: the second read as payback this often, and the benches out then. */
-  payback: 0.14,
-  paybackClear: 0.7,
+  payback: 0.035,
+  paybackClear: 0.6,
   /** Once out, how far it goes: a stand-off, pushing, a fight. */
   shares: { standoff: 0.72, scuffle: 0.23, fight: 0.05 },
   /** Games suspended and fines (만원) by what he did. */
@@ -44,7 +45,8 @@ export interface Brawl {
   gameId: string;
   date: string;
   level: BrawlLevel;
-  /** The side whose batter was hit first, and the side that hit back (if it was payback). */
+  /** The side whose batter was hit first, and (if it was payback) the side that hit back — 2.0.27: the same club,
+      its pitcher answering for its batter (it was recorded as the other club before). */
   hit: TeamId;
   back?: TeamId;
   /** Players suspended for it, with their games and fines (만원). */
@@ -54,6 +56,13 @@ export interface Brawl {
 const hitBatters = (b: TeamBox) => b.batting.filter((x) => x.hbp > 0);
 const hittingPitchers = (b: TeamBox) => b.pitching.filter((x) => x.hbp > 0);
 const pickIn = (r: () => number, [a, b]: number[]) => a! + Math.floor(r() * (b! - a! + 1));
+const particleOf = (word: string, f: (w: string) => string) => f(word).slice(word.length);
+/** Why each was thrown out, at length (2.0.27). */
+const WHY_LONG: Record<Brawl['bans'][number]['why'], () => string> = {
+  payback: () => __i18n_k("league.brawl.text.e579b0cc"),
+  charge: () => __i18n_k("league.brawl.text.dd00e16b"),
+  fight: () => __i18n_k("league.brawl.text.56b644b2"),
+};
 const short = (s: LeagueState, id: TeamId) => s.teams.find((t) => t.id === id)?.short ?? id;
 
 /** After a game: the benches may clear over a hit batter. */
@@ -64,11 +73,11 @@ export function brawlGame(s: LeagueState, out: GameOut, gameId: string, date: st
   const r = rng(`${s.seed}|brawl|${gameId}`);
   const star = (ids: { id: PlayerId }[]) => ids.some((x) => (s.players[x.id]?.scouting.current ?? 0) >= BRAWL.star.grade);
   let hit: 'home' | 'away',
-    back: 'home' | 'away' | undefined;
+    payback = false;
   if (homeHit.length && awayHit.length && r() < BRAWL.payback) {
     // Both sides hit someone and the second is read as payback: which came first is a coin toss.
     hit = r() < 0.5 ? 'home' : 'away';
-    back = hit === 'home' ? 'away' : 'home';
+    payback = true;
     if (r() >= BRAWL.paybackClear) return null;
   } else {
     hit = homeHit.length && (!awayHit.length || r() < 0.5) ? 'home' : 'away';
@@ -79,32 +88,44 @@ export function brawlGame(s: LeagueState, out: GameOut, gameId: string, date: st
   const level: BrawlLevel = x < BRAWL.shares.standoff ? 'standoff' : x < BRAWL.shares.standoff + BRAWL.shares.scuffle ? 'scuffle' : 'fight';
   const side = (k: 'home' | 'away') => (k === 'home' ? out.home : out.away);
   const other = (k: 'home' | 'away') => (k === 'home' ? 'away' : 'home');
-  const victim = s.players[[...hitBatters(side(hit))].sort((a, b) => (s.players[b.id]?.scouting.current ?? 0) - (s.players[a.id]?.scouting.current ?? 0))[0]!.id]!;
-  const thrower = s.players[hittingPitchers(side(other(hit)))[0]?.id ?? '']!;
-  const avenger = back ? s.players[hittingPitchers(side(other(back)))[0]?.id ?? ''] : undefined;
+  const best = (b: TeamBox) => s.players[[...hitBatters(b)].sort((a, c) => (s.players[c.id]?.scouting.current ?? 0) - (s.players[a.id]?.scouting.current ?? 0))[0]!.id]!;
+  // The first batter hit (on the `hit` side) by the other side's pitcher; with payback, the `hit` side's pitcher
+  // then hits one of theirs, and it is that batter who has had enough.
+  const victim = best(side(hit));
+  const thrower = s.players[hittingPitchers(side(other(hit)))[0]?.id ?? ''];
+  const avenger = payback ? s.players[hittingPitchers(side(hit))[0]?.id ?? ''] : undefined;
+  const victim2 = payback ? best(side(other(hit))) : undefined;
   const bans: Brawl['bans'] = [];
   const ban = (p: Player | undefined, teamId: TeamId, why: 'payback' | 'charge' | 'fight') => {
     if (!p || bans.some((b) => b.id === p.id)) return;
     const B = BRAWL.bans[why];
-    bans.push({ id: p.id, teamId, games: pickIn(r, B.games), fine: pickIn(r, B.fine) * 10, why });
+    // Fines in 만원, rounded to 10만 won (2.0.27: they were ten times too much).
+    bans.push({ id: p.id, teamId, games: pickIn(r, B.games), fine: Math.round(pickIn(r, B.fine) / 10) * 10, why });
   };
-  // The one who threw it back is thrown out whatever follows; a scuffle or a fight costs the batter who charged.
-  if (back && avenger) ban(avenger, side(back).teamId, 'payback');
-  if (level !== 'standoff' && victim && !isPitcher(victim)) ban(victim, side(hit).teamId, level === 'fight' ? 'fight' : 'charge');
-  if (level === 'fight' && thrower) ban(thrower, side(other(hit)).teamId, 'fight');
-  const brawl: Brawl = { gameId, date, level, hit: side(hit).teamId, ...(back ? { back: side(back).teamId } : {}), bans };
-  settle(s, brawl, victim, thrower, avenger, [out.home.teamId, out.away.teamId]);
+  // The one who threw it back is thrown out whatever follows; a scuffle or a fight costs the batter who charged the
+  // mound (the last one hit), and a fight the pitcher he went for too.
+  if (avenger) ban(avenger, side(hit).teamId, 'payback');
+  const charger = payback ? victim2 : victim;
+  const chargerSide = payback ? other(hit) : hit;
+  if (level !== 'standoff' && charger && !isPitcher(charger)) ban(charger, side(chargerSide).teamId, level === 'fight' ? 'fight' : 'charge');
+  const target = payback ? avenger : thrower;
+  if (level === 'fight' && target) ban(target, side(payback ? hit : other(hit)).teamId, 'fight');
+  const brawl: Brawl = { gameId, date, level, hit: side(hit).teamId, ...(payback ? { back: side(hit).teamId } : {}), bans };
+  settle(s, brawl, { victim, thrower, avenger, victim2, hitClub: side(hit).teamId, otherClub: side(other(hit)).teamId });
   return brawl;
 }
 
 /** The suspensions, the fines, the papers and our popup. */
-function settle(s: LeagueState, b: Brawl, victim: Player, thrower: Player | undefined, avenger: Player | undefined, clubs: TeamId[]) {
+function settle(s: LeagueState, b: Brawl, who: { victim: Player; thrower?: Player; avenger?: Player; victim2?: Player; hitClub: TeamId; otherClub: TeamId }) {
+  const { victim, thrower, avenger, victim2, hitClub, otherClub } = who;
+  const clubs = [hitClub, otherClub];
+  const reasonOf = (why: Brawl['bans'][number]['why']) => (why === 'payback' ? __i18n_k("league.brawl.text.52902162") : why === 'charge' ? __i18n_k("league.brawl.text.0fa1bdba") : __i18n_k("league.brawl.text.078d81ca"));
   for (const x of b.bans) {
-    const reason = x.why === 'payback' ? __i18n_k("league.brawl.text.52902162") : x.why === 'charge' ? __i18n_k("league.brawl.text.0fa1bdba") : __i18n_k("league.brawl.text.078d81ca");
+    const reason = reasonOf(x.why);
     const prev = s.suspended?.[x.id];
     (s.suspended ??= {})[x.id] = { reason, games: (prev?.games ?? 0) + x.games, ...(prev?.until ? { until: prev.until } : {}), since: b.date };
   }
-  const mine = !!s.user && (b.hit === s.user.teamId || b.back === s.user.teamId || b.bans.some((x) => x.teamId === s.user!.teamId));
+  const mine = !!s.user && clubs.includes(s.user.teamId);
   if (s.user && b.level !== 'standoff' && clubs.includes(s.user.teamId)) {
     s.user.fund -= BRAWL.clubFine;
     s.user.ledger.push({ year: s.year, label: __i18n_k("league.brawl.text.2ab9515a"), amount: -BRAWL.clubFine });
@@ -117,15 +138,17 @@ function settle(s: LeagueState, b: Brawl, victim: Player, thrower: Player | unde
         ? __i18n_k("league.brawl.text.bdce29c5", { pair })
         : __i18n_k("league.brawl.text.ded639c1", { pair });
   const lines: string[] = [];
+  // 2.0.27: who threw at whom, with their clubs, so the first sentence reads on its own.
   lines.push(
-    b.back && avenger
-      ? __i18n_k("league.brawl.text.61e5c545", { victim: victim.name, avenger: iga(avenger.name) })
-      : __i18n_k("league.brawl.text.d1d6fb43", { thrower: thrower?.name ?? '', victim: victim.name }),
+    avenger && victim2
+      ? __i18n_k("league.brawl.text.1ec8015c", { otherClub: short(s, otherClub), hitClub: short(s, hitClub), thrower: thrower?.name ?? '', victim: iga(victim.name), avenger: iga(avenger.name), victim2: eulreul(victim2.name) })
+      : __i18n_k("league.brawl.text.9076f037", { otherClub: short(s, otherClub), hitClub: short(s, hitClub), thrower: thrower?.name ?? '', victim: victim.name }),
   );
   if (b.level === 'standoff') lines.push(__i18n_k("league.brawl.text.1c2809b7"));
   for (const x of b.bans) {
     const p = s.players[x.id]!;
-    lines.push(__i18n_k("league.brawl.text.892b6d1b", { name: p.name, club: short(s, x.teamId), games: x.games, fine: x.fine.toLocaleString('ko-KR') }));
+    // 2.0.27: and why he was thrown out and punished.
+    lines.push(__i18n_k("league.brawl.text.504348a9", { name: p.name, club: short(s, x.teamId), particle: particleOf(p.name, eunneun), why: WHY_LONG[x.why](), games: x.games, fine: x.fine.toLocaleString('ko-KR') }));
   }
   if (b.level !== 'standoff') lines.push(__i18n_k("league.brawl.text.7b8c67d8", { fine: BRAWL.clubFine }));
   addNews(s, { id: `brawl-${b.gameId}`, date: b.date, kind: 'game', title, body: lines.join(' '), quotes: [], facts: { level: b.level, suspended: b.bans.length }, players: [victim.id, ...b.bans.map((x) => x.id)], ...(mine ? { mine } : {}) });

@@ -409,7 +409,8 @@ export function processWaivers(s: LeagueState, date: string) {
 /** Unattached players' asking salary for the rest of this season (or next season after it). */
 export function poolAsk(s: LeagueState, p: Player) {
   const season = s.phase === 'regular' ? s.year : s.year + 1;
-  const full = Math.max(minimumSalaryFor(season), renewSalary(p, season));
+  // 2.0.27: an unsigned free agent asks what he did in the market (×0.7), not a renewal salary.
+  const full = Math.max(minimumSalaryFor(season), renewSalary(p, season), p.life?.unsigned != null && season <= p.life.unsigned + 1 ? (p.life.unsignedAsk ?? 0) : 0);
   return s.phase === 'regular' ? Math.max(minimumSalaryFor(season), Math.round((full * Math.max(0.3, seasonShareLeft(s))) / 100) * 100) : full;
 }
 
@@ -420,6 +421,8 @@ export function canSignFromPool(s: LeagueState, id: PlayerId): string | null {
   // 1.6.0: the free agents nobody signed (FA 미아) can be signed in the winter too, once the market is over.
   const winter = s.phase === 'offseason';
   if (winter && !s.offseason?.faDone) return __i18n_k("league.trade.canSignFromPool.e14818cd");
+  // 2.0.27: a free agent nobody signed waits for the season to open (no signing him right after the market).
+  if (winter && p.life?.unsigned != null && p.life.unsigned === s.offseason?.year) return __i18n_k("league.trade.text.0e5d0da3");
   if ((s.pending && !winter) || s.pending?.kind === 'roster' || s.phase === 'postseason') return __i18n_k("league.trade.canSignFromPool.f547701d");
   if (registeredIds(s, u.teamId).length >= rosterLimit(s.phase === 'regular' ? s.year : s.year + 1)) return __i18n_k("league.trade.canSignFromPool.c4dade95");
   return null;
@@ -502,7 +505,7 @@ export function foreignMarket(s: LeagueState, teamId: TeamId): Player[] {
     p.status = 'amateur';
     out.unshift(p);
   }
-  return [...foreignPoolPlayers(s), ...out];
+  return [...foreignPoolPlayers(s, teamId), ...out];
 }
 
 /** The prorated asking price now (US dollars): new signings are capped at the full-season cap times the share left. */
