@@ -43,6 +43,8 @@ import { postRows, postTotals, type PostRow } from '../league/poststats';
 import { FASTBALL_LABELS, PITCH_LABELS, VARIANT_LABELS } from '../league/pitches';
 import { LEGACY_START } from '../league/era';
 import type { ArmSlot, Tracking } from '../league/tracking';
+import { pathwayLabel } from '../league/amateur';
+import { CareerStages } from './CareerStages';
 
 const POSITION_NAMES: Record<string, string> = { C: __i18n_k("ui.playerPanel.pOSITION_NAMES.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("ui.playerPanel.pOSITION_NAMES.sS.3e24c7f1"), LF: __i18n_k("ui.playerPanel.pOSITION_NAMES.lF.73836db2"), CF: __i18n_k("ui.playerPanel.pOSITION_NAMES.cF.56780b2a"), RF: __i18n_k("ui.playerPanel.pOSITION_NAMES.rF.a28a0ef8") };
 
@@ -710,6 +712,13 @@ export function PlayerPanel({
               ))}
             </dl>
             <p class="muted small">{__i18n_display(p.education.pathText)}</p>
+            {/* 2.0.27: his road to the draft, stage by stage. */}
+            {__i18n_display(p.origin.kind === 'draftClass' && !!p.education.history?.length && (
+              <details class="career-before">
+                <summary>{__i18n_t("ui.playerPanel.text.725635c9", { path: pathwayLabel(p) })}</summary>
+                <CareerStages player={p} />
+              </details>
+            ))}
             {__i18n_display(!!p.honors?.length && (
               <>
                 <h3>{__i18n_t("ui.playerPanel.playerPanel.34f8ad9e")}</h3>

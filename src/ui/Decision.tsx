@@ -38,6 +38,7 @@ import { FantasyBoard } from './FantasyDraft';
 import { MEDDLE } from '../league/scenarios';
 import { ROUND_NAME } from '../league/postseason';
 import { motionText, playersView, type BoardVote } from '../league/board';
+import { pathwayLabel } from '../league/amateur';
 
 interface Props {
   league: LeagueState;
@@ -294,7 +295,7 @@ function PlayerTable({
                         ? `${p.origin.background?.veteran ? __i18n_t("ui.decision.text.f2667506") : ''}${p.archetype} · ${p.education.pathText}`
                         : p.career.length
                           ? __i18n_k("ui.decision.playerTable.e16b5dd5")
-                          : p.origin.pathway)}
+                          : pathwayLabel(p))}
               </td>
               <td class={`num ${gradeClass(p.scouting.current)}`}>{__i18n_display(p.scouting.current)}</td>
               <td class={`num strong ${gradeClass(shownFuture(p))}`}>{__i18n_display(shownFuture(p) ?? '-')}</td>
@@ -359,7 +360,7 @@ function DraftTable({ league, onPlayer, onPick, only }: { league: LeagueState; o
               </td>
               <td>{__i18n_display(positionLabel(p))}</td>
               <td class="num">{__i18n_display(ageIn(p, year + 1))}</td>
-              <td class="muted">{__i18n_display(p.origin.pathway)}</td>
+              <td class="muted">{__i18n_display(pathwayLabel(p))}</td>
               <td class={`num ${gradeClass(p.scouting.current)}`}>{__i18n_display(p.scouting.current)}</td>
               <td class={`num strong ${gradeClass(shownFuture(p))}`}>{__i18n_display(shownFuture(p) ?? '-')}</td>
               <td class="num">{__i18n_display(p.velocity ?? '-')}</td>

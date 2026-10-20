@@ -8,8 +8,10 @@ import { TOOL_LABELS } from '../draftroom';
 import type { PublicPlayer } from '../model/player';
 import type { CombineLine } from '../league/combine';
 import type { TraitReport } from '../league/reports';
-import { handedness, militaryLabel, recordLine, roleLabel, toolKeysFor } from './format';
+import { handedness, militaryLabel, roleLabel, toolKeysFor } from './format';
 import { TraitReportBox } from './PlayerPanel';
+import { CareerStages } from './CareerStages';
+import { pathwayLabel } from '../league/amateur';
 import { useFocusTrap } from './modal';
 
 interface Props {
@@ -36,8 +38,8 @@ export function PlayerProfile({ player: p, age, draftYear, ours, combine, combin
   const future = shownFuture(p);
   const parts: { key: Part; label: string }[] = [
     { key: 'grades', label: __i18n_t("ui.playerProfile.text.6f36da79") },
+    { key: 'amateur', label: __i18n_t("ui.playerProfile.text.f892ec34") },
     { key: 'combine', label: __i18n_t("ui.playerProfile.text.572be2e2") },
-    { key: 'amateur', label: __i18n_t("ui.playerProfile.text.c9c0e467") },
   ];
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -49,7 +51,7 @@ export function PlayerProfile({ player: p, age, draftYear, ours, combine, combin
             <span class="prospect-rank-label">{__i18n_t("ui.playerProfile.text.ee320476")}</span>
           </div>
           <div>
-            <p class="muted">{__i18n_t("ui.playerProfile.text.c63d35fe", { year: draftYear + 1, pathway: p.origin.pathway, school: p.education.school })}</p>
+            <p class="muted">{__i18n_t("ui.playerProfile.text.c63d35fe", { year: draftYear + 1, pathway: pathwayLabel(p), school: p.education.school })}</p>
             <h2 id="profile-name" tabIndex={-1}>
               {__i18n_display(p.name)}
               {__i18n_display(p.twoWay && <span class="tag">{__i18n_t("ui.draftBoard.draftBoard.62cb0192")}</span>)}
@@ -163,9 +165,18 @@ export function PlayerProfile({ player: p, age, draftYear, ours, combine, combin
         {__i18n_display(part === 'amateur' && (
           <div class="profile-part" role="tabpanel">
             <section>
-              <h3>{__i18n_t("ui.playerProfile.playerProfile.0eb04ce0")}</h3>
-              <p class="numbers">{__i18n_display(recordLine(p.amateur.record))}</p>
-              {__i18n_display(p.amateur.awards.length > 0 && <p class="muted">{__i18n_display(p.amateur.awards.join(' · '))}</p>)}
+              <h3>{__i18n_t("ui.playerProfile.text.f892ec34")}</h3>
+              <CareerStages player={p} />
+              <p class="muted small">{__i18n_t("ui.playerProfile.text.441a99b9")}</p>
+              {__i18n_display(p.amateur.awards.length > 0 && (
+                <p>
+                  {__i18n_display(p.amateur.awards.map((a) => (
+                    <span key={a} class="tag">
+                      {__i18n_display(a)}
+                    </span>
+                  )))}
+                </p>
+              ))}
             </section>
             <section>
               <h3>{__i18n_t("ui.playerProfile.text.3095fa46")}</h3>

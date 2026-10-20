@@ -9,6 +9,7 @@ import type { Player, PlayerId } from '../model/types';
 import { roleLabel } from './format';
 import { gradeClass } from './grades';
 import { useSort } from './sort';
+import { pathwayLabel } from '../league/amateur';
 
 type RoleFilter = 'all' | Role;
 type PathFilter = 'all' | 'hs' | 'college' | 'other';
@@ -60,7 +61,7 @@ export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect, ou
     rank: { value: (p) => p.amateur.draftRank, first: 1 },
     name: { value: (p) => p.name },
     role: { value: (p) => ['SP', 'RP', 'C', 'IF', 'OF'].indexOf(p.role), first: 1 },
-    path: { value: (p) => p.origin.pathway },
+    path: { value: (p) => pathwayLabel(p) },
     age: { value: (p) => ageOf(p), first: 1 },
     current: { value: (p) => p.scouting.current },
     future: { value: (p) => p.scouting.futureValue },
@@ -125,7 +126,7 @@ export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect, ou
                     <span class="muted small draft-school">{__i18n_display(p.education.school)}</span>
                   </td>
                   <td>{__i18n_display(roleLabel(p.role))}</td>
-                  <td>{__i18n_display(p.origin.pathway)}</td>
+                  <td>{__i18n_display(pathwayLabel(p))}</td>
                   <td class="num">{__i18n_display(ageOf(p))}</td>
                   <td class={`num ${gradeClass(p.scouting.current)}`}>{__i18n_display(p.scouting.current)}</td>
                   <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{__i18n_display(p.scouting.futureValue)}</td>
