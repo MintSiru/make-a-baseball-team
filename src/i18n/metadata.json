@@ -80857,5 +80857,159 @@
     "line": 121,
     "params": {},
     "locations": []
+  },
+  "league.hsevents.text.5aa472a6": {
+    "source": "src/league/hsevents.ts",
+    "line": 171,
+    "params": {},
+    "locations": []
+  },
+  "league.hsevents.text.b80e8368": {
+    "source": "src/league/hsevents.ts",
+    "line": 171,
+    "params": {},
+    "locations": []
+  },
+  "league.hsevents.text.457d6d25": {
+    "source": "src/league/hsevents.ts",
+    "line": 179,
+    "params": {},
+    "locations": []
+  },
+  "league.hsevents.text.d7d75f25": {
+    "source": "src/league/hsevents.ts",
+    "line": 180,
+    "params": {},
+    "locations": []
+  },
+  "league.hsevents.text.6a14ee2d": {
+    "source": "src/league/hsevents.ts",
+    "line": 181,
+    "params": {},
+    "locations": []
+  },
+  "league.hsevents.text.cf8735ff": {
+    "source": "src/league/hsevents.ts",
+    "line": 182,
+    "params": {},
+    "locations": []
+  },
+  "league.hsevents.text.82ac692c": {
+    "source": "src/league/hsevents.ts",
+    "line": 183,
+    "params": {},
+    "locations": []
+  },
+  "league.north.text.8a2d3ebe": {
+    "source": "src/league/north.ts",
+    "line": 105,
+    "params": {
+      "town": {
+        "expression": "town"
+      }
+    },
+    "locations": []
+  },
+  "league.north.text.53f06ddc": {
+    "source": "src/league/north.ts",
+    "line": 106,
+    "params": {
+      "town": {
+        "expression": "town"
+      }
+    },
+    "locations": []
+  },
+  "league.northevents.text.894badc3": {
+    "source": "src/league/northevents.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.northevents.text.3660fdbb": {
+    "source": "src/league/northevents.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.northevents.text.82c2c27f": {
+    "source": "src/league/northevents.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.northevents.text.bea9cec6": {
+    "source": "src/league/northevents.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.northevents.text.efb15c9f": {
+    "source": "src/league/northevents.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.northevents.text.66d071e5": {
+    "source": "src/league/northevents.ts",
+    "line": 52,
+    "params": {
+      "region": {
+        "expression": "region"
+      }
+    },
+    "locations": []
+  },
+  "league.northevents.text.5aa472a6": {
+    "source": "src/league/northevents.ts",
+    "line": 57,
+    "params": {},
+    "locations": []
+  },
+  "league.northevents.text.457d6d25": {
+    "source": "src/league/northevents.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "league.northevents.text.b80e8368": {
+    "source": "src/league/northevents.ts",
+    "line": 70,
+    "params": {},
+    "locations": []
+  },
+  "league.northevents.text.d7d75f25": {
+    "source": "src/league/northevents.ts",
+    "line": 73,
+    "params": {},
+    "locations": []
+  },
+  "league.northevents.text.6a14ee2d": {
+    "source": "src/league/northevents.ts",
+    "line": 73,
+    "params": {},
+    "locations": []
+  },
+  "league.northevents.text.cf8735ff": {
+    "source": "src/league/northevents.ts",
+    "line": 74,
+    "params": {},
+    "locations": []
+  },
+  "league.northevents.text.82ac692c": {
+    "source": "src/league/northevents.ts",
+    "line": 74,
+    "params": {},
+    "locations": []
+  },
+  "league.northevents.text.42a7b82f": {
+    "source": "src/league/northevents.ts",
+    "line": 74,
+    "params": {
+      "n": {
+        "expression": "rank"
+      }
+    },
+    "locations": []
   }
 }

@@ -49,7 +49,7 @@ export interface HsEvent {
 
 /** Placing by how far a school got: 1 the winner, 2 the final, 4 the semi-finals…; the early rounds of a big draw by
     their number (1회전, 2회전), as the schools' tournaments call them. */
-const roundName = (reached: number, size = 32) =>
+export const roundName = (reached: number, size = 32) =>
   reached === 1
     ? __i18n_k("league.hsevents.text.894badc3")
     : reached === 2
@@ -61,17 +61,17 @@ const roundName = (reached: number, size = 32) =>
           : __i18n_k("league.hsevents.text.0e854629", { n: reached });
 
 /** A knockout draw, the stronger seeds kept apart: how far each school got and how many games it played. */
-function knockout(entrants: Institution[], r: () => number): Map<string, { reached: number; games: number; size: number }> {
+export function knockout<T extends { id: string }>(entrants: T[], r: () => number, strength: (s: T) => number = team as unknown as (s: T) => number): Map<string, { reached: number; games: number; size: number }> {
   let size = 1;
   while (size < entrants.length) size *= 2;
-  const seeded = [...entrants].sort((a, b) => team(b) - team(a) || a.id.localeCompare(b.id));
+  const seeded = [...entrants].sort((a, b) => strength(b) - strength(a) || a.id.localeCompare(b.id));
   let order = [0];
   while (order.length < size) order = order.flatMap((i) => [i, order.length * 2 - 1 - i]);
   const out = new Map(seeded.map((s) => [s.id, { reached: size, games: 0, size }]));
-  let round: (Institution | null)[] = order.map((i) => seeded[i] ?? null);
+  let round: (T | null)[] = order.map((i) => seeded[i] ?? null);
   let left = size;
   while (round.length > 1) {
-    const next: (Institution | null)[] = [];
+    const next: (T | null)[] = [];
     for (let i = 0; i < round.length; i += 2) {
       const a = round[i]!,
         b = round[i + 1]!;
@@ -81,8 +81,8 @@ function knockout(entrants: Institution[], r: () => number): Map<string, { reach
       }
       out.get(a.id)!.games++;
       out.get(b.id)!.games++;
-      const ta = team(a) + 0.15,
-        tb = team(b) + 0.15;
+      const ta = strength(a) + 0.15,
+        tb = strength(b) + 0.15;
       const [win, lose] = r() < ta / (ta + tb) ? [a, b] : [b, a];
       out.get(lose.id)!.reached = left;
       next.push(win);
@@ -159,7 +159,8 @@ function reachedOf(result: string): number {
   return Number.isFinite(n) && n > 0 ? n : 32;
 }
 
-/** His school's or college's year: a draft class's (its pool seed), or one drawn for an earlier year (`key`). */
+/** His school's or college's year: a draft class's (its pool seed), or one drawn for an earlier year (`key`). A
+    northern school's is northevents.ts's. */
 export function schoolEvents(schoolId: string, at: { poolSeed: string } | { key: string }): HsEvent[] {
   return season('poolSeed' in at ? at.poolSeed : at.key).get(schoolId) ?? [];
 }

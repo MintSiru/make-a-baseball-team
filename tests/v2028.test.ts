@@ -149,3 +149,49 @@ describe('the fall league, Australia and the wrap-up camp (2.0.28)', () => {
     expect(checkCamp(s, 'guam')).toMatch(/이미/);
   });
 });
+
+describe('the north on its own school circuit (2.0.28, 통일 한국)', () => {
+  const southEvents = /^(서울|경기·강원|인천|대전·충청·전북|대구·경북|부산·울산|경남|광주·전남·제주) 권역|다이아몬드|퓨처 베이스볼|대학리그 (수도권|충청|영남)|^전문대학 리그/;
+
+  it("gives a northern prospect the north's schools and tournaments, one winner each, awards that match", async () => {
+    const { draftClass } = await import('../src/league/players');
+    const { isNorthern } = await import('../src/league/north');
+    const { northSeason } = await import('../src/league/northevents');
+    const north = draftClass('v2028-north', 2030, { since: 2029 }).filter(isNorthern);
+    expect(north.length).toBeGreaterThan(100);
+    const southNames = new Set(institutions.map((x) => x.name));
+    let withEvents = 0;
+    for (const p of north) {
+      for (const h of p.education.history) if (['high-school', 'hs-club', 'college', 'college2'].includes(h.kind)) expect(southNames.has(h.name)).toBe(false);
+      for (const a of p.amateur.awards) expect(a).not.toMatch(southEvents);
+      for (const s of careerStages(p, 'v2028-north')) {
+        for (const e of s.events ?? []) expect(e.label).not.toMatch(southEvents);
+        if (s.kept && s.events?.length) {
+          withEvents++;
+          // Each league or tournament won is an award, and each award one he won.
+          for (const e of s.events) if ((e.result === '우승' || e.result === '준우승') && e.kind !== 'open' && e.kind !== 'champions') expect(p.amateur.awards).toContain(`${e.label} ${e.result}`);
+        }
+      }
+    }
+    expect(withEvents).toBeGreaterThan(50);
+    const wins = new Map<string, number>();
+    for (const evs of northSeason('v2028-north|draft|2030|north').values()) for (const e of evs) if (e.result === '우승') wins.set(e.label, (wins.get(e.label) ?? 0) + 1);
+    expect(wins.size).toBeGreaterThanOrEqual(11);
+    for (const n of wins.values()) expect(n).toBe(1);
+  });
+
+  it("puts an old save's northern player through the same circuit", async () => {
+    const { draftClass } = await import('../src/league/players');
+    const { isNorthern } = await import('../src/league/north');
+    const { northernPast } = await import('../src/league/northevents');
+    const p = draftClass('v2028-north', 2030, { since: 2029 }).filter(isNorthern).find((x) => x.education.history.length > 1)!;
+    const school = institutions.find((x) => x.kind === 'high-school')!;
+    const old = { ...p, education: { ...p.education, history: p.education.history.map((h, i) => (i === 0 ? { ...h, kind: 'high-school', name: school.name } : h)) }, amateur: { ...p.amateur, awards: ['서울 권역 주말리그 우승', 'U-18 대표팀'] } };
+    const fixed = northernPast(old, 'v2028-north|draft|2030|north');
+    expect(fixed.education.history[0]!.name).not.toBe(school.name);
+    expect(fixed.amateur.awards).toContain('U-18 대표팀');
+    expect(fixed.amateur.awards.some((a) => a.startsWith('서울'))).toBe(false);
+    // Again changes nothing.
+    expect(northernPast(fixed, 'v2028-north|draft|2030|north')).toEqual(fixed);
+  });
+});
