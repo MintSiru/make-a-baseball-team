@@ -3,7 +3,8 @@
    senior year event by event beneath it — the regional weekend league and the three national tournaments — a college's
    league and national the same way, and the U-18 or U-23 national team (games outside the school's record). */
 import { display as __i18n_display, t as __i18n_t } from '../i18n/index';
-import type { AmateurRecord } from '../draftroom';
+import { TOOL_LABELS, type AmateurRecord, type ToolKey } from '../draftroom';
+import type { DevLine } from '../league/development';
 import type { Player } from '../model/types';
 import { careerStages } from '../league/amateur';
 import { innings } from './format';
@@ -115,6 +116,64 @@ export function CareerStages({ player, seed }: { player: Pick<Player, 'id' | 'ro
             ))}
         </ul>
       )}
+    </>
+  );
+}
+
+/** 2.0.28 (development.ts): his fall instructional leagues and Australian winters, and what each did for him. */
+export function DevTable({ lines, pitcher }: { lines: DevLine[]; pitcher: boolean }) {
+  return (
+    <>
+      <h3>{__i18n_t("ui.careerStages.text.b55ed0ab")}</h3>
+      <div class="table-wrap" tabIndex={0}>
+        <table class="record-table career-stages">
+          <thead>
+            <tr>
+              <th>{__i18n_t("ui.careerStages.text.d5bc99dd")}</th>
+              <th>{__i18n_t('ui.careerStages.text.5d24a2fc')}</th>
+              <th class="num">{__i18n_t('ui.careerStages.text.e0cee61a')}</th>
+              {pitcher ? (
+                <>
+                  <th class="num">{__i18n_t('ui.careerStages.text.639a1f2f')}</th>
+                  <th class="num">{__i18n_t('ui.careerStages.text.3b1908b7')}</th>
+                  <th class="num">ERA</th>
+                  <th class="num">{__i18n_t('ui.careerStages.text.3f349ed1')}</th>
+                  <th class="num">{__i18n_t('ui.careerStages.text.21e0537f')}</th>
+                </>
+              ) : (
+                <>
+                  <th class="num">{__i18n_t('ui.careerStages.text.1eb19e0a')}</th>
+                  <th class="num">OPS</th>
+                  <th class="num">{__i18n_t('ui.careerStages.text.9162d3a3')}</th>
+                  <th class="num">{__i18n_t('ui.careerStages.text.fed1c588')}</th>
+                  <th class="num">{__i18n_t('ui.careerStages.text.91e54831')}</th>
+                </>
+              )}
+              <th>{__i18n_t("ui.careerStages.text.705103b6")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...lines].reverse().map((l, i) => (
+              <tr key={i}>
+                <td class="num">{l.kind === 'abl' ? `${l.year}–${String(l.year + 1).slice(2)}` : l.year}</td>
+                <td>
+                  {__i18n_display(l.team)}
+                  <span class="muted small stage-period">{l.kind === 'abl' ? __i18n_t("ui.careerStages.text.4398928e") : __i18n_t("ui.careerStages.text.f285e071")}</span>
+                </td>
+                <Stats r={l.record} pitcher={pitcher} />
+                <td class="small">
+                  {__i18n_display(
+                    Object.entries(l.gains)
+                      .map(([k, g]) => `${TOOL_LABELS[k as ToolKey] ?? k} +${g!.toFixed(1)}`)
+                      .join(', ') || '-',
+                  )}
+                  {l.injury ? <span class="minus"> · {__i18n_display(l.injury)}</span> : null}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </>
   );
 }

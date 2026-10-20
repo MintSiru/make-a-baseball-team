@@ -523,6 +523,9 @@ export interface UserClub {
   facilityWorks?: { kind: FacilityKind; level: number; opens: number; cost: number }[];
   /** 2.0.25 (dynamic.ts): this season's level, −2 (a hand up) to 3 (the others close ranks). */
   handicap?: number;
+  /** 2.0.28 (development.ts): the years the club sent prospects to the fall league and to Australia, and its last
+      wrap-up camp. */
+  dev?: { fall?: number; abl?: number; camp?: { year: number; site: import('./development').CampSite; players: number } };
 }
 
 /** A private training centre abroad (V0.10). */

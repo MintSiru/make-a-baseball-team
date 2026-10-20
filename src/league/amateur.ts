@@ -72,7 +72,7 @@ function stageOf(e: HistoryEntry, pathway = ''): { kind: StageKind; label: strin
 const month = (iso: string | null) => (iso ? iso.slice(0, 7).replace('-', '.') : __i18n_k("league.amateur.text.001e4be2"));
 
 /** A line for an earlier stage, as Draft Room draws one (prospects.js amateurRecord), from what he was then. */
-function drawnRecord(p: Prospect, ready: number, key: string): AmateurRecord {
+export function drawnRecord(p: Prospect, ready: number, key: string): AmateurRecord {
   const r = rng(key);
   const t = p.scouting.tools;
   const normal = () => {

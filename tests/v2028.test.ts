@@ -110,3 +110,42 @@ describe('college events and the youth teams (2.0.28)', () => {
     for (const finishes of byYear.values()) expect(finishes.size).toBe(1);
   });
 });
+
+describe('the fall league, Australia and the wrap-up camp (2.0.28)', () => {
+  it('sends prospects, keeps their lines and growth, bills the club, and allows each once a year', async () => {
+    const { apply } = await import('../src/league/actions');
+    const { checkCamp, checkDev, devCandidates, holdCamp, sendDev } = await import('../src/league/development');
+    const s = createLeague('v2028-dev');
+    apply(s, { kind: 'toFounding' });
+    apply(s, { kind: 'found', settings: { name: '청주 독수리', short: '독수리', color: '#1f6fb2', cityId: 'cheongju', parentType: 'conglomerate', parentName: '청주그룹', stadium: 'existing', promotion: 'immediate', difficulty: 'normal', scenario: null } });
+    s.phase = 'offseason';
+    s.offseason ??= { year: s.year } as never;
+    s.user!.fund = 1_000_000;
+    // Some young players on the futures list to choose from.
+    const r = s.rosters[s.user!.teamId]!;
+    const young = Object.values(s.players).filter((p) => p.teamId === 'lg' && p.status === 'active' && p.origin.kind === 'draftClass').slice(0, 6);
+    for (const p of young) {
+      p.teamId = s.user!.teamId;
+      p.birthday = `${s.offseason!.year - 21}-05-01`;
+      r.futures.push(p.id);
+    }
+    const fall = devCandidates(s, 'fall').slice(0, 3).map((p) => p.id);
+    expect(fall.length).toBe(3);
+    const before = s.user!.fund;
+    sendDev(s, 'fall', fall);
+    expect(s.user!.fund).toBeLessThan(before);
+    for (const id of fall) expect(s.players[id]!.devLog?.[0]?.kind).toBe('fall');
+    expect(checkDev(s, 'fall', fall)).toMatch(/이미/);
+    const abl = devCandidates(s, 'abl').slice(0, 2).map((p) => p.id);
+    sendDev(s, 'abl', abl);
+    expect(s.players[abl[0]!]!.devLog?.at(-1)?.kind).toBe('abl');
+    expect(checkDev(s, 'abl', devCandidates(s, 'abl').slice(0, 4).map((p) => p.id))).not.toBeNull();
+    // The camp: once a year, the young ones a little better.
+    const p = s.players[young[5]!.id]!;
+    const sum = () => Object.values(p.hidden.current).reduce((a, b) => a + (b ?? 0), 0);
+    const was = sum();
+    holdCamp(s, 'okinawa');
+    expect(sum()).toBeGreaterThanOrEqual(was);
+    expect(checkCamp(s, 'guam')).toMatch(/이미/);
+  });
+});
