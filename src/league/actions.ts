@@ -44,6 +44,7 @@ import { setCaptains } from './captains';
 import { planLearn } from './newpitch';
 import { addCondition } from './conditions';
 import { measureHandicap } from './dynamic';
+import { exhibitionDate } from './exhibition';
 
 export type Action =
   /** `stops` (1.6.0): end the run early at the moments the user asked to stop for (stops.ts). */
@@ -471,4 +472,5 @@ export function apply(s: LeagueState, action: Action): LeagueState {
 }
 
 /** The date of the next game day, or null once the regular season is done. */
-export const nextDate = (s: LeagueState) => s.schedule[s.next]?.date ?? null;
+/** 2.0.30: a spring game's date first, while there are any (exhibition.ts). */
+export const nextDate = (s: LeagueState) => exhibitionDate(s) ?? s.schedule[s.next]?.date ?? null;

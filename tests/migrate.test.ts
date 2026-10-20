@@ -1,5 +1,6 @@
 /* Older saves carry forward: a snapshot shaped like 0.3 (no third squads, no absences, the user's
    futures year only) loads under the current rules and keeps playing. */
+import { EXHIBITION } from '../src/league/exhibition';
 import { describe, expect, it } from 'vitest';
 import { SIM_VERSION } from '../src/core/version';
 import { apply } from '../src/league/actions';
@@ -19,7 +20,8 @@ describe('carrying older saves forward', () => {
     expect(save.sim).toBe(SIM_VERSION);
     const state = save.snapshot!.state as typeof s;
     expect(state.rosters.kia!.third).toEqual([]);
-    apply(state, { kind: 'days', days: 30 });
+    // 2.0.30: the spring games come first (exhibition.ts).
+    apply(state, { kind: 'days', days: 30 + EXHIBITION.days });
     expect(state.scores.length).toBeGreaterThan(100);
   }, 120_000);
 

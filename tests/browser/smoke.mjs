@@ -27,6 +27,9 @@ const check = (ok, message) => {
 };
 const status = (page) => page.locator('.status').first().textContent();
 const waitStatus = (page, text, timeout = 120_000) => page.waitForFunction((t) => document.querySelector('.status')?.textContent?.includes(t), text, { timeout });
+// 2.0.30: a season opens with its spring games (시범경기) before the regular season.
+const waitSeason = (page, year = '', timeout = 120_000) =>
+  page.waitForFunction((y) => [`${y} 정규시즌`, `${y} 시범경기`].some((t) => document.querySelector('.status')?.textContent?.includes(t.trim())), String(year), { timeout });
 const noOverflow = async (page, label) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   check(overflow <= 0, `${label}: page scrolls sideways by ${overflow}px`);
@@ -352,7 +355,7 @@ try {
   await playSeason(page);
   await decideAll(page, log);
   check(log.filter((t) => t === '신인 드래프트').length >= 15, `first draft gives many picks (${log.filter((t) => t === '신인 드래프트').length})`);
-  await waitStatus(page, '2027 정규시즌');
+  await waitSeason(page, 2027);
   await page.getByRole('button', { name: '1주', exact: true }).click();
   await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled);
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
@@ -389,7 +392,7 @@ try {
   const winter = log.slice(before);
   for (const t of ['특별지명', '외국인 선수 계약']) check(winter.includes(t), `winter before the first team includes ${t} (${winter.filter((x) => x !== '신인 드래프트').join(', ')})`);
   for (const t of ['신인 계약금 협상', '스프링캠프', '코칭스태프 · 프런트']) check(log.includes(t), `yearly decisions include ${t}`);
-  await waitStatus(page, '2028 정규시즌');
+  await waitSeason(page, 2028);
 
   // 3b. The front office: every section, a ticket price change, the futures year's accounts.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
@@ -465,7 +468,12 @@ try {
   check((await page.locator('.lineup-card').textContent())?.includes('좌완 상대 9'), 'lineup card saved with nine fixed spots');
   await page.screenshot({ path: join(shots, 'lineup.png'), fullPage: false });
   await page.getByRole('button', { name: '1주', exact: true }).click();
-  await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled);
+  await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled, null, { timeout: 90_000 });
+  // 2.0.30: past the spring games into the season.
+  for (let i = 0; i < 3 && ((await status(page)) ?? '').includes('시범경기'); i++) {
+    await page.getByRole('button', { name: '1주', exact: true }).click();
+    await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled, null, { timeout: 90_000 });
+  }
   await page.getByRole('button', { name: '경기', exact: true }).click();
   await page.getByRole('button', { name: '기록지 · 중계' }).first().click();
   await page.getByRole('dialog').waitFor();
@@ -689,7 +697,7 @@ try {
   // 2.0.15: home and road, and each ballpark.
   await views.getByRole('button', { name: '홈·원정·구장', exact: true }).click();
   check((await page.locator('.dialog .record-table.venues').count()) === 2, 'the venues view shows the season and the career');
-  for (const t of ['포스트시즌', '커리어 하이', '좌우 기록', '정규시즌']) await views.getByRole('button', { name: t }).click();
+  for (const t of ['포스트시즌', '커리어 하이', '상황별 기록', '정규시즌']) await views.getByRole('button', { name: t }).click();
   await page.getByRole('tab', { name: /^부상/ }).click();
   await page.getByRole('tab', { name: '기록' }).click();
   // 1.9.2: wait for the part to render before counting (the count raced the click on CI). 1.9.4: wait for the
@@ -713,7 +721,7 @@ try {
   await page.keyboard.press('Escape');
   const saved = await status(page);
   await page.reload();
-  await waitStatus(page, '정규시즌', 60_000);
+  await waitSeason(page, '', 60_000);
   const autosave = (await page.locator('.save-actions .muted').textContent()) ?? '';
   if (autosave.includes('자동 저장됨')) check((await status(page)) === saved, `reload restores the game (${saved} → ${await status(page)})`);
 
@@ -762,7 +770,7 @@ try {
   await noOverflow(p2, '320 new game');
   await p2.screenshot({ path: join(shots, 'new-game-320.png'), fullPage: true });
   await p2.getByRole('button', { name: '구단 없이 리그만 관전' }).click();
-  await waitStatus(p2, '2026 정규시즌');
+  await waitSeason(p2, 2026);
   check((await p2.locator('.standings tbody tr').count()) === 10, 'spectator league has ten clubs');
   await phone.close();
 } catch (e) {

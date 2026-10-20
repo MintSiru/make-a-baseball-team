@@ -1,8 +1,8 @@
-import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* The draft prospects (2.0.27, the user's request: the tab looked like Draft Room lifted whole). Now the game's own
    list: the class at a glance (how many of each kind, how many our scouts rate highly), filters by position and by
    pathway, one table across the page in the roster's style — his school under his name — and his page opens over it
-   like any player's. */
+   like any player's. 2.0.30 (the user's request): a pitcher's pitches, his fastball first. */
 import { useMemo, useState } from 'preact/hooks';
 import type { Role } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
@@ -10,6 +10,7 @@ import { roleLabel } from './format';
 import { gradeClass } from './grades';
 import { useSort } from './sort';
 import { pathwayLabel } from '../league/amateur';
+import { FASTBALL_LABELS, fastballOf, pitchLabel, repertoire } from '../league/pitches';
 
 type RoleFilter = 'all' | Role;
 type PathFilter = 'all' | 'hs' | 'college' | 'other';
@@ -24,6 +25,14 @@ const ROLE_FILTERS: { id: RoleFilter; label: string }[] = [
 ];
 
 /** High school, college (four-year, early entry, two-year) or the rest (independent clubs, back from abroad). */
+/** His fastball and his other pitches, best first: the codes, and their names for the tooltip. */
+const pitchesOf = (p: Player) => {
+  if (p.role !== 'SP' && p.role !== 'RP') return null;
+  const fb = fastballOf(p);
+  const rest = repertoire(p);
+  return { codes: [fb, ...rest.map((x) => x.type)], names: [__i18n_displayText(FASTBALL_LABELS[fb]), ...rest.map((x) => __i18n_displayText(pitchLabel(p, x.type)))] };
+};
+
 const pathOf = (p: Player): Exclude<PathFilter, 'all'> => (p.origin.pathway === '고졸' ? 'hs' : /대|2년제/.test(p.origin.pathway) ? 'college' : 'other');
 
 interface Props {
@@ -66,6 +75,7 @@ export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect, ou
     current: { value: (p) => p.scouting.current },
     future: { value: (p) => p.scouting.futureValue },
     velocity: { value: (p) => p.velocity ?? 0 },
+    pitches: { value: (p) => pitchesOf(p)?.codes.length ?? 0 },
     ours: { value: (p) => ourView?.(p) ?? 0 },
   });
 
@@ -109,12 +119,14 @@ export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect, ou
               {__i18n_display(th('current', __i18n_k("ui.draftBoard.draftBoard.001e4be2"), true))}
               {__i18n_display(th('future', __i18n_k("ui.draftBoard.draftBoard.6e0caec5"), true))}
               {__i18n_display(th('velocity', __i18n_k("ui.draftBoard.draftBoard.b8c2e079"), true))}
+              {__i18n_display(th('pitches', __i18n_k("ui.playerPanel.text.0685b54a")))}
               {__i18n_display(ourView && th('ours', __i18n_k("ui.draftBoard.draftBoard.03c90563"), true))}
             </tr>
           </thead>
           <tbody>
             {__i18n_display(rows.map((p) => {
               const ours = ourView?.(p) ?? null;
+              const pitches = pitchesOf(p);
               return (
                 <tr key={p.id} class="player-row" aria-selected={p.id === selectedId}>
                   <td class="num muted">{__i18n_display(p.amateur.draftRank)}</td>
@@ -131,6 +143,9 @@ export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect, ou
                   <td class={`num ${gradeClass(p.scouting.current)}`}>{__i18n_display(p.scouting.current)}</td>
                   <td class={`num strong ${gradeClass(p.scouting.futureValue)}`}>{__i18n_display(p.scouting.futureValue)}</td>
                   <td class="num">{__i18n_display(p.velocity ?? '-')}</td>
+                  <td class="small draft-pitches" title={pitches?.names.join(', ')}>
+                    {__i18n_display(pitches ? pitches.codes.join(' · ') : '-')}
+                  </td>
                   {__i18n_display(ourView && <td class={`num strong ${gradeClass(ours)}`}>{__i18n_display(ours ?? '-')}</td>)}
                 </tr>
               );

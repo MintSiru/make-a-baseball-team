@@ -1,6 +1,6 @@
 import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, rich as __i18n_rich, t as __i18n_t } from '../i18n/index';
 import type { LeagueState } from '../league/state';
-import { halfStandingsView, lastDayScores, shortName, standingsView } from '../league/views';
+import { exhibitionView, halfStandingsView, lastDayScores, shortName, standingsView } from '../league/views';
 import { postseasonNote } from '../league/historic';
 import { rulesFor } from '../rules/history';
 import { LEAGUE_NAMES, leagueTables, playoffsOf, seasonSeries, sidesOf, twelveClubs } from '../league/twelve';
@@ -53,6 +53,7 @@ export function Standings({ league, onTeam, onBox, onAct }: { league: LeagueStat
               : (note ?? __i18n_k("ui.standings.standings.83a72e8d")))}
           </p>
           <HeadToHead league={league} order={rows.map((r) => r.teamId)} />
+          <ExhibitionPart league={league} onTeam={onTeam} />
           {__i18n_display(rival && league.user && series.w + series.l + series.t > 0 && (
             <p>{__i18n_rich("ui.standings.standings.2196d9ea", { short: rival.short, value: ' ', value2: <strong>{__i18n_t("ui.standings.standings.eae1f95b", { w: series.w, l: series.l, value: series.t ? __i18n_k("ui.standings.standings.136ac74d", { value: series.t }) : '' })}</strong> })}</p>
           ))}
@@ -95,6 +96,38 @@ function HeadToHead({ league, order }: { league: LeagueState; order: string[] })
       </div>
       <HeadToHeadTable league={league} h2h={all ? headToHeadAll(league) : headToHead(league.scores)} order={order} />
       <p class="muted small">{__i18n_t("ui.standings.text.b1793760")}</p>
+    </details>
+  );
+}
+
+/** 2.0.30 (the user's request): this spring's 시범경기 — its own table and leaders; they count for nothing. Open until
+    opening day, folded away after. */
+function ExhibitionPart({ league, onTeam }: { league: LeagueState; onTeam: (id: string) => void }) {
+  const v = exhibitionView(league);
+  if (!v) return null;
+  const list = (xs: typeof v.avg) => xs.map((x) => `${x.name}(${__i18n_displayText(x.club)}) ${x.text}`).join(', ');
+  return (
+    <details class="exhibition" open={league.next === 0}>
+      <summary>{__i18n_t("ui.standings.text.710c185c", { year: v.year, played: v.played, total: v.total })}</summary>
+      <StandingsTable title={null} rows={v.rows} cut={0} onTeam={onTeam} />
+      <ul class="exhibition-leaders">
+        {v.avg.length > 0 && (
+          <li>
+            <strong>{__i18n_t("ui.standings.text.1eb19e0a")}</strong> {list(v.avg)}
+          </li>
+        )}
+        {v.hr.length > 0 && (
+          <li>
+            <strong>{__i18n_t("ui.standings.text.9162d3a3")}</strong> {list(v.hr)}
+          </li>
+        )}
+        {v.era.length > 0 && (
+          <li>
+            <strong>{__i18n_t("ui.standings.text.f0f9146b")}</strong> {list(v.era)}
+          </li>
+        )}
+      </ul>
+      <p class="muted small">{__i18n_t("ui.standings.text.f34dc9fe")}</p>
     </details>
   );
 }

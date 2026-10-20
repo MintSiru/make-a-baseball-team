@@ -20,6 +20,7 @@ import { featsOf, featText } from '../league/feats';
 import { learnedNote } from '../league/newpitch';
 import { TOOL_LABELS } from '../draftroom';
 import type { Split, Splits } from '../league/engine/types';
+import { SITUATIONS, splitOf } from '../league/engine/situation';
 import type { Action } from '../league/actions';
 import { wagwa } from '../league/josa';
 import { checkNumber, numberHolder } from '../league/numbers';
@@ -123,6 +124,9 @@ const RECORD_VIEWS: { key: RecordView; label: string }[] = [
 ];
 let lastPart: Part = 'ability';
 let lastRecords: RecordView = 'seasons';
+/** 2.0.30: which splits the records show — by hand (and 득점권), leverage, score margin or runners. */
+type SplitGroup = 'hand' | keyof typeof SITUATIONS;
+let lastSplitGroup: SplitGroup = 'hand';
 
 /** 2.0.6: a grade's change since last season, "▲5" or "▼5" (nothing when unchanged or unknown). */
 const changeMark = (now: number | undefined, last: number | undefined) => (now == null || last == null || now === last ? '' : now > last ? ` ▲${now - last}` : ` ▼${last - now}`);
@@ -166,9 +170,31 @@ function MoveTable({ league, p }: { league: LeagueState; p: Parameters<typeof mo
   );
 }
 
-function SplitTable({ title, splits, pitcher }: { title: string; splits: Splits | null; pitcher: boolean }) {
+/** 2.0.30: each situation's name. */
+const SITUATION_LABEL = (): Record<string, string> => ({
+  liH: __i18n_t("ui.playerPanel.text.9c6aa0c9"),
+  liM: __i18n_t("ui.playerPanel.text.01bbe806"),
+  liL: __i18n_t("ui.playerPanel.text.5d99ea86"),
+  d0: __i18n_t("ui.playerPanel.text.0b21b992"),
+  d1: __i18n_t("ui.playerPanel.text.54cc1ef3"),
+  d2: __i18n_t("ui.playerPanel.text.24947fc9"),
+  d3: __i18n_t("ui.playerPanel.text.145cc5f6"),
+  d4: __i18n_t("ui.playerPanel.text.bec5cb7a"),
+  d5: __i18n_t("ui.playerPanel.text.0372ba21"),
+  b0: __i18n_t("ui.playerPanel.text.47e356eb"),
+  b1: __i18n_t("ui.playerPanel.text.0b113b9a"),
+  b2: __i18n_t("ui.playerPanel.text.a04ed63b"),
+  b3: __i18n_t("ui.playerPanel.text.fb8b46f8"),
+  b12: __i18n_t("ui.playerPanel.text.17e8c2c4"),
+  b13: __i18n_t("ui.playerPanel.text.a4376199"),
+  b23: __i18n_t("ui.playerPanel.text.204a3ad5"),
+  b123: __i18n_t("ui.playerPanel.text.5caa3550"),
+});
+
+function SplitTable({ title, splits, pitcher, group = 'hand' }: { title: string; splits: Splits | null; pitcher: boolean; group?: SplitGroup }) {
   if (!splits) return null;
-  const rows: [string, Split][] = pitcher
+  const labels = SITUATION_LABEL();
+  const rows: [string, Split][] = group !== 'hand' ? SITUATIONS[group].map((key) => [labels[key]!, splitOf(splits.X?.[key])]) : pitcher
     ? [
         [__i18n_k("ui.playerPanel.splitTable.rows.85efe664"), splits.L],
         [__i18n_k("ui.playerPanel.splitTable.rows.9f7370d0"), splits.R],
@@ -178,7 +204,7 @@ function SplitTable({ title, splits, pitcher }: { title: string; splits: Splits 
         [__i18n_k("ui.playerPanel.splitTable.rows.43502365"), splits.R],
       ];
   // 2.0.28: with runners in scoring position (from 2.0.28's games on).
-  if (splits.S?.pa) rows.push([__i18n_t("ui.playerPanel.text.e6f85d35"), splits.S]);
+  if (group === 'hand' && splits.S?.pa) rows.push([__i18n_t("ui.playerPanel.text.e6f85d35"), splits.S]);
   return (
     <>
       <h4>{__i18n_display(title)}</h4>
@@ -404,6 +430,8 @@ export function PlayerPanel({
   const [records, setRecordsState] = useState<RecordView>(lastRecords);
   const setPart = (x: Part) => setPartState((lastPart = x));
   const setRecords = (x: RecordView) => setRecordsState((lastRecords = x));
+  const [splitGroup, setSplitGroupState] = useState<SplitGroup>(lastSplitGroup);
+  const setSplitGroup = (x: SplitGroup) => setSplitGroupState((lastSplitGroup = x));
   useEffect(() => {
     heading.current?.focus();
   }, [id]);
@@ -609,8 +637,23 @@ export function PlayerPanel({
             {__i18n_display(records === 'splits' &&
               (card.splits.season || card.splits.career ? (
                 <>
-                  <SplitTable title={__i18n_displayText(__i18n_k("ui.playerPanel.playerPanel.de766445", { year: league.year }))} splits={card.splits.season} pitcher={pitcher} />
-                  <SplitTable title={__i18n_t("ui.playerPanel.playerPanel.7f3e9e67")} splits={card.splits.career} pitcher={pitcher} />
+                  <div class="segmented small split-groups" role="group" aria-label={__i18n_t("ui.playerPanel.text.cb927874")}>
+                    {(
+                      [
+                        ['hand', __i18n_t("ui.playerPanel.text.72ebde13")],
+                        ['leverage', __i18n_t("ui.playerPanel.text.ed858bae")],
+                        ['margin', __i18n_t("ui.playerPanel.text.104de6fb")],
+                        ['bases', __i18n_t("ui.playerPanel.text.3a85e389")],
+                      ] as [SplitGroup, string][]
+                    ).map(([g, label]) => (
+                      <button key={g} type="button" aria-pressed={splitGroup === g} onClick={() => setSplitGroup(g)}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <SplitTable title={__i18n_displayText(__i18n_k("ui.playerPanel.playerPanel.de766445", { year: league.year }))} splits={card.splits.season} pitcher={pitcher} group={splitGroup} />
+                  <SplitTable title={__i18n_t("ui.playerPanel.playerPanel.7f3e9e67")} splits={card.splits.career} pitcher={pitcher} group={splitGroup} />
+                  {splitGroup !== 'hand' && <p class="muted small">{__i18n_t("ui.playerPanel.text.495f1461")}</p>}
                   <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.3fbaa6d0")}</p>
                 </>
               ) : (

@@ -9,7 +9,9 @@ import { faOutlook, type FaOutlook } from './faclock';
 import type { BatTotals, InjuryRecord, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { emptySplit, type Splits } from './engine/types';
 import { batDetail, pitDetail } from './savant';
-import { averageVelocity, fastballOf, pitchGrades, pitchingLift, topVelocity, type FastballType } from './pitches';
+import { addSituations } from './engine/situation';
+import { exhibitionBox, exhibitionLeaders, exhibitionTable } from './exhibition';
+import { averageVelocity, FASTBALL_LABELS, fastballOf, pitchGrades, pitchingLift, topVelocity, type FastballType } from './pitches';
 import { POSITION_SHORT, positionGrades, secondaryPositions } from './positions';
 import { halfLabel, playText } from './playtext';
 import { salaryIn, usdTotal } from './contracts';
@@ -354,6 +356,14 @@ function careerHighs(rows: CareerRow[], pitcher: boolean) {
   return out.filter((x): x is NonNullable<typeof x> => !!x);
 }
 
+/** 2.0.30: the seasons gone by keep their situations on the player (`situ`), not on each season's record. */
+function withSituations(splits: Splits | null, past: Record<string, number[]> | undefined): Splits | null {
+  if (!past) return splits;
+  const out: Splits = splits ?? { L: emptySplit(), R: emptySplit() };
+  addSituations((out.X ??= {}), past);
+  return out;
+}
+
 function sumSplits(list: (Splits | undefined)[]): Splits | null {
   const have = list.filter((x): x is Splits => !!x);
   if (!have.length) return null;
@@ -362,6 +372,7 @@ function sumSplits(list: (Splits | undefined)[]): Splits | null {
     addInto(out.L, x.L);
     addInto(out.R, x.R);
     if (x.S) addInto((out.S ??= emptySplit()), x.S);
+    if (x.X) addSituations((out.X ??= {}), x.X);
   }
   return out;
 }
@@ -392,7 +403,7 @@ export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
     career,
     totals: { bat, pit, war: Math.round(major.filter((r) => !r.current).reduce((a, r) => a + r.war, 0) * 10) / 10, seasons: new Set(major.map((r) => r.year)).size },
     highs: careerHighs(career, pitcher),
-    splits: { season: line ? (side(line) ?? null) : null, career: sumSplits(major.map(side)) },
+    splits: { season: line ? (side(line) ?? null) : null, career: withSituations(sumSplits(major.map(side)), p.situ?.[pitcher ? 'pit' : 'bat']) },
     velocity: top == null ? null : { top, average: averageVelocity(p)! },
     pitches: pitchGrades(p),
     // 2.0.6 (the user's request): each pitch's potential and its change since last season.
@@ -475,8 +486,8 @@ const POS_KO: Record<string, string> = { C: __i18n_k("league.views.pOS_KO.c.c611
 const SUB_KO: Record<string, string> = { PH: __i18n_k("league.views.text.4fe00bd7"), PR: __i18n_k("league.views.text.ac615d38"), DEF: __i18n_k("league.views.text.46160651") };
 
 export function boxView(s: LeagueState, id: string) {
-  // 2.0.16: or a national team's game (kept on its event).
-  const b = s.boxes?.[id] ?? nationalBox(s, id);
+  // 2.0.16: or a national team's game (kept on its event); 2.0.30: or a spring game.
+  const b = s.boxes?.[id] ?? nationalBox(s, id) ?? exhibitionBox(s, id);
   if (!b) return null;
   const name = (pid: string) => s.players[pid]?.name ?? nationalName(s, pid) ?? '?';
   const side = (i: 0 | 1) => {
@@ -520,6 +531,44 @@ export function gameList(s: LeagueState) {
   return {
     mine: u ? boxes.filter((b) => b.home === u || b.away === u).map(row) : [],
     recent: boxes.filter((b) => !u || (b.home !== u && b.away !== u)).map(row),
+  };
+}
+
+/** 2.0.30: this spring's table (as the standings screen shows a table) and leaders, once a game has been played. */
+export function exhibitionView(s: LeagueState) {
+  const ex = s.exhibition;
+  if (!ex || ex.year !== s.year || !ex.scores.length) return null;
+  const rows = exhibitionTable(s).map((r) => ({ ...r, name: teamOf(s, r.teamId)?.name ?? r.teamId, short: shortName(s, r.teamId), color: teamOf(s, r.teamId)?.color ?? '#888', games: r.w + r.l + r.t, crowd: 0 }));
+  const leaders = exhibitionLeaders(s, 3);
+  const pick = (xs: typeof leaders.avg) => xs.map((x) => ({ ...x, club: shortName(s, x.teamId) }));
+  return { year: ex.year, played: ex.scores.length, total: ex.games.length, done: !!ex.done, rows, avg: pick(leaders.avg), hr: pick(leaders.hr.filter((x) => x.value > 0)), era: pick(leaders.era) };
+}
+
+/** 2.0.30: this spring's games for the games screen, newest first (ours marked with the result). */
+export function exhibitionGames(s: LeagueState) {
+  const ex = s.exhibition;
+  if (!ex || ex.year !== s.year) return [];
+  const u = s.user?.teamId;
+  return [...ex.scores]
+    .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
+    .map((g) => {
+      const mine = !!u && (g.home === u || g.away === u);
+      const us = g.home === u ? g.hs : g.as,
+        them = g.home === u ? g.as : g.hs;
+      return { id: g.id, date: g.date, away: shortName(s, g.away), home: shortName(s, g.home), as: g.as, hs: g.hs, mine, pbp: !!s.pbp?.[g.id], result: mine ? (us > them ? '승' : us < them ? '패' : __i18n_k("league.views.row.result.56c5af5b")) : '' };
+    });
+}
+
+/** 2.0.30 (the user's request): a draft prospect pitcher's pitches as his page shows them — his fastball, then the
+    others with the scouts' grades now and later and how often he throws each. */
+export function prospectPitches(p: Player) {
+  if (p.role !== 'SP' && p.role !== 'RP') return null;
+  const fb = fastballOf(p);
+  const now = pitchGrades(p);
+  const later = Object.fromEntries(pitchGrades(p, true).map((x) => [x.type, x.grade]));
+  return {
+    fastball: { type: fb, name: FASTBALL_LABELS[fb], usage: 1 - now.reduce((a, x) => a + x.usage, 0) },
+    list: now.map((x) => ({ type: x.type, name: x.label, grade: x.grade, future: later[x.type], usage: x.usage })),
   };
 }
 

@@ -52,6 +52,8 @@ import { carryOverInjuries, offRoster, rollInjuries } from './injuries';
 import { openForeignBooks } from './foreigncap';
 import { assignLeagues, sidesOf, twelveClubs, twelveGames } from './twelve';
 import { finishTrips } from './training';
+import { exhibitionDate, planExhibitions, playExhibitionDay } from './exhibition';
+import { addSituations } from './engine/situation';
 import { lifeDay } from './life';
 import { alumniDay } from './alumni';
 import { familyDay, familyGame, pruneFamilies } from './family';
@@ -121,6 +123,8 @@ export function startSeason(s: LeagueState) {
   if (s.user && s.user.firstTeamYear === s.year) milestone(s, s.year, __i18n_k("league.season.startSeason.8c583704", { year: s.year }), 'firstTeam');
   // The owner's budget for the season and season tickets (V0.12).
   openBooks(s);
+  // 2.0.30: the spring games before opening day (exhibition.ts).
+  planExhibitions(s);
 }
 
 // ── Futures league ──────────────────────────────────────────────────────────────────────────────
@@ -206,6 +210,7 @@ function addSplits(into: { split?: Splits }, from: Splits) {
   addInto(into.split.L, from.L);
   addInto(into.split.R, from.R);
   if (from.S) addInto((into.split.S ??= emptySplit()), from.S);
+  if (from.X) addSituations((into.split.X ??= {}), from.X);
 }
 
 /** Adds a box score to the lines (the season's unless given) and to the pitchers' arm use. */
@@ -307,6 +312,8 @@ export function playDay(s: LeagueState): boolean {
   if (s.phase !== 'regular' || s.next >= s.schedule.length) return false;
   // The game waits while the user has something to decide (an in-season decision, V0.12).
   if (s.pending) return false;
+  // 2.0.30: the spring games come first, a date at a time (exhibition.ts).
+  if (exhibitionDate(s)) return playExhibitionDay(s, (box, day, lines) => record(s, box, day, lines)) || s.next < s.schedule.length;
   const date = s.schedule[s.next]!.date;
   // A national team named today may need the user's word on his players first (V0.12): the day waits.
   if (nationalTeamCalls(s, date)) return false;

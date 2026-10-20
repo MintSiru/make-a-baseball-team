@@ -18,15 +18,26 @@ const EXPERIENCED = POSITION_FIT.experienced;
 
 /** First-team games at each position: career plus this season. */
 export function positionGames(s: LeagueState | null, p: Player): Partial<Record<FieldPos, number>> {
-  // Read for every lineup of every game (V0.14: kept free of throwaway arrays).
-  const out: Partial<Record<FieldPos, number>> = {};
-  const add = (g?: Partial<Record<FieldPos, number>>) => {
-    if (!g) return;
-    for (const k in g) out[k as FieldPos] = (out[k as FieldPos] ?? 0) + (g[k as FieldPos] ?? 0);
-  };
-  for (const c of p.career) if (!c.level) add(c.bat?.posG);
-  if (s) add(s.lines[p.id]?.bat?.posG);
+  // Read for every lineup of every game (V0.14: kept free of throwaway arrays; 2.0.30: the seasons gone by summed once).
+  const out: Partial<Record<FieldPos, number>> = { ...pastGames(p) };
+  const g = s?.lines[p.id]?.bat?.posG;
+  if (g) for (const k in g) out[k as FieldPos] = (out[k as FieldPos] ?? 0) + (g[k as FieldPos] ?? 0);
   return out;
+}
+
+/** 2.0.30: his first-team games at each position in the seasons gone by, kept until his record grows (a season is
+    added to it only when it is over, and never changed after). */
+const past = new WeakMap<Player['career'], { n: number; games: Partial<Record<FieldPos, number>> }>();
+function pastGames(p: Player): Partial<Record<FieldPos, number>> {
+  const hit = past.get(p.career);
+  if (hit && hit.n === p.career.length) return hit.games;
+  const games: Partial<Record<FieldPos, number>> = {};
+  for (const c of p.career) {
+    const g = c.level ? undefined : c.bat?.posG;
+    if (g) for (const k in g) games[k as FieldPos] = (games[k as FieldPos] ?? 0) + (g[k as FieldPos] ?? 0);
+  }
+  past.set(p.career, { n: p.career.length, games });
+  return games;
 }
 
 /** Whether `at` is one of his listed other positions. */

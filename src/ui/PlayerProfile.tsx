@@ -1,7 +1,8 @@
 import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* A draft prospect's page (2.0.27, the user's request: the draft tab no longer looks like Draft Room lifted whole).
    It opens over the list as the other players' pages do: his public rank, the summary strip, then three parts —
-   the scouts' grades as bars, the combine and our own reports, and his amateur days. */
+   the scouts' grades as bars, the combine and our own reports, and his amateur days. 2.0.30 (the user's request): a
+   pitcher's pitches too, as on any pitcher's page. */
 import { useRef, useState } from 'preact/hooks';
 import { shownFuture, showsFutureDetail, GradeBar, gradeClass } from './grades';
 import { TOOL_LABELS } from '../draftroom';
@@ -13,6 +14,7 @@ import { TraitReportBox } from './PlayerPanel';
 import { CareerStages } from './CareerStages';
 import { pathwayLabel } from '../league/amateur';
 import { useFocusTrap } from './modal';
+import type { prospectPitches } from '../league/views';
 
 interface Props {
   player: PublicPlayer;
@@ -25,6 +27,8 @@ interface Props {
   combineNote?: string;
   report?: TraitReport | null;
   workout?: { done: boolean; blocked: string | null; cost: string; onClick: () => void };
+  /** 2.0.30: a pitcher's fastball and other pitches (the scouts' grades, his share of each). */
+  pitches?: ProspectPitches | null;
   /** 2.0.28: the league's seed (his school's results in its year: hsevents.ts). */
   seed?: string;
   onClose: () => void;
@@ -32,7 +36,9 @@ interface Props {
 
 type Part = 'grades' | 'combine' | 'amateur';
 
-export function PlayerProfile({ player: p, age, draftYear, ours, combine, combineNote, report, workout, seed, onClose }: Props) {
+type ProspectPitches = NonNullable<ReturnType<typeof prospectPitches>>;
+
+export function PlayerProfile({ player: p, age, draftYear, ours, combine, combineNote, report, workout, pitches, seed, onClose }: Props) {
   const box = useRef<HTMLDivElement>(null);
   useFocusTrap(box, onClose);
   const [part, setPart] = useState<Part>('grades');
@@ -127,6 +133,17 @@ export function PlayerProfile({ player: p, age, draftYear, ours, combine, combin
                 </p>
               ))}
             </section>
+            {__i18n_display(pitches && (
+              <section class="pitch-box">
+                <h3>{__i18n_t("ui.playerPanel.text.0685b54a")}</h3>
+                <div class="gradebars">
+                  <GradeBar label={`${pitches.fastball.type} ${__i18n_displayText(pitches.fastball.name)}`} now={s.tools.stuff} future={showsFutureDetail(p) ? s.futureTools.stuff : undefined} note={__i18n_displayText(__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round(pitches.fastball.usage * 100) }))} />
+                  {__i18n_display(pitches.list.map((x) => (
+                    <GradeBar key={x.type} label={`${x.type} ${__i18n_displayText(x.name)}`} now={x.grade} future={showsFutureDetail(p) ? x.future : undefined} note={__i18n_displayText(__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round(x.usage * 100) }))} />
+                  )))}
+                </div>
+              </section>
+            ))}
             <section>
               <h3>{__i18n_t("ui.playerProfile.playerProfile.989d5649")}</h3>
               <p>{__i18n_display(s.strength)}</p>

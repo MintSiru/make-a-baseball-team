@@ -2,7 +2,8 @@
    (its history played season by season) and a test run builds over a hundred. With LEAGUE_CACHE=1 a built league is
    kept on disk (node_modules/.cache/kbo-leagues), keyed by its arguments and by every source file's content, and read
    back in a fraction of a second the next time — for running a test file again while working on it. Any change under
-   src/ makes new keys, so a stale league is never read. Off by default (and on CI), where every league is built. */
+   src/ makes new keys, so a stale league is never read (2.0.30: but the screens' code in src/ui, which no league is
+   built from). Off by default (and on CI), where every league is built. */
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -18,6 +19,7 @@ function hashSources(): string {
   const walk = (dir: string) => {
     for (const name of readdirSync(dir).sort()) {
       const path = join(dir, name);
+      if (path === join(ROOT, 'src', 'ui')) continue;
       if (statSync(path).isDirectory()) walk(path);
       else {
         h.update(path.slice(ROOT.length));

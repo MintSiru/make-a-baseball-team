@@ -82182,5 +82182,314 @@
     "line": 54,
     "params": {},
     "locations": []
+  },
+  "league.exhibition.text.68c6711d": {
+    "source": "src/league/exhibition.ts",
+    "line": 128,
+    "params": {
+      "club": {
+        "expression": "short(top.teamId)"
+      },
+      "w": {
+        "expression": "top.w"
+      },
+      "l": {
+        "expression": "top.l"
+      },
+      "t": {
+        "expression": "top.t"
+      }
+    },
+    "locations": []
+  },
+  "league.exhibition.text.acb2e2fb": {
+    "source": "src/league/exhibition.ts",
+    "line": 129,
+    "params": {
+      "rank": {
+        "expression": "ours.rank"
+      },
+      "w": {
+        "expression": "ours.w"
+      },
+      "l": {
+        "expression": "ours.l"
+      },
+      "t": {
+        "expression": "ours.t"
+      }
+    },
+    "locations": []
+  },
+  "league.exhibition.text.225614ec": {
+    "source": "src/league/exhibition.ts",
+    "line": 130,
+    "params": {
+      "name": {
+        "expression": "leaders.avg[0].name"
+      },
+      "club": {
+        "expression": "short(leaders.avg[0].teamId)"
+      },
+      "value": {
+        "expression": "leaders.avg[0].text"
+      }
+    },
+    "locations": []
+  },
+  "league.exhibition.text.9155e5df": {
+    "source": "src/league/exhibition.ts",
+    "line": 131,
+    "params": {
+      "name": {
+        "expression": "leaders.hr[0].name"
+      },
+      "club": {
+        "expression": "short(leaders.hr[0].teamId)"
+      },
+      "value": {
+        "expression": "leaders.hr[0].value"
+      }
+    },
+    "locations": []
+  },
+  "league.exhibition.text.d269861d": {
+    "source": "src/league/exhibition.ts",
+    "line": 132,
+    "params": {
+      "name": {
+        "expression": "leaders.era[0].name"
+      },
+      "club": {
+        "expression": "short(leaders.era[0].teamId)"
+      },
+      "value": {
+        "expression": "leaders.era[0].text"
+      }
+    },
+    "locations": []
+  },
+  "league.exhibition.text.2ef67827": {
+    "source": "src/league/exhibition.ts",
+    "line": 138,
+    "params": {
+      "year": {
+        "expression": "ex.year"
+      },
+      "club": {
+        "expression": "short(top.teamId)"
+      }
+    },
+    "locations": []
+  },
+  "ui.standings.text.710c185c": {
+    "source": "src/ui/Standings.tsx",
+    "line": 111,
+    "params": {
+      "year": {
+        "expression": "v.year"
+      },
+      "played": {
+        "expression": "v.played"
+      },
+      "total": {
+        "expression": "v.total"
+      }
+    },
+    "locations": []
+  },
+  "ui.standings.text.1eb19e0a": {
+    "source": "src/ui/Standings.tsx",
+    "line": 116,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.9162d3a3": {
+    "source": "src/ui/Standings.tsx",
+    "line": 121,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.f0f9146b": {
+    "source": "src/ui/Standings.tsx",
+    "line": 126,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.f34dc9fe": {
+    "source": "src/ui/Standings.tsx",
+    "line": 130,
+    "params": {},
+    "locations": []
+  },
+  "ui.games.text.5d250044": {
+    "source": "src/ui/Games.tsx",
+    "line": 74,
+    "params": {
+      "year": {
+        "expression": "league.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.app.text.a4a493ff": {
+    "source": "src/ui/App.tsx",
+    "line": 106,
+    "params": {
+      "year": {
+        "expression": "s.year"
+      },
+      "month": {
+        "expression": "Number(spring.slice(5, 7))"
+      },
+      "day": {
+        "expression": "Number(spring.slice(8))"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.9c6aa0c9": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 175,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.01bbe806": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 176,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.5d99ea86": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 177,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.0b21b992": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 178,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.54cc1ef3": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 179,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.24947fc9": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 180,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.145cc5f6": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 181,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.bec5cb7a": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 182,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.0372ba21": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 183,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.47e356eb": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 184,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.0b113b9a": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 185,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.a04ed63b": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 186,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.fb8b46f8": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 187,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.17e8c2c4": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 188,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.a4376199": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 189,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.204a3ad5": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 190,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.5caa3550": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 191,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.cb927874": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 640,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.72ebde13": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 643,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.ed858bae": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 644,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.104de6fb": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 645,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.3a85e389": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 646,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.495f1461": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 656,
+    "params": {},
+    "locations": []
+  },
+  "ui.savant.text.40b18759": {
+    "source": "src/ui/Savant.tsx",
+    "line": 325,
+    "params": {},
+    "locations": []
   }
 }

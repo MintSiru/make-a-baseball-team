@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
 
-# 2.0.29: the unit tests in four parallel shards (most of their time is leagues being built and seasons played), and
+# 2.0.29: the unit tests in parallel shards, six from 2.0.30 (most of their time is leagues being built and seasons played), and
 # the typecheck, the build and the browser smoke in a job of their own beside them.
 jobs:
   test:
@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5, 6]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,7 +20,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx vitest run --shard=${{ matrix.shard }}/4
+      - run: npx vitest run --shard=${{ matrix.shard }}/6
 
   build:
     runs-on: ubuntu-latest
