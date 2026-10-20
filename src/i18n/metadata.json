@@ -81485,5 +81485,351 @@
     "line": 150,
     "params": {},
     "locations": []
+  },
+  "league.traits.text.05269563": {
+    "source": "src/league/traits.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.reports.text.d3e425cc": {
+    "source": "src/league/reports.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.reports.text.9c7b6592": {
+    "source": "src/league/reports.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.reports.text.357acdc1": {
+    "source": "src/league/reports.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.reports.text.cb5370c6": {
+    "source": "src/league/reports.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.reports.text.e2ba0e77": {
+    "source": "src/league/reports.ts",
+    "line": 176,
+    "params": {},
+    "locations": []
+  },
+  "league.reports.text.9f8a3eff": {
+    "source": "src/league/reports.ts",
+    "line": 195,
+    "params": {},
+    "locations": []
+  },
+  "league.protests.text.74a28135": {
+    "source": "src/league/protests.ts",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "league.protests.text.bc04871e": {
+    "source": "src/league/protests.ts",
+    "line": 63,
+    "params": {},
+    "locations": []
+  },
+  "league.protests.text.c89e3d1d": {
+    "source": "src/league/protests.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "league.protests.text.2f30d5a4": {
+    "source": "src/league/protests.ts",
+    "line": 67,
+    "params": {
+      "club": {
+        "expression": "short(s, side.teamId)"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.protests.text.a48d4072": {
+    "source": "src/league/protests.ts",
+    "line": 69,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      },
+      "fine": {
+        "expression": "PROTESTS.fine.player"
+      },
+      "games": {
+        "expression": "PROTESTS.ban.games"
+      }
+    },
+    "locations": []
+  },
+  "league.protests.text.bad91aad": {
+    "source": "src/league/protests.ts",
+    "line": 70,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      },
+      "fine": {
+        "expression": "PROTESTS.fine.player"
+      }
+    },
+    "locations": []
+  },
+  "league.protests.text.daec431c": {
+    "source": "src/league/protests.ts",
+    "line": 80,
+    "params": {},
+    "locations": []
+  },
+  "league.protests.text.8a5c9a74": {
+    "source": "src/league/protests.ts",
+    "line": 80,
+    "params": {},
+    "locations": []
+  },
+  "league.protests.text.0b977195": {
+    "source": "src/league/protests.ts",
+    "line": 80,
+    "params": {},
+    "locations": []
+  },
+  "league.protests.text.71eee772": {
+    "source": "src/league/protests.ts",
+    "line": 82,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "who.name"
+      },
+      "role": {
+        "expression": "role"
+      }
+    },
+    "locations": []
+  },
+  "league.protests.text.2b0801cc": {
+    "source": "src/league/protests.ts",
+    "line": 83,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "who.name"
+      },
+      "role": {
+        "expression": "role"
+      },
+      "particle": {
+        "expression": "iga(role).slice(role.length)",
+        "particle": "이/가"
+      },
+      "fine": {
+        "expression": "manager ? PROTESTS.fine.manager : PROTESTS.fine.coach"
+      }
+    },
+    "locations": []
+  },
+  "league.protests.text.0790461a": {
+    "source": "src/league/protests.ts",
+    "line": 94,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.c7c25019": {
+    "source": "src/league/scandals.ts",
+    "line": 154,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.a03c00f6": {
+    "source": "src/league/scandals.ts",
+    "line": 159,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.0926e424": {
+    "source": "src/league/scandals.ts",
+    "line": 159,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "particle": {
+        "expression": "particle"
+      },
+      "fine": {
+        "expression": "fine"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.a764734a": {
+    "source": "src/league/scandals.ts",
+    "line": 161,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.887d6212": {
+    "source": "src/league/scandals.ts",
+    "line": 161,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.0e751bd7": {
+    "source": "src/league/scandals.ts",
+    "line": 162,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.175641cd": {
+    "source": "src/league/scandals.ts",
+    "line": 162,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "particle": {
+        "expression": "particle"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.9b20cdfe": {
+    "source": "src/league/scandals.ts",
+    "line": 163,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.1e27e617": {
+    "source": "src/league/scandals.ts",
+    "line": 163,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.897cda5b": {
+    "source": "src/league/scandals.ts",
+    "line": 164,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.83d3556c": {
+    "source": "src/league/scandals.ts",
+    "line": 271,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.44626f52": {
+    "source": "src/league/scandals.ts",
+    "line": 272,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.9db193cb": {
+    "source": "src/league/scandals.ts",
+    "line": 273,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.0bd65bef": {
+    "source": "src/league/scandals.ts",
+    "line": 274,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.f9ad59c6": {
+    "source": "src/league/scandals.ts",
+    "line": 275,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.6c1c41bd": {
+    "source": "src/league/scandals.ts",
+    "line": 276,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.c7d06d6d": {
+    "source": "src/league/scandals.ts",
+    "line": 277,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.57851fc3": {
+    "source": "src/league/scandals.ts",
+    "line": 302,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.b87c3929": {
+    "source": "src/league/scandals.ts",
+    "line": 302,
+    "params": {
+      "games": {
+        "expression": "S.rareGames.gambling"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.6e61822d": {
+    "source": "src/league/scandals.ts",
+    "line": 306,
+    "params": {
+      "years": {
+        "expression": "S.rareGames.draftDodgeYears"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.a0878aca": {
+    "source": "src/league/scandals.ts",
+    "line": 308,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.9ecabb3d": {
+    "source": "src/league/scandals.ts",
+    "line": 311,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.41bd5cf9": {
+    "source": "src/league/scandals.ts",
+    "line": 313,
+    "params": {},
+    "locations": []
   }
 }

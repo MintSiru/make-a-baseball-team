@@ -15,7 +15,7 @@ import { adaptabilityOf } from './adapt';
 import { kboSeasons } from './foreigncap';
 import { ageIn, isForeign, isPitcher } from './players';
 import type { LeagueState, StaffRole } from './state';
-import { clutchOf, GROWTH_LABELS, GROWTH_NOTES, GROWTH_ORDER, TRAIT_LABELS, traitsOf, type TraitKey } from './traits';
+import { clutchOf, temperOf, GROWTH_LABELS, GROWTH_NOTES, GROWTH_ORDER, TRAIT_LABELS, traitsOf, type TraitKey } from './traits';
 import { COMBINE, DIFFICULTY } from './tuning';
 
 export type ReadKey = 'growth' | 'injury' | 'adapt' | TraitKey;
@@ -51,6 +51,8 @@ const levelOf = (v: number) => (v >= 80 ? 5 : v >= 62 ? 4 : v >= 38 ? 3 : v >= 2
 const injuryScale = (risk: number) => clamp(((risk - 0.05) / 0.12) * 100, 1, 99);
 const INJURY_TEXT = [__i18n_k("league.reports.iNJURY_TEXT.1db38f03"), __i18n_k("league.reports.iNJURY_TEXT.58150fdf"), '보통', __i18n_k("league.reports.iNJURY_TEXT.d4458811"), __i18n_k("league.reports.iNJURY_TEXT.52c0c240")];
 const CONTROVERSY_TEXT = [__i18n_k("league.reports.cONTROVERSY_TEXT.608872ad"), __i18n_k("league.reports.cONTROVERSY_TEXT.b910f76d"), '보통', __i18n_k("league.reports.cONTROVERSY_TEXT.f0db19bc"), __i18n_k("league.reports.cONTROVERSY_TEXT.73eb039b")];
+/** 2.0.28 논쟁성, in words. */
+const TEMPER_TEXT = [__i18n_k("league.reports.text.d3e425cc"), __i18n_k("league.reports.text.9c7b6592"), '보통', __i18n_k("league.reports.text.357acdc1"), __i18n_k("league.reports.text.cb5370c6")];
 const controversyLevel = (v: number) => (v >= 58 ? 5 : v >= 44 ? 4 : v >= 26 ? 3 : v >= 14 ? 2 : 1);
 
 /** Which of our staff read which trait. */
@@ -63,6 +65,7 @@ const READER: Record<ReadKey, (p: Player, year: number) => StaffRole> = {
   loyalty: () => 'manager',
   controversy: () => 'manager',
   clutch: (p) => (isPitcher(p) ? 'pitching' : 'hitting'),
+  temper: () => 'manager',
   injury: () => 'medical',
   adapt: () => 'manager',
 };
@@ -129,11 +132,11 @@ export function traitReport(s: LeagueState, p: Player): TraitReport | null {
     const level = levelOf(v);
     reads.push({ key: 'injury', label: __i18n_k("league.reports.traitReport.label.ceba074c"), text: INJURY_TEXT[level - 1]!, level, sure: sureOf(a) });
   }
-  for (const key of ['genius', 'work', 'mental', 'leadership', 'loyalty', 'controversy', 'clutch'] as TraitKey[]) {
+  for (const key of ['genius', 'work', 'mental', 'leadership', 'loyalty', 'controversy', 'clutch', 'temper'] as TraitKey[]) {
     const { a, e } = read(key);
-    const v = clamp((key === 'clutch' ? clutchOf(p) : t[key]!) + e * 45, 1, 99);
+    const v = clamp((key === 'clutch' ? clutchOf(p) : key === 'temper' ? temperOf(p) : t[key]!) + e * 45, 1, 99);
     const level = key === 'controversy' ? controversyLevel(v) : levelOf(v);
-    const text = key === 'controversy' ? CONTROVERSY_TEXT[level - 1]! : LEVELS[level - 1]!;
+    const text = key === 'controversy' ? CONTROVERSY_TEXT[level - 1]! : key === 'temper' ? TEMPER_TEXT[level - 1]! : LEVELS[level - 1]!;
     reads.push({ key, label: TRAIT_LABELS[key], text: a < 0.1 ? null : text, level: a < 0.1 ? null : level, sure: sureOf(a) });
   }
   // 1.7.0: a foreigner's adaptability (adapt.ts).
@@ -170,6 +173,7 @@ function notesOf(reads: TraitRead[]): string[] {
   else if (lo('mental', 2)) out.push(__i18n_k("league.reports.notesOf.131e8fc3"));
   if (hi('clutch', 5)) out.push(__i18n_k("league.reports.text.71b1baa0"));
   else if (lo('clutch')) out.push(__i18n_k("league.reports.text.c6c95b42"));
+  if (hi('temper', 4)) out.push(__i18n_k("league.reports.text.e2ba0e77"));
   if (hi('leadership', 4)) out.push(__i18n_k("league.reports.notesOf.f2b13074"));
   if (hi('loyalty', 5)) out.push(__i18n_k("league.reports.notesOf.15837057"));
   else if (lo('loyalty')) out.push(__i18n_k("league.reports.notesOf.78db4b26"));
@@ -188,6 +192,7 @@ function characterOf(personality: string, reads: TraitRead[]): string {
     leadership: [__i18n_k("league.reports.wORDS.leadership.3ff3f43a"), __i18n_k("league.reports.wORDS.leadership.20534e4e")],
     loyalty: [__i18n_k("league.reports.wORDS.loyalty.1ac710f5"), __i18n_k("league.reports.wORDS.loyalty.b8b60a9a")],
     genius: [__i18n_k("league.reports.wORDS.genius.5eee1e68"), __i18n_k("league.reports.wORDS.genius.3eda2649")],
+    temper: [__i18n_k("league.reports.text.357acdc1"), __i18n_k("league.reports.text.9f8a3eff")],
     clutch: [__i18n_k("league.reports.text.94a2b78c"), __i18n_k("league.reports.text.e2e661d8")],
   };
   const picks = reads

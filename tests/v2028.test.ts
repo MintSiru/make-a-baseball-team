@@ -306,3 +306,75 @@ describe("a player's moves (2.0.28)", () => {
     expect(old.filter((r) => r.kind === 'change').length).toBeGreaterThanOrEqual(2);
   });
 });
+
+describe('논쟁성, arguing the calls, and the rare scandals (2.0.28)', () => {
+  it('is a hidden trait the hotheads lean to, about 1 on average as a factor, and read by the manager', async () => {
+    const { rollTraits, temperFactor } = await import('../src/league/traits');
+    const as = (personality: string) => Array.from({ length: 1500 }, (_, i) => ({ id: `t${i}`, personality, hidden: { traits: rollTraits('v2028-temper', `t${i}`, personality) } }) as never);
+    const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+    const hot = as('승부욕 강한 도전자').map(temperFactor),
+      calm = as('차분한 노력파').map(temperFactor);
+    expect(mean(hot)).toBeGreaterThan(mean(calm) * 1.5);
+    const all = ['차분한 노력파', '승부욕 강한 도전자', '밝은 분위기 메이커', '분석을 즐기는 연구형', '책임감 강한 리더', '말보다 행동하는 실천형', '꾸준함을 믿는 성실형', '큰 무대를 즐기는 대담형'].flatMap((x) => as(x).map(temperFactor));
+    expect(mean(all)).toBeGreaterThan(0.8);
+    expect(mean(all)).toBeLessThan(1.3);
+  });
+
+  it('lets most arguments go, throws the hotheads out far more often, and writes up the ejections', async () => {
+    const { protestGame } = await import('../src/league/protests');
+    const s = createLeague('v2028-protest');
+    const [a, b] = s.teams.filter((t) => s.rosters[t.id]).map((t) => t.id);
+    const side = (teamId: string, temper: number) => {
+      const ids = s.rosters[teamId]!.active.slice(0, 10);
+      for (const id of ids) s.players[id]!.hidden.traits = { ...s.players[id]!.hidden.traits!, temper };
+      return { teamId, runs: 0, hits: 0, errors: 0, lineScore: [], batting: ids.map((id) => ({ id, pa: 4 })), pitching: [] } as never;
+    };
+    const hot = side(a!, 95),
+      cold = side(b!, 15);
+    const count = (teamId: string): [number, number] => Object.values(s.players).filter((p) => p.teamId === teamId).reduce<[number, number]>((x, p) => [x[0] + (p.life?.protests ?? 0), x[1] + (p.life?.ejections ?? 0)], [0, 0]);
+    for (let i = 0; i < 4000; i++) protestGame(s, { gameId: `pg${i}`, innings: 9, home: hot, away: cold, result: 'tie' }, `pg${i}`, `${s.year}-06-01`);
+    const [hp, he] = count(a!),
+      [cp, ce] = count(b!);
+    expect(hp).toBeGreaterThan(cp * 2);
+    expect(he / hp).toBeGreaterThan(ce / Math.max(1, cp));
+    expect(he).toBeLessThan(hp);
+    expect((s.news ?? []).some((n) => n.id.startsWith('protest-'))).toBe(true);
+  });
+
+  it('has the new player and club trouble, with the KBO penalty where there is one and none where there is not', async () => {
+    const { apply } = await import('../src/league/actions');
+    const { scandalDay } = await import('../src/league/scandals');
+    const { SCANDAL } = await import('../src/league/tuning');
+    const s = createLeague('v2028-scandal');
+    apply(s, { kind: 'toFounding' });
+    apply(s, { kind: 'found', settings: { name: '청주 독수리', short: '독수리', color: '#1f6fb2', cityId: 'cheongju', parentType: 'conglomerate', parentName: '청주그룹', stadium: 'existing', promotion: 'immediate', difficulty: 'normal', scenario: null } });
+    s.user!.teamId = s.teams.find((t) => s.rosters[t.id]?.active.length)!.id;
+    s.pending = null;
+    const saved = { rare: { ...SCANDAL.rare }, club: { ...SCANDAL.club.rates }, rates: { ...SCANDAL.rates } };
+    try {
+      for (const k of Object.keys(SCANDAL.rare) as (keyof typeof SCANDAL.rare)[]) SCANDAL.rare[k] = 4;
+      for (const k of Object.keys(SCANDAL.club.rates) as (keyof typeof SCANDAL.club.rates)[]) SCANDAL.club.rates[k] = 4;
+      for (const k of Object.keys(SCANDAL.rates) as (keyof typeof SCANDAL.rates)[]) SCANDAL.rates[k] = 0;
+      const seen = new Set<string>();
+      for (let d = 0; d < 300 && seen.size < 7; d++) {
+        const date = new Date(Date.parse(`${s.year}-04-01`) + d * 86400000).toISOString().slice(0, 10);
+        scandalDay(s, date);
+        const pend = s.pending as { kind: string; id: string; offense: string } | null;
+        if (pend?.kind === 'scandal') {
+          seen.add(pend.offense);
+          const banned = !!s.suspended?.[pend.id];
+          expect(banned).toBe(['gambling', 'gangs', 'draftDodge'].includes(pend.offense));
+          s.pending = null;
+        }
+      }
+      expect(seen.size).toBeGreaterThanOrEqual(5);
+      expect((s.alerts ?? []).filter((x) => x.id.startsWith('club-trouble-')).length).toBeGreaterThan(0);
+    } finally {
+      Object.assign(SCANDAL.rare, saved.rare);
+      Object.assign(SCANDAL.club.rates, saved.club);
+      Object.assign(SCANDAL.rates, saved.rates);
+    }
+    // And rare in a normal season: a few in a hundred club seasons each.
+    for (const v of Object.values(SCANDAL.rare)) expect(v).toBeLessThanOrEqual(0.02);
+  });
+});

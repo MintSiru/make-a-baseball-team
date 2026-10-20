@@ -240,7 +240,7 @@ describe('scout and coach reports', () => {
     expect(traitReport(s, p)).toEqual(traitReport(s, p));
     expect(traitReport(s, p)!.by).toBe('scout');
     expect(traitReport(s, p)!.staff).toContain('스카우트 팀장');
-    expect(traitReport(s, p)!.reads.map((r) => r.key)).toEqual(['growth', 'injury', 'genius', 'work', 'mental', 'leadership', 'loyalty', 'controversy', 'clutch']);
+    expect(traitReport(s, p)!.reads.map((r) => r.key)).toEqual(['growth', 'injury', 'genius', 'work', 'mental', 'leadership', 'loyalty', 'controversy', 'clutch', 'temper']);
     expect(traitReport({ ...s, user: null } as LeagueState, p)).toBeNull();
   });
 });

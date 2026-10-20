@@ -34,6 +34,7 @@ import { draftClass } from './players';
 import { applyCombine, combineDay } from './combine';
 import { scandalDay, serveSuspensions } from './scandals';
 import { brawlGame } from './brawl';
+import { protestGame } from './protests';
 import { meddleDay } from './scenarios';
 import { openBooks } from './finance';
 import { rosterLimit } from './offseason';
@@ -366,6 +367,8 @@ export function playDay(s: LeagueState): boolean {
     featsGame(s, out, date);
     // 2.0.25: a hit batter, a pitch thrown back, the benches clearing (brawl.ts).
     brawlGame(s, out, g.id, date);
+    // 2.0.28: arguing a call, now and then an ejection (protests.ts).
+    protestGame(s, out, g.id, date);
     const box = compactBox(out, g.id, date, att);
     keepBox(s, box, log);
     if (log) {
