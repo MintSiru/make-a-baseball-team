@@ -2,7 +2,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 /* The club at a glance (V0.7.7), always in the sidebar: standing, the next game, money and who is out. */
 import { projectedPayroll } from '../league/expansion';
 import type { LeagueState } from '../league/state';
-import { rates, shortName, standingsView } from '../league/views';
+import { clubStanding, rates, shortName } from '../league/views';
 import { bracketView } from '../league/postseason';
 import { moneyShort } from './format';
 
@@ -10,7 +10,9 @@ export function ClubSummary({ league, onTab }: { league: LeagueState; onTab: (ta
   const u = league.user!;
   const me = u.teamId;
   const inFirstTeam = league.year >= u.firstTeamYear;
-  const row = inFirstTeam ? standingsView(league).find((r) => r.teamId === me) : undefined;
+  // 2.0.29: in two leagues, our rank inside our own league.
+  const standing = inFirstTeam ? clubStanding(league, me) : null;
+  const row = standing?.row;
   const next = league.phase === 'regular' ? league.schedule.slice(league.next).find((g) => g.home === me || g.away === me) : undefined;
   const payYear = league.phase === 'offseason' && league.offseason ? league.offseason.year + 1 : league.year;
   const payroll = projectedPayroll(league, me, payYear);
@@ -27,7 +29,7 @@ export function ClubSummary({ league, onTab }: { league: LeagueState; onTab: (ta
           <dd>
             {__i18n_display(row ? (
               <>
-                <strong>{__i18n_t("ui.clubSummary.clubSummary.b372d067", { rank: row.rank })}</strong> {__i18n_display(row.w)}-{__i18n_display(row.l)}-{__i18n_display(row.t)} <span class="muted">{__i18n_display(rates.fmt3(row.pct))}</span>
+                <strong>{standing?.league ? __i18n_t("ui.clubSummary.text.99f21377", { league: standing.league, rank: row.rank }) : __i18n_t("ui.clubSummary.clubSummary.b372d067", { rank: row.rank })}</strong> {__i18n_display(row.w)}-{__i18n_display(row.l)}-{__i18n_display(row.t)} <span class="muted">{__i18n_display(rates.fmt3(row.pct))}</span>
               </>
             ) : (
               __i18n_k("ui.clubSummary.clubSummary.57787c68", { firstTeamYear: u.firstTeamYear })

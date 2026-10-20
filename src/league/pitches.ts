@@ -47,16 +47,19 @@ export const PITCH_LABELS: Record<PitchType, string> = {
     break — a vertical slider (종슬라이더) that drops more than it sweeps, a sweeping one (횡슬라이더); a 12-to-6 drop
     curve, a big slow one, a hard power curve. His own (seeded by id): a higher arm slot throws the slider more
     downward, a harder thrower the curve harder. */
-export type PitchVariant = 'vertSL' | 'sweepSL' | 'drop' | 'slow' | 'power';
+export type PitchVariant = 'vertSL' | 'sweepSL' | 'hardSL' | 'drop' | 'slow' | 'power';
 export const VARIANT_LABELS: Record<PitchVariant, string> = {
   vertSL: __i18n_k("league.pitches.text.96463a9e"),
   sweepSL: __i18n_k("league.pitches.text.99427d9b"),
+  hardSL: __i18n_k("league.pitches.text.69d3539d"),
   drop: __i18n_k("league.pitches.text.4979ca84"),
   slow: __i18n_k("league.pitches.text.3bb0253d"),
   power: __i18n_k("league.pitches.text.bdebc467"),
 };
 
 const clamp01 = (x: number) => Math.max(0.05, Math.min(0.95, x));
+/** 2.0.29: the share of sliders that are hard ones — at 145 km/h, and this much more each km/h above, at most. */
+export const HARD_SLIDER = { from: 145, base: 0.1, perKmh: 0.03, most: 0.45 };
 
 /** The kind of his slider or curveball (null for every other pitch, and for a hitter). */
 export function pitchVariant(p: Pick<Player, 'id' | 'role' | 'origin' | 'velocity'>, type: PitchType): PitchVariant | null {
@@ -64,7 +67,13 @@ export function pitchVariant(p: Pick<Player, 'id' | 'role' | 'origin' | 'velocit
   const angle = armAngle(p);
   if (angle == null) return null;
   const u = hashUnit(`variant|${p.id}|${type}`);
-  if (type === 'SL') return u < clamp01(0.45 + (angle - 40) * 0.012) ? 'vertSL' : 'sweepSL';
+  if (type === 'SL') {
+    // 2.0.29 (the user's request): a hard thrower's slider is often a hard one (고속 슬라이더), near his fastball's speed
+    // with a short, late break — from 145 km/h on, more the harder he throws (its own draw, so the others keep theirs).
+    const v = p.velocity ?? 142;
+    if (v >= HARD_SLIDER.from && hashUnit(`variant-hard|${p.id}`) < Math.min(HARD_SLIDER.most, HARD_SLIDER.base + (v - HARD_SLIDER.from) * HARD_SLIDER.perKmh)) return 'hardSL';
+    return u < clamp01(0.45 + (angle - 40) * 0.012) ? 'vertSL' : 'sweepSL';
+  }
   const v = p.velocity ?? 142;
   const power = clamp01(0.2 + (v - 145) * 0.03),
     slow = clamp01(0.3 - (v - 145) * 0.025);
@@ -83,7 +92,7 @@ const KC_SHARE = { domestic: 0.2, foreign: 0.35, young: 0.1 };
 /** Same-side platoon advantage by best pitch: >1 a wider split, <1 a pitcher who handles both sides. */
 const PLATOON: Record<PitchType, number> = { SL: 1.25, SW: 1.45, CB: 1.05, CH: 0.65, FRK: 0.7, CUT: 0.9, '2SFB': 1.1, SNK: 1.1, CIR: 0.6, SPL: 0.7, SLV: 1.3, KN: 0.85, SCR: 0.55, PLM: 0.75, SH: 1.15, KC: 1 };
 /** 2.0.24: the kind changes it — a sweeper-like slider is harder on same-side hitters than one that drops. */
-const VARIANT_PLATOON: Record<PitchVariant, number> = { vertSL: 1.12, sweepSL: 1.35, drop: 1.02, slow: 0.98, power: 1.12 };
+const VARIANT_PLATOON: Record<PitchVariant, number> = { vertSL: 1.12, sweepSL: 1.35, hardSL: 1.08, drop: 1.02, slow: 0.98, power: 1.12 };
 
 /** 1.9.3 (from the 1.9 feedback): the fastball he leans on — a four-seamer (most), a two-seamer that runs to his arm
     side and sinks, or a cutter. A two-seam or cutter pitcher does not carry the same pitch again as a secondary. */

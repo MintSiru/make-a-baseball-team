@@ -8966,5 +8966,9 @@
   "league.scandals.text.b57c99d1": "인터뷰 거절",
   "league.scandals.text.9ce1e89d": "팬과 언쟁",
   "league.scandals.text.75d0b2e7": "마약류 성분 검출",
-  "league.scandals.text.d4855beb": "KBO 경고"
+  "league.scandals.text.d4855beb": "KBO 경고",
+  "ui.myClub.text.99f21377": "{league} {rank}위",
+  "ui.clubSummary.text.99f21377": "{league} {rank}위",
+  "ui.teamRoster.text.99f21377": "{league} {rank}위",
+  "league.pitches.text.69d3539d": "고속 슬라이더"
 }

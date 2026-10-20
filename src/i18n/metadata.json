@@ -82137,5 +82137,50 @@
     "line": 359,
     "params": {},
     "locations": []
+  },
+  "ui.myClub.text.99f21377": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 163,
+    "params": {
+      "league": {
+        "expression": "side"
+      },
+      "rank": {
+        "expression": "row.rank"
+      }
+    },
+    "locations": []
+  },
+  "ui.clubSummary.text.99f21377": {
+    "source": "src/ui/ClubSummary.tsx",
+    "line": 32,
+    "params": {
+      "league": {
+        "expression": "standing.league"
+      },
+      "rank": {
+        "expression": "row.rank"
+      }
+    },
+    "locations": []
+  },
+  "ui.teamRoster.text.99f21377": {
+    "source": "src/ui/TeamRoster.tsx",
+    "line": 47,
+    "params": {
+      "league": {
+        "expression": "side"
+      },
+      "rank": {
+        "expression": "row.rank"
+      }
+    },
+    "locations": []
+  },
+  "league.pitches.text.69d3539d": {
+    "source": "src/league/pitches.ts",
+    "line": 54,
+    "params": {},
+    "locations": []
   }
 }

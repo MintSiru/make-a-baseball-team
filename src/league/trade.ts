@@ -165,7 +165,13 @@ export function checkTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get
   const reasons = planReasons(s, teamId, plan, gives as Player[], picksOut.length, cashOut);
   const guard = planGuard(s, teamId, plan, gets as Player[], gives as Player[]);
   if (guard) return { problem: null, margin: 0, accepted: false, reasons: [guard, ...reasons] };
-  const inValue = gives.reduce((a, p) => a + tradeValue(s, p!) * planFactor(s, plan, p!), 0) + cashValue(cashOut) * cashFactor(plan) + picksOut.reduce((a, r) => a + pickValue(s, u.teamId, r) * pickFactor(plan), 0);
+  // 2.0.29: the players it gets, best first, each one after counting for less (TRADES.depth).
+  const depth = TRADES.depth;
+  const players = gives
+    .map((p) => tradeValue(s, p!) * planFactor(s, plan, p!))
+    .sort((a, b) => b - a)
+    .reduce((a, v, i) => a + (v > 0 ? v * (depth[i] ?? depth[depth.length - 1]!) : v), 0);
+  const inValue = players + cashValue(cashOut) * cashFactor(plan) + picksOut.reduce((a, r) => a + pickValue(s, u.teamId, r) * pickFactor(plan), 0);
   const outValue = gets.reduce((a, p) => a + tradeValue(s, p!), 0) + cashValue(cashIn) + picksIn.reduce((a, r) => a + pickValue(s, teamId, r) * pickFactor(plan), 0);
   const margin = Math.round((inValue - outValue * TRADES.accept.premium * DIFFICULTY.tradePremium[u.settings.difficulty] - TRADES.accept.fixed) * 10) / 10;
   return { problem: null, margin, accepted: margin >= 0, reasons };

@@ -1,6 +1,6 @@
 import { display as __i18n_display, rich as __i18n_rich, t as __i18n_t } from '../i18n/index';
 import type { LeagueState } from '../league/state';
-import { standingsView, teamOf } from '../league/views';
+import { clubStanding, teamOf } from '../league/views';
 import { useState } from 'preact/hooks';
 import { accentStyle } from './display';
 import { useDark } from './useDisplay';
@@ -22,7 +22,8 @@ export function TeamRoster({
   const dark = useDark();
   const team = teamOf(league, teamId)!;
   const [view, setView] = useState<'squad' | 'lineup'>('squad');
-  const row = standingsView(league).find((r) => r.teamId === teamId);
+  // 2.0.29: in two leagues, the rank inside the club's own league.
+  const { row, league: side } = clubStanding(league, teamId);
   return (
     <section aria-labelledby="team-title" style={accentStyle(team.color, dark)}>
       <div class="team-chips" role="group" aria-label={__i18n_t("ui.teamRoster.teamRoster.58756112")}>
@@ -43,7 +44,7 @@ export function TeamRoster({
           ))}
         </div>
         {__i18n_display(row && (
-          <p class="head-stat">{__i18n_rich("ui.teamRoster.teamRoster.55e5b921", { value: <span class="card-value">{__i18n_t("ui.teamRoster.teamRoster.b372d067", { rank: row.rank })}</span>, w: row.w, l: row.l, value2: row.t })}</p>
+          <p class="head-stat">{__i18n_rich("ui.teamRoster.teamRoster.55e5b921", { value: <span class="card-value">{side ? __i18n_t("ui.teamRoster.text.99f21377", { league: side, rank: row.rank }) : __i18n_t("ui.teamRoster.teamRoster.b372d067", { rank: row.rank })}</span>, w: row.w, l: row.l, value2: row.t })}</p>
         ))}
       </div>
       <div class="segmented" role="group" aria-label={__i18n_t("ui.teamRoster.teamRoster.58d6978a")}>
