@@ -27,7 +27,8 @@ export interface Alert {
   seen?: boolean;
 }
 
-const KEEP = 200;
+/** 2.0.28: 300 (the trade offers, the ejections and the papers add a few a season). */
+const KEEP = 300;
 
 export function addAlert(s: LeagueState, a: Omit<Alert, 'seen'>) {
   if (!s.user) return;
@@ -52,6 +53,8 @@ export function newsAlert(s: LeagueState, n: NewsItem) {
   const kind = FROM_NEWS[n.kind];
   if (!s.user || !kind || n.id.startsWith('iv-')) return;
   if (!n.mine && !OURS_ONLY.includes(n.kind)) return;
+  // 2.0.28: a bench-clearing or an ejection is written up for every club; only ours pops up (they add their own).
+  if (!n.mine && (n.id.startsWith('protest-') || n.id.startsWith('brawl-'))) return;
   addAlert(s, { id: n.id, date: n.date, kind, title: n.title, lines: n.body.split('\n').filter(Boolean), minor: true, ...(n.players.length ? { players: n.players } : {}) });
 }
 

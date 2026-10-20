@@ -322,23 +322,30 @@ describe('논쟁성, arguing the calls, and the rare scandals (2.0.28)', () => {
 
   it('lets most arguments go, throws the hotheads out far more often, and writes up the ejections', async () => {
     const { protestGame } = await import('../src/league/protests');
-    const s = createLeague('v2028-protest');
-    const [a, b] = s.teams.filter((t) => s.rosters[t.id]).map((t) => t.id);
-    const side = (teamId: string, temper: number) => {
-      const ids = s.rosters[teamId]!.active.slice(0, 10);
-      for (const id of ids) s.players[id]!.hidden.traits = { ...s.players[id]!.hidden.traits!, temper };
-      return { teamId, runs: 0, hits: 0, errors: 0, lineScore: [], batting: ids.map((id) => ({ id, pa: 4 })), pitching: [] } as never;
+    // Our club's arguments (their count is kept on our players' pages), once hot-headed and once calm.
+    const run = (temper: number) => {
+      const s = createLeague('v2028-protest');
+      const [a, b] = s.teams.filter((t) => s.rosters[t.id]).map((t) => t.id);
+      s.user = { teamId: a! } as never;
+      const side = (teamId: string, t: number) => {
+        const ids = s.rosters[teamId]!.active.slice(0, 10);
+        for (const id of ids) s.players[id]!.hidden.traits = { ...s.players[id]!.hidden.traits!, temper: t };
+        return { teamId, runs: 0, hits: 0, errors: 0, lineScore: [], batting: ids.map((id) => ({ id, pa: 4 })), pitching: [] } as never;
+      };
+      const home = side(a!, temper),
+        away = side(b!, 50);
+      for (let i = 0; i < 4000; i++) protestGame(s, { gameId: `pg${i}`, innings: 9, home, away, result: 'tie' }, `pg${i}`, `${s.year}-06-01`);
+      const ours = Object.values(s.players).filter((p) => p.teamId === a);
+      return { protests: ours.reduce((x, p) => x + (p.life?.protests ?? 0), 0), ejections: ours.reduce((x, p) => x + (p.life?.ejections ?? 0), 0), news: (s.news ?? []).filter((n) => n.id.startsWith('protest-')).length, theirs: Object.values(s.players).filter((p) => p.teamId === b && p.life?.protests).length };
     };
-    const hot = side(a!, 95),
-      cold = side(b!, 15);
-    const count = (teamId: string): [number, number] => Object.values(s.players).filter((p) => p.teamId === teamId).reduce<[number, number]>((x, p) => [x[0] + (p.life?.protests ?? 0), x[1] + (p.life?.ejections ?? 0)], [0, 0]);
-    for (let i = 0; i < 4000; i++) protestGame(s, { gameId: `pg${i}`, innings: 9, home: hot, away: cold, result: 'tie' }, `pg${i}`, `${s.year}-06-01`);
-    const [hp, he] = count(a!),
-      [cp, ce] = count(b!);
-    expect(hp).toBeGreaterThan(cp * 2);
-    expect(he / hp).toBeGreaterThan(ce / Math.max(1, cp));
-    expect(he).toBeLessThan(hp);
-    expect((s.news ?? []).some((n) => n.id.startsWith('protest-'))).toBe(true);
+    const hot = run(95),
+      calm = run(15);
+    expect(hot.protests).toBeGreaterThan(calm.protests * 2);
+    expect(hot.ejections / hot.protests).toBeGreaterThan(calm.ejections / Math.max(1, calm.protests));
+    expect(hot.ejections).toBeLessThan(hot.protests);
+    expect(hot.news).toBeGreaterThan(0);
+    // The other club's players keep no page of it.
+    expect(hot.theirs).toBe(0);
   });
 
   it('has the new player and club trouble, with the KBO penalty where there is one and none where there is not', async () => {

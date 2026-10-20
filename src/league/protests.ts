@@ -80,20 +80,22 @@ export function protestGame(s: LeagueState, out: GameOut, gameId: string, date: 
       let x = r() * players.reduce((a, p) => a + temperFactor(p), 0);
       const p = players.find((q) => (x -= temperFactor(q)) < 0) ?? players.at(-1)!;
       const f = temperFactor(p);
-      const life = (p.life ??= {});
-      life.protests = (life.protests ?? 0) + 1;
+      // The count and the line on his page are kept for our players only (life is the user's club's).
+      const ours = p.teamId === s.user?.teamId;
+      const life = ours ? (p.life ??= {}) : undefined;
+      if (life) life.protests = (life.protests ?? 0) + 1;
       const ejected = review || r() < Math.min(PROTESTS.eject.most, PROTESTS.eject.player * f);
       if (!ejected) {
-        if (p.teamId === s.user?.teamId) (life.events ??= []).push({ date, text: __i18n_k("league.protests.text.894a5be0", { call: what }) });
+        if (life) (life.events ??= []).push({ date, text: __i18n_k("league.protests.text.894a5be0", { call: what }) });
         continue;
       }
-      life.ejections = (life.ejections ?? 0) + 1;
+      if (life) life.ejections = (life.ejections ?? 0) + 1;
       const banned = f >= PROTESTS.ban.temper && r() < PROTESTS.ban.chance;
       if (banned) {
         const prev = s.suspended?.[p.id];
         (s.suspended ??= {})[p.id] = { reason: __i18n_k("league.protests.text.bc04871e"), games: (prev?.games ?? 0) + PROTESTS.ban.games, ...(prev?.until ? { until: prev.until } : {}), since: date };
       }
-      if (p.teamId === s.user?.teamId) (life.events ??= []).push({ date, text: __i18n_k("league.protests.text.cb8b9e96", { call: what }), tone: 'bad' });
+      if (life) (life.events ??= []).push({ date, text: __i18n_k("league.protests.text.cb8b9e96", { call: what }), tone: 'bad' });
       const head = review ? __i18n_k("league.protests.text.07530bfe", { name: iga(p.name), call: what }) : __i18n_k("league.protests.text.cb19e81b", { name: iga(p.name), call: what });
       report(s, side, gameId, date, {
         title: __i18n_k("league.protests.text.2f30d5a4", { club: short(s, side.teamId), name: p.name }),

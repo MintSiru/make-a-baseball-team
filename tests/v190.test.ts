@@ -32,7 +32,8 @@ describe('who may play in the postseason', () => {
     const e = s.postEntry!;
     expect(e.year).toBe(s.year);
     for (const t of s.teams.filter((x) => s.rosters[x.id])) {
-      expect(e.domestic![t.id]!.length).toBeGreaterThan(40);
+      // Our club may have let a player or two go during the season (2.0.28: a scandal the scouts answer with a release).
+      expect(e.domestic![t.id]!.length).toBeGreaterThan(t.id === s.user?.teamId ? 37 : 40);
       expect(e.domestic![t.id]!.every((id) => !isForeign(s.players[id]!))).toBe(true);
       expect(e.foreign![t.id]!.every((id) => isForeign(s.players[id]!))).toBe(true);
     }
