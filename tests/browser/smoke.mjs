@@ -469,13 +469,17 @@ try {
   await page.screenshot({ path: join(shots, 'lineup.png'), fullPage: false });
   await page.getByRole('button', { name: '1주', exact: true }).click();
   await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled, null, { timeout: 90_000 });
-  // 2.0.30: past the spring games into the season.
-  for (let i = 0; i < 3 && ((await status(page)) ?? '').includes('시범경기'); i++) {
+  // 2.0.30: past the spring games into the season, until we have a regular-season game of our own to watch (a run of
+  // days may stop early, at opening day or for a decision).
+  await page.getByRole('button', { name: '경기', exact: true }).click();
+  const ourGames = page.locator('.split .panel').first().getByRole('button', { name: '기록지 · 중계' });
+  for (let i = 0; i < 5 && !(await ourGames.count()); i++) {
+    await decideAll(page, log);
     await page.getByRole('button', { name: '1주', exact: true }).click();
     await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled, null, { timeout: 90_000 });
+    await page.getByRole('button', { name: '경기', exact: true }).click();
   }
-  await page.getByRole('button', { name: '경기', exact: true }).click();
-  await page.getByRole('button', { name: '기록지 · 중계' }).first().click();
+  await ourGames.first().click();
   await page.getByRole('dialog').waitFor();
   check((await page.locator('.linescore tbody tr').count()) === 2, 'line score has two clubs');
   await page.getByRole('tab', { name: '문자중계' }).click();

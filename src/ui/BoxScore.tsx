@@ -129,7 +129,8 @@ export function BoxScore({
         <div class="segmented profile-tabs" role="tablist" aria-label={__i18n_t("ui.boxScore.boxScore.e0cee61a")}>
           <button type="button" role="tab" aria-selected={tab === 'box'} aria-pressed={tab === 'box'} disabled={!!live && hidden} onClick={() => setTab('box')}>{__i18n_t("ui.boxScore.boxScore.8fcc8f9a")}</button>
           <button type="button" role="tab" aria-selected={tab === 'pbp'} aria-pressed={tab === 'pbp'} disabled={!v.plays} onClick={() => setTab('pbp')}>{__i18n_t("ui.boxScore.boxScore.a1298173")}</button>
-          {__i18n_display(mine && (
+          {/* 2.0.31: a spring game (시범경기) gets no article. */}
+          {__i18n_display(mine && !id.includes('-ex-') && (
             <button type="button" role="tab" aria-selected={tab === 'story'} aria-pressed={tab === 'story'} disabled={!!live && hidden} onClick={() => setTab('story')}>{__i18n_t("ui.boxScore.boxScore.9df02808")}</button>
           ))}
         </div>
