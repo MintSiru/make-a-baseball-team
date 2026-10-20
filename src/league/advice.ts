@@ -6,6 +6,7 @@ import type { PlayerId } from '../model/types';
 import { autoDecision, type DecisionInput } from './expansion';
 import { ageIn, isPitcher } from './players';
 import { STAFF_LABELS } from './staff';
+import { CAMP_SITES, campSuggestion, devSuggestion } from './development';
 import type { LeagueState, StaffRole } from './state';
 
 export interface Advice {
@@ -106,6 +107,20 @@ export function adviceFor(s: LeagueState): Advice | null {
       return { rule: __i18n_k("league.advice.adviceFor.rule.2f705ae8"), picks: list(input.ids), tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.276381a9") };
     case 'salaries':
       return { rule: __i18n_k("league.advice.adviceFor.rule.7b248f20"), picks: [__i18n_k("league.advice.adviceFor.picks.f05fcc20")], tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.9d4f6911") };
+    // 2.0.32: left to the scouts nobody goes; the screen's recommendation is what follows.
+    case 'devFall':
+    case 'devAbl':
+      return {
+        rule: __i18n_k("league.advice.text.f025fedd"),
+        picks: none(devSuggestion(s, input.kind === 'devFall' ? 'fall' : 'abl'), __i18n_k("league.advice.text.79da61f9")),
+        tradeoff: __i18n_k("league.advice.text.0a99cdf9"),
+      };
+    case 'wrapUp':
+      return {
+        rule: __i18n_k("league.advice.text.42518824"),
+        picks: [CAMP_SITES[campSuggestion(s)].name()],
+        tradeoff: __i18n_k("league.advice.text.28890b44"),
+      };
     case 'sponsor':
       return { rule: __i18n_k("league.advice.adviceFor.rule.8c8a9a37"), picks: d.kind === 'sponsor' ? [d.offers[input.index]?.name ?? ''] : [], tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.3de4bca6") };
     case 'staff': {

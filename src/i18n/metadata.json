@@ -82521,5 +82521,157 @@
     "line": 74,
     "params": {},
     "locations": []
+  },
+  "ui.decision.text.f285e071": {
+    "source": "src/ui/Decision.tsx",
+    "line": 85,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.37d4233b": {
+    "source": "src/ui/Decision.tsx",
+    "line": 86,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.dce453a2": {
+    "source": "src/ui/Decision.tsx",
+    "line": 87,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.495cc3e4": {
+    "source": "src/ui/Decision.tsx",
+    "line": 870,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.fa035b63": {
+    "source": "src/ui/Decision.tsx",
+    "line": 871,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.65d28ede": {
+    "source": "src/ui/Decision.tsx",
+    "line": 873,
+    "params": {
+      "max": {
+        "expression": "d.max"
+      },
+      "cost": {
+        "expression": "money(d.cost)"
+      },
+      "n": {
+        "expression": "selected.size"
+      },
+      "total": {
+        "expression": "money(selected.size * d.cost)"
+      },
+      "fund": {
+        "expression": "money(u.fund)"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.cc6bd830": {
+    "source": "src/ui/Decision.tsx",
+    "line": 883,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.2d25decb": {
+    "source": "src/ui/Decision.tsx",
+    "line": 884,
+    "params": {
+      "fund": {
+        "expression": "money(u.fund)"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.07238217": {
+    "source": "src/ui/Decision.tsx",
+    "line": 888,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.dce8ab82": {
+    "source": "src/ui/Training.tsx",
+    "line": 367,
+    "params": {},
+    "locations": []
+  },
+  "ui.tutorial.text.f285e071": {
+    "source": "src/ui/tutorial.ts",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "ui.tutorial.text.547ca0d2": {
+    "source": "src/ui/tutorial.ts",
+    "line": 57,
+    "params": {},
+    "locations": []
+  },
+  "ui.tutorial.text.37d4233b": {
+    "source": "src/ui/tutorial.ts",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "ui.tutorial.text.491b5ddb": {
+    "source": "src/ui/tutorial.ts",
+    "line": 61,
+    "params": {},
+    "locations": []
+  },
+  "ui.tutorial.text.dce453a2": {
+    "source": "src/ui/tutorial.ts",
+    "line": 64,
+    "params": {},
+    "locations": []
+  },
+  "ui.tutorial.text.d89f4a9b": {
+    "source": "src/ui/tutorial.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.4399e2cd": {
+    "source": "src/ui/Training.tsx",
+    "line": 391,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.f025fedd": {
+    "source": "src/league/advice.ts",
+    "line": 114,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.79da61f9": {
+    "source": "src/league/advice.ts",
+    "line": 115,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.0a99cdf9": {
+    "source": "src/league/advice.ts",
+    "line": 116,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.42518824": {
+    "source": "src/league/advice.ts",
+    "line": 120,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.28890b44": {
+    "source": "src/league/advice.ts",
+    "line": 122,
+    "params": {},
+    "locations": []
   }
 }

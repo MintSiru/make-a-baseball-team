@@ -364,7 +364,36 @@ function DevSection({ league, kind, onAct, onPlayer }: { league: LeagueState; ki
     <section class="dev-programs">
       <h3>{kind === 'fall' ? __i18n_t("ui.training.text.f285e071") : __i18n_t("ui.training.text.37d4233b")}</h3>
       <DevPick league={league} kind={kind} onAct={onAct} onPlayer={onPlayer} />
+      <p class="muted small">{__i18n_t("ui.training.text.dce8ab82")}</p>
     </section>
+  );
+}
+
+/** The camp's places to pick from (here and in the winter's wrap-up camp decision, 2.0.32). */
+export function CampChoices({ site, onPick, onNone }: { site: CampSite | null; onPick: (site: CampSite) => void; onNone?: () => void }) {
+  return (
+    <div class="choice-grid">
+      {CAMP_IDS.map((id) => {
+        const C = CAMP_SITES[id];
+        return (
+          <button key={id} type="button" class="choice" aria-pressed={site === id} onClick={() => onPick(id)}>
+            <strong>{__i18n_display(C.name())}</strong>
+            <span class="muted">{C.cost ? money(C.cost) : __i18n_t("ui.training.text.06048927")}</span>
+            <span class="muted small">
+              {__i18n_t("ui.training.text.77e97665", { p: focusText(C.pitcher), h: focusText(C.hitter) })}
+            </span>
+            <span class="muted small">{__i18n_display(C.note())}</span>
+          </button>
+        );
+      })}
+      {onNone && (
+        <button type="button" class="choice" aria-pressed={site === null} onClick={onNone}>
+          <strong>{__i18n_t("ui.training.text.4399e2cd")}</strong>
+          <span class="muted">{__i18n_t("ui.training.text.06048927")}</span>
+          <span class="muted small">{__i18n_t("ui.decision.text.07238217")}</span>
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -378,21 +407,7 @@ function WrapCamp({ league, onAct }: { league: LeagueState; onAct: (a: Action) =
     <section class="dev-programs">
       <h3>{__i18n_t("ui.training.text.dce453a2")}</h3>
       <p class="muted small">{__i18n_t("ui.training.text.e8c26099")}</p>
-      <div class="choice-grid">
-        {CAMP_IDS.map((id) => {
-          const C = CAMP_SITES[id];
-          return (
-            <button key={id} type="button" class="choice" aria-pressed={site === id} onClick={() => setSite(id)}>
-              <strong>{__i18n_display(C.name())}</strong>
-              <span class="muted">{C.cost ? money(C.cost) : __i18n_t("ui.training.text.06048927")}</span>
-              <span class="muted small">
-                {__i18n_t("ui.training.text.77e97665", { p: focusText(C.pitcher), h: focusText(C.hitter) })}
-              </span>
-              <span class="muted small">{__i18n_display(C.note())}</span>
-            </button>
-          );
-        })}
-      </div>
+      <CampChoices site={site} onPick={setSite} />
       {camp?.year === year ? (
         <p class="muted">{__i18n_t("ui.training.text.d517e650", { place: CAMP_SITES[camp.site].name(), n: camp.players })}</p>
       ) : (
@@ -403,6 +418,7 @@ function WrapCamp({ league, onAct }: { league: LeagueState; onAct: (a: Action) =
           <span class="muted small">{__i18n_display(why ?? '')}</span>
         </p>
       )}
+      <p class="muted small">{__i18n_t("ui.training.text.dce8ab82")}</p>
     </section>
   );
 }

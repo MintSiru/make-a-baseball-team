@@ -221,6 +221,11 @@ export type Decision =
   | { kind: 'rookieBonus'; picks: { id: PlayerId; slot: number; ask: number }[]; final: boolean }
   | { kind: 'development'; candidates: PlayerId[]; max: number }
   | { kind: 'camp'; players: PlayerId[] }
+  /** 2.0.32 (development.ts): the fall instructional league and a winter in Australia as stages of the winter; the
+      wrap-up camp's place. */
+  | { kind: 'devFall'; candidates: PlayerId[]; max: number; cost: number }
+  | { kind: 'devAbl'; candidates: PlayerId[]; max: number; cost: number }
+  | { kind: 'wrapUp' }
   // The market (V0.5); since V0.8 the free-agent negotiation in rounds (fa.ts, the market on `offseason.fa`)
   | { kind: 'faRound'; round: number; day: number; date: string }
   /** Free-agent deals whose guaranteed seasons end with a club option (V0.8): take it up or let him go. */

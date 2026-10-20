@@ -22,7 +22,7 @@ import { addNews } from './news';
 import { rescout } from './offseason';
 import { ageIn, isForeign, isPitcher } from './players';
 import { splitRecord } from './hsevents';
-import type { LeagueState } from './state';
+import type { Decision, LeagueState } from './state';
 import { TRAINING as T } from './tuning';
 
 export type CampSite = 'home' | 'okinawa' | 'guam' | 'taiwan' | 'california';
@@ -206,4 +206,51 @@ export function holdCamp(s: LeagueState, site: CampSite) {
   const lines = [C.note(), ...(top.length ? [__i18n_k("league.development.text.9eaf6756", { names: top.join(', ') })] : [])];
   addAlert(s, { id: `camp-${year}`, date: `${year}-11-25`, kind: 'season', title, lines, tone: 'good' });
   addNews(s, { id: `camp-${year}`, date: `${year}-11-25`, kind: 'interview', title, body: lines.join(' '), quotes: [], facts: { players: grew }, players: [], mine: true });
+}
+
+/* 2.0.32 (the user's request): the three as stages of the winter of their own, like the salary talks or the free-agent
+   market — decisions after the November national team and the sponsor: the fall league, then Australia, then the
+   wrap-up camp. Each comes up when it has not been held this year (sent from the training tab already, it is passed
+   over) and someone can go; not going is an answer too, and the scouts' when the decision is left to them (a club
+   that does not choose spends nothing). */
+export const DEV_STAGES = ['devFall', 'devAbl', 'wrapUp'] as const;
+export type DevStage = (typeof DEV_STAGES)[number];
+
+/** The next of the three this winter, after `after` (from the first without it). */
+export function devDecision(s: LeagueState, after?: DevStage): Decision | null {
+  const u = s.user;
+  if (!u || s.phase !== 'offseason') return null;
+  const year = devYear(s);
+  for (const stage of DEV_STAGES.slice(after ? DEV_STAGES.indexOf(after) + 1 : 0)) {
+    if (stage === 'wrapUp') {
+      if (u.dev?.camp?.year !== year) return { kind: 'wrapUp' };
+      continue;
+    }
+    const kind = stage === 'devFall' ? 'fall' : 'abl';
+    if ((kind === 'fall' ? u.dev?.fall : u.dev?.abl) === year) continue;
+    const candidates = devCandidates(s, kind);
+    if (candidates.length && u.fund >= DEV[kind].cost) return { kind: stage as 'devFall' | 'devAbl', candidates: candidates.map((p) => p.id), max: DEV[kind].max, cost: DEV[kind].cost };
+  }
+  return null;
+}
+
+/** The scouts' picks, for the recommendation: the highest future grades (the youngest among equals), as many as the
+    places and the fund allow. */
+export function devSuggestion(s: LeagueState, kind: 'fall' | 'abl'): PlayerId[] {
+  const u = s.user;
+  if (!u) return [];
+  const year = devYear(s);
+  const D = DEV[kind];
+  const n = Math.min(D.max, Math.floor(Math.max(0, u.fund) / D.cost));
+  return devCandidates(s, kind)
+    .sort((a, b) => b.scouting.futureValue - a.scouting.futureValue || ageIn(a, year) - ageIn(b, year))
+    .slice(0, n)
+    .map((p) => p.id);
+}
+
+/** The scouts' place for the camp, for the recommendation: the dearest the club can easily afford (a quarter of its
+    fund at most), at home otherwise. */
+export function campSuggestion(s: LeagueState): CampSite {
+  const fund = s.user?.fund ?? 0;
+  return [...CAMP_IDS].filter((id) => !checkCamp(s, id) && CAMP_SITES[id].cost <= fund / 4).sort((a, b) => CAMP_SITES[b].cost - CAMP_SITES[a].cost)[0] ?? 'home';
 }
