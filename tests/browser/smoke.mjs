@@ -152,8 +152,15 @@ async function playSeason(page, log = []) {
   // 1.6.0: it also stops at the moments that matter (a long injury, the deadline, the debut, the race): go on.
   let stops = 0;
   for (let i = 0; i < 30; i++) {
+    // 2.0.27: a slow runner may still be simulating the last days, or a decision may have come up meanwhile (CI once
+    // timed out on the click): wait for the controls, answer what is pending, then go on.
+    await page.waitForFunction(() => !!document.querySelector('#decision-title') || !document.querySelector('fieldset.controls')?.disabled, null, { timeout: 90_000 });
+    if (await page.locator('#decision-title').count()) {
+      await decideAll(page, log);
+      continue;
+    }
     const before = (await page.locator('.status').textContent()) ?? '';
-    await page.getByRole('button', { name: '정규시즌 끝까지' }).click();
+    await page.getByRole('button', { name: '정규시즌 끝까지' }).click({ timeout: 90_000 });
     const post = page.getByRole('button', { name: '포스트시즌 시작' });
     const decision = page.locator('#decision-title');
     await page.waitForFunction(
