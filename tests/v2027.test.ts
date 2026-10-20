@@ -105,3 +105,20 @@ describe('the anti-dynasty alliance needs the dynamic difficulty (2.0.27)', () =
     expect(tradeBarred(s, me, 'lg')).toBe(false);
   });
 });
+
+describe("a prospect's road to the draft (2.0.27)", () => {
+  it('lists every stage with a record, and names returnees by where they came back from', async () => {
+    const { careerStages, pathwayLabel } = await import('../src/league/amateur');
+    const s = createLeague('v2027-career');
+    const amateurs = Object.values(s.players).filter((p) => p.origin.kind === 'draftClass' && p.education.history?.length);
+    expect(amateurs.length).toBeGreaterThan(50);
+    for (const p of amateurs.slice(0, 200)) {
+      const stages = careerStages(p);
+      expect(stages).toHaveLength(p.education.history.length);
+      expect(stages.at(-1)!.record).toBe(p.amateur.record);
+      for (const st of stages) expect(st.record.games).toBeGreaterThan(0);
+    }
+    const back = amateurs.filter((p) => /복귀/.test(p.origin.pathway));
+    for (const p of back) expect(pathwayLabel(p)).toMatch(/^해외 유턴/);
+  });
+});
