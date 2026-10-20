@@ -33,7 +33,7 @@ import { milestone } from './milestones';
 /** A new scoreboard's lift to the fans' mood in its first season (V0.10, facilities.ts). */
 const SCOREBOARD_BUZZ = 0.03;
 import { foundClub, foundingDate, resolveDecision, type DecisionInput } from './expansion';
-import { finishTrips, sendTrip } from './training';
+import { clearTripRecord, finishTrips, sendTrip } from './training';
 import { holdCamp, sendDev } from './development';
 import { inspect } from './scandals';
 import { runCampaign } from './allstar';
@@ -120,6 +120,8 @@ export type Action =
   | { kind: 'twoLeaguePlayoffs'; style: 'kbo' | 'npb' }
   // Players and facilities (V0.10)
   | { kind: 'trip'; id: PlayerId; site: SiteId }
+  /** 2.0.31: clear the training screen's record of programmes abroad. */
+  | { kind: 'clearTrips' }
   /** 2.0.8: a pitch for one of our pitchers to learn this winter (null cancels). */
   | { kind: 'learnPitch'; id: PlayerId; type: import('./pitches').PitchType | null }
   | { kind: 'facility'; facility: FacilityKind }
@@ -165,7 +167,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -355,6 +357,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'trip':
       sendTrip(s, action.id, action.site);
+      break;
+    case 'clearTrips':
+      clearTripRecord(s);
       break;
     case 'devSend':
       // 2.0.28 (development.ts): the fall league, a winter in Australia.

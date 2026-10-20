@@ -9007,5 +9007,10 @@
   "ui.playerPanel.text.104de6fb": "Score margin",
   "ui.playerPanel.text.3a85e389": "Runners on",
   "ui.playerPanel.text.495f1461": "Situational records are kept from 2.0.30 on. Leverage is how much a plate appearance weighs given the runners, outs, inning and score margin (1 on average): over 2.0 is high, under 0.85 is low.",
-  "ui.savant.text.40b18759": "The four outer boxes are outside the strike zone (chase pitches)."
+  "ui.savant.text.40b18759": "The four outer boxes are outside the strike zone (chase pitches).",
+  "ui.training.text.0abac6b4": "Clear the finished programmes from this record? Each player's own history and this season's limit on programmes stay as they are.",
+  "ui.training.text.9e62ff83": "Clear record",
+  "ui.training.text.bb50e4ae": "Cleared programmes are still listed on each player's own page.",
+  "ui.training.text.b4927759": "Training abroad",
+  "ui.training.text.3e801fc3": "Training programmes"
 }

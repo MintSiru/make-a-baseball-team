@@ -3611,3 +3611,11 @@ button.danger {
 .trade-offer { padding: 6px 0; border-top: 1px dashed var(--rule); display: grid; gap: 4px; }
 .trade-offer:first-of-type { border-top: 0; }
 .trade-offer .row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* 2.0.31: a heading with its own small button beside it (the training record's reset). */
+.training .section-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.8rem;
+}

@@ -494,7 +494,14 @@ try {
   // 4c. V0.10: a player to a training centre abroad during the season.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
   await page.getByRole('button', { name: '훈련·연수', exact: true }).click();
+  // 2.0.31: each programme on its own tab.
+  await page.getByRole('group', { name: '훈련·연수 보기' }).getByRole('button', { name: '해외 연수', exact: true }).click();
   check((await page.locator('.training .trip-sites .choice').count()) === 4, 'three American centres and one Japanese');
+  for (const v of ['가을 교육리그', '호주 리그(ABL) 유학', '해외 마무리캠프']) {
+    await page.getByRole('group', { name: '훈련·연수 보기' }).getByRole('button', { name: v, exact: true }).click();
+    check((await page.locator('.training .dev-programs h3', { hasText: v }).count()) === 1, `the training view shows ${v} on its tab`);
+  }
+  await page.getByRole('group', { name: '훈련·연수 보기' }).getByRole('button', { name: '해외 연수', exact: true }).click();
   await page.getByRole('button', { name: /^도쿄 모션 베이스 일본/ }).click();
   // 2.0.10: the players in a sortable table, one button each.
   const pickTable = page.locator('.trip-pick');
@@ -639,6 +646,7 @@ try {
   // 2.0.8: the winter's new pitches, planned from the training view.
   await page.locator('nav.tabs').getByRole('button', { name: '우리 구단', exact: true }).click();
   await page.getByRole('group', { name: '우리 구단 보기' }).getByRole('button', { name: '훈련·연수', exact: true }).click();
+  await page.getByRole('group', { name: '훈련·연수 보기' }).getByRole('button', { name: '새 구종 익히기 (겨울)', exact: true }).click();
   check((await page.locator('.learn-pitch').count()) === 1, 'the training view plans new pitches');
   // 2.0.7: a new game asks to save this one first; cancelling keeps the game.
   await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
