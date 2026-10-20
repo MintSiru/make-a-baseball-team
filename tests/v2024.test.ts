@@ -28,7 +28,8 @@ describe('sliders and curves by kind', () => {
         if (x.variant === 'sweepSL') sweep += Math.abs(x.horizontal);
       }
     }
-    expect([...seen].sort()).toEqual(['drop', 'power', 'slow', 'sweepSL', 'vertSL']);
+    // 2.0.29: and the hard slider of the hardest throwers.
+    expect([...seen].sort()).toEqual(['drop', 'hardSL', 'power', 'slow', 'sweepSL', 'vertSL']);
     // A sweeping slider breaks across more than a vertical one, on the whole.
     const sl = (v: string) => arms.flatMap((p) => trackingOf(p)?.pitches.filter((x) => x.variant === v) ?? []);
     const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
