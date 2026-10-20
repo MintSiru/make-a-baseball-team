@@ -54,7 +54,8 @@ const POSITION_NAMES: Record<string, string> = { C: __i18n_k("ui.playerPanel.pOS
 export function TraitReportBox({ report }: { report: TraitReport }) {
   const tone = (r: TraitReport['reads'][number]) => {
     if (r.level == null || r.key === 'growth') return '';
-    const bad = r.key === 'controversy' || r.key === 'injury';
+    // 2.0.31: 논쟁성 too — a hot temper is the bad end, as 논란성 and 부상 are.
+    const bad = r.key === 'controversy' || r.key === 'temper' || r.key === 'injury';
     return r.level >= 4 ? (bad ? 'minus' : 'plus') : r.level <= 2 ? (bad ? 'plus' : 'minus') : '';
   };
   return (

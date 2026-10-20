@@ -82491,5 +82491,35 @@
     "line": 325,
     "params": {},
     "locations": []
+  },
+  "ui.training.text.0abac6b4": {
+    "source": "src/ui/Training.tsx",
+    "line": 137,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.9e62ff83": {
+    "source": "src/ui/Training.tsx",
+    "line": 138,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.bb50e4ae": {
+    "source": "src/ui/Training.tsx",
+    "line": 180,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.b4927759": {
+    "source": "src/ui/Training.tsx",
+    "line": 66,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.3e801fc3": {
+    "source": "src/ui/Training.tsx",
+    "line": 74,
+    "params": {},
+    "locations": []
   }
 }

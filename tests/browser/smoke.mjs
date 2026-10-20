@@ -469,13 +469,17 @@ try {
   await page.screenshot({ path: join(shots, 'lineup.png'), fullPage: false });
   await page.getByRole('button', { name: '1주', exact: true }).click();
   await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled, null, { timeout: 90_000 });
-  // 2.0.30: past the spring games into the season.
-  for (let i = 0; i < 3 && ((await status(page)) ?? '').includes('시범경기'); i++) {
+  // 2.0.30: past the spring games into the season, until we have a regular-season game of our own to watch (a run of
+  // days may stop early, at opening day or for a decision).
+  await page.getByRole('button', { name: '경기', exact: true }).click();
+  const ourGames = page.locator('.split .panel').first().getByRole('button', { name: '기록지 · 중계' });
+  for (let i = 0; i < 5 && !(await ourGames.count()); i++) {
+    await decideAll(page, log);
     await page.getByRole('button', { name: '1주', exact: true }).click();
     await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled, null, { timeout: 90_000 });
+    await page.getByRole('button', { name: '경기', exact: true }).click();
   }
-  await page.getByRole('button', { name: '경기', exact: true }).click();
-  await page.getByRole('button', { name: '기록지 · 중계' }).first().click();
+  await ourGames.first().click();
   await page.getByRole('dialog').waitFor();
   check((await page.locator('.linescore tbody tr').count()) === 2, 'line score has two clubs');
   await page.getByRole('tab', { name: '문자중계' }).click();
@@ -494,7 +498,14 @@ try {
   // 4c. V0.10: a player to a training centre abroad during the season.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
   await page.getByRole('button', { name: '훈련·연수', exact: true }).click();
+  // 2.0.31: each programme on its own tab.
+  await page.getByRole('group', { name: '훈련·연수 보기' }).getByRole('button', { name: '해외 연수', exact: true }).click();
   check((await page.locator('.training .trip-sites .choice').count()) === 4, 'three American centres and one Japanese');
+  for (const v of ['가을 교육리그', '호주 리그(ABL) 유학', '해외 마무리캠프']) {
+    await page.getByRole('group', { name: '훈련·연수 보기' }).getByRole('button', { name: v, exact: true }).click();
+    check((await page.locator('.training .dev-programs h3', { hasText: v }).count()) === 1, `the training view shows ${v} on its tab`);
+  }
+  await page.getByRole('group', { name: '훈련·연수 보기' }).getByRole('button', { name: '해외 연수', exact: true }).click();
   await page.getByRole('button', { name: /^도쿄 모션 베이스 일본/ }).click();
   // 2.0.10: the players in a sortable table, one button each.
   const pickTable = page.locator('.trip-pick');
@@ -639,6 +650,7 @@ try {
   // 2.0.8: the winter's new pitches, planned from the training view.
   await page.locator('nav.tabs').getByRole('button', { name: '우리 구단', exact: true }).click();
   await page.getByRole('group', { name: '우리 구단 보기' }).getByRole('button', { name: '훈련·연수', exact: true }).click();
+  await page.getByRole('group', { name: '훈련·연수 보기' }).getByRole('button', { name: '새 구종 익히기 (겨울)', exact: true }).click();
   check((await page.locator('.learn-pitch').count()) === 1, 'the training view plans new pitches');
   // 2.0.7: a new game asks to save this one first; cancelling keeps the game.
   await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
@@ -703,9 +715,15 @@ try {
   // 1.9.2: wait for the part to render before counting (the count raced the click on CI). 1.9.4: wait for the
   // count itself — the first table showing was not enough once (the part was still being redrawn).
   // 2.0.18: a two-way (or turned-around) player has a second table for his other side (2.0.12): one or two.
-  await page.waitForFunction(() => document.querySelectorAll('.dialog .record-table.career').length >= 1, null, { timeout: 10_000 }).catch(() => undefined);
-  const seasonTables = await page.locator('.dialog .record-table.career').count();
-  check(seasonTables >= 1 && seasonTables <= 2, 'the records part shows the season table');
+  // 2.0.31: the first player on the list may be a rookie with no season yet (the league's seed is random): then the
+  // part says so instead of a table.
+  const seasonPart = () => ({
+    tables: document.querySelectorAll('.dialog .record-table.career').length,
+    empty: [...document.querySelectorAll('.dialog p.muted')].some((x) => x.textContent === '기록이 없습니다.'),
+  });
+  await page.waitForFunction(() => document.querySelectorAll('.dialog .record-table.career').length >= 1 || [...document.querySelectorAll('.dialog p.muted')].some((x) => x.textContent === '기록이 없습니다.'), null, { timeout: 10_000 }).catch(() => undefined);
+  const { tables: seasonTables, empty } = await page.evaluate(seasonPart);
+  check((seasonTables >= 1 && seasonTables <= 2) || (seasonTables === 0 && empty), 'the records part shows the season table');
   // 0.15: the keyboard stays inside the dialog, and Escape hands the focus back to the name that opened it.
   for (let i = 0; i < 40; i++) await page.keyboard.press('Tab');
   check(await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]')), 'Tab stays inside the player dialog');

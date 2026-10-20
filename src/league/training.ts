@@ -163,6 +163,23 @@ export function sendTrip(s: LeagueState, id: PlayerId, site: SiteId) {
   (u.log ??= []).push({ year: when.inSeason ? s.year : when.season - 1, text: __i18n_k("league.training.sendTrip.text.f539a91b", { name: p.name, place: S.place, name2: S.name, weeks: S.weeks, from: dates.from, until: dates.until }) });
 }
 
+/** 2.0.31 (the user's request): clears the training screen's record of programmes — those over by now; one still on
+    stays listed until it is. The trips are kept (this season's limits count them; each player's page lists his). */
+export function clearTripRecord(s: LeagueState) {
+  const u = s.user;
+  if (!u?.trips) return;
+  let n = 0;
+  while (n < u.trips.length && u.trips[n]!.result) n++;
+  u.tripsCleared = Math.max(u.tripsCleared ?? 0, n);
+}
+
+/** The programmes the training screen lists: those not cleared, newest first. */
+export const tripRecord = (s: LeagueState) => {
+  const all = s.user?.trips ?? [];
+  const from = s.user?.tripsCleared ?? 0;
+  return all.filter((t, i) => i >= from || !t.result).reverse();
+};
+
 /** What a programme did for him. */
 export function tripGains(s: LeagueState, p: Player, site: SiteId, season: number, r: () => number): Partial<Record<ToolKey, number>> {
   const keys = SITES[site].focus[isPitcher(p) ? 'pitcher' : 'hitter'] ?? [];

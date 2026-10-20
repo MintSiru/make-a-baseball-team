@@ -25,7 +25,7 @@ export interface TraitRead {
   label: string;
   /** What the staff say, or null when they cannot tell yet. */
   text: string | null;
-  /** 1 (low) … 5 (high) for a bar; for 논란성 and 부상 high is bad. Growth: 1 초조숙 … 5 초만성. */
+  /** 1 (low) … 5 (high) for a bar; for 논란성, 논쟁성 and 부상 high is bad. Growth: 1 초조숙 … 5 초만성. */
   level: number | null;
   sure: '높음' | '보통' | '낮음';
 }

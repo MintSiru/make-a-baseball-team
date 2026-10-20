@@ -518,6 +518,9 @@ export interface UserClub {
   twelveNo?: number[];
   /** Short programmes at private training centres abroad (V0.10, training.ts). */
   trips?: TrainingTrip[];
+  /** 2.0.31: how many of them the training screen's record no longer lists (cleared by the user; the trips themselves
+      stay, for the season's limits and each player's own page). */
+  tripsCleared?: number;
   /** Facilities built (level by kind) and under construction (V0.10, facilities.ts). */
   facilities?: Partial<Record<FacilityKind, number>>;
   facilityWorks?: { kind: FacilityKind; level: number; opens: number; cost: number }[];

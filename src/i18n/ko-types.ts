@@ -9008,5 +9008,10 @@ export const koSource = {
   "ui.playerPanel.text.104de6fb": "점수 차",
   "ui.playerPanel.text.3a85e389": "주자 상황",
   "ui.playerPanel.text.495f1461": "상황별 기록은 2.0.30부터 쌓입니다. 레버리지는 주자·아웃·이닝·점수 차로 본 그 타석의 무게(평균 1)로, 2.0 넘으면 하이, 0.85 미만이면 로우입니다.",
-  "ui.savant.text.40b18759": "바깥 네 칸은 스트라이크 존 밖(유인구)입니다."
+  "ui.savant.text.40b18759": "바깥 네 칸은 스트라이크 존 밖(유인구)입니다.",
+  "ui.training.text.0abac6b4": "지금까지 끝난 연수 기록을 이 표에서 지울까요? 선수 화면의 연수 이력과 이번 시즌 연수 횟수 제한은 그대로입니다.",
+  "ui.training.text.9e62ff83": "기록 초기화",
+  "ui.training.text.bb50e4ae": "지운 연수 기록은 각 선수 화면의 연수 이력에 남아 있습니다.",
+  "ui.training.text.b4927759": "해외 연수",
+  "ui.training.text.3e801fc3": "훈련·연수 보기"
 } as const;
