@@ -81831,5 +81831,311 @@
     "line": 313,
     "params": {},
     "locations": []
+  },
+  "league.protests.text.12724a8b": {
+    "source": "src/league/protests.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.protests.text.6426c9ce": {
+    "source": "src/league/protests.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.protests.text.7009ac28": {
+    "source": "src/league/protests.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.protests.text.942381a7": {
+    "source": "src/league/protests.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.protests.text.72ca063a": {
+    "source": "src/league/protests.ts",
+    "line": 76,
+    "params": {
+      "fine": {
+        "expression": "fine"
+      }
+    },
+    "locations": []
+  },
+  "league.protests.text.894a5be0": {
+    "source": "src/league/protests.ts",
+    "line": 87,
+    "params": {
+      "call": {
+        "expression": "what"
+      }
+    },
+    "locations": []
+  },
+  "league.protests.text.cb8b9e96": {
+    "source": "src/league/protests.ts",
+    "line": 96,
+    "params": {
+      "call": {
+        "expression": "what"
+      }
+    },
+    "locations": []
+  },
+  "league.protests.text.07530bfe": {
+    "source": "src/league/protests.ts",
+    "line": 97,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      },
+      "call": {
+        "expression": "what"
+      }
+    },
+    "locations": []
+  },
+  "league.protests.text.cb19e81b": {
+    "source": "src/league/protests.ts",
+    "line": 97,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      },
+      "call": {
+        "expression": "what"
+      }
+    },
+    "locations": []
+  },
+  "league.protests.text.d0840a10": {
+    "source": "src/league/protests.ts",
+    "line": 100,
+    "params": {
+      "games": {
+        "expression": "PROTESTS.ban.games"
+      }
+    },
+    "locations": []
+  },
+  "league.protests.text.a81e2102": {
+    "source": "src/league/protests.ts",
+    "line": 113,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "who.name"
+      },
+      "role": {
+        "expression": "role"
+      },
+      "particle": {
+        "expression": "particle"
+      },
+      "call": {
+        "expression": "what"
+      }
+    },
+    "locations": []
+  },
+  "league.protests.text.f4bafc6e": {
+    "source": "src/league/protests.ts",
+    "line": 114,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "who.name"
+      },
+      "role": {
+        "expression": "role"
+      },
+      "particle": {
+        "expression": "particle"
+      },
+      "call": {
+        "expression": "what"
+      }
+    },
+    "locations": []
+  },
+  "league.expansion.text.ac3100e6": {
+    "source": "src/league/expansion.ts",
+    "line": 720,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.expansion.text.9c95283a": {
+    "source": "src/league/expansion.ts",
+    "line": 721,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.expansion.text.97b8c8ab": {
+    "source": "src/league/expansion.ts",
+    "line": 721,
+    "params": {},
+    "locations": []
+  },
+  "league.expansion.text.a1c00e68": {
+    "source": "src/league/expansion.ts",
+    "line": 721,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.aa9b9ed4": {
+    "source": "src/league/scandals.ts",
+    "line": 170,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.dcf82e20": {
+    "source": "src/league/scandals.ts",
+    "line": 170,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.c1801365": {
+    "source": "src/league/scandals.ts",
+    "line": 170,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.ee5931b1": {
+    "source": "src/league/scandals.ts",
+    "line": 172,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.2f904ef6": {
+    "source": "src/league/scandals.ts",
+    "line": 172,
+    "params": {
+      "name": {
+        "expression": "eunneun(p.name)",
+        "particle": "은/는"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.1d16914f": {
+    "source": "src/league/scandals.ts",
+    "line": 172,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.5bb089b5": {
+    "source": "src/league/scandals.ts",
+    "line": 174,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.ce43f398": {
+    "source": "src/league/scandals.ts",
+    "line": 174,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.f7843bb0": {
+    "source": "src/league/scandals.ts",
+    "line": 174,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.6d07ad90": {
+    "source": "src/league/scandals.ts",
+    "line": 175,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.cef3b3e7": {
+    "source": "src/league/scandals.ts",
+    "line": 175,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.b57c99d1": {
+    "source": "src/league/scandals.ts",
+    "line": 175,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.9ce1e89d": {
+    "source": "src/league/scandals.ts",
+    "line": 320,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.75d0b2e7": {
+    "source": "src/league/scandals.ts",
+    "line": 321,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.d4855beb": {
+    "source": "src/league/scandals.ts",
+    "line": 359,
+    "params": {},
+    "locations": []
   }
 }

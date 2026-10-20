@@ -378,3 +378,73 @@ describe('논쟁성, arguing the calls, and the rare scandals (2.0.28)', () => {
     for (const v of Object.values(SCANDAL.rare)) expect(v).toBeLessThanOrEqual(0.02);
   });
 });
+
+describe('the calls argued, foreign players and the papers (2.0.28)', () => {
+  it('argues balls and strikes only without the ABS, and the plays on the bases and the lines either way', async () => {
+    const { protestGame } = await import('../src/league/protests');
+    const { setEraBoard } = await import('../src/league/era');
+    const run = (abs: number) => {
+      const s = createLeague('v2028-calls');
+      setEraBoard([{ from: 0, item: 'abs', value: abs }]);
+      const [a, b] = s.teams.filter((t) => s.rosters[t.id]).map((t) => t.id);
+      const side = (teamId: string) => {
+        const ids = s.rosters[teamId]!.active.slice(0, 10);
+        for (const id of ids) s.players[id]!.hidden.traits = { ...s.players[id]!.hidden.traits!, temper: 95 };
+        return { teamId, runs: 0, hits: 0, errors: 0, lineScore: [], batting: ids.map((id) => ({ id, pa: 4 })), pitching: [] } as never;
+      };
+      const home = side(a!),
+        away = side(b!);
+      for (let i = 0; i < 3000; i++) protestGame(s, { gameId: `c${i}`, innings: 9, home, away, result: 'tie' }, `c${i}`, `${s.year}-06-01`);
+      setEraBoard([]);
+      return (s.news ?? []).filter((n) => n.id.startsWith('protest-')).map((n) => n.body);
+    };
+    const withAbs = run(2),
+      without = run(0);
+    expect(withAbs.some((t) => t.includes('볼·스트라이크'))).toBe(false);
+    expect(without.some((t) => t.includes('볼·스트라이크'))).toBe(true);
+    for (const call of ['아웃·세이프', '홈런·파울', '페어·파울']) expect(withAbs.some((t) => t.includes(call))).toBe(true);
+    expect(withAbs.some((t) => t.includes('비디오 판독'))).toBe(true);
+    expect(withAbs.length).toBeLessThan(without.length);
+  });
+
+  it('keeps the foreign players’ trouble and the papers rare, and points them at the right players', async () => {
+    const { FOREIGN_TROUBLE } = await import('../src/league/scandals');
+    const { SCANDAL } = await import('../src/league/tuning');
+    expect(FOREIGN_TROUBLE.medical).toBeLessThanOrEqual(0.05);
+    for (const v of Object.values(FOREIGN_TROUBLE.rates)) expect(v).toBeLessThanOrEqual(0.02);
+    for (const v of Object.values(SCANDAL.pr.rates)) expect(v).toBeLessThanOrEqual(0.03);
+    const { apply } = await import('../src/league/actions');
+    const { scandalDay } = await import('../src/league/scandals');
+    const s = createLeague('v2028-foreign-trouble');
+    apply(s, { kind: 'toFounding' });
+    apply(s, { kind: 'found', settings: { name: '청주 독수리', short: '독수리', color: '#1f6fb2', cityId: 'cheongju', parentType: 'conglomerate', parentName: '청주그룹', stadium: 'existing', promotion: 'immediate', difficulty: 'normal', scenario: null } });
+    s.user!.teamId = s.teams.find((t) => s.rosters[t.id]?.active.length)!.id;
+    s.pending = null;
+    const saved = { f: { ...FOREIGN_TROUBLE.rates }, pr: { ...SCANDAL.pr.rates }, rates: { ...SCANDAL.rates }, rare: { ...SCANDAL.rare }, club: { ...SCANDAL.club.rates } };
+    try {
+      for (const o of [SCANDAL.rates, SCANDAL.rare, SCANDAL.club.rates] as Record<string, number>[]) for (const k of Object.keys(o)) o[k] = 0;
+      for (const k of Object.keys(FOREIGN_TROUBLE.rates) as (keyof typeof FOREIGN_TROUBLE.rates)[]) FOREIGN_TROUBLE.rates[k] = 8;
+      for (const k of Object.keys(SCANDAL.pr.rates) as (keyof typeof SCANDAL.pr.rates)[]) SCANDAL.pr.rates[k] = 4;
+      const offenses: string[] = [];
+      for (let d = 0; d < 200; d++) {
+        const date = new Date(Date.parse(`${s.year}-04-01`) + d * 86400000).toISOString().slice(0, 10);
+        scandalDay(s, date);
+        const pend = s.pending as { kind: string; id: string; offense: string } | null;
+        if (pend?.kind === 'scandal') {
+          offenses.push(pend.offense);
+          expect(s.players[pend.id]!.origin.kind).toBe('foreign');
+          s.pending = null;
+        }
+      }
+      expect(offenses.length).toBeGreaterThan(0);
+      expect(new Set(offenses).size).toBeLessThanOrEqual(2);
+      expect((s.news ?? []).filter((n) => n.id.startsWith('pr-')).length).toBeGreaterThan(0);
+    } finally {
+      Object.assign(FOREIGN_TROUBLE.rates, saved.f);
+      Object.assign(SCANDAL.pr.rates, saved.pr);
+      Object.assign(SCANDAL.rates, saved.rates);
+      Object.assign(SCANDAL.rare, saved.rare);
+      Object.assign(SCANDAL.club.rates, saved.club);
+    }
+  });
+});

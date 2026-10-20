@@ -1,5 +1,6 @@
 import { k as __i18n_k } from '../i18n/index';
 import { noteMove } from './moves';
+import { FOREIGN_TROUBLE } from './scandals';
 /* The user's expansion club: founding in summer 2026, the first drafts, the special draft from the
    other clubs, free agents, foreign players and the step up to the first team.
 
@@ -7,7 +8,7 @@ import { noteMove } from './moves';
    game assumptions in RULES.md §9. Money is in 만 원 (10,000 = 1억). */
 import { employedAlumni, fameOf } from './alumni';
 import { startYear } from './era';
-import { generateDraftPool, rng } from '../draftroom';
+import { generateDraftPool, hashUnit, rng } from '../draftroom';
 import { cityById } from '../club/cities';
 import { scenarioDef, supportFactor } from './scenarios';
 import { WARD } from './ward';
@@ -714,6 +715,13 @@ function resolveForeign(s: LeagueState, dd: Extract<Decision, { kind: 'foreign' 
     const offer = input.offers?.[id] ?? suggestedOffer(t, newSigningCap(p));
     const answer = reply(t, offer, round, `${s.seed}|foreign-talk|${next}|${id}|${round}`);
     if (answer.kind === 'accept') {
+      // 2.0.28: a new face fails his medical now and then (rarely), and the deal is off.
+      if (!poolEntry(s, id) && hashUnit(`${s.seed}|medical|${next}|${id}`) < FOREIGN_TROUBLE.medical) {
+        log.push(__i18n_k("league.expansion.text.ac3100e6", { name: p.name }));
+        addAlert(s, { id: `medical-${next}-${id}`, date: `${next - 1}-12-20`, kind: 'scandal', title: __i18n_k("league.expansion.text.9c95283a", { name: p.name }), lines: [__i18n_k("league.expansion.text.97b8c8ab"), __i18n_k("league.expansion.text.a1c00e68")], tone: 'bad', players: [] });
+        drop(id);
+        continue;
+      }
       const bonus = Math.round((offer.guaranteed * 0.2) / 10_000) * 10_000;
       const c = foreignContract(u.teamId, next, { bonus, salary: offer.guaranteed - bonus, options: offer.options }, !!p.origin.asiaQuota, newSigningCap(p));
       if (t.fee) {

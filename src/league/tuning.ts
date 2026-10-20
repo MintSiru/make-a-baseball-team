@@ -685,10 +685,17 @@ export const SCANDAL = {
     caughtGrudge: 6,
     cleanGrudge: 3,
   },
-  fans: { dui: 25, doping: 25, assault: 20, fixing: 30, affair: 15, abortion: 25, gambling: 25, gangs: 25, schoolViolence: 30, draftDodge: 30, insubordination: 8 } as Record<string, number>,
-  clubMood: { dui: 0.03, doping: 0.03, assault: 0.02, fixing: 0.08, affair: 0.01, abortion: 0.02, gambling: 0.03, gangs: 0.03, schoolViolence: 0.03, draftDodge: 0.03, insubordination: 0.005 } as Record<string, number>,
+  fans: { dui: 25, doping: 25, assault: 20, fixing: 30, fanQuarrel: 10, narcotics: 25, affair: 15, abortion: 25, gambling: 25, gangs: 25, schoolViolence: 30, draftDodge: 30, insubordination: 8 } as Record<string, number>,
+  clubMood: { dui: 0.03, doping: 0.03, assault: 0.02, fixing: 0.08, fanQuarrel: 0.01, narcotics: 0.03, affair: 0.01, abortion: 0.02, gambling: 0.03, gangs: 0.03, schoolViolence: 0.03, draftDodge: 0.03, insubordination: 0.005 } as Record<string, number>,
   /** 2.0.28: the club's own trouble, a season's chance each — illegal CCTV surveillance of its players, an
       improper word on the club's social media, fans treated badly — the fans' mood it costs and the KBO's fine (만원). */
+  /** 2.0.28: the papers and the fans — a careless interview, a twisted one, an autograph or an interview refused: a
+      season's chance at a club, his fans' fondness and the club's mood they cost. */
+  pr: {
+    rates: { gaffe: 0.03, distorted: 0.02, autograph: 0.025, noInterview: 0.02 },
+    fans: { gaffe: 4, distorted: 1, autograph: 3, noInterview: 2 },
+    mood: { gaffe: 0.003, distorted: 0.001, autograph: 0.004, noInterview: 0.002 },
+  },
   club: {
     rates: { cctv: 0.006, sns: 0.02, fans: 0.02 },
     mood: { cctv: 0.04, sns: 0.015, fans: 0.02 },

@@ -12,6 +12,7 @@ import { addAlert } from './alerts';
 import type { GameOut, TeamBox } from './engine/types';
 import { iga } from './josa';
 import { addNews } from './news';
+import { absLevel } from './board';
 import { staffOf } from './staff';
 import type { LeagueState } from './state';
 import { temperFactor } from './traits';
@@ -25,6 +26,8 @@ export const PROTESTS = {
   eject: { player: 0.1, manager: 0.3, coach: 0.2, most: 0.7 },
   /** A player this hot (논쟁성) who is thrown out may sit out a game too. */
   ban: { temper: 1.8, chance: 0.35, games: 1 },
+  /** Of the arguments over a reviewed call, the share that is over the review itself (an ejection by the rules). */
+  review: 0.15,
   /** Fines (만원). */
   fine: { player: 50, manager: 100, coach: 50 },
 };
@@ -32,6 +35,28 @@ export const PROTESTS = {
 const short = (s: LeagueState, id: TeamId) => s.teams.find((t) => t.id === id)?.short ?? id;
 /** A coach's or manager's own temper (staff have no traits): from his id, × 0.6–1.6. */
 const staffHeat = (id: string) => 0.6 + hashUnit(`staff-temper|${id}`);
+
+export type Call = 'ballStrike' | 'outSafe' | 'homeRun' | 'fairFoul';
+/** 2.0.28: what he argued — balls and strikes only while the umpires call them (no ABS, board.ts absLevel), out or
+    safe, a home run or a foul, fair or foul. The last three go to video review, and arguing the review is an ejection
+    by the rules: a share of those arguments are over the review. */
+const CALLS: [Call, number][] = [
+  ['ballStrike', 0.45],
+  ['outSafe', 0.3],
+  ['homeRun', 0.1],
+  ['fairFoul', 0.15],
+];
+const CALL_LABEL: Record<Call, () => string> = { ballStrike: () => __i18n_k("league.protests.text.12724a8b"), outSafe: () => __i18n_k("league.protests.text.6426c9ce"), homeRun: () => __i18n_k("league.protests.text.7009ac28"), fairFoul: () => __i18n_k("league.protests.text.942381a7") };
+
+function callOf(s: LeagueState, r: () => number): { call: Call; review: boolean } {
+  const abs = absLevel(s.year);
+  const calls = CALLS.filter(([c]) => c !== 'ballStrike' || abs < 2);
+  let x = r() * calls.reduce((a, [, w]) => a + w, 0);
+  const call = (calls.find(([, w]) => (x -= w) < 0) ?? calls.at(-1)!)[0];
+  // Reviewed: the plays on the bases and the lines, and balls and strikes under the challenge system.
+  const reviewable = call !== 'ballStrike' || abs === 1;
+  return { call, review: reviewable && r() < PROTESTS.review };
+}
 
 /** After a game: each side may argue a call. */
 export function protestGame(s: LeagueState, out: GameOut, gameId: string, date: string) {
@@ -43,7 +68,12 @@ export function protestGame(s: LeagueState, out: GameOut, gameId: string, date: 
     const players = [...side.batting.filter((b) => b.pa > 0), ...side.pitching].map((x) => s.players[x.id]).filter((p): p is Player => !!p);
     if (!players.length) continue;
     const heat = players.reduce((a, p) => a + temperFactor(p), 0) / players.length;
-    if (r() >= PROTESTS.perSide * heat) continue;
+    // With the ABS calling balls and strikes, a good part of the arguments is gone.
+    const share = absLevel(s.year) >= 2 ? 1 - CALLS[0]![1] : 1;
+    if (r() >= PROTESTS.perSide * heat * share) continue;
+    const { call, review } = callOf(s, r);
+    const what = CALL_LABEL[call]();
+    const fineLine = (fine: number) => __i18n_k("league.protests.text.72ca063a", { fine });
     const w = r();
     if (w < PROTESTS.who.player) {
       // The hotter heads go out first.
@@ -52,9 +82,9 @@ export function protestGame(s: LeagueState, out: GameOut, gameId: string, date: 
       const f = temperFactor(p);
       const life = (p.life ??= {});
       life.protests = (life.protests ?? 0) + 1;
-      const ejected = r() < Math.min(PROTESTS.eject.most, PROTESTS.eject.player * f);
+      const ejected = review || r() < Math.min(PROTESTS.eject.most, PROTESTS.eject.player * f);
       if (!ejected) {
-        if (p.teamId === s.user?.teamId) (life.events ??= []).push({ date, text: __i18n_k("league.protests.text.74a28135") });
+        if (p.teamId === s.user?.teamId) (life.events ??= []).push({ date, text: __i18n_k("league.protests.text.894a5be0", { call: what }) });
         continue;
       }
       life.ejections = (life.ejections ?? 0) + 1;
@@ -63,12 +93,11 @@ export function protestGame(s: LeagueState, out: GameOut, gameId: string, date: 
         const prev = s.suspended?.[p.id];
         (s.suspended ??= {})[p.id] = { reason: __i18n_k("league.protests.text.bc04871e"), games: (prev?.games ?? 0) + PROTESTS.ban.games, ...(prev?.until ? { until: prev.until } : {}), since: date };
       }
-      if (p.teamId === s.user?.teamId) (life.events ??= []).push({ date, text: __i18n_k("league.protests.text.c89e3d1d"), tone: 'bad' });
+      if (p.teamId === s.user?.teamId) (life.events ??= []).push({ date, text: __i18n_k("league.protests.text.cb8b9e96", { call: what }), tone: 'bad' });
+      const head = review ? __i18n_k("league.protests.text.07530bfe", { name: iga(p.name), call: what }) : __i18n_k("league.protests.text.cb19e81b", { name: iga(p.name), call: what });
       report(s, side, gameId, date, {
         title: __i18n_k("league.protests.text.2f30d5a4", { club: short(s, side.teamId), name: p.name }),
-        line: banned
-          ? __i18n_k("league.protests.text.a48d4072", { name: iga(p.name), fine: PROTESTS.fine.player, games: PROTESTS.ban.games })
-          : __i18n_k("league.protests.text.bad91aad", { name: iga(p.name), fine: PROTESTS.fine.player }),
+        line: [head, fineLine(PROTESTS.fine.player), banned ? __i18n_k("league.protests.text.d0840a10", { games: PROTESTS.ban.games }) : ''].filter(Boolean).join(' '),
         players: [p.id],
         bad: true,
       });
@@ -76,12 +105,16 @@ export function protestGame(s: LeagueState, out: GameOut, gameId: string, date: 
       const manager = w < PROTESTS.who.player + PROTESTS.who.manager;
       const staff = staffOf(s, side.teamId);
       const who = manager ? staff.manager : r() < 0.5 ? staff.hitting : staff.pitching;
-      if (!who || r() >= Math.min(PROTESTS.eject.most, (manager ? PROTESTS.eject.manager : PROTESTS.eject.coach) * staffHeat(who.id))) continue;
+      if (!who || !(review || r() < Math.min(PROTESTS.eject.most, (manager ? PROTESTS.eject.manager : PROTESTS.eject.coach) * staffHeat(who.id)))) continue;
       const club = short(s, side.teamId);
       const role = manager ? __i18n_k("league.protests.text.daec431c") : who.role === 'hitting' ? __i18n_k("league.protests.text.8a5c9a74") : __i18n_k("league.protests.text.0b977195");
+      const particle = iga(role).slice(role.length);
+      const head = review
+        ? __i18n_k("league.protests.text.a81e2102", { club, name: who.name, role, particle, call: what })
+        : __i18n_k("league.protests.text.f4bafc6e", { club, name: who.name, role, particle, call: what });
       report(s, side, gameId, date, {
         title: __i18n_k("league.protests.text.71eee772", { club, name: who.name, role }),
-        line: __i18n_k("league.protests.text.2b0801cc", { club, name: who.name, role, particle: iga(role).slice(role.length), fine: manager ? PROTESTS.fine.manager : PROTESTS.fine.coach }),
+        line: `${head} ${fineLine(manager ? PROTESTS.fine.manager : PROTESTS.fine.coach)}`,
         players: [],
         bad: true,
       });
