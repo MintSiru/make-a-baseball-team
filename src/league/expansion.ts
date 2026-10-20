@@ -48,6 +48,7 @@ import { ageIn, currentValue, DRAFT_ROOM_YEAR, isForeign, isPitcher, keepValue, 
 import { DIFFICULTY, FOREIGN_TALKS, OFFSEASON, PARENT } from './tuning';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './foreignpool';
 import { marchEvents, nextNationalDecision, novemberEvents } from './national';
+import { devDecision } from './development';
 import { disputeDecision } from './dispute';
 import { homecomings } from './returnees';
 import { conditionUnified, foundNorthClubs } from './unified';
@@ -359,8 +360,9 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
     case 'military':
       return militaryDecision(s);
     case 'international':
-      // A November national team with our players first (V0.12), then the sponsor.
-      return nextNationalDecision(s, novemberEvents(o.year)) ?? sponsorDecision(s, o.year);
+      // A November national team with our players first (V0.12), then the sponsor; 2.0.32: then the fall league,
+      // Australia and the wrap-up camp (development.ts).
+      return nextNationalDecision(s, novemberEvents(o.year)) ?? sponsorDecision(s, o.year) ?? devDecision(s);
     case 'develop':
       // The twelfth club (V0.9): founded this winter, or offered by the board; a naming-rights club's rare
       // shareholder dispute (V0.12).

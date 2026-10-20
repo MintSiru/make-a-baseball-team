@@ -52,6 +52,18 @@ const DECISION_TIPS: Partial<Record<Decision['kind'], { title: string; body: str
     title: __i18n_k("ui.tutorial.development.title.e8d66117"),
     body: [__i18n_k("ui.tutorial.development.body.78914642")],
   },
+  devFall: {
+    title: __i18n_k("ui.tutorial.text.f285e071"),
+    body: [__i18n_k("ui.tutorial.text.547ca0d2")],
+  },
+  devAbl: {
+    title: __i18n_k("ui.tutorial.text.37d4233b"),
+    body: [__i18n_k("ui.tutorial.text.491b5ddb")],
+  },
+  wrapUp: {
+    title: __i18n_k("ui.tutorial.text.dce453a2"),
+    body: [__i18n_k("ui.tutorial.text.d89f4a9b")],
+  },
   released: {
     title: __i18n_k("ui.tutorial.released.title.9eb3f222"),
     body: [__i18n_k("ui.tutorial.released.body.fb3eb2eb")],

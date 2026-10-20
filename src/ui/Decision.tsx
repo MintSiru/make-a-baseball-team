@@ -34,6 +34,8 @@ import { capPlayers, foreignCap, foreignCost } from '../league/foreigncap';
 import { gradeClass, shownFuture } from './grades';
 import { positionKey, useSort, type SortColumn } from './sort';
 import { RivalForm } from './Twelve';
+import { CampChoices } from './Training';
+import { campSuggestion, devSuggestion, type CampSite } from '../league/development';
 import { FantasyBoard } from './FantasyDraft';
 import { MEDDLE } from '../league/scenarios';
 import { ROUND_NAME } from '../league/postseason';
@@ -80,6 +82,9 @@ const TITLES: Record<DecisionT['kind'], string> = {
   fantasyPick: __i18n_k("ui.decision.tITLES.fantasyPick.bc92c419"),
   postEntry: __i18n_t("ui.decision.text.2bfab379"),
   board: __i18n_t("ui.decision.text.b736056d"),
+  devFall: __i18n_k("ui.decision.text.f285e071"),
+  devAbl: __i18n_k("ui.decision.text.37d4233b"),
+  wrapUp: __i18n_k("ui.decision.text.dce453a2"),
 };
 
 /** What the scouts hear about major league interest, from the public grade. */
@@ -472,6 +477,9 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         return { kind: 'posting', id: choices.pick && choices.pick !== 'none' ? choices.pick : null };
       case 'sponsor':
         return { kind: 'sponsor', index: Number(choices.pick ?? 0) };
+      case 'wrapUp':
+        // 2.0.32: the camp at home unless another place (or none) is picked.
+        return { kind: 'wrapUp', site: choices.site === 'none' ? null : ((choices.site as CampSite | undefined) ?? 'home') };
       case 'staff':
         return {
           kind: 'staff',
@@ -534,6 +542,14 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         break;
       case 'sponsor':
         setChoices({ pick: String(a.index) });
+        break;
+      // 2.0.32: the scouts leave the winter's programmes to the club; the recommendation picks for it.
+      case 'devFall':
+      case 'devAbl':
+        setSelected(new Set(devSuggestion(league, a.kind === 'devFall' ? 'fall' : 'abl')));
+        break;
+      case 'wrapUp':
+        setChoices({ site: campSuggestion(league) });
         break;
       case 'staff':
         setChoices({ ...(a.hires as Record<string, string>), ...Object.fromEntries(Object.entries(a.terms ?? {}).map(([k, v]) => [`${k}:years`, String(v)])) });
@@ -842,6 +858,33 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         </>
       );
       break;
+    case 'devFall':
+    case 'devAbl': {
+      const fall = d.kind === 'devFall';
+      body = (
+        <>
+          <p>
+            {fall
+              ? __i18n_t("ui.decision.text.495cc3e4")
+              : __i18n_t("ui.decision.text.fa035b63")}
+          </p>
+          <p class="muted">{__i18n_t("ui.decision.text.65d28ede", { max: d.max, cost: money(d.cost), n: selected.size, total: money(selected.size * d.cost), fund: money(u.fund) })}</p>
+          <PlayerTable league={league} players={d.candidates.map((id) => league.players[id]!)} selected={selected} toggle={toggle} onPlayer={onPlayer} max={d.max} />
+        </>
+      );
+      break;
+    }
+    case 'wrapUp': {
+      const site = choices.site ?? 'home';
+      body = (
+        <>
+          <p>{__i18n_t("ui.decision.text.cc6bd830")}</p>
+          <p class="muted">{__i18n_t("ui.decision.text.2d25decb", { fund: money(u.fund) })}</p>
+          <CampChoices site={site === 'none' ? null : (site as CampSite)} onPick={(x) => choose('site', x)} onNone={() => choose('site', 'none')} />
+        </>
+      );
+      break;
+    }
     case 'salaries': {
       const byId = Object.fromEntries(d.rows.map((r) => [r.id, r]));
       const total = d.rows.reduce((a, r) => a + salaryOffer(r, (choices[r.id] as SalaryChoice) ?? 'merit'), 0);

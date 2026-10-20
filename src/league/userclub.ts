@@ -54,6 +54,7 @@ import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type SalaryRow, type StaffRole, type UserClub } from './state';
 import { OFFSEASON as O, PARENT, TALKS, DIFFICULTY } from './tuning';
 import { lifeWinter } from './life';
+import { CAMP_IDS, checkCamp, checkDev, devDecision, holdCamp, sendDev, type CampSite } from './development';
 import { autoNational, marchEvents, nextNationalDecision, novemberEvents, resolveNational } from './national';
 import { autoScandal, resolveScandal } from './scandals';
 import { autoDispute, resolveDispute } from './dispute';
@@ -107,7 +108,12 @@ export type AnnualInput =
   /** Settle with the investor or fight (V0.12). */
   | { kind: 'dispute'; answer: 'settle' | 'fight' }
   /** Obey the owner or not (1.6.0). */
-  | { kind: 'meddle'; answer: 'obey' | 'refuse' };
+  | { kind: 'meddle'; answer: 'obey' | 'refuse' }
+  /** 2.0.32 (development.ts): who goes to the fall league or to Australia (none: nobody), the wrap-up camp's place
+      (null: none this year). */
+  | { kind: 'devFall'; ids: PlayerId[] }
+  | { kind: 'devAbl'; ids: PlayerId[] }
+  | { kind: 'wrapUp'; site: CampSite | null };
 
 /** The club's answer to each player: his ask, the club's merit figure, last year's pay, or a multi-year deal. */
 export type SalaryChoice = 'ask' | 'merit' | 'freeze' | 'extension';
@@ -398,6 +404,16 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
       const dd = d as Extract<Decision, { kind: 'sponsor' }>;
       return dd.offers[input.index] ? null : __i18n_k("league.userclub.checkAnnual.c92ccea7");
     }
+    case 'devFall':
+    case 'devAbl': {
+      const dd = d as Extract<Decision, { kind: 'devFall' | 'devAbl' }>;
+      if (!input.ids.length) return null;
+      if (input.ids.some((id) => !dd.candidates.includes(id))) return __i18n_k("league.userclub.checkAnnual.98ce3a2b");
+      return checkDev(s, input.kind === 'devFall' ? 'fall' : 'abl', input.ids);
+    }
+    case 'wrapUp':
+      if (input.site === null) return null;
+      return CAMP_IDS.includes(input.site) ? checkCamp(s, input.site) : __i18n_k("league.userclub.checkAnnual.db09d1ab");
     case 'staff': {
       const dd = d as Extract<Decision, { kind: 'staff' }>;
       let buyouts = 0;
@@ -563,8 +579,16 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
       const dd = d as Extract<Decision, { kind: 'sponsor' }>;
       signSponsor(s, dd.offers[input.index]!, year);
       u.sponsorPending = false;
-      return null;
+      // 2.0.32: the autumn's and winter's programmes come next.
+      return devDecision(s);
     }
+    case 'devFall':
+    case 'devAbl':
+      if (input.ids.length) sendDev(s, input.kind === 'devFall' ? 'fall' : 'abl', input.ids);
+      return devDecision(s, input.kind);
+    case 'wrapUp':
+      if (input.site) holdCamp(s, input.site);
+      return devDecision(s, 'wrapUp');
     case 'staff': {
       const dd = d as Extract<Decision, { kind: 'staff' }>;
       const club = s.clubs![u.teamId]!;
@@ -632,7 +656,7 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
       // The step goes on: another event's squad, then the step's own decision.
       const o = s.offseason;
       const step = o ? OFFSEASON_STEPS[o.step] : null;
-      if (o && step === 'international') return nextNationalDecision(s, novemberEvents(o.year)) ?? sponsorDecision(s, o.year);
+      if (o && step === 'international') return nextNationalDecision(s, novemberEvents(o.year)) ?? sponsorDecision(s, o.year) ?? devDecision(s);
       if (o && step === 'camp') return nextNationalDecision(s, marchEvents(o.year + 1)) ?? campDecision(s);
       return null;
     }
@@ -833,6 +857,12 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
       return { kind: 'secondProtect', ids: d.candidates.slice(0, d.protect) };
     case 'postEntry':
       return { kind: 'postEntry', ids: d.suggested };
+    // 2.0.32: left to the scouts, nobody goes and the club stays home (the recommendation on the screen picks some).
+    case 'devFall':
+    case 'devAbl':
+      return { kind: d.kind, ids: [] };
+    case 'wrapUp':
+      return { kind: 'wrapUp', site: null };
     case 'sponsor': {
       const best = d.offers.reduce((bi, o, i) => (o.annual > d.offers[bi]!.annual ? i : bi), 0);
       return { kind: 'sponsor', index: best };
@@ -887,7 +917,7 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
 }
 
 export const isAnnual = (kind: Decision['kind']) =>
-  ['military', 'rookieBonus', 'development', 'camp', 'faRound', 'faOptions', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting', 'returnee', 'sponsor', 'staff', 'retire', 'national', 'scandal', 'dispute', 'meddle', 'postEntry'].includes(kind);
+  ['military', 'rookieBonus', 'development', 'camp', 'faRound', 'faOptions', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting', 'returnee', 'sponsor', 'staff', 'retire', 'national', 'scandal', 'dispute', 'meddle', 'postEntry', 'devFall', 'devAbl', 'wrapUp'].includes(kind);
 
 // ── Salary talks ─────────────────────────────────────────────────────────────────────────────────
 
