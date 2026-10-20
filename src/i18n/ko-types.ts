@@ -8983,5 +8983,6 @@ export const koSource = {
   "ui.standings.text.9162d3a3": "홈런",
   "ui.standings.text.f0f9146b": "평균자책점",
   "ui.standings.text.f34dc9fe": "시범경기는 순위와 시즌 기록에 들어가지 않고, 부상도 생기지 않습니다. 타율·홈런은 20타석, 평균자책점은 8이닝 이상.",
-  "ui.games.text.5d250044": "{year} 시범경기"
+  "ui.games.text.5d250044": "{year} 시범경기",
+  "ui.app.text.a4a493ff": "{year} 시범경기 · 다음 경기일 {month}월 {day}일"
 } as const;

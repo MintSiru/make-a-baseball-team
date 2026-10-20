@@ -1,4 +1,4 @@
-import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, rich as __i18n_rich, t as __i18n_t } from '../i18n/index';
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* A draft prospect's page (2.0.27, the user's request: the draft tab no longer looks like Draft Room lifted whole).
    It opens over the list as the other players' pages do: his public rank, the summary strip, then three parts —
    the scouts' grades as bars, the combine and our own reports, and his amateur days. 2.0.30 (the user's request): a
@@ -135,13 +135,7 @@ export function PlayerProfile({ player: p, age, draftYear, ours, combine, combin
             </section>
             {__i18n_display(pitches && (
               <section class="pitch-box">
-                <h3>{__i18n_t("ui.playerPanel.playerPanel.79ffa7f7")}</h3>
-                {__i18n_display(pitches.velocity && (
-                  <p class="velocity">
-                    <span>{__i18n_rich("ui.playerPanel.playerPanel.dfeb642b", { value: <strong>{__i18n_display(pitches.velocity.top)}</strong> })}</span>
-                    <span>{__i18n_rich("ui.playerPanel.playerPanel.f35cd13f", { value: <strong>{__i18n_display(pitches.velocity.average)}</strong> })}</span>
-                  </p>
-                ))}
+                <h3>{__i18n_t("ui.playerPanel.text.0685b54a")}</h3>
                 <div class="gradebars">
                   <GradeBar label={`${pitches.fastball.type} ${__i18n_displayText(pitches.fastball.name)}`} now={s.tools.stuff} future={showsFutureDetail(p) ? s.futureTools.stuff : undefined} note={__i18n_displayText(__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round(pitches.fastball.usage * 100) }))} />
                   {__i18n_display(pitches.list.map((x) => (

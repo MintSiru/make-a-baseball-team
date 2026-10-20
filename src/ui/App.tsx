@@ -8,6 +8,7 @@ import { draftClass } from '../league/players';
 import { allowedWhileWaiting, nextDate, regularOver, type Action } from '../league/actions';
 import type { ExpansionSettings, LeagueState } from '../league/state';
 import { prospectPitches, shortName } from '../league/views';
+import { exhibitionDate } from '../league/exhibition';
 import { scoutView } from '../league/staff';
 import { ageOn, publicView } from '../model/player';
 import type { CalendarPhase, Player, PlayerId } from '../model/types';
@@ -100,6 +101,9 @@ function statusLine(s: LeagueState) {
     return __i18n_k("ui.app.statusLine.86001336", { year: s.year, value: ks ? shortName(s, ks.winner) : '-' });
   }
   if (regularOver(s)) return __i18n_k("ui.app.statusLine.18db41b9", { year: s.year });
+  // 2.0.30: the spring games before opening day.
+  const spring = exhibitionDate(s);
+  if (spring) return __i18n_t("ui.app.text.a4a493ff", { year: s.year, month: Number(spring.slice(5, 7)), day: Number(spring.slice(8)) });
   const date = nextDate(s);
   return __i18n_k("ui.app.statusLine.dfb24da9", { year: s.year, value: date ? __i18n_k("ui.app.statusLine.a629d4ea", { number: Number(date.slice(5, 7)), number2: Number(date.slice(8)) }) : '-' });
 }

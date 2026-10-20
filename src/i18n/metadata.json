@@ -82331,5 +82331,21 @@
       }
     },
     "locations": []
+  },
+  "ui.app.text.a4a493ff": {
+    "source": "src/ui/App.tsx",
+    "line": 106,
+    "params": {
+      "year": {
+        "expression": "s.year"
+      },
+      "month": {
+        "expression": "Number(spring.slice(5, 7))"
+      },
+      "day": {
+        "expression": "Number(spring.slice(8))"
+      }
+    },
+    "locations": []
   }
 }

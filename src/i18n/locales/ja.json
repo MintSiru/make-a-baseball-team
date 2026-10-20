@@ -8982,5 +8982,6 @@
   "ui.standings.text.9162d3a3": "本塁打",
   "ui.standings.text.f0f9146b": "防御率",
   "ui.standings.text.f34dc9fe": "オープン戦は順位にもシーズン成績にも含まれず、けがも起きません。打率・本塁打は20打席以上、防御率は8イニング以上。",
-  "ui.games.text.5d250044": "{year}年オープン戦"
+  "ui.games.text.5d250044": "{year}年オープン戦",
+  "ui.app.text.a4a493ff": "{year}年オープン戦 · 次の試合日 {month}月{day}日"
 }

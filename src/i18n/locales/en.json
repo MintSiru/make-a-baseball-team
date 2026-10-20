@@ -8982,5 +8982,6 @@
   "ui.standings.text.9162d3a3": "HR",
   "ui.standings.text.f0f9146b": "ERA",
   "ui.standings.text.f34dc9fe": "Spring games count toward neither the standings nor season stats, and no one gets hurt in them. AVG and HR leaders need 20 plate appearances; ERA leaders need 8 innings.",
-  "ui.games.text.5d250044": "{year} spring games"
+  "ui.games.text.5d250044": "{year} spring games",
+  "ui.app.text.a4a493ff": "{year} spring games · next game day {month}/{day}"
 }

@@ -556,9 +556,7 @@ export function prospectPitches(p: Player) {
   const fb = fastballOf(p);
   const now = pitchGrades(p);
   const later = Object.fromEntries(pitchGrades(p, true).map((x) => [x.type, x.grade]));
-  const top = topVelocity(p);
   return {
-    velocity: top == null ? null : { top, average: averageVelocity(p)! },
     fastball: { type: fb, name: FASTBALL_LABELS[fb], usage: 1 - now.reduce((a, x) => a + x.usage, 0) },
     list: now.map((x) => ({ type: x.type, name: x.label, grade: x.grade, future: later[x.type], usage: x.usage })),
   };
