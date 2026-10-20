@@ -486,7 +486,7 @@ try {
   // 4c. V0.10: a player to a training centre abroad during the season.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
   await page.getByRole('button', { name: '훈련·연수', exact: true }).click();
-  check((await page.locator('.training .choice').count()) === 4, 'three American centres and one Japanese');
+  check((await page.locator('.training .trip-sites .choice').count()) === 4, 'three American centres and one Japanese');
   await page.getByRole('button', { name: /^도쿄 모션 베이스 일본/ }).click();
   // 2.0.10: the players in a sortable table, one button each.
   const pickTable = page.locator('.trip-pick');

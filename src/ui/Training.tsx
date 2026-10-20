@@ -56,7 +56,7 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
   return (
     <div class="training">
       <p>{__i18n_t("ui.training.training.101d8cf2", { lastStartText: lastStartText, seasonMax: TRAINING.seasonMax, winterMax: TRAINING.winterMax })}</p>
-      <div class="choice-grid">
+      <div class="choice-grid trip-sites">
         {__i18n_display(SITE_IDS.map((id) => {
           const x = SITES[id];
           return (
