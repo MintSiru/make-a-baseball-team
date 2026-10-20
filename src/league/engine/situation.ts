@@ -57,9 +57,11 @@ export function situationKeys(inning: number, outs: number, bases: readonly bool
 
 /** Adds situation counts into another's. */
 export function addSituations(into: Record<string, number[]>, from: Record<string, number[]>) {
-  for (const [key, xs] of Object.entries(from)) {
-    const to = (into[key] ??= SPLIT_KEYS.map(() => 0));
-    xs.forEach((x, i) => (to[i]! += x));
+  // After every game for every player in it: plain loops.
+  for (const key in from) {
+    const xs = from[key]!;
+    const to = (into[key] ??= [0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    for (let i = 0; i < xs.length; i++) to[i]! += xs[i]!;
   }
 }
 

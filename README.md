@@ -92,7 +92,7 @@ npm run i18n:check     # 번역 리소스와 코드 점검
 node scripts/mobile-perf.mjs           # 휴대폰 크기 + CPU 4배 감속에서 조작별 시간과 가장 긴 화면 멈춤
 ```
 
-테스트는 리그를 처음부터 만드는 데 시간이 많이 들어서, CI는 4갈래로 나눠 동시에 돌립니다(`vitest --shard`). 로컬에서 일부만 다시 돌릴 때는 `LEAGUE_CACHE=1 npx vitest run tests/<파일>`.
+테스트는 리그를 처음부터 만드는 데 시간이 많이 들어서, CI는 6갈래로 나눠 동시에 돌립니다(`vitest --shard`). 지난 버전 세이브 호환 테스트도 `tests/compat-play-1…4`로 나뉘어 있고, 버전 목록은 `tests/compat/shared.ts` 한 곳에 있습니다. 로컬에서 일부만 다시 돌릴 때는 `LEAGUE_CACHE=1 npx vitest run tests/<파일>`.
 
 밸런스를 바꿀 때:
 
