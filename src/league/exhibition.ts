@@ -10,7 +10,8 @@ import { k as __i18n_k } from '../i18n/index';
 import { rng } from '../draftroom';
 import type { PlayerId, TeamId } from '../model/types';
 import { simulateGame } from './engine/game';
-import { compactBox, type StoredBox } from './boxscore';
+import { compactBox, isUserGame, type StoredBox } from './boxscore';
+import type { PlayEvent } from './engine/types';
 import { parkFactor } from './clubs';
 import { layoutOf } from './layout';
 import { matchInputs } from './manager';
@@ -101,11 +102,14 @@ export function playExhibitionDay(s: LeagueState, record: (box: import('./engine
     if (!home || !away) continue;
     const host = s.teams.find((t) => t.id === g.home);
     const layout = host ? layoutOf(host) : undefined;
-    const out = simulateGame({ gameId: g.id, home, away, maxInnings: 9, park: host?.stadium.park ?? parkFactor(g.home), balls: rng(`${s.seed}|balls|${g.id}`), ...(layout ? { layout } : {}) }, rng(`${s.seed}|game|${g.id}`));
+    // Our own spring games keep their play-by-play to watch (the log changes nothing in the game).
+    const log: PlayEvent[] | undefined = isUserGame(s, g.home, g.away) ? [] : undefined;
+    const out = simulateGame({ gameId: g.id, home, away, maxInnings: 9, park: host?.stadium.park ?? parkFactor(g.home), balls: rng(`${s.seed}|balls|${g.id}`), ...(layout ? { layout } : {}) }, rng(`${s.seed}|game|${g.id}`), log);
     record(out.home, date, ex.lines);
     record(out.away, date, ex.lines);
     ex.scores.push({ id: g.id, date, home: g.home, away: g.away, hs: out.home.runs, as: out.away.runs });
     ex.boxes[g.id] = compactBox(out, g.id, date);
+    if (log) (s.pbp ??= {})[g.id] = log;
   }
   if (ex.next >= ex.games.length) finish(s);
   return true;

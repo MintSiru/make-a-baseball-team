@@ -52,7 +52,7 @@ function GameTable({ rows, onOpen, mine }: { rows: Row[]; onOpen: (id: string) =
 
 export function Games({ league, onOpen }: { league: LeagueState; onOpen: (id: string) => void }) {
   const list = gameList(league);
-  const spring = exhibitionGames(league).map((g) => ({ ...g, att: 0, pbp: false, post: false }));
+  const spring = exhibitionGames(league).map((g) => ({ ...g, att: 0, post: false }));
   return (
     <section aria-labelledby="games-title">
       <h2 id="games-title">{__i18n_t("ui.games.games.e0cee61a")}</h2>

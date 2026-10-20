@@ -555,7 +555,7 @@ export function exhibitionGames(s: LeagueState) {
       const mine = !!u && (g.home === u || g.away === u);
       const us = g.home === u ? g.hs : g.as,
         them = g.home === u ? g.as : g.hs;
-      return { id: g.id, date: g.date, away: shortName(s, g.away), home: shortName(s, g.home), as: g.as, hs: g.hs, mine, result: mine ? (us > them ? '승' : us < them ? '패' : __i18n_k("league.views.row.result.56c5af5b")) : '' };
+      return { id: g.id, date: g.date, away: shortName(s, g.away), home: shortName(s, g.home), as: g.as, hs: g.hs, mine, pbp: !!s.pbp?.[g.id], result: mine ? (us > them ? '승' : us < them ? '패' : __i18n_k("league.views.row.result.56c5af5b")) : '' };
     });
 }
 

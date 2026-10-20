@@ -14,6 +14,7 @@ import { offRoster } from './injuries';
 import { rosterLimit } from './offseason';
 import { isDevelopment, moveTo, registeredIds, squadOf, type LeagueState, type LineupCard, type Squad } from './state';
 import { isKyopo, kyopoLimit } from './kyopo';
+import { exhibitionDate } from './exhibition';
 
 export const REREGISTER_DAYS = 10;
 /** The fewest players the general manager may leave on the first team (game assumption). */
@@ -22,7 +23,8 @@ export const MIN_FIRST_TEAM = 26;
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 
 /** Today in the league calendar: the next game day during the season. */
-export const today = (s: LeagueState) => s.schedule[s.next]?.date ?? s.schedule.at(-1)?.date ?? `${s.year}-10-01`;
+/** The game's date: 2.0.30, a spring game's while they are on (exhibition.ts). */
+export const today = (s: LeagueState) => exhibitionDate(s) ?? s.schedule[s.next]?.date ?? s.schedule.at(-1)?.date ?? `${s.year}-10-01`;
 
 export function canMove(s: LeagueState, id: PlayerId, to: Squad): string | null {
   const u = s.user;

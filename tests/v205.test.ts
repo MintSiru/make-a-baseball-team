@@ -1,4 +1,5 @@
 /* 2.0.5: a club's all-time records — its seasons year by year, its own career and single-season leaders, its managers. */
+import { EXHIBITION } from '../src/league/exhibition';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { clubRecords, clubYears } from '../src/league/clubrecords';
 import { createLeague } from '../src/league/history';
@@ -44,7 +45,8 @@ describe('a club’s records', () => {
   });
 
   it('keeps each club’s manager when the season closes, and shows the season being played', () => {
-    for (let d = 0; d < 10; d++) playDay(s);
+    // 2.0.30: past the spring games (exhibition.ts) into the season.
+    for (let d = 0; d < 10 + EXHIBITION.days; d++) playDay(s);
     const now = clubYears(s, team)[0]!;
     expect(now.current).toBe(true);
     const row = currentStandings(s).find((r) => r.teamId === team)!;
