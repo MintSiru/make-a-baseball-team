@@ -8971,5 +8971,17 @@ export const koSource = {
   "ui.myClub.text.99f21377": "{league} {rank}위",
   "ui.clubSummary.text.99f21377": "{league} {rank}위",
   "ui.teamRoster.text.99f21377": "{league} {rank}위",
-  "league.pitches.text.69d3539d": "고속 슬라이더"
+  "league.pitches.text.69d3539d": "고속 슬라이더",
+  "league.exhibition.text.68c6711d": "시범경기 1위는 {club}({w}승 {l}패 {t}무).",
+  "league.exhibition.text.acb2e2fb": "우리 구단은 {rank}위({w}승 {l}패 {t}무).",
+  "league.exhibition.text.225614ec": "타율 1위 {name}({club}) {value}.",
+  "league.exhibition.text.9155e5df": "홈런 1위 {name}({club}) {value}개.",
+  "league.exhibition.text.d269861d": "평균자책점 1위 {name}({club}) {value}.",
+  "league.exhibition.text.2ef67827": "{year} 시범경기 마감: {club} 1위",
+  "ui.standings.text.710c185c": "{year} 시범경기 ({played}/{total}경기)",
+  "ui.standings.text.1eb19e0a": "타율",
+  "ui.standings.text.9162d3a3": "홈런",
+  "ui.standings.text.f0f9146b": "평균자책점",
+  "ui.standings.text.f34dc9fe": "시범경기는 순위와 시즌 기록에 들어가지 않고, 부상도 생기지 않습니다. 타율·홈런은 20타석, 평균자책점은 8이닝 이상.",
+  "ui.games.text.5d250044": "{year} 시범경기"
 } as const;

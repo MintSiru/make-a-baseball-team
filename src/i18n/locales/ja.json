@@ -8970,5 +8970,17 @@
   "ui.myClub.text.99f21377": "{league} {rank}位",
   "ui.clubSummary.text.99f21377": "{league} {rank}位",
   "ui.teamRoster.text.99f21377": "{league} {rank}位",
-  "league.pitches.text.69d3539d": "高速スライダー"
+  "league.pitches.text.69d3539d": "高速スライダー",
+  "league.exhibition.text.68c6711d": "オープン戦1位は{club}（{w}勝{l}敗{t}分）。",
+  "league.exhibition.text.acb2e2fb": "わがチームは{rank}位（{w}勝{l}敗{t}分）。",
+  "league.exhibition.text.225614ec": "打率1位は{name}（{club}）、{value}。",
+  "league.exhibition.text.9155e5df": "本塁打1位は{name}（{club}）、{value}本。",
+  "league.exhibition.text.d269861d": "防御率1位は{name}（{club}）、{value}。",
+  "league.exhibition.text.2ef67827": "{year}年オープン戦終了：{club}が1位",
+  "ui.standings.text.710c185c": "{year}年オープン戦（{played}/{total}試合）",
+  "ui.standings.text.1eb19e0a": "打率",
+  "ui.standings.text.9162d3a3": "本塁打",
+  "ui.standings.text.f0f9146b": "防御率",
+  "ui.standings.text.f34dc9fe": "オープン戦は順位にもシーズン成績にも含まれず、けがも起きません。打率・本塁打は20打席以上、防御率は8イニング以上。",
+  "ui.games.text.5d250044": "{year}年オープン戦"
 }

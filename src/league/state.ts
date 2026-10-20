@@ -702,6 +702,8 @@ export interface LeagueState {
   postseasonGate?: number;
   /** 1.9.0 (postentry.ts): who may play in this postseason, and the first teams the entries replaced. */
   postEntry?: import('./postentry').PostEntryState;
+  /** 2.0.30: this spring's 시범경기 (exhibition.ts). */
+  exhibition?: import('./exhibition').Exhibition;
   /** Box scores and play-by-play logs kept for viewing (V0.7, boxscore.ts). */
   boxes?: Record<string, import('./boxscore').StoredBox>;
   pbp?: Record<string, import('./engine/types').PlayEvent[]>;

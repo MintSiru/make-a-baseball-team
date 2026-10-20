@@ -82182,5 +82182,154 @@
     "line": 54,
     "params": {},
     "locations": []
+  },
+  "league.exhibition.text.68c6711d": {
+    "source": "src/league/exhibition.ts",
+    "line": 128,
+    "params": {
+      "club": {
+        "expression": "short(top.teamId)"
+      },
+      "w": {
+        "expression": "top.w"
+      },
+      "l": {
+        "expression": "top.l"
+      },
+      "t": {
+        "expression": "top.t"
+      }
+    },
+    "locations": []
+  },
+  "league.exhibition.text.acb2e2fb": {
+    "source": "src/league/exhibition.ts",
+    "line": 129,
+    "params": {
+      "rank": {
+        "expression": "ours.rank"
+      },
+      "w": {
+        "expression": "ours.w"
+      },
+      "l": {
+        "expression": "ours.l"
+      },
+      "t": {
+        "expression": "ours.t"
+      }
+    },
+    "locations": []
+  },
+  "league.exhibition.text.225614ec": {
+    "source": "src/league/exhibition.ts",
+    "line": 130,
+    "params": {
+      "name": {
+        "expression": "leaders.avg[0].name"
+      },
+      "club": {
+        "expression": "short(leaders.avg[0].teamId)"
+      },
+      "value": {
+        "expression": "leaders.avg[0].text"
+      }
+    },
+    "locations": []
+  },
+  "league.exhibition.text.9155e5df": {
+    "source": "src/league/exhibition.ts",
+    "line": 131,
+    "params": {
+      "name": {
+        "expression": "leaders.hr[0].name"
+      },
+      "club": {
+        "expression": "short(leaders.hr[0].teamId)"
+      },
+      "value": {
+        "expression": "leaders.hr[0].value"
+      }
+    },
+    "locations": []
+  },
+  "league.exhibition.text.d269861d": {
+    "source": "src/league/exhibition.ts",
+    "line": 132,
+    "params": {
+      "name": {
+        "expression": "leaders.era[0].name"
+      },
+      "club": {
+        "expression": "short(leaders.era[0].teamId)"
+      },
+      "value": {
+        "expression": "leaders.era[0].text"
+      }
+    },
+    "locations": []
+  },
+  "league.exhibition.text.2ef67827": {
+    "source": "src/league/exhibition.ts",
+    "line": 138,
+    "params": {
+      "year": {
+        "expression": "ex.year"
+      },
+      "club": {
+        "expression": "short(top.teamId)"
+      }
+    },
+    "locations": []
+  },
+  "ui.standings.text.710c185c": {
+    "source": "src/ui/Standings.tsx",
+    "line": 111,
+    "params": {
+      "year": {
+        "expression": "v.year"
+      },
+      "played": {
+        "expression": "v.played"
+      },
+      "total": {
+        "expression": "v.total"
+      }
+    },
+    "locations": []
+  },
+  "ui.standings.text.1eb19e0a": {
+    "source": "src/ui/Standings.tsx",
+    "line": 116,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.9162d3a3": {
+    "source": "src/ui/Standings.tsx",
+    "line": 121,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.f0f9146b": {
+    "source": "src/ui/Standings.tsx",
+    "line": 126,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.f34dc9fe": {
+    "source": "src/ui/Standings.tsx",
+    "line": 130,
+    "params": {},
+    "locations": []
+  },
+  "ui.games.text.5d250044": {
+    "source": "src/ui/Games.tsx",
+    "line": 74,
+    "params": {
+      "year": {
+        "expression": "league.year"
+      }
+    },
+    "locations": []
   }
 }

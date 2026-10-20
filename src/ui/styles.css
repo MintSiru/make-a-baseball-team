@@ -3349,10 +3349,21 @@ fieldset.stops {
   white-space: nowrap;
   text-align: center;
 }
-.h2h summary {
+.h2h summary,
+.exhibition summary {
   cursor: pointer;
   font-weight: 600;
   margin: 0.8rem 0 0.4rem;
+}
+/* 2.0.30: the spring games' leaders under their table. */
+.exhibition-leaders {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0;
+  font-size: 13.5px;
+}
+.exhibition-leaders li + li {
+  margin-top: 2px;
 }
 .h2h-table td.good {
   color: var(--good, #2f7d32);
@@ -3531,6 +3542,11 @@ button.danger {
   display: block;
   font-weight: 400;
   line-height: 1.2;
+}
+/* 2.0.30: a pitcher's pitches, fastball first. */
+.draft-table .draft-pitches {
+  white-space: nowrap;
+  color: var(--ink-2);
 }
 .prospect-rank {
   min-width: 60px;

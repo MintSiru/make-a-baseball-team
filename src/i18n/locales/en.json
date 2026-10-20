@@ -8970,5 +8970,17 @@
   "ui.myClub.text.99f21377": "No. {rank} in the {league}",
   "ui.clubSummary.text.99f21377": "No. {rank} in the {league}",
   "ui.teamRoster.text.99f21377": "No. {rank} in the {league}",
-  "league.pitches.text.69d3539d": "Hard slider"
+  "league.pitches.text.69d3539d": "Hard slider",
+  "league.exhibition.text.68c6711d": "{club} topped the spring games ({w}-{l}-{t}).",
+  "league.exhibition.text.acb2e2fb": "We finished No. {rank} ({w}-{l}-{t}).",
+  "league.exhibition.text.225614ec": "Batting average leader: {name} ({club}), {value}.",
+  "league.exhibition.text.9155e5df": "Home run leader: {name} ({club}), {value}.",
+  "league.exhibition.text.d269861d": "ERA leader: {name} ({club}), {value}.",
+  "league.exhibition.text.2ef67827": "{year} spring games end: {club} on top",
+  "ui.standings.text.710c185c": "{year} spring games ({played} of {total} played)",
+  "ui.standings.text.1eb19e0a": "AVG",
+  "ui.standings.text.9162d3a3": "HR",
+  "ui.standings.text.f0f9146b": "ERA",
+  "ui.standings.text.f34dc9fe": "Spring games count toward neither the standings nor season stats, and no one gets hurt in them. AVG and HR leaders need 20 plate appearances; ERA leaders need 8 innings.",
+  "ui.games.text.5d250044": "{year} spring games"
 }

@@ -1,7 +1,7 @@
 import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* Games (V0.7): the user's games this season and the league's last few days; each opens its box score. */
 import type { LeagueState } from '../league/state';
-import { gameList } from '../league/views';
+import { exhibitionGames, gameList } from '../league/views';
 import { spoilerHidden } from './display';
 
 type Row = ReturnType<typeof gameList>['mine'][number];
@@ -52,6 +52,7 @@ function GameTable({ rows, onOpen, mine }: { rows: Row[]; onOpen: (id: string) =
 
 export function Games({ league, onOpen }: { league: LeagueState; onOpen: (id: string) => void }) {
   const list = gameList(league);
+  const spring = exhibitionGames(league).map((g) => ({ ...g, att: 0, pbp: false, post: false }));
   return (
     <section aria-labelledby="games-title">
       <h2 id="games-title">{__i18n_t("ui.games.games.e0cee61a")}</h2>
@@ -67,6 +68,13 @@ export function Games({ league, onOpen }: { league: LeagueState; onOpen: (id: st
           <h3>{__i18n_t("ui.games.games.8eaf05a2")}</h3>
           <GameTable rows={list.recent} onOpen={onOpen} mine={false} />
         </div>
+        {/* 2.0.30: this spring's 시범경기 (they count for nothing). */}
+        {spring.length > 0 && (
+          <div class={league.user ? 'panel tall' : undefined}>
+            <h3>{__i18n_t("ui.games.text.5d250044", { year: league.year })}</h3>
+            <GameTable rows={spring} onOpen={onOpen} mine={false} />
+          </div>
+        )}
       </div>
     </section>
   );

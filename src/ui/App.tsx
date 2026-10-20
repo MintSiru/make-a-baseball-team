@@ -7,7 +7,7 @@ import { DRAFT_ROOM_DRAFT_DATE } from '../draftroom';
 import { draftClass } from '../league/players';
 import { allowedWhileWaiting, nextDate, regularOver, type Action } from '../league/actions';
 import type { ExpansionSettings, LeagueState } from '../league/state';
-import { shortName } from '../league/views';
+import { prospectPitches, shortName } from '../league/views';
 import { scoutView } from '../league/staff';
 import { ageOn, publicView } from '../model/player';
 import type { CalendarPhase, Player, PlayerId } from '../model/types';
@@ -733,6 +733,7 @@ export function App() {
                 combine={league && combineHeld(shown, draftYear) && attends(shown.seed, draftYear, prospect) ? combineLines(shown.seed, draftYear, prospect) : null}
                 combineNote={league && !combineHeld(shown, draftYear) ? __i18n_k("ui.app.app.dabfaec3", { draftYear: draftYear }) : __i18n_k("ui.app.app.5e6c4cae")}
                 report={shown?.user ? traitReport(shown, prospect) : null}
+                pitches={prospectPitches(prospect)}
                 workout={
                   shown?.user
                     ? {
