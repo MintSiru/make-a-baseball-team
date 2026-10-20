@@ -664,6 +664,12 @@ export const DISPUTE = { chance: 0.006, settle: 250_000, legal: 30_000, loss: 80
 export const SCANDAL = {
   gameDays: 170,
   rates: { dui: 0.1, assault: 0.04, fixing: 0.003, doping: 0.05 } as Record<'dui' | 'assault' | 'fixing' | 'doping', number>,
+  /** 2.0.28 (the user's request, kept rare): a season's chance at a club for each of these. KBO penalties where the KBO
+      gives one (illegal betting 72 games after the 2016 overseas-gambling cases; the rest game assumptions); an affair,
+      pressing for an abortion, school violence come out and the KBO leaves it to the club; insubordination is the
+      club's own business. */
+  rare: { affair: 0.008, abortion: 0.003, gambling: 0.006, gangs: 0.003, schoolViolence: 0.006, draftDodge: 0.002, insubordination: 0.012 },
+  rareGames: { gambling: 72, gangs: 50, draftDodgeYears: 1 },
   dui: { games: 70, revoked: 0.35, hidden: 0.2, hidingGames: 10, foundAfter: [10, 40] as [number, number] },
   assault: { games: 30, bad: 0.25, badGames: 50 },
   doping: {
@@ -679,8 +685,22 @@ export const SCANDAL = {
     caughtGrudge: 6,
     cleanGrudge: 3,
   },
-  fans: { dui: 25, doping: 25, assault: 20, fixing: 30 } as Record<'dui' | 'assault' | 'fixing' | 'doping', number>,
-  clubMood: { dui: 0.03, doping: 0.03, assault: 0.02, fixing: 0.08 } as Record<'dui' | 'assault' | 'fixing' | 'doping', number>,
+  fans: { dui: 25, doping: 25, assault: 20, fixing: 30, fanQuarrel: 10, narcotics: 25, affair: 15, abortion: 25, gambling: 25, gangs: 25, schoolViolence: 30, draftDodge: 30, insubordination: 8 } as Record<string, number>,
+  clubMood: { dui: 0.03, doping: 0.03, assault: 0.02, fixing: 0.08, fanQuarrel: 0.01, narcotics: 0.03, affair: 0.01, abortion: 0.02, gambling: 0.03, gangs: 0.03, schoolViolence: 0.03, draftDodge: 0.03, insubordination: 0.005 } as Record<string, number>,
+  /** 2.0.28: the club's own trouble, a season's chance each — illegal CCTV surveillance of its players, an
+      improper word on the club's social media, fans treated badly — the fans' mood it costs and the KBO's fine (만원). */
+  /** 2.0.28: the papers and the fans — a careless interview, a twisted one, an autograph or an interview refused: a
+      season's chance at a club, his fans' fondness and the club's mood they cost. */
+  pr: {
+    rates: { gaffe: 0.03, distorted: 0.02, autograph: 0.025, noInterview: 0.02 },
+    fans: { gaffe: 4, distorted: 1, autograph: 3, noInterview: 2 },
+    mood: { gaffe: 0.003, distorted: 0.001, autograph: 0.004, noInterview: 0.002 },
+  },
+  club: {
+    rates: { cctv: 0.006, sns: 0.02, fans: 0.02 },
+    mood: { cctv: 0.04, sns: 0.015, fans: 0.02 },
+    fine: { cctv: 5000, sns: 0, fans: 0 },
+  },
   answer: { release: 0.02, extra: 0.01, none: -0.02 } as Record<'release' | 'extra' | 'none', number>,
   extraGames: 20,
 };
@@ -846,6 +866,12 @@ export const GROWTH = {
   geniusBreakout: 1,
   /** Grade points on his main tools in the postseason per point of 멘탈 over 50. */
   mental: 0.05,
+  /** 2.0.28: grade points on his main tools with runners in scoring position per point of 클러치 over 50 (±5 at the
+      ends), and how much of 멘탈 over 50 carries into it. */
+  clutch: 0.1,
+  clutchFromMental: 0.25,
+  /** 2.0.28 논쟁성: × 2^((논쟁성 − pivot) / doubling) on a bench-clearing or an argument (the league's average about 1). */
+  temper: { pivot: 45, doubling: 25 },
   /** Who gets into trouble: × 2^((논란성 − pivot) / doubling); a club's chance × its players' average of that over
       the league's (`mean`), so the league sees as much trouble as before. */
   controversy: { pivot: 30, doubling: 15, mean: 1.35 },

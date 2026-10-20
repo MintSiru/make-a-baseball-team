@@ -226,7 +226,7 @@ export function applyPickTrades(s: LeagueState, year: number, slots: DraftSlot[]
 }
 
 /** Players a club can trade: registered, domestic, past their first season, not a pick bought this year. */
-const tradableOf = (s: LeagueState, teamId: TeamId) =>
+export const tradableOf = (s: LeagueState, teamId: TeamId) =>
   registeredIds(s, teamId)
     .map((id) => s.players[id]!)
     .filter((p) => !isForeign(p) && p.proSince <= s.year && p.contract?.kind !== 'development' && !(p.origin.pickVia && p.proSince >= s.year));

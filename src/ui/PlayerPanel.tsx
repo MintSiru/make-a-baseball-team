@@ -2,6 +2,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 /* A league player's page (V0.5.1 layout; in parts since 1.4.0): who he is and his latest season at a glance on top,
    then one part at a time — scouting grades as bars with positions or pitches, records, the staff's read, his
    background and injuries. Everything shown is public: grades are scouting reports, velocity is the radar gun. */
+import { moveHistory } from '../league/moves';
 import type { FieldTotals } from '../league/fielding';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useFocusTrap } from './modal';
@@ -44,7 +45,7 @@ import { FASTBALL_LABELS, PITCH_LABELS, VARIANT_LABELS } from '../league/pitches
 import { LEGACY_START } from '../league/era';
 import type { ArmSlot, Tracking } from '../league/tracking';
 import { pathwayLabel } from '../league/amateur';
-import { CareerStages } from './CareerStages';
+import { CareerStages, DevTable } from './CareerStages';
 
 const POSITION_NAMES: Record<string, string> = { C: __i18n_k("ui.playerPanel.pOSITION_NAMES.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("ui.playerPanel.pOSITION_NAMES.sS.3e24c7f1"), LF: __i18n_k("ui.playerPanel.pOSITION_NAMES.lF.73836db2"), CF: __i18n_k("ui.playerPanel.pOSITION_NAMES.cF.56780b2a"), RF: __i18n_k("ui.playerPanel.pOSITION_NAMES.rF.a28a0ef8") };
 
@@ -91,7 +92,7 @@ export function TraitReportBox({ report }: { report: TraitReport }) {
    with the records split again into the regular season, the postseason, career highs and left/right. The part
    last opened stays open for the next player. */
 type Part = 'ability' | 'records' | 'report' | 'profile' | 'injuries';
-type RecordView = 'seasons' | 'post' | 'highs' | 'splits' | 'venues' | 'batted' | 'fielding' | 'savant' | 'meetings' | 'national' | 'mlb';
+type RecordView = 'seasons' | 'post' | 'highs' | 'splits' | 'venues' | 'batted' | 'fielding' | 'savant' | 'meetings' | 'national' | 'mlb' | 'amateur';
 const PARTS: { key: Part; label: string }[] = [
   { key: 'ability', label: __i18n_k("ui.playerPanel.pARTS.label.9e9117d0") },
   { key: 'records', label: __i18n_k("ui.playerPanel.pARTS.label.d84b6f4b") },
@@ -117,6 +118,8 @@ const RECORD_VIEWS: { key: RecordView; label: string }[] = [
   { key: 'national', label: __i18n_k("ui.playerPanel.text.3243618b") },
   // 1.9.3: MLB, the minors and NPB.
   { key: 'mlb', label: __i18n_k("ui.playerPanel.text.98a07411") },
+  // 2.0.28 (the user's request): before he turned pro, and his fall leagues and Australian winters since.
+  { key: 'amateur', label: __i18n_t("ui.playerPanel.text.c661f5e5") },
 ];
 let lastPart: Part = 'ability';
 let lastRecords: RecordView = 'seasons';
@@ -130,6 +133,39 @@ const splitRates = (x: Split) => ({
   slg: x.ab ? x.tb / x.ab : 0,
 });
 
+/** 2.0.28 (moves.ts): how he came into the league and every move since. */
+function MoveTable({ league, p }: { league: LeagueState; p: Parameters<typeof moveHistory>[1] }) {
+  const rows = moveHistory(league, p);
+  if (!rows.length) return null;
+  return (
+    <>
+      <h3>{__i18n_t("ui.playerPanel.text.fe920557")}</h3>
+      <div class="table-wrap" tabIndex={0}>
+        <table class="record-table moves">
+          <thead>
+            <tr>
+              <th>{__i18n_t("ui.playerPanel.text.5caa75a8")}</th>
+              <th>{__i18n_t("ui.playerPanel.text.af2feed6")}</th>
+              <th>{__i18n_t("ui.playerPanel.text.c686d054")}</th>
+              <th>{__i18n_t("ui.playerPanel.text.75cffa41")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i}>
+                <td class="num">{r.date.length > 4 ? r.date.slice(0, 7).replace('-', '.') : r.date}</td>
+                <td>{__i18n_display(r.label)}</td>
+                <td>{__i18n_display(r.from && r.to ? `${r.from} → ${r.to}` : r.to ? `→ ${r.to}` : r.from ? `${r.from} →` : '-')}</td>
+                <td class="muted small">{__i18n_display(r.note || '')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
 function SplitTable({ title, splits, pitcher }: { title: string; splits: Splits | null; pitcher: boolean }) {
   if (!splits) return null;
   const rows: [string, Split][] = pitcher
@@ -141,6 +177,8 @@ function SplitTable({ title, splits, pitcher }: { title: string; splits: Splits 
         [__i18n_k("ui.playerPanel.splitTable.rows.78f330a6"), splits.L],
         [__i18n_k("ui.playerPanel.splitTable.rows.43502365"), splits.R],
       ];
+  // 2.0.28: with runners in scoring position (from 2.0.28's games on).
+  if (splits.S?.pa) rows.push([__i18n_t("ui.playerPanel.text.e6f85d35"), splits.S]);
   return (
     <>
       <h4>{__i18n_display(title)}</h4>
@@ -509,7 +547,7 @@ export function PlayerPanel({
         {__i18n_display(shown === 'records' && (
           <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.d84b6f4b")}>
             <div class="segmented record-views" role="group" aria-label={__i18n_t("ui.playerPanel.playerPanel.493c08af")}>
-              {__i18n_display(RECORD_VIEWS.filter((x) => (x.key !== 'mlb' || p.mlb) && (x.key !== 'national' || nationalLinesOf(league, p.id).length > 0)).map((x) => (
+              {__i18n_display(RECORD_VIEWS.filter((x) => (x.key !== 'mlb' || p.mlb) && (x.key !== 'national' || nationalLinesOf(league, p.id).length > 0) && (x.key !== 'amateur' || !!p.education.history?.length || !!p.devLog?.length)).map((x) => (
                 <button key={x.key} type="button" aria-pressed={records === x.key} onClick={() => setRecords(x.key)}>
                   {__i18n_display(x.label)}
                   {__i18n_display(x.key === 'post' && post.length > 0 && <span class="count">{__i18n_display(post.length)}</span>)}
@@ -555,6 +593,17 @@ export function PlayerPanel({
             {records === 'savant' && <SavantView league={league} id={id} pitcher={pitcher} />}
             {records === 'meetings' && <MeetingsView league={league} id={id} pitcher={pitcher} onPlayer={onPlayer} />}
             {records === 'national' && <NationalLines league={league} id={id} pitcher={pitcher} />}
+            {records === 'amateur' && (
+              <>
+                {p.education.history?.length ? (
+                  <>
+                    <h3>{__i18n_t("ui.playerPanel.text.725635c9", { path: pathwayLabel(p) })}</h3>
+                    <CareerStages player={p} seed={league.seed} />
+                  </>
+                ) : null}
+                {p.devLog?.length ? <DevTable lines={p.devLog} pitcher={pitcher} /> : null}
+              </>
+            )}
             {records === 'venues' && <VenueTable league={league} id={id} pitcher={pitcher} />}
             {records === 'fielding' && (card.fielding ? <FieldingTable fielding={card.fielding} /> : <p class="muted">{__i18n_t("ui.playerPanel.text.189e71c9")}</p>)}
             {__i18n_display(records === 'splits' &&
@@ -712,13 +761,7 @@ export function PlayerPanel({
               ))}
             </dl>
             <p class="muted small">{__i18n_display(p.education.pathText)}</p>
-            {/* 2.0.27: his road to the draft, stage by stage. */}
-            {__i18n_display(p.origin.kind === 'draftClass' && !!p.education.history?.length && (
-              <details class="career-before">
-                <summary>{__i18n_t("ui.playerPanel.text.725635c9", { path: pathwayLabel(p) })}</summary>
-                <CareerStages player={p} />
-              </details>
-            ))}
+            <MoveTable league={league} p={p} />
             {__i18n_display(!!p.honors?.length && (
               <>
                 <h3>{__i18n_t("ui.playerPanel.playerPanel.34f8ad9e")}</h3>

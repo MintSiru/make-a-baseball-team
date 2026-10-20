@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { noteForeignOut, noteMove } from './moves';
 /* Between seasons: close the books, then age every player a year and rebuild the rosters.
 
    Order (fixed; each step has its own random stream): close season, then OFFSEASON_STEPS —
@@ -337,6 +338,9 @@ function removeFromRoster(s: LeagueState, p: Player) {
 export function leaveLeague(s: LeagueState, p: Player, status: 'retired' | 'overseas') {
   if (status === 'retired' && p.teamId) maybeRetireNumber(s, p, p.teamId, s.year);
   if (status === 'retired') hallOfFameCheck(s, p, s.year);
+  // 2.0.28 (moves.ts): retirement, or a foreign player going home.
+  if (status === 'retired') noteMove(s, p, 'retire', p.teamId, null);
+  else if (p.origin.kind === 'foreign' && p.teamId) noteForeignOut(s, p, p.teamId);
   removeFromRoster(s, p);
   p.teamId = null;
   p.contract = null;
@@ -690,6 +694,7 @@ export function cutToLimits(s: LeagueState, next: number): Player[] {
   const D = O.development;
   const release = (p: Player) => {
     removeFromRoster(s, p);
+    noteMove(s, p, 'release', p.teamId, null);
     p.teamId = null;
     released.push(p);
   };
@@ -729,6 +734,7 @@ export function placeReleased(s: LeagueState, released: Player[], next: number, 
     if (room.length && age <= O.release.maxAge && keepValue(p, next) >= O.release.minValue && r() < O.release.signChance) {
       const to = room[Math.floor(r() * room.length)]!;
       p.teamId = to.id;
+      noteMove(s, p, 'signReleased', null, to.id);
       s.rosters[to.id]!.futures.push(p.id);
       p.contract = { teamId: to.id, kind: 'standard', signedIn: next - 1, signingBonus: 0, salaries: [{ season: next, amount: renewSalary(p, next) }] };
     } else leaveLeague(s, p, 'retired');

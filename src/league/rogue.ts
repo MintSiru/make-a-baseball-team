@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { noteMove } from './moves';
 /* 살려야 한다 (1.6.0, scenario 7): a runaway "genius GM" AI runs the club from the founding through its fifth season.
    It answers every decision by itself — mostly as the scouts would, but it drafts for now over the future and gives
    every player what he asks — and each winter it does its own damage: the best young players traded for veterans,
@@ -66,6 +67,8 @@ function rogueWinter(s: LeagueState, year: number): string[] {
     if (!vet) continue;
     movePlayer(s, p, club);
     movePlayer(s, vet, me);
+    noteMove(s, p, 'trade', me, club, __i18n_k("league.rogue.text.3f2a4ab2", { what: vet.name }));
+    noteMove(s, vet, 'trade', club, me, __i18n_k("league.rogue.text.3f2a4ab2", { what: p.name }));
     const team = s.teams.find((t) => t.id === club)!.short;
     done.push(__i18n_k("league.rogue.rogueWinter.d84a0d78", { name: p.name, ageIn: ageIn(p, next), team: team, name2: vet.name, ageIn2: ageIn(vet, next) }));
     addNews(s, { id: `rogue-trade-${year}-${p.id}`, date: `${year}-11-15`, kind: 'move', title: __i18n_k("league.rogue.rogueWinter.title.53320f19", { name: p.name, name2: vet.name }), body: __i18n_k("league.rogue.rogueWinter.body.df2bfd43", { team: team, name: p.name, ageIn: ageIn(vet, next), name2: vet.name }), quotes: [], facts: {}, players: [p.id, vet.id], mine: true });

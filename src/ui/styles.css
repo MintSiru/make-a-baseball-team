@@ -3567,3 +3567,30 @@ button.danger {
   margin: 6px 0 0;
   padding-left: 18px;
 }
+/* 2.0.28: a high school's senior year, event by event, under its row. */
+.career-stages tbody.stage + tbody.stage tr:first-child td {
+  border-top: 1px solid var(--rule);
+}
+.career-stages tr.stage-event td {
+  font-size: 13px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  background: transparent;
+}
+.career-stages .stage-event-name {
+  display: block;
+  padding-left: 12px;
+  border-left: 2px solid var(--rule);
+  color: var(--ink-2);
+}
+.career-stages .stage-youth .stage-event-name {
+  border-left-color: var(--accent);
+  color: var(--accent);
+}
+
+/* 2.0.28: trades the AI clubs offer us */
+.trade-offers { border: 1px solid var(--rule); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; }
+.trade-offers h3 { margin: 0 0 6px; }
+.trade-offer { padding: 6px 0; border-top: 1px dashed var(--rule); display: grid; gap: 4px; }
+.trade-offer:first-of-type { border-top: 0; }
+.trade-offer .row { display: flex; gap: 6px; flex-wrap: wrap; }

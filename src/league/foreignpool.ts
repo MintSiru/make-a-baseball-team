@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { noteForeignOut } from './moves';
 /* Foreign players with KBO experience on the market (V0.7.3). A foreign player whose club lets him go —
    released or replaced during the season, or not re-signed in the winter — and who is not leaving for a
    bigger league stays on the list through two winters. Any club may sign him: as an in-season
@@ -36,6 +37,7 @@ export function toForeignPool(s: LeagueState, p: Player, year: number): boolean 
   const from = p.teamId;
   if (!s.user || !from || ageIn(p, year + 1) > POOL.maxAge) return false;
   const usd = usdTotal(p.contract);
+  noteForeignOut(s, p, from);
   removeFromRoster(s, p);
   p.teamId = null;
   p.contract = null;

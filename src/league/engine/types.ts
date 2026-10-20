@@ -31,6 +31,8 @@ export interface BatterIn {
   lead?: number;
   /** 2.0.17: a catcher's framing (counts only as far as the umpires call the pitches: GameIn `framing`). */
   frame?: number;
+  /** 2.0.28 (traits.ts clutchEdge): grade points on his contact, power and eye with a runner on second or third. */
+  clutch?: number;
 }
 
 /** 마무리 · 셋업맨 · 필승조 · 추격조 · 롱릴리프 · 원 포인트 (left-handed specialist). */
@@ -41,6 +43,8 @@ export interface PitcherIn {
   throws: 'L' | 'R';
   stuff: number;
   command: number;
+  /** 2.0.28 (traits.ts clutchEdge): grade points on his stuff and command with a runner on second or third. */
+  clutch?: number;
   breaking: number;
   stamina: number;
   /** Pitch count at which the manager starts looking to pull him today (fatigue already applied). */
@@ -128,6 +132,8 @@ export interface Split {
 export interface Splits {
   L: Split;
   R: Split;
+  /** 2.0.28: with a runner on second or third (득점권), from 2.0.28's games on. */
+  S?: Split;
 }
 
 export const emptySplit = (): Split => ({ pa: 0, ab: 0, h: 0, tb: 0, hr: 0, bb: 0, hbp: 0, k: 0, sf: 0 });

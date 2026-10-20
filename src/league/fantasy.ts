@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { noteMove } from './moves';
 /* 판타지 드래프트 (1.6.0, scenario 5): in the winter of 2027 every domestic player under contract leaves his club
    and the clubs draft the whole league again, this year's draft class with them, in a snake order drawn by lot.
    Players keep their contracts (the new club takes them over); the class signs rookie deals at the slot of their
@@ -147,6 +148,7 @@ export function makeFantasyPick(s: LeagueState, f: FantasyDraft, p: Player) {
       u.ledger.push({ year: f.year, label: __i18n_k("league.fantasy.makeFantasyPick.label.f180b788", { name: p.name }), amount: -bonus });
     }
   } else if (p.contract) p.contract.teamId = teamId;
+  noteMove(s, p, 'special', p.teamId, teamId, __i18n_k("league.fantasy.text.bc92c419"));
   p.teamId = teamId;
   s.rosters[teamId]!.futures.push(p.id);
   f.picks.push({ teamId, id: p.id });

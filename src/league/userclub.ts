@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { noteMove } from './moves';
 import { applyEntry, checkEntry } from './postentry';
 /* The user's club every year (V0.4): the owner's yearly money, military service, its own free agents,
    rookie bonuses (Draft Room's negotiation), development signings and spring-camp plans.
@@ -727,7 +728,9 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
       const amount = input.player ? dd.withPlayer : dd.cashOnly;
       if (input.player) {
         const p = s.players[input.player]!;
+        const was = p.teamId;
         movePlayer(s, p, u.teamId);
+        noteMove(s, p, 'compensation', was, u.teamId, __i18n_k("league.userclub.text.c238f04f", { name: fa }));
         note(u, year, __i18n_k("league.userclub.resolveAnnual.ce389c09", { fa: fa, name: p.name }));
       }
       u.fund += amount;

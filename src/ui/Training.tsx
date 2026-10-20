@@ -12,6 +12,7 @@ import { LEARN, learnable, learnChance } from '../league/newpitch';
 import { PITCH_LABELS, repertoire, type PitchType } from '../league/pitches';
 import { positionLabel } from '../league/views';
 import { money } from './format';
+import { CAMP_IDS, CAMP_SITES, checkCamp, checkDev, DEV, devCandidates, devYear, type CampSite } from '../league/development';
 import { positionKey, useSort } from './sort';
 
 const focusText = (keys: ToolKey[] | undefined) => (keys ?? []).map((k) => TOOL_LABELS[k] ?? k).join('·');
@@ -55,7 +56,7 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
   return (
     <div class="training">
       <p>{__i18n_t("ui.training.training.101d8cf2", { lastStartText: lastStartText, seasonMax: TRAINING.seasonMax, winterMax: TRAINING.winterMax })}</p>
-      <div class="choice-grid">
+      <div class="choice-grid trip-sites">
         {__i18n_display(SITE_IDS.map((id) => {
           const x = SITES[id];
           return (
@@ -171,6 +172,7 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
         <p class="muted">{__i18n_t("ui.training.training.7ba8c700")}</p>
       ))}
       {__i18n_display(away.length > 0 && <p class="muted small">{__i18n_t("ui.training.training.bb74e8bf", { value: away.map((t) => league.players[t.id]?.name).join(', ') })}</p>)}
+      <DevPrograms league={league} onAct={onAct} onPlayer={onPlayer} />
       <LearnPitch league={league} onAct={onAct} onPlayer={onPlayer} />
     </div>
   );
@@ -250,6 +252,113 @@ function LearnPitch({ league, onAct, onPlayer }: { league: LeagueState; onAct: (
         </div>
       ) : (
         <p class="muted">{__i18n_t("ui.training.text.9908e755")}</p>
+      )}
+    </section>
+  );
+}
+
+/** 2.0.28 (the user's request, development.ts): the fall instructional league, a winter in Australia, and the wrap-up
+    camp abroad. */
+function DevPick({ league, kind, onAct, onPlayer }: { league: LeagueState; kind: 'fall' | 'abl'; onAct: (a: Action) => void; onPlayer: (id: string) => void }) {
+  const [picked, setPicked] = useState<string[]>([]);
+  const D = DEV[kind];
+  const year = devYear(league);
+  const list = useMemo(() => devCandidates(league, kind).sort((a, b) => (shownFuture(b) ?? 0) - (shownFuture(a) ?? 0) || ageIn(a, year) - ageIn(b, year)), [league, kind]);
+  const done = (kind === 'fall' ? league.user?.dev?.fall : league.user?.dev?.abl) === year;
+  const why = done ? __i18n_t("ui.training.text.75edbde0") : checkDev(league, kind, picked.length ? picked : list.slice(0, 1).map((p) => p.id));
+  const toggle = (id: string) => setPicked((x) => (x.includes(id) ? x.filter((y) => y !== id) : x.length < D.max ? [...x, id] : x));
+  return (
+    <>
+      <p class="muted small">
+        {kind === 'fall'
+          ? __i18n_t("ui.training.text.9d1e46be", { max: D.max, cost: money(D.cost) })
+          : __i18n_t("ui.training.text.b6dd3647", { max: D.max, cost: money(D.cost) })}
+      </p>
+      {done ? (
+        <p class="muted">{__i18n_t("ui.training.text.0e7a6713")}</p>
+      ) : (
+        <>
+          <div class="table-wrap trip-pick" tabIndex={0}>
+            <table class="record-table">
+              <thead>
+                <tr>
+                  <th aria-label={__i18n_t("ui.training.text.08109e41")} />
+                  <th>{__i18n_t('ui.training.text.9aa18e50')}</th>
+                  <th>{__i18n_t('ui.training.text.81922a91')}</th>
+                  <th class="num">{__i18n_t('ui.training.text.6c620e5c')}</th>
+                  <th class="num">{__i18n_t('ui.training.text.001e4be2')}</th>
+                  <th class="num">{__i18n_t('ui.training.text.6e0caec5')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {list.map((p) => (
+                  <tr key={p.id} class="player-row">
+                    <td>
+                      <input type="checkbox" aria-label={p.name} checked={picked.includes(p.id)} disabled={!picked.includes(p.id) && picked.length >= D.max} onChange={() => toggle(p.id)} />
+                    </td>
+                    <td>
+                      <button type="button" class="link" onClick={() => onPlayer(p.id)}>
+                        {p.name}
+                      </button>
+                    </td>
+                    <td>{__i18n_display(positionLabel(p))}</td>
+                    <td class="num">{ageIn(p, year + 1)}</td>
+                    <td class="num">{p.scouting.current}</td>
+                    <td class="num">{shownFuture(p) ?? '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p class="inline-form">
+            <button type="button" class="primary" disabled={!picked.length || !!checkDev(league, kind, picked)} onClick={() => (onAct({ kind: 'devSend', what: kind, ids: picked }), setPicked([]))}>
+              {__i18n_t("ui.training.text.5539e8b5", { n: picked.length, cost: money(picked.length * D.cost) })}
+            </button>
+            <span class="muted small">{__i18n_display(picked.length ? (checkDev(league, kind, picked) ?? '') : (why ?? ''))}</span>
+          </p>
+        </>
+      )}
+    </>
+  );
+}
+
+function DevPrograms({ league, onAct, onPlayer }: { league: LeagueState; onAct: (a: Action) => void; onPlayer: (id: string) => void }) {
+  const [site, setSite] = useState<CampSite>('okinawa');
+  const camp = league.user?.dev?.camp;
+  const year = devYear(league);
+  const why = checkCamp(league, site);
+  return (
+    <section class="dev-programs">
+      <h3>{__i18n_t("ui.training.text.f285e071")}</h3>
+      <DevPick league={league} kind="fall" onAct={onAct} onPlayer={onPlayer} />
+      <h3>{__i18n_t("ui.training.text.37d4233b")}</h3>
+      <DevPick league={league} kind="abl" onAct={onAct} onPlayer={onPlayer} />
+      <h3>{__i18n_t("ui.training.text.dce453a2")}</h3>
+      <p class="muted small">{__i18n_t("ui.training.text.e8c26099")}</p>
+      <div class="choice-grid">
+        {CAMP_IDS.map((id) => {
+          const C = CAMP_SITES[id];
+          return (
+            <button key={id} type="button" class="choice" aria-pressed={site === id} onClick={() => setSite(id)}>
+              <strong>{__i18n_display(C.name())}</strong>
+              <span class="muted">{C.cost ? money(C.cost) : __i18n_t("ui.training.text.06048927")}</span>
+              <span class="muted small">
+                {__i18n_t("ui.training.text.77e97665", { p: focusText(C.pitcher), h: focusText(C.hitter) })}
+              </span>
+              <span class="muted small">{__i18n_display(C.note())}</span>
+            </button>
+          );
+        })}
+      </div>
+      {camp?.year === year ? (
+        <p class="muted">{__i18n_t("ui.training.text.d517e650", { place: CAMP_SITES[camp.site].name(), n: camp.players })}</p>
+      ) : (
+        <p class="inline-form">
+          <button type="button" class="primary" disabled={!!why} onClick={() => onAct({ kind: 'wrapCamp', site })}>
+            {__i18n_t("ui.training.text.29e29050", { place: CAMP_SITES[site].name() })}
+          </button>
+          <span class="muted small">{__i18n_display(why ?? '')}</span>
+        </p>
       )}
     </section>
   );

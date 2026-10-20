@@ -17,6 +17,7 @@ import { addAlert } from './alerts';
 import { eulreul, eunneun, iga } from './josa';
 import { addNews } from './news';
 import { isPitcher } from './players';
+import { temperFactor } from './traits';
 import type { LeagueState } from './state';
 
 export const BRAWL = {
@@ -72,19 +73,26 @@ export function brawlGame(s: LeagueState, out: GameOut, gameId: string, date: st
   if (!homeHit.length && !awayHit.length) return null;
   const r = rng(`${s.seed}|brawl|${gameId}`);
   const star = (ids: { id: PlayerId }[]) => ids.some((x) => (s.players[x.id]?.scouting.current ?? 0) >= BRAWL.star.grade);
+  // 2.0.28 논쟁성: hot tempers among the hit batters and the pitchers who hit them (traits.ts).
+  const hot = (b: { id: PlayerId }[]) => Math.max(1e-3, ...b.map((x) => temperFactor(s.players[x.id])));
+  const heat = (batters: TeamBox, pitchers: TeamBox) => Math.sqrt(hot(hitBatters(batters)) * hot(hittingPitchers(pitchers)));
   let hit: 'home' | 'away',
-    payback = false;
+    payback = false,
+    f = 1;
   if (homeHit.length && awayHit.length && r() < BRAWL.payback) {
     // Both sides hit someone and the second is read as payback: which came first is a coin toss.
     hit = r() < 0.5 ? 'home' : 'away';
     payback = true;
-    if (r() >= BRAWL.paybackClear) return null;
+    f = Math.max(heat(out.home, out.away), heat(out.away, out.home));
+    if (r() >= Math.min(0.95, BRAWL.paybackClear * Math.sqrt(f))) return null;
   } else {
     hit = homeHit.length && (!awayHit.length || r() < 0.5) ? 'home' : 'away';
     const victims = hit === 'home' ? homeHit : awayHit;
-    if (r() >= BRAWL.single + (star(victims) ? BRAWL.star.extra : 0)) return null;
+    f = hit === 'home' ? heat(out.home, out.away) : heat(out.away, out.home);
+    if (r() >= (BRAWL.single + (star(victims) ? BRAWL.star.extra : 0)) * f) return null;
   }
-  const x = r();
+  // Hotter heads take it further.
+  const x = r() ** (1 / Math.max(0.5, Math.min(2, f)));
   const level: BrawlLevel = x < BRAWL.shares.standoff ? 'standoff' : x < BRAWL.shares.standoff + BRAWL.shares.scuffle ? 'scuffle' : 'fight';
   const side = (k: 'home' | 'away') => (k === 'home' ? out.home : out.away);
   const other = (k: 'home' | 'away') => (k === 'home' ? 'away' : 'home');

@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { noteMove } from './moves';
 /* Players coming home from abroad (V0.7.3, RULES.md §6).
    - Posted players: the club that posted him keeps his rights (보류권), so a player who comes back to
      the KBO signs with that club only. After his major league deal ends he may come home each winter
@@ -138,6 +139,7 @@ export function homecomings(s: LeagueState, next: number): ReturnOffer[] {
 
 /** A draftee who refused to sign to go abroad: he leaves the league, and whether and when he comes back is set now. */
 export function goAbroad(s: LeagueState, p: Player, year: number) {
+  noteMove(s, p, 'abroad', p.teamId, null);
   removeFromRoster(s, p);
   p.teamId = null;
   p.contract = null;

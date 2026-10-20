@@ -32,10 +32,10 @@ export const NORTH_COMPANIES = [__i18n_k("league.north.text.d45fbb7c"), __i18n_k
 /** The regions northern amateurs grow up in (1.9.3: seven, weighted by how many people live there), the towns they
     come from and their schools (all made up, no political names). */
 export const NORTH_REGIONS = [__i18n_k("league.north.text.55051eea"), __i18n_k("league.north.text.e2327ca4"), __i18n_k("league.north.text.8fd755b9"), __i18n_k("league.north.text.4ff21820"), __i18n_k("league.north.text.6fdf4f5a"), __i18n_k("league.north.text.cc7167d9"), __i18n_k("league.north.text.fd242584")] as const;
-const REGION_WEIGHT = [3, 2, 2, 2, 2, 1.5, 1];
+export const REGION_WEIGHT = [3, 2, 2, 2, 2, 1.5, 1];
 /** 1.9.2's two regions, still on the players of a 1.9.2 game. */
 export const NORTH_REGIONS_1_9_2 = [__i18n_k("league.north.text.3021b1cf"), __i18n_k("league.north.text.cade0157")] as const;
-const NORTH_TOWNS: string[][] = [
+export const NORTH_TOWNS: string[][] = [
   [__i18n_k("league.north.text.8c71272a"), __i18n_k("league.north.text.40a80fb4"), __i18n_k("league.north.text.a44dd090"), __i18n_k("league.north.text.3f990bdf"), __i18n_k("league.north.text.ffcdf1e4"), __i18n_k("league.north.text.74ad9595"), __i18n_k("league.north.text.758ba560"), __i18n_k("league.north.text.79f6f16a")],
   [__i18n_k("league.north.text.9ab745ec"), __i18n_k("league.north.text.1d78e09b"), __i18n_k("league.north.text.f9e005c2"), __i18n_k("league.north.text.dc7d5150"), __i18n_k("league.north.text.8a4fea60"), __i18n_k("league.north.text.b2475acc"), __i18n_k("league.north.text.d9278627")],
   [__i18n_k("league.north.text.aa778c35"), __i18n_k("league.north.text.a492454c"), __i18n_k("league.north.text.a0a7b7b4"), __i18n_k("league.north.text.2c677e09"), __i18n_k("league.north.text.42477cf6"), __i18n_k("league.north.text.f31e08f8"), __i18n_k("league.north.text.db2efe68"), __i18n_k("league.north.text.9e633686"), __i18n_k("league.north.text.989927bb")],
@@ -44,7 +44,7 @@ const NORTH_TOWNS: string[][] = [
   [__i18n_k("league.north.text.44627941"), __i18n_k("league.north.text.a9371c39"), __i18n_k("league.north.text.c983de74"), __i18n_k("league.north.text.476d6526"), __i18n_k("league.north.text.8ae98176"), __i18n_k("league.north.text.a6e1abf9"), __i18n_k("league.north.text.729fe890"), __i18n_k("league.north.text.09220bb4"), __i18n_k("league.north.text.11984fee")],
   [__i18n_k("league.north.text.f264380b"), __i18n_k("league.north.text.55a16fbe"), __i18n_k("league.north.text.43e23c90"), __i18n_k("league.north.text.04236bbd"), __i18n_k("league.north.text.056ac19f"), __i18n_k("league.north.text.53e7ff26"), __i18n_k("league.north.text.45fbe848"), __i18n_k("league.north.text.aa748b61"), __i18n_k("league.north.text.68779414")],
 ];
-const NORTH_HIGH_SCHOOLS: string[][] = [
+export const NORTH_HIGH_SCHOOLS: string[][] = [
   [__i18n_k("league.north.text.88b4d779"), __i18n_k("league.north.text.a35cb17d"), __i18n_k("league.north.text.b236a900"), __i18n_k("league.north.text.26e739be"), __i18n_k("league.north.text.344b7530"), __i18n_k("league.north.text.7d796f27"), __i18n_k("league.north.text.7ff600d8"), __i18n_k("league.north.text.94dd8d8d"), __i18n_k("league.north.text.e68d9cd9"), __i18n_k("league.north.text.6f54889b")],
   [__i18n_k("league.north.text.1da6dae9"), __i18n_k("league.north.text.3412f3c7"), __i18n_k("league.north.text.49b92c11"), __i18n_k("league.north.text.a9747a15"), __i18n_k("league.north.text.da4e743c"), __i18n_k("league.north.text.d688e69e"), __i18n_k("league.north.text.0901968d")],
   [__i18n_k("league.north.text.e3a2244a"), __i18n_k("league.north.text.281e4ea7"), __i18n_k("league.north.text.16fc51a9"), __i18n_k("league.north.text.8469cf1c"), __i18n_k("league.north.text.9c011fd4"), __i18n_k("league.north.text.dcdcf14e"), __i18n_k("league.north.text.7de0fcd7"), __i18n_k("league.north.text.f011e3f1")],
@@ -53,7 +53,7 @@ const NORTH_HIGH_SCHOOLS: string[][] = [
   [__i18n_k("league.north.text.65d98dca"), __i18n_k("league.north.text.7aa3fe24"), __i18n_k("league.north.text.2f3d80e2"), __i18n_k("league.north.text.51322e16"), __i18n_k("league.north.text.700e6c88"), __i18n_k("league.north.text.2efdd5a8"), __i18n_k("league.north.text.c01dd042"), __i18n_k("league.north.text.da66cfe1")],
   [__i18n_k("league.north.text.018f0c4d"), __i18n_k("league.north.text.a0c594a6"), __i18n_k("league.north.text.f88efd4f"), __i18n_k("league.north.text.93863434"), __i18n_k("league.north.text.d7a2056d"), __i18n_k("league.north.text.7d79e9b3"), __i18n_k("league.north.text.05adafef")],
 ];
-const NORTH_COLLEGES = [__i18n_k("league.north.text.9f01a2e6"), __i18n_k("league.north.text.3b6d0ace"), __i18n_k("league.north.text.be237d6b"), __i18n_k("league.north.text.060b4802"), __i18n_k("league.north.text.47eca877"), __i18n_k("league.north.text.267f7ad2"), __i18n_k("league.north.text.4112652f"), __i18n_k("league.north.text.47f00a04"), __i18n_k("league.north.text.34ef952c"), __i18n_k("league.north.text.63f09dd6"), __i18n_k("league.north.text.1095cebc"), __i18n_k("league.north.text.e2afc564"), __i18n_k("league.north.text.e95732b4"), __i18n_k("league.north.text.d089c362"), __i18n_k("league.north.text.d01266a4"), __i18n_k("league.north.text.3fd7d397")];
+export const NORTH_COLLEGES = [__i18n_k("league.north.text.9f01a2e6"), __i18n_k("league.north.text.3b6d0ace"), __i18n_k("league.north.text.be237d6b"), __i18n_k("league.north.text.060b4802"), __i18n_k("league.north.text.47eca877"), __i18n_k("league.north.text.267f7ad2"), __i18n_k("league.north.text.4112652f"), __i18n_k("league.north.text.47f00a04"), __i18n_k("league.north.text.34ef952c"), __i18n_k("league.north.text.63f09dd6"), __i18n_k("league.north.text.1095cebc"), __i18n_k("league.north.text.e2afc564"), __i18n_k("league.north.text.e95732b4"), __i18n_k("league.north.text.d089c362"), __i18n_k("league.north.text.d01266a4"), __i18n_k("league.north.text.3fd7d397")];
 
 /** Surnames as the north writes them (no initial-sound rule), for the ones that differ. */
 const NORTH_SURNAME: Record<string, string> = Object.fromEntries('이리 임림 유류 노로 양량 나라 여려 염렴 용룡 육륙'.split(' ').map((x) => [x[0]!, x[1]!]));
@@ -63,9 +63,9 @@ const NORTH_GIVEN = '철진 성철 영철 광혁 명철 은철 혁철 일남 정
 /** Two-letter surnames (the rest are one letter). */
 const TWO_LETTER = '남궁 황보 제갈 선우 독고 사공 서문 동방'.split(' ');
 
-const pick = <T>(xs: readonly T[], r: () => number) => xs[Math.floor(r() * xs.length)]!;
+export const pick = <T>(xs: readonly T[], r: () => number) => xs[Math.floor(r() * xs.length)]!;
 /** An index drawn by weight. */
-function weighted(w: readonly number[], r: () => number): number {
+export function weighted(w: readonly number[], r: () => number): number {
   let x = r() * w.reduce((a, b) => a + b, 0);
   for (let i = 0; i < w.length; i++) if ((x -= w[i]!) < 0) return i;
   return w.length - 1;
@@ -87,26 +87,29 @@ export function northName(name: string, r: () => number, used: Set<string>): str
   return name;
 }
 
-/** Remakes a prospect as one who grew up in the north: his region, town, school (same kind of school) and name. */
-export function makeNorthern(p: Player, seed: string, used: Set<string>): Player {
-  const r = rng(`${seed}|north|${p.id}`);
-  const ri = weighted(REGION_WEIGHT, r);
-  const region = NORTH_REGIONS[ri]!;
-  const town = pick(NORTH_TOWNS[ri]!, r);
-  const old = p.education.school;
-  const college = p.origin.entryCategory === 'college';
-  const school = college ? pick(NORTH_COLLEGES, r) : pick(NORTH_HIGH_SCHOOLS[ri]!, r);
-  const swap = (text: string) => (old ? text.split(old).join(school) : text);
-  return {
-    ...p,
-    name: northName(p.name, r, used),
-    birthplace: town,
-    education: {
-      ...p.education,
-      region,
-      school,
-      pathText: swap(p.education.pathText),
-      history: p.education.history.map((h) => JSON.parse(swap(JSON.stringify(h)))),
-    },
-  };
+/** A player who grew up in the north (his region one of the north's, 1.9.2's two included). */
+export const isNorthern = (p: Pick<Player, 'education'>) => {
+  const region = p.education?.region;
+  return !!region && ((NORTH_REGIONS as readonly string[]).includes(region) || (NORTH_REGIONS_1_9_2 as readonly string[]).includes(region));
+};
+
+export const SCHOOL_KINDS = new Set(['high-school', 'hs-club', 'college', 'college2']);
+/** 2.0.28: the north's youth clubs (two towns in each region) and two-year colleges (eight towns), so the north's
+    circuit (northevents.ts) knows every school in it. */
+export const NORTH_CLUBS: string[][] = NORTH_TOWNS.map((towns) => towns.slice(1, 3).map((town) => __i18n_k("league.north.text.53f06ddc", { town })));
+export const NORTH_JUNIOR_COLLEGES: string[] = [...NORTH_TOWNS.map((towns) => towns[0]!), NORTH_TOWNS[0]![1]!].map((town) => __i18n_k("league.north.text.8a2d3ebe", { town }));
+const NORTH_HS = new Set(NORTH_HIGH_SCHOOLS.flat());
+const NORTH_CLUB = new Set(NORTH_CLUBS.flat());
+const NORTH_COLLEGE = new Set(NORTH_COLLEGES);
+const NORTH_JC = new Set(NORTH_JUNIOR_COLLEGES);
+export const isNorthName = (kind: string, name: string) =>
+  kind === 'college' ? NORTH_COLLEGE.has(name) : kind === 'college2' ? NORTH_JC.has(name) : NORTH_HS.has(name) || (kind === 'hs-club' && NORTH_CLUB.has(name));
+
+/** A northern school of the kind `kind` in region `ri`. */
+export function northSchool(kind: string, ri: number, r: () => number): string {
+  if (kind === 'college') return pick(NORTH_COLLEGES, r);
+  if (kind === 'college2') return pick(NORTH_JUNIOR_COLLEGES, r);
+  if (kind === 'hs-club') return pick(NORTH_CLUBS[ri]!, r);
+  return pick(NORTH_HIGH_SCHOOLS[ri]!, r);
 }
+

@@ -743,6 +743,7 @@ export function App() {
                       }
                     : undefined
                 }
+                seed={shown?.seed}
                 onClose={() => setProspectId(null)}
               />
             ))}

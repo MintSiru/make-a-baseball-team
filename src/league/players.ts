@@ -8,7 +8,7 @@ import { background, careerText, foreignAsk, foreignName, LEVEL_LABELS, veteranC
 import type { Player } from '../model/types';
 import { FOREIGN } from './tuning';
 import { rollPersonality, rollTraits } from './traits';
-import { makeNorthern } from './north';
+import { makeNorthern } from './northevents';
 import { playsHistory } from './era';
 import { eraName } from './eranames';
 import { rulesFor } from '../rules/history';

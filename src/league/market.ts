@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { noteMove } from './moves';
 /* Free-agent rules around the negotiation (V0.5, RULES.md §4): grades from salary rank, the limit on
    outside signings, compensation to the club a player leaves (a player outside the protected list plus money,
    or money only), the owner's free agent, and the payroll the budget is checked against. The negotiation
@@ -131,6 +132,7 @@ export function aiCompensation(s: LeagueState, item: FaQueueItem, protectedIds: 
   const name = s.players[item.fa]?.name ?? '';
   if (pick && keepValue(pick, next) >= MARKET.compensationPickValue) {
     movePlayer(s, pick, item.from);
+    noteMove(s, pick, 'compensation', item.to, item.from, __i18n_k("league.market.text.c238f04f", { name }));
     moneyFor(s, item.to, item.from, cash.withPlayer!, __i18n_k("league.market.aiCompensation.a888086b", { name: name, grade: item.grade, name2: pick.name }), next - 1);
     if (s.user?.teamId === item.to) (s.user.log ??= []).push({ year: next - 1, text: __i18n_k("league.market.aiCompensation.text.3a631528", { name: name, name2: iga(pick.name), shortOf: ro(shortOf(s, item.from)) }) });
   } else moneyFor(s, item.to, item.from, cash.cashOnly, __i18n_k("league.market.aiCompensation.ace972ba", { name: name, grade: item.grade }), next - 1);

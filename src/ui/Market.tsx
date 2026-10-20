@@ -30,6 +30,7 @@ import {
   poolAsk,
   releaseCost,
   tradeValue,
+  extrasText,
   tradeWindow,
 } from '../league/trade';
 import { foreignReplacements } from '../rules/kbo2026';
@@ -42,6 +43,7 @@ import { positionKey, useSort } from './sort';
 import { Help } from './Help';
 import { PlayerSearch, type PosFilter } from './PlayerSearch';
 import { TRADES } from '../league/tuning';
+import { liveOffers, type TradeOffer } from '../league/offers';
 
 type View = 'trade' | 'search' | 'release' | 'foreign' | 'news';
 
@@ -225,8 +227,19 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
     return next;
   };
   const lastLog = sent !== null ? (u.log ?? []).slice(sent) : [];
+  // 2.0.28: an offer taken into the builder, to change before sending it back.
+  const tweak = (o: TradeOffer) => {
+    setTeamId(o.teamId);
+    setGive(new Set(o.give));
+    setGet(new Set(o.get));
+    setCashOut(o.extras.cashOut ?? 0);
+    setCashIn(o.extras.cashIn ?? 0);
+    setPicksOut(new Set(o.extras.picksOut ?? []));
+    setPicksIn(new Set(o.extras.picksIn ?? []));
+  };
   return (
     <>
+      <Offers league={league} onPlayer={onPlayer} onAct={(a) => (setSent((u.log ?? []).length), onAct(a))} onTweak={tweak} />
       <Help title={__i18n_t("ui.market.trade.a8916b94")}>{__i18n_t("ui.market.trade.39de664b", { money: money(TRADES.cash.max) })}</Help>
       {__i18n_display(closed && <p class="notice">{__i18n_display(closed)}</p>)}
       <div class="team-chips" role="group" aria-label={__i18n_t("ui.market.trade.d1837717")}>
@@ -331,6 +344,59 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
         </div>
       </div>
     </>
+  );
+}
+
+/** 2.0.28: the trades the AI clubs have offered us (offers.ts). */
+function Offers({ league, onPlayer, onAct, onTweak }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void; onTweak: (o: TradeOffer) => void }) {
+  const offers = liveOffers(league);
+  if (!offers.length) return null;
+  const names = (ids: PlayerId[]) =>
+    ids.map((id, i) => (
+      <span key={id}>
+        {i > 0 && '·'}
+        <button type="button" class="link" onClick={() => onPlayer(id)}>
+          {__i18n_display(league.players[id]?.name ?? '?')}
+        </button>
+        <span class="muted small"> ({tradeValue(league, league.players[id]!).toFixed(1)})</span>
+      </span>
+    ));
+  return (
+    <section class="trade-offers" aria-label={__i18n_t("ui.market.text.b38f0cf2")}>
+      <h3>{__i18n_t("ui.market.text.b38f0cf2")}</h3>
+      {offers.map((o) => {
+        const extra = extrasText(league, o.extras.cashIn ?? 0, o.extras.picksIn ?? []);
+        return (
+          <div class="trade-offer" key={o.id}>
+            <div>
+              <strong>{__i18n_display(shortName(league, o.teamId))}</strong>
+              <span class="muted small">
+                {' '}
+                {__i18n_display(o.why)} · {__i18n_t("ui.market.text.63374049", { date: o.expires })}
+              </span>
+            </div>
+            <div class="small">
+              {__i18n_t("ui.market.text.d16756ff")}: {names(o.give)}
+            </div>
+            <div class="small">
+              {__i18n_t("ui.market.text.b0be164a")}: {names(o.get)}
+              {extra && <> + {__i18n_display(extra)}</>}
+            </div>
+            <div class="row">
+              <button type="button" class="primary" onClick={() => onAct({ kind: 'tradeOffer', id: o.id, accept: true })}>
+                {__i18n_t("ui.market.text.2f0e02c8")}
+              </button>
+              <button type="button" onClick={() => onAct({ kind: 'tradeOffer', id: o.id, accept: false })}>
+                {__i18n_t("ui.market.text.09797ed8")}
+              </button>
+              <button type="button" onClick={() => onTweak(o)}>
+                {__i18n_t("ui.market.text.21b19efe")}
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </section>
   );
 }
 

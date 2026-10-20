@@ -26,6 +26,7 @@ import { attendance, clubState, recordGate } from './fans';
 import { staffOf } from './staff';
 import { setGoals } from './parent';
 import { aiDeadlineDeals, aiForeignChanges, aiTrades, processWaivers } from './trade';
+import { aiOffers, OFFERS } from './offers';
 import { tempForeignDay } from './tempforeign';
 import { tired, travelCost } from './travel';
 import { allStarDay } from './allstar';
@@ -33,6 +34,7 @@ import { draftClass } from './players';
 import { applyCombine, combineDay } from './combine';
 import { scandalDay, serveSuspensions } from './scandals';
 import { brawlGame } from './brawl';
+import { protestGame } from './protests';
 import { meddleDay } from './scenarios';
 import { openBooks } from './finance';
 import { rosterLimit } from './offseason';
@@ -203,6 +205,7 @@ function addSplits(into: { split?: Splits }, from: Splits) {
   into.split ??= { L: emptySplit(), R: emptySplit() };
   addInto(into.split.L, from.L);
   addInto(into.split.R, from.R);
+  if (from.S) addInto((into.split.S ??= emptySplit()), from.S);
 }
 
 /** Adds a box score to the lines (the season's unless given) and to the pitchers' arm use. */
@@ -364,6 +367,8 @@ export function playDay(s: LeagueState): boolean {
     featsGame(s, out, date);
     // 2.0.25: a hit batter, a pitch thrown back, the benches clearing (brawl.ts).
     brawlGame(s, out, g.id, date);
+    // 2.0.28: arguing a call, now and then an ejection (protests.ts).
+    protestGame(s, out, g.id, date);
     const box = compactBox(out, g.id, date, att);
     keepBox(s, box, log);
     if (log) {
@@ -399,6 +404,8 @@ function marketEvents(s: LeagueState, date: string) {
   // 1.6.0: contenders buy from rebuilding clubs before the deadline (strategy.ts).
   once('deadline', '07-22', () => aiDeadlineDeals(s, rng(`${s.seed}|ai-deadline|${s.year}`)));
   once('foreign', '07-01', () => aiForeignChanges(s, date, rng(`${s.seed}|ai-foreign|${s.year}`)));
+  // 2.0.28: the clubs come to us with trades (offers.ts).
+  for (const d of OFFERS.dates) once(`offers-${d}`, d, () => aiOffers(s, date, rng(`${s.seed}|offers|${s.year}|${d}`)));
 }
 
 /** An in-season national team leaves its clubs on its date; clubs call up replacements (maintainRosters). */

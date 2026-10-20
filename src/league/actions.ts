@@ -1,3 +1,4 @@
+import { answerOffer } from './offers';
 import { extendStaff, fireStaff } from './staffdeals';
 import { askOwner } from './ownerask';
 import type { StaffRole } from './state';
@@ -33,6 +34,7 @@ import { milestone } from './milestones';
 const SCOREBOARD_BUZZ = 0.03;
 import { foundClub, foundingDate, resolveDecision, type DecisionInput } from './expansion';
 import { finishTrips, sendTrip } from './training';
+import { holdCamp, sendDev } from './development';
 import { inspect } from './scandals';
 import { runCampaign } from './allstar';
 import { workout } from './combine';
@@ -95,8 +97,11 @@ export type Action =
   | { kind: 'twelveSetting'; setting: TwelveSetting }
   // The market (V0.5)
   | { kind: 'trade'; teamId: TeamId; give: PlayerId[]; get: PlayerId[]; extras?: TradeExtras }
+  | { kind: 'tradeOffer'; id: string; accept: boolean }
   | { kind: 'release'; id: PlayerId }
   | { kind: 'signPool'; id: PlayerId }
+  | { kind: 'devSend'; what: 'fall' | 'abl'; ids: PlayerId[] }
+  | { kind: 'wrapCamp'; site: import('./development').CampSite }
   | { kind: 'foreignSwap'; out: PlayerId; in: string }
   // 2.0.18: a stand-in for an injured foreign player, and whom to keep when he is back.
   | { kind: 'tempSign'; for: PlayerId; in: string }
@@ -159,7 +164,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -329,6 +334,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     case 'trade':
       makeTrade(s, action.teamId, action.give, action.get, action.extras);
       break;
+    case 'tradeOffer':
+      answerOffer(s, action.id, action.accept);
+      break;
     case 'release':
       releasePlayer(s, action.id);
       break;
@@ -346,6 +354,13 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'trip':
       sendTrip(s, action.id, action.site);
+      break;
+    case 'devSend':
+      // 2.0.28 (development.ts): the fall league, a winter in Australia.
+      sendDev(s, action.what, action.ids);
+      break;
+    case 'wrapCamp':
+      holdCamp(s, action.site);
       break;
     case 'learnPitch':
       planLearn(s, action.id, action.type);

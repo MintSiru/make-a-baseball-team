@@ -38,6 +38,12 @@ export interface Traits {
   loyalty: number;
   /** 논란성: trouble off the field. */
   controversy: number;
+  /** 2.0.28 클러치: better (or worse) with runners in scoring position. Absent on a player from before (traits.ts
+      clutchOf draws it). */
+  clutch?: number;
+  /** 2.0.28 논쟁성: a quarrelsome temper on the field — the benches clear more around him, he argues the calls and is
+      thrown out more often. Absent on a player from before (traits.ts temperOf draws it). */
+  temper?: number;
 }
 
 /** A scouting report: five-point 20–80 grades with observer error. */
@@ -295,6 +301,10 @@ export interface Player {
       turned around. */
   other?: import('../league/twoway').OtherSide;
   switched?: { year: number; to: 'pitcher' | 'hitter' }[];
+  /** 2.0.28 (development.ts): his fall instructional league and Australian winters. */
+  devLog?: import('../league/development').DevLine[];
+  /** 2.0.28 (league/moves.ts): his moves from club to club, as they happened. */
+  moves?: import('../league/moves').MoveEntry[];
   /** 2.0.15 (venues.ts): his career at home and on the road, and at each ballpark (from 2.0.15). */
   venues?: import('../league/venues').Venues;
   career: SeasonRecord[];
@@ -391,9 +401,12 @@ export interface PlayerLife {
   conditioned?: number;
   /** What happened, newest last. */
   events?: { date: string; text: string; tone?: 'good' | 'bad' }[];
+  /** 2.0.28 (protests.ts): the times he argued a call, and was thrown out for it. */
+  protests?: number;
+  ejections?: number;
   /** V0.12 (scandals.ts): offenses so far, drunk driving not yet known, a doping suspicion (real or a rumour; the
       ability it lends while it lasts) and the season the club last tested him. */
-  offenses?: Partial<Record<'dui' | 'doping' | 'assault' | 'fixing', number>>;
+  offenses?: Partial<Record<import('../league/scandals').Offense, number>>;
   hiding?: { date: string; found: string };
   /** 1.6.0: a free agent nobody signed that winter (FA 미아), waiting in the unattached pool. */
   unsigned?: number;
