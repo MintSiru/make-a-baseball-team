@@ -79999,5 +79999,120 @@
     "line": 425,
     "params": {},
     "locations": []
+  },
+  "ui.draftBoard.text.24d8cd41": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 44,
+    "params": {},
+    "locations": []
+  },
+  "ui.draftBoard.text.22aa6019": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 45,
+    "params": {},
+    "locations": []
+  },
+  "ui.draftBoard.text.ba687438": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 46,
+    "params": {},
+    "locations": []
+  },
+  "ui.draftBoard.text.31fd31bc": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 77,
+    "params": {
+      "n": {
+        "expression": "players.length"
+      },
+      "pitchers": {
+        "expression": "glance.pitchers"
+      },
+      "hitters": {
+        "expression": "glance.hitters"
+      },
+      "top": {
+        "expression": "glance.top"
+      }
+    },
+    "locations": []
+  },
+  "ui.draftBoard.text.a183b984": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 78,
+    "params": {
+      "ours": {
+        "expression": "glance.ourTop"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerProfile.text.6f36da79": {
+    "source": "src/ui/PlayerProfile.tsx",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerProfile.text.572be2e2": {
+    "source": "src/ui/PlayerProfile.tsx",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerProfile.text.c9c0e467": {
+    "source": "src/ui/PlayerProfile.tsx",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerProfile.text.ee320476": {
+    "source": "src/ui/PlayerProfile.tsx",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerProfile.text.c63d35fe": {
+    "source": "src/ui/PlayerProfile.tsx",
+    "line": 52,
+    "params": {
+      "year": {
+        "expression": "draftYear + 1"
+      },
+      "pathway": {
+        "expression": "p.origin.pathway"
+      },
+      "school": {
+        "expression": "p.education.school"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerProfile.text.5c356d32": {
+    "source": "src/ui/PlayerProfile.tsx",
+    "line": 71,
+    "params": {
+      "future": {
+        "expression": "future ?? '-'"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerProfile.text.25269feb": {
+    "source": "src/ui/PlayerProfile.tsx",
+    "line": 76,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerProfile.text.fb1d89be": {
+    "source": "src/ui/PlayerProfile.tsx",
+    "line": 96,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerProfile.text.3095fa46": {
+    "source": "src/ui/PlayerProfile.tsx",
+    "line": 171,
+    "params": {},
+    "locations": []
   }
 }

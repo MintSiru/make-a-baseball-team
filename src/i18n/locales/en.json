@@ -8686,5 +8686,19 @@
   "league.userclub.text.034bd9ee": "Rookie talks failed: {n} draftee(s) refused to sign",
   "league.userclub.text.6b8af682": "Foreign re-signings that fell through: {n}",
   "league.userclub.text.874afdaa": "A player whose re-signing failed cannot be signed back by our club from the market.",
-  "league.trade.text.0e5d0da3": "An unsigned free agent can be signed only after the season opens."
+  "league.trade.text.0e5d0da3": "An unsigned free agent can be signed only after the season opens.",
+  "ui.draftBoard.text.24d8cd41": "High school",
+  "ui.draftBoard.text.22aa6019": "College",
+  "ui.draftBoard.text.ba687438": "Independent, abroad, etc.",
+  "ui.draftBoard.text.31fd31bc": "Total {n} · pitchers {pitchers} · position players {hitters} · public future 60+: {top}",
+  "ui.draftBoard.text.a183b984": " · our scouts 60+: {ours}",
+  "ui.playerProfile.text.6f36da79": "Scouting",
+  "ui.playerProfile.text.572be2e2": "Combine & reports",
+  "ui.playerProfile.text.c9c0e467": "Amateur",
+  "ui.playerProfile.text.ee320476": "Public rank",
+  "ui.playerProfile.text.c63d35fe": "{year} draft prospect · {pathway} · {school}",
+  "ui.playerProfile.text.5c356d32": "future {future}",
+  "ui.playerProfile.text.25269feb": "Our scouts",
+  "ui.playerProfile.text.fb1d89be": "Prospect details",
+  "ui.playerProfile.text.3095fa46": "Schooling & background"
 }

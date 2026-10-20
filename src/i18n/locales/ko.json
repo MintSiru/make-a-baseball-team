@@ -8686,5 +8686,19 @@
   "league.userclub.text.034bd9ee": "신인 계약 결렬: {n}명이 계약을 거부했습니다",
   "league.userclub.text.6b8af682": "외국인 재계약 결렬: {n}명",
   "league.userclub.text.874afdaa": "재계약이 결렬된 선수는 시장에 나와도 우리 구단이 다시 영입할 수 없습니다.",
-  "league.trade.text.0e5d0da3": "FA 미아는 시즌이 개막한 뒤에 영입할 수 있습니다."
+  "league.trade.text.0e5d0da3": "FA 미아는 시즌이 개막한 뒤에 영입할 수 있습니다.",
+  "ui.draftBoard.text.24d8cd41": "고졸",
+  "ui.draftBoard.text.22aa6019": "대학",
+  "ui.draftBoard.text.ba687438": "독립·해외 등",
+  "ui.draftBoard.text.31fd31bc": "{n}명 · 투수 {pitchers} · 야수 {hitters} · 공개 미래 60 이상 {top}",
+  "ui.draftBoard.text.a183b984": " · 우리 스카우트 60 이상 {ours}",
+  "ui.playerProfile.text.6f36da79": "스카우팅",
+  "ui.playerProfile.text.572be2e2": "컴바인·리포트",
+  "ui.playerProfile.text.c9c0e467": "아마추어",
+  "ui.playerProfile.text.ee320476": "공개 순위",
+  "ui.playerProfile.text.c63d35fe": "{year} 신인 드래프트 후보 · {pathway} · {school}",
+  "ui.playerProfile.text.5c356d32": "미래 {future}",
+  "ui.playerProfile.text.25269feb": "우리 스카우트",
+  "ui.playerProfile.text.fb1d89be": "후보 정보",
+  "ui.playerProfile.text.3095fa46": "학력·신상"
 }

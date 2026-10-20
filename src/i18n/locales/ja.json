@@ -8686,5 +8686,19 @@
   "league.userclub.text.034bd9ee": "新人契約決裂：{n}人が契約を拒否しました",
   "league.userclub.text.6b8af682": "外国人再契約決裂：{n}人",
   "league.userclub.text.874afdaa": "再契約が決裂した選手は、市場に出ても我が球団は再獲得できません。",
-  "league.trade.text.0e5d0da3": "FA浪人は開幕後に獲得できます。"
+  "league.trade.text.0e5d0da3": "FA浪人は開幕後に獲得できます。",
+  "ui.draftBoard.text.24d8cd41": "高卒",
+  "ui.draftBoard.text.22aa6019": "大学",
+  "ui.draftBoard.text.ba687438": "独立・海外など",
+  "ui.draftBoard.text.31fd31bc": "{n}人・投手{pitchers}・野手{hitters}・公開将来60以上{top}",
+  "ui.draftBoard.text.a183b984": "・自球団スカウト60以上{ours}",
+  "ui.playerProfile.text.6f36da79": "スカウティング",
+  "ui.playerProfile.text.572be2e2": "コンバイン・レポート",
+  "ui.playerProfile.text.c9c0e467": "アマチュア",
+  "ui.playerProfile.text.ee320476": "公開順位",
+  "ui.playerProfile.text.c63d35fe": "{year}新人ドラフト候補・{pathway}・{school}",
+  "ui.playerProfile.text.5c356d32": "将来 {future}",
+  "ui.playerProfile.text.25269feb": "自球団スカウト",
+  "ui.playerProfile.text.fb1d89be": "候補情報",
+  "ui.playerProfile.text.3095fa46": "学歴・身上"
 }
