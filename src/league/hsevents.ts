@@ -32,11 +32,13 @@ const team = (s: Institution) => P.bio.TIERS[s.tier]?.team ?? 0.5;
 export const HS_EVENTS = {
   /** Weekend-league games a school plays (give or take one). */
   leagueGames: 9,
+  /** College-league games (give or take two). */
+  collegeGames: 14,
   qualifiers: 4,
   champions: 4,
 };
 
-export type HsEventKind = 'league' | 'open' | 'qualified' | 'champions';
+export type HsEventKind = 'league' | 'open' | 'qualified' | 'champions' | 'collegeLeague' | 'collegeNational' | 'u18' | 'u23';
 
 export interface HsEvent {
   kind: HsEventKind;
@@ -57,7 +59,6 @@ const roundName = (reached: number, size = 32) =>
         : reached > 32
           ? __i18n_k("league.hsevents.text.d96f4b7d", { n: Math.round(Math.log2(size / reached)) + 1 })
           : __i18n_k("league.hsevents.text.0e854629", { n: reached });
-const placeName = (i: number) => (i === 0 ? __i18n_k("league.hsevents.text.74e19661") : __i18n_k("league.hsevents.text.42a7b82f", { n: i + 1 }));
 
 /** A knockout draw, the stronger seeds kept apart: how far each school got and how many games it played. */
 function knockout(entrants: Institution[], r: () => number): Map<string, { reached: number; games: number; size: number }> {
@@ -94,56 +95,58 @@ function knockout(entrants: Institution[], r: () => number): Map<string, { reach
 }
 
 const cache = new Map<string, Map<string, HsEvent[]>>();
+const COLLEGES = (Catalog as unknown as { institutions: Institution[] }).institutions.filter((x) => x.kind === 'college' || x.kind === 'college2');
 
-/** Every school's senior-year events under `key` (Draft Room's honours for a draft class, when given). */
-function season(key: string, honors: Record<string, Honor> | null): Map<string, HsEvent[]> {
-  const hit = cache.get(key);
+/** Every school's (and college's) year under Draft Room's results for `seed`: a draft class's pool seed, or one made
+    for an earlier year — Draft Room draws the regional leagues, the qualified national, the college leagues and the
+    college national the same way for any seed; the open national and the champions' tournament are drawn here. */
+function season(seed: string): Map<string, HsEvent[]> {
+  const hit = cache.get(seed);
   if (hit) return hit;
-  const events = new Map<string, HsEvent[]>(SCHOOLS.map((s) => [s.id, []]));
+  const honors = P.schoolHonors(seed);
+  const events = new Map<string, HsEvent[]>([...SCHOOLS, ...COLLEGES].map((s) => [s.id, []]));
   // The regional weekend leagues.
-  const regional = new Map<string, number>();
-  for (const region of [...new Set(SCHOOLS.map((s) => s.region ?? ''))]) {
-    const r = rng(`${key}|hs-league|${region}`);
-    const list = SCHOOLS.filter((s) => (s.region ?? '') === region);
-    const ranked = honors ? list : list.map((s) => ({ s, score: team(s) * 60 + r() * 55 })).sort((a, b) => b.score - a.score).map((x) => x.s);
-    ranked.forEach((s, i) => regional.set(s.id, i));
-    for (const s of list) {
-      const h = honors?.[s.id];
-      const place = regional.get(s.id)!;
-      events.get(s.id)!.push({ kind: 'league', label: h?.event ?? __i18n_k("league.hsevents.text.66d071e5", { region }), result: h?.result ?? placeName(place), games: HS_EVENTS.leagueGames + Math.floor(hashUnit(`${key}|league-games|${s.id}`) * 3) - 1 });
-    }
+  for (const s of SCHOOLS) {
+    const h = honors[s.id];
+    if (h) events.get(s.id)!.push({ kind: 'league', label: h.event, result: h.result, games: HS_EVENTS.leagueGames + Math.floor(hashUnit(`${seed}|league-games|${s.id}`) * 3) - 1 });
   }
   // The open national: everyone.
-  const open = knockout(SCHOOLS, rng(`${key}|hs-open`));
+  const open = knockout(SCHOOLS, rng(`${seed}|hs-open`));
   for (const s of SCHOOLS) {
     const x = open.get(s.id)!;
     events.get(s.id)!.push({ kind: 'open', label: __i18n_k("league.hsevents.text.bebba778"), result: roundName(x.reached, x.size), games: x.games });
   }
-  // The national through the regional leagues: Draft Room's result, or drawn among each region's top four.
-  const qualifiedEvent = __i18n_k('draftroom.prospects.hS_NATIONAL.5b4476fa');
-  const quals = honors ? SCHOOLS.filter((s) => honors[s.id]?.national) : SCHOOLS.filter((s) => regional.get(s.id)! < HS_EVENTS.qualifiers);
-  const drawn = honors ? null : knockout(quals, rng(`${key}|hs-qualified`));
+  // The national through the regional leagues (each region's top four, 32 schools).
   const qualifiedReach = new Map<string, number>();
-  for (const s of quals) {
-    const h = honors?.[s.id]?.national;
-    const x = drawn?.get(s.id);
-    const reached = x ? x.reached : reachedOf(h!.result);
+  for (const s of SCHOOLS) {
+    const h = honors[s.id]?.national;
+    if (!h) continue;
+    const reached = reachedOf(h.result);
     qualifiedReach.set(s.id, reached);
-    const games = x ? x.games : Math.max(1, Math.log2(32 / reached) + (reached === 1 ? 0 : 1));
-    events.get(s.id)!.push({ kind: 'qualified', label: h?.event ?? qualifiedEvent, result: h?.result ?? roundName(reached), games });
+    events.get(s.id)!.push({ kind: 'qualified', label: h.event, result: h.result, games: Math.max(1, Math.log2(32 / reached) + (reached === 1 ? 0 : 1)) });
   }
   // The champions: the top four of each national (the next best fill in for a school in both).
   const top = (m: Map<string, number>) => [...m.entries()].sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0])).map(([id]) => id);
-  const openOrder = top(new Map([...open.entries()].map(([id, x]) => [id, x.reached])));
-  const qualOrder = top(qualifiedReach);
-  const picked = new Set<string>(openOrder.slice(0, HS_EVENTS.champions));
-  for (const id of qualOrder) if (picked.size < HS_EVENTS.champions * 2) picked.add(id);
+  const picked = new Set<string>(top(new Map([...open.entries()].map(([id, x]) => [id, x.reached]))).slice(0, HS_EVENTS.champions));
+  for (const id of top(qualifiedReach)) if (picked.size < HS_EVENTS.champions * 2) picked.add(id);
   const champs = knockout(
     SCHOOLS.filter((s) => picked.has(s.id)),
-    rng(`${key}|hs-champions`),
+    rng(`${seed}|hs-champions`),
   );
   for (const [id, x] of champs) events.get(id)!.push({ kind: 'champions', label: __i18n_k("league.hsevents.text.2099f312"), result: roundName(x.reached), games: x.games });
-  cache.set(key, events);
+  // The colleges: Draft Room's conference leagues, then its national for each conference's top four (12, a draw of 16);
+  // the two-year colleges' league and their own national for its top four.
+  for (const c of COLLEGES) {
+    const h = honors[c.id];
+    if (!h) continue;
+    events.get(c.id)!.push({ kind: 'collegeLeague', label: h.event, result: h.result, games: HS_EVENTS.collegeGames + Math.floor(hashUnit(`${seed}|college-games|${c.id}`) * 5) - 2 });
+    if (h.national) {
+      const reached = reachedOf(h.national.result);
+      const size = c.kind === 'college2' ? 4 : 16; // two-year colleges: their top four meet
+      events.get(c.id)!.push({ kind: 'collegeNational', label: h.national.event, result: h.national.result, games: Math.max(1, Math.log2(size / reached) + (reached === 1 ? 0 : 1)) });
+    }
+  }
+  cache.set(seed, events);
   if (cache.size > 40) cache.delete(cache.keys().next().value!);
   return events;
 }
@@ -156,10 +159,19 @@ function reachedOf(result: string): number {
   return Number.isFinite(n) && n > 0 ? n : 32;
 }
 
-/** His school's senior-year events: from a draft class's pool (`poolSeed`), or drawn for that year (`key`). */
-export function hsEvents(schoolId: string, at: { poolSeed: string } | { key: string }): HsEvent[] {
-  const events = 'poolSeed' in at ? season(`pool|${at.poolSeed}`, P.schoolHonors(at.poolSeed)) : season(at.key, null);
-  return events.get(schoolId) ?? [];
+/** His school's or college's year: a draft class's (its pool seed), or one drawn for an earlier year (`key`). */
+export function schoolEvents(schoolId: string, at: { poolSeed: string } | { key: string }): HsEvent[] {
+  return season('poolSeed' in at ? at.poolSeed : at.key).get(schoolId) ?? [];
+}
+export const hsEvents = schoolEvents;
+
+/** 2.0.28: the national youth teams — U-18 for a high-school senior, U-23 for a college player: Korea's finish that
+    year (the same for every player on the team) and the games he played. */
+export function youthTeam(level: 'U-18' | 'U-23', year: number, key: string, pitcher: boolean): HsEvent {
+  const place = Math.floor(hashUnit(`youth|${level}|${year}`) * 8);
+  const result = place === 0 ? __i18n_k("league.hsevents.text.894badc3") : place === 1 ? __i18n_k("league.hsevents.text.3660fdbb") : __i18n_k("league.hsevents.text.42a7b82f", { n: place + 1 });
+  const games = (pitcher ? 2 : 6) + Math.floor(hashUnit(`${key}|youth-games`) * (pitcher ? 3 : 4));
+  return { kind: level === 'U-18' ? 'u18' : 'u23', label: level === 'U-18' ? __i18n_k("league.hsevents.text.9fb8330f") : __i18n_k("league.hsevents.text.7f0272f9"), result, games };
 }
 
 /** Shares a year's record out over the events by their games (each stat a little up or down, the totals kept). */

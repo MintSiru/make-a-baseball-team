@@ -1,6 +1,7 @@
 /* 2.0.27 (the user's request): a prospect's road to the draft as a table — each stage (high school, college,
    independent league, the leagues abroad) with its years and its record (league/amateur.ts). 2.0.28: a high school's
-   senior year event by event beneath it — the regional weekend league and the three national tournaments. */
+   senior year event by event beneath it — the regional weekend league and the three national tournaments — a college's
+   league and national the same way, and the U-18 or U-23 national team (games outside the school's record). */
 import { display as __i18n_display, t as __i18n_t } from '../i18n/index';
 import type { AmateurRecord } from '../draftroom';
 import type { Player } from '../model/types';
@@ -88,6 +89,17 @@ export function CareerStages({ player, seed }: { player: Pick<Player, 'id' | 'ro
                   <Stats r={e.record} pitcher={pitcher} />
                 </tr>
               ))}
+              {s.youth && (
+                <tr class="stage-event stage-youth">
+                  <td>
+                    <span class="stage-event-name">{__i18n_display(s.youth.label)}</span>
+                  </td>
+                  <td>
+                    <span class="tag">{__i18n_display(s.youth.result)}</span>
+                  </td>
+                  <Stats r={s.youth.record} pitcher={pitcher} />
+                </tr>
+              )}
             </tbody>
           ))}
         </table>

@@ -10,7 +10,7 @@ import { k as __i18n_k } from '../i18n/index';
 import Catalog from '../draftroom/catalog.js';
 import { hashUnit, isPitcherRole, rng, type AmateurRecord, type HistoryEntry } from '../draftroom';
 import type { Player } from '../model/types';
-import { hsEvents, splitRecord, type HsEventKind } from './hsevents';
+import { schoolEvents, splitRecord, youthTeam, type HsEventKind } from './hsevents';
 import { poolSeed } from './players';
 
 type Prospect = Pick<Player, 'id' | 'role' | 'scouting' | 'education' | 'amateur' | 'origin'>;
@@ -37,8 +37,10 @@ export interface Stage {
   record: AmateurRecord;
   /** The record Draft Room kept (the last stage), or one drawn for the screen. */
   kept: boolean;
-  /** 2.0.28: a high-school stage's senior year, event by event (hsevents.ts). */
+  /** 2.0.28: a high school's or college's last year there, event by event (hsevents.ts), and his national youth team
+      (U-18, U-23) that year — games outside his school's record. */
   events?: { kind: HsEventKind; label: string; result: string; record: AmateurRecord }[];
+  youth?: { kind: HsEventKind; label: string; result: string; record: AmateurRecord };
 }
 
 const LEVEL_LABEL: Record<string, () => string> = {
@@ -63,7 +65,7 @@ function stageOf(e: HistoryEntry, pathway = ''): { kind: StageKind; label: strin
   if (kind === 'overseas-independent') return { kind: 'overseasIndependent', label: __i18n_k("league.amateur.text.9f77082e", { country: inst?.country ?? '' }) };
   if (kind === 'overseas-college' || kind === 'overseas-hs') return { kind: 'overseasAmateur', label: kind === 'overseas-hs' ? __i18n_k("league.amateur.text.48703547", { country: inst?.country ?? '' }) : __i18n_k("league.amateur.text.d03ab931", { country: inst?.country ?? '' }) };
   if (kind === 'independent') return { kind: 'independent', label: __i18n_k("league.amateur.text.9f31907e") };
-  if (kind === 'college') return pathway === '2년제' ? { kind: 'juniorCollege', label: __i18n_k("league.amateur.text.c8f601ff") } : { kind: 'college', label: __i18n_k("league.amateur.text.22aa6019") };
+  if (kind === 'college' || kind === 'college2') return kind === 'college2' || pathway === '2년제' ? { kind: 'juniorCollege', label: __i18n_k("league.amateur.text.c8f601ff") } : { kind: 'college', label: __i18n_k("league.amateur.text.22aa6019") };
   return { kind: 'highSchool', label: kind === 'hs-club' ? __i18n_k("league.amateur.text.f310065f") : __i18n_k("league.amateur.text.7da7f481") };
 }
 
@@ -129,13 +131,29 @@ export function careerStages(p: Prospect, seed?: string): Stage[] {
     const record = kept ? p.amateur.record : drawnRecord(p, ready, `${p.id}|stage|${i}`);
     const stage: Stage = { kind, label, name: e.name, period: `${month(e.start)} – ${month(e.end)}`, status: e.status, note: e.note, record, kept };
     const inst = BY_ID[e.institutionId];
-    if (kind === 'highSchool' && inst && (inst.kind === 'high-school' || inst.kind === 'hs-club')) {
+    const school = inst && (inst.kind === 'high-school' || inst.kind === 'hs-club');
+    const college = inst?.kind === 'college' || inst?.kind === 'college2';
+    if (school || college) {
+      // His last season there (a year that ends in the winter counts as the season before).
+      const end = e.end ?? `${p.origin.draftYear ?? new Date().getFullYear()}-12-31`;
+      const year = Number(end.slice(0, 4)) - (Number(end.slice(5, 7)) <= 2 ? 1 : 0);
       const draftYear = p.origin.kind === 'draftClass' ? p.origin.draftYear : undefined;
-      const at = kept && seed && draftYear ? { poolSeed: poolSeed(seed, draftYear) } : { key: `${seed ?? p.id}|hs|${(e.end ?? e.start).slice(0, 4)}` };
-      const events = hsEvents(e.institutionId, at);
+      const at = kept && seed && draftYear ? { poolSeed: poolSeed(seed, draftYear) } : { key: `${seed ?? p.id}|school-year|${year}` };
+      const events = schoolEvents(e.institutionId, at);
       if (events.length) {
-        const parts = splitRecord(record, events.map((x) => x.games), `${p.id}|hs-split|${i}`);
+        const parts = splitRecord(record, events.map((x) => x.games), `${p.id}|school-split|${i}`);
         stage.events = events.map((x, j) => ({ kind: x.kind, label: x.label, result: x.result, record: parts[j]! }));
+      }
+      // The youth team: his award says so for the year the scouts saw; before it, the better ones now and then.
+      const level = school ? 'U-18' : 'U-23';
+      const award = school ? __i18n_k('draftroom.prospects.generatePool.67a28002') : __i18n_k('draftroom.prospects.generatePool.f45e2ce3');
+      const picked = kept ? p.amateur.awards.includes(award) : ready >= 50 && hashUnit(`${p.id}|youth|${i}`) < 0.3;
+      if (picked) {
+        const pitcher = record.kind === 'pitcher';
+        const y = youthTeam(level, year, `${p.id}|${i}`, pitcher);
+        const season = drawnRecord(p, ready, `${p.id}|youth-season|${i}`);
+        const [part] = splitRecord(season, [y.games, Math.max(1, Number(season.games) - y.games)], `${p.id}|youth-split|${i}`);
+        stage.youth = { kind: y.kind, label: y.label, result: y.result, record: part! };
       }
     }
     return stage;

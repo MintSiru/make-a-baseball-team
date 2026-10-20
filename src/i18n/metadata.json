@@ -80443,5 +80443,17 @@
       }
     },
     "locations": []
+  },
+  "league.hsevents.text.9fb8330f": {
+    "source": "src/league/hsevents.ts",
+    "line": 172,
+    "params": {},
+    "locations": []
+  },
+  "league.hsevents.text.7f0272f9": {
+    "source": "src/league/hsevents.ts",
+    "line": 172,
+    "params": {},
+    "locations": []
   }
 }

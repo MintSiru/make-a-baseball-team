@@ -8748,5 +8748,7 @@ export const koSource = {
   "league.hsevents.text.66d071e5": "{region} 권역 주말리그",
   "league.hsevents.text.bebba778": "전국고교야구선수권대회",
   "league.hsevents.text.2099f312": "고교야구 왕중왕전",
-  "league.hsevents.text.d96f4b7d": "{n}회전"
+  "league.hsevents.text.d96f4b7d": "{n}회전",
+  "league.hsevents.text.9fb8330f": "WBSC U-18 야구 월드컵 (U-18 대표팀)",
+  "league.hsevents.text.7f0272f9": "WBSC U-23 야구 월드컵 (U-23 대표팀)"
 } as const;

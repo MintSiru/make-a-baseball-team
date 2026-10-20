@@ -3583,3 +3583,7 @@ button.danger {
   border-left: 2px solid var(--rule);
   color: var(--ink-2);
 }
+.career-stages .stage-youth .stage-event-name {
+  border-left-color: var(--accent);
+  color: var(--accent);
+}

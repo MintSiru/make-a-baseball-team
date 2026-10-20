@@ -82,3 +82,31 @@ describe('a high-school senior year, event by event (2.0.28)', () => {
     expect(parts.reduce((a, r) => a + Number(r.ab), 0)).toBe(100);
   });
 });
+
+describe('college events and the youth teams (2.0.28)', () => {
+  it("gives a college Draft Room's league and, to each conference's top four, its national", async () => {
+    const { schoolEvents } = await import('../src/league/hsevents');
+    const four = institutions.filter((x) => x.kind === 'college').map((c) => schoolEvents(c.id, { key: 'v2028|college|2025' }));
+    const two = institutions.filter((x) => x.kind === 'college2').map((c) => schoolEvents(c.id, { key: 'v2028|college|2025' }));
+    for (const ev of [...four, ...two]) expect(ev.some((x) => x.kind === 'collegeLeague')).toBe(true);
+    expect(four.filter((ev) => ev.some((x) => x.kind === 'collegeNational')).length).toBe(12);
+    expect(two.filter((ev) => ev.some((x) => x.kind === 'collegeNational')).length).toBe(Math.min(4, two.length));
+  });
+
+  it('shows the U-18 team for a senior with the award, the U-23 team for a college player with his', () => {
+    const s = createLeague('v2028-youth');
+    const ps = Object.values(s.players).filter((p) => p.origin.kind === 'draftClass' && p.education.history?.length);
+    const u18 = ps.filter((p) => p.amateur.awards.includes('U-18 대표팀'));
+    const u23 = ps.filter((p) => p.amateur.awards.includes('대학 대표팀'));
+    expect(u18.length + u23.length).toBeGreaterThan(0);
+    for (const p of u18) expect(careerStages(p, s.seed).at(-1)!.youth?.kind).toBe('u18');
+    for (const p of u23) expect(careerStages(p, s.seed).at(-1)!.youth?.kind).toBe('u23');
+    // The same finish for the whole team in a year (the league holds many draft classes).
+    const byYear = new Map<string, Set<string>>();
+    for (const p of u18) {
+      const year = p.education.history.at(-1)!.end ?? '';
+      (byYear.get(year) ?? byYear.set(year, new Set()).get(year)!).add(careerStages(p, s.seed).at(-1)!.youth!.result);
+    }
+    for (const finishes of byYear.values()) expect(finishes.size).toBe(1);
+  });
+});
