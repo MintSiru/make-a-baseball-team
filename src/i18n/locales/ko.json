@@ -5808,7 +5808,7 @@
   "ui.playerPanel.rECORD_VIEWS.label.b4070ed2": "정규시즌",
   "ui.playerPanel.rECORD_VIEWS.label.a0f7a345": "포스트시즌",
   "ui.playerPanel.rECORD_VIEWS.label.dc5975f8": "커리어 하이",
-  "ui.playerPanel.rECORD_VIEWS.label.1df210e9": "좌우 기록",
+  "ui.playerPanel.rECORD_VIEWS.label.1df210e9": "상황별 기록",
   "ui.playerPanel.splitTable.rows.85efe664": "좌타자 상대",
   "ui.playerPanel.splitTable.rows.9f7370d0": "우타자 상대",
   "ui.playerPanel.splitTable.rows.78f330a6": "좌투수 상대",
@@ -9006,5 +9006,6 @@
   "ui.playerPanel.text.ed858bae": "레버리지",
   "ui.playerPanel.text.104de6fb": "점수 차",
   "ui.playerPanel.text.3a85e389": "주자 상황",
-  "ui.playerPanel.text.495f1461": "상황별 기록은 2.0.30부터 쌓입니다. 레버리지는 주자·아웃·이닝·점수 차로 본 그 타석의 무게(평균 1)로, 2.0 넘으면 하이, 0.85 미만이면 로우입니다."
+  "ui.playerPanel.text.495f1461": "상황별 기록은 2.0.30부터 쌓입니다. 레버리지는 주자·아웃·이닝·점수 차로 본 그 타석의 무게(평균 1)로, 2.0 넘으면 하이, 0.85 미만이면 로우입니다.",
+  "ui.savant.text.40b18759": "바깥 네 칸은 스트라이크 존 밖(유인구)입니다."
 }

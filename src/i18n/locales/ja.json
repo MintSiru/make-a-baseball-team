@@ -5808,7 +5808,7 @@
   "ui.playerPanel.rECORD_VIEWS.label.b4070ed2": "レギュラーシーズン",
   "ui.playerPanel.rECORD_VIEWS.label.a0f7a345": "ポストシーズン",
   "ui.playerPanel.rECORD_VIEWS.label.dc5975f8": "キャリアハイ",
-  "ui.playerPanel.rECORD_VIEWS.label.1df210e9": "左右別成績",
+  "ui.playerPanel.rECORD_VIEWS.label.1df210e9": "状況別成績",
   "ui.playerPanel.splitTable.rows.85efe664": "対左打者",
   "ui.playerPanel.splitTable.rows.9f7370d0": "対右打者",
   "ui.playerPanel.splitTable.rows.78f330a6": "対左投手",
@@ -9006,5 +9006,6 @@
   "ui.playerPanel.text.ed858bae": "レバレッジ",
   "ui.playerPanel.text.104de6fb": "点差",
   "ui.playerPanel.text.3a85e389": "走者状況",
-  "ui.playerPanel.text.495f1461": "状況別成績は2.0.30から記録されます。レバレッジは走者・アウト・イニング・点差から見たその打席の重み（平均1）で、2.0を超えるとハイ、0.85未満ならローです。"
+  "ui.playerPanel.text.495f1461": "状況別成績は2.0.30から記録されます。レバレッジは走者・アウト・イニング・点差から見たその打席の重み（平均1）で、2.0を超えるとハイ、0.85未満ならローです。",
+  "ui.savant.text.40b18759": "外側の4マスはストライクゾーンの外（誘い球）です。"
 }

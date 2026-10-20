@@ -12,7 +12,7 @@ import { trackingOf } from '../league/tracking';
 import { hashUnit } from '../draftroom';
 import type { LeagueState } from '../league/state';
 import { shortName } from '../league/views';
-import { hitterZones, pitcherZones } from '../league/zones';
+import { hitterOuterZones, hitterZones, pitcherOuterZones, pitcherZones } from '../league/zones';
 
 const BAT_LABEL = (): Record<PercentileKey, string> => ({
   xwoba: 'xwOBA',
@@ -276,32 +276,54 @@ function Usage({ league, id, pitches, usage }: { league: LeagueState; id: string
   );
 }
 
-/** 2.0.25 (zones.ts): the strike zone in nine, hot red and cold blue, from the catcher's view. */
+/** 2.0.25 (zones.ts): the strike zone in nine, hot red and cold blue, from the catcher's view; 2.0.30: and the four
+    corners outside it, behind the nine. */
 function HotZones({ league, id, pitcher }: { league: LeagueState; id: string; pitcher: boolean }) {
   const p = league.players[id];
   if (!p) return null;
   const grid = pitcher ? pitcherZones(league, p) : hitterZones(league, p);
-  const all = grid.flat();
+  const outer = pitcher ? pitcherOuterZones(league, p) : hitterOuterZones(league, p);
+  const all = [...grid.flat(), ...outer];
   const lo = Math.min(...all),
     hi = Math.max(...all);
   // For a pitcher a low average is good: his cold zones are the batters' cold zones, coloured the same way.
   const pct = (x: number) => (hi === lo ? 50 : ((x - lo) / (hi - lo)) * 100);
+  // The outside box, and the zone's nine inside it.
+  const [ox, oy, ow, oh] = [10, 6, 200, 218];
+  const [ix, iy, cw, ch] = [50, 46, 40, 46];
+  const quarters: [number, number][] = [
+    [ox, oy],
+    [ox + ow / 2, oy],
+    [ox, oy + oh / 2],
+    [ox + ow / 2, oy + oh / 2],
+  ];
   return (
     <figure class="hot-zones">
-      <svg viewBox="0 0 150 166" role="img" aria-label={__i18n_displayText(__i18n_t("ui.savant.text.9b467d5f", { value: grid.map((r) => r.map(avg3).join(' ')).join(' / ') }))}>
+      <svg viewBox="0 0 220 248" role="img" aria-label={__i18n_displayText(__i18n_t("ui.savant.text.9b467d5f", { value: grid.map((r) => r.map(avg3).join(' ')).join(' / ') }))}>
+        {quarters.map(([x, y], i) => (
+          <g key={`out-${i}`} class="zone-out">
+            <rect x={x} y={y} width={ow / 2} height={oh / 2} fill={shade(pct(outer[i]!))} stroke="var(--paper)" stroke-width="1.5" />
+            <text x={i % 2 ? x + ow / 2 - 6 : x + 6} y={i < 2 ? y + 17 : y + oh / 2 - 8} text-anchor={i % 2 ? 'end' : 'start'} class="zone-avg">
+              {avg3(outer[i]!)}
+            </text>
+          </g>
+        ))}
         {grid.map((row, r) =>
           row.map((x, c) => (
             <g key={`${r}-${c}`}>
-              <rect x={15 + c * 40} y={8 + r * 46} width="40" height="46" fill={shade(pct(x))} stroke="var(--paper)" stroke-width="1.5" />
-              <text x={35 + c * 40} y={36 + r * 46} text-anchor="middle" class="zone-avg">
+              <rect x={ix + c * cw} y={iy + r * ch} width={cw} height={ch} fill={shade(pct(x))} stroke="var(--paper)" stroke-width="1.5" />
+              <text x={ix + cw / 2 + c * cw} y={iy + 28 + r * ch} text-anchor="middle" class="zone-avg">
                 {avg3(x)}
               </text>
             </g>
           )),
         )}
-        <polygon points="45,156 105,156 105,160 75,165 45,160" fill="var(--rule)" />
+        <rect x={ix} y={iy} width={cw * 3} height={ch * 3} fill="none" stroke="var(--ink)" stroke-width="1.2" />
+        <polygon points="80,236 140,236 140,240 110,245 80,240" fill="var(--rule)" />
       </svg>
-      <figcaption class="small muted">{pitcher ? __i18n_t("ui.savant.text.40622003") : __i18n_t("ui.savant.text.7c60b5e8")}</figcaption>
+      <figcaption class="small muted">
+        {pitcher ? __i18n_t("ui.savant.text.40622003") : __i18n_t("ui.savant.text.7c60b5e8")} {__i18n_t("ui.savant.text.40b18759")}
+      </figcaption>
     </figure>
   );
 }

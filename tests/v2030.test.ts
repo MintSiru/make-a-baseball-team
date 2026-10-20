@@ -9,6 +9,7 @@ import { firstTeamIds } from '../src/league/state';
 import { leverageIndex, SITUATIONS, SPLIT_KEYS } from '../src/league/engine/situation';
 import { playerCard } from '../src/league/views';
 import { closeSeason } from '../src/league/offseason';
+import { hitterOuterZones, hitterZones, pitcherOuterZones, pitcherZones } from '../src/league/zones';
 
 describe('draft prospects show their pitches (2.0.30)', () => {
   it('a pitcher has his fastball and his other pitches, a hitter none', () => {
@@ -127,5 +128,23 @@ describe('records by situation (2.0.30)', () => {
     // His career's table reads the same before and after the season is put away.
     expect(playerCard(s, id)!.splits.career!.X!.b0![0]).toBe(careerBefore);
     expect(SPLIT_KEYS).toHaveLength(9);
+  });
+});
+
+describe('hot and cold zones outside the strike zone (2.0.30)', () => {
+  it('four corners, colder than the zone; a good eye chases better, a good breaking ball gets worse chases', () => {
+    const s = createLeague('v2030');
+    const players = Object.values(s.players).filter((p) => p.status === 'active' && p.teamId);
+    const hitters = players.filter((p) => p.role !== 'SP' && p.role !== 'RP');
+    const arms = players.filter((p) => p.role === 'SP' || p.role === 'RP');
+    const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+    for (const p of hitters.slice(0, 60)) {
+      const out = hitterOuterZones(s, p);
+      expect(out).toHaveLength(4);
+      expect(mean(out)).toBeLessThan(mean(hitterZones(s, p).flat()));
+    }
+    for (const p of arms.slice(0, 60)) expect(mean(pitcherOuterZones(s, p))).toBeLessThan(mean(pitcherZones(s, p).flat()));
+    const byEye = (lo: boolean) => mean(hitters.filter((p) => (lo ? (p.scouting.tools.eye ?? 50) <= 40 : (p.scouting.tools.eye ?? 50) >= 60)).map((p) => mean(hitterOuterZones(s, p)) - mean(hitterZones(s, p).flat())));
+    expect(byEye(false)).toBeGreaterThan(byEye(true));
   });
 });

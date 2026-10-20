@@ -5808,7 +5808,7 @@
   "ui.playerPanel.rECORD_VIEWS.label.b4070ed2": "Regular Season",
   "ui.playerPanel.rECORD_VIEWS.label.a0f7a345": "Postseason",
   "ui.playerPanel.rECORD_VIEWS.label.dc5975f8": "Career High",
-  "ui.playerPanel.rECORD_VIEWS.label.1df210e9": "Platoon Splits",
+  "ui.playerPanel.rECORD_VIEWS.label.1df210e9": "Splits",
   "ui.playerPanel.splitTable.rows.85efe664": "vs. LHB",
   "ui.playerPanel.splitTable.rows.9f7370d0": "vs. RHB",
   "ui.playerPanel.splitTable.rows.78f330a6": "vs. LHP",
@@ -9006,5 +9006,6 @@
   "ui.playerPanel.text.ed858bae": "Leverage",
   "ui.playerPanel.text.104de6fb": "Score margin",
   "ui.playerPanel.text.3a85e389": "Runners on",
-  "ui.playerPanel.text.495f1461": "Situational records are kept from 2.0.30 on. Leverage is how much a plate appearance weighs given the runners, outs, inning and score margin (1 on average): over 2.0 is high, under 0.85 is low."
+  "ui.playerPanel.text.495f1461": "Situational records are kept from 2.0.30 on. Leverage is how much a plate appearance weighs given the runners, outs, inning and score margin (1 on average): over 2.0 is high, under 0.85 is low.",
+  "ui.savant.text.40b18759": "The four outer boxes are outside the strike zone (chase pitches)."
 }

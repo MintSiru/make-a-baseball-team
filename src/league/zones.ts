@@ -4,7 +4,12 @@
    wants it inside or out — his own, seeded by id, a power hitter more often a pull hitter who wants it in), the middle
    hotter than the corners, scaled so the nine average his season's batting average (his grades' estimate before 50
    plate appearances). A pitcher's map follows his pitches: a sinkerballer or a splitter's low zones are cold, a
-   riding four-seamer's high ones, a slider's glove-side corner; scaled to what hitters bat against him. */
+   riding four-seamer's high ones, a slider's glove-side corner; scaled to what hitters bat against him.
+
+   2.0.30 (the user's request): and the four corners outside the zone, as broadcasts show them — what a hitter bats
+   when he chases there, well under his zone's: a good eye chases better pitches and less; the same leanings up or
+   in. For a pitcher, the hitters who chase his pitches: the better his breaking ball, the colder; a sinker or a
+   splitter colder low, a slider colder low on his glove side. */
 import { hashUnit } from '../draftroom';
 import type { Player } from '../model/types';
 import { isPitcher } from './players';
@@ -14,7 +19,18 @@ import type { LeagueState } from './state';
 /** Rows top to bottom, columns from the catcher's view left (third-base side) to right. */
 export type ZoneGrid = number[][];
 
-export const ZONES = { leagueAvg: 0.265, middle: 0.035, corner: -0.025, lean: 0.03, minPa: 50 };
+export const ZONES = { leagueAvg: 0.265, middle: 0.035, corner: -0.025, lean: 0.03, minPa: 50, outside: 0.62, eye: 0.0018, breaking: 0.0015 };
+
+/** 2.0.30: the four corners outside the zone, in the order upper left, upper right, lower left, lower right. */
+export type OuterZones = [number, number, number, number];
+const CORNERS: [number, number][] = [
+  [0, 0],
+  [0, 2],
+  [2, 0],
+  [2, 2],
+];
+const clampOut = (x: number) => Math.max(0.04, Math.min(0.4, x));
+const meanOf = (grid: ZoneGrid) => grid.flat().reduce((a, b) => a + b, 0) / 9;
 
 const normalOf = (key: string) => (hashUnit(`${key}|a`) + hashUnit(`${key}|b`) + hashUnit(`${key}|c`) - 1.5) * 2;
 const shape = (row: number, col: number) => (row === 1 && col === 1 ? ZONES.middle : row !== 1 && col !== 1 ? ZONES.corner : 0);
@@ -38,6 +54,23 @@ export function hitterZones(s: LeagueState, p: Player): ZoneGrid {
   const b = s.lines[p.id]?.bat;
   const avg = b && b.ab >= ZONES.minPa ? b.h / b.ab : ZONES.leagueAvg + (contact - 50) * 0.003;
   return scaled(grid, avg);
+}
+
+/** 2.0.30: a hitter's average where he chases, outside the zone: the corner beside each of his zone's corners. */
+export function hitterOuterZones(s: LeagueState, p: Player): OuterZones {
+  const grid = hitterZones(s, p);
+  const eye = p.scouting.tools.eye ?? 50;
+  const base = meanOf(grid) * ZONES.outside + (eye - 50) * ZONES.eye;
+  // His leanings carry outside too: the neighbouring corner of the zone, less the zone's own middle-ness.
+  return CORNERS.map(([r, c]) => clampOut(base + (grid[r]![c]! - meanOf(grid)) * 0.8)) as OuterZones;
+}
+
+/** What hitters bat against a pitcher when they chase, outside the zone. */
+export function pitcherOuterZones(s: LeagueState, p: Player): OuterZones {
+  const grid = pitcherZones(s, p);
+  const breaking = p.scouting.tools.breaking ?? 50;
+  const base = meanOf(grid) * ZONES.outside - (breaking - 50) * ZONES.breaking;
+  return CORNERS.map(([r, c]) => clampOut(base + (grid[r]![c]! - meanOf(grid)) * 0.8)) as OuterZones;
 }
 
 /** What hitters bat against a pitcher in each zone. */

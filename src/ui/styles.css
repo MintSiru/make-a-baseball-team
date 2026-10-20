@@ -3514,7 +3514,7 @@ button.danger {
 /* 2.0.25: hot and cold zones (Savant.tsx). */
 .hot-zones {
   margin: 0.4rem 0;
-  max-width: 12rem;
+  max-width: 15rem;
 }
 .hot-zones svg {
   display: block;
