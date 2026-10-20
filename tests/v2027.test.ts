@@ -84,3 +84,24 @@ describe('the foreign pool and unsigned free agents (2.0.27)', () => {
     expect(canSignFromPool(s, p.id)).toMatch(/개막/);
   });
 });
+
+describe('the anti-dynasty alliance needs the dynamic difficulty (2.0.27)', () => {
+  it('does not form with the setting off, and lapses when it is turned off', async () => {
+    const { dynastyWinter, tradeBarred } = await import('../src/league/dynasty');
+    const s = createLeague('v2027-alliance');
+    found(s);
+    const me = s.user!.teamId;
+    const base = s.history.at(-1)!;
+    for (const y of [2030, 2031, 2032]) s.history.push({ ...base, year: y, champion: me });
+    s.year = 2032;
+    dynastyWinter(s, 2032);
+    expect(s.alliance).toBeUndefined();
+    expect(tradeBarred(s, me, 'lg')).toBe(false);
+    s.dynamicDifficulty = true;
+    dynastyWinter(s, 2032);
+    expect(tradeBarred(s, me, 'lg')).toBe(true);
+    apply(s, { kind: 'dynamicDifficulty', on: false });
+    expect(s.alliance).toBeUndefined();
+    expect(tradeBarred(s, me, 'lg')).toBe(false);
+  });
+});

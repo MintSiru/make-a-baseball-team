@@ -8652,7 +8652,7 @@
   "league.dynamic.text.e5eba92d": "牽制{level}段階――親会社支援金−{support}%、年俸予算−{payroll}%、FA選手の好感−{fa}%",
   "league.dynamic.text.81dac229": "支援{level}段階――親会社支援金+{support}%、年俸予算+{payroll}%、FA選手の好感+{fa}%",
   "ui.settings.text.8636eb2a": "変動難易度",
-  "ui.settings.text.4cb5ffb6": "オンにすると毎冬、直近3シーズン（優勝・順位・貯まったお金）を見て、好調な球団は支援金・年俸予算・FA選手の好感が減り、苦戦する球団は増えます。選んだ難易度に上乗せされます。",
+  "ui.settings.text.4cb5ffb6": "オンにすると毎冬、直近3シーズン（優勝・順位・貯まったお金・戦力）を見て、好調な球団は支援金・年俸予算・FA選手の好感が減り、苦戦する球団は増えます。選んだ難易度に上乗せされます。3連覇や10シーズン5回優勝の球団に対抗する反独走連盟も、この設定がオンのときだけ結成されます。",
   "ui.settings.text.f43cf6e0": "今シーズン：{text}",
   "league.dynasty.text.af84a389": "反独走連盟が解散：{club}への牽制が終わりました",
   "league.dynasty.text.0981bff3": "反独走連盟結成：{club}の牽制に残りの球団が結束",

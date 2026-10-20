@@ -18,6 +18,7 @@ describe('the anti-dynasty alliance', () => {
   it('forms against three titles running, bars trades with the club and makes it pay into the fund', () => {
     const s = createLeague('v2026-alliance');
     found(s);
+    s.dynamicDifficulty = true; // 2.0.27: the alliance comes with the dynamic difficulty
     const me = s.user!.teamId;
     const base = s.history.at(-1)!;
     for (const y of [2030, 2031, 2032]) s.history.push({ ...base, year: y, champion: me });

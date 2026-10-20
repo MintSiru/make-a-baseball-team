@@ -412,7 +412,11 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       if (action.on) {
         s.dynamicDifficulty = true;
         s.user.handicap = measureHandicap(s, s.offseason?.year ?? s.year - 1);
-      } else delete s.dynamicDifficulty;
+      } else {
+        delete s.dynamicDifficulty;
+        // 2.0.27: the anti-dynasty alliance goes with it (dynasty.ts).
+        delete s.alliance;
+      }
       break;
     case 'capForfeit':
       // 2.0.24: the salary cap's pick forfeiture on or off (cap.ts).

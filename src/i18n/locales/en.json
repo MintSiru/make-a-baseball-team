@@ -8652,7 +8652,7 @@
   "league.dynamic.text.e5eba92d": "Held back, level {level}: owner's support −{support}%, payroll budget −{payroll}%, free agents' liking −{fa}%",
   "league.dynamic.text.81dac229": "A hand up, level {level}: owner's support +{support}%, payroll budget +{payroll}%, free agents' liking +{fa}%",
   "ui.settings.text.8636eb2a": "Dynamic difficulty",
-  "ui.settings.text.4cb5ffb6": "When on, each winter looks at the last three seasons (titles, finishes, money in the bank): a club on top gets less support, a smaller payroll budget and less love from free agents, and a struggling one more. It comes on top of the difficulty chosen.",
+  "ui.settings.text.4cb5ffb6": "When on, each winter looks at the last three seasons (titles, finishes, money in the bank, squad strength): a club on top gets less support, a smaller payroll budget and less love from free agents, and a struggling one more. It comes on top of the difficulty chosen. The anti-dynasty alliance against a club with three titles in a row, or five in ten seasons, forms only with this on.",
   "ui.settings.text.f43cf6e0": "This season: {text}",
   "league.dynasty.text.af84a389": "The anti-dynasty alliance disbands: the stand against {club} is over",
   "league.dynasty.text.0981bff3": "An anti-dynasty alliance: the other clubs close ranks against {club}",

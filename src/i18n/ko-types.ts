@@ -8653,7 +8653,7 @@ export const koSource = {
   "league.dynamic.text.e5eba92d": "견제 {level}단계 — 모기업 지원금 −{support}%, 연봉 예산 −{payroll}%, FA 선수의 호감 −{fa}%",
   "league.dynamic.text.81dac229": "지원 {level}단계 — 모기업 지원금 +{support}%, 연봉 예산 +{payroll}%, FA 선수의 호감 +{fa}%",
   "ui.settings.text.8636eb2a": "유동적인 난이도",
-  "ui.settings.text.4cb5ffb6": "켜면 겨울마다 최근 3시즌(우승·순위·쌓인 돈)을 보고, 잘나가는 구단은 지원금·연봉 예산·FA 선수의 호감이 줄고 고전하는 구단은 늘어납니다. 고른 난이도에 더해집니다.",
+  "ui.settings.text.4cb5ffb6": "켜면 겨울마다 최근 3시즌(우승·순위·쌓인 돈·선수단 전력)을 보고, 잘나가는 구단은 지원금·연봉 예산·FA 선수의 호감이 줄고 고전하는 구단은 늘어납니다. 고른 난이도에 더해집니다. 3연속 우승이나 10시즌 5회 우승 구단에 맞서는 반독주 연맹도 이 설정을 켰을 때만 생깁니다.",
   "ui.settings.text.f43cf6e0": "이번 시즌: {text}",
   "league.dynasty.text.af84a389": "반독주 연맹 해산: {club} 견제가 끝났습니다",
   "league.dynasty.text.0981bff3": "반독주 연맹 결성: {club} 견제에 나머지 구단 뭉쳐",

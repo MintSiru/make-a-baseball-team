@@ -11,7 +11,9 @@ import { k as __i18n_k } from '../i18n/index';
      dynasty's contribution are shared out among the three clubs at the bottom of the table. Our club takes its share
      into the fund; another club's makes it bolder in next winter's free-agent market.
 
-   Game rules, not the KBO's (its levies go to a youth fund). */
+   Game rules, not the KBO's (its levies go to a youth fund). 2.0.27: the alliance is part of the dynamic difficulty —
+   with that setting off there is none (it formed whatever the setting before); the balance fund from the cap's levies
+   is shared out either way. */
 import type { TeamId } from '../model/types';
 import { addAlert } from './alerts';
 import { milestone } from './milestones';
@@ -50,16 +52,22 @@ export function dynastyOf(s: LeagueState, year: number): TeamId | null {
   return streak || titlesIn(s, last, year - DYNASTY.window + 1, year) >= DYNASTY.titles ? last : null;
 }
 
-/** The alliance standing against `teamId` now, if any. */
-export const allianceAgainst = (s: Pick<LeagueState, 'alliance' | 'year'>, teamId: TeamId) => !!s.alliance && s.alliance.target === teamId && s.year <= s.alliance.until;
+/** The alliance standing against `teamId` now, if any (only with the dynamic difficulty on). */
+export const allianceAgainst = (s: Pick<LeagueState, 'alliance' | 'year' | 'dynamicDifficulty'>, teamId: TeamId) => !!s.dynamicDifficulty && !!s.alliance && s.alliance.target === teamId && s.year <= s.alliance.until;
 
 /** Whether a trade between the two clubs is barred by the alliance. */
-export const tradeBarred = (s: Pick<LeagueState, 'alliance' | 'year'>, a: TeamId, b: TeamId) => allianceAgainst(s, a) || allianceAgainst(s, b);
+export const tradeBarred = (s: Pick<LeagueState, 'alliance' | 'year' | 'dynamicDifficulty'>, a: TeamId, b: TeamId) => allianceAgainst(s, a) || allianceAgainst(s, b);
 
 /** The winter: the alliance formed, renewed or ended, and the balance fund shared out. */
 export function dynastyWinter(s: LeagueState, year: number) {
   const me = s.user?.teamId;
   const date = `${year}-11-05`;
+  // 2.0.27: no alliance with the dynamic difficulty off (one from before quietly lapses); the fund is still shared.
+  if (!s.dynamicDifficulty) {
+    delete s.alliance;
+    shareFund(s, year);
+    return;
+  }
   const a = s.alliance;
   // An alliance ends once its target has gone two seasons without a title, or runs out.
   if (a && (year >= a.until || titlesIn(s, a.target, year - DYNASTY.dry + 1, year) === 0)) {
@@ -93,7 +101,7 @@ export function dynastyWinter(s: LeagueState, year: number) {
 function shareFund(s: LeagueState, year: number) {
   const me = s.user?.teamId;
   const levies = Object.values(s.cap ?? {}).reduce((a, rows) => a + (rows.find((r) => r.year === year)?.levy ?? 0), 0);
-  const target = s.alliance && year <= s.alliance.until ? s.alliance.target : null;
+  const target = s.dynamicDifficulty && s.alliance && year <= s.alliance.until ? s.alliance.target : null;
   const contribution = target ? DYNASTY.contribution : 0;
   if (target === me && s.user) {
     s.user.fund -= contribution;
