@@ -962,7 +962,8 @@ function signTalk(s: LeagueState, m: FaMarket, t: FaTalk, teamId: TeamId, o: FaO
 
 /** The day before camp with no offer: his club takes him back on a one-year deal if it wants him; otherwise, since
     1.6.0, he waits as an unattached player (FA 미아) any club can sign at his ask, without talks, until the next
-    season ends (before, he retired at once). */
+    season ends (before, he retired at once). 2.0.27: only once the season has opened, and for no less than 70% of
+    his market price a year — skipping him in the market and signing him straight after cost nothing before. */
 function closeUnsigned(s: LeagueState, m: FaMarket, t: FaTalk, day: number, next: number) {
   const p = s.players[t.id]!;
   const me = s.user?.teamId;
@@ -978,6 +979,8 @@ function closeUnsigned(s: LeagueState, m: FaMarket, t: FaTalk, day: number, next
   p.teamId = null;
   p.contract = null;
   (p.life ??= {}).unsigned = m.year;
+  // 2.0.27: he does not come cheaper for having been left out of the market.
+  p.life.unsignedAsk = Math.round(((guaranteed(t.price) / t.price.years) * 0.7) / 100) * 100;
   if (!(s.pool ??= []).includes(p.id)) s.pool.push(p.id);
 }
 

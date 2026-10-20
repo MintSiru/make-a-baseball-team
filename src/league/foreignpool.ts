@@ -46,9 +46,12 @@ export function toForeignPool(s: LeagueState, p: Player, year: number): boolean 
   return true;
 }
 
-/** Players on the market now (not signed by anyone since). */
-export function foreignPoolPlayers(s: LeagueState): Player[] {
+/** Players on the market now (not signed by anyone since). 2.0.27: `buyer` leaves out the ones that club let go
+    itself — a foreign player whose re-signing failed (or whom the club released) does not come back to it from the
+    list at a lower price. */
+export function foreignPoolPlayers(s: LeagueState, buyer?: TeamId): Player[] {
   return (s.foreignPool ?? [])
+    .filter((e) => !buyer || e.from !== buyer)
     .map((e) => s.players[e.id])
     .filter((p): p is Player => !!p && p.status === 'freeAgent' && !p.teamId)
     .sort((a, b) => b.scouting.current - a.scouting.current);

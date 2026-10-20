@@ -47,7 +47,7 @@ import { alumnusHired, employedAlumni, legendFired } from './alumni';
 import { post, postingCandidates, postingMax, postingNote } from './posting';
 import { toForeignPool } from './foreignpool';
 import { goAbroad, releaseReturnee, signReturnee } from './returnees';
-import { ownerAlert } from './alerts';
+import { addAlert, ownerAlert } from './alerts';
 import { splitContract } from './foreign';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type SalaryRow, type StaffRole, type UserClub } from './state';
@@ -505,6 +505,7 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
     case 'rookieBonus': {
       const dd = d as Extract<Decision, { kind: 'rookieBonus' }>;
       const counters: { id: PlayerId; slot: number; ask: number }[] = [];
+      const refused: string[] = [];
       for (const pick of dd.picks) {
         const p = s.players[pick.id]!;
         const offer = input.offers[pick.id] ?? 0;
@@ -522,7 +523,9 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           u.fund -= amount;
           u.ledger.push({ year, label: __i18n_k("league.userclub.resolveAnnual.label.b640149f", { name: p.name }), amount: -amount });
         } else if (!counters.some((c) => c.id === p.id)) {
-          note(u, year, __i18n_k("league.userclub.resolveAnnual.709cbf07", { overallPick: p.origin.overallPick, name: p.name, value: p.amateur.intent === 'college' ? __i18n_k("league.userclub.resolveAnnual.2e03a59b") : p.amateur.intent === 'abroad' ? __i18n_k("league.userclub.resolveAnnual.c02cebf4") : __i18n_k("league.userclub.resolveAnnual.0d7dd114") }));
+          const line = __i18n_k("league.userclub.resolveAnnual.709cbf07", { overallPick: p.origin.overallPick, name: p.name, value: p.amateur.intent === 'college' ? __i18n_k("league.userclub.resolveAnnual.2e03a59b") : p.amateur.intent === 'abroad' ? __i18n_k("league.userclub.resolveAnnual.c02cebf4") : __i18n_k("league.userclub.resolveAnnual.0d7dd114") });
+          note(u, year, line);
+          refused.push(line);
           // One who goes abroad may come back years later through the draft (returnees.ts); the others leave the game.
           if (p.amateur.intent === 'abroad') goAbroad(s, p, year);
           else {
@@ -531,6 +534,8 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           }
         }
       }
+      // 2.0.27: a popup when a pick will not sign.
+      if (refused.length) addAlert(s, { id: `rookie-refused-${year}-${dd.final ? 'final' : 'first'}`, date: `${year}-09-30`, kind: 'season', title: __i18n_k("league.userclub.text.034bd9ee", { n: refused.length }), lines: refused, tone: 'bad' });
       return counters.length ? { kind: 'rookieBonus', picks: counters, final: true } : null;
     }
     case 'development': {
@@ -683,6 +688,7 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
     }
     case 'foreignRenew': {
       const dd = d as Extract<Decision, { kind: 'foreignRenew' }>;
+      const failed: string[] = [];
       for (const row of dd.rows) {
         const p = s.players[row.id]!;
         const offer = input.offers?.[row.id] ?? { amount: row.ask, years: 1 as const };
@@ -693,7 +699,9 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           if (offer.years === 2) p.contract.salaries.push({ season: next + 1, amount: p.contract.salaries[0]!.amount });
           note(u, year, __i18n_k("league.userclub.resolveAnnual.a10572f6", { name: p.name, usd: usd(offer.amount), value: offer.years === 2 ? __i18n_k("league.userclub.resolveAnnual.d554ee3d") : '' }));
         } else if (input.keep.includes(row.id)) {
-          note(u, year, __i18n_k("league.userclub.resolveAnnual.723a0593", { name: p.name, usd: usd(offer.amount), value: offer.years === 2 ? __i18n_k("league.userclub.resolveAnnual.d554ee3d") : '', usd2: usd(row.ask) }));
+          const line = __i18n_k("league.userclub.resolveAnnual.723a0593", { name: p.name, usd: usd(offer.amount), value: offer.years === 2 ? __i18n_k("league.userclub.resolveAnnual.d554ee3d") : '', usd2: usd(row.ask) });
+          note(u, year, line);
+          failed.push(line);
           if (!toForeignPool(s, p, year)) leaveLeague(s, p, 'overseas');
         } else {
           note(u, year, __i18n_k("league.userclub.resolveAnnual.0b220cd8", { name: p.name, value: row.leaving ? __i18n_k("league.userclub.resolveAnnual.46795cbd") : __i18n_k("league.userclub.resolveAnnual.b0045732") }));
@@ -701,6 +709,8 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           if (row.leaving || !toForeignPool(s, p, year)) leaveLeague(s, p, 'overseas');
         }
       }
+      // 2.0.27: a popup when a re-signing falls through (he will not come back to us from the market either).
+      if (failed.length) addAlert(s, { id: `foreign-renew-failed-${year}`, date: `${year}-11-25`, kind: 'move', title: __i18n_k("league.userclub.text.6b8af682", { n: failed.length }), lines: [...failed, __i18n_k("league.userclub.text.874afdaa")], tone: 'bad' });
       // New signings for the open slots come next.
       return foreignSigningDecision(s, next);
     }

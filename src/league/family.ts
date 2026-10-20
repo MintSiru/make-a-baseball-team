@@ -32,7 +32,9 @@ export interface FamilyTie {
 }
 
 /** Chances at each pick (each needs a fitting relative to be there). */
-export const FAMILY = { son: 0.015, brother: 0.02, twin: 0.008, fatherGap: [22, 40] as const, brotherGap: [1, 6] as const };
+/** 2.0.27 (the user's request): sons more often — of any former first-team regular now, not only of a coach — twins
+    far rarer (a handful in the KBO's whole history), brothers a little rarer. */
+export const FAMILY = { son: 0.03, brother: 0.015, twin: 0.002, fatherGap: [22, 40] as const, brotherGap: [1, 6] as const, fatherSeasons: 3 };
 
 const DOUBLE = ['남궁', '황보', '제갈', '선우', '독고'];
 export const surnameOf = (name: string) => (DOUBLE.includes(name.slice(0, 2)) ? name.slice(0, 2) : name.slice(0, 1));
@@ -84,9 +86,14 @@ export function familyAtPick(s: LeagueState, p: Player, teamId: TeamId, draftYea
   const born = bornIn(p);
   const pick = <T,>(xs: T[]) => xs[Math.floor(r() * xs.length)];
   let tie: FamilyTie | null = null;
-  // A coach's or manager's son.
+  // A coach's or manager's son, or (2.0.27) a retired player's who played a few seasons on a first team.
   if (r() < FAMILY.son) {
-    const dads = coaches(s).filter((c) => surnameOf(c.p.name) === name && born - bornIn(c.p) >= FAMILY.fatherGap[0] && born - bornIn(c.p) <= FAMILY.fatherGap[1] && !(s.families ?? []).some((t) => t.kind === 'father' && t.a === c.p.id));
+    const staff = coaches(s);
+    const coachIds = new Set(staff.map((c) => c.p.id));
+    const veterans = Object.values(s.players)
+      .filter((o) => o.status === 'retired' && !isForeign(o) && !coachIds.has(o.id) && o.career.filter((c) => !c.level).length >= FAMILY.fatherSeasons)
+      .map((o) => ({ p: o }));
+    const dads = [...staff, ...veterans].filter((c) => surnameOf(c.p.name) === name && born - bornIn(c.p) >= FAMILY.fatherGap[0] && born - bornIn(c.p) <= FAMILY.fatherGap[1] && !(s.families ?? []).some((t) => t.kind === 'father' && t.a === c.p.id));
     const same = dads.filter((c) => isPitcher(c.p) === isPitcher(p));
     const dad = pick(same.length ? same : dads);
     if (dad) {
@@ -133,7 +140,12 @@ function draftStory(s: LeagueState, t: FamilyTie, teamId: TeamId, draftYear: num
   const sameClub = t.kind === 'father' ? at?.team === teamId : a.teamId === teamId;
   const mine = !!s.user && (teamId === s.user.teamId || a.teamId === s.user.teamId || at?.team === s.user.teamId);
   let title: string, body: string;
-  if (t.kind === 'father') {
+  if (t.kind === 'father' && !at) {
+    // 2.0.27: a former player who does not coach: his old club and seasons.
+    const seasons = a.career.filter((c) => !c.level).length;
+    title = __i18n_k("league.family.text.27659aed", { dad: a.name, son: b.name, club });
+    body = __i18n_k("league.family.text.a6111524", { club: iga(club), dad: a.name, son: eulreul(b.name), seasons });
+  } else if (t.kind === 'father') {
     const role = at?.role ?? __i18n_k("league.family.text.95430629");
     title = sameClub ? __i18n_k("league.family.text.e3c1ebd1", { club, dad: a.name, role, son: b.name }) : __i18n_k("league.family.text.5bcc2077", { dad: a.name, role, son: b.name, club });
     body = sameClub

@@ -283,7 +283,8 @@ export function App() {
     [league?.seed, draftYear, version],
   );
   useEffect(() => registerNames(draftPool.map((p) => p.name)), [draftPool]);
-  const prospect = useMemo(() => draftPool.find((p) => p.id === prospectId) ?? draftPool[0] ?? null, [draftPool, prospectId]);
+  // 2.0.27: a prospect's page opens over the list (null: none open).
+  const prospect = useMemo(() => draftPool.find((p) => p.id === prospectId) ?? null, [draftPool, prospectId]);
   const prospectAge = (p: Player) => ageOn(p.birthday, `${draftYear}${DRAFT_ROOM_DRAFT_DATE.slice(4)}`);
 
   // Automatic mode: big articles get written as they appear, one at a time, within the session's budget.
@@ -503,11 +504,7 @@ export function App() {
   // 2.0.7 (the user's request): a warning to save first, in a dialog of its own.
   const newGame = () => setNewGameAsk(true);
 
-  // On narrow screens the scouting report sits below the whole list, so bring it into view.
-  const selectProspect = (id: PlayerId) => {
-    setProspectId(id);
-    if (window.matchMedia('(max-width: 900px)').matches) requestAnimationFrame(() => document.querySelector('.profile')?.scrollIntoView({ block: 'start' }));
-  };
+  const selectProspect = (id: PlayerId) => setProspectId(id);
 
   const openTeam = (id: string) => {
     if (id === league.user?.teamId) setTab('club');
@@ -725,25 +722,30 @@ export function App() {
         ))}
         {__i18n_display(tab === 'help' && <Manual />)}
         {__i18n_display(tab === 'draft' && (
-          <div class="layout">
+          <div class="draft-page">
             <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} ourView={shown?.user ? (p) => scoutView(shown!, p) : undefined} />
-            <PlayerProfile
-              player={prospect && publicView(prospect)}
-              age={prospect && prospectAge(prospect)}
-              combine={prospect && league && combineHeld(shown, draftYear) && attends(shown.seed, draftYear, prospect) ? combineLines(shown.seed, draftYear, prospect) : null}
-              combineNote={league && !combineHeld(shown, draftYear) ? __i18n_k("ui.app.app.dabfaec3", { draftYear: draftYear }) : __i18n_k("ui.app.app.5e6c4cae")}
-              report={prospect && shown?.user ? traitReport(shown, prospect) : null}
-              workout={
-                prospect && shown?.user
-                  ? {
-                      done: workoutsOf(shown, draftYear).includes(prospect.id),
-                      blocked: checkWorkout(shown, draftYear, prospect.id),
-                      cost: money(COMBINE.workoutCost),
-                      onClick: () => act({ kind: 'workout', draftYear, id: prospect.id, name: prospect.name }, __i18n_k("ui.app.app.onClick.bd04d7e4"), false),
-                    }
-                  : undefined
-              }
-            />
+            {__i18n_display(prospect && (
+              <PlayerProfile
+                player={publicView(prospect)}
+                age={prospectAge(prospect)}
+                draftYear={draftYear}
+                ours={shown?.user ? scoutView(shown, prospect) : null}
+                combine={league && combineHeld(shown, draftYear) && attends(shown.seed, draftYear, prospect) ? combineLines(shown.seed, draftYear, prospect) : null}
+                combineNote={league && !combineHeld(shown, draftYear) ? __i18n_k("ui.app.app.dabfaec3", { draftYear: draftYear }) : __i18n_k("ui.app.app.5e6c4cae")}
+                report={shown?.user ? traitReport(shown, prospect) : null}
+                workout={
+                  shown?.user
+                    ? {
+                        done: workoutsOf(shown, draftYear).includes(prospect.id),
+                        blocked: checkWorkout(shown, draftYear, prospect.id),
+                        cost: money(COMBINE.workoutCost),
+                        onClick: () => act({ kind: 'workout', draftYear, id: prospect.id, name: prospect.name }, __i18n_k("ui.app.app.onClick.bd04d7e4"), false),
+                      }
+                    : undefined
+                }
+                onClose={() => setProspectId(null)}
+              />
+            ))}
           </div>
         ))}
         </Guard>

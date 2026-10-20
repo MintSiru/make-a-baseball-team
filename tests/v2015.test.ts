@@ -34,7 +34,8 @@ describe('venues', () => {
   });
 
   it('adds a season into a career', () => {
-    const [line] = Object.values(s.lines).filter((l) => l.venues && l.bat?.pa);
+    // (A player who batted only on the road has no home line to add: take one who batted at both.)
+    const [line] = Object.values(s.lines).filter((l) => l.venues?.home.bat?.pa && l.venues.away.bat?.pa);
     const career = emptyVenues();
     addVenues(career, line!.venues!);
     addVenues(career, line!.venues!);
