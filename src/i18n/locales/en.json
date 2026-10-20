@@ -8828,5 +8828,21 @@
   "league.northevents.text.6a14ee2d": "Daedonggang Cup Northern College Tournament",
   "league.northevents.text.cf8735ff": "Northern Junior College League",
   "league.northevents.text.82ac692c": "Northern Junior College Tournament",
-  "league.northevents.text.42a7b82f": "No. {n}"
+  "league.northevents.text.42a7b82f": "No. {n}",
+  "league.offers.text.f25c6a05": "rebuilding and looking for young players",
+  "league.offers.text.d0cd519f": "in urgent need of help at {spot}",
+  "league.offers.text.eade3bfa": "looking to strengthen the roster",
+  "league.offers.text.35f9059c": "Trade offer from {club}",
+  "league.offers.text.57791162": "{club}: {why}.",
+  "league.offers.text.d91240b6": "Accept or decline it under Market › Trades by {date}.",
+  "league.offers.text.8e2d9a69": "Our {ours} ↔ {club}'s {theirs}",
+  "league.offers.text.eda643c4": "Declined {club}'s trade offer: {deal}",
+  "league.offers.text.1d55bab7": "{club} changed its mind and withdrew the offer.",
+  "ui.market.text.b38f0cf2": "Trade offers received",
+  "ui.market.text.63374049": "until {date}",
+  "ui.market.text.d16756ff": "We give",
+  "ui.market.text.b0be164a": "We get",
+  "ui.market.text.2f0e02c8": "Accept",
+  "ui.market.text.09797ed8": "Decline",
+  "ui.market.text.21b19efe": "Adjust terms"
 }

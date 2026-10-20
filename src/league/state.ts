@@ -526,6 +526,8 @@ export interface UserClub {
   /** 2.0.28 (development.ts): the years the club sent prospects to the fall league and to Australia, and its last
       wrap-up camp. */
   dev?: { fall?: number; abl?: number; camp?: { year: number; site: import('./development').CampSite; players: number } };
+  /** 2.0.28: trades the AI clubs offer us (offers.ts), open until they run out. */
+  tradeOffers?: import('./offers').TradeOffer[];
 }
 
 /** A private training centre abroad (V0.10). */

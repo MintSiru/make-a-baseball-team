@@ -26,6 +26,7 @@ import { attendance, clubState, recordGate } from './fans';
 import { staffOf } from './staff';
 import { setGoals } from './parent';
 import { aiDeadlineDeals, aiForeignChanges, aiTrades, processWaivers } from './trade';
+import { aiOffers, OFFERS } from './offers';
 import { tempForeignDay } from './tempforeign';
 import { tired, travelCost } from './travel';
 import { allStarDay } from './allstar';
@@ -399,6 +400,8 @@ function marketEvents(s: LeagueState, date: string) {
   // 1.6.0: contenders buy from rebuilding clubs before the deadline (strategy.ts).
   once('deadline', '07-22', () => aiDeadlineDeals(s, rng(`${s.seed}|ai-deadline|${s.year}`)));
   once('foreign', '07-01', () => aiForeignChanges(s, date, rng(`${s.seed}|ai-foreign|${s.year}`)));
+  // 2.0.28: the clubs come to us with trades (offers.ts).
+  for (const d of OFFERS.dates) once(`offers-${d}`, d, () => aiOffers(s, date, rng(`${s.seed}|offers|${s.year}|${d}`)));
 }
 
 /** An in-season national team leaves its clubs on its date; clubs call up replacements (maintainRosters). */

@@ -81011,5 +81011,146 @@
       }
     },
     "locations": []
+  },
+  "league.offers.text.f25c6a05": {
+    "source": "src/league/offers.ts",
+    "line": 67,
+    "params": {},
+    "locations": []
+  },
+  "league.offers.text.d0cd519f": {
+    "source": "src/league/offers.ts",
+    "line": 67,
+    "params": {
+      "spot": {
+        "expression": "SPOT_LABEL[spotOf(pick.p)]"
+      }
+    },
+    "locations": []
+  },
+  "league.offers.text.eade3bfa": {
+    "source": "src/league/offers.ts",
+    "line": 67,
+    "params": {},
+    "locations": []
+  },
+  "league.offers.text.35f9059c": {
+    "source": "src/league/offers.ts",
+    "line": 117,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.offers.text.57791162": {
+    "source": "src/league/offers.ts",
+    "line": 118,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      },
+      "why": {
+        "expression": "want.why"
+      }
+    },
+    "locations": []
+  },
+  "league.offers.text.d91240b6": {
+    "source": "src/league/offers.ts",
+    "line": 118,
+    "params": {
+      "date": {
+        "expression": "offer.expires"
+      }
+    },
+    "locations": []
+  },
+  "league.offers.text.8e2d9a69": {
+    "source": "src/league/offers.ts",
+    "line": 128,
+    "params": {
+      "ours": {
+        "expression": "names(o.give)"
+      },
+      "club": {
+        "expression": "shortOf(s, o.teamId)"
+      },
+      "theirs": {
+        "expression": "theirs"
+      }
+    },
+    "locations": []
+  },
+  "league.offers.text.eda643c4": {
+    "source": "src/league/offers.ts",
+    "line": 140,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "deal": {
+        "expression": "offerText(s, offer)"
+      }
+    },
+    "locations": []
+  },
+  "league.offers.text.1d55bab7": {
+    "source": "src/league/offers.ts",
+    "line": 145,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.b38f0cf2": {
+    "source": "src/ui/Market.tsx",
+    "line": 365,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.63374049": {
+    "source": "src/ui/Market.tsx",
+    "line": 375,
+    "params": {
+      "date": {
+        "expression": "o.expires"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.d16756ff": {
+    "source": "src/ui/Market.tsx",
+    "line": 379,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.b0be164a": {
+    "source": "src/ui/Market.tsx",
+    "line": 382,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.2f0e02c8": {
+    "source": "src/ui/Market.tsx",
+    "line": 387,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.09797ed8": {
+    "source": "src/ui/Market.tsx",
+    "line": 390,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.21b19efe": {
+    "source": "src/ui/Market.tsx",
+    "line": 393,
+    "params": {},
+    "locations": []
   }
 }

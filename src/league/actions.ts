@@ -1,3 +1,4 @@
+import { answerOffer } from './offers';
 import { extendStaff, fireStaff } from './staffdeals';
 import { askOwner } from './ownerask';
 import type { StaffRole } from './state';
@@ -96,6 +97,7 @@ export type Action =
   | { kind: 'twelveSetting'; setting: TwelveSetting }
   // The market (V0.5)
   | { kind: 'trade'; teamId: TeamId; give: PlayerId[]; get: PlayerId[]; extras?: TradeExtras }
+  | { kind: 'tradeOffer'; id: string; accept: boolean }
   | { kind: 'release'; id: PlayerId }
   | { kind: 'signPool'; id: PlayerId }
   | { kind: 'devSend'; what: 'fall' | 'abl'; ids: PlayerId[] }
@@ -331,6 +333,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     }
     case 'trade':
       makeTrade(s, action.teamId, action.give, action.get, action.extras);
+      break;
+    case 'tradeOffer':
+      answerOffer(s, action.id, action.accept);
       break;
     case 'release':
       releasePlayer(s, action.id);

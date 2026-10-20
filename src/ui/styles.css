@@ -3587,3 +3587,10 @@ button.danger {
   border-left-color: var(--accent);
   color: var(--accent);
 }
+
+/* 2.0.28: trades the AI clubs offer us */
+.trade-offers { border: 1px solid var(--rule); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; }
+.trade-offers h3 { margin: 0 0 6px; }
+.trade-offer { padding: 6px 0; border-top: 1px dashed var(--rule); display: grid; gap: 4px; }
+.trade-offer:first-of-type { border-top: 0; }
+.trade-offer .row { display: flex; gap: 6px; flex-wrap: wrap; }

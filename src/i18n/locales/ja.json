@@ -8828,5 +8828,21 @@
   "league.northevents.text.6a14ee2d": "大同江杯北部大学野球大会",
   "league.northevents.text.cf8735ff": "北部専門大学リーグ",
   "league.northevents.text.82ac692c": "北部専門大学野球大会",
-  "league.northevents.text.42a7b82f": "{n}位"
+  "league.northevents.text.42a7b82f": "{n}位",
+  "league.offers.text.f25c6a05": "再建中で若手を探しています",
+  "league.offers.text.d0cd519f": "{spot}の補強が急務です",
+  "league.offers.text.eade3bfa": "戦力補強を望んでいます",
+  "league.offers.text.35f9059c": "{club}からトレード提案",
+  "league.offers.text.57791162": "{club}：{why}。",
+  "league.offers.text.d91240b6": "{date}まで移籍市場 › トレードで受諾か拒否ができます。",
+  "league.offers.text.8e2d9a69": "当球団 {ours} ↔ {club} {theirs}",
+  "league.offers.text.eda643c4": "{club}のトレード提案を断りました：{deal}",
+  "league.offers.text.1d55bab7": "{club}側が考えを変え、提案を取り下げました。",
+  "ui.market.text.b38f0cf2": "届いたトレード提案",
+  "ui.market.text.63374049": "{date}まで",
+  "ui.market.text.d16756ff": "当球団が出す選手",
+  "ui.market.text.b0be164a": "受け取る選手",
+  "ui.market.text.2f0e02c8": "受諾",
+  "ui.market.text.09797ed8": "拒否",
+  "ui.market.text.21b19efe": "条件を変えてみる"
 }

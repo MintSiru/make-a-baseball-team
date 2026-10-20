@@ -195,3 +195,43 @@ describe('the north on its own school circuit (2.0.28, 통일 한국)', () => {
     expect(northernPast(fixed, 'v2028-north|draft|2030|north')).toEqual(fixed);
   });
 });
+
+describe('the AI clubs offer us trades (2.0.28)', () => {
+  it('offers a fair deal it would sign off on, keeps it ten days, and goes through when we take it', async () => {
+    const { apply } = await import('../src/league/actions');
+    const { firstTeamIds } = await import('../src/league/state');
+    const { aiOffers, liveOffers, OFFERS } = await import('../src/league/offers');
+    const { checkTrade, tradeValue, pickValue } = await import('../src/league/trade');
+    const { rng } = await import('../src/draftroom');
+    const s = createLeague('v2028-offers');
+    apply(s, { kind: 'toFounding' });
+    apply(s, { kind: 'found', settings: { name: '청주 독수리', short: '독수리', color: '#1f6fb2', cityId: 'cheongju', parentType: 'conglomerate', parentName: '청주그룹', stadium: 'existing', promotion: 'immediate', difficulty: 'normal', scenario: null } });
+    // Run one of the clubs already in the league, in May.
+    s.user!.teamId = firstTeamIds(s)[0]!;
+    s.pending = null;
+    s.next = s.schedule.findIndex((g) => g.date >= `${s.year}-05-10`);
+    for (let i = 0; i < 20; i++) aiOffers(s, `${s.year}-05-10`, rng(`v2028-offers|${i}`));
+    const offers = liveOffers(s);
+    expect(offers.length).toBeGreaterThan(0);
+    expect(offers.length).toBeLessThanOrEqual(OFFERS.open);
+    expect(s.alerts?.some((a) => a.id === offers[0]!.id)).toBe(true);
+    for (const o of offers) {
+      expect(checkTrade(s, o.teamId, o.give, o.get, o.extras).accepted).toBe(true);
+      const ask = o.give.reduce((a, id) => a + tradeValue(s, s.players[id]!), 0);
+      const pay = o.get.reduce((a, id) => a + tradeValue(s, s.players[id]!), 0) + (o.extras.picksIn ?? []).reduce((a, r) => a + pickValue(s, o.teamId, r), 0);
+      expect(pay).toBeGreaterThanOrEqual(ask * OFFERS.fair - 0.01);
+    }
+    // Turned down: gone. Taken: the players change clubs.
+    apply(s, { kind: 'tradeOffer', id: offers[0]!.id, accept: false });
+    expect(liveOffers(s).some((o) => o.id === offers[0]!.id)).toBe(false);
+    const take = liveOffers(s)[0];
+    if (take) {
+      apply(s, { kind: 'tradeOffer', id: take.id, accept: true });
+      expect(s.players[take.give[0]!]!.teamId).toBe(take.teamId);
+      expect(s.players[take.get[0]!]!.teamId).toBe(s.user!.teamId);
+    }
+    // Ten days on, an offer left alone has lapsed.
+    s.next = s.schedule.findIndex((g) => g.date > `${s.year}-05-${10 + OFFERS.days}`);
+    expect(liveOffers(s).length).toBe(0);
+  });
+});

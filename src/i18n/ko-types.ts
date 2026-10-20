@@ -8829,5 +8829,21 @@ export const koSource = {
   "league.northevents.text.6a14ee2d": "대동강배 북부 대학야구대회",
   "league.northevents.text.cf8735ff": "북부 전문대학 리그",
   "league.northevents.text.82ac692c": "북부 전문대학 야구대회",
-  "league.northevents.text.42a7b82f": "{n}위"
+  "league.northevents.text.42a7b82f": "{n}위",
+  "league.offers.text.f25c6a05": "리빌딩 중이라 젊은 선수를 찾고 있습니다",
+  "league.offers.text.d0cd519f": "{spot} 보강이 급합니다",
+  "league.offers.text.eade3bfa": "전력 보강을 원합니다",
+  "league.offers.text.35f9059c": "{club}에서 트레이드 제안",
+  "league.offers.text.57791162": "{club} {why}.",
+  "league.offers.text.d91240b6": "이적시장 › 트레이드에서 {date}까지 수락하거나 거절할 수 있습니다.",
+  "league.offers.text.8e2d9a69": "우리 {ours} ↔ {club} {theirs}",
+  "league.offers.text.eda643c4": "{club}의 트레이드 제안을 거절했습니다: {deal}",
+  "league.offers.text.1d55bab7": "{club} 측이 마음을 바꿔 제안을 거둬들였습니다.",
+  "ui.market.text.b38f0cf2": "받은 트레이드 제안",
+  "ui.market.text.63374049": "{date}까지",
+  "ui.market.text.d16756ff": "우리가 줄 선수",
+  "ui.market.text.b0be164a": "받을 선수",
+  "ui.market.text.2f0e02c8": "수락",
+  "ui.market.text.09797ed8": "거절",
+  "ui.market.text.21b19efe": "조건 바꿔 보기"
 } as const;
