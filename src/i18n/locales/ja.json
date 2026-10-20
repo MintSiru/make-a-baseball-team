@@ -8844,5 +8844,11 @@
   "ui.market.text.b0be164a": "受け取る選手",
   "ui.market.text.2f0e02c8": "受諾",
   "ui.market.text.09797ed8": "拒否",
-  "ui.market.text.21b19efe": "条件を変えてみる"
+  "ui.market.text.21b19efe": "条件を変えてみる",
+  "league.reports.text.71b1baa0": "得点圏でさらに強くなります",
+  "league.reports.text.c6c95b42": "得点圏で萎縮します",
+  "league.reports.text.94a2b78c": "チャンスに強い",
+  "league.reports.text.e2e661d8": "チャンスに弱い",
+  "league.traits.text.8c934283": "勝負強さ",
+  "ui.playerPanel.text.e6f85d35": "得点圏"
 }

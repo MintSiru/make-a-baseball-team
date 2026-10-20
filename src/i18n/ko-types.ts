@@ -8845,5 +8845,11 @@ export const koSource = {
   "ui.market.text.b0be164a": "받을 선수",
   "ui.market.text.2f0e02c8": "수락",
   "ui.market.text.09797ed8": "거절",
-  "ui.market.text.21b19efe": "조건 바꿔 보기"
+  "ui.market.text.21b19efe": "조건 바꿔 보기",
+  "league.reports.text.71b1baa0": "득점권에서 더 강해집니다",
+  "league.reports.text.c6c95b42": "득점권에서 위축됩니다",
+  "league.reports.text.94a2b78c": "찬스에 강한",
+  "league.reports.text.e2e661d8": "찬스에 약한",
+  "league.traits.text.8c934283": "클러치",
+  "ui.playerPanel.text.e6f85d35": "득점권"
 } as const;

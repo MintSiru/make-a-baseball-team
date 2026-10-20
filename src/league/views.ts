@@ -348,6 +348,7 @@ function sumSplits(list: (Splits | undefined)[]): Splits | null {
   for (const x of have) {
     addInto(out.L, x.L);
     addInto(out.R, x.R);
+    if (x.S) addInto((out.S ??= emptySplit()), x.S);
   }
   return out;
 }

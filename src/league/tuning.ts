@@ -846,6 +846,10 @@ export const GROWTH = {
   geniusBreakout: 1,
   /** Grade points on his main tools in the postseason per point of 멘탈 over 50. */
   mental: 0.05,
+  /** 2.0.28: grade points on his main tools with runners in scoring position per point of 클러치 over 50 (±5 at the
+      ends), and how much of 멘탈 over 50 carries into it. */
+  clutch: 0.1,
+  clutchFromMental: 0.25,
   /** Who gets into trouble: × 2^((논란성 − pivot) / doubling); a club's chance × its players' average of that over
       the league's (`mean`), so the league sees as much trouble as before. */
   controversy: { pivot: 30, doubling: 15, mean: 1.35 },

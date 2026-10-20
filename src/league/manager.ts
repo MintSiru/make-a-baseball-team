@@ -19,7 +19,7 @@ import { pitchingLift, platoonFactor } from './pitches';
 import { ENGINE, STAFF } from './tuning';
 import { formOf } from './life';
 import { adaptPenalty } from './adapt';
-import { bigGameEdge } from './traits';
+import { bigGameEdge, clutchEdge } from './traits';
 import { inWard, WARD } from './ward';
 import { isKyopo, kyopoLimit } from './kyopo';
 import { eraUsage, type EraUsage } from '../rules/history';
@@ -539,6 +539,9 @@ function withForm(s: LeagueState, date: string, team: TeamIn): TeamIn {
   const tired = inWard(s, team.teamId) ? WARD.fatigue : 0;
   const today = (p: Player) => formOf(p, date) - adaptPenalty(p, s.year) + (big ? bigGameEdge(p) : 0) - tired;
   for (const b of [...team.lineup, ...(team.bench ?? [])]) {
+    // 2.0.28: 클러치 (the engine uses it with runners in scoring position).
+    const c = clutchEdge(s.players[b.id]!);
+    if (c) b.clutch = c;
     const f = today(s.players[b.id]!);
     if (!f) continue;
     b.contact += f;
@@ -546,6 +549,8 @@ function withForm(s: LeagueState, date: string, team: TeamIn): TeamIn {
     b.eye += f;
   }
   for (const a of [team.starter, ...team.bullpen]) {
+    const c = clutchEdge(s.players[a.id]!);
+    if (c) a.clutch = c;
     const f = today(s.players[a.id]!);
     if (!f) continue;
     a.stuff += f;

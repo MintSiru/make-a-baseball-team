@@ -8844,5 +8844,11 @@
   "ui.market.text.b0be164a": "We get",
   "ui.market.text.2f0e02c8": "Accept",
   "ui.market.text.09797ed8": "Decline",
-  "ui.market.text.21b19efe": "Adjust terms"
+  "ui.market.text.21b19efe": "Adjust terms",
+  "league.reports.text.71b1baa0": "Rises to the occasion with runners in scoring position",
+  "league.reports.text.c6c95b42": "Shrinks with runners in scoring position",
+  "league.reports.text.94a2b78c": "clutch",
+  "league.reports.text.e2e661d8": "wilts in the clutch",
+  "league.traits.text.8c934283": "Clutch",
+  "ui.playerPanel.text.e6f85d35": "RISP"
 }

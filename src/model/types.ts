@@ -38,6 +38,9 @@ export interface Traits {
   loyalty: number;
   /** 논란성: trouble off the field. */
   controversy: number;
+  /** 2.0.28 클러치: better (or worse) with runners in scoring position. Absent on a player from before (traits.ts
+      clutchOf draws it). */
+  clutch?: number;
 }
 
 /** A scouting report: five-point 20–80 grades with observer error. */

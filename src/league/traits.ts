@@ -10,6 +10,8 @@ import { k as __i18n_k } from '../i18n/index';
    리더십     a senior voice in the clubhouse.
    충성심     what his own club's offer is worth to him in free agency.
    논란성     trouble off the field (scandals.ts: who it happens to, and how often at his club).
+   클러치     (2.0.28) with runners in scoring position: a little better or worse at the plate, or on the mound with
+             them on. A cousin of 멘탈 (a quarter of it carries over), drawn after the others so they stay as they were.
 
    Draft Room's eight personalities lean the traits (a 성실형 works harder, a 대담형 loves the big stage and makes
    more headlines); the rest is chance. The leanings are centred, so the league's average stays where it was. Traits
@@ -30,8 +32,8 @@ export const GROWTH_NOTES: Record<GrowthType, string> = {
 };
 
 export type TraitKey = Exclude<keyof Traits, 'growth'>;
-export const TRAIT_KEYS: TraitKey[] = ['genius', 'work', 'mental', 'leadership', 'loyalty', 'controversy'];
-export const TRAIT_LABELS: Record<TraitKey, string> = { genius: __i18n_k("league.traits.tRAIT_LABELS.genius.77832cee"), work: __i18n_k("league.traits.tRAIT_LABELS.work.46833a36"), mental: __i18n_k("league.traits.tRAIT_LABELS.mental.48b4c861"), leadership: __i18n_k("league.traits.tRAIT_LABELS.leadership.3386e92f"), loyalty: __i18n_k("league.traits.tRAIT_LABELS.loyalty.2db96ec2"), controversy: __i18n_k("league.traits.tRAIT_LABELS.controversy.5346a603") };
+export const TRAIT_KEYS: TraitKey[] = ['genius', 'work', 'mental', 'leadership', 'loyalty', 'controversy', 'clutch'];
+export const TRAIT_LABELS: Record<TraitKey, string> = { genius: __i18n_k("league.traits.tRAIT_LABELS.genius.77832cee"), work: __i18n_k("league.traits.tRAIT_LABELS.work.46833a36"), mental: __i18n_k("league.traits.tRAIT_LABELS.mental.48b4c861"), leadership: __i18n_k("league.traits.tRAIT_LABELS.leadership.3386e92f"), loyalty: __i18n_k("league.traits.tRAIT_LABELS.loyalty.2db96ec2"), controversy: __i18n_k("league.traits.tRAIT_LABELS.controversy.5346a603"), clutch: __i18n_k("league.traits.text.8c934283") };
 
 /** Each trait's spread: base, standard deviation, and a rare jump (a genius, a troublemaker). */
 const ROLL: Record<TraitKey, { base: number; sd: number; tail?: [number, number] }> = {
@@ -41,18 +43,19 @@ const ROLL: Record<TraitKey, { base: number; sd: number; tail?: [number, number]
   leadership: { base: 45, sd: 15 },
   loyalty: { base: 50, sd: 16 },
   controversy: { base: 28, sd: 12, tail: [0.06, 30] },
+  clutch: { base: 50, sd: 13 },
 };
 
 // prettier-ignore
 const LEAN_RAW: Record<string, Partial<Record<TraitKey, number>>> = {
-  '차분한 노력파': { work: 14, mental: 6, controversy: -10 },
-  '승부욕 강한 도전자': { mental: 10, work: 4, controversy: 6, loyalty: -6 },
+  '차분한 노력파': { work: 14, mental: 6, controversy: -10, clutch: 4 },
+  '승부욕 강한 도전자': { mental: 10, work: 4, controversy: 6, loyalty: -6, clutch: 6 },
   '밝은 분위기 메이커': { leadership: 8, loyalty: 6, mental: 4, controversy: 4 },
-  '분석을 즐기는 연구형': { genius: 10, work: 6, mental: -4 },
+  '분석을 즐기는 연구형': { genius: 10, work: 6, mental: -4, clutch: -4 },
   '책임감 강한 리더': { leadership: 24, work: 6, loyalty: 10, controversy: -10 },
   '말보다 행동하는 실천형': { work: 10, mental: 4, leadership: 4 },
   '꾸준함을 믿는 성실형': { work: 20, loyalty: 6, controversy: -12 },
-  '큰 무대를 즐기는 대담형': { mental: 22, genius: 4, loyalty: -10, controversy: 10 },
+  '큰 무대를 즐기는 대담형': { mental: 22, genius: 4, loyalty: -10, controversy: 10, clutch: 12 },
 };
 /** The leanings less their average over the eight, so the population keeps each trait's base. */
 const LEAN: Record<string, Partial<Record<TraitKey, number>>> = Object.fromEntries(
@@ -94,6 +97,7 @@ export function rollTraits(seed: string, id: string, personality: string, curve?
     const jump = a.tail && r() < a.tail[0] ? a.tail[1] : 0;
     out[k] = clamp(Math.round(a.base + (lean[k] ?? 0) + gauss(r) * a.sd + jump), 1, 99);
   }
+  out.clutch = clamp(Math.round(out.clutch! + (out.mental - 50) * GROWTH.clutchFromMental), 1, 99);
   return out;
 }
 
@@ -150,6 +154,17 @@ export const matureAge = (p: Pick<Player, 'id' | 'personality' | 'hidden'>) => g
 
 /** How much likelier than usual he is to get into trouble off the field. */
 export const troubleFactor = (p: Pick<Player, 'id' | 'personality' | 'hidden'>) => 2 ** ((traitsOf(p).controversy - GROWTH.controversy.pivot) / GROWTH.controversy.doubling);
+
+/** 2.0.28: his 클러치 (a player from before draws it from his id, the same every time). */
+export function clutchOf(p: Pick<Player, 'id' | 'personality' | 'hidden'>): number {
+  const t = traitsOf(p);
+  if (t.clutch != null) return t.clutch;
+  const r = rng(`clutch|${p.id}`);
+  return clamp(Math.round(ROLL.clutch.base + (LEAN[p.personality]?.clutch ?? 0) + gauss(r) * ROLL.clutch.sd + (t.mental - 50) * GROWTH.clutchFromMental), 1, 99);
+}
+
+/** Grade points on his main tools with runners in scoring position. */
+export const clutchEdge = (p: Pick<Player, 'id' | 'personality' | 'hidden'>) => (clutchOf(p) - 50) * GROWTH.clutch;
 
 /** Grade points on his main tools in a postseason game. */
 export const bigGameEdge = (p: Pick<Player, 'id' | 'personality' | 'hidden'>) => (traitsOf(p).mental - 50) * GROWTH.mental;

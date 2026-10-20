@@ -226,7 +226,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
     const current = () => field.apps[field.apps.length - 1]!;
 
     // The plate appearance in progress, credited to both players' platoon splits once it is over.
-    type OpenPa = { bl: BattingLine; pl: PitchingLine; vsPitcher: 'L' | 'R'; vsBatter: 'L' | 'R'; before: Split; runs: number; err: number; gdp: number; rbi: number; ball?: BattedBall };
+    type OpenPa = { bl: BattingLine; pl: PitchingLine; vsPitcher: 'L' | 'R'; vsBatter: 'L' | 'R'; before: Split; runs: number; err: number; gdp: number; rbi: number; ball?: BattedBall; risp?: boolean };
     let open: OpenPa | null = null;
     const scoreNow = (): [number, number] => [away.box.runs, home.box.runs];
     const record = (o: OpenPa, res: PlayResult) =>
@@ -236,6 +236,8 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       if (!open) return;
       const now = counts(open.bl);
       const into = [open.bl.split![open.vsPitcher], open.pl.split![open.vsBatter]];
+      // 2.0.28: and with runners in scoring position.
+      if (open.risp) into.push((open.bl.split!.S ??= emptySplit()), (open.pl.split!.S ??= emptySplit()));
       for (const k of Object.keys(now) as (keyof Split)[]) for (const s of into) s[k] += now[k] - open.before[k];
       // 2.0.4: the batter against this pitcher.
       if (game.balls) {
@@ -377,8 +379,10 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       const batter = bat.lineup[bat.next]!;
       const bl = bat.bat[bat.next]!;
       const fatigue = Math.max(0, pl.pitches - p.pitchLimit) * 0.18;
-      const stuff = Zr(p.stuff - fatigue),
-        command = Zr(p.command - fatigue),
+      // 2.0.28: 클러치, with a runner on second or third (traits.ts).
+      const pc = bases[1] || bases[2] ? (p.clutch ?? 0) : 0;
+      const stuff = Zr(p.stuff - fatigue + pc),
+        command = Zr(p.command - fatigue + pc),
         breaking = Zr(p.breaking - fatigue * 0.5);
 
       // Stolen base attempt before the pitch: runner on first, second base open.
@@ -443,9 +447,10 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       const hb = isHome ? 1 : 0;
       const b = E.batter,
         q = E.pitcher;
-      const zc = Zr(batter.contact),
-        zp = Zr(batter.power),
-        ze = Zr(batter.eye),
+      const bc = bases[1] || bases[2] ? (batter.clutch ?? 0) : 0;
+      const zc = Zr(batter.contact + bc),
+        zp = Zr(batter.power + bc),
+        ze = Zr(batter.eye + bc),
         zs = Zr(batter.speed);
       // 2.0.3: the catcher's game-calling, a little on the strikeouts and walks.
       const callZ = game.balls ? field.leadZ : 0;
@@ -461,7 +466,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       );
 
       const hitsFrom = batter.bats === 'S' ? (p.throws === 'L' ? 'R' : 'L') : batter.bats;
-      const pa: OpenPa = { bl, pl, vsPitcher: p.throws, vsBatter: hitsFrom, before: counts(bl), runs: bat.box.runs, err: field.box.errors, gdp: bl.gdp, rbi: bl.rbi };
+      const pa: OpenPa = { bl, pl, vsPitcher: p.throws, vsBatter: hitsFrom, before: counts(bl), runs: bat.box.runs, err: field.box.errors, gdp: bl.gdp, rbi: bl.rbi, ...(bases[1] || bases[2] ? { risp: true } : {}) };
       open = pa;
       // 2.0.3: the catcher's plate appearances and the runs his game-calling is worth over them (z × 0.001 a PA).
       if (game.balls) {

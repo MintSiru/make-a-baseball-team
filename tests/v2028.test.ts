@@ -235,3 +235,55 @@ describe('the AI clubs offer us trades (2.0.28)', () => {
     expect(liveOffers(s).length).toBe(0);
   });
 });
+
+describe('클러치 (2.0.28)', () => {
+  it('is a hidden trait that leans on 멘탈, stays the same for a player from before, and stays within ±5 grade points', async () => {
+    const { clutchEdge, clutchOf, rollTraits } = await import('../src/league/traits');
+    const xs = Array.from({ length: 2000 }, (_, i) => rollTraits('v2028-clutch', `p${i}`, '큰 무대를 즐기는 대담형'));
+    const ys = Array.from({ length: 2000 }, (_, i) => rollTraits('v2028-clutch', `p${i}`, '분석을 즐기는 연구형'));
+    const mean = (a: number[]) => a.reduce((x, y) => x + y, 0) / a.length;
+    expect(mean(xs.map((t) => t.clutch!))).toBeGreaterThan(mean(ys.map((t) => t.clutch!)));
+    // An old player (no 클러치 kept) gets the same value every time.
+    const old = { id: 'old-1', personality: '', hidden: { traits: { ...xs[0]!, clutch: undefined } } } as never;
+    expect(clutchOf(old)).toBe(clutchOf(old));
+    for (const t of xs) expect(Math.abs(clutchEdge({ id: 'x', personality: '', hidden: { traits: t } } as never))).toBeLessThanOrEqual(5);
+  });
+
+  it('moves a hitter with runners in scoring position only, and counts those plate appearances apart', async () => {
+    const { simulateGame } = await import('../src/league/engine/game');
+    const { rng } = await import('../src/draftroom');
+    const POS = ['CF', 'SS', '2B', '1B', '3B', 'LF', 'RF', 'DH', 'C'] as const;
+    const team = (id: string, clutch: number) => ({
+      teamId: id,
+      lineup: POS.map((pos, i) => ({ id: `${id}-b${i}`, bats: 'R' as const, contact: 55, power: 55, eye: 55, speed: 55, defense: 55, pos, clutch })),
+      starter: { id: `${id}-sp`, throws: 'R' as const, stuff: 55, command: 55, breaking: 55, stamina: 55, pitchLimit: 90 },
+      bullpen: (['CL', 'SU', 'HL', 'MU', 'LR'] as const).map((role, i) => ({ id: `${id}-rp${i}`, throws: 'R' as const, stuff: 55, command: 55, breaking: 55, stamina: 40, pitchLimit: 30, role })),
+    });
+    const line = (clutch: number) => {
+      const t = { all: { pa: 0, h: 0, ab: 0 }, risp: { pa: 0, h: 0, ab: 0 } };
+      for (let i = 0; i < 150; i++) {
+        const out = simulateGame({ gameId: `c${i}`, home: team('H', clutch), away: team('A', 0), maxInnings: 11, park: 1 }, rng(`v2028-clutch|${i}`));
+        for (const b of out.home.batting) {
+          t.all.pa += b.pa;
+          t.all.h += b.h;
+          t.all.ab += b.ab;
+          const s = b.split?.S;
+          if (s) {
+            t.risp.pa += s.pa;
+            t.risp.h += s.h;
+            t.risp.ab += s.ab;
+          }
+        }
+      }
+      return t;
+    };
+    const hi = line(5),
+      lo = line(-5);
+    expect(hi.risp.pa).toBeGreaterThan(500);
+    expect(hi.risp.pa).toBeLessThan(hi.all.pa);
+    expect(hi.risp.h / hi.risp.ab).toBeGreaterThan(lo.risp.h / lo.risp.ab);
+    // With the bases empty or a runner on first only, the same hitters.
+    const rest = (t: typeof hi) => (t.all.h - t.risp.h) / (t.all.ab - t.risp.ab);
+    expect(Math.abs(rest(hi) - rest(lo))).toBeLessThan(0.03);
+  });
+});

@@ -204,6 +204,7 @@ function addSplits(into: { split?: Splits }, from: Splits) {
   into.split ??= { L: emptySplit(), R: emptySplit() };
   addInto(into.split.L, from.L);
   addInto(into.split.R, from.R);
+  if (from.S) addInto((into.split.S ??= emptySplit()), from.S);
 }
 
 /** Adds a box score to the lines (the season's unless given) and to the pitchers' arm use. */

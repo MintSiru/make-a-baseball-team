@@ -81152,5 +81152,41 @@
     "line": 393,
     "params": {},
     "locations": []
+  },
+  "league.reports.text.71b1baa0": {
+    "source": "src/league/reports.ts",
+    "line": 171,
+    "params": {},
+    "locations": []
+  },
+  "league.reports.text.c6c95b42": {
+    "source": "src/league/reports.ts",
+    "line": 172,
+    "params": {},
+    "locations": []
+  },
+  "league.reports.text.94a2b78c": {
+    "source": "src/league/reports.ts",
+    "line": 191,
+    "params": {},
+    "locations": []
+  },
+  "league.reports.text.e2e661d8": {
+    "source": "src/league/reports.ts",
+    "line": 191,
+    "params": {},
+    "locations": []
+  },
+  "league.traits.text.8c934283": {
+    "source": "src/league/traits.ts",
+    "line": 36,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.e6f85d35": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 147,
+    "params": {},
+    "locations": []
   }
 }

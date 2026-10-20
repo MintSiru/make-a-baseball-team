@@ -143,6 +143,8 @@ function SplitTable({ title, splits, pitcher }: { title: string; splits: Splits 
         [__i18n_k("ui.playerPanel.splitTable.rows.78f330a6"), splits.L],
         [__i18n_k("ui.playerPanel.splitTable.rows.43502365"), splits.R],
       ];
+  // 2.0.28: with runners in scoring position (from 2.0.28's games on).
+  if (splits.S?.pa) rows.push([__i18n_t("ui.playerPanel.text.e6f85d35"), splits.S]);
   return (
     <>
       <h4>{__i18n_display(title)}</h4>
