@@ -287,3 +287,22 @@ describe('클러치 (2.0.28)', () => {
     expect(Math.abs(rest(hi) - rest(lo))).toBeLessThan(0.03);
   });
 });
+
+describe("a player's moves (2.0.28)", () => {
+  it('starts from his draft pick, notes trades, free-agent deals and retirement, and reads an old save off his career', async () => {
+    const { moveHistory } = await import('../src/league/moves');
+    const s = createLeague('v2028-moves');
+    const ps = Object.values(s.players);
+    const kinds = new Set(ps.flatMap((p) => (p.moves ?? []).map((m) => m.kind)));
+    for (const k of ['trade', 'fa', 'retire', 'release'] as const) expect(kinds.has(k)).toBe(true);
+    const traded = ps.find((p) => p.moves?.some((m) => m.kind === 'trade') && s.draftLog?.some((d) => d.id === p.id))!;
+    const rows = moveHistory(s, traded);
+    expect(rows[0]!.kind).toBe('draft');
+    expect(rows.find((r) => r.kind === 'trade')!.note).toMatch(/↔/);
+    for (let i = 1; i < rows.length; i++) expect(rows[i]!.date >= rows[i - 1]!.date).toBe(true);
+    // A save from before: no moves kept, the club changes come from his career.
+    const mover = ps.find((p) => new Set(p.career.map((c) => c.teamId)).size >= 3)!;
+    const old = moveHistory(s, { ...mover, moves: undefined });
+    expect(old.filter((r) => r.kind === 'change').length).toBeGreaterThanOrEqual(2);
+  });
+});

@@ -300,6 +300,8 @@ export interface Player {
   switched?: { year: number; to: 'pitcher' | 'hitter' }[];
   /** 2.0.28 (development.ts): his fall instructional league and Australian winters. */
   devLog?: import('../league/development').DevLine[];
+  /** 2.0.28 (league/moves.ts): his moves from club to club, as they happened. */
+  moves?: import('../league/moves').MoveEntry[];
   /** 2.0.15 (venues.ts): his career at home and on the road, and at each ballpark (from 2.0.15). */
   venues?: import('../league/venues').Venues;
   career: SeasonRecord[];

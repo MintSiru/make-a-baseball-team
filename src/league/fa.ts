@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { noteMove } from './moves';
 /* The free-agent negotiation (V0.8, RULES.md §4 and §9). From the day after the list is published every club
    may talk to every free agent (no exclusive window since 2016). An offer has a signing bonus, the same salary
    each guaranteed season, incentives, perhaps a period option ("2+1", an opt-out) and, from the user's club,
@@ -975,6 +976,7 @@ function closeUnsigned(s: LeagueState, m: FaMarket, t: FaTalk, day: number, next
   t.gone = true;
   if (me && t.from === me) (s.user!.log ??= []).push({ year: m.year, text: __i18n_k("league.fa.closeUnsigned.text.0971c548", { name: p.name }) });
   m.news.push({ day, text: __i18n_k("league.fa.closeUnsigned.text.83bc90ee", { name: p.name }), ...(t.from === me ? { mine: true } : {}) });
+  noteMove(s, p, 'unsigned', t.from, null);
   removeFromRoster(s, p);
   p.teamId = null;
   p.contract = null;

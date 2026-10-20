@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { noteMove } from './moves';
 /* 2.0.18 (the user's request): the injury replacement foreign player (부상 대체 외국인 선수, the KBO's from 2024,
    RULES.md §5, S38). A foreign player out six weeks or more goes on the rehabilitation list and his club may sign a
    stand-in for the time he is out, without using one of the season's replacements; the stand-in is paid by the month
@@ -104,6 +105,7 @@ export function signTemp(s: LeagueState, teamId: TeamId, forId: PlayerId, inId: 
   const price = tempPrice(s, p, forId);
   p.status = 'active';
   p.teamId = teamId;
+  noteMove(s, p, 'temp', null, teamId, __i18n_k("league.tempforeign.text.fefa1654", { name: injured.name }));
   p.contract = { ...foreignContract(teamId, s.year, { bonus: 0, salary: price, options: 0 }, !!p.origin.asiaQuota, price), temp: forId };
   s.players[p.id] = p;
   const r = s.rosters[teamId]!;

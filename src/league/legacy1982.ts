@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { noteMove } from './moves';
 /* 1.9.5, scenario 15 (the 1.9 plan's 4.3): the 1982 legacy start. The league begins with the KBO's six clubs of 1982
    under their names then (lineage.ts) and plays the KBO's own rules year by year (rules/history.ts, `historical`);
    the money stays in today's terms (an era shift: 1982 is 2026's economy). The player watches the first season,
@@ -163,6 +164,7 @@ export function legacyAllocations(s: LeagueState, next: number) {
         .slice(ALLOCATION.keep, ALLOCATION.keep + ALLOCATION.perClub);
       for (const p of give) {
         removeFromRoster(s, p);
+        noteMove(s, p, 'special', from, to);
         p.teamId = to;
         if (p.contract) p.contract.teamId = to;
         s.rosters[to]!.futures.push(p.id);

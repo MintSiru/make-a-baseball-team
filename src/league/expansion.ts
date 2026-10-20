@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { noteMove } from './moves';
 /* The user's expansion club: founding in summer 2026, the first drafts, the special draft from the
    other clubs, free agents, foreign players and the step up to the first team.
 
@@ -623,6 +624,7 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
       for (const [teamId, id] of Object.entries(input.picks)) {
         const p = s.players[id]!;
         removeFromRoster(s, p);
+        noteMove(s, p, 'special', p.teamId, u.teamId);
         p.teamId = u.teamId;
         if (p.contract) p.contract.teamId = u.teamId;
         s.rosters[u.teamId]!.futures.push(p.id);
@@ -634,6 +636,7 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
       for (const id of input.ids) {
         const p = s.players[id]!;
         sign(s, p, u.teamId, { teamId: u.teamId, kind: 'standard', signedIn: next - 1, signingBonus: 0, salaries: [{ season: next, amount: renewSalary(p, next) }] });
+        noteMove(s, p, 'signReleased', null, u.teamId);
       }
       if (s.offseason) s.offseason.released = s.offseason.released.filter((id) => !input.ids.includes(id));
       break;
@@ -655,6 +658,7 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
           continue;
         }
         removeFromRoster(s, p);
+        noteMove(s, p, 'release', p.teamId, null);
         p.teamId = null;
         s.offseason?.released.push(id);
       }

@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { noteNewsMove } from './moves';
 /* Transaction news (V0.7.2): trades, releases and waivers, unattached signings, foreign replacements,
    postings, free-agent contracts and the second draft become articles, with each player's public record
    as fact lines for an optional language model. Written only in a game with the player's club (the
@@ -125,6 +126,8 @@ const FANS = {
 
 /** Writes the article for a move (see the header for which ones). */
 export function moveNews(s: LeagueState, m: Move, date = s.phase === 'regular' ? today(s) : `${s.year}-11-01`) {
+  // 2.0.28: on the players' own move records, in any league.
+  noteNewsMove(s, m, date);
   const u = s.user?.teamId;
   if (!u) return;
   const season = s.phase === 'regular' ? s.year : s.year + 1;

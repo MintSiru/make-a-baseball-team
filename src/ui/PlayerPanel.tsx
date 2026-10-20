@@ -2,6 +2,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 /* A league player's page (V0.5.1 layout; in parts since 1.4.0): who he is and his latest season at a glance on top,
    then one part at a time — scouting grades as bars with positions or pitches, records, the staff's read, his
    background and injuries. Everything shown is public: grades are scouting reports, velocity is the radar gun. */
+import { moveHistory } from '../league/moves';
 import type { FieldTotals } from '../league/fielding';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useFocusTrap } from './modal';
@@ -131,6 +132,39 @@ const splitRates = (x: Split) => ({
   obp: x.pa ? (x.h + x.bb + x.hbp) / Math.max(1, x.ab + x.bb + x.hbp + x.sf) : 0,
   slg: x.ab ? x.tb / x.ab : 0,
 });
+
+/** 2.0.28 (moves.ts): how he came into the league and every move since. */
+function MoveTable({ league, p }: { league: LeagueState; p: Parameters<typeof moveHistory>[1] }) {
+  const rows = moveHistory(league, p);
+  if (!rows.length) return null;
+  return (
+    <>
+      <h3>{__i18n_t("ui.playerPanel.text.fe920557")}</h3>
+      <div class="table-wrap" tabIndex={0}>
+        <table class="record-table moves">
+          <thead>
+            <tr>
+              <th>{__i18n_t("ui.playerPanel.text.5caa75a8")}</th>
+              <th>{__i18n_t("ui.playerPanel.text.af2feed6")}</th>
+              <th>{__i18n_t("ui.playerPanel.text.c686d054")}</th>
+              <th>{__i18n_t("ui.playerPanel.text.75cffa41")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i}>
+                <td class="num">{r.date.length > 4 ? r.date.slice(0, 7).replace('-', '.') : r.date}</td>
+                <td>{__i18n_display(r.label)}</td>
+                <td>{__i18n_display(r.from && r.to ? `${r.from} → ${r.to}` : r.to ? `→ ${r.to}` : r.from ? `${r.from} →` : '-')}</td>
+                <td class="muted small">{__i18n_display(r.note || '')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
 
 function SplitTable({ title, splits, pitcher }: { title: string; splits: Splits | null; pitcher: boolean }) {
   if (!splits) return null;
@@ -727,6 +761,7 @@ export function PlayerPanel({
               ))}
             </dl>
             <p class="muted small">{__i18n_display(p.education.pathText)}</p>
+            <MoveTable league={league} p={p} />
             {__i18n_display(!!p.honors?.length && (
               <>
                 <h3>{__i18n_t("ui.playerPanel.playerPanel.34f8ad9e")}</h3>

@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { noteMove } from './moves';
 import { legacyAllocations } from './legacy1982';
 /* The twelfth club, the rival (V0.9). The player designs it (or lets the scouts suggest one) when it is founded:
    in a set winter, or when the board puts a twelfth club to the clubs (and the player may vote it down).
@@ -273,6 +274,7 @@ export function rivalSpecialDraft(s: LeagueState, next: number, club?: FoundingC
     const p = eligible.filter((x) => !kept.has(x.id)).sort((a, b) => gmValue(b, next, tw.gm) - gmValue(a, next, tw.gm))[0];
     if (!p) continue;
     removeFromRoster(s, p);
+    noteMove(s, p, 'special', teamId, tw.teamId);
     p.teamId = tw.teamId;
     if (p.contract) p.contract.teamId = tw.teamId;
     s.rosters[tw.teamId]!.futures.push(p.id);
