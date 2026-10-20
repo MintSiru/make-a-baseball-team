@@ -134,6 +134,8 @@ export interface Splits {
   R: Split;
   /** 2.0.28: with a runner on second or third (득점권), from 2.0.28's games on. */
   S?: Split;
+  /** 2.0.30: by situation (situation.ts: leverage, margin, runners), the counts in SPLIT_KEYS order. */
+  X?: Record<string, number[]>;
 }
 
 export const emptySplit = (): Split => ({ pa: 0, ab: 0, h: 0, tb: 0, hr: 0, bb: 0, hbp: 0, k: 0, sf: 0 });

@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { addSituations } from './engine/situation';
 import { noteForeignOut, noteMove } from './moves';
 /* Between seasons: close the books, then age every player a year and rebuild the rosters.
 
@@ -92,6 +93,13 @@ export function closeSeason(s: LeagueState) {
     const war = (line.bat ? batterWar(line.bat, p.position ?? 'DH', lg) : 0) + (line.pit ? pitcherWar(line.pit, lg) : 0);
     // 2.0.4: the spray chart is the season's alone (a save stays small); a pitcher's mix and velocity are kept.
     const { spray: _spray, ...batKept } = line.bat ?? {};
+    // 2.0.30: the situations go to his career's (situation.ts), not on each season's record.
+    for (const [side, l] of [['bat', line.bat], ['pit', line.pit]] as const) {
+      const x = l?.split?.X;
+      if (!x) continue;
+      addSituations(((p.situ ??= {})[side] ??= {}), x);
+      delete l.split!.X;
+    }
     const rec: SeasonRecord = { year: s.year, teamId: line.teamId, age: ageIn(p, s.year), days: line.days, bat: line.bat ? (batKept as typeof line.bat) : null, pit: line.pit, war: Math.round(war * 10) / 10, ...(line.pit ? seasonMix(p, s.year) : {}) };
     if (line.bat || line.pit || line.days) p.career.push(rec);
     // 2.0.15: the season's venues join his career's.

@@ -9,6 +9,7 @@ import { faOutlook, type FaOutlook } from './faclock';
 import type { BatTotals, InjuryRecord, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { emptySplit, type Splits } from './engine/types';
 import { batDetail, pitDetail } from './savant';
+import { addSituations } from './engine/situation';
 import { exhibitionBox, exhibitionLeaders, exhibitionTable } from './exhibition';
 import { averageVelocity, FASTBALL_LABELS, fastballOf, pitchGrades, pitchingLift, topVelocity, type FastballType } from './pitches';
 import { POSITION_SHORT, positionGrades, secondaryPositions } from './positions';
@@ -355,6 +356,14 @@ function careerHighs(rows: CareerRow[], pitcher: boolean) {
   return out.filter((x): x is NonNullable<typeof x> => !!x);
 }
 
+/** 2.0.30: the seasons gone by keep their situations on the player (`situ`), not on each season's record. */
+function withSituations(splits: Splits | null, past: Record<string, number[]> | undefined): Splits | null {
+  if (!past) return splits;
+  const out: Splits = splits ?? { L: emptySplit(), R: emptySplit() };
+  addSituations((out.X ??= {}), past);
+  return out;
+}
+
 function sumSplits(list: (Splits | undefined)[]): Splits | null {
   const have = list.filter((x): x is Splits => !!x);
   if (!have.length) return null;
@@ -363,6 +372,7 @@ function sumSplits(list: (Splits | undefined)[]): Splits | null {
     addInto(out.L, x.L);
     addInto(out.R, x.R);
     if (x.S) addInto((out.S ??= emptySplit()), x.S);
+    if (x.X) addSituations((out.X ??= {}), x.X);
   }
   return out;
 }
@@ -393,7 +403,7 @@ export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
     career,
     totals: { bat, pit, war: Math.round(major.filter((r) => !r.current).reduce((a, r) => a + r.war, 0) * 10) / 10, seasons: new Set(major.map((r) => r.year)).size },
     highs: careerHighs(career, pitcher),
-    splits: { season: line ? (side(line) ?? null) : null, career: sumSplits(major.map(side)) },
+    splits: { season: line ? (side(line) ?? null) : null, career: withSituations(sumSplits(major.map(side)), p.situ?.[pitcher ? 'pit' : 'bat']) },
     velocity: top == null ? null : { top, average: averageVelocity(p)! },
     pitches: pitchGrades(p),
     // 2.0.6 (the user's request): each pitch's potential and its change since last season.

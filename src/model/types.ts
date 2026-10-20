@@ -307,6 +307,8 @@ export interface Player {
   moves?: import('../league/moves').MoveEntry[];
   /** 2.0.15 (venues.ts): his career at home and on the road, and at each ballpark (from 2.0.15). */
   venues?: import('../league/venues').Venues;
+  /** 2.0.30: his first-team plate appearances by situation, the seasons gone by (engine/situation.ts). */
+  situ?: { bat?: Record<string, number[]>; pit?: Record<string, number[]> };
   career: SeasonRecord[];
   /** 1.4.0: postseason lines, one a year he played in it (not in `career`, so season totals stay as they were). */
   post?: PostRecord[];

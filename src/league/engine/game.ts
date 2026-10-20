@@ -12,6 +12,7 @@ import { countBall, distanceOf, drawBall, emptyBatted, groundShift, homeRunShift
 import { clearance, layoutEffects } from '../layout';
 import { emptyField, FIELDER_DIR, fielderFor } from '../fielding';
 import { ENGINE as E, Z, Zr } from '../tuning';
+import { situationKeys, SPLIT_KEYS } from './situation';
 import { emptySplit, type BattingLine, type BatterIn, type BenchIn, type BullpenRole, type FieldPos, type GameIn, type GameOut, type PitcherIn, type PitchingLine, type PlayEvent, type PlayResult, type RelieverIn, type Split, type TeamBox, type TeamIn } from './types';
 
 type R = () => number;
@@ -226,7 +227,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
     const current = () => field.apps[field.apps.length - 1]!;
 
     // The plate appearance in progress, credited to both players' platoon splits once it is over.
-    type OpenPa = { bl: BattingLine; pl: PitchingLine; vsPitcher: 'L' | 'R'; vsBatter: 'L' | 'R'; before: Split; runs: number; err: number; gdp: number; rbi: number; ball?: BattedBall; risp?: boolean };
+    type OpenPa = { bl: BattingLine; pl: PitchingLine; vsPitcher: 'L' | 'R'; vsBatter: 'L' | 'R'; before: Split; runs: number; err: number; gdp: number; rbi: number; ball?: BattedBall; risp?: boolean; sit: string[] };
     let open: OpenPa | null = null;
     const scoreNow = (): [number, number] => [away.box.runs, home.box.runs];
     const record = (o: OpenPa, res: PlayResult) =>
@@ -239,6 +240,12 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       // 2.0.28: and with runners in scoring position.
       if (open.risp) into.push((open.bl.split!.S ??= emptySplit()), (open.pl.split!.S ??= emptySplit()));
       for (const k of Object.keys(now) as (keyof Split)[]) for (const s of into) s[k] += now[k] - open.before[k];
+      // 2.0.30: and by leverage, score margin and runners (situation.ts).
+      for (const key of open.sit)
+        for (const l of [open.bl, open.pl]) {
+          const x = ((l.split!.X ??= {})[key] ??= SPLIT_KEYS.map(() => 0));
+          for (let i = 0; i < SPLIT_KEYS.length; i++) x[i]! += now[SPLIT_KEYS[i]!] - open.before[SPLIT_KEYS[i]!];
+        }
       // 2.0.4: the batter against this pitcher.
       if (game.balls) {
         const o = open;
@@ -439,7 +446,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
         bases[1] = bases[0];
         bases[0] = null;
         bat.next = (bat.next + 1) % 9;
-        if (log) record({ bl, pl, vsPitcher: p.throws, vsBatter: 'R', before: counts(bl), runs: bat.box.runs, err: field.box.errors, gdp: bl.gdp, rbi: bl.rbi }, 'SH');
+        if (log) record({ bl, pl, vsPitcher: p.throws, vsBatter: 'R', before: counts(bl), runs: bat.box.runs, err: field.box.errors, gdp: bl.gdp, rbi: bl.rbi, sit: [] }, 'SH');
         continue;
       }
 
@@ -466,7 +473,7 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
       );
 
       const hitsFrom = batter.bats === 'S' ? (p.throws === 'L' ? 'R' : 'L') : batter.bats;
-      const pa: OpenPa = { bl, pl, vsPitcher: p.throws, vsBatter: hitsFrom, before: counts(bl), runs: bat.box.runs, err: field.box.errors, gdp: bl.gdp, rbi: bl.rbi, ...(bases[1] || bases[2] ? { risp: true } : {}) };
+      const pa: OpenPa = { bl, pl, vsPitcher: p.throws, vsBatter: hitsFrom, before: counts(bl), runs: bat.box.runs, err: field.box.errors, gdp: bl.gdp, rbi: bl.rbi, ...(bases[1] || bases[2] ? { risp: true } : {}), sit: situationKeys(inning, outs, [!!bases[0], !!bases[1], !!bases[2]], lead(bat)) };
       open = pa;
       // 2.0.3: the catcher's plate appearances and the runs his game-calling is worth over them (z × 0.001 a PA).
       if (game.balls) {

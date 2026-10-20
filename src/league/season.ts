@@ -53,6 +53,7 @@ import { openForeignBooks } from './foreigncap';
 import { assignLeagues, sidesOf, twelveClubs, twelveGames } from './twelve';
 import { finishTrips } from './training';
 import { exhibitionDate, planExhibitions, playExhibitionDay } from './exhibition';
+import { addSituations } from './engine/situation';
 import { lifeDay } from './life';
 import { alumniDay } from './alumni';
 import { familyDay, familyGame, pruneFamilies } from './family';
@@ -209,6 +210,7 @@ function addSplits(into: { split?: Splits }, from: Splits) {
   addInto(into.split.L, from.L);
   addInto(into.split.R, from.R);
   if (from.S) addInto((into.split.S ??= emptySplit()), from.S);
+  if (from.X) addSituations((into.split.X ??= {}), from.X);
 }
 
 /** Adds a box score to the lines (the season's unless given) and to the pitchers' arm use. */
