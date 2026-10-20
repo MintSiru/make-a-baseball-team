@@ -327,8 +327,14 @@ export const TRADES = {
   cash: { perEok: 1, max: 200_000, step: 10_000 },
   /** Draft picks in a trade (V0.7.8): value by round for a mid-order pick, how much the club's place in the
       order moves it (the worst club's pick × (1 + spread), the best's × (1 − spread)), and the KBO limit of
-      two picks of one draft given away per club, only in trades with players (2019 rule). */
-  picks: { value: [12, 6, 4, 2.6, 1.8, 1.3, 1, 0.8, 0.6, 0.5, 0.4], spread: 0.3, perClub: 2 },
+      two picks of one draft given away per club, only in trades with players (2019 rule). 2.0.29 (the user's report:
+      another club's first-round pick went for one or two 50–55 players): a first-rounder is worth about a 60-grade
+      player under control (a top pick far more, the last one of the round a little less), the second round about a
+      55, and the order spreads them wider. */
+  picks: { value: [50, 18, 8, 5, 3.2, 2.2, 1.6, 1.2, 0.9, 0.65, 0.5], spread: 0.3, perClub: 2 },
+  /** 2.0.29: what an AI club gets in players, best first, counts at these shares (quality over quantity: two ordinary
+      players do not add up to a good one). */
+  depth: [1, 0.75, 0.55, 0.4],
   /** A club claims a waived player who is this much better than its weakest registered player. */
   waiverMargin: 3,
   /** AI clubs replace a foreign player with an ERA or OPS this bad by July (or out six weeks), with this chance. */

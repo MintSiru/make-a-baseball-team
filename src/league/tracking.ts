@@ -126,6 +126,8 @@ const SHAPE: Record<PitchType | 'FB', { slower: number; spin: number; v: number;
 const VARIANT_SHAPE: Record<PitchVariant, { slower: number; spin: number; v: number; h: number; axis: number }> = {
   vertSL: { slower: 10, spin: 2350, v: -6, h: -7, axis: -4.6 },
   sweepSL: { slower: 12, spin: 2450, v: 6, h: -24, axis: -3.1 },
+  // 2.0.29: a hard slider — a few km/h off the fastball, a short tight break, much of its spin gyro.
+  hardSL: { slower: 6, spin: 2400, v: 4, h: -9, axis: -2.6 },
   drop: { slower: 19, spin: 2550, v: -38, h: -6, axis: -5.8 },
   slow: { slower: 27, spin: 2250, v: -32, h: -16, axis: -5 },
   power: { slower: 14, spin: 2800, v: -26, h: -15, axis: -4.6 },

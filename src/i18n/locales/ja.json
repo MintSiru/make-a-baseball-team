@@ -8966,5 +8966,9 @@
   "league.scandals.text.b57c99d1": "インタビュー拒否",
   "league.scandals.text.9ce1e89d": "ファンとの口論",
   "league.scandals.text.75d0b2e7": "麻薬類成分の検出",
-  "league.scandals.text.d4855beb": "KBO警告"
+  "league.scandals.text.d4855beb": "KBO警告",
+  "ui.myClub.text.99f21377": "{league} {rank}位",
+  "ui.clubSummary.text.99f21377": "{league} {rank}位",
+  "ui.teamRoster.text.99f21377": "{league} {rank}位",
+  "league.pitches.text.69d3539d": "高速スライダー"
 }

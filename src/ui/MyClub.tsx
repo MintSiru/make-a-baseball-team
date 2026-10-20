@@ -18,7 +18,7 @@ import { captainsOf, captainsProblem } from '../league/captains';
 import { faOutlook } from '../league/faclock';
 import { developmentIds, orgIds, registeredIds, type LeagueState, type Squad as SquadName } from '../league/state';
 import { OFFSEASON } from '../league/tuning';
-import { injuryNote, rates, shortName, standingsView } from '../league/views';
+import { clubStanding, injuryNote, rates, shortName } from '../league/views';
 import { money } from './format';
 import { Squad, type Row, type SquadKey } from './Squad';
 import { Office } from './Office';
@@ -134,8 +134,8 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
   const u = league.user!;
   const me = u.teamId;
   const inFirstTeam = league.year >= u.firstTeamYear;
-  const table = standingsView(league);
-  const row = table.find((r) => r.teamId === me);
+  // 2.0.29: in two leagues, our rank inside our own league.
+  const { row, league: side, table } = clubStanding(league, me);
   const games = inFirstTeam ? league.scores.filter((g) => g.home === me || g.away === me) : (league.futures?.scores ?? []).filter((g) => g.home === me || g.away === me);
   const record = games.reduce(
     (a, g) => {
@@ -160,7 +160,7 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
       <div class="cards">
         <div class="card">
           <p class="card-label">{__i18n_display(inFirstTeam ? __i18n_k("ui.myClub.overview.6b921fd2", { year: league.year }) : __i18n_k("ui.myClub.overview.b5dc6dec", { year: league.year }))}</p>
-          <p class="card-value">{__i18n_display(inFirstTeam && row ? __i18n_k("ui.myClub.overview.b372d067", { rank: row.rank }) : games.length ? __i18n_k("ui.myClub.overview.44b431c7", { w: record.w, l: record.l }) : __i18n_k("ui.myClub.overview.d103f6c7"))}</p>
+          <p class="card-value">{__i18n_display(inFirstTeam && row ? (side ? __i18n_t("ui.myClub.text.99f21377", { league: side, rank: row.rank }) : __i18n_k("ui.myClub.overview.b372d067", { rank: row.rank })) : games.length ? __i18n_k("ui.myClub.overview.44b431c7", { w: record.w, l: record.l }) : __i18n_k("ui.myClub.overview.d103f6c7"))}</p>
           <p class="card-sub">
             {__i18n_display(inFirstTeam && row ? __i18n_k("ui.myClub.overview.133887b6", { w: row.w, l: row.l, value: row.t, value2: rates.fmt3(row.pct), value3: row.gb ? __i18n_k("ui.myClub.overview.66ea1b23", { gb: row.gb }) : '' }) : __i18n_k("ui.myClub.overview.265daa15", { firstTeamYear: u.firstTeamYear }))}
           </p>

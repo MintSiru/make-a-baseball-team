@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { LEAGUE_NAMES, leagueTables, sidesOf } from './twelve';
 /* Read-only views of the league for the screens. Everything here is public: scouting grades, results
    and contracts, never hidden ability. */
 import { alumnusJob } from './alumni';
@@ -51,6 +52,18 @@ export function standingsView(s: LeagueState) {
     const crowd = gate?.games ? Math.round(gate.fans / gate.games) : last?.homeGames && last.year === s.year ? Math.round(last.fans / last.homeGames) : 0;
     return { ...r, name: teamOf(s, r.teamId)!.name, short: shortName(s, r.teamId), color: teamOf(s, r.teamId)!.color, games: r.w + r.l + r.t, crowd };
   });
+}
+
+/** 2.0.29 (the user's report): a club's line in the table — in two leagues (the board's or the twelve clubs'), its
+    rank and games behind inside its own league, with that league's name and table; null when it is not in this year's
+    table. */
+export function clubStanding(s: LeagueState, teamId: TeamId) {
+  const rows = standingsView(s);
+  const sides = sidesOf(s);
+  if (!sides) return { row: rows.find((r) => r.teamId === teamId) ?? null, league: null as string | null, table: rows };
+  const side = sides[teamId] ?? 'magic';
+  const table = leagueTables(rows, sides)[side];
+  return { row: table.find((r) => r.teamId === teamId) ?? null, league: LEAGUE_NAMES[side] as string | null, table };
 }
 
 /** 1.9.7: the first and second halves' tables of a split season (a history game, 1982–1988), as the full table's rows;

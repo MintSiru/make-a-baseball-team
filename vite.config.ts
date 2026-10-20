@@ -10,5 +10,7 @@ export default defineConfig({
   test: {
     include: ['tests/**/*.test.ts'],
     testTimeout: 120_000,
+    // 2.0.29: LEAGUE_CACHE=1 keeps built leagues on disk between runs (tests/setup/league-cache.ts).
+    setupFiles: ['tests/setup/league-cache.ts'],
   },
 });

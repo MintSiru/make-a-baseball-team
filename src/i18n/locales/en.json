@@ -8966,5 +8966,9 @@
   "league.scandals.text.b57c99d1": "Refused an interview",
   "league.scandals.text.9ce1e89d": "A row with a fan",
   "league.scandals.text.75d0b2e7": "Narcotic substance detected",
-  "league.scandals.text.d4855beb": "KBO warning"
+  "league.scandals.text.d4855beb": "KBO warning",
+  "ui.myClub.text.99f21377": "No. {rank} in the {league}",
+  "ui.clubSummary.text.99f21377": "No. {rank} in the {league}",
+  "ui.teamRoster.text.99f21377": "No. {rank} in the {league}",
+  "league.pitches.text.69d3539d": "Hard slider"
 }

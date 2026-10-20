@@ -18,7 +18,7 @@ import { afterPlay, beforePlay, onChange } from './commentary';
 /** How much slower than his fastball each pitch comes (km/h). */
 const PITCH_DROP: Record<PitchType, number> = { CB: 25, CH: 17, FRK: 17, CUT: 5, '2SFB': 5, SL: 13, SW: 13, SNK: 3, CIR: 17, SPL: 12, SLV: 18, KN: 38, SCR: 20, PLM: 27, SH: 4, KC: 22 };
 /** 2.0.24: the kinds of slider and curve (pitches.ts) come at their own speeds. */
-const VARIANT_DROP: Record<PitchVariant, number> = { vertSL: 12, sweepSL: 14, drop: 25, slow: 32, power: 18 };
+const VARIANT_DROP: Record<PitchVariant, number> = { vertSL: 12, sweepSL: 14, hardSL: 7, drop: 25, slow: 32, power: 18 };
 
 export interface PitchFrame {
   /** Index of the play in the game's log (the relay's line). */

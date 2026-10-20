@@ -1852,6 +1852,7 @@ ul.plain li {
 .club-summary dt {
   color: var(--ink-2);
   font-size: 12px;
+  white-space: nowrap;
 }
 .club-summary dd {
   margin: 0;

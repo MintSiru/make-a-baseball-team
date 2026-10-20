@@ -4,8 +4,25 @@ on:
   push:
   pull_request:
 
+# 2.0.29: the unit tests in four parallel shards (most of their time is leagues being built and seasons played), and
+# the typecheck, the build and the browser smoke in a job of their own beside them.
 jobs:
   test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx vitest run --shard=${{ matrix.shard }}/4
+
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,7 +32,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
-      - run: npm test
       - run: npm run build
       - run: npx playwright-core install --with-deps chromium
       - run: npm run test:browser
