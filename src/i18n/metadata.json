@@ -80357,5 +80357,91 @@
       }
     },
     "locations": []
+  },
+  "league.proclubs.text.33ba061b": {
+    "source": "src/league/proclubs.ts",
+    "line": 28,
+    "params": {
+      "club": {
+        "expression": "pick(NPB_CLUBS)"
+      }
+    },
+    "locations": []
+  },
+  "league.hsevents.text.894badc3": {
+    "source": "src/league/hsevents.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.hsevents.text.3660fdbb": {
+    "source": "src/league/hsevents.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.hsevents.text.82c2c27f": {
+    "source": "src/league/hsevents.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.hsevents.text.0e854629": {
+    "source": "src/league/hsevents.ts",
+    "line": 50,
+    "params": {
+      "n": {
+        "expression": "reached"
+      }
+    },
+    "locations": []
+  },
+  "league.hsevents.text.74e19661": {
+    "source": "src/league/hsevents.ts",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "league.hsevents.text.42a7b82f": {
+    "source": "src/league/hsevents.ts",
+    "line": 51,
+    "params": {
+      "n": {
+        "expression": "i + 1"
+      }
+    },
+    "locations": []
+  },
+  "league.hsevents.text.66d071e5": {
+    "source": "src/league/hsevents.ts",
+    "line": 104,
+    "params": {
+      "region": {
+        "expression": "region"
+      }
+    },
+    "locations": []
+  },
+  "league.hsevents.text.bebba778": {
+    "source": "src/league/hsevents.ts",
+    "line": 111,
+    "params": {},
+    "locations": []
+  },
+  "league.hsevents.text.2099f312": {
+    "source": "src/league/hsevents.ts",
+    "line": 136,
+    "params": {},
+    "locations": []
+  },
+  "league.hsevents.text.d96f4b7d": {
+    "source": "src/league/hsevents.ts",
+    "line": 58,
+    "params": {
+      "n": {
+        "expression": "Math.round(Math.log2(size / reached)) + 1"
+      }
+    },
+    "locations": []
   }
 }

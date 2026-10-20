@@ -3,6 +3,7 @@ import { hashUnit, rng, servedBeforeDraft, type DraftProspect } from '../draftro
 import { altPositions, assignPosition, balancePositions } from './position';
 import type { Player, PlayerId } from './types';
 import { rollTraits } from '../league/traits';
+import { withRealClubs } from '../league/proclubs';
 
 /**
  * Left-handed throwers almost always bat left in the KBO (좌투우타 is a handful of players). Draft Room
@@ -17,7 +18,7 @@ export const draftPlayerId = (draftYear: number, sourceId: string): PlayerId => 
 /** Turns a Draft Room prospect into an amateur league player, splitting hidden and public ability. */
 export function fromDraftProspect(p: DraftProspect, draftYear: number, poolSeed: string): Player {
   const position = assignPosition(p.role, p.futureTools, hashUnit(p.id + p.name));
-  return {
+  const player: Player = {
     id: draftPlayerId(draftYear, p.id),
     name: p.name,
     birthday: p.birthday,
@@ -74,6 +75,11 @@ export function fromDraftProspect(p: DraftProspect, draftYear: number, poolSeed:
     proSince: draftYear + 1,
     career: [],
   };
+  // 2.0.28: real clubs abroad for the ones who played pro ball there (league/proclubs.ts). Draft Room's history is
+  // shared with the prospect, so the player gets his own copy first.
+  player.education = { ...player.education, history: player.education.history.map((e) => ({ ...e })) };
+  withRealClubs(player);
+  return player;
 }
 
 /** A class of amateurs placed together (V0.12): KBO-like numbers at each spot, the best fits at the hard ones;

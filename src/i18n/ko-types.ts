@@ -8737,5 +8737,16 @@ export const koSource = {
   "ui.careerStages.text.91e54831": "도루",
   "ui.playerProfile.text.f892ec34": "경력·성적",
   "ui.playerProfile.text.441a99b9": "맨 아래 줄이 스카우트가 확인한 최근 기록이고, 그 위는 지난 경력의 기록입니다.",
-  "ui.playerPanel.text.725635c9": "입단 전 경력·성적 ({path})"
+  "ui.playerPanel.text.725635c9": "입단 전 경력·성적 ({path})",
+  "league.proclubs.text.33ba061b": "{club} 2군",
+  "league.hsevents.text.894badc3": "우승",
+  "league.hsevents.text.3660fdbb": "준우승",
+  "league.hsevents.text.82c2c27f": "4강",
+  "league.hsevents.text.0e854629": "{n}강",
+  "league.hsevents.text.74e19661": "1위",
+  "league.hsevents.text.42a7b82f": "{n}위",
+  "league.hsevents.text.66d071e5": "{region} 권역 주말리그",
+  "league.hsevents.text.bebba778": "전국고교야구선수권대회",
+  "league.hsevents.text.2099f312": "고교야구 왕중왕전",
+  "league.hsevents.text.d96f4b7d": "{n}회전"
 } as const;

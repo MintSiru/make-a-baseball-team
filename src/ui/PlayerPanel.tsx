@@ -716,7 +716,7 @@ export function PlayerPanel({
             {__i18n_display(p.origin.kind === 'draftClass' && !!p.education.history?.length && (
               <details class="career-before">
                 <summary>{__i18n_t("ui.playerPanel.text.725635c9", { path: pathwayLabel(p) })}</summary>
-                <CareerStages player={p} />
+                <CareerStages player={p} seed={league.seed} />
               </details>
             ))}
             {__i18n_display(!!p.honors?.length && (

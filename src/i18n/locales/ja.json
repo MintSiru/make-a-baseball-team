@@ -8736,5 +8736,16 @@
   "ui.careerStages.text.91e54831": "盗塁",
   "ui.playerProfile.text.f892ec34": "経歴・成績",
   "ui.playerProfile.text.441a99b9": "一番下の行はスカウトが確認した最近の記録で、その上は以前の経歴の記録です。",
-  "ui.playerPanel.text.725635c9": "入団前の経歴・成績（{path}）"
+  "ui.playerPanel.text.725635c9": "入団前の経歴・成績（{path}）",
+  "league.proclubs.text.33ba061b": "{club}二軍",
+  "league.hsevents.text.894badc3": "優勝",
+  "league.hsevents.text.3660fdbb": "準優勝",
+  "league.hsevents.text.82c2c27f": "ベスト4",
+  "league.hsevents.text.0e854629": "ベスト{n}",
+  "league.hsevents.text.74e19661": "1位",
+  "league.hsevents.text.42a7b82f": "{n}位",
+  "league.hsevents.text.66d071e5": "{region}圏域週末リーグ",
+  "league.hsevents.text.bebba778": "全国高校野球選手権大会",
+  "league.hsevents.text.2099f312": "高校野球王中王戦",
+  "league.hsevents.text.d96f4b7d": "{n}回戦"
 }

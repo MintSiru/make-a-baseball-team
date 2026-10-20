@@ -25,12 +25,14 @@ interface Props {
   combineNote?: string;
   report?: TraitReport | null;
   workout?: { done: boolean; blocked: string | null; cost: string; onClick: () => void };
+  /** 2.0.28: the league's seed (his school's results in its year: hsevents.ts). */
+  seed?: string;
   onClose: () => void;
 }
 
 type Part = 'grades' | 'combine' | 'amateur';
 
-export function PlayerProfile({ player: p, age, draftYear, ours, combine, combineNote, report, workout, onClose }: Props) {
+export function PlayerProfile({ player: p, age, draftYear, ours, combine, combineNote, report, workout, seed, onClose }: Props) {
   const box = useRef<HTMLDivElement>(null);
   useFocusTrap(box, onClose);
   const [part, setPart] = useState<Part>('grades');
@@ -166,7 +168,7 @@ export function PlayerProfile({ player: p, age, draftYear, ours, combine, combin
           <div class="profile-part" role="tabpanel">
             <section>
               <h3>{__i18n_t("ui.playerProfile.text.f892ec34")}</h3>
-              <CareerStages player={p} />
+              <CareerStages player={p} seed={seed} />
               <p class="muted small">{__i18n_t("ui.playerProfile.text.441a99b9")}</p>
               {__i18n_display(p.amateur.awards.length > 0 && (
                 <p>

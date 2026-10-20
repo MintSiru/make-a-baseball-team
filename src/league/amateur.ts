@@ -10,6 +10,8 @@ import { k as __i18n_k } from '../i18n/index';
 import Catalog from '../draftroom/catalog.js';
 import { hashUnit, isPitcherRole, rng, type AmateurRecord, type HistoryEntry } from '../draftroom';
 import type { Player } from '../model/types';
+import { hsEvents, splitRecord, type HsEventKind } from './hsevents';
+import { poolSeed } from './players';
 
 type Prospect = Pick<Player, 'id' | 'role' | 'scouting' | 'education' | 'amateur' | 'origin'>;
 
@@ -35,6 +37,8 @@ export interface Stage {
   record: AmateurRecord;
   /** The record Draft Room kept (the last stage), or one drawn for the screen. */
   kept: boolean;
+  /** 2.0.28: a high-school stage's senior year, event by event (hsevents.ts). */
+  events?: { kind: HsEventKind; label: string; result: string; record: AmateurRecord }[];
 }
 
 const LEVEL_LABEL: Record<string, () => string> = {
@@ -110,8 +114,9 @@ function drawnRecord(p: Prospect, ready: number, key: string): AmateurRecord {
   };
 }
 
-/** His stages, first to last, each with its record. */
-export function careerStages(p: Prospect): Stage[] {
+/** His stages, first to last, each with its record (a high school's split by its events; `seed`: the league's, so a
+    draft class's school results are the ones its awards name). */
+export function careerStages(p: Prospect, seed?: string): Stage[] {
   const history = p.education.history ?? [];
   if (!history.length) return [];
   const last = history.length - 1;
@@ -121,16 +126,19 @@ export function careerStages(p: Prospect): Stage[] {
     // A few grade points younger for each stage back (a little noise, the same every time).
     const back = last - i;
     const ready = Math.max(25, p.scouting.current - back * 6 + Math.round((hashUnit(`${p.id}|stage-ready|${i}`) - 0.5) * 6));
-    return {
-      kind,
-      label,
-      name: e.name,
-      period: `${month(e.start)} – ${month(e.end)}`,
-      status: e.status,
-      note: e.note,
-      record: kept ? p.amateur.record : drawnRecord(p, ready, `${p.id}|stage|${i}`),
-      kept,
-    };
+    const record = kept ? p.amateur.record : drawnRecord(p, ready, `${p.id}|stage|${i}`);
+    const stage: Stage = { kind, label, name: e.name, period: `${month(e.start)} – ${month(e.end)}`, status: e.status, note: e.note, record, kept };
+    const inst = BY_ID[e.institutionId];
+    if (kind === 'highSchool' && inst && (inst.kind === 'high-school' || inst.kind === 'hs-club')) {
+      const draftYear = p.origin.kind === 'draftClass' ? p.origin.draftYear : undefined;
+      const at = kept && seed && draftYear ? { poolSeed: poolSeed(seed, draftYear) } : { key: `${seed ?? p.id}|hs|${(e.end ?? e.start).slice(0, 4)}` };
+      const events = hsEvents(e.institutionId, at);
+      if (events.length) {
+        const parts = splitRecord(record, events.map((x) => x.games), `${p.id}|hs-split|${i}`);
+        stage.events = events.map((x, j) => ({ kind: x.kind, label: x.label, result: x.result, record: parts[j]! }));
+      }
+    }
+    return stage;
   });
 }
 

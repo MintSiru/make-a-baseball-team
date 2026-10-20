@@ -8736,5 +8736,16 @@
   "ui.careerStages.text.91e54831": "SB",
   "ui.playerProfile.text.f892ec34": "Career & record",
   "ui.playerProfile.text.441a99b9": "The bottom row is the recent record the scouts checked; the rows above are his earlier stops.",
-  "ui.playerPanel.text.725635c9": "Before turning pro ({path})"
+  "ui.playerPanel.text.725635c9": "Before turning pro ({path})",
+  "league.proclubs.text.33ba061b": "{club} (farm team)",
+  "league.hsevents.text.894badc3": "Champion",
+  "league.hsevents.text.3660fdbb": "Runner-up",
+  "league.hsevents.text.82c2c27f": "Semifinal",
+  "league.hsevents.text.0e854629": "Round of {n}",
+  "league.hsevents.text.74e19661": "1st",
+  "league.hsevents.text.42a7b82f": "No. {n}",
+  "league.hsevents.text.66d071e5": "{region} weekend league",
+  "league.hsevents.text.bebba778": "National High School Championship (open)",
+  "league.hsevents.text.2099f312": "High School Champions' Tournament",
+  "league.hsevents.text.d96f4b7d": "Round {n}"
 }
