@@ -150,6 +150,8 @@ export type Action =
   | { kind: 'allStarCampaign' }
   /** 1.2.0: the optional foreign veteran rule (seasons, or off). */
   | { kind: 'foreignVeteran'; seasons: number | null }
+  /** 2.0.37: development foreign players a club may keep (1 or 2), or null for none (devforeign.ts). */
+  | { kind: 'devForeign'; places: number | null }
   | { kind: 'retiredBar'; rise: boolean }
   | { kind: 'travelFatigue'; on: boolean }
   /** 2.0.34: a six-man rotation for every club (twelve clubs or more). */
@@ -181,7 +183,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'askBudget', 'twoLeaguePlayoffs', 'sixMan', 'favorite', 'abilityEditor', 'editAbility', 'discipline'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'devForeign', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'askBudget', 'twoLeaguePlayoffs', 'sixMan', 'favorite', 'abilityEditor', 'editAbility', 'discipline'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -436,6 +438,12 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       if (!s.user || (action.seasons !== null && ![5, 8].includes(action.seasons)) || (s.foreignVeteran ?? null) === action.seasons) break;
       s.foreignVeteran = action.seasons;
       milestone(s, s.offseason?.year ?? s.year, action.seasons ? __i18n_k("league.actions.apply.e689101c", { seasons: action.seasons }) : __i18n_k("league.actions.apply.a4c1dacc"));
+      break;
+    }
+    case 'devForeign': {
+      if (!s.user || (action.places !== null && ![1, 2].includes(action.places)) || (s.devForeign ?? null) === action.places) break;
+      s.devForeign = action.places;
+      milestone(s, s.offseason?.year ?? s.year, action.places ? __i18n_k("league.actions.text.dc689d71", { n: action.places }) : __i18n_k("league.actions.text.9b5484dd"));
       break;
     }
     case 'favorite':

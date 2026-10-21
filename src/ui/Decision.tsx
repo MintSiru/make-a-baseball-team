@@ -43,6 +43,7 @@ import { ROUND_NAME } from '../league/postseason';
 import { motionText, playersView, type BoardVote } from '../league/board';
 import { pathwayLabel } from '../league/amateur';
 import { cityById } from '../club/cities';
+import { DEV_FOREIGN } from '../league/devforeign';
 
 interface Props {
   league: LeagueState;
@@ -88,6 +89,7 @@ const TITLES: Record<DecisionT['kind'], string> = {
   devAbl: __i18n_k("ui.decision.text.37d4233b"),
   relocate: __i18n_t("ui.decision.text.cdbe2c7a"),
   merger: __i18n_t("ui.decision.text.55ef9dba"),
+  devForeign: __i18n_t("ui.decision.text.c8b4b844"),
   wrapUp: __i18n_k("ui.decision.text.dce453a2"),
 };
 
@@ -866,6 +868,15 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       );
       break;
     }
+    case 'devForeign':
+      // 2.0.37: young foreign prospects on development contracts (devforeign.ts).
+      body = (
+        <>
+          <p>{__i18n_t("ui.decision.text.ee560e92", { seasons: DEV_FOREIGN.seasons, max: d.max, size: selected.size })}</p>
+          <PlayerTable league={league} players={byValue(d.candidates)} selected={selected} toggle={toggle} onPlayer={onPlayer} max={d.max} />
+        </>
+      );
+      break;
     case 'development':
       body = (
         <>

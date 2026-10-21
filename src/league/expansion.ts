@@ -76,6 +76,7 @@ import { developmentIds, emptyRoster, firstTeamIds, orgIds, registeredIds, type 
 import { openTryout, runTryout, takeTryoutPick, tryoutYear } from './tryout';
 import { historicForeignCap } from '../rules/history';
 import { autoBoard, boardDecision, LEGACY_BOARD_FROM, resolveBoard, type BoardVote } from './board';
+import { autoDevForeign, devForeignDecision, resolveDevForeign } from './devforeign';
 
 export const EXPANSION_ID = 'new';
 export const FOUNDING_DATE = '2026-07-01';
@@ -240,7 +241,7 @@ function comebackPool(s: LeagueState): Player[] {
   const y0 = startYear();
   const staff = employedAlumni(s);
   return Object.values(s.players)
-    .filter((p) => p.status === 'retired' && !isForeign(p) && p.career.some((c) => !c.level) && (p.career.at(-1)?.year ?? 0) >= y0 - STEEL.retiredSince && ageIn(p, y0 + 1) <= STEEL.maxAge && !staff.has(p.id))
+    .filter((p) => p.status === 'retired' && !s.otherSport?.[p.id] && !isForeign(p) && p.career.some((c) => !c.level) && (p.career.at(-1)?.year ?? 0) >= y0 - STEEL.retiredSince && ageIn(p, y0 + 1) <= STEEL.maxAge && !staff.has(p.id))
     .sort((a, b) => currentValue(b) + fameOf(s, b) * 0.1 - (currentValue(a) + fameOf(s, a) * 0.1))
     .slice(0, STEEL.retired);
 }
@@ -266,7 +267,7 @@ function tryoutPool(s: LeagueState): Player[] {
     .slice(0, 25);
   for (const p of pool) s.players[p.id] = p;
   const released = Object.values(s.players)
-    .filter((p) => p.status === 'retired' && p.career.length && (p.career.at(-1)?.year ?? 0) >= y0 - 1 && ageIn(p, y0 + 1) <= 33)
+    .filter((p) => p.status === 'retired' && !s.otherSport?.[p.id] && p.career.length && (p.career.at(-1)?.year ?? 0) >= y0 - 1 && ageIn(p, y0 + 1) <= 33)
     .sort((a, b) => keepValue(b, y0 + 1) - keepValue(a, y0 + 1))
     .slice(0, 15);
   return [...released, ...pool];
@@ -415,8 +416,9 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       // The AI clubs settle their own foreign players first, so the ones they let go can be signed.
       aiForeignRenewals(s, next);
       if (next < u.firstTeamYear) return null; // no foreign players in the futures year (NC precedent)
-      // First our own: re-sign or let go (V0.5); the signing decision follows.
-      return foreignRenewDecision(s, next) ?? foreignSigningDecision(s, next);
+      // 2.0.37: our development foreign prospects first (an optional rule); then our own: re-sign or let go (V0.5);
+      // the signing decision follows.
+      return devForeignDecision(s, next) ?? foreignRenewDecision(s, next) ?? foreignSigningDecision(s, next);
     }
     default:
       return null;
@@ -488,6 +490,8 @@ export type DecisionInput =
   /** `offers`: what we offer each (1.3.0; his ask within the cap when missing). */
   | { kind: 'foreign'; ids: PlayerId[]; offers?: Record<PlayerId, ForeignOffer> }
   | { kind: 'roster'; ids: PlayerId[]; develop?: PlayerId[] }
+  /** 2.0.37: the development foreign prospects we sign (devforeign.ts). */
+  | { kind: 'devForeign'; ids: PlayerId[] }
   /** The twelfth club (V0.9): its design, or null to vote it down when the board offers it. */
   | { kind: 'rival'; settings: RivalSettings | null }
   | { kind: 'rivalProtect'; ids: PlayerId[] }
@@ -511,8 +515,9 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
   const payrollAfter = (ids: PlayerId[]) => projectedPayroll(s, u.teamId, next) + ids.reduce((a, id) => a + (salaryIn(s.players[id]!, next) || renewSalary(s.players[id]!, next)), 0);
   switch (input.kind) {
     case 'tryout':
-    case 'released': {
-      const dd = d as Extract<Decision, { kind: 'tryout' | 'released' }>;
+    case 'released':
+    case 'devForeign': {
+      const dd = d as Extract<Decision, { kind: 'tryout' | 'released' | 'devForeign' }>;
       if (input.ids.some((id) => !dd.candidates.includes(id))) return __i18n_k("league.expansion.checkDecision.98ce3a2b");
       if (input.ids.length > dd.max) return __i18n_k("league.expansion.checkDecision.3c960698", { max: dd.max });
       return null;
@@ -669,6 +674,16 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
         s.offseason?.released.push(id);
       }
       break;
+    case 'devForeign': {
+      resolveDevForeign(s, d as Extract<Decision, { kind: 'devForeign' }>, input.ids, next);
+      // Then our regular foreign players: re-sign or let go, and the signings.
+      const then = foreignRenewDecision(s, next) ?? foreignSigningDecision(s, next);
+      if (then) {
+        s.pending = then;
+        return;
+      }
+      break;
+    }
     case 'foreign': {
       const again = resolveForeign(s, d as Extract<Decision, { kind: 'foreign' }>, input, next);
       // Another round of talks while slots are open and someone is still talking (1.3.0).
@@ -787,6 +802,8 @@ export function autoDecision(s: LeagueState): DecisionInput | null {
       return { kind: 'fantasyPick', id: null };
     case 'released':
       return { kind: 'released', ids: best(d.candidates, Math.min(d.max, 5)) };
+    case 'devForeign':
+      return { kind: 'devForeign', ids: autoDevForeign(s, d) };
     case 'specialDraft': {
       // Best unprotected player from each club, best clubs' picks first, while money and payroll allow.
       const options = Object.entries(d.lists)

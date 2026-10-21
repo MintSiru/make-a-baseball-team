@@ -203,6 +203,16 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
             )))}
           </div>
           <p class="muted small">{__i18n_t("ui.settings.gameOptions.132bf02d")}</p>
+          {/* 2.0.37 (devforeign.ts): young foreign prospects on development contracts. */}
+          <h3>{__i18n_t("ui.settings.text.c8b4b844")}</h3>
+          <div class="segmented" role="group" aria-label={__i18n_t("ui.settings.text.c8b4b844")}>
+            {([null, 1, 2] as const).map((n) => (
+              <button key={String(n)} type="button" aria-pressed={(league.devForeign ?? null) === n} disabled={busy} onClick={() => (league.devForeign ?? null) !== n && onAct({ kind: 'devForeign', places: n })}>
+                {n ? __i18n_t("ui.settings.text.33c4ed6a", { n }) : __i18n_t("ui.settings.text.d58fa73a")}
+              </button>
+            ))}
+          </div>
+          <p class="muted small">{__i18n_t("ui.settings.text.ee54e0ef")}</p>
           {/* 2.0.22 (travel.ts): tiredness from the road. */}
           <h3>{__i18n_t("ui.settings.text.0d58aa7c")}</h3>
           <div class="segmented" role="group" aria-label={__i18n_displayText(__i18n_t("ui.settings.text.0d58aa7c"))}>

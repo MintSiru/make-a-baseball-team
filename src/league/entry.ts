@@ -6,7 +6,7 @@ import { k as __i18n_k } from '../i18n/index';
    player can be registered from May 1, inside the 68-player limit (RULES.md §6). */
 import type { PlayerId } from '../model/types';
 import type { FieldPos } from './engine/types';
-import { isPitcher } from './players';
+import { isForeign, isPitcher } from './players';
 import { eunneun, iga } from './josa';
 import { KBO_2026 } from '../rules/kbo2026';
 import { firstTeamSize, rotationSize } from './manager';
@@ -15,6 +15,7 @@ import { rosterLimit } from './offseason';
 import { isDevelopment, moveTo, registeredIds, squadOf, type LeagueState, type LineupCard, type Squad } from './state';
 import { isKyopo, kyopoLimit } from './kyopo';
 import { exhibitionDate } from './exhibition';
+import { isDevForeign, slotOpen } from './devforeign';
 
 export const REREGISTER_DAYS = 10;
 /** The fewest players the general manager may leave on the first team (game assumption). */
@@ -67,6 +68,8 @@ export function canRegister(s: LeagueState, id: PlayerId): string | null {
   if (!u || !p || p.teamId !== u.teamId) return __i18n_k("league.entry.canRegister.60e00321");
   if (!isDevelopment(p)) return __i18n_k("league.entry.canRegister.27805a63");
   if (s.phase !== 'regular' || today(s) < `${s.year}-${KBO_2026.development.registerFrom}`) return __i18n_k("league.entry.canRegister.b12e8868");
+  // 2.0.37: a development foreign player takes a foreign slot instead of a place under the limit (devforeign.ts).
+  if (isDevForeign(p)) return slotOpen(s, u.teamId, s.year) ? null : __i18n_k("league.entry.text.5810114f");
   if (registeredIds(s, u.teamId).length >= rosterLimit(s.year)) return __i18n_k("league.entry.canRegister.c85619fe", { rosterLimit: rosterLimit(s.year) });
   return null;
 }
@@ -75,7 +78,7 @@ export function registerPlayer(s: LeagueState, id: PlayerId) {
   const problem = canRegister(s, id);
   if (problem) throw new Error(problem);
   const p = s.players[id]!;
-  p.contract!.kind = 'standard';
+  p.contract!.kind = isForeign(p) ? 'foreign' : 'standard';
   (s.user!.log ??= []).push({ year: s.year, text: __i18n_k("league.entry.registerPlayer.text.a3840eb9", { name: p.name, today: today(s) }) });
 }
 

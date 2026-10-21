@@ -85265,5 +85265,449 @@
     "line": 25,
     "params": {},
     "locations": []
+  },
+  "league.othersport.text.5b4172e9": {
+    "source": "src/league/othersport.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.0611cd3a": {
+    "source": "src/league/othersport.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.ea29db94": {
+    "source": "src/league/othersport.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.102f52f0": {
+    "source": "src/league/othersport.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.b3ac27b8": {
+    "source": "src/league/othersport.ts",
+    "line": 42,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.564761e3": {
+    "source": "src/league/othersport.ts",
+    "line": 43,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.4984319d": {
+    "source": "src/league/othersport.ts",
+    "line": 44,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.f10c1e6d": {
+    "source": "src/league/othersport.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.c6d77f87": {
+    "source": "src/league/othersport.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.1d5a2765": {
+    "source": "src/league/othersport.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.b00deb1f": {
+    "source": "src/league/othersport.ts",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.8cdee8f2": {
+    "source": "src/league/othersport.ts",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.d7d72438": {
+    "source": "src/league/othersport.ts",
+    "line": 53,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.5722fc40": {
+    "source": "src/league/othersport.ts",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.ffd618e7": {
+    "source": "src/league/othersport.ts",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.ecc92aed": {
+    "source": "src/league/othersport.ts",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.8df112dd": {
+    "source": "src/league/othersport.ts",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.e758f61d": {
+    "source": "src/league/othersport.ts",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "league.othersport.text.106fd999": {
+    "source": "src/league/othersport.ts",
+    "line": 86,
+    "params": {
+      "sport": {
+        "expression": "sportName(away.sport)"
+      }
+    },
+    "locations": []
+  },
+  "league.othersport.text.1346e5ff": {
+    "source": "src/league/othersport.ts",
+    "line": 103,
+    "params": {
+      "sport": {
+        "expression": "sportName(sport)"
+      }
+    },
+    "locations": []
+  },
+  "league.othersport.text.4cf5fc3a": {
+    "source": "src/league/othersport.ts",
+    "line": 110,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "p.name"
+      },
+      "sport": {
+        "expression": "sportName(sport)"
+      }
+    },
+    "locations": []
+  },
+  "league.othersport.text.10162b1c": {
+    "source": "src/league/othersport.ts",
+    "line": 111,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      },
+      "plan": {
+        "expression": "sportPlan(sport)"
+      },
+      "club2": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.othersport.text.6cc62f5f": {
+    "source": "src/league/othersport.ts",
+    "line": 139,
+    "params": {
+      "sport": {
+        "expression": "sportName(away.sport)"
+      },
+      "name": {
+        "expression": "p.name"
+      },
+      "seasons": {
+        "expression": "seasons"
+      },
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.othersport.text.a11fad81": {
+    "source": "src/league/othersport.ts",
+    "line": 140,
+    "params": {
+      "year": {
+        "expression": "away.since"
+      },
+      "sport": {
+        "expression": "sportName(away.sport)"
+      },
+      "name": {
+        "expression": "eunneun(p.name)",
+        "particle": "은/는"
+      },
+      "why": {
+        "expression": "pickWhy(r)"
+      },
+      "club": {
+        "expression": "ro(club)",
+        "particle": "으로/로"
+      }
+    },
+    "locations": []
+  },
+  "league.views.text.2ee3a1d0": {
+    "source": "src/league/views.ts",
+    "line": 384,
+    "params": {
+      "sport": {
+        "expression": "sportName(s.otherSport[id]!.sport)"
+      },
+      "club": {
+        "expression": "s.teams.find((t) => t.id === s.otherSport![id]!.teamId)?.short ?? ''"
+      }
+    },
+    "locations": []
+  },
+  "league.devforeign.text.2457fb18": {
+    "source": "src/league/devforeign.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.devforeign.text.c95139a2": {
+    "source": "src/league/devforeign.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.devforeign.text.b0447764": {
+    "source": "src/league/devforeign.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.devforeign.text.67a84e81": {
+    "source": "src/league/devforeign.ts",
+    "line": 42,
+    "params": {},
+    "locations": []
+  },
+  "league.devforeign.text.03b4aef6": {
+    "source": "src/league/devforeign.ts",
+    "line": 43,
+    "params": {},
+    "locations": []
+  },
+  "league.devforeign.text.b0e06d09": {
+    "source": "src/league/devforeign.ts",
+    "line": 44,
+    "params": {},
+    "locations": []
+  },
+  "league.devforeign.text.77dde5e9": {
+    "source": "src/league/devforeign.ts",
+    "line": 45,
+    "params": {},
+    "locations": []
+  },
+  "league.devforeign.text.5db69ec1": {
+    "source": "src/league/devforeign.ts",
+    "line": 46,
+    "params": {},
+    "locations": []
+  },
+  "league.devforeign.text.8a9d64bd": {
+    "source": "src/league/devforeign.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "league.devforeign.text.bd1e31db": {
+    "source": "src/league/devforeign.ts",
+    "line": 80,
+    "params": {
+      "nation": {
+        "expression": "nationality"
+      }
+    },
+    "locations": []
+  },
+  "league.devforeign.text.9be0b065": {
+    "source": "src/league/devforeign.ts",
+    "line": 80,
+    "params": {
+      "nation": {
+        "expression": "nationality"
+      }
+    },
+    "locations": []
+  },
+  "league.devforeign.text.618bfd0a": {
+    "source": "src/league/devforeign.ts",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "league.devforeign.text.82ee1a8f": {
+    "source": "src/league/devforeign.ts",
+    "line": 85,
+    "params": {},
+    "locations": []
+  },
+  "league.devforeign.text.74594b70": {
+    "source": "src/league/devforeign.ts",
+    "line": 142,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.devforeign.text.1a7082f8": {
+    "source": "src/league/devforeign.ts",
+    "line": 143,
+    "params": {
+      "n": {
+        "expression": "DEV_FOREIGN.seasons"
+      }
+    },
+    "locations": []
+  },
+  "league.devforeign.text.cf8d360f": {
+    "source": "src/league/devforeign.ts",
+    "line": 145,
+    "params": {},
+    "locations": []
+  },
+  "league.devforeign.text.602df5ac": {
+    "source": "src/league/devforeign.ts",
+    "line": 152,
+    "params": {},
+    "locations": []
+  },
+  "league.devforeign.text.8de7f625": {
+    "source": "src/league/devforeign.ts",
+    "line": 153,
+    "params": {
+      "club": {
+        "expression": "t.short"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.devforeign.text.7cd75e8b": {
+    "source": "src/league/devforeign.ts",
+    "line": 153,
+    "params": {
+      "club": {
+        "expression": "iga(t.short)",
+        "particle": "이/가"
+      },
+      "name": {
+        "expression": "eulreul(p.name)",
+        "particle": "을/를"
+      }
+    },
+    "locations": []
+  },
+  "league.entry.text.5810114f": {
+    "source": "src/league/entry.ts",
+    "line": 72,
+    "params": {},
+    "locations": []
+  },
+  "league.actions.text.dc689d71": {
+    "source": "src/league/actions.ts",
+    "line": 446,
+    "params": {
+      "n": {
+        "expression": "action.places"
+      }
+    },
+    "locations": []
+  },
+  "league.actions.text.9b5484dd": {
+    "source": "src/league/actions.ts",
+    "line": 446,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.c8b4b844": {
+    "source": "src/ui/Settings.tsx",
+    "line": 207,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.33c4ed6a": {
+    "source": "src/ui/Settings.tsx",
+    "line": 211,
+    "params": {
+      "n": {
+        "expression": "n"
+      }
+    },
+    "locations": []
+  },
+  "ui.settings.text.d58fa73a": {
+    "source": "src/ui/Settings.tsx",
+    "line": 211,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.ee54e0ef": {
+    "source": "src/ui/Settings.tsx",
+    "line": 215,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.c8b4b844": {
+    "source": "src/ui/Decision.tsx",
+    "line": 92,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.ee560e92": {
+    "source": "src/ui/Decision.tsx",
+    "line": 875,
+    "params": {
+      "seasons": {
+        "expression": "DEV_FOREIGN.seasons"
+      },
+      "max": {
+        "expression": "d.max"
+      },
+      "size": {
+        "expression": "selected.size"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.618bfd0a": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 473,
+    "params": {},
+    "locations": []
   }
 }

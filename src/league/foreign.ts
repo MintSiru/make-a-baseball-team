@@ -67,7 +67,7 @@ export const NAMES = {
   },
 };
 
-type Pool = keyof typeof NAMES;
+export type Pool = keyof typeof NAMES;
 export type NamePool = Pool;
 
 /** Nationality for a regular foreign player: mostly American, then the Caribbean and Latin America. */

@@ -50,6 +50,7 @@ import { legacySeason } from './legacy1982';
 import { rulesFor } from '../rules/history';
 import { addMeetings } from './matchups';
 import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, registeredIds, type FuturesSeason, type LeagueState, type SeasonLine } from './state';
+import { devForeignSeason, isDevForeign } from './devforeign';
 import { standings } from './standings';
 import { ENGINE } from './tuning';
 import { carryOverInjuries, offRoster, rollInjuries } from './injuries';
@@ -179,17 +180,19 @@ function convertDevelopment(s: LeagueState, teamId: TeamId, date: string) {
   const bar = Math.min(...firstTeam.map(currentValue)) - 2;
   const dev = developmentIds(s, teamId)
     .map((id) => s.players[id]!)
-    .filter((p) => !s.injuries[p.id] && currentValue(p) >= bar)
+    .filter((p) => !isDevForeign(p) && !s.injuries[p.id] && currentValue(p) >= bar)
     .sort((a, b) => currentValue(b) - currentValue(a));
   for (const p of dev) {
     if (room-- <= 0) break;
     registerDevelopment(p);
   }
+  // 2.0.37: a development foreign player takes a foreign slot, not a place under the limit (devforeign.ts).
+  devForeignSeason(s, teamId, bar);
 }
 
 /** 육성선수 → 소속선수: the same salary on a regular contract. */
 export function registerDevelopment(p: Player) {
-  if (p.contract) p.contract.kind = 'standard';
+  if (p.contract) p.contract.kind = isForeign(p) ? 'foreign' : 'standard';
 }
 
 function lineOf(s: LeagueState, id: PlayerId, teamId: TeamId): SeasonLine {

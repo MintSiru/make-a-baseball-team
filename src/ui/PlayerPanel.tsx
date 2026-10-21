@@ -470,7 +470,7 @@ export function PlayerPanel({
           <div>
             <p class="muted">
               {__i18n_display(card.team)} · {__i18n_display(positionLabel(p))} · {__i18n_display(handedness(p))}
-              {__i18n_display(foreign ? __i18n_k("ui.playerPanel.playerPanel.151173f4", { value: p.origin.asiaQuota ? __i18n_k("ui.playerPanel.playerPanel.c66942ff") : __i18n_k("ui.playerPanel.playerPanel.5bd804b7"), nationality: p.origin.nationality, archetype: p.archetype, value2: league.foreignVeteran && kboSeasons(p, league.year) >= league.foreignVeteran ? __i18n_k("ui.playerPanel.playerPanel.1cb18f2a") : '' }) : '')}
+              {__i18n_display(foreign ? __i18n_k("ui.playerPanel.playerPanel.151173f4", { value: p.origin.asiaQuota ? __i18n_k("ui.playerPanel.playerPanel.c66942ff") : p.origin.devForeign && p.contract?.kind === 'development' ? __i18n_t("ui.playerPanel.text.618bfd0a") : __i18n_k("ui.playerPanel.playerPanel.5bd804b7"), nationality: p.origin.nationality, archetype: p.archetype, value2: league.foreignVeteran && kboSeasons(p, league.year) >= league.foreignVeteran ? __i18n_k("ui.playerPanel.playerPanel.1cb18f2a") : '' }) : '')}
             </p>
             <h2 id="player-name" tabIndex={-1} ref={heading}>
               {__i18n_display(p.name)}

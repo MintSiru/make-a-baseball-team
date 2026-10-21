@@ -197,7 +197,7 @@ export function rivalTryout(s: LeagueState, year: number, teamId: TeamId, gm: Gm
     seed,
   );
   // Players let go this year: not for the north's clubs, founded while ours holds its own tryout.
-  const released = !withReleased ? [] : Object.values(s.players).filter((p) => p.status === 'retired' && p.career.length && (p.career.at(-1)?.year ?? 0) >= year - 1 && ageIn(p, next) <= 33);
+  const released = !withReleased ? [] : Object.values(s.players).filter((p) => p.status === 'retired' && !s.otherSport?.[p.id] && p.career.length && (p.career.at(-1)?.year ?? 0) >= year - 1 && ageIn(p, next) <= 33);
   const chosen = [...released, ...pool].sort((a, b) => gmValue(b, next, gm) - gmValue(a, next, gm)).slice(0, north?.count ?? RIVAL.tryout);
   for (const p of chosen) {
     p.proSince = Math.max(p.proSince, next);

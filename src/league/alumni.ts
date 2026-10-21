@@ -75,7 +75,7 @@ export function alumniFor(s: LeagueState, role: StaffRole, year: number, exclude
   const busy = employedAlumni(s);
   const out: Alumnus[] = [];
   for (const p of Object.values(s.players)) {
-    if (p.status !== 'retired' || isForeign(p) || busy.has(p.id) || exclude.has(p.id)) continue;
+    if (p.status !== 'retired' || isForeign(p) || busy.has(p.id) || exclude.has(p.id) || s.otherSport?.[p.id]) continue;
     if ((p.life?.offenses?.fixing ?? 0) > 0) continue;
     if (want !== 'any' && (want === 'pitcher') !== isPitcher(p)) continue;
     const age = ageIn(p, year);
