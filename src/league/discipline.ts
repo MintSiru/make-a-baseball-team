@@ -94,7 +94,9 @@ function sendDown(s: LeagueState, p: Player, why: DisciplineWhy, days: number, d
   roster.active = roster.active.filter((x) => x !== p.id);
   if (!roster.futures.includes(p.id)) roster.futures.push(p.id);
   (s.demoted ??= {})[p.id] = date;
-  if (push) {
+  const mine = ours(s, p);
+  // His form and his fans are kept for our players only (life.ts).
+  if (push && mine) {
     setForm(p, DISCIPLINE.form.pushback, date, DISCIPLINE.form.days, __i18n_k("league.discipline.text.89eea76e"));
     adjustFans(p, DISCIPLINE.fans.pushback);
   }
@@ -105,7 +107,6 @@ function sendDown(s: LeagueState, p: Player, why: DisciplineWhy, days: number, d
   const body = push
     ? __i18n_k("league.discipline.text.37439858", { club: shortOf(s, team), who: eunneun(who), reason, name: eulreul(p.name), player: eunneun(p.name), until: back })
     : __i18n_k("league.discipline.text.b00ef1b1", { club: shortOf(s, team), who: eunneun(who), reason, name: eulreul(p.name), until: back });
-  const mine = ours(s, p);
   if (mine) note(p, date, title, 'bad');
   // The papers: ours always, another club's only when he is one of its best or answered back.
   if (mine || push || p.scouting.current >= DISCIPLINE.star)
@@ -129,7 +130,7 @@ export function disciplineDay(s: LeagueState, date: string) {
     delete s.discipline![id];
     const p = s.players[id];
     // Taking it well: back sharper now and then.
-    if (p && !d.pushback && rng(`${s.seed}|discipline-wake|${id}|${d.since}`)() < DISCIPLINE.wake.chance) setForm(p, DISCIPLINE.wake.form, date, DISCIPLINE.wake.days, __i18n_k("league.discipline.text.4fcf156a"));
+    if (p && ours(s, p) && !d.pushback && rng(`${s.seed}|discipline-wake|${id}|${d.since}`)() < DISCIPLINE.wake.chance) setForm(p, DISCIPLINE.wake.form, date, DISCIPLINE.wake.days, __i18n_k("league.discipline.text.4fcf156a"));
   }
   const mark = (s.formMark ??= { date, lines: {} });
   if (mark.date > date) s.formMark = { date, lines: {} };
