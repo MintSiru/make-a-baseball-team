@@ -227,6 +227,19 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
               <p class="muted small">{__i18n_t("ui.settings.text.11b1814f")}</p>
             </>
           )}
+          {/* 2.0.35 (abilityedit.ts, the user's request): the ability editor, off unless turned on. */}
+          <h3>{__i18n_t("ui.settings.text.b4df750c")}</h3>
+          <div class="segmented" role="group" aria-label={__i18n_t("ui.settings.text.b4df750c")}>
+            {([false, true] as const).map((on) => (
+              <button key={String(on)} type="button" aria-pressed={!!league.abilityEditor === on} disabled={busy} onClick={() => !!league.abilityEditor !== on && onAct({ kind: 'abilityEditor', on })}>
+                {on ? __i18n_t("ui.settings.text.a57a2d9a") : __i18n_t("ui.settings.text.991911ab")}
+              </button>
+            ))}
+          </div>
+          <p class="muted small">
+            {__i18n_t("ui.settings.text.0cf2022e")}
+            {league.abilityEdits ? ` ${__i18n_t("ui.settings.text.01cb3f86", { n: league.abilityEdits })}` : ''}
+          </p>
           {/* 2.0.22 (numbers.ts): the retired-number bar rising with each number the club retires, or not. */}
           <h3>{__i18n_t("ui.settings.text.5348a154")}</h3>
           <div class="segmented" role="group" aria-label={__i18n_displayText(__i18n_t("ui.settings.text.5348a154"))}>

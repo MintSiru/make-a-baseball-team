@@ -87,16 +87,17 @@ function meanFive(t: number): number {
 
 /** His tendencies from his own seed and his bat: power hitters pull and lift the ball more, contact hitters spray it,
     fast ones keep it on the ground. Pull is negative (toward 극단적 당겨치기), lift positive (toward 극단적 뜬공). */
-export function battingProfile(p: Pick<Player, 'id' | 'hidden'>): BattingProfile {
+export function battingProfile(p: Pick<Player, 'id' | 'hidden' | 'custom'>): BattingProfile {
   const h = p.hidden.current as unknown as Record<string, number>;
   const power = h.power ?? 50,
     speed = h.speed ?? 50,
     contact = h.contact ?? 50;
   const tilt = (x: number) => Math.max(0.01, Math.min(0.99, x));
   const up = (power - 50) * 0.007 - (speed - 50) * 0.004;
-  const lift = five(tilt(hashUnit(`lift|${p.id}`) + up));
+  // 2.0.35 (abilityedit.ts): what the editor set, in place of his own draws.
+  const lift = p.custom?.lift ?? five(tilt(hashUnit(`lift|${p.id}`) + up));
   return {
-    pull: five(tilt(hashUnit(`pull|${p.id}`) - (power - 50) * 0.006 + (contact - 50) * 0.003)),
+    pull: p.custom?.pull ?? five(tilt(hashUnit(`pull|${p.id}`) - (power - 50) * 0.006 + (contact - 50) * 0.003)),
     lift,
     edge: Math.round((lift - meanFive(up)) * 100) / 100,
   };

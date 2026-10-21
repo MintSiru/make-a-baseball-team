@@ -22,6 +22,9 @@ import { checkPlayerEdit, checkTie, EDIT, editOf, findPlayers, type PlayerEdit, 
 import { featsOf, featText } from '../league/feats';
 import { learnedNote } from '../league/newpitch';
 import { TOOL_LABELS } from '../draftroom';
+import { ABILITY, abilityOf, checkAbilityEdit, type AbilityEdit, type FieldPart } from '../league/abilityedit';
+import { GROWTH_LABELS, GROWTH_ORDER, TRAIT_KEYS, TRAIT_LABELS } from '../league/traits';
+import type { GrowthType } from '../model/types';
 import type { Split, Splits } from '../league/engine/types';
 import { SITUATIONS, splitOf } from '../league/engine/situation';
 import type { Action } from '../league/actions';
@@ -45,7 +48,7 @@ import type { TraitReport } from '../league/reports';
 import { kboSeasons } from '../league/foreigncap';
 import { extensionCooldown, extensionOptions, extensionProblem } from '../league/extensions';
 import { postRows, postTotals, type PostRow } from '../league/poststats';
-import { FASTBALL_LABELS, PITCH_LABELS, VARIANT_LABELS } from '../league/pitches';
+import { FASTBALL_LABELS, PITCH_LABELS, VARIANT_LABELS, type FastballType, type PitchType } from '../league/pitches';
 import { LEGACY_START } from '../league/era';
 import type { ArmSlot, Tracking } from '../league/tracking';
 import { pathwayLabel } from '../league/amateur';
@@ -853,6 +856,7 @@ export function PlayerPanel({
             ))}
             {/* 2.0.9: the editor (no abilities). */}
             {onAct && <PlayerEditor league={league} id={p.id} onAct={onAct} />}
+            {onAct && league.abilityEditor && <AbilityEditor league={league} id={p.id} onAct={onAct} />}
           </div>
         ))}
 
@@ -1210,6 +1214,197 @@ function PlayerEditor({ league, id, onAct }: { league: LeagueState; id: string; 
           })}
         </ul>
       )}
+    </details>
+  );
+}
+
+/** 2.0.35 (abilityedit.ts, the user's request): what the editor above leaves alone — true grades, hidden character,
+    tendencies, pitches and fielding parts. Only with the ability editor turned on in the settings. */
+function AbilityEditor({ league, id, onAct }: { league: LeagueState; id: string; onAct: (a: Action) => void }) {
+  const p = league.players[id]!;
+  const current = JSON.stringify(abilityOf(p));
+  const [draft, setDraft] = useState<AbilityEdit>(() => abilityOf(p));
+  useEffect(() => setDraft(abilityOf(p)), [current]);
+  const problem = checkAbilityEdit(league, id, draft);
+  const changed = JSON.stringify(draft) !== current;
+  const num = (v: string) => (v.trim() === '' ? NaN : Number(v));
+  const up = (f: (d: AbilityEdit) => AbilityEdit) => setDraft((d) => f(structuredClone(d)));
+  const box = (value: number | null | undefined, set: (v: number) => void, min: number, max: number, label: string) => (
+    <input type="number" inputMode="numeric" min={min} max={max} step={1} value={Number.isFinite(value) ? String(value) : ''} aria-label={label} onInput={(e) => set(num((e.currentTarget as HTMLInputElement).value))} />
+  );
+  const G = ABILITY.grade,
+    T = ABILITY.trait;
+  const keys = Object.keys(draft.current) as (keyof typeof draft.current)[];
+  const steps = [-2, -1, 0, 1, 2];
+  const pitcher = draft.pull === null;
+  const liftLabels = pitcher ? PITCH_LIFT_LABEL() : LIFT_LABEL();
+  const fieldLabels: [FieldPart, string][] = [
+    ['range', __i18n_t("ui.playerPanel.text.88c280f6")],
+    ['hands', __i18n_t("ui.playerPanel.text.f06721a0")],
+    ['arm', __i18n_t("ui.playerPanel.text.5894110d")],
+    ['lead', __i18n_t("ui.playerPanel.text.f94f5492")],
+    ['frame', __i18n_t("ui.playerPanel.text.af94ca7f")],
+  ];
+  const free = (Object.keys(PITCH_LABELS) as PitchType[]).filter((t) => !(draft.pitches ?? []).some((x) => x.type === t) && !(draft.fastball !== '4SFB' && t === draft.fastball));
+  const used = (draft.pitches ?? []).reduce((a, x) => a + (Number.isFinite(x.usage) ? x.usage : 0), 0);
+  return (
+    <details class="player-editor ability-editor">
+      <summary>{__i18n_t("ui.playerPanel.text.b4df750c")}</summary>
+      <p class="muted small">{__i18n_t("ui.playerPanel.text.e17a99d4")}</p>
+      <h4>{__i18n_t("ui.playerPanel.text.58b9a2bf")}</h4>
+      <table class="mini-table ability-table">
+        <thead>
+          <tr>
+            <th />
+            <th class="num">{__i18n_t("ui.playerPanel.text.001e4be2")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.text.4ba64c8c")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {keys.map((k) => (
+            <tr key={k}>
+              <th scope="row">{__i18n_displayText(TOOL_LABELS[k])}</th>
+              <td class="num">{box(draft.current[k], (v) => up((d) => ((d.current[k] = v), d)), G.min, G.max, __i18n_t("ui.playerPanel.text.1f6a508b", { tool: __i18n_displayText(TOOL_LABELS[k]) }))}</td>
+              <td class="num">{box(draft.potential[k], (v) => up((d) => ((d.potential[k] = v), d)), G.min, G.max, __i18n_t("ui.playerPanel.text.9706b980", { tool: __i18n_displayText(TOOL_LABELS[k]) }))}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <h4>{__i18n_t("ui.playerPanel.text.8cd516a2")}</h4>
+      <div class="editor-fields">
+        <label>
+          {__i18n_t("ui.playerPanel.text.13164922")}
+          <select value={draft.growth} onChange={(e) => up((d) => ((d.growth = (e.currentTarget as HTMLSelectElement).value as GrowthType), d))}>
+            {GROWTH_ORDER.map((g) => (
+              <option key={g} value={g}>
+                {__i18n_displayText(GROWTH_LABELS[g])}
+              </option>
+            ))}
+          </select>
+        </label>
+        {TRAIT_KEYS.map((k) => (
+          <label key={k}>
+            {__i18n_displayText(TRAIT_LABELS[k])}
+            {box(draft.traits[k], (v) => up((d) => ((d.traits[k] = v), d)), T.min, T.max, __i18n_displayText(TRAIT_LABELS[k]))}
+          </label>
+        ))}
+        <label>
+          {__i18n_t("ui.playerPanel.text.1939f919")}
+          {box(draft.injury, (v) => up((d) => ((d.injury = v), d)), T.min, T.max, __i18n_t("ui.playerPanel.text.1939f919"))}
+        </label>
+      </div>
+      <h4>{__i18n_t("ui.playerPanel.text.a575e086")}</h4>
+      <div class="editor-fields">
+        {!pitcher && (
+          <label>
+            {__i18n_t("ui.playerPanel.text.d57ae193")}
+            <select value={String(draft.pull)} onChange={(e) => up((d) => ((d.pull = Number((e.currentTarget as HTMLSelectElement).value)), d))}>
+              {steps.map((x, i) => (
+                <option key={x} value={String(x)}>
+                  {PULL_LABEL()[i]}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <label>
+          {__i18n_t("ui.playerPanel.text.ce7ae75b")}
+          <select value={String(draft.lift)} onChange={(e) => up((d) => ((d.lift = Number((e.currentTarget as HTMLSelectElement).value)), d))}>
+            {steps.map((x, i) => (
+              <option key={x} value={String(x)}>
+                {liftLabels[i]}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      {draft.pitches && (
+        <>
+          <h4>{__i18n_t("ui.playerPanel.text.79ffa7f7")}</h4>
+          <div class="editor-fields">
+            <label>
+              {__i18n_t("ui.playerPanel.text.6b41097a")}
+              {box(draft.velocity, (v) => up((d) => ((d.velocity = v), d)), ABILITY.velocity.min, ABILITY.velocity.max, __i18n_t("ui.playerPanel.text.6b41097a"))}
+            </label>
+            <label>
+              {__i18n_t("ui.playerPanel.text.5c352f05")}
+              <select value={draft.fastball!} onChange={(e) => up((d) => ((d.fastball = (e.currentTarget as HTMLSelectElement).value as FastballType), d))}>
+                {(['4SFB', '2SFB', 'CUT'] as const).map((t) => (
+                  <option key={t} value={t}>
+                    {__i18n_displayText(FASTBALL_LABELS[t])}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <table class="mini-table ability-table">
+            <thead>
+              <tr>
+                <th>{__i18n_t("ui.playerPanel.text.0685b54a")}</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.89dbf513")}</th>
+                <th class="num">{__i18n_t("ui.playerPanel.text.56832409")}</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {draft.pitches.map((x, i) => (
+                <tr key={i}>
+                  <td>
+                    <select value={x.type} aria-label={__i18n_t("ui.playerPanel.text.0685b54a")} onChange={(e) => up((d) => ((d.pitches![i]!.type = (e.currentTarget as HTMLSelectElement).value as PitchType), d))}>
+                      {[x.type, ...free].map((t) => (
+                        <option key={t} value={t}>
+                          {__i18n_displayText(PITCH_LABELS[t])}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td class="num">{box(x.grade, (v) => up((d) => ((d.pitches![i]!.grade = v), d)), G.min, G.max, __i18n_t("ui.playerPanel.text.89dbf513"))}</td>
+                  <td class="num">{box(x.usage, (v) => up((d) => ((d.pitches![i]!.usage = v), d)), ABILITY.usage.min, ABILITY.usage.max, __i18n_t("ui.playerPanel.text.56832409"))}</td>
+                  <td>
+                    <button type="button" class="link small" disabled={draft.pitches!.length <= ABILITY.pitches.min} onClick={() => up((d) => (d.pitches!.splice(i, 1), d))}>
+                      {__i18n_t("ui.playerPanel.text.60af2f80")}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p class="small">
+            <button type="button" disabled={draft.pitches.length >= ABILITY.pitches.max || !free.length} onClick={() => up((d) => (d.pitches!.push({ type: free[0]!, grade: 40, usage: 5 }), d))}>
+              {__i18n_t("ui.playerPanel.text.ec124f76")}
+            </button>{' '}
+            <span class="muted">{__i18n_t("ui.playerPanel.text.7f270e85", { n: Math.max(0, 100 - used) })}</span>
+          </p>
+        </>
+      )}
+      {draft.field && (
+        <>
+          <h4>{__i18n_t("ui.playerPanel.text.8d1966c8")}</h4>
+          <div class="editor-fields">
+            {fieldLabels
+              .filter(([k]) => draft.field![k] !== undefined)
+              .map(([k, label]) => (
+                <label key={k}>
+                  {__i18n_display(label)}
+                  {box(draft.field![k], (v) => up((d) => ((d.field![k] = v), d)), G.min, G.max, label)}
+                </label>
+              ))}
+          </div>
+        </>
+      )}
+      {problem && (
+        <p class="notice warn small" role="alert">
+          {__i18n_display(problem)}
+        </p>
+      )}
+      <div class="row-actions">
+        <button type="button" class="primary" disabled={!changed || !!problem} onClick={() => onAct({ kind: 'editAbility', id, edit: draft })}>
+          {__i18n_t("ui.playerPanel.text.4a050669")}
+        </button>
+        <button type="button" disabled={!changed} onClick={() => setDraft(abilityOf(p))}>
+          {__i18n_t("ui.playerPanel.text.8bd9b45e")}
+        </button>
+      </div>
     </details>
   );
 }

@@ -662,6 +662,9 @@ export interface LeagueState {
   travelFatigue?: boolean;
   /** 2.0.34 (the user's request): every club turns a six-man rotation — chosen in a league of twelve clubs or more. */
   sixMan?: boolean;
+  /** 2.0.35 (abilityedit.ts): the ability editor turned on in the settings, and how many edits it has made. */
+  abilityEditor?: boolean;
+  abilityEdits?: number;
   /** 2.0.24 (posting.ts): the players a club may post in a winter, when not the KBO's one. */
   postingMax?: number;
   /** 2.0.24 (cap.ts): a game option — clubs far or long over the salary cap lose their next first-round pick. */
