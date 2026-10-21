@@ -22,6 +22,8 @@ import { checkPlayerEdit, checkTie, EDIT, editOf, findPlayers, type PlayerEdit, 
 import { featsOf, featText } from '../league/feats';
 import { learnedNote } from '../league/newpitch';
 import { TOOL_LABELS } from '../draftroom';
+import { checkDiscipline, DISCIPLINE, pushbackChance } from '../league/discipline';
+import { rivalsOf, rivalText } from '../league/rivals';
 import { ABILITY, abilityOf, checkAbilityEdit, type AbilityEdit, type FieldPart } from '../league/abilityedit';
 import { GROWTH_LABELS, GROWTH_ORDER, TRAIT_KEYS, TRAIT_LABELS } from '../league/traits';
 import type { GrowthType } from '../model/types';
@@ -48,7 +50,7 @@ import type { TraitReport } from '../league/reports';
 import { kboSeasons } from '../league/foreigncap';
 import { extensionCooldown, extensionOptions, extensionProblem } from '../league/extensions';
 import { postRows, postTotals, type PostRow } from '../league/poststats';
-import { FASTBALL_LABELS, PITCH_LABELS, VARIANT_LABELS, type FastballType, type PitchType } from '../league/pitches';
+import { FASTBALL_LABELS, isKnuckleballer, PITCH_LABELS, VARIANT_LABELS, type FastballType, type PitchType } from '../league/pitches';
 import { LEGACY_START } from '../league/era';
 import type { ArmSlot, Tracking } from '../league/tracking';
 import { pathwayLabel } from '../league/amateur';
@@ -489,6 +491,8 @@ export function PlayerPanel({
               </p>
             )}
             {__i18n_display(nickname && <p class="profile-nickname" title={__i18n_displayText(nicknameWhy(p) ?? '')}>“{__i18n_display(nickname)}”</p>)}
+            {/* 2.0.36: sent down for a set time, his rivals, a knuckleballer. */}
+            <StatusLines league={league} id={p.id} onAct={onAct} onPlayer={onPlayer} />
             {/* 2.0.24: a foreign player registered under a shorter name. */}
             {p.fullName && <p class="muted small">{__i18n_t("ui.playerPanel.text.f5dc3a10", { full: __i18n_displayText(p.fullName) })}</p>}
           </div>
@@ -1215,6 +1219,63 @@ function PlayerEditor({ league, id, onAct }: { league: LeagueState; id: string; 
         </ul>
       )}
     </details>
+  );
+}
+
+/** 2.0.36: a disciplinary stay in the futures (discipline.ts; ours can be sent down from here), his rivals
+    (rivals.ts) and a knuckleballer's tag. */
+function StatusLines({ league, id, onAct, onPlayer }: { league: LeagueState; id: string; onAct?: (a: Action) => void; onPlayer?: (id: string) => void }) {
+  const p = league.players[id];
+  const [days, setDays] = useState<number>(DISCIPLINE.days.gm[0]);
+  if (!p) return null;
+  const down = league.discipline?.[id];
+  const rivals = rivalsOf(league, id);
+  const ours = !!league.user && p.teamId === league.user.teamId;
+  const can = ours && onAct ? checkDiscipline(league, id, days) : 'no';
+  const knuckle = isPitcher(p) && isKnuckleballer(p);
+  if (!down && !rivals.length && !knuckle && (!ours || !onAct || league.phase !== 'regular' || !league.rosters[p.teamId!]?.active.includes(id))) return null;
+  return (
+    <div class="status-lines small">
+      {knuckle && <p><span class="tag">{__i18n_t("ui.playerPanel.text.ffc72ae8")}</span></p>}
+      {down && (
+        <p class="notice warn">
+          {down.pushback ? __i18n_t("ui.playerPanel.text.6e34f0f1", { until: down.until }) : __i18n_t("ui.playerPanel.text.865839ae", { until: down.until })}
+        </p>
+      )}
+      {rivals.length > 0 && (
+        <p>
+          {__i18n_t("ui.playerPanel.text.6b84a108")}:{' '}
+          {rivals.map((r, i) => (
+            <span key={r.id}>
+              {i > 0 && ' · '}
+              {onPlayer ? (
+                <button type="button" class="link" onClick={() => onPlayer(r.id)}>
+                  {league.players[r.id]?.name ?? '?'}
+                </button>
+              ) : (
+                (league.players[r.id]?.name ?? '?')
+              )}{' '}
+              <span class="muted">({__i18n_displayText(rivalText(league, id, r.id, r.why))}, {shortName(league, league.players[r.id]?.teamId ?? null)})</span>
+            </span>
+          ))}
+        </p>
+      )}
+      {ours && onAct && !down && league.phase === 'regular' && league.rosters[p.teamId!]?.active.includes(id) && (
+        <p class="inline-form">
+          <select value={String(days)} aria-label={__i18n_t("ui.playerPanel.text.394d000a")} onChange={(e) => setDays(Number((e.currentTarget as HTMLSelectElement).value))}>
+            {DISCIPLINE.days.gm.map((d) => (
+              <option key={d} value={String(d)}>
+                {__i18n_t("ui.playerPanel.text.e21a8c25", { n: d })}
+              </option>
+            ))}
+          </select>
+          <button type="button" disabled={!!can} onClick={() => onAct({ kind: 'discipline', id, days })}>
+            {__i18n_t("ui.playerPanel.text.61b8a853")}
+          </button>
+          <span class="muted">{__i18n_t("ui.playerPanel.text.9f627e49", { pct: Math.round(pushbackChance(p) * 100) })}</span>
+        </p>
+      )}
+    </div>
   );
 }
 

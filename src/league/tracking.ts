@@ -14,7 +14,7 @@
 import { hashUnit, rng } from '../draftroom';
 import type { Player } from '../model/types';
 import { isForeign, isPitcher } from './players';
-import { averageVelocity, fastballOf, pitchGrades, pitchVariant, type PitchType, type PitchVariant } from './pitches';
+import { averageVelocity, fastballOf, KNUCKLE, pitchGrades, pitchVariant, type PitchType, type PitchVariant } from './pitches';
 
 export type ArmSlot = 'over' | 'three' | 'side' | 'under';
 
@@ -174,7 +174,8 @@ export function trackingOf(p: Player): Tracking | null {
     return {
       type,
       ...(variant ? { variant } : {}),
-      velocity: Math.round(avg - s.slower + (grade - 50) * 0.05 + noise(1)),
+      // 2.0.36: the knuckleball comes in at its own speed, whatever his fastball (pitches.ts KNUCKLE).
+      velocity: type === 'KN' ? Math.round(KNUCKLE.kmh + (grade - 50) * 0.05 + noise(2)) : Math.round(avg - s.slower + (grade - 50) * 0.05 + noise(1)),
       // Spin pitches gain spin with the grade; the low-spin ones (changeups, splitters, forkballs, palmballs) lose it.
       spin: Math.max(150, Math.round(s.spin + (grade - 50) * (s.spin >= SHAPE.FB.spin ? MOVE.spin : -MOVE.spin) + noise(80))),
       axis: clock(lefty ? 24 - axisH : axisH),

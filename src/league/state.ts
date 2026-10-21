@@ -253,6 +253,11 @@ export type Decision =
   | { kind: 'scandal'; id: PlayerId; offense: string; penalty: string }
   /** An investor from the founding days claims part of the club (V0.12, dispute.ts). */
   | { kind: 'dispute'; investor: string; firm: string; settle: number; legal: number; loss: number }
+  /** 2.0.37 (relocation.ts): the parent's move to a bigger city — proposed, or turned down by the board (`temp`: a
+      temporary home on the way); `chance` the board's yes in percent. */
+  | { kind: 'relocate'; stage: 'propose' | 'rejected'; from: string; target: string; temp?: string | null; chance: number }
+  /** 2.0.37 (merger.ts): the board's vote on merging `weak` into `partner`. */
+  | { kind: 'merger'; weak: TeamId; partner: TeamId; needed: number; clubs: number }
   /** 1.9.9 (board.ts): the winter's board meeting — the committee's motions with each club's expected vote, and the
       motions our club may put (with the yes votes each would expect). */
   | { kind: 'board'; motions: import('./board').BoardMotion[]; expected: Record<TeamId, import('./board').BoardVote>[]; options: import('./board').BoardMotion[]; optionYes: number[]; need: number }
@@ -482,6 +487,9 @@ export interface UserClub {
   /** The parent's goals for the season and its trust in the general manager (0–100). */
   goals?: SeasonGoals;
   trust?: number;
+  /** 2.0.37 (relocation.ts): a move under way from a temporary home, and the moves made. */
+  relocation?: { target: string; temp: string; tries: number; since: number };
+  relocations?: { year: number; from: string; to: string; temporary?: boolean }[];
   /** Year-end evaluations. */
   evaluations?: Evaluation[];
   /** Ballpark works under way. */
@@ -664,6 +672,13 @@ export interface LeagueState {
   sixMan?: boolean;
   /** 2.0.35 (abilityedit.ts): the ability editor turned on in the settings, and how many edits it has made. */
   abilityEditor?: boolean;
+  /** 2.0.36 (discipline.ts): players sent down for a set time (문책성 2군행), and each first team's lines at the managers' last look. */
+  discipline?: Record<PlayerId, import('./discipline').Discipline>;
+  formMark?: { date: string; lines: Record<PlayerId, number[]> };
+  /** 2.0.36 (rivals.ts): the season's rivalries between players. */
+  playerRivals?: { year: number; list: import('./rivals').Rivalry[] };
+  /** 2.0.37 (merger.ts): mergers and sales of clubs (`teamId` the club that took a new name). */
+  mergers?: { year: number; into: TeamId | null; absorbed: string; founded: string; teamId: TeamId; approved: boolean; cityId?: string }[];
   abilityEdits?: number;
   /** 2.0.24 (posting.ts): the players a club may post in a winter, when not the KBO's one. */
   postingMax?: number;

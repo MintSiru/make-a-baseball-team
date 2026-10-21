@@ -83795,5 +83795,1475 @@
       }
     },
     "locations": []
+  },
+  "league.discipline.text.25eb910c": {
+    "source": "src/league/discipline.ts",
+    "line": 66,
+    "params": {},
+    "locations": []
+  },
+  "league.discipline.text.b1c7b338": {
+    "source": "src/league/discipline.ts",
+    "line": 67,
+    "params": {},
+    "locations": []
+  },
+  "league.discipline.text.413a9d3e": {
+    "source": "src/league/discipline.ts",
+    "line": 68,
+    "params": {},
+    "locations": []
+  },
+  "league.discipline.text.f77026d0": {
+    "source": "src/league/discipline.ts",
+    "line": 69,
+    "params": {},
+    "locations": []
+  },
+  "league.discipline.text.20ab4cd3": {
+    "source": "src/league/discipline.ts",
+    "line": 70,
+    "params": {},
+    "locations": []
+  },
+  "league.discipline.text.89eea76e": {
+    "source": "src/league/discipline.ts",
+    "line": 97,
+    "params": {},
+    "locations": []
+  },
+  "league.discipline.text.e8338240": {
+    "source": "src/league/discipline.ts",
+    "line": 100,
+    "params": {},
+    "locations": []
+  },
+  "league.discipline.text.daec431c": {
+    "source": "src/league/discipline.ts",
+    "line": 100,
+    "params": {},
+    "locations": []
+  },
+  "league.discipline.text.5989973a": {
+    "source": "src/league/discipline.ts",
+    "line": 101,
+    "params": {},
+    "locations": []
+  },
+  "league.discipline.text.8ab841fb": {
+    "source": "src/league/discipline.ts",
+    "line": 101,
+    "params": {},
+    "locations": []
+  },
+  "league.discipline.text.8979fee5": {
+    "source": "src/league/discipline.ts",
+    "line": 101,
+    "params": {},
+    "locations": []
+  },
+  "league.discipline.text.68a7776b": {
+    "source": "src/league/discipline.ts",
+    "line": 102,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.discipline.text.98d9def8": {
+    "source": "src/league/discipline.ts",
+    "line": 102,
+    "params": {
+      "club": {
+        "expression": "shortOf(s, team)"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.discipline.text.37439858": {
+    "source": "src/league/discipline.ts",
+    "line": 105,
+    "params": {
+      "club": {
+        "expression": "shortOf(s, team)"
+      },
+      "who": {
+        "expression": "eunneun(who)",
+        "particle": "은/는"
+      },
+      "reason": {
+        "expression": "reason"
+      },
+      "name": {
+        "expression": "eulreul(p.name)",
+        "particle": "을/를"
+      },
+      "player": {
+        "expression": "eunneun(p.name)",
+        "particle": "은/는"
+      },
+      "until": {
+        "expression": "back"
+      }
+    },
+    "locations": []
+  },
+  "league.discipline.text.b00ef1b1": {
+    "source": "src/league/discipline.ts",
+    "line": 106,
+    "params": {
+      "club": {
+        "expression": "shortOf(s, team)"
+      },
+      "who": {
+        "expression": "eunneun(who)",
+        "particle": "은/는"
+      },
+      "reason": {
+        "expression": "reason"
+      },
+      "name": {
+        "expression": "eulreul(p.name)",
+        "particle": "을/를"
+      },
+      "until": {
+        "expression": "back"
+      }
+    },
+    "locations": []
+  },
+  "league.discipline.text.4fcf156a": {
+    "source": "src/league/discipline.ts",
+    "line": 131,
+    "params": {},
+    "locations": []
+  },
+  "league.viral.text.0605c900": {
+    "source": "src/league/viral.ts",
+    "line": 136,
+    "params": {
+      "a": {
+        "expression": "a.name"
+      },
+      "b": {
+        "expression": "b.name"
+      }
+    },
+    "locations": []
+  },
+  "league.viral.text.19356ea1": {
+    "source": "src/league/viral.ts",
+    "line": 137,
+    "params": {
+      "a": {
+        "expression": "wagwa(a.name)",
+        "particle": "과/와"
+      },
+      "b": {
+        "expression": "iga(b.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.viral.text.219b9dc4": {
+    "source": "src/league/viral.ts",
+    "line": 140,
+    "params": {},
+    "locations": []
+  },
+  "league.viral.text.d8bd97dc": {
+    "source": "src/league/viral.ts",
+    "line": 143,
+    "params": {},
+    "locations": []
+  },
+  "league.viral.text.860ad8e7": {
+    "source": "src/league/viral.ts",
+    "line": 144,
+    "params": {},
+    "locations": []
+  },
+  "league.viral.text.b0e0f19c": {
+    "source": "src/league/viral.ts",
+    "line": 147,
+    "params": {},
+    "locations": []
+  },
+  "league.viral.text.5dc5525a": {
+    "source": "src/league/viral.ts",
+    "line": 148,
+    "params": {
+      "name": {
+        "expression": "iga(slip.name)",
+        "particle": "이/가"
+      },
+      "days": {
+        "expression": "days"
+      }
+    },
+    "locations": []
+  },
+  "league.viral.text.8c18adda": {
+    "source": "src/league/viral.ts",
+    "line": 159,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.viral.text.e972651e": {
+    "source": "src/league/viral.ts",
+    "line": 160,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.viral.text.01d66c53": {
+    "source": "src/league/viral.ts",
+    "line": 169,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.viral.text.b05d49d8": {
+    "source": "src/league/viral.ts",
+    "line": 170,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.viral.text.134f0a7b": {
+    "source": "src/league/viral.ts",
+    "line": 178,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.viral.text.b9d0eb7c": {
+    "source": "src/league/viral.ts",
+    "line": 179,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.viral.text.95430629": {
+    "source": "src/league/viral.ts",
+    "line": 185,
+    "params": {},
+    "locations": []
+  },
+  "league.viral.text.fe47f4a0": {
+    "source": "src/league/viral.ts",
+    "line": 187,
+    "params": {},
+    "locations": []
+  },
+  "league.viral.text.16a1d85d": {
+    "source": "src/league/viral.ts",
+    "line": 191,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.viral.text.490ee4a5": {
+    "source": "src/league/viral.ts",
+    "line": 192,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      },
+      "coach": {
+        "expression": "coach"
+      },
+      "days": {
+        "expression": "days"
+      }
+    },
+    "locations": []
+  },
+  "league.viral.text.8f81be61": {
+    "source": "src/league/viral.ts",
+    "line": 200,
+    "params": {},
+    "locations": []
+  },
+  "league.viral.text.5f0ae6a8": {
+    "source": "src/league/viral.ts",
+    "line": 200,
+    "params": {},
+    "locations": []
+  },
+  "league.viral.text.0e330181": {
+    "source": "src/league/viral.ts",
+    "line": 200,
+    "params": {},
+    "locations": []
+  },
+  "league.viral.text.7e3ccf68": {
+    "source": "src/league/viral.ts",
+    "line": 200,
+    "params": {},
+    "locations": []
+  },
+  "league.viral.text.0b9b15ef": {
+    "source": "src/league/viral.ts",
+    "line": 203,
+    "params": {},
+    "locations": []
+  },
+  "league.viral.text.30fd6d76": {
+    "source": "src/league/viral.ts",
+    "line": 204,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "who": {
+        "expression": "who"
+      }
+    },
+    "locations": []
+  },
+  "league.viral.text.87dfb2ba": {
+    "source": "src/league/viral.ts",
+    "line": 205,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "who": {
+        "expression": "iga(who)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.viral.text.3ef82baf": {
+    "source": "src/league/viral.ts",
+    "line": 216,
+    "params": {
+      "streak": {
+        "expression": "streak"
+      },
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "old.name"
+      }
+    },
+    "locations": []
+  },
+  "league.viral.text.42b081e1": {
+    "source": "src/league/viral.ts",
+    "line": 217,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      },
+      "streak": {
+        "expression": "streak"
+      },
+      "name": {
+        "expression": "iga(old.name)",
+        "particle": "이/가"
+      },
+      "young": {
+        "expression": "eulreul(young.name)",
+        "particle": "을/를"
+      }
+    },
+    "locations": []
+  },
+  "league.stafftrouble.text.af34a9e3": {
+    "source": "src/league/stafftrouble.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.stafftrouble.text.e6b87c5b": {
+    "source": "src/league/stafftrouble.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.stafftrouble.text.af270683": {
+    "source": "src/league/stafftrouble.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.stafftrouble.text.9d01d849": {
+    "source": "src/league/stafftrouble.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.stafftrouble.text.648308eb": {
+    "source": "src/league/stafftrouble.ts",
+    "line": 47,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "role": {
+        "expression": "label"
+      },
+      "name": {
+        "expression": "m.name"
+      },
+      "what": {
+        "expression": "ro(what)",
+        "particle": "으로/로"
+      }
+    },
+    "locations": []
+  },
+  "league.stafftrouble.text.02860fa7": {
+    "source": "src/league/stafftrouble.ts",
+    "line": 48,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      },
+      "what": {
+        "expression": "what"
+      },
+      "role": {
+        "expression": "label"
+      },
+      "name": {
+        "expression": "wagwa(m.name)",
+        "particle": "과/와"
+      },
+      "interim": {
+        "expression": "interim.name"
+      }
+    },
+    "locations": []
+  },
+  "league.stafftrouble.text.724cc77d": {
+    "source": "src/league/stafftrouble.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.stafftrouble.text.59ff3ec4": {
+    "source": "src/league/stafftrouble.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.rivals.text.14b62ed6": {
+    "source": "src/league/rivals.ts",
+    "line": 49,
+    "params": {
+      "year": {
+        "expression": "born(p)"
+      },
+      "pos": {
+        "expression": "positionLabel(p)"
+      }
+    },
+    "locations": []
+  },
+  "league.rivals.text.1884b087": {
+    "source": "src/league/rivals.ts",
+    "line": 50,
+    "params": {
+      "year": {
+        "expression": "p.origin.draftYear ?? ''"
+      }
+    },
+    "locations": []
+  },
+  "league.rivals.text.86d1981a": {
+    "source": "src/league/rivals.ts",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "league.rivals.text.208e7ab2": {
+    "source": "src/league/rivals.ts",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "league.rivals.text.cb902471": {
+    "source": "src/league/rivals.ts",
+    "line": 140,
+    "params": {
+      "ours": {
+        "expression": "ours.name"
+      },
+      "year": {
+        "expression": "year"
+      },
+      "theirs": {
+        "expression": "theirs.name"
+      }
+    },
+    "locations": []
+  },
+  "league.rivals.text.0e62d907": {
+    "source": "src/league/rivals.ts",
+    "line": 140,
+    "params": {
+      "theirs": {
+        "expression": "theirs.name"
+      },
+      "ours": {
+        "expression": "ours.name"
+      }
+    },
+    "locations": []
+  },
+  "league.rivals.text.443d1b1c": {
+    "source": "src/league/rivals.ts",
+    "line": 141,
+    "params": {
+      "year": {
+        "expression": "year"
+      },
+      "ours": {
+        "expression": "ours.name"
+      },
+      "wo": {
+        "expression": "wo"
+      },
+      "theirs": {
+        "expression": "theirs.name"
+      },
+      "wt": {
+        "expression": "wt"
+      }
+    },
+    "locations": []
+  },
+  "league.rivals.text.0f443bb2": {
+    "source": "src/league/rivals.ts",
+    "line": 165,
+    "params": {
+      "ip": {
+        "expression": "Math.floor((pit[1] as number) / 3)"
+      },
+      "er": {
+        "expression": "pit[4] as number"
+      }
+    },
+    "locations": []
+  },
+  "league.rivals.text.b7c0fa98": {
+    "source": "src/league/rivals.ts",
+    "line": 166,
+    "params": {
+      "ab": {
+        "expression": "bat[2] as number"
+      },
+      "h": {
+        "expression": "bat[4] as number"
+      },
+      "hr": {
+        "expression": "bat[6] as number"
+      }
+    },
+    "locations": []
+  },
+  "league.rivals.text.cc3e0532": {
+    "source": "src/league/rivals.ts",
+    "line": 177,
+    "params": {
+      "win": {
+        "expression": "win.name"
+      }
+    },
+    "locations": []
+  },
+  "league.rivals.text.3bd0b591": {
+    "source": "src/league/rivals.ts",
+    "line": 178,
+    "params": {
+      "why": {
+        "expression": "rivalText(s, win.id, lose.id, r.why)"
+      },
+      "win": {
+        "expression": "iga(win.name)",
+        "particle": "이/가"
+      },
+      "lose": {
+        "expression": "wagwa(lose.name)",
+        "particle": "과/와"
+      },
+      "win2": {
+        "expression": "win.name"
+      },
+      "lw": {
+        "expression": "lw.line"
+      },
+      "lose2": {
+        "expression": "lose.name"
+      },
+      "ll": {
+        "expression": "ll.line"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.0815d9cd": {
+    "source": "src/league/scandals.ts",
+    "line": 216,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.b200a735": {
+    "source": "src/league/scandals.ts",
+    "line": 216,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      },
+      "fine": {
+        "expression": "fine"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.a6e859be": {
+    "source": "src/league/scandals.ts",
+    "line": 217,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.b1bfba87": {
+    "source": "src/league/scandals.ts",
+    "line": 217,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.af34a9e3": {
+    "source": "src/league/scandals.ts",
+    "line": 335,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.ef291265": {
+    "source": "src/league/scandals.ts",
+    "line": 336,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.3289ffa1": {
+    "source": "src/league/scandals.ts",
+    "line": 337,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.7736a978": {
+    "source": "src/league/scandals.ts",
+    "line": 338,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.9a014a3d": {
+    "source": "src/league/scandals.ts",
+    "line": 385,
+    "params": {},
+    "locations": []
+  },
+  "league.entry.text.984bda2b": {
+    "source": "src/league/entry.ts",
+    "line": 44,
+    "params": {
+      "until": {
+        "expression": "s.discipline[id]!.until"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.ffc72ae8": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1239,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.6e34f0f1": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1242,
+    "params": {
+      "until": {
+        "expression": "down.until"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.865839ae": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1242,
+    "params": {
+      "until": {
+        "expression": "down.until"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.6b84a108": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1247,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.394d000a": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1265,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.e21a8c25": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1268,
+    "params": {
+      "n": {
+        "expression": "d"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.61b8a853": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1273,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.9f627e49": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1275,
+    "params": {
+      "pct": {
+        "expression": "Math.round(pushbackChance(p) * 100)"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.b62a23ee": {
+    "source": "src/league/relocation.ts",
+    "line": 77,
+    "params": {
+      "club": {
+        "expression": "clubName(s)"
+      },
+      "city": {
+        "expression": "from.name"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.0b362396": {
+    "source": "src/league/relocation.ts",
+    "line": 77,
+    "params": {
+      "tries": {
+        "expression": "plan.tries"
+      },
+      "club": {
+        "expression": "iga(clubName(s))",
+        "particle": "이/가"
+      },
+      "city": {
+        "expression": "ro(from.name)",
+        "particle": "으로/로"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.a50d2945": {
+    "source": "src/league/relocation.ts",
+    "line": 78,
+    "params": {
+      "club": {
+        "expression": "clubName(s)"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.bab2110e": {
+    "source": "src/league/relocation.ts",
+    "line": 78,
+    "params": {
+      "club": {
+        "expression": "clubName(s)"
+      },
+      "city": {
+        "expression": "to.name"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.a312f8ab": {
+    "source": "src/league/relocation.ts",
+    "line": 98,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.9efd971e": {
+    "source": "src/league/relocation.ts",
+    "line": 98,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      },
+      "to": {
+        "expression": "to.name"
+      },
+      "from": {
+        "expression": "from.name"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.12feee1b": {
+    "source": "src/league/relocation.ts",
+    "line": 101,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "to": {
+        "expression": "to.name"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.81e2d3b2": {
+    "source": "src/league/relocation.ts",
+    "line": 101,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      },
+      "from": {
+        "expression": "eulreul(from.name)",
+        "particle": "을/를"
+      },
+      "to": {
+        "expression": "ro(to.name)",
+        "particle": "으로/로"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.b4c3df5e": {
+    "source": "src/league/relocation.ts",
+    "line": 103,
+    "params": {
+      "from": {
+        "expression": "from.name"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.440075b0": {
+    "source": "src/league/relocation.ts",
+    "line": 103,
+    "params": {
+      "from": {
+        "expression": "from.name"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.addd428d": {
+    "source": "src/league/relocation.ts",
+    "line": 108,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.2ff02ff2": {
+    "source": "src/league/relocation.ts",
+    "line": 108,
+    "params": {
+      "club": {
+        "expression": "clubName(s)"
+      },
+      "to": {
+        "expression": "to.name"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.f76b447d": {
+    "source": "src/league/relocation.ts",
+    "line": 120,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.8c987fe2": {
+    "source": "src/league/relocation.ts",
+    "line": 120,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      },
+      "to": {
+        "expression": "to.name"
+      },
+      "from": {
+        "expression": "from.name"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.c6e3d7f1": {
+    "source": "src/league/relocation.ts",
+    "line": 140,
+    "params": {
+      "club": {
+        "expression": "team.name"
+      },
+      "to": {
+        "expression": "ro(to.name)",
+        "particle": "으로/로"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.a12d5dc7": {
+    "source": "src/league/relocation.ts",
+    "line": 140,
+    "params": {
+      "club": {
+        "expression": "team.name"
+      },
+      "from": {
+        "expression": "from.name"
+      },
+      "to": {
+        "expression": "ro(to.name)",
+        "particle": "으로/로"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.c974dbfb": {
+    "source": "src/league/relocation.ts",
+    "line": 141,
+    "params": {
+      "club": {
+        "expression": "team.name"
+      },
+      "to": {
+        "expression": "ro(to.name)",
+        "particle": "으로/로"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.51c88bac": {
+    "source": "src/league/relocation.ts",
+    "line": 141,
+    "params": {
+      "club": {
+        "expression": "iga(team.name)",
+        "particle": "이/가"
+      },
+      "to": {
+        "expression": "ro(to.name)",
+        "particle": "으로/로"
+      },
+      "park": {
+        "expression": "to.stadium.name"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.10b946ee": {
+    "source": "src/league/relocation.ts",
+    "line": 142,
+    "params": {
+      "club": {
+        "expression": "team.name"
+      },
+      "to": {
+        "expression": "to.name"
+      }
+    },
+    "locations": []
+  },
+  "league.relocation.text.663fd334": {
+    "source": "src/league/relocation.ts",
+    "line": 142,
+    "params": {
+      "club": {
+        "expression": "iga(team.name)",
+        "particle": "이/가"
+      },
+      "to": {
+        "expression": "eulreul(to.name)",
+        "particle": "을/를"
+      },
+      "park": {
+        "expression": "to.stadium.name"
+      },
+      "from": {
+        "expression": "from.name"
+      }
+    },
+    "locations": []
+  },
+  "league.merger.text.40b6d162": {
+    "source": "src/league/merger.ts",
+    "line": 64,
+    "params": {
+      "a": {
+        "expression": "a"
+      },
+      "b": {
+        "expression": "b"
+      }
+    },
+    "locations": []
+  },
+  "league.merger.text.c926a16f": {
+    "source": "src/league/merger.ts",
+    "line": 64,
+    "params": {
+      "a": {
+        "expression": "a"
+      },
+      "seasons": {
+        "expression": "weak.d"
+      },
+      "b": {
+        "expression": "iga(b)",
+        "particle": "이/가"
+      },
+      "a2": {
+        "expression": "eulreul(a)",
+        "particle": "을/를"
+      }
+    },
+    "locations": []
+  },
+  "league.merger.text.d827edd4": {
+    "source": "src/league/merger.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "league.merger.text.935d4d05": {
+    "source": "src/league/merger.ts",
+    "line": 65,
+    "params": {
+      "a": {
+        "expression": "a"
+      }
+    },
+    "locations": []
+  },
+  "league.merger.text.8c205f11": {
+    "source": "src/league/merger.ts",
+    "line": 121,
+    "params": {
+      "old": {
+        "expression": "id.old"
+      },
+      "into": {
+        "expression": "into"
+      },
+      "name": {
+        "expression": "id.name"
+      }
+    },
+    "locations": []
+  },
+  "league.merger.text.9894ef87": {
+    "source": "src/league/merger.ts",
+    "line": 123,
+    "params": {
+      "old": {
+        "expression": "id.old"
+      },
+      "into": {
+        "expression": "into"
+      }
+    },
+    "locations": []
+  },
+  "league.merger.text.d41812f4": {
+    "source": "src/league/merger.ts",
+    "line": 124,
+    "params": {
+      "into": {
+        "expression": "iga(into)",
+        "particle": "이/가"
+      },
+      "old": {
+        "expression": "id.old"
+      },
+      "n": {
+        "expression": "best.length"
+      },
+      "company": {
+        "expression": "id.company"
+      },
+      "name": {
+        "expression": "eulreul(id.name)",
+        "particle": "을/를"
+      },
+      "clubs": {
+        "expression": "firstTeamIds(s, next).length"
+      }
+    },
+    "locations": []
+  },
+  "league.merger.text.b87b1463": {
+    "source": "src/league/merger.ts",
+    "line": 132,
+    "params": {
+      "old": {
+        "expression": "id.old"
+      },
+      "company": {
+        "expression": "id.company"
+      },
+      "name": {
+        "expression": "id.name"
+      }
+    },
+    "locations": []
+  },
+  "league.merger.text.72ae1d82": {
+    "source": "src/league/merger.ts",
+    "line": 134,
+    "params": {
+      "old": {
+        "expression": "id.old"
+      },
+      "company": {
+        "expression": "id.company"
+      }
+    },
+    "locations": []
+  },
+  "league.merger.text.4f521e37": {
+    "source": "src/league/merger.ts",
+    "line": 135,
+    "params": {
+      "yes": {
+        "expression": "yes"
+      },
+      "needed": {
+        "expression": "needed"
+      },
+      "company": {
+        "expression": "id.company"
+      },
+      "name": {
+        "expression": "id.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.cdbe2c7a": {
+    "source": "src/ui/Decision.tsx",
+    "line": 89,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.55ef9dba": {
+    "source": "src/ui/Decision.tsx",
+    "line": 90,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.472f1d51": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1318,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.dc88641a": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1318,
+    "params": {
+      "pct": {
+        "expression": "d.chance"
+      },
+      "to": {
+        "expression": "to?.name ?? ''"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.6547f38c": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1319,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.6e7849ab": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1319,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.f4b80702": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1322,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.cd82bb71": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1322,
+    "params": {
+      "temp": {
+        "expression": "temp.name"
+      },
+      "pct": {
+        "expression": "d.chance"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.95917b7e": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1323,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.86d05374": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1323,
+    "params": {
+      "from": {
+        "expression": "from?.name ?? ''"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.e75a811e": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1330,
+    "params": {
+      "from": {
+        "expression": "from?.name ?? ''"
+      },
+      "m1": {
+        "expression": "from?.market ?? 0"
+      },
+      "to": {
+        "expression": "to?.name ?? ''"
+      },
+      "m2": {
+        "expression": "to?.market ?? 0"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.877bb679": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1331,
+    "params": {
+      "to": {
+        "expression": "to?.name ?? ''"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.163471bd": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1351,
+    "params": {
+      "partner": {
+        "expression": "iga(partner)",
+        "particle": "이/가"
+      },
+      "weak": {
+        "expression": "weak"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.3db39cd4": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1352,
+    "params": {
+      "weak": {
+        "expression": "eunneun(weak)",
+        "particle": "은/는"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.2081ab16": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1356,
+    "params": {
+      "weak": {
+        "expression": "weak"
+      },
+      "partner": {
+        "expression": "wagwa(partner)",
+        "particle": "과/와"
+      },
+      "clubs": {
+        "expression": "d.clubs"
+      },
+      "needed": {
+        "expression": "d.needed"
+      }
+    },
+    "locations": []
+  },
+  "league.merger.text.6b9d548f": {
+    "source": "src/league/merger.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.merger.text.ebdf4f1b": {
+    "source": "src/league/merger.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.merger.text.d879a040": {
+    "source": "src/league/merger.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.merger.text.a2310ede": {
+    "source": "src/league/merger.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.merger.text.3ac2fc0b": {
+    "source": "src/league/merger.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.merger.text.0ae10827": {
+    "source": "src/league/merger.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.merger.text.5ae3f402": {
+    "source": "src/league/merger.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.merger.text.cc1316b9": {
+    "source": "src/league/merger.ts",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "league.merger.text.3497e002": {
+    "source": "src/league/merger.ts",
+    "line": 25,
+    "params": {},
+    "locations": []
+  },
+  "league.merger.text.c869fd6f": {
+    "source": "src/league/merger.ts",
+    "line": 25,
+    "params": {},
+    "locations": []
+  },
+  "league.merger.text.13bf58c9": {
+    "source": "src/league/merger.ts",
+    "line": 25,
+    "params": {},
+    "locations": []
+  },
+  "league.merger.text.78709406": {
+    "source": "src/league/merger.ts",
+    "line": 25,
+    "params": {},
+    "locations": []
+  },
+  "league.merger.text.fc92c728": {
+    "source": "src/league/merger.ts",
+    "line": 25,
+    "params": {},
+    "locations": []
+  },
+  "league.merger.text.e126cbed": {
+    "source": "src/league/merger.ts",
+    "line": 25,
+    "params": {},
+    "locations": []
   }
 }

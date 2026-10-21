@@ -344,6 +344,8 @@ export interface Player {
     pull?: number;
     lift?: number;
     pitchLift?: number;
+    /** 2.0.36: a knuckleballer's top velocity. */
+    top?: number;
     fastball?: import('../league/pitches').FastballType;
     pitches?: import('../league/pitches').Pitch[];
     field?: Partial<Record<import('../league/abilityedit').FieldPart, number>>;

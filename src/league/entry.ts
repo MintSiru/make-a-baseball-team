@@ -40,6 +40,8 @@ export function canMove(s: LeagueState, id: PlayerId, to: Squad): string | null 
   if (to === 'active') {
     if (!r.active.length && s.year < u.firstTeamYear) return __i18n_k("league.entry.canMove.81880ddf");
     if (isDevelopment(p)) return __i18n_k("league.entry.canMove.bc9d990b");
+    // 2.0.36: sent down for a set time (discipline.ts).
+    if (s.discipline?.[id]) return __i18n_k("league.entry.text.984bda2b", { until: s.discipline[id]!.until });
     if (offRoster(s, id)) return s.suspended?.[id] ? __i18n_k("league.entry.canMove.c30a1a7f") : s.away[id] ? __i18n_k("league.entry.canMove.603e30f7") : __i18n_k("league.entry.canMove.fc099ae5");
     if (r.active.length >= firstTeamSize(s, u.teamId)) return __i18n_k("league.entry.canMove.80107525", { firstTeamSize: firstTeamSize(s, u.teamId) });
     // 1.9.6: overseas Korean players on the first team (kyopo.ts).

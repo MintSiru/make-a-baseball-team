@@ -23,6 +23,7 @@ import { ageIn, isPitcher } from './players';
 import { orgPlayers, type LeagueState } from './state';
 import { FANS, LIFE as L } from './tuning';
 import { traitsOf, troubleFactor } from './traits';
+import { maybeDiscipline } from './discipline';
 
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
@@ -77,7 +78,7 @@ export function favouritesMerch(s: LeagueState, teamId: TeamId): number {
   return L.merch * clamp((avg - 40) / 60, 0, 1);
 }
 
-const adjustFans = (p: Player, by: number) => {
+export const adjustFans = (p: Player, by: number) => {
   const life = (p.life ??= {});
   life.fans = clamp((life.fans ?? 0) + by, -30, 30);
 };
@@ -390,6 +391,8 @@ export function lifeDay(s: LeagueState, date: string): PlayerId | null {
   }
   note(p, date, title, tone);
   addNews(s, { id: `life-${date}-${p.id}`, date, kind: 'interview', title, body, quotes, facts: { player: p.name, event: title }, players: [p.id], mine: true });
+  // 2.0.36: a row in the papers may cost him a stay in the futures (discipline.ts).
+  if (kind === 'row' || kind === 'feud') maybeDiscipline(s, p, date, r);
   // A pop-up only when it takes a first-team player out for a few days.
   if (onFirst && (kind === 'birth' || kind === 'loss' || kind === 'accident'))
     addAlert(s, { id: `life-${date}-${p.id}`, date, kind: 'life', title, lines: [body], ...(tone ? { tone } : {}), players: [p.id] });

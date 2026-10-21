@@ -138,6 +138,17 @@ export const FAMILY: Partial<Record<PitchType, string>> = { SL: 'slider', SW: 's
 
 const WEIGHTS = [0.6, 0.3, 0.1];
 
+/** 2.0.36 (the user's request): a knuckleballer — the knuckleball his main pitch whatever else, thrown most of the time
+    (Wakefield, Dickey: some 70–85%), with one or two weak pitches besides and a slow fastball; the knuckleball itself
+    comes in at its own speed (about 108 km/h) whatever his fastball. One whose best pitch is drawn as the knuckleball. */
+export const KNUCKLE = { kmh: 108, top: { min: 118, max: 132 }, share: { min: 0.68, max: 0.82 }, best: 4, weak: { min: 9, max: 16 }, extraUsage: { min: 0.03, max: 0.07 } };
+
+/** Whether he is a knuckleballer: the knuckleball his main pitch, thrown most of the time. */
+export const isKnuckleballer = (p: Player) => {
+  const first = repertoire(p)[0];
+  return first?.type === 'KN' && first.usage >= 0.4;
+};
+
 /** 2.0.8: the share of his pitches a learned pitch takes. */
 export const LEARNED_USAGE = 0.08;
 
@@ -235,6 +246,17 @@ export function repertoire(p: Player): Pitch[] {
   // 2.0.24: some curveballers grip it as a knuckle curve (his own, outside the mix's draws).
   const kc = (isForeign(p) ? KC_SHARE.foreign : KC_SHARE.domestic) + (Number(p.birthday.slice(0, 4)) >= 1998 ? KC_SHARE.young : 0);
   for (let i = 0; i < types.length; i++) if (types[i] === 'CB' && hashUnit(`knuckle-curve|${p.id}`) < kc) types[i] = 'KC';
+  // 2.0.36: a knuckleballer (his own stream, so the other arms' mixes do not move).
+  if (types[0] === 'KN') {
+    const k = rng(`knuckle-${p.id}`);
+    const between = (x: { min: number; max: number }) => x.min + k() * (x.max - x.min);
+    const extras = types.slice(1, k() < 0.5 ? 2 : 3);
+    if (!extras.length) extras.push(p.throws === '좌' ? 'CH' : 'CB');
+    const out: Pitch[] = [{ type: 'KN', offset: KNUCKLE.best, usage: between(KNUCKLE.share) }, ...extras.map((type) => ({ type, offset: -between(KNUCKLE.weak), usage: between(KNUCKLE.extraUsage) }))];
+    for (const x of p.learned ?? []) if (!out.some((y) => y.type === x.type)) out.push({ type: x.type, offset: x.offset, usage: LEARNED_USAGE });
+    cache.set(p, { key, out });
+    return out;
+  }
   const raw = types.map((_, i) => (i === 0 ? 5 + r() * 5 : i === 1 ? -1 - r() * 5 : -7 - r() * 7));
   // Shift so the weighted grade equals the tool: 0.6·best + 0.3·second + 0.1·(mean of the rest; the second
   // again for a pitcher with two). A pitcher with one breaking ball throws it at the tool's grade.
@@ -280,6 +302,11 @@ const normalOf = (key: string) => (hashUnit(`${key}|a`) + hashUnit(`${key}|b`) +
 export function developPitches(p: Player, year: number, age: number) {
   const rep = repertoire(p);
   if (rep.length < 2) return;
+  // 2.0.36: a knuckleballer's pitches stay as they are (the knuckleball his own, the rest weak).
+  if (isKnuckleballer(p)) {
+    delete p.pitchDev;
+    return;
+  }
   const dev = p.pitchDev ?? {};
   const steps = rep.map((x) => {
     const now = x.offset + devOf(p, x.type);
@@ -308,6 +335,8 @@ const VELO_PER_STUFF = 0.35;
 /** Top velocity today: the draft-day reading moved by how much his 구위 has changed since. */
 export function topVelocity(p: Player): number | null {
   if (p.velocity == null) return null;
+  // 2.0.36: a knuckleballer's slow fastball (his own, or what the ability editor set).
+  if (isKnuckleballer(p)) return p.custom?.top ?? Math.round(KNUCKLE.top.min + hashUnit(`knuckle-top|${p.id}`) * (KNUCKLE.top.max - KNUCKLE.top.min));
   // 2.0.0: his arm slot (tracking.ts): a sidearmer a few km/h under, a submariner well under.
   const slot = slotVelocity(p);
   const now = p.hidden.current.stuff;

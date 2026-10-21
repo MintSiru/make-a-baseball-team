@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import type { TeamBox } from '../src/league/engine/types';
 import { familyGame, familyOf, familySeason, surnameOf } from '../src/league/family';
 import { createLeague } from '../src/league/history';
-import { developPitches, pitchGrades, repertoire } from '../src/league/pitches';
+import { developPitches, isKnuckleballer, pitchGrades, repertoire } from '../src/league/pitches';
 import { isPitcher } from '../src/league/players';
 import { seasonMix } from '../src/league/savant';
 import type { LeagueState } from '../src/league/state';
@@ -100,7 +100,8 @@ describe('each pitch on its own course', () => {
 
   it('lets a young arm’s weaker pitches catch up over the years, on average', () => {
     const arms = Object.values(s.players)
-      .filter((x) => isPitcher(x) && repertoire(x).length >= 2)
+      // A knuckleballer's pitches stay as they are (2.0.36).
+      .filter((x) => isPitcher(x) && repertoire(x).length >= 2 && !isKnuckleballer(x))
       .slice(0, 60)
       .map((x) => structuredClone(x));
     let gap = 0;

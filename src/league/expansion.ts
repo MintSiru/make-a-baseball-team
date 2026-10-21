@@ -50,6 +50,8 @@ import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './fore
 import { marchEvents, nextNationalDecision, novemberEvents } from './national';
 import { devDecision } from './development';
 import { disputeDecision } from './dispute';
+import { relocationDecision } from './relocation';
+import { mergerDecision } from './merger';
 import { homecomings } from './returnees';
 import { conditionUnified, foundNorthClubs } from './unified';
 import { autoProtect, checkRival, checkRivalProtect, resolveRival, resolveRivalProtect, rivalDecision, rivalProtectDecision, rivalStep } from './rival';
@@ -368,7 +370,8 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       // shareholder dispute (V0.12).
       // 2.0.23: the north's clubs for a unified condition added this year (unified.ts).
       conditionUnified(s, o.year);
-      return rivalDecision(s, o.year) ?? disputeDecision(s, o.year);
+      // 2.0.37: the parent's move to a bigger city, a merger before the board.
+      return rivalDecision(s, o.year) ?? disputeDecision(s, o.year) ?? relocationDecision(s, o.year) ?? mergerDecision(s, o.year);
     case 'retire':
       // Staff first; our players who want to retire follow (V0.11, userclub.ts).
       return staffDecision(s, o.year) ?? retireDecision(s);

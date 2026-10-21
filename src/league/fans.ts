@@ -15,7 +15,7 @@ import { cityById } from '../club/cities';
 import { ageIn, isForeign } from './players';
 import type { GameScore } from './standings';
 import { firstTeamIds, orgPlayers, type ClubState, type LeagueState } from './state';
-import { BALLPARK, FANS, FINANCE, PARENT, RIVAL } from './tuning';
+import { BALLPARK, FANS, FINANCE, PARENT, PLAYER_RIVALS, RIVAL } from './tuning';
 import { isRivalry } from './twelve';
 import { premiumShare, scoreboardDemand } from './facilities';
 
@@ -102,6 +102,15 @@ const DAY_FACTOR = [1.3, 0.8, 0.82, 0.85, 0.95, 1.25, 1.35]; // Sunday … Satur
 const MONTH_FACTOR: Record<number, number> = { 3: 1.05, 4: 0.95, 5: 1.05, 6: 1.02, 7: 0.95, 8: 0.95, 9: 1.02, 10: 1.05 };
 
 /** How many come to this regular-season game (the home club's ballpark). */
+/** 2.0.36 (rivals.ts): whether rival players meet in this game (each club carries one of a rivalry). */
+export function rivalsMeet(s: LeagueState, home: TeamId, away: TeamId): boolean {
+  return (s.playerRivals?.list ?? []).some((x) => {
+    const ta = s.players[x.a]?.teamId,
+      tb = s.players[x.b]?.teamId;
+    return (ta === home && tb === away) || (ta === away && tb === home);
+  });
+}
+
 export function attendance(s: LeagueState, g: Pick<GameScore, 'id' | 'date' | 'home' | 'away'>): number {
   const home = clubState(s, g.home),
     away = clubState(s, g.away);
@@ -116,7 +125,8 @@ export function attendance(s: LeagueState, g: Pick<GameScore, 'id' | 'date' | 'h
   const month = domed ? Math.max(1, MONTH_FACTOR[Number(g.date.slice(5, 7))] ?? 1) * BALLPARK.domeGate : (MONTH_FACTOR[Number(g.date.slice(5, 7))] ?? 1);
   const visitors = 1 + ((away.popularity - FANS.averagePopularity) / FANS.averagePopularity) * FANS.visitorWeight;
   // The rivalry (V0.9) draws more.
-  const rivalry = isRivalry(s, g.home, g.away) ? RIVAL.rivalry.gate : 1;
+  // 2.0.36: rival players meeting draw a few more (rivals.ts).
+  const rivalry = (isRivalry(s, g.home, g.away) ? RIVAL.rivalry.gate : 1) * (rivalsMeet(s, g.home, g.away) ? PLAYER_RIVALS.crowd : 1);
   // The user's new scoreboard (V0.10).
   const venue = 1 + scoreboardDemand(s, g.home);
   // 1.6.0, scenario 불인기 종목: the whole league's crowds are down.

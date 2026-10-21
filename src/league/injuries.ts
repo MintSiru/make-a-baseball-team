@@ -162,7 +162,8 @@ export const sidelined = (s: LeagueState, id: PlayerId) => !!s.injuries[id] || !
 /** Off the first team: on the injured list, in rehab or with the national team (a knock does not count). */
 export const offRoster = (s: LeagueState, id: PlayerId) => {
   const i = s.injuries[id];
-  return (!!i && !i.dtd) || !!s.away?.[id] || !!s.abroad?.[id] || !!s.suspended?.[id];
+  // 2.0.36: sent down for a set time (discipline.ts).
+  return (!!i && !i.dtd) || !!s.away?.[id] || !!s.abroad?.[id] || !!s.suspended?.[id] || !!s.discipline?.[id];
 };
 
 /** A major operation's lasting mark on the player: hidden ability, and a little more fragile. */
