@@ -3,7 +3,8 @@ import { k as __i18n_k } from '../i18n/index';
    owner's own gift now and then (V0.7.7, market.ts parentGiftFor), the general manager may go to the owner once a
    winter with one name from the market: if the owner agrees, it pays his deal itself, outside the payroll budget,
    just as with a gift. A conglomerate is the likeliest to say yes, a citizen club the least; trust moves it a good
-   deal, and the bigger the price, the harder the sell. A no costs a little trust. */
+   deal, and the bigger the price, the harder the sell. A no costs a little trust. 2.0.34 (the user's request): our
+   own free agents too, a little likelier. */
 import { rng } from '../draftroom';
 import type { PlayerId } from '../model/types';
 import { addAlert } from './alerts';
@@ -26,6 +27,8 @@ export const OWNER_ASK = {
   /** Trust lost when the owner says no. */
   noTrust: 3,
   maxAge: 34,
+  /** 2.0.34: our own free agent — an owner would rather keep a face of the club than see him go. */
+  own: 0.1,
 } as const;
 
 /** Why we cannot ask the owner for him now, or null. */
@@ -38,7 +41,6 @@ export function askOwnerProblem(s: LeagueState, id: PlayerId): string | null {
   const t = m.talks[id];
   const p = s.players[id];
   if (!t || !p || t.signed) return __i18n_k("league.ownerask.text.09cffef4");
-  if (t.from === u.teamId) return __i18n_k("league.ownerask.text.ea57b6e1");
   if (ageIn(p, m.year + 1) > OWNER_ASK.maxAge) return __i18n_k("league.ownerask.text.9eb5fa6c", { age: OWNER_ASK.maxAge });
   return null;
 }
@@ -50,7 +52,7 @@ export function askOwnerChance(s: LeagueState, id: PlayerId): number {
   const trust = u.trust ?? PARENT.startTrust;
   const price = guaranteed(t.price);
   const sizeFactor = Math.max(0.35, Math.min(1.1, 1.2 - (price / OWNER_ASK.bigDeal) * 0.6));
-  const base = OWNER_ASK.base[u.settings.parentType] + (trust - 50) * OWNER_ASK.perTrust;
+  const base = OWNER_ASK.base[u.settings.parentType] + (trust - 50) * OWNER_ASK.perTrust + (t.from === u.teamId ? OWNER_ASK.own : 0);
   return Math.max(OWNER_ASK.min, Math.min(OWNER_ASK.max, base * sizeFactor));
 }
 

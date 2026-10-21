@@ -13,7 +13,7 @@ import type { BatterIn, BenchIn, BullpenRole, FieldPos, Hand, PitcherIn, Relieve
 import { hashUnit } from '../draftroom';
 import { ageIn, batValue, currentValue, isForeign, isPitcher, keepValue, starterValue } from './players';
 import { staffEdge, staffRating } from './staff';
-import { hasBenefits, registeredIds, type LeagueState, type LineupSlot, type ManagerStyle } from './state';
+import { firstTeamIds, hasBenefits, registeredIds, type LeagueState, type LineupSlot, type ManagerStyle } from './state';
 import { EXPANSION_DEFAULTS, KBO_2026 } from '../rules/kbo2026';
 import { pitchingLift, platoonFactor } from './pitches';
 import { ENGINE, STAFF } from './tuning';
@@ -79,7 +79,7 @@ export function chooseActive(s: LeagueState, teamId: TeamId, opts?: { size?: num
   const pitchers = pool.filter(isPitcher).sort((a, b) => val(b) - val(a));
   const hitters = pool.filter((p) => !isPitcher(p)).sort((a, b) => val(b) - val(a));
   const chosen: Player[] = [];
-  const starters = [...pitchers].sort((a, b) => rotationScore(b, none) - rotationScore(a, none)).slice(0, 5);
+  const starters = [...pitchers].sort((a, b) => rotationScore(b, none) - rotationScore(a, none)).slice(0, Math.max(5, rotationSize(s)));
   chosen.push(...starters);
   for (const p of pitchers) if (chosen.length < pitchersWanted && !chosen.includes(p)) chosen.push(p);
   const catchers = hitters.filter((p) => p.position === 'C').slice(0, 2);
@@ -390,11 +390,28 @@ const rotationScore = (p: Player, prefer: Prefer) => starterValue(p.scouting.too
 
 /** The five-man rotation: starters (role SP) by public starter value; everyone else pitches from the bullpen.
     `order` (the user's club, V0.8): the general manager's starters first, in his order, while on the squad. */
-export function rotationFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none, order: PlayerId[] = [], size = eraUsage(s.year)?.rotation ?? 5): Player[] {
+/** 2.0.34: whether the six-man rotation may be chosen — twelve first-team clubs or more. */
+export const sixManAllowed = (s: LeagueState) => firstTeamIds(s).length >= 12;
+/** The rotation's size: the era's (four in the old days), or six when the league chose it (2.0.34). */
+export const rotationSize = (s: LeagueState) => (s.sixMan && sixManAllowed(s) ? 6 : (eraUsage(s.year)?.rotation ?? 5));
+
+export function rotationFor(s: LeagueState, ids: PlayerId[], prefer: Prefer = none, order: PlayerId[] = [], size = rotationSize(s)): Player[] {
   const pitchers = ids.map((id) => s.players[id]!).filter((p) => isPitcher(p));
   const mine = order.filter((id, i) => order.indexOf(id) === i && pitchers.some((p) => p.id === id)).slice(0, size);
   const rest = pitchers.filter((p) => !mine.includes(p.id)).sort((a, b) => rotationScore(b, prefer) - rotationScore(a, prefer) || a.id.localeCompare(b.id));
-  return [...mine.map((id) => s.players[id]!), ...rest].slice(0, size);
+  const chosen = rest.slice(0, Math.max(0, size - mine.length));
+  return [...mine.map((id) => s.players[id]!), ...turnOrder(chosen)];
+}
+
+/** 2.0.34 (the user's request): the manager's order through the rotation, as KBO clubs set it — the foreign starters
+    first, then the home-grown ace (so he takes the second or third turn), then the Asia-quota starter, then the rest
+    by value. Who makes the rotation is chosen as before; only the turns change. */
+function turnOrder(five: Player[]): Player[] {
+  const starter = (p: Player) => p.role === 'SP';
+  const foreign = five.filter((p) => starter(p) && isForeign(p) && !p.origin.asiaQuota);
+  const asia = five.filter((p) => starter(p) && isForeign(p) && p.origin.asiaQuota);
+  const home = five.filter((p) => !foreign.includes(p) && !asia.includes(p));
+  return [...foreign, ...home.slice(0, 1), ...asia, ...home.slice(1)];
 }
 
 /** The user's lineup card for a squad (the first team only; futures squads are the manager's). */
@@ -485,6 +502,53 @@ export function penRoles(s: LeagueState, teamId: TeamId, relievers: Player[], pr
   return out;
 }
 
+/** Whether a reliever's arm is ready today (he pitched today, or yesterday long or on two days running, or long the
+    day before: he rests). All out (our postseason plan): only a long outing yesterday rests him. */
+function penRested(a: { lastDate: string; lastPitches: number; streak: number } | undefined, date: string, allOut = false) {
+  if (!a) return true;
+  const days = daysBetween(a.lastDate, date);
+  if (days <= 0) return false;
+  if (allOut) return !(days === 1 && a.lastPitches >= 45);
+  if (days === 1 && (a.lastPitches >= 30 || a.streak >= 2)) return false;
+  if (days <= 2 && a.lastPitches >= 50) return false;
+  return true;
+}
+
+/** 2.0.34 (the user's request: a pitcher's tiredness at a glance): how ready his arm is for `date`, by the same rules
+    the manager goes by — a starter's days of rest against the rotation's (100% when he may start), a reliever's
+    last outings (the day after a short one he can go again, a little tired). `pct` 0–100, `ready` whether he may
+    pitch, `why` the reason in a few words, `back` the first day he may pitch again when he may not. */
+export interface ArmReady {
+  pct: number;
+  ready: boolean;
+  why: 'fresh' | 'rested' | 'short' | 'today' | 'streak' | 'long' | 'hurt';
+  last: { date: string; pitches: number; streak: number } | null;
+  back: string | null;
+}
+const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
+export function armReady(s: LeagueState, p: Pick<Player, 'id'>, date: string, starter: boolean): ArmReady {
+  const a = s.arms[p.id];
+  const last = a ? { date: a.lastDate, pitches: a.lastPitches, streak: a.streak } : null;
+  if (!available(s, p.id)) return { pct: 0, ready: false, why: 'hurt', last, back: null };
+  if (!a) return { pct: 100, ready: true, why: 'fresh', last, back: null };
+  const days = daysBetween(a.lastDate, date);
+  if (starter) {
+    const need = eraUsage(s.year)?.rest ?? 5;
+    if (days >= need) return { pct: 100, ready: true, why: 'rested', last, back: null };
+    return { pct: Math.max(0, Math.round((days / need) * 100)), ready: false, why: 'short', last, back: addDays(a.lastDate, need) };
+  }
+  if (penRested(a, date)) {
+    // Ready: a little short of full the day after an outing, and the second day after a long one.
+    const pct = days === 1 ? 70 : days === 2 && a.lastPitches >= 30 ? 85 : 100;
+    return { pct, ready: true, why: pct === 100 ? 'rested' : 'short', last, back: null };
+  }
+  // Resting: the first day the rules let him go again.
+  let back = 1;
+  while (back < 4 && !penRested(a, addDays(date, back))) back++;
+  const why = days <= 0 ? 'today' : a.lastPitches >= 50 ? 'long' : a.streak >= 2 ? 'streak' : 'long';
+  return { pct: days <= 0 ? 0 : days === 1 ? 35 : 50, ready: false, why, last, back: addDays(date, back) };
+}
+
 /** Relievers who can pitch today, with their bullpen roles. */
 export function bullpenFor(s: LeagueState, teamId: TeamId, ids: PlayerId[], date: string, exclude: Set<PlayerId>, prefer: Prefer = none, allOut = false): RelieverIn[] {
   // 2.0.12: a two-way hitter pitches in relief (his arm, twoway.ts).
@@ -494,17 +558,7 @@ export function bullpenFor(s: LeagueState, teamId: TeamId, ids: PlayerId[], date
     .filter((p) => isPitcher(p) && !exclude.has(p.id));
   const roles = penRoles(s, teamId, pen, prefer);
   const arms = pen.filter((p) => available(s, p.id));
-  const rested = arms.filter((p) => {
-    const a = s.arms[p.id];
-    if (!a) return true;
-    const days = daysBetween(a.lastDate, date);
-    if (days <= 0) return false;
-    // All out (our postseason plan): only a long outing yesterday rests him.
-    if (allOut) return !(days === 1 && a.lastPitches >= 45);
-    if (days === 1 && (a.lastPitches >= 30 || a.streak >= 2)) return false;
-    if (days <= 2 && a.lastPitches >= 50) return false;
-    return true;
-  });
+  const rested = arms.filter((p) => penRested(s.arms[p.id], date, allOut));
   const relief = (p: Player) => p.scouting.current + performanceNudge(s, p) + (p.role === 'RP' ? 2 : 0) + prefer(p);
   const sorted = rested.sort((a, b) => relief(b) - relief(a));
   return sorted.map((p) => {

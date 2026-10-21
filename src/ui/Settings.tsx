@@ -8,6 +8,7 @@ import { DISCLAIMER, ISSUES_URL, OPEN_SOURCE, RULES_URL } from '../core/about';
 import { RELEASE, SIM_VERSION } from '../core/version';
 import { PARENT_COMPANY_TYPES } from '../club/types';
 import { FICTIONAL_LABELS, labelOf, labelProblems, realLabels, CLUB_NAME, CLUB_SHORT, COMPANY_NAME, BALLPARK_NAME, type ClubLabel } from '../league/clubs';
+import { sixManAllowed } from '../league/manager';
 import type { Action } from '../league/actions';
 import type { LeagueState } from '../league/state';
 import type { SaveStore } from '../save/store';
@@ -212,6 +213,20 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
             ))}
           </div>
           <p class="muted small">{__i18n_t("ui.settings.text.de632662")}</p>
+          {/* 2.0.34 (the user's request): a six-man rotation in a league of twelve clubs or more. */}
+          {sixManAllowed(league) && (
+            <>
+              <h3>{__i18n_t("ui.settings.text.cad4826e")}</h3>
+              <div class="segmented" role="group" aria-label={__i18n_t("ui.settings.text.cad4826e")}>
+                {([false, true] as const).map((on) => (
+                  <button key={String(on)} type="button" aria-pressed={!!league.sixMan === on} disabled={busy} onClick={() => !!league.sixMan !== on && onAct({ kind: 'sixMan', on })}>
+                    {on ? __i18n_t("ui.settings.text.079f0656") : __i18n_t("ui.settings.text.ddcddff2")}
+                  </button>
+                ))}
+              </div>
+              <p class="muted small">{__i18n_t("ui.settings.text.11b1814f")}</p>
+            </>
+          )}
           {/* 2.0.22 (numbers.ts): the retired-number bar rising with each number the club retires, or not. */}
           <h3>{__i18n_t("ui.settings.text.5348a154")}</h3>
           <div class="segmented" role="group" aria-label={__i18n_displayText(__i18n_t("ui.settings.text.5348a154"))}>

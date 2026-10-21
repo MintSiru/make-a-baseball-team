@@ -5,6 +5,9 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 import { moveHistory } from '../league/moves';
 import type { FieldTotals } from '../league/fielding';
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { isFavorite } from '../league/favorites';
+import { armReady } from '../league/manager';
+import { ArmMeter } from './ArmMeter';
 import { useFocusTrap } from './modal';
 import { MeetingsView, SavantView } from './Savant';
 import { NationalLines } from './NationalLines';
@@ -469,7 +472,19 @@ export function PlayerPanel({
               {__i18n_display(p.contract?.kind === 'development' && <span class="tag">{__i18n_t("ui.playerPanel.playerPanel.818f3b79")}</span>)}
               {/* 2.0.14: a two-way player, plain to see. */}
               {p.twoWay && <span class="tag two-way">{__i18n_t("ui.playerPanel.text.62cb0192")}</span>}
+              {/* 2.0.34 (the user's request): star him to keep him on the club's favourites list. */}
+              {onAct && league.user && (
+                <button type="button" class={`fav-star${isFavorite(league, p.id) ? ' on' : ''}`} aria-pressed={isFavorite(league, p.id)} title={isFavorite(league, p.id) ? __i18n_t("ui.playerPanel.text.40e258b4") : __i18n_t("ui.playerPanel.text.d57680be")} aria-label={isFavorite(league, p.id) ? __i18n_t("ui.playerPanel.text.40e258b4") : __i18n_t("ui.playerPanel.text.d57680be")} onClick={() => onAct({ kind: 'favorite', id: p.id, on: !isFavorite(league, p.id) })}>
+                  {isFavorite(league, p.id) ? '★' : '☆'}
+                </button>
+              )}
             </h2>
+            {/* 2.0.34: a pitcher on a club — how ready his arm is. */}
+            {pitcher && p.teamId && p.status === 'active' && (league.phase === 'regular' || league.phase === 'postseason') && (
+              <p class="small">
+                <ArmMeter arm={armReady(league, p, league.schedule[league.next]?.date ?? `${league.year}-10-01`, p.role === 'SP')} />
+              </p>
+            )}
             {__i18n_display(nickname && <p class="profile-nickname" title={__i18n_displayText(nicknameWhy(p) ?? '')}>“{__i18n_display(nickname)}”</p>)}
             {/* 2.0.24: a foreign player registered under a shorter name. */}
             {p.fullName && <p class="muted small">{__i18n_t("ui.playerPanel.text.f5dc3a10", { full: __i18n_displayText(p.fullName) })}</p>}

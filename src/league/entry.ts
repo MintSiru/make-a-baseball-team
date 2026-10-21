@@ -9,7 +9,7 @@ import type { FieldPos } from './engine/types';
 import { isPitcher } from './players';
 import { eunneun, iga } from './josa';
 import { KBO_2026 } from '../rules/kbo2026';
-import { firstTeamSize } from './manager';
+import { firstTeamSize, rotationSize } from './manager';
 import { offRoster } from './injuries';
 import { rosterLimit } from './offseason';
 import { isDevelopment, moveTo, registeredIds, squadOf, type LeagueState, type LineupCard, type Squad } from './state';
@@ -146,7 +146,7 @@ export function checkLineupCard(s: LeagueState, card: LineupCard): string | null
     }
     if (ids.size > 9) return __i18n_k("league.entry.text.6240b64c", { hand });
   }
-  if (card.rotation.length > 5) return __i18n_k("league.entry.checkLineupCard.133d2296");
+  if (card.rotation.length > Math.max(5, rotationSize(s))) return __i18n_k("league.entry.checkLineupCard.133d2296");
   if (new Set(card.rotation).size !== card.rotation.length) return __i18n_k("league.entry.checkLineupCard.97c24fe3");
   for (const id of card.rotation) {
     const p = s.players[id];

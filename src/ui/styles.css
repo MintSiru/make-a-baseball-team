@@ -3619,3 +3619,85 @@ button.danger {
   flex-wrap: wrap;
   gap: 0.4rem 0.8rem;
 }
+
+/* 2.0.34: asking the owner for more payroll budget; the contracts tab. */
+.card.card-wide {
+  grid-column: 1 / -1;
+}
+.budget-ask .inline-form {
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.3rem 0;
+}
+.budget-why ul {
+  margin: 0.3rem 0 0;
+  padding-left: 1.2rem;
+}
+.contract-table .toggle {
+  font-size: 0.85em;
+  padding: 0 0.15rem;
+}
+.contract-detail td {
+  background: var(--panel-alt, rgba(0, 0, 0, 0.03));
+}
+.contract-detail ul {
+  margin: 0.2rem 0;
+  padding-left: 1.2rem;
+  white-space: normal;
+}
+
+/* 2.0.34: how ready a pitcher's arm is. */
+.arm-meter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.82em;
+  white-space: nowrap;
+}
+.arm-meter .arm-bar {
+  display: inline-block;
+  width: 3.2rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--line, rgba(0, 0, 0, 0.12));
+  overflow: hidden;
+}
+.arm-meter .arm-bar span {
+  display: block;
+  height: 100%;
+}
+.arm-meter.ready .arm-bar span {
+  background: #2e8b57;
+}
+.arm-meter.tired .arm-bar span {
+  background: #d49b1f;
+}
+.arm-meter.rest .arm-bar span {
+  background: #c0392b;
+}
+.arm-meter.rest .arm-text {
+  color: #c0392b;
+}
+
+/* 2.0.34: the favourite star on the player screen and the favourites card. */
+.fav-star {
+  background: none;
+  border: 0;
+  padding: 0 0.2em;
+  font-size: 1.1em;
+  line-height: 1;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.55;
+}
+.fav-star.on {
+  color: #d49b1f;
+  opacity: 1;
+}
+.fav-star:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.favorites {
+  margin-top: 0.75rem;
+}

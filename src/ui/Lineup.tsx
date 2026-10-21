@@ -3,6 +3,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
    right- or left-handed starter, the rotation (next starter marked) and the bullpen by role. For the
    user's club (V0.8) the general manager's lineup card: spots and positions he fixes, the rotation order. */
 import { useEffect, useState } from 'preact/hooks';
+import { rotationSize } from '../league/manager';
 import type { Action } from '../league/actions';
 import type { FieldPos } from '../league/engine/types';
 import { checkLineupCard } from '../league/entry';
@@ -13,6 +14,7 @@ import { lineupView, rates } from '../league/views';
 import { gradeTier } from './display';
 import { gradeClass } from './grades';
 import { Help } from './Help';
+import { ArmMeter } from './ArmMeter';
 
 const SPOTS: Record<string, [number, number]> = {
   CF: [200, 40],
@@ -146,6 +148,8 @@ export function Lineup({ league, teamId, onPlayer, onAct }: { league: LeagueStat
                 <span class="muted small">
                   {__i18n_rich("ui.lineup.lineup.04abb99c", { throws: p.throws, arm: <ArmLine p={p} />, w: String(p.w), l: String(p.l), era: p.era == null ? '-' : p.era.toFixed(2) })}
                 </span>
+{' '}
+                <ArmMeter arm={p.arm} />
                 {__i18n_display(p.next && <span class="tag">{__i18n_t("ui.lineup.lineup.ae82f6eb")}</span>)}
                 {__i18n_display(p.mine && <span class="tag" title={__i18n_t("ui.lineup.lineup.195089c9")}>{__i18n_t("ui.lineup.lineup.678af713")}</span>)}
               </li>
@@ -163,7 +167,8 @@ export function Lineup({ league, teamId, onPlayer, onAct }: { league: LeagueStat
                 </button>{__i18n_display(' ')}
                 <span class="muted small">
                   {__i18n_rich("ui.lineup.lineup.087033b5", { throws: p.throws, arm: <ArmLine p={p} />, sv: String(p.sv), hld: String(p.hld), era: p.era == null ? '-' : p.era.toFixed(2) })}
-                </span>
+                </span>{' '}
+                <ArmMeter arm={p.arm} />
               </li>
             )))}
           </ol>
@@ -361,7 +366,7 @@ function CardEditor({ league, vs, lineup, starters, onAct }: { league: LeagueSta
           </div>
           <h4>{__i18n_t("ui.lineup.cardEditor.cad4826e")}</h4>
           <div class="rotation-picks">
-            {__i18n_display([0, 1, 2, 3, 4].map((i) => (
+            {__i18n_display(Array.from({ length: Math.max(5, rotationSize(league)) }, (_, i) => i).map((i) => (
               <label key={i}>
                 {__i18n_t("ui.lineup.text.44016365", { value: i + 1 })}
                 <select

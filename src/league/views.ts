@@ -21,7 +21,7 @@ import { rulesFor } from '../rules/history';
 import { halfTables } from './historic';
 import type { StandingRow } from './standings';
 import { SANGMU } from './futures';
-import { cardFor, lineupFor, managerLean, penRoles, PEN_ROLE_LABELS, rotationFor } from './manager';
+import { cardFor, lineupFor, managerLean, penRoles, PEN_ROLE_LABELS, rotationFor, armReady } from './manager';
 import { isDevelopment, type LeagueState } from './state';
 import { captaincyLift } from './captains';
 import { avg, babip, babipAllowed, batterWar, defensiveWar, era, eraMinus, fip, fipMinus, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
@@ -625,9 +625,11 @@ export function lineupView(s: LeagueState, teamId: TeamId, vs: 'L' | 'R') {
   });
   const rotation = rotationFor(s, active, prefer, card?.rotation);
   const nextUp = s.rotation[teamId] ?? 0;
+  // 2.0.34: the arms as they stand for the next game (or the next day of the calendar).
+  const armDate = next?.date ?? s.schedule[s.next]?.date ?? `${s.year}-04-01`;
   const starters = rotation.map((p, i) => {
     const pit = line(p.id)?.pit;
-    return { id: p.id, name: p.name, throws: p.throws, next: i === nextUp % Math.max(1, rotation.length), mine: !!card?.rotation.includes(p.id), era: pit?.outs ? era(pit) : null, w: pit?.w ?? 0, l: pit?.l ?? 0, ...armGrades(p) };
+    return { id: p.id, name: p.name, throws: p.throws, next: i === nextUp % Math.max(1, rotation.length), mine: !!card?.rotation.includes(p.id), era: pit?.outs ? era(pit) : null, w: pit?.w ?? 0, l: pit?.l ?? 0, ...armGrades(p), arm: armReady(s, p, armDate, true) };
   });
   const inRotation = new Set(rotation.map((p) => p.id));
   const pen = active.map(player).filter((p) => isPitcher(p) && !inRotation.has(p.id));
@@ -636,7 +638,7 @@ export function lineupView(s: LeagueState, teamId: TeamId, vs: 'L' | 'R') {
   const bullpen = pen
     .map((p) => {
       const pit = line(p.id)?.pit;
-      return { id: p.id, name: p.name, throws: p.throws, role: PEN_ROLE_LABELS[roles[p.id] ?? 'MU'], rank: order.indexOf(roles[p.id] ?? 'MU'), era: pit?.outs ? era(pit) : null, sv: pit?.sv ?? 0, hld: pit?.hld ?? 0, ...armGrades(p) };
+      return { id: p.id, name: p.name, throws: p.throws, role: PEN_ROLE_LABELS[roles[p.id] ?? 'MU'], rank: order.indexOf(roles[p.id] ?? 'MU'), era: pit?.outs ? era(pit) : null, sv: pit?.sv ?? 0, hld: pit?.hld ?? 0, ...armGrades(p), arm: armReady(s, p, armDate, false) };
     })
     .sort((a, b) => a.rank - b.rank);
   const starting = new Set(lineup.map((b) => b.id));
