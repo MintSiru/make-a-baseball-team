@@ -370,7 +370,7 @@ describe('논쟁성, arguing the calls, and the rare scandals (2.0.28)', () => {
         if (pend?.kind === 'scandal') {
           seen.add(pend.offense);
           const banned = !!s.suspended?.[pend.id];
-          expect(banned).toBe(['gambling', 'gangs', 'draftDodge'].includes(pend.offense));
+          expect(banned).toBe(['gambling', 'gangs', 'draftDodge', 'drunkBrawl', 'hazing'].includes(pend.offense));
           s.pending = null;
         }
       }
