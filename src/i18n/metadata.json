@@ -82673,5 +82673,38 @@
     "line": 122,
     "params": {},
     "locations": []
+  },
+  "league.userclub.text.670f25ac": {
+    "source": "src/league/userclub.ts",
+    "line": 537,
+    "params": {
+      "n": {
+        "expression": "passed.length"
+      }
+    },
+    "locations": []
+  },
+  "league.userclub.text.836f3f8c": {
+    "source": "src/league/userclub.ts",
+    "line": 537,
+    "params": {
+      "n": {
+        "expression": "failed.length"
+      }
+    },
+    "locations": []
+  },
+  "league.userclub.text.f51c7577": {
+    "source": "src/league/userclub.ts",
+    "line": 537,
+    "params": {
+      "passed": {
+        "expression": "passed.length"
+      },
+      "failed": {
+        "expression": "failed.length"
+      }
+    },
+    "locations": []
   }
 }

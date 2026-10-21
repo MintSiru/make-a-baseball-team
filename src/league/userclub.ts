@@ -500,6 +500,12 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
   const year = s.offseason?.year ?? s.year;
   switch (input.kind) {
     case 'military': {
+      // 2.0.33 (the user's request): the 상무 results pop up, passed and failed together.
+      const passed: PlayerId[] = [];
+      const failed: PlayerId[] = [];
+      // Those accepted first, then the ones turned down.
+      const passLines: string[] = [];
+      const failLines: string[] = [];
       for (const [id, order] of Object.entries(input.orders)) {
         const p = s.players[id]!;
         const forced = (d as Extract<Decision, { kind: 'military' }>).forced.includes(id);
@@ -511,12 +517,31 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           note(u, year, __i18n_k("league.userclub.resolveAnnual.5e5ea4a0", { name: p.name, value: next + 1 }));
         } else if (rng(`${s.seed}|sangmu|${year}|${id}`)() < sangmuChance(p, next)) {
           enlistAs(s, p, next, 'sangmu');
-          note(u, year, __i18n_k("league.userclub.resolveAnnual.91129d87", { name: p.name, value: next + 1 }));
+          passed.push(id);
+          passLines.push(__i18n_k("league.userclub.resolveAnnual.91129d87", { name: p.name, value: next + 1 }));
+          note(u, year, passLines.at(-1)!);
         } else if (forced) {
           enlistAs(s, p, next, 'army');
-          note(u, year, __i18n_k("league.userclub.resolveAnnual.c2744553", { name: p.name }));
-        } else note(u, year, __i18n_k("league.userclub.resolveAnnual.214af07f", { name: p.name }));
+          failed.push(id);
+          failLines.push(__i18n_k("league.userclub.resolveAnnual.c2744553", { name: p.name }));
+          note(u, year, failLines.at(-1)!);
+        } else {
+          failed.push(id);
+          failLines.push(__i18n_k("league.userclub.resolveAnnual.214af07f", { name: p.name }));
+          note(u, year, failLines.at(-1)!);
+        }
       }
+      const lines = [...passLines, ...failLines];
+      if (lines.length)
+        addAlert(s, {
+          id: `sangmu-${year}`,
+          date: `${year}-12-10`,
+          kind: 'military',
+          title: !failed.length ? __i18n_k("league.userclub.text.670f25ac", { n: passed.length }) : !passed.length ? __i18n_k("league.userclub.text.836f3f8c", { n: failed.length }) : __i18n_k("league.userclub.text.f51c7577", { passed: passed.length, failed: failed.length }),
+          lines,
+          tone: !failed.length ? 'good' : !passed.length ? 'bad' : undefined,
+          players: [...passed, ...failed],
+        });
       return null;
     }
     case 'rookieBonus': {
