@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { PERSONALITIES, rng, type Tools } from '../src/draftroom';
 import type { GrowthType, Player } from '../src/model/types';
 import { draftClass, FOREIGN_TYPES, foreignTypeOf, makeForeign } from '../src/league/players';
-import { repertoire } from '../src/league/pitches';
+import { isKnuckleballer, repertoire } from '../src/league/pitches';
 import { traitReport } from '../src/league/reports';
 import type { LeagueState } from '../src/league/state';
 import { declineOf, growTools, GROWTH_ORDER, rollTraits, traitsOf, troubleFactor } from '../src/league/traits';
@@ -141,7 +141,8 @@ describe('pitches', () => {
   const arms = Array.from({ length: 1200 }, (_, i) => {
     const role = i % 2 ? 'RP' : 'SP';
     return { id: `arm${i}`, role, throws: i % 3 ? '우' : '좌', birthday: '2000-05-05', archetype: i % 7 === 0 ? '포크볼 불펜' : '파워 불펜', origin: { kind: 'draftClass' }, hidden: { current: { breaking: 50 } } } as unknown as Player;
-  });
+    // A knuckleballer (2.0.36) throws the knuckleball most of the time and the rest poorly: outside these rules.
+  }).filter((p) => !isKnuckleballer(p));
 
   it('a third of relievers throw a fastball and one breaking ball; starters almost never', () => {
     const two = (role: string) => arms.filter((p) => p.role === role && repertoire(p).length === 1).length / arms.filter((p) => p.role === role).length;
