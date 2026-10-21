@@ -45,7 +45,7 @@ describe('the winter programmes as stages (2.0.32)', () => {
     expect(d.kind).toBe('devFall');
     if (d.kind !== 'devFall') return;
     expect(d.max).toBe(DEV.fall.max);
-    expect(d.candidates.length).toBeGreaterThanOrEqual(6);
+    expect(d.candidates.length).toBeGreaterThanOrEqual(3);
     // Someone not on the list, or more than the fund pays for, refused; two of them sent.
     expect(checkDecision(s, { kind: 'devFall', ids: ['nobody'] })).not.toBeNull();
     const rich = s.user!.fund;

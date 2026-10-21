@@ -25,6 +25,7 @@ import { salaryCapFor } from '../rules/kbo2026';
 import { money } from './format';
 import { eulreul } from '../league/josa';
 import { Help } from './Help';
+import { BudgetAsk } from './BudgetAsk';
 import { RivalryBox, TwelveSettingField } from './Twelve';
 import { favourites } from '../league/life';
 import { FACILITIES, FACILITY_KINDS, facilityLevel, facilityOptions, facilityUpkeep } from '../league/facilities';
@@ -218,6 +219,9 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
             <p class="card-label">{__i18n_t("ui.office.office.26719725", { payYear: payYear })}</p>
             <p class="card-value">{__i18n_display(money(projectedPayroll(league, u.teamId, payYear)))}</p>
             <p class="card-sub">{__i18n_t("ui.office.office.43fc4f2a", { money: money(u.payrollBudget) })}</p>
+          </div>
+          <div class="card card-wide">
+            <BudgetAsk league={league} onAct={onAct} why />
           </div>
           <div class="card">
             <p class="card-label">{__i18n_t("ui.office.office.e4762814")}</p>

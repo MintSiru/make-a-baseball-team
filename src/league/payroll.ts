@@ -43,7 +43,7 @@ export interface Payroll {
   cap: { total: number; cap: number; floor: number | null } | null;
 }
 
-const kindLabel = (p: Player): string => {
+export const kindLabel = (p: Player): string => {
   switch (p.contract?.kind) {
     case 'rookie':
       return __i18n_k('league.payroll.text.95c461d4');

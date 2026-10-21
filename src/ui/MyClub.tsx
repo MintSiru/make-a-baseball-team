@@ -28,11 +28,13 @@ import { Lineup } from './Lineup';
 import { Story } from './Story';
 import { Training } from './Training';
 import { Payroll } from './Payroll';
+import { Contracts } from './Contracts';
+import { Favorites } from './Favorites';
 import type { NewsItem } from '../league/news';
 import type { BriefGo } from '../league/briefing';
 import { Briefing } from './Briefing';
 
-export type View = 'overview' | 'squad' | 'payroll' | 'lineup' | 'training' | 'story' | 'records' | 'office';
+export type View = 'overview' | 'squad' | 'payroll' | 'contracts' | 'lineup' | 'training' | 'story' | 'records' | 'office';
 
 export interface StoryHooks {
   onRewrite?: (item: NewsItem) => void;
@@ -80,6 +82,8 @@ export function MyClub({
               ['squad', __i18n_k("ui.myClub.myClub.5b9daec2")],
               // 2.0.10: the payroll at a glance.
               ['payroll', __i18n_t("ui.myClub.text.5d364b3d")],
+              // 2.0.34: every contract in full.
+              ['contracts', __i18n_t("ui.myClub.text.b4116369")],
               ['lineup', __i18n_k("ui.myClub.myClub.4c31ef82")],
               ['training', __i18n_k("ui.myClub.myClub.b4927759")],
               ['story', __i18n_k("ui.myClub.myClub.d77486d9")],
@@ -107,10 +111,12 @@ export function MyClub({
             }}
           />
           <Overview league={league} onPlayer={onPlayer} />
+          <Favorites league={league} onPlayer={onPlayer} onAct={onAct} />
         </>
       ))}
       {__i18n_display(view === 'squad' && <Management league={league} onPlayer={onPlayer} onAct={onAct} setMsg={setMsg} />)}
       {view === 'payroll' && <Payroll league={league} onPlayer={onPlayer} />}
+      {view === 'contracts' && <Contracts league={league} onPlayer={onPlayer} />}
       {__i18n_display(view === 'lineup' && <Lineup league={league} teamId={u.teamId} onPlayer={onPlayer} onAct={onAct} />)}
       {__i18n_display(view === 'training' && <Training league={league} onAct={onAct} onPlayer={onPlayer} />)}
       {__i18n_display(view === 'story' && <Story league={league} {...story} />)}

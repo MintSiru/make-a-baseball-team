@@ -26,9 +26,12 @@ describe('the benches clearing (2.0.27)', () => {
     const [homeBat, homePit, awayBat, awayPit] = [of('lg', false), of('lg', true), of('doosan', false), of('doosan', true)];
     // Every hit-back game: find one that clears, and one that ends in a scuffle.
     let payback = 0;
+    // 2.0.34: the articles of these games (the league's own history may hold brawls of its own, without ejections).
+    const ejected: string[] = [];
     for (let i = 0; i < 4000 && payback < 30; i++) {
       const out = { gameId: `g${i}`, innings: 9, result: 'home', home: box('lg', homeBat.id, homePit.id), away: box('doosan', awayBat.id, awayPit.id) } as unknown as GameOut;
       const b = brawlGame(s, out, `g${i}`, '2027-05-01');
+      if (b?.bans.length) ejected.push(`brawl-g${i}`);
       if (!b?.back) continue;
       payback++;
       // The side hit first answers through its own pitcher: he is banned for his own club.
@@ -41,7 +44,7 @@ describe('the benches clearing (2.0.27)', () => {
       for (const x of b.bans) expect(x.fine).toBeLessThanOrEqual(BRAWL.bans.fight.fine[1]!);
     }
     expect(payback).toBeGreaterThan(5);
-    const news = (s.news ?? []).find((n) => n.id.startsWith('brawl-') && n.body.includes('투수'))!;
+    const news = (s.news ?? []).find((n) => ejected.includes(n.id) && n.body.includes('투수'))!;
     expect(news.body).not.toMatch(/가의|이의/);
     expect(news.body).toMatch(/던져 퇴장|벌여 퇴장|휘둘러 퇴장/);
   });

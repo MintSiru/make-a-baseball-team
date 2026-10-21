@@ -2,7 +2,7 @@ import { k as __i18n_k } from '../i18n/index';
 /* Play-by-play in Korean (V0.7). Only the wording is picked here (from a hash of the game and event,
    never the simulation's random stream); the facts come from the engine's log. */
 import { hashUnit } from '../draftroom';
-import type { BattedBall } from './battedball';
+import { distanceOf, type BattedBall } from './battedball';
 import type { PlayEvent } from './engine/types';
 
 const pickBy = <T,>(xs: T[], key: string) => xs[Math.floor(hashUnit(key) * xs.length)]!;
@@ -44,11 +44,30 @@ function byBall(res: string, ball: BattedBall, runs: number): number | null {
     case 'OUT': {
       if (ground || runs > 0) return infield();
       if (la >= 50) return Math.abs(dir) < 12 ? (dir < 0 ? 9 : 11) : dir < 0 ? 10 : 9;
-      if (la < 25 && dir > 0 && dir < 22) return 8;
+      // 2.0.34: a liner caught in the infield is named by infieldAirOut; one that carried is an outfielder's.
       return dir < -15 ? 6 : dir > 15 ? 7 : 5;
     }
   }
   return null;
+}
+
+/** 2.0.34 (the user's report: the relay put a ball down by the mound and called it a fly to centre): an out in the air
+    that came down short of the outfield grass — as far as its flight carried, which is where the relay draws it
+    (pitchfeed.ts) — was an infielder's catch: a soft liner or a flare taken in the infield. Pop-ups (very high) keep
+    their own words; a ground ball is a ground ball. */
+export const INFIELD_DEPTH = 45;
+const INFIELD_AIR: Record<'P' | '3B' | 'SS' | '2B' | '1B', () => [string, string]> = {
+  P: () => [__i18n_k("league.playtext.text.7065790d"), __i18n_k("league.playtext.text.07aa6b67")],
+  '3B': () => [__i18n_k("league.playtext.text.60d2f69b"), __i18n_k("league.playtext.text.b1cf5587")],
+  SS: () => [__i18n_k("league.playtext.text.361fac51"), __i18n_k("league.playtext.text.0417ca29")],
+  '2B': () => [__i18n_k("league.playtext.text.b918f520"), __i18n_k("league.playtext.text.7cabec65")],
+  '1B': () => [__i18n_k("league.playtext.text.40076727"), __i18n_k("league.playtext.text.c5299a78")],
+};
+export function infieldAirOut(ball: BattedBall): string | null {
+  const { dir, la, ev } = ball;
+  if (la < 10 || la >= 50 || distanceOf(ev, la) >= INFIELD_DEPTH) return null;
+  const pos = Math.abs(dir) <= 5 ? 'P' : dir < -22 ? '3B' : dir < 0 ? 'SS' : dir < 22 ? '2B' : '1B';
+  return INFIELD_AIR[pos]()[la < 25 ? 1 : 0];
 }
 
 export function playText(ev: PlayEvent, key: string, name: (id: string) => string): string {
@@ -88,6 +107,10 @@ export function playText(ev: PlayEvent, key: string, name: (id: string) => strin
         return pick(ERRORS, key);
       default:
         // An out that scores a run is a ground ball to the infield (a fly would be a sacrifice fly).
+        if (ev.res === 'OUT' && ev.ball && ev.runs === 0) {
+          const short = infieldAirOut(ev.ball);
+          if (short) return short;
+        }
         return at != null ? OUTS[at]! : pick(ev.runs > 0 ? OUTS.filter((x) => x.endsWith('땅볼')) : OUTS, key);
     }
   })();

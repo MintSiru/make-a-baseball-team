@@ -534,6 +534,13 @@ export interface UserClub {
   /** 2.0.28 (development.ts): the years the club sent prospects to the fall league and to Australia, and its last
       wrap-up camp. */
   dev?: { fall?: number; abl?: number; camp?: { year: number; site: import('./development').CampSite; players: number } };
+  /** 2.0.34 (budgetask.ts): the payroll budget raises asked of the owner, one a season. */
+  budgetAsks?: import('./budgetask').BudgetAsk[];
+  /** 2.0.34 (favorites.ts): players starred by the general manager. */
+  favorites?: PlayerId[];
+  /** 2.0.34: how the season's payroll budget was set — the club's base at the league's cap, the owner's running
+      scale (PARENT.scaleMin–scaleMax), the dynamic difficulty, the floor, and the owner's free agents. */
+  budgetWhy?: { season: number; base: number; scale: number; dynamic: number; floor: number; gifts: number };
   /** 2.0.28: trades the AI clubs offer us (offers.ts), open until they run out. */
   tradeOffers?: import('./offers').TradeOffer[];
 }
@@ -653,6 +660,8 @@ export interface LeagueState {
   retiredBarRise?: boolean;
   /** 2.0.22 (travel.ts): false — no tiredness from the road. */
   travelFatigue?: boolean;
+  /** 2.0.34 (the user's request): every club turns a six-man rotation — chosen in a league of twelve clubs or more. */
+  sixMan?: boolean;
   /** 2.0.24 (posting.ts): the players a club may post in a winter, when not the KBO's one. */
   postingMax?: number;
   /** 2.0.24 (cap.ts): a game option — clubs far or long over the salary cap lose their next first-round pick. */

@@ -222,7 +222,17 @@ export function yearlyGrant(s: LeagueState) {
   );
   u.support = b.support;
   // Free agents the owner paid for: their salary comes on top of the budget while they are under contract.
-  u.payrollBudget = Math.max(b.payroll, payrollFloor(next, k)) + giftPayroll(u, next);
+  const floor = payrollFloor(next, k);
+  u.payrollBudget = Math.max(b.payroll, floor) + giftPayroll(u, next);
+  // 2.0.34 (the user's report of a frozen budget): what made it, for the club's office to show.
+  u.budgetWhy = {
+    season: next,
+    base: Math.round((budgetFor(u.settings).payrollBudget * salaryCapFor(next) * conditionMoney(s, 'payroll')) / salaryCapFor(startYear() + 1)),
+    scale: u.budgetScale ?? 1,
+    dynamic: 1 - DYNAMIC.payroll * h,
+    floor,
+    gifts: giftPayroll(u, next),
+  };
 }
 
 /** The least an owner budgets for pay (V0.16): enough over the league's floor for the foreign players and a

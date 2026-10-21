@@ -35,6 +35,7 @@ import { gradeClass, shownFuture } from './grades';
 import { positionKey, useSort, type SortColumn } from './sort';
 import { RivalForm } from './Twelve';
 import { CampChoices } from './Training';
+import { BudgetAsk } from './BudgetAsk';
 import { campSuggestion, devSuggestion, type CampSite } from '../league/development';
 import { FantasyBoard } from './FantasyDraft';
 import { MEDDLE } from '../league/scenarios';
@@ -573,7 +574,11 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
 
   const byValue = (ids: PlayerId[]) => ids.map((id) => league.players[id]!).sort((a, b) => keepValue(b, next) - keepValue(a, next));
   const budgetLine = (
-    <p class="muted">{__i18n_t("ui.decision.decision.budgetLine.e9273c2f", { money: money(u.fund), next: next, money2: money(projectedPayroll(league, u.teamId, next)), money3: money(u.payrollBudget) })}</p>
+    <>
+      <p class="muted">{__i18n_t("ui.decision.decision.budgetLine.e9273c2f", { money: money(u.fund), next: next, money2: money(projectedPayroll(league, u.teamId, next)), money3: money(u.payrollBudget) })}</p>
+      {/* 2.0.34: more budget from the owner, for the foreign players and the rest. */}
+      <BudgetAsk league={league} onAct={onAct} />
+    </>
   );
 
   // The free-agent market has its own screen (V0.8).

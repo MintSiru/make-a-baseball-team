@@ -5,6 +5,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import type { Action } from '../league/actions';
 import { askOwnerChance, askOwnerProblem } from '../league/ownerask';
+import { BudgetAsk } from './BudgetAsk';
 import { autoDecision, checkDecision, foreignReserve, type DecisionInput } from '../league/expansion';
 import {
   budgetUse,
@@ -180,6 +181,7 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
       {__i18n_display(base + c <= u.payrollBudget && base + c + reserve > u.payrollBudget && (
         <p class="notice warn">{__i18n_t("ui.faMarket.faMarket.8694e6c8", { moneyShort: moneyShort(reserve), moneyShort2: moneyShort(base + c + reserve - u.payrollBudget) })}</p>
       ))}
+      <BudgetAsk league={league} onAct={onAct} />
       {__i18n_display(m.gift && !m.talks[m.gift.id]!.signed && (
         <p class="notice good">{__i18n_rich("ui.faMarket.faMarket.35ffaa19", { value: <strong>{__i18n_t("ui.faMarket.faMarket.17f613d4")}</strong>, name: league.players[m.gift.id]!.name, money: money(m.gift.total), value2: ' ', value3: <button type="button" class="link" onClick={() => setSel(m.gift!.id)}>{__i18n_t("ui.faMarket.faMarket.858d3c58")}</button> })}</p>
       ))}

@@ -1,6 +1,9 @@
 import { answerOffer } from './offers';
 import { extendStaff, fireStaff } from './staffdeals';
 import { askOwner } from './ownerask';
+import { askBudget } from './budgetask';
+import { sixManAllowed } from './manager';
+import { setFavorite } from './favorites';
 import type { StaffRole } from './state';
 import { k as __i18n_k } from '../i18n/index';
 /* What the player can do, as state transitions. The UI and the worker both call these. */
@@ -116,6 +119,8 @@ export type Action =
   | { kind: 'staffFire'; role: StaffRole }
   /** 1.8.0 (ownerask.ts): ask the owner to pay for a free agent (once a winter). */
   | { kind: 'askOwner'; id: PlayerId }
+  /** 2.0.34: ask the owner for more payroll budget this season (a share of it). */
+  | { kind: 'askBudget'; share: number }
   /** 1.8.0: two leagues' postseason format (from the next postseason drawn). */
   | { kind: 'twoLeaguePlayoffs'; style: 'kbo' | 'npb' }
   // Players and facilities (V0.10)
@@ -145,6 +150,10 @@ export type Action =
   | { kind: 'foreignVeteran'; seasons: number | null }
   | { kind: 'retiredBar'; rise: boolean }
   | { kind: 'travelFatigue'; on: boolean }
+  /** 2.0.34: a six-man rotation for every club (twelve clubs or more). */
+  | { kind: 'sixMan'; on: boolean }
+  /** 2.0.34: star a player (or take the star off). */
+  | { kind: 'favorite'; id: PlayerId; on: boolean }
   | { kind: 'postingMax'; max: number | null }
   | { kind: 'capForfeit'; on: boolean }
   | { kind: 'dynamicDifficulty'; on: boolean }
@@ -167,7 +176,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'twoLeaguePlayoffs'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'askBudget', 'twoLeaguePlayoffs', 'sixMan', 'favorite'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -405,6 +414,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     case 'staffFire':
       fireStaff(s, action.role);
       break;
+    case 'askBudget':
+      askBudget(s, action.share);
+      break;
     case 'askOwner':
       askOwner(s, action.id);
       break;
@@ -421,6 +433,14 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       milestone(s, s.offseason?.year ?? s.year, action.seasons ? __i18n_k("league.actions.apply.e689101c", { seasons: action.seasons }) : __i18n_k("league.actions.apply.a4c1dacc"));
       break;
     }
+    case 'favorite':
+      setFavorite(s, action.id, action.on);
+      break;
+    case 'sixMan':
+      if (!s.user || !sixManAllowed(s)) break;
+      if (action.on) s.sixMan = true;
+      else delete s.sixMan;
+      break;
     case 'travelFatigue':
       // 2.0.22: tiredness from the road on or off (travel.ts).
       if (!s.user) break;

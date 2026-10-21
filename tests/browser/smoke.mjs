@@ -525,6 +525,20 @@ try {
   check((await page.locator('.payroll-table tfoot').count()) === 1, 'the payroll shows the totals');
   await page.locator('.payroll-table thead').getByRole('button', { name: 'FA 시기' }).click();
   await page.screenshot({ path: join(shots, 'payroll.png') });
+  // 2.0.34: every contract in full, a row opened for its details.
+  await page.getByRole('group', { name: '우리 구단 보기' }).getByRole('button', { name: '계약', exact: true }).click();
+  check((await page.locator('.contract-table tbody tr.player-row').count()) > 20, 'the contracts tab lists the whole club');
+  await page.locator('.contract-table .toggle').first().click();
+  check((await page.locator('.contract-detail li').count()) > 0, 'a contract opens to its details');
+  await page.screenshot({ path: join(shots, 'contracts.png') });
+  // 2.0.34: star a player from his screen; he shows on the overview's favourites.
+  await page.locator('.contract-table tbody tr.player-row button.link:not(.toggle)').first().click();
+  await page.locator('.fav-star').click();
+  await page.waitForFunction(() => document.querySelector('.fav-star')?.getAttribute('aria-pressed') === 'true', null, { timeout: 5_000 }).catch(() => undefined);
+  check((await page.locator('.fav-star').getAttribute('aria-pressed')) === 'true', 'the star marks a favourite');
+  await page.keyboard.press('Escape');
+  await page.getByRole('group', { name: '우리 구단 보기' }).getByRole('button', { name: '개요', exact: true }).click();
+  check((await page.locator('.favorites tbody tr').count()) === 1, 'the favourite shows on the overview');
 
   // 4d. The club's story, the AI article settings (no key: nothing is sent), the record room.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
