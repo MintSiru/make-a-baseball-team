@@ -9348,8 +9348,6 @@
   "league.devforeign.text.77dde5e9": "니카라과",
   "league.devforeign.text.5db69ec1": "호주",
   "league.devforeign.text.8a9d64bd": "미국",
-  "league.devforeign.text.bd1e31db": "{nation} 아카데미 출신 유망주",
-  "league.devforeign.text.9be0b065": "{nation} 아마추어 출신 유망주",
   "league.devforeign.text.618bfd0a": "육성형 외국인",
   "league.devforeign.text.82ee1a8f": "육성형",
   "league.devforeign.text.74594b70": "육성형 외국인 {name}, 계약 만료로 팀을 떠나",
@@ -9367,5 +9365,7 @@
   "ui.settings.text.ee54e0ef": "켜면 각 구단이 18~21세 외국인 유망주를 육성 계약으로 1~2명 둘 수 있습니다. 외국인 선수 자리와 연봉 상한 밖에서 퓨처스로 성장하고, 자리가 비면 정식 등록됩니다. 3시즌 안에 등록되지 않으면 떠납니다.",
   "ui.decision.text.c8b4b844": "육성형 외국인 선수",
   "ui.decision.text.ee560e92": "젊은 외국인 유망주를 육성 계약(최저 연봉)으로 데려옵니다. 외국인 선수 자리와 외국인 연봉 상한에 들지 않고 퓨처스에서 성장하며, 5월 1일부터 외국인 선수 자리가 비어 있으면 정식 등록할 수 있습니다. {seasons}시즌 안에 등록하지 못하면 팀을 떠납니다. 최대 {max}명 · 선택 {size}명.",
-  "ui.playerPanel.text.618bfd0a": "육성형 외국인"
+  "ui.playerPanel.text.618bfd0a": "육성형 외국인",
+  "league.devforeign.text.9bca7d71": "중남미 아카데미 출신 유망주",
+  "league.devforeign.text.a29b6a1a": "아마추어 출신 유망주"
 }

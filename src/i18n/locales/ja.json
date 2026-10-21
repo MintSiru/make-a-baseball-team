@@ -9348,8 +9348,6 @@
   "league.devforeign.text.77dde5e9": "ニカラグア",
   "league.devforeign.text.5db69ec1": "オーストラリア",
   "league.devforeign.text.8a9d64bd": "アメリカ",
-  "league.devforeign.text.bd1e31db": "{nation}のアカデミー出身の有望株",
-  "league.devforeign.text.9be0b065": "{nation}のアマチュア出身の有望株",
   "league.devforeign.text.618bfd0a": "育成外国人",
   "league.devforeign.text.82ee1a8f": "育成",
   "league.devforeign.text.74594b70": "育成外国人{name}、契約満了で退団",
@@ -9367,5 +9365,7 @@
   "ui.settings.text.ee54e0ef": "オンにすると、各球団が18〜21歳の外国人有望株を育成契約で1〜2人保有できます。外国人枠と年俸上限の外でファームで成長し、枠が空けば正式登録されます。3シーズン以内に登録されなければ退団します。",
   "ui.decision.text.c8b4b844": "育成外国人選手",
   "ui.decision.text.ee560e92": "若い外国人有望株を育成契約（最低年俸）で迎えます。外国人枠と外国人年俸上限に含まれず、ファームで成長し、5月1日以降に外国人枠が空いていれば正式登録できます。{seasons}シーズン以内に登録されなければ退団します。最大{max}人・選択{size}人。",
-  "ui.playerPanel.text.618bfd0a": "育成外国人"
+  "ui.playerPanel.text.618bfd0a": "育成外国人",
+  "league.devforeign.text.9bca7d71": "中南米アカデミー出身の有望株",
+  "league.devforeign.text.a29b6a1a": "アマチュア出身の有望株"
 }

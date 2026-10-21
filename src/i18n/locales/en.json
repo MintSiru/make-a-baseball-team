@@ -9348,8 +9348,6 @@
   "league.devforeign.text.77dde5e9": "Nicaragua",
   "league.devforeign.text.5db69ec1": "Australia",
   "league.devforeign.text.8a9d64bd": "USA",
-  "league.devforeign.text.bd1e31db": "Academy prospect from {nation}",
-  "league.devforeign.text.9be0b065": "Amateur prospect from {nation}",
   "league.devforeign.text.618bfd0a": "development import",
   "league.devforeign.text.82ee1a8f": "development",
   "league.devforeign.text.74594b70": "Development import {name} leaves as his contract ends",
@@ -9367,5 +9365,7 @@
   "ui.settings.text.ee54e0ef": "When on, each club may keep one or two foreign prospects aged 18–21 on development contracts. They grow in the futures league outside the foreign slots and the salary cap, and are registered when a slot opens. One not registered within three seasons leaves.",
   "ui.decision.text.c8b4b844": "Development foreign players",
   "ui.decision.text.ee560e92": "Young foreign prospects on development contracts (the minimum salary). They take no foreign slot and stay outside the foreign salary cap while they grow in the futures league; from May 1 one can be registered when a foreign slot is open. One not registered within {seasons, plural, one {# season} other {# seasons}} leaves. Up to {max} · {size} chosen.",
-  "ui.playerPanel.text.618bfd0a": "development import"
+  "ui.playerPanel.text.618bfd0a": "development import",
+  "league.devforeign.text.9bca7d71": "Latin American academy prospect",
+  "league.devforeign.text.a29b6a1a": "Amateur prospect"
 }

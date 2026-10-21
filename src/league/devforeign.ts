@@ -78,7 +78,7 @@ export function makeDevForeign(seed: string, id: string, season: number): Player
   p.birthday = `${season - age - 1}-${String(1 + Math.floor(r() * 12)).padStart(2, '0')}-${String(1 + Math.floor(r() * 28)).padStart(2, '0')}`;
   p.hidden = { ...p.hidden, current: cur, potential: pot, injuryRisk: 0.06 };
   if (p.velocity != null) p.velocity -= 5 + Math.floor(r() * 4);
-  const text = pool === 'latin' ? __i18n_k("league.devforeign.text.bd1e31db", { nation: nationality }) : __i18n_k("league.devforeign.text.9be0b065", { nation: nationality });
+  const text = pool === 'latin' ? __i18n_k("league.devforeign.text.9bca7d71") : __i18n_k("league.devforeign.text.a29b6a1a");
   p.origin = { ...p.origin, nationality, devForeign: true, pathway: __i18n_k("league.devforeign.text.618bfd0a"), background: { level: 'indie', text, ask: 0 } };
   p.education = { ...p.education, region: nationality, pathText: `${nationality} · ${text}` };
   p.proSince = season;
