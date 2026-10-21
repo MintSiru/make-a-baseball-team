@@ -72,11 +72,14 @@ import {
   yearlyGrant,
   type AnnualInput,
 } from './userclub';
-import { developmentIds, emptyRoster, firstTeamIds, orgIds, registeredIds, type Decision, type DraftSlot, type ExpansionSettings, type LeagueState, type RivalSettings, type UserClub, aiFoundingClubs } from './state';
+import { developmentIds, emptyRoster, firstTeamIds, orgIds, registeredIds, type Decision, type DraftSlot, type ExpansionSettings, type LeagueState, type RivalSettings, type UserClub, aiFoundingClubs, rightsHeld } from './state';
 import { openTryout, runTryout, takeTryoutPick, tryoutYear } from './tryout';
 import { historicForeignCap } from '../rules/history';
 import { autoBoard, boardDecision, LEGACY_BOARD_FROM, resolveBoard, type BoardVote } from './board';
 import { autoDevForeign, devForeignDecision, resolveDevForeign } from './devforeign';
+import { japanPersuasion, persuadeAbroadChance, staysHome } from './abroad';
+import { japanDeal } from './fa';
+import { freeAgentsFor } from './offseason';
 
 export const EXPANSION_ID = 'new';
 export const FOUNDING_DATE = '2026-07-01';
@@ -241,7 +244,7 @@ function comebackPool(s: LeagueState): Player[] {
   const y0 = startYear();
   const staff = employedAlumni(s);
   return Object.values(s.players)
-    .filter((p) => p.status === 'retired' && !s.otherSport?.[p.id] && !isForeign(p) && p.career.some((c) => !c.level) && (p.career.at(-1)?.year ?? 0) >= y0 - STEEL.retiredSince && ageIn(p, y0 + 1) <= STEEL.maxAge && !staff.has(p.id))
+    .filter((p) => p.status === 'retired' && !rightsHeld(s, p.id) && !isForeign(p) && p.career.some((c) => !c.level) && (p.career.at(-1)?.year ?? 0) >= y0 - STEEL.retiredSince && ageIn(p, y0 + 1) <= STEEL.maxAge && !staff.has(p.id))
     .sort((a, b) => currentValue(b) + fameOf(s, b) * 0.1 - (currentValue(a) + fameOf(s, a) * 0.1))
     .slice(0, STEEL.retired);
 }
@@ -267,7 +270,7 @@ function tryoutPool(s: LeagueState): Player[] {
     .slice(0, 25);
   for (const p of pool) s.players[p.id] = p;
   const released = Object.values(s.players)
-    .filter((p) => p.status === 'retired' && !s.otherSport?.[p.id] && p.career.length && (p.career.at(-1)?.year ?? 0) >= y0 - 1 && ageIn(p, y0 + 1) <= 33)
+    .filter((p) => p.status === 'retired' && !rightsHeld(s, p.id) && p.career.length && (p.career.at(-1)?.year ?? 0) >= y0 - 1 && ageIn(p, y0 + 1) <= 33)
     .sort((a, b) => keepValue(b, y0 + 1) - keepValue(a, y0 + 1))
     .slice(0, 15);
   return [...released, ...pool];
@@ -388,9 +391,8 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       return nextNationalDecision(s, marchEvents(next)) ?? campDecision(s);
     case 'freeAgency': {
       if (isFantasyWinter(s, o.year)) return null;
-      // Club options on free-agent deals that end now, before the market opens (the market itself runs in the step).
-      const due = clubOptionsDue(s, u.teamId, next);
-      return due.length ? { kind: 'faOptions', rows: due.map((p) => ({ id: p.id, years: p.contract!.fa!.extra!.years, annual: p.contract!.fa!.extra!.annual })) } : null;
+      // 2.0.37: our free agents Japan wants first (abroad.ts), then the club options.
+      return abroadDecision(s, next) ?? faOptionsDecision(s, next);
     }
     case 'special':
       // None in the fantasy draft's winter (1.6.0): the clubs have just drafted the whole league; and 강철야구 builds
@@ -423,6 +425,23 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
     default:
       return null;
   }
+}
+
+/** Club options on free-agent deals that end now, before the market opens (the market itself runs in the step). */
+function faOptionsDecision(s: LeagueState, next: number): Decision | null {
+  const due = clubOptionsDue(s, user(s).teamId, next);
+  return due.length ? { kind: 'faOptions', rows: due.map((p) => ({ id: p.id, years: p.contract!.fa!.extra!.years, annual: p.contract!.fa!.extra!.annual })) } : null;
+}
+
+/** 2.0.37: our free agents a Japanese club is about to sign. */
+function abroadDecision(s: LeagueState, next: number): Decision | null {
+  const u = user(s);
+  const rows = freeAgentsFor(s, next)
+    .filter((p) => p.teamId === u.teamId && !staysHome(s, p.id, next))
+    .map((p) => ({ p, deal: japanDeal(s, p, next) }))
+    .filter((x) => x.deal)
+    .map(({ p, deal }) => ({ id: p.id, years: deal!.years, total: deal!.total, chance: persuadeAbroadChance(s, p, next) }));
+  return rows.length ? { kind: 'abroad', rows } : null;
 }
 
 /** The user's foreign players whose contracts end: what each asks to stay, and who is leaving anyway. */
@@ -492,6 +511,8 @@ export type DecisionInput =
   | { kind: 'roster'; ids: PlayerId[]; develop?: PlayerId[] }
   /** 2.0.37: the development foreign prospects we sign (devforeign.ts). */
   | { kind: 'devForeign'; ids: PlayerId[] }
+  /** 2.0.37: the free agents bound for Japan we try to talk round (abroad.ts). */
+  | { kind: 'abroad'; persuade: PlayerId[] }
   /** The twelfth club (V0.9): its design, or null to vote it down when the board offers it. */
   | { kind: 'rival'; settings: RivalSettings | null }
   | { kind: 'rivalProtect'; ids: PlayerId[] }
@@ -560,6 +581,10 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       // Only new conversions count: a club can already be over the cap through trades or the second draft.
       if (develop.length && developmentIds(s, u.teamId).length + develop.length > OFFSEASON.development.cap) return __i18n_k("league.expansion.checkDecision.bb840372", { cap: OFFSEASON.development.cap });
       return null;
+    }
+    case 'abroad': {
+      const dd = d as Extract<Decision, { kind: 'abroad' }>;
+      return input.persuade.every((id) => dd.rows.some((r) => r.id === id)) ? null : __i18n_k("league.expansion.checkDecision.98ce3a2b");
     }
     case 'rival':
       return checkRival(s, d as Extract<Decision, { kind: 'rival' }>, input.settings);
@@ -674,6 +699,16 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
         s.offseason?.released.push(id);
       }
       break;
+    case 'abroad': {
+      const dd = d as Extract<Decision, { kind: 'abroad' }>;
+      japanPersuasion(s, dd.rows.map((r) => r.id), input.persuade, next);
+      const then = faOptionsDecision(s, next);
+      if (then) {
+        s.pending = then;
+        return;
+      }
+      break;
+    }
     case 'devForeign': {
       resolveDevForeign(s, d as Extract<Decision, { kind: 'devForeign' }>, input.ids, next);
       // Then our regular foreign players: re-sign or let go, and the signings.
@@ -804,6 +839,9 @@ export function autoDecision(s: LeagueState): DecisionInput | null {
       return { kind: 'released', ids: best(d.candidates, Math.min(d.max, 5)) };
     case 'devForeign':
       return { kind: 'devForeign', ids: autoDevForeign(s, d) };
+    case 'abroad':
+      // Worth a try: a word costs nothing.
+      return { kind: 'abroad', persuade: d.rows.map((r) => r.id) };
     case 'specialDraft': {
       // Best unprotected player from each club, best clubs' picks first, while money and payroll allow.
       const options = Object.entries(d.lists)

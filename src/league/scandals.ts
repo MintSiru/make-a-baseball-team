@@ -429,14 +429,15 @@ function incident(s: LeagueState, p: Player, offense: Offense, date: string, r: 
 }
 
 /** The club's answer. */
-export function resolveScandal(s: LeagueState, d: Extract<Decision, { kind: 'scandal' }>, chosen: 'release' | 'extra' | 'none', release: (id: PlayerId) => boolean) {
+/** 2.0.37: `voluntary` puts him on the voluntary retired list (voluntary.ts) — the club keeps his rights. */
+export function resolveScandal(s: LeagueState, d: Extract<Decision, { kind: 'scandal' }>, chosen: 'release' | 'extra' | 'none' | 'voluntary', release: (id: PlayerId, how?: 'voluntary') => boolean) {
   const u = s.user!;
   const p = s.players[d.id]!;
   // A release the roster cannot take now (the first team's minimum) becomes a penalty of our own.
-  const answer = chosen === 'release' && !release(d.id) ? 'extra' : chosen;
+  const answer = (chosen === 'release' || chosen === 'voluntary') && !release(d.id, chosen === 'voluntary' ? 'voluntary' : undefined) ? 'extra' : chosen;
   const club = clubState(s, u.teamId);
   club.interest += S.answer[answer];
-  const text = answer === 'release' ? __i18n_k("league.scandals.resolveScandal.text.e16b5dd5") : answer === 'extra' ? __i18n_k("league.scandals.resolveScandal.text.8108135a", { extraGames: S.extraGames }) : __i18n_k("league.scandals.resolveScandal.text.a5cf5786");
+  const text = answer === 'voluntary' ? __i18n_k("league.scandals.text.88338b66") : answer === 'release' ? __i18n_k("league.scandals.resolveScandal.text.e16b5dd5") : answer === 'extra' ? __i18n_k("league.scandals.resolveScandal.text.8108135a", { extraGames: S.extraGames }) : __i18n_k("league.scandals.resolveScandal.text.a5cf5786");
   if (answer === 'extra') {
     const x = s.suspended?.[d.id];
     if (x) x.games = (x.games ?? 0) + S.extraGames;
@@ -446,7 +447,7 @@ export function resolveScandal(s: LeagueState, d: Extract<Decision, { kind: 'sca
     id: `answer-${p.id}-${s.year}-${d.offense}`,
     date: s.phase === 'regular' ? (s.schedule[s.next]?.date ?? `${s.year}-10-01`) : `${s.year}-12-01`,
     kind: 'move',
-    title: __i18n_k("league.scandals.resolveScandal.title.f3725815", { short: short(s), name: p.name, value: answer === 'release' ? __i18n_k("league.scandals.resolveScandal.title.991ef114") : answer === 'extra' ? __i18n_k("league.scandals.resolveScandal.title.15c7ad7c") : __i18n_k("league.scandals.resolveScandal.title.3fb9d596") }),
+    title: __i18n_k("league.scandals.resolveScandal.title.f3725815", { short: short(s), name: p.name, value: answer === 'voluntary' ? __i18n_k("league.scandals.text.1d116c4d") : answer === 'release' ? __i18n_k("league.scandals.resolveScandal.title.991ef114") : answer === 'extra' ? __i18n_k("league.scandals.resolveScandal.title.15c7ad7c") : __i18n_k("league.scandals.resolveScandal.title.3fb9d596") }),
     body: answer === 'none' ? __i18n_k("league.scandals.resolveScandal.body.b97ed44f", { short: eunneun(short(s)) }) : __i18n_k("league.scandals.resolveScandal.body.7e2cc384", { short: iga(short(s)), name: p.name, text: text }),
     quotes: [],
     facts: { 선수: p.name, 대응: text },

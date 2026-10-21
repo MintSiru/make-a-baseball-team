@@ -34,6 +34,7 @@ import { farewell } from './life';
 import { traitsOf } from './traits';
 import { DYNAMIC, handicap } from './dynamic';
 import { balanceBoost } from './dynasty';
+import { staysHome } from './abroad';
 
 // ── Offers ───────────────────────────────────────────────────────────────────────────────────────
 
@@ -551,15 +552,22 @@ function appetite(s: LeagueState, teamId: TeamId, t: FaTalk, p: Player, next: nu
   return { chance, need: need * comp };
 }
 
+/** The deal Japan offers this free agent this winter, or null (his own draw, so asking twice gives the same answer). */
+export function japanDeal(s: LeagueState, p: Player, next: number) {
+  if (isForeign(p) || p.scouting.current < NPB_MOVE.faMinGrade || ageIn(p, next) > NPB_MOVE.faMaxAge) return null;
+  const r = rng(`${s.seed}|fa-npb|${next - 1}|${p.id}`);
+  if (r() > NPB_MOVE.faChance) return null;
+  return npbMarket(p, next, r, NPB_MOVE.faMinGrade, 1);
+}
+
 /** 1.9.3: free agents good enough and not too old may sign in Japan before the KBO market opens (no compensation:
     he leaves the league). The chance is his own, drawn from his id and the year. */
 export function toJapan(s: LeagueState, next: number) {
   const year = next - 1;
   for (const p of freeAgentsFor(s, next)) {
-    if (isForeign(p) || p.scouting.current < NPB_MOVE.faMinGrade || ageIn(p, next) > NPB_MOVE.faMaxAge) continue;
-    const r = rng(`${s.seed}|fa-npb|${year}|${p.id}`);
-    if (r() > NPB_MOVE.faChance) continue;
-    const deal = npbMarket(p, next, r, NPB_MOVE.faMinGrade, 1);
+    // 2.0.37: talked into staying (abroad.ts).
+    if (staysHome(s, p.id, next)) continue;
+    const deal = japanDeal(s, p, next);
     if (!deal) continue;
     const from = p.teamId!;
     const club = s.teams.find((t) => t.id === from)?.short ?? from;

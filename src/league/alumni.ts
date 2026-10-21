@@ -21,6 +21,7 @@ import { ageIn, isForeign, isPitcher } from './players';
 import type { LeagueState, ManagerStyle, StaffMember, StaffRole } from './state';
 import { ALUMNI as A, FANS } from './tuning';
 import { traitsOf } from './traits';
+import { rightsHeld } from './state';
 
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
 const round5 = (x: number) => Math.max(20, Math.min(80, Math.round(x / 5) * 5));
@@ -75,7 +76,7 @@ export function alumniFor(s: LeagueState, role: StaffRole, year: number, exclude
   const busy = employedAlumni(s);
   const out: Alumnus[] = [];
   for (const p of Object.values(s.players)) {
-    if (p.status !== 'retired' || isForeign(p) || busy.has(p.id) || exclude.has(p.id) || s.otherSport?.[p.id]) continue;
+    if (p.status !== 'retired' || isForeign(p) || busy.has(p.id) || exclude.has(p.id) || rightsHeld(s, p.id)) continue;
     if ((p.life?.offenses?.fixing ?? 0) > 0) continue;
     if (want !== 'any' && (want === 'pitcher') !== isPitcher(p)) continue;
     const age = ageIn(p, year);

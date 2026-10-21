@@ -222,6 +222,8 @@ export type Decision =
   | { kind: 'development'; candidates: PlayerId[]; max: number }
   /** 2.0.37: our development foreign prospects for the winter (devforeign.ts). */
   | { kind: 'devForeign'; candidates: PlayerId[]; max: number }
+  /** 2.0.37: our free agents Japan is about to sign, to talk round or let go (abroad.ts). */
+  | { kind: 'abroad'; rows: { id: PlayerId; years: number; total: number; chance: number }[] }
   | { kind: 'camp'; players: PlayerId[] }
   /** 2.0.32 (development.ts): the fall instructional league and a winter in Australia as stages of the winter; the
       wrap-up camp's place. */
@@ -683,6 +685,10 @@ export interface LeagueState {
   playerRivals?: { year: number; list: import('./rivals').Rivalry[] };
   /** 2.0.37 (othersport.ts): players away at another sport — the sport, the winter he left and the club holding his rights. */
   otherSport?: Record<PlayerId, { sport: import('./othersport').OtherSport; since: number; teamId: TeamId }>;
+  /** 2.0.37 (voluntary.ts): the voluntary retired list (임의탈퇴) — the club holding him, the day, why, his salary then. */
+  voluntary?: Record<PlayerId, { teamId: TeamId; since: string; why: 'club' | 'scandal'; salary: number }>;
+  /** 2.0.37 (abroad.ts): our players talked out of going abroad, and the winter they agreed. */
+  abroadStay?: Record<PlayerId, number>;
   /** 2.0.37 (merger.ts): mergers and sales of clubs (`teamId` the club that took a new name). */
   mergers?: { year: number; into: TeamId | null; absorbed: string; founded: string; teamId: TeamId; approved: boolean; cityId?: string }[];
   abilityEdits?: number;
@@ -791,6 +797,8 @@ export const hasBenefits = (s: LeagueState, teamId: string, year = s.year) => {
 
 /** Development players (육성선수) sit outside the registered-player limit (RULES.md §6). */
 export const isDevelopment = (p: Player) => p.contract?.kind === 'development';
+/** 2.0.37: a retired player whose club still holds his rights (another sport, or the voluntary retired list). */
+export const rightsHeld = (s: Pick<LeagueState, 'otherSport' | 'voluntary'>, id: PlayerId) => !!s.otherSport?.[id] || !!s.voluntary?.[id];
 
 /** Everyone under contract with the club who is not serving: first team, futures squad and third squad. */
 export const orgIds = (s: LeagueState, teamId: TeamId): PlayerId[] => {

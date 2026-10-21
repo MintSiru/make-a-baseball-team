@@ -85701,5 +85701,392 @@
     "line": 81,
     "params": {},
     "locations": []
+  },
+  "league.voluntary.text.ebc63783": {
+    "source": "src/league/voluntary.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.voluntary.text.f5a96743": {
+    "source": "src/league/voluntary.ts",
+    "line": 33,
+    "params": {},
+    "locations": []
+  },
+  "league.voluntary.text.55e22a98": {
+    "source": "src/league/voluntary.ts",
+    "line": 34,
+    "params": {},
+    "locations": []
+  },
+  "league.voluntary.text.88338b66": {
+    "source": "src/league/voluntary.ts",
+    "line": 42,
+    "params": {},
+    "locations": []
+  },
+  "league.voluntary.text.f06e02f4": {
+    "source": "src/league/voluntary.ts",
+    "line": 52,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.voluntary.text.be26c663": {
+    "source": "src/league/voluntary.ts",
+    "line": 53,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      },
+      "name": {
+        "expression": "eulreul(p.name)",
+        "particle": "을/를"
+      },
+      "club2": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.voluntary.text.cef24f8b": {
+    "source": "src/league/voluntary.ts",
+    "line": 53,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      },
+      "name": {
+        "expression": "eulreul(p.name)",
+        "particle": "을/를"
+      },
+      "club2": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.voluntary.text.60895c27": {
+    "source": "src/league/voluntary.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "league.voluntary.text.2792d4e9": {
+    "source": "src/league/voluntary.ts",
+    "line": 67,
+    "params": {
+      "date": {
+        "expression": "backFrom(s, id)!"
+      }
+    },
+    "locations": []
+  },
+  "league.voluntary.text.10d788d8": {
+    "source": "src/league/voluntary.ts",
+    "line": 80,
+    "params": {},
+    "locations": []
+  },
+  "league.voluntary.text.a0d2f5e4": {
+    "source": "src/league/voluntary.ts",
+    "line": 82,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.voluntary.text.0aa7f05e": {
+    "source": "src/league/voluntary.ts",
+    "line": 84,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      },
+      "name": {
+        "expression": "eulreul(p.name)",
+        "particle": "을/를"
+      }
+    },
+    "locations": []
+  },
+  "league.abroad.text.8e78b5ac": {
+    "source": "src/league/abroad.ts",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "league.abroad.text.709f0dc5": {
+    "source": "src/league/abroad.ts",
+    "line": 57,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.abroad.text.7b05cec0": {
+    "source": "src/league/abroad.ts",
+    "line": 57,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.abroad.text.f0d35e8f": {
+    "source": "src/league/abroad.ts",
+    "line": 58,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.abroad.text.83630d92": {
+    "source": "src/league/abroad.ts",
+    "line": 58,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "league.abroad.text.9a7a688a": {
+    "source": "src/league/abroad.ts",
+    "line": 66,
+    "params": {},
+    "locations": []
+  },
+  "league.abroad.text.e58a2bec": {
+    "source": "src/league/abroad.ts",
+    "line": 70,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.abroad.text.8f1c4f9d": {
+    "source": "src/league/abroad.ts",
+    "line": 72,
+    "params": {
+      "name": {
+        "expression": "eunneun(p.name)",
+        "particle": "은/는"
+      }
+    },
+    "locations": []
+  },
+  "league.abroad.text.2504be7c": {
+    "source": "src/league/abroad.ts",
+    "line": 73,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.88338b66": {
+    "source": "src/league/scandals.ts",
+    "line": 440,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.1d116c4d": {
+    "source": "src/league/scandals.ts",
+    "line": 450,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.5d8d9b80": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1247,
+    "params": {
+      "club": {
+        "expression": "shortName(league, held.teamId)"
+      },
+      "since": {
+        "expression": "held.since"
+      },
+      "back": {
+        "expression": "backFrom(league, id) ?? ''"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.1908ef40": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1252,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.d1662462": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1299,
+    "params": {
+      "name": {
+        "expression": "eulreul(p.name)",
+        "particle": "을/를"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.88338b66": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1300,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.9b500592": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1302,
+    "params": {},
+    "locations": []
+  },
+  "league.views.text.3a0a4531": {
+    "source": "src/league/views.ts",
+    "line": 384,
+    "params": {
+      "club": {
+        "expression": "s.teams.find((t) => t.id === s.voluntary![id]!.teamId)?.short ?? ''"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.89e6c5dc": {
+    "source": "src/ui/Decision.tsx",
+    "line": 93,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.a08a2259": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1220,
+    "params": {
+      "pct": {
+        "expression": "Math.round(persuadeAbroadChance(league, p, next) * 100)"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.26ed23d5": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1249,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.3c2ff3cc": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1258,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.2e177398": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1262,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.9aa18e50": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1263,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.627f7e91": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1264,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.9c2f4414": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1265,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.b27a1258": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1272,
+    "params": {
+      "name": {
+        "expression": "league.players[r.id]?.name ?? ''"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.26246615": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1279,
+    "params": {
+      "years": {
+        "expression": "r.years"
+      },
+      "total": {
+        "expression": "usd(r.total)"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.88338b66": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1472,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.852b0d20": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1472,
+    "params": {},
+    "locations": []
+  },
+  "ui.contracts.text.b789e35e": {
+    "source": "src/ui/Contracts.tsx",
+    "line": 106,
+    "params": {},
+    "locations": []
+  },
+  "ui.contracts.text.4dcbc6f2": {
+    "source": "src/ui/Contracts.tsx",
+    "line": 114,
+    "params": {
+      "since": {
+        "expression": "h.since"
+      },
+      "back": {
+        "expression": "h.back ?? ''"
+      }
+    },
+    "locations": []
+  },
+  "ui.contracts.text.4b875b79": {
+    "source": "src/ui/Contracts.tsx",
+    "line": 114,
+    "params": {
+      "since": {
+        "expression": "h.since.slice(0, 4)"
+      }
+    },
+    "locations": []
   }
 }

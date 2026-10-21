@@ -53,8 +53,16 @@ export function renewSalary(p: Player, season: number): number {
   const prev = salaryIn(p, season - 1) || minimumSalaryFor(season);
   const war = recentWar(p, 2);
   const target = minimumSalaryFor(season) + Math.max(0, war) ** 1.5 * SALARY.raisePerWar + Math.min(p.service.creditedSeasons, 8) * SALARY.perServiceYear;
-  const next = prev * 0.45 + target * 0.55;
-  const capped = Math.max(prev * 0.7, Math.min(prev * 2.8, next));
+  // 2.0.37 (the user's request): a season below the bar — little first-team time, or a WAR under it — is cut
+  // harder: the old salary weighs less, and the cut may go to 40% (60% for a season below replacement).
+  const C = SALARY.cut;
+  const last = p.career.find((r) => !r.level && r.year === season - 1);
+  // (No first-team line at all — the army, a season abroad — is not judged.)
+  const under = !!last && (last.days < C.days || last.war < C.bar);
+  const bad = !!last && (last.days < C.days || last.war < 0);
+  const keep = under ? (bad ? C.badKeep : C.keep) : 0.45;
+  const next = prev * keep + target * (1 - keep);
+  const capped = Math.max(prev * (under ? (bad ? C.badFloor : C.floor) : 0.7), Math.min(prev * 2.8, next));
   return Math.max(minimumSalaryFor(season), Math.round(capped / 100) * 100);
 }
 

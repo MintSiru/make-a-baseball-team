@@ -50,6 +50,7 @@ import { planLearn } from './newpitch';
 import { addCondition } from './conditions';
 import { measureHandicap } from './dynamic';
 import { exhibitionDate } from './exhibition';
+import { canReinstate, canVoluntary, placeVoluntary, reinstate } from './voluntary';
 
 export type Action =
   /** `stops` (1.6.0): end the run early at the moments the user asked to stop for (stops.ts). */
@@ -158,6 +159,9 @@ export type Action =
   | { kind: 'sixMan'; on: boolean }
   | { kind: 'abilityEditor'; on: boolean }
   | { kind: 'discipline'; id: PlayerId; days: number }
+  /** 2.0.37: onto the voluntary retired list, and back from it (voluntary.ts). */
+  | { kind: 'voluntary'; id: PlayerId }
+  | { kind: 'reinstate'; id: PlayerId }
   | { kind: 'editAbility'; id: PlayerId; edit: AbilityEdit }
   /** 2.0.34: star a player (or take the star off). */
   | { kind: 'favorite'; id: PlayerId; on: boolean }
@@ -452,6 +456,18 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     case 'discipline':
       gmDiscipline(s, action.id, action.days, today(s));
       break;
+    case 'voluntary': {
+      const problem = canVoluntary(s, action.id);
+      if (problem) throw new Error(problem);
+      placeVoluntary(s, s.players[action.id]!, 'club');
+      break;
+    }
+    case 'reinstate': {
+      const problem = canReinstate(s, action.id);
+      if (problem) throw new Error(problem);
+      reinstate(s, action.id);
+      break;
+    }
     case 'abilityEditor':
       if (!s.user) break;
       if (action.on) s.abilityEditor = true;

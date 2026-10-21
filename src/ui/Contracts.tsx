@@ -4,6 +4,7 @@ import { t as __i18n_t } from '../i18n/index';
    (contractbook.ts). */
 import { useMemo, useState } from 'preact/hooks';
 import { contractBook } from '../league/contractbook';
+import { heldPlayers } from '../league/voluntary';
 import { usd } from '../league/foreign';
 import type { LeagueState } from '../league/state';
 import { moneyShort } from './format';
@@ -32,6 +33,7 @@ export function Contracts({ league, onPlayer }: { league: LeagueState; onPlayer:
     { key: 'total', dir: -1 },
   );
   const money = (r: (typeof rows)[number], n: number) => (r.foreign ? usd(n) : n ? moneyShort(n, book.season) : '-');
+  const held = heldPlayers(league);
   return (
     <div class="contracts">
       <p class="muted">{__i18n_t("ui.contracts.text.8878c252", { season: book.season })}</p>
@@ -98,6 +100,24 @@ export function Contracts({ league, onPlayer }: { league: LeagueState; onPlayer:
           </tbody>
         </table>
       </div>
+      {/* 2.0.37: our players held off the roster — the voluntary retired list and another sport (voluntary.ts). */}
+      {held.length > 0 && (
+        <div class="held-list">
+          <h3>{__i18n_t("ui.contracts.text.b789e35e")}</h3>
+          <ul>
+            {held.map((h) => (
+              <li key={h.id}>
+                <button type="button" class="link" onClick={() => onPlayer(h.id)}>
+                  {league.players[h.id]?.name ?? '?'}
+                </button>{' '}
+                <span class="muted">
+                  {h.kind === 'voluntary' ? __i18n_t("ui.contracts.text.4dcbc6f2", { since: h.since, back: h.back ?? '' }) : __i18n_t("ui.contracts.text.4b875b79", { since: h.since.slice(0, 4) })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

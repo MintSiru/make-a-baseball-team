@@ -44,6 +44,7 @@ import { motionText, playersView, type BoardVote } from '../league/board';
 import { pathwayLabel } from '../league/amateur';
 import { cityById } from '../club/cities';
 import { DEV_FOREIGN } from '../league/devforeign';
+import { persuadeAbroadChance } from '../league/abroad';
 
 interface Props {
   league: LeagueState;
@@ -89,6 +90,7 @@ const TITLES: Record<DecisionT['kind'], string> = {
   devAbl: __i18n_k("ui.decision.text.37d4233b"),
   relocate: __i18n_t("ui.decision.text.cdbe2c7a"),
   merger: __i18n_t("ui.decision.text.55ef9dba"),
+  abroad: __i18n_t("ui.decision.text.89e6c5dc"),
   devForeign: __i18n_t("ui.decision.text.c8b4b844"),
   wrapUp: __i18n_k("ui.decision.text.dce453a2"),
 };
@@ -479,8 +481,15 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       }
       case 'posting':
         // 2.0.24: several when the game allows more than one a winter.
-        if (d.max > 1) return { kind: 'posting', id: null, ids: d.candidates.filter((id) => choices[`post:${id}`] === '1') };
-        return { kind: 'posting', id: choices.pick && choices.pick !== 'none' ? choices.pick : null };
+      {
+        // 2.0.37: those not posted we may try to talk round (abroad.ts).
+        const posted = d.max > 1 ? d.candidates.filter((id) => choices[`post:${id}`] === '1') : choices.pick && choices.pick !== 'none' ? [choices.pick] : [];
+        const persuade = d.candidates.filter((id) => !posted.includes(id) && choices[`persuade:${id}`] === '1');
+        if (d.max > 1) return { kind: 'posting', id: null, ids: posted, persuade };
+        return { kind: 'posting', id: posted[0] ?? null, persuade };
+      }
+      case 'abroad':
+        return { kind: 'abroad', persuade: [...selected] };
       case 'sponsor':
         return { kind: 'sponsor', index: Number(choices.pick ?? 0) };
       case 'wrapUp':
@@ -502,7 +511,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       case 'rivalProtect':
         return { kind: 'rivalProtect', ids: [...selected] };
       case 'scandal':
-        return { kind: 'scandal', answer: (choices.pick ?? 'extra') as 'release' | 'extra' | 'none' };
+        return { kind: 'scandal', answer: (choices.pick ?? 'extra') as 'release' | 'extra' | 'none' | 'voluntary' };
       case 'dispute':
         return { kind: 'dispute', answer: (choices.pick ?? 'settle') as 'settle' | 'fight' };
       case 'relocate':
@@ -548,7 +557,10 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         setSelected(new Set(a.keep));
         break;
       case 'posting':
-        setChoices({ pick: a.id ?? 'none', ...Object.fromEntries((a.ids ?? (a.id ? [a.id] : [])).map((id) => [`post:${id}`, '1'])) });
+        setChoices({ pick: a.id ?? 'none', ...Object.fromEntries((a.ids ?? (a.id ? [a.id] : [])).map((id) => [`post:${id}`, '1'])), ...Object.fromEntries((a.persuade ?? []).map((id) => [`persuade:${id}`, '1'])) });
+        break;
+      case 'abroad':
+        setSelected(new Set(a.persuade));
         break;
       case 'sponsor':
         setChoices({ pick: String(a.index) });
@@ -1199,8 +1211,17 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
             players={d.candidates.map((id) => league.players[id]!)}
             onPlayer={onPlayer}
             extra={{ title: __i18n_k("ui.decision.decision.title.11ab7c2a"), value: (p) => `${mlbInterest(p)} · ${money(salaryIn(p, next - 1))}`, sort: (p) => p.scouting.current }}
-            control={(p) =>
-              d.max > 1 ? (
+            control={(p) => {
+              // 2.0.37: one we keep may be talked round (abroad.ts); refused without a word, he sulks a little.
+              const posted = d.max > 1 ? choices[`post:${p.id}`] === '1' : pick === p.id;
+              const talk = (
+                <label class="check">
+                  <input type="checkbox" checked={!posted && choices[`persuade:${p.id}`] === '1'} disabled={posted} onChange={(e) => choose(`persuade:${p.id}`, (e.currentTarget as HTMLInputElement).checked ? '1' : '0')} />{' '}
+                  {__i18n_t("ui.decision.text.a08a2259", { pct: Math.round(persuadeAbroadChance(league, p, next) * 100) })}
+                </label>
+              );
+              return d.max > 1 ? (
+                <>
                 <label class="check">
                   <input
                     type="checkbox"
@@ -1211,16 +1232,59 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
                   />{' '}
                   포스팅
                 </label>
+                {' '}
+                {talk}
+                </>
               ) : (
+                <>
               <label class="check">
                 <input type="radio" name="posting" checked={pick === p.id} onChange={() => choose('pick', p.id)} aria-label={__i18n_displayText(__i18n_k("ui.decision.decision.fd515c2c", { name: p.name }))} /> 포스팅
               </label>
-            )}
+                {' '}
+                {talk}
+                </>
+              );
+            }}
           />
+          <p class="muted small">{__i18n_t("ui.decision.text.26ed23d5")}</p>
         </>
       );
       break;
     }
+    case 'abroad':
+      // 2.0.37: our free agents a Japanese club is about to sign (abroad.ts).
+      body = (
+        <>
+          <p>{__i18n_t("ui.decision.text.3c2ff3cc")}</p>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>{__i18n_t("ui.decision.text.2e177398")}</th>
+                <th>{__i18n_t("ui.decision.text.9aa18e50")}</th>
+                <th>{__i18n_t("ui.decision.text.627f7e91")}</th>
+                <th class="num">{__i18n_t("ui.decision.text.9c2f4414")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {d.rows.map((r) => (
+                <tr key={r.id}>
+                  <td>
+                    <input type="checkbox" checked={selected.has(r.id)} onChange={() => toggle(r.id)} aria-label={__i18n_t("ui.decision.text.b27a1258", { name: league.players[r.id]?.name ?? '' })} />
+                  </td>
+                  <td>
+                    <button type="button" class="link" onClick={() => onPlayer(r.id)}>
+                      {league.players[r.id]?.name ?? '?'}
+                    </button>
+                  </td>
+                  <td>{__i18n_t("ui.decision.text.26246615", { years: r.years, total: usd(r.total) })}</td>
+                  <td class="num">{Math.round(r.chance * 100)}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      );
+      break;
     case 'fantasyPick':
       body = <FantasyBoard league={league} onPlayer={onPlayer} onPick={(id) => onSubmit({ kind: 'fantasyPick', id })} />;
       break;
@@ -1404,6 +1468,8 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       const pick = choices.pick ?? 'extra';
       const options: [string, string, string][] = [
         ['release', __i18n_k("ui.decision.decision.options.e16b5dd5"), __i18n_k("ui.decision.decision.options.391ff34c")],
+        // 2.0.37: the voluntary retired list — off the roster, the rights kept (voluntary.ts).
+        ['voluntary', __i18n_t("ui.decision.text.88338b66"), __i18n_t("ui.decision.text.852b0d20")],
         ['extra', __i18n_k("ui.decision.decision.options.f678166c"), __i18n_k("ui.decision.decision.options.f4422979", { value: 20 })],
         ['none', __i18n_k("ui.decision.decision.options.a5cf5786"), __i18n_k("ui.decision.decision.options.88aff6b5")],
       ];

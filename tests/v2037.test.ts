@@ -330,3 +330,104 @@ describe('development foreign players (2.0.37)', () => {
     expect(isDevForeign(p)).toBe(false);
   });
 });
+
+describe('deeper cuts after a poor season (2.0.37)', () => {
+  it('a season below the bar costs more than the old 30% at most; a decent one does not', async () => {
+    const { renewSalary } = await import('../src/league/contracts');
+    const s = loadSave('2.0.34');
+    const p = Object.values(s.players).find((x) => x.teamId && !isForeign(x) && x.career.some((c) => !c.level))!;
+    const season = 2040;
+    const setLast = (war: number, days: number) => {
+      p.career = p.career.filter((c) => c.level || c.year < season - 1);
+      p.career.push({ ...p.career.find((c) => !c.level)!, year: season - 1, war, days, level: undefined } as never);
+      p.contract = { teamId: p.teamId!, kind: 'standard', signedIn: season - 2, signingBonus: 0, salaries: [{ season: season - 1, amount: 30000 }] };
+    };
+    setLast(1.5, 150);
+    const fine = renewSalary(p, season);
+    expect(fine).toBeGreaterThanOrEqual(21000);
+    setLast(0.2, 150);
+    const under = renewSalary(p, season);
+    expect(under).toBeLessThan(21000);
+    expect(under).toBeGreaterThanOrEqual(18000);
+    setLast(-0.8, 150);
+    const bad = renewSalary(p, season);
+    expect(bad).toBeLessThan(under);
+    expect(bad).toBeGreaterThanOrEqual(12000);
+  });
+});
+
+describe('the voluntary retired list (2.0.37)', () => {
+  const ours = (s: LeagueState) => s.rosters[s.user!.teamId]!.futures.map((id) => s.players[id]!).find((p) => !isForeign(p) && p.status === 'active')!;
+
+  it('off the roster and the payroll, the rights kept; back no sooner than a year on', async () => {
+    const { backFrom, canReinstate, VOLUNTARY } = await import('../src/league/voluntary');
+    const s = loadSave('2.0.34');
+    s.pending = null;
+    const p = ours(s);
+    apply(s, { kind: 'voluntary', id: p.id });
+    const v = s.voluntary![p.id]!;
+    expect(v.teamId).toBe(s.user!.teamId);
+    expect(p.status).toBe('retired');
+    expect(p.teamId).toBeNull();
+    expect(p.contract).toBeNull();
+    expect(Object.values(s.rosters[s.user!.teamId]!).flat()).not.toContain(p.id);
+    expect(canReinstate(s, p.id)).toBeTruthy();
+    expect(() => apply(s, { kind: 'reinstate', id: p.id })).toThrow();
+    v.since = '2000-01-01';
+    expect(backFrom(s, p.id)! < '2002-01-01').toBe(true);
+    apply(s, { kind: 'reinstate', id: p.id });
+    expect(s.voluntary![p.id]).toBeUndefined();
+    expect(p.status).toBe('active');
+    expect(p.teamId).toBe(s.user!.teamId);
+    expect(p.contract?.kind).toBe('standard');
+    expect(p.contract!.salaries[0]!.amount).toBeGreaterThanOrEqual(Math.round(v.salary * VOLUNTARY.keep * 0.99) - 100);
+  });
+
+  it('is one of the answers to a scandal', () => {
+    const s = loadSave('2.0.34');
+    const p = ours(s);
+    s.pending = { kind: 'scandal', id: p.id, offense: 'drunkBrawl', penalty: '' };
+    apply(s, { kind: 'decide', input: { kind: 'scandal', answer: 'voluntary' } } as never);
+    expect(s.voluntary?.[p.id]?.why).toBe('scandal');
+    expect(p.teamId).toBeNull();
+  });
+});
+
+describe('talking a player out of going abroad (2.0.37)', () => {
+  it('loyalty helps, youth and a big name do not; always between the bounds', async () => {
+    const { ABROAD, persuadeAbroadChance } = await import('../src/league/abroad');
+    const s = loadSave('2.0.34');
+    const p = Object.values(s.players).find((x) => x.teamId === s.user!.teamId && !isForeign(x))!;
+    const t = p.hidden.traits!;
+    t.loyalty = 90;
+    const loyal = persuadeAbroadChance(s, p, s.year + 1);
+    t.loyalty = 10;
+    const not = persuadeAbroadChance(s, p, s.year + 1);
+    expect(loyal).toBeGreaterThan(not);
+    for (const x of [loyal, not]) {
+      expect(x).toBeGreaterThanOrEqual(ABROAD.min);
+      expect(x).toBeLessThanOrEqual(ABROAD.max);
+    }
+  });
+
+  it('talked round: stays without a grudge and does not ask for two winters; refused: sulks', async () => {
+    const { ABROAD, postingPersuasion, staysHome } = await import('../src/league/abroad');
+    const s = loadSave('2.0.34');
+    const mine = Object.values(s.players).filter((x) => x.teamId === s.user!.teamId && !isForeign(x)).slice(0, 2);
+    const [a, b] = mine as [typeof mine[0], typeof mine[0]];
+    const next = s.year + 1;
+    const was = { min: ABROAD.min, max: ABROAD.max };
+    Object.assign(ABROAD, { min: 1, max: 1 });
+    try {
+      postingPersuasion(s, [a.id, b.id], [], [a.id], next);
+    } finally {
+      Object.assign(ABROAD, was);
+    }
+    expect(staysHome(s, a.id, next)).toBe(true);
+    expect(staysHome(s, a.id, next + 1)).toBe(true);
+    expect(staysHome(s, a.id, next + 2)).toBe(false);
+    expect(a.life?.form?.delta).toBeGreaterThan(0);
+    expect(staysHome(s, b.id, next)).toBe(false);
+    expect(b.life?.form?.delta).toBeLessThan(0);
+  });
+});

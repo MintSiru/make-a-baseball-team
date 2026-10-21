@@ -24,7 +24,7 @@ import { addNews } from './news';
 import { developmentContract, leaveLeague, removeFromRoster, rosterLimit, sign, type OffseasonStep } from './offseason';
 import { ageIn, DRAFT_ROOM_YEAR, isForeign, keepValue, shiftProspect, withEra } from './players';
 import { MANAGER_STYLES, staffOf } from './staff';
-import { developmentIds, emptyRoster, firstTeamIds, registeredIds, type Decision, type GmStyle, type LeagueState, type ManagerStyle, type RivalSettings, type TwelveState, aiFoundingClubs } from './state';
+import { developmentIds, emptyRoster, firstTeamIds, registeredIds, type Decision, type GmStyle, type LeagueState, type ManagerStyle, type RivalSettings, type TwelveState, aiFoundingClubs, rightsHeld } from './state';
 import { crossing } from './rivalry';
 import { farewell } from './life';
 import { GM_STYLES, gmValue } from './twelve';
@@ -197,7 +197,7 @@ export function rivalTryout(s: LeagueState, year: number, teamId: TeamId, gm: Gm
     seed,
   );
   // Players let go this year: not for the north's clubs, founded while ours holds its own tryout.
-  const released = !withReleased ? [] : Object.values(s.players).filter((p) => p.status === 'retired' && !s.otherSport?.[p.id] && p.career.length && (p.career.at(-1)?.year ?? 0) >= year - 1 && ageIn(p, next) <= 33);
+  const released = !withReleased ? [] : Object.values(s.players).filter((p) => p.status === 'retired' && !rightsHeld(s, p.id) && p.career.length && (p.career.at(-1)?.year ?? 0) >= year - 1 && ageIn(p, next) <= 33);
   const chosen = [...released, ...pool].sort((a, b) => gmValue(b, next, gm) - gmValue(a, next, gm)).slice(0, north?.count ?? RIVAL.tryout);
   for (const p of chosen) {
     p.proSince = Math.max(p.proSince, next);

@@ -19,6 +19,7 @@ import { eulreul, iga, ro, wagwa } from './josa';
 import { addNews } from './news';
 import { isForeign, isPitcher } from './players';
 import type { LeagueState } from './state';
+import { rightsHeld } from './state';
 
 export type FamilyKind = 'father' | 'brother' | 'twin';
 
@@ -91,7 +92,7 @@ export function familyAtPick(s: LeagueState, p: Player, teamId: TeamId, draftYea
     const staff = coaches(s);
     const coachIds = new Set(staff.map((c) => c.p.id));
     const veterans = Object.values(s.players)
-      .filter((o) => o.status === 'retired' && !s.otherSport?.[o.id] && !isForeign(o) && !coachIds.has(o.id) && o.career.filter((c) => !c.level).length >= FAMILY.fatherSeasons)
+      .filter((o) => o.status === 'retired' && !rightsHeld(s, o.id) && !isForeign(o) && !coachIds.has(o.id) && o.career.filter((c) => !c.level).length >= FAMILY.fatherSeasons)
       .map((o) => ({ p: o }));
     const dads = [...staff, ...veterans].filter((c) => surnameOf(c.p.name) === name && born - bornIn(c.p) >= FAMILY.fatherGap[0] && born - bornIn(c.p) <= FAMILY.fatherGap[1] && !(s.families ?? []).some((t) => t.kind === 'father' && t.a === c.p.id));
     const same = dads.filter((c) => isPitcher(c.p) === isPitcher(p));

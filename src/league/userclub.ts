@@ -64,6 +64,8 @@ import { conditionMoney } from './conditions';
 import { DYNAMIC, handicap, setHandicap } from './dynamic';
 import { autoMeddle, resolveMeddle, scenarioWinter, supportFactor } from './scenarios';
 import { canRelease, releasePlayer } from './trade';
+import { placeVoluntary } from './voluntary';
+import { postingPersuasion } from './abroad';
 
 /** Difficulty scales the owner's money. */
 const DIFFICULTY_MONEY = DIFFICULTY.money;
@@ -97,7 +99,7 @@ export type AnnualInput =
   | { kind: 'secondPick'; id: PlayerId | null }
   /** `offers`: a figure (US dollars a season) and years for any of them (1.3.0; his ask for one year when missing). */
   | { kind: 'foreignRenew'; keep: PlayerId[]; offers?: Record<PlayerId, { amount: number; years: 1 | 2 }> }
-  | { kind: 'posting'; id: PlayerId | null; /** 2.0.24: several, when the game allows more than one. */ ids?: PlayerId[] }
+  | { kind: 'posting'; id: PlayerId | null; /** 2.0.24: several, when the game allows more than one. */ ids?: PlayerId[]; /** 2.0.37: those not posted we try to talk round (abroad.ts). */ persuade?: PlayerId[] }
   | { kind: 'returnee'; ids: PlayerId[] }
   | { kind: 'sponsor'; index: number }
   | { kind: 'staff'; hires: Partial<Record<StaffRole, string>>; /** 1.8.0: contract years for a hire or renewal. */ terms?: Partial<Record<StaffRole, number>> }
@@ -106,7 +108,7 @@ export type AnnualInput =
   /** Our players named for the national team: the ones the club asks to keep home (V0.12). */
   | { kind: 'national'; ids: PlayerId[] }
   /** The club's answer to a disciplined player (V0.12). */
-  | { kind: 'scandal'; answer: 'release' | 'extra' | 'none' }
+  | { kind: 'scandal'; answer: 'release' | 'extra' | 'none' | 'voluntary' }
   /** Settle with the investor or fight (V0.12). */
   | { kind: 'dispute'; answer: 'settle' | 'fight' }
   | { kind: 'relocate'; answer: 'accept' | 'refuse' | 'temporary' | 'drop' }
@@ -402,7 +404,7 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
       return null;
     }
     case 'scandal':
-      return ['release', 'extra', 'none'].includes(input.answer) ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
+      return ['release', 'extra', 'none', 'voluntary'].includes(input.answer) ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
     case 'dispute':
       return ['settle', 'fight'].includes(input.answer) ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
     case 'relocate': {
@@ -696,9 +698,11 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
     case 'scandal': {
       // The release needs the game not to be waiting on this decision any more.
       s.pending = null;
-      resolveScandal(s, d as Extract<Decision, { kind: 'scandal' }>, input.answer, (id) => {
+      resolveScandal(s, d as Extract<Decision, { kind: 'scandal' }>, input.answer, (id, how) => {
         if (canRelease(s, id)) return false;
-        releasePlayer(s, id);
+        // 2.0.37: on the voluntary retired list instead of released (voluntary.ts).
+        if (how === 'voluntary') placeVoluntary(s, s.players[id]!, 'scandal');
+        else releasePlayer(s, id);
         return true;
       });
       return null;
@@ -733,6 +737,8 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
         if (ids.includes(id)) note(u, year, postingNote(s, post(s, id, next), name));
         else note(u, year, __i18n_k("league.userclub.resolveAnnual.eb03e1bd", { name: name }));
       }
+      // 2.0.37: those we kept: talked round or sulking (abroad.ts).
+      postingPersuasion(s, dd.candidates, ids, (input.persuade ?? []).filter((id) => dd.candidates.includes(id)), next);
       return null;
     }
     case 'returnee': {
@@ -942,7 +948,11 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
     }
     case 'posting':
       // The scouts keep a player under 27 and let an older one chase his dream (and bring in the fee).
-      return { kind: 'posting', id: d.candidates.find((id) => ageIn(s.players[id]!, next) >= 27) ?? null };
+      // 2.0.37: and tries to talk the others round.
+      {
+        const id = d.candidates.find((x) => ageIn(s.players[x]!, next) >= 27) ?? null;
+        return { kind: 'posting', id, persuade: d.candidates.filter((x) => x !== id) };
+      }
     case 'secondPick': {
       const best = d.candidates[0];
       return { kind: 'secondPick', id: best && keepValue(s.players[best]!, next) >= 50 && d.fee <= u.fund ? best : null };
