@@ -9,7 +9,7 @@ import { rng } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
 import { eulreul, iga } from './josa';
 import { addNews } from './news';
-import { FAMILY, fastballOf, PITCH_LABELS, repertoire, type PitchType } from './pitches';
+import { FAMILY, fastballOf, isKnuckleballer, PITCH_LABELS, repertoire, type PitchType } from './pitches';
 import { ageIn, isForeign, isPitcher } from './players';
 import type { LeagueState } from './state';
 
@@ -34,7 +34,8 @@ const ALL = Object.keys(PITCH_LABELS) as PitchType[];
 
 /** Pitches he could learn: not his already, nor of a family he throws (his fastball's included). */
 export function learnable(p: Player): PitchType[] {
-  if (!isPitcher(p) || p.hidden.current.breaking == null) return [];
+  // 2.0.36: a knuckleballer keeps to his knuckleball.
+  if (!isPitcher(p) || p.hidden.current.breaking == null || isKnuckleballer(p)) return [];
   const rep = repertoire(p);
   if (rep.length >= LEARN.maxPitches) return [];
   const fb = fastballOf(p);

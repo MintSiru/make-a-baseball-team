@@ -24,10 +24,13 @@ import { orgPlayers, type Decision, type LeagueState } from './state';
 import { GROWTH, SCANDAL as S } from './tuning';
 import { temperFactor, troubleFactor } from './traits';
 import { isMarried } from './life';
+import { maybeDiscipline } from './discipline';
 
 export type Offense = 'dui' | 'doping' | 'assault' | 'fixing' | RareOffense;
 /** 2.0.28 (the user's request): 불륜, 낙태 종용, 불법 도박, 조직폭력배 연루, 학교 폭력, 병역 비리, 감독·코치에게 항명. */
-export type RareOffense = 'affair' | 'abortion' | 'gambling' | 'gangs' | 'schoolViolence' | 'draftDodge' | 'insubordination' | ForeignOffense;
+export type RareOffense = 'affair' | 'abortion' | 'gambling' | 'gangs' | 'schoolViolence' | 'draftDodge' | 'insubordination' | ForeignOffense | NewOffense;
+/** 2.0.36 (the user's request): 음주 난동, 마약류 투여, 후배 폭행, 부조리. */
+export type NewOffense = 'drunkBrawl' | 'drugs' | 'hazing' | 'abuse';
 /** 2.0.28: a foreign player's (팬과 언쟁, 마약류 성분 검출). */
 export type ForeignOffense = 'fanQuarrel' | 'narcotics';
 const FOREIGN_ONLY: Offense[] = ['fanQuarrel', 'narcotics'];
@@ -35,7 +38,7 @@ const FOREIGN_ONLY: Offense[] = ['fanQuarrel', 'narcotics'];
 /** 2.0.28 (the user's request, kept rare): a new foreign signing fails his medical; a season's chance at a club that a
     foreign player has words with a fan or tests positive for a narcotic (a cold medicine, a supplement). */
 export const FOREIGN_TROUBLE = { medical: 0.03, rates: { fanQuarrel: 0.015, narcotics: 0.003 } as Record<ForeignOffense, number> };
-const RARE: RareOffense[] = ['affair', 'abortion', 'gambling', 'gangs', 'schoolViolence', 'draftDodge', 'insubordination', 'fanQuarrel', 'narcotics'];
+const RARE: RareOffense[] = ['affair', 'abortion', 'gambling', 'gangs', 'schoolViolence', 'draftDodge', 'insubordination', 'fanQuarrel', 'narcotics', 'drunkBrawl', 'drugs', 'hazing', 'abuse'];
 
 /** A suspension: games still to sit out (his club's first-team games), or a ban until a date. */
 export interface Suspension {
@@ -94,6 +97,9 @@ function candidate(s: LeagueState, offense: Offense | 'rumour', r: () => number)
     if (offense === 'schoolViolence') return age <= 25 ? 3 : 0.3;
     if (offense === 'draftDodge') return p.service.military === 'pending' && age >= 20 && age <= 28 ? 1 : 0;
     if (offense === 'insubordination') return temperFactor(p);
+    // 2.0.36: a senior picks on the juniors; a brawl is a hothead's.
+    if (offense === 'hazing' || offense === 'abuse') return age >= 27 ? 2 : age >= 24 ? 0.5 : 0;
+    if (offense === 'drunkBrawl') return (age >= 21 ? 1 : 0.2) * temperFactor(p);
     return age >= 21 ? 1 : 0.3;
   };
   // 논란성 (1.1.0): the likelier ones; a rumour finds anyone.
@@ -179,12 +185,14 @@ function prDay(s: LeagueState, kind: PrTrouble, date: string, r: () => number) {
   clubState(s, u.teamId).interest -= S.pr.mood[kind];
   addNews(s, { id: `pr-${kind}-${p.id}-${date}`, date, kind: 'interview', title, body, quotes: [], facts: { 선수: p.name }, players: [p.id], mine: true });
   addAlert(s, { id: `pr-${kind}-${p.id}-${date}`, date, kind: 'life', title, lines: [body], tone: 'bad', players: [p.id] });
+  // 2.0.36: the manager may send him down for it (discipline.ts).
+  if (kind === 'gaffe' || kind === 'noInterview') maybeDiscipline(s, p, date, r);
 }
 
 // ── The club's own trouble (2.0.28) ──────────────────────────────────────────────────────────────
 
 type ClubTrouble = keyof typeof S.club.rates;
-const CLUB_TROUBLE: ClubTrouble[] = ['cctv', 'sns', 'fans'];
+const CLUB_TROUBLE: ClubTrouble[] = ['cctv', 'sns', 'fans', 'kickback', 'neglect'];
 
 function clubTroubleDay(s: LeagueState, kind: ClubTrouble, date: string) {
   const u = s.user!;
@@ -201,7 +209,12 @@ function clubTroubleDay(s: LeagueState, kind: ClubTrouble, date: string) {
       ? [__i18n_k("league.scandals.text.a03c00f6", { club }), __i18n_k("league.scandals.text.0926e424", { club, particle, fine })]
       : kind === 'sns'
         ? [__i18n_k("league.scandals.text.a764734a", { club }), __i18n_k("league.scandals.text.887d6212", { club })]
-        : [__i18n_k("league.scandals.text.0e751bd7", { club }), __i18n_k("league.scandals.text.175641cd", { club, particle })];
+        : kind === 'fans'
+          ? [__i18n_k("league.scandals.text.0e751bd7", { club }), __i18n_k("league.scandals.text.175641cd", { club, particle })]
+          : // 2.0.36: the front office's kickbacks, players treated badly.
+            kind === 'kickback'
+            ? [__i18n_k("league.scandals.text.0815d9cd", { club }), __i18n_k("league.scandals.text.b200a735", { club: iga(club), fine })]
+            : [__i18n_k("league.scandals.text.a6e859be", { club }), __i18n_k("league.scandals.text.b1bfba87", { club: iga(club) })];
   addNews(s, { id: `club-trouble-${kind}-${date}`, date, kind: 'move', title: t, body, quotes: [{ who: __i18n_k("league.scandals.text.9b20cdfe"), role: 'fan', text: __i18n_k("league.scandals.text.1e27e617") }], facts: { 구단: club }, players: [], mine: true });
   addAlert(s, { id: `club-trouble-${kind}-${date}`, date, kind: 'scandal', title: t, lines: [body, __i18n_k("league.scandals.text.897cda5b")], tone: 'bad' });
 }
@@ -319,6 +332,10 @@ const LABEL: Record<Offense, string> = {
   insubordination: __i18n_k("league.scandals.text.c7d06d6d"),
   fanQuarrel: __i18n_k("league.scandals.text.9ce1e89d"),
   narcotics: __i18n_k("league.scandals.text.75d0b2e7"),
+  drunkBrawl: __i18n_k("league.scandals.text.af34a9e3"),
+  drugs: __i18n_k("league.scandals.text.ef291265"),
+  hazing: __i18n_k("league.scandals.text.3289ffa1"),
+  abuse: __i18n_k("league.scandals.text.7736a978"),
 };
 
 /** The KBO's penalty for this offense and his record. */
@@ -359,6 +376,15 @@ function penalty(p: Player, offense: Offense, r: () => number, hid: boolean): { 
       return { text: __i18n_k("league.scandals.text.d4855beb") };
     case 'narcotics':
       return { text: __i18n_k("league.scandals.text.6e61822d", { years: 1 }), years: 1 };
+    // 2.0.36.
+    case 'drunkBrawl':
+      return { text: __i18n_k("league.scandals.text.b87c3929", { games: S.rareGames.drunkBrawl }), games: S.rareGames.drunkBrawl };
+    case 'hazing':
+      return { text: __i18n_k("league.scandals.text.b87c3929", { games: S.rareGames.hazing }), games: S.rareGames.hazing };
+    case 'drugs':
+      return { text: __i18n_k("league.scandals.text.9a014a3d"), life: true };
+    case 'abuse':
+      return { text: __i18n_k("league.scandals.text.9ecabb3d") };
   }
 }
 
@@ -430,4 +456,4 @@ export function resolveScandal(s: LeagueState, d: Extract<Decision, { kind: 'sca
 }
 
 /** The scouts' answer: release him for a life-changing offense, a penalty of our own otherwise. */
-export const autoScandal = (d: Extract<Decision, { kind: 'scandal' }>): 'release' | 'extra' => (['dui', 'fixing', 'gambling', 'gangs', 'draftDodge', 'narcotics'].includes(d.offense) ? 'release' : 'extra');
+export const autoScandal = (d: Extract<Decision, { kind: 'scandal' }>): 'release' | 'extra' => (['dui', 'fixing', 'gambling', 'gangs', 'draftDodge', 'narcotics', 'drugs'].includes(d.offense) ? 'release' : 'extra');

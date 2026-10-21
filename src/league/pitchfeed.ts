@@ -9,7 +9,7 @@ import { rng } from '../draftroom';
 import { distanceOf, type BattedBall } from './battedball';
 import { clearance, layoutOf, type ParkLayout } from './layout';
 import type { PlayEvent } from './engine/types';
-import { averageVelocity, FASTBALL_LABELS, fastballOf, pitchLabel, pitchVariant, repertoire, type PitchType, type PitchVariant } from './pitches';
+import { averageVelocity, FASTBALL_LABELS, fastballOf, KNUCKLE, pitchLabel, pitchVariant, repertoire, type PitchType, type PitchVariant } from './pitches';
 import { halfLabel, playText } from './playtext';
 import type { LeagueState } from './state';
 import { nationalLog, nationalName } from './nationalgames';
@@ -189,7 +189,9 @@ function pitchOf(s: LeagueState, pid: string, r: () => number): string {
       const variant = pitchVariant(p, rep.type);
       const drop = variant ? VARIANT_DROP[variant] : PITCH_DROP[rep.type];
       const name = pitchLabel(p, rep.type);
-      return avg ? __i18n_k("league.pitchfeed.text.977ba357", { type: name, velo: Math.round(avg - drop + (r() - 0.5) * 6) }) : name;
+      // 2.0.36: the knuckleball at its own speed (pitches.ts KNUCKLE).
+      const velo = rep.type === 'KN' ? Math.round(KNUCKLE.kmh + (r() - 0.5) * 8) : Math.round(avg! - drop + (r() - 0.5) * 6);
+      return avg ? __i18n_k("league.pitchfeed.text.977ba357", { type: name, velo }) : name;
     }
   }
   // 1.9.3: his fastball by its kind (포심, 투심, 커터).

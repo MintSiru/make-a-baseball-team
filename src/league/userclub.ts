@@ -58,6 +58,8 @@ import { CAMP_IDS, checkCamp, checkDev, devDecision, holdCamp, sendDev, type Cam
 import { autoNational, marchEvents, nextNationalDecision, novemberEvents, resolveNational } from './national';
 import { autoScandal, resolveScandal } from './scandals';
 import { autoDispute, resolveDispute } from './dispute';
+import { resolveRelocation } from './relocation';
+import { resolveMerger } from './merger';
 import { conditionMoney } from './conditions';
 import { DYNAMIC, handicap, setHandicap } from './dynamic';
 import { autoMeddle, resolveMeddle, scenarioWinter, supportFactor } from './scenarios';
@@ -107,6 +109,8 @@ export type AnnualInput =
   | { kind: 'scandal'; answer: 'release' | 'extra' | 'none' }
   /** Settle with the investor or fight (V0.12). */
   | { kind: 'dispute'; answer: 'settle' | 'fight' }
+  | { kind: 'relocate'; answer: 'accept' | 'refuse' | 'temporary' | 'drop' }
+  | { kind: 'merger'; vote: 'yes' | 'no' }
   /** Obey the owner or not (1.6.0). */
   | { kind: 'meddle'; answer: 'obey' | 'refuse' }
   /** 2.0.32 (development.ts): who goes to the fall league or to Australia (none: nobody), the wrap-up camp's place
@@ -401,6 +405,13 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
       return ['release', 'extra', 'none'].includes(input.answer) ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
     case 'dispute':
       return ['settle', 'fight'].includes(input.answer) ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
+    case 'relocate': {
+      const dd = d as Extract<Decision, { kind: 'relocate' }>;
+      const ok = dd.stage === 'propose' ? ['accept', 'refuse'] : dd.temp ? ['temporary', 'drop'] : ['drop'];
+      return ok.includes(input.answer) ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
+    }
+    case 'merger':
+      return ['yes', 'no'].includes(input.vote) ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
     case 'meddle':
       return ['obey', 'refuse'].includes(input.answer) ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
     case 'returnee': {
@@ -673,6 +684,12 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
     case 'dispute':
       resolveDispute(s, d as Extract<Decision, { kind: 'dispute' }>, input.answer, year);
       return null;
+    // 2.0.37: a move proposed (a no from the board asks once more), a merger voted on.
+    case 'relocate':
+      return resolveRelocation(s, d as Extract<Decision, { kind: 'relocate' }>, input.answer, year);
+    case 'merger':
+      resolveMerger(s, d as Extract<Decision, { kind: 'merger' }>, input.vote, year);
+      return null;
     case 'meddle':
       resolveMeddle(s, d as Extract<Decision, { kind: 'meddle' }>, input.answer);
       return null;
@@ -867,6 +884,11 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
       return { kind: 'scandal', answer: autoScandal(d) };
     case 'dispute':
       return { kind: 'dispute', answer: autoDispute() };
+    // 2.0.37: the scouts keep the club where it is and vote against a merger.
+    case 'relocate':
+      return { kind: 'relocate', answer: (d as Extract<Decision, { kind: 'relocate' }>).stage === 'propose' ? 'refuse' : 'drop' };
+    case 'merger':
+      return { kind: 'merger', vote: 'no' };
     case 'meddle':
       return { kind: 'meddle', answer: autoMeddle(s, d) };
     case 'retire':
@@ -952,7 +974,7 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
 }
 
 export const isAnnual = (kind: Decision['kind']) =>
-  ['military', 'rookieBonus', 'development', 'camp', 'faRound', 'faOptions', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting', 'returnee', 'sponsor', 'staff', 'retire', 'national', 'scandal', 'dispute', 'meddle', 'postEntry', 'devFall', 'devAbl', 'wrapUp'].includes(kind);
+  ['military', 'rookieBonus', 'development', 'camp', 'faRound', 'faOptions', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting', 'returnee', 'sponsor', 'staff', 'retire', 'national', 'scandal', 'dispute', 'meddle', 'postEntry', 'devFall', 'devAbl', 'wrapUp', 'relocate', 'merger'].includes(kind);
 
 // ── Salary talks ─────────────────────────────────────────────────────────────────────────────────
 

@@ -667,6 +667,10 @@ export const DISPUTE = { chance: 0.006, settle: 250_000, legal: 30_000, loss: 80
     mood it costs, and what the club's answer does to the mood. Doping: a clean player's rumours a season, the days
     to the first sign and between signs, the signs a rumour shows at most and how long it lasts, the days before the
     KBO's testers can find him and their chance a game day, the ability it lends, and the club's own test. */
+/** 2.0.36 (rivals.ts): rivalries between players — the public grade to count, how many in the league and of ours, the
+    meetings that make a pitcher and a hitter rivals, and the crowd when rivals meet. */
+export const PLAYER_RIVALS = { grade: 58, max: 12, mine: 4, duelPa: 30, crowd: 1.03 };
+
 export const SCANDAL = {
   gameDays: 170,
   rates: { dui: 0.1, assault: 0.04, fixing: 0.003, doping: 0.05 } as Record<'dui' | 'assault' | 'fixing' | 'doping', number>,
@@ -674,8 +678,10 @@ export const SCANDAL = {
       gives one (illegal betting 72 games after the 2016 overseas-gambling cases; the rest game assumptions); an affair,
       pressing for an abortion, school violence come out and the KBO leaves it to the club; insubordination is the
       club's own business. */
-  rare: { affair: 0.008, abortion: 0.003, gambling: 0.006, gangs: 0.003, schoolViolence: 0.006, draftDodge: 0.002, insubordination: 0.012 },
-  rareGames: { gambling: 72, gangs: 50, draftDodgeYears: 1 },
+  rare: { affair: 0.008, abortion: 0.003, gambling: 0.006, gangs: 0.003, schoolViolence: 0.006, draftDodge: 0.002, insubordination: 0.012, drunkBrawl: 0.01, drugs: 0.002, hazing: 0.006, abuse: 0.006 },
+  /** 2.0.36 (the user's request): a drunken brawl and beating a junior 30 games each (game assumptions, as the KBO's
+      assault); drug use a ban from the league (실격); 부조리 (hazing short of violence) the club's own business. */
+  rareGames: { gambling: 72, gangs: 50, draftDodgeYears: 1, drunkBrawl: 30, hazing: 30 },
   dui: { games: 70, revoked: 0.35, hidden: 0.2, hidingGames: 10, foundAfter: [10, 40] as [number, number] },
   assault: { games: 30, bad: 0.25, badGames: 50 },
   doping: {
@@ -691,8 +697,8 @@ export const SCANDAL = {
     caughtGrudge: 6,
     cleanGrudge: 3,
   },
-  fans: { dui: 25, doping: 25, assault: 20, fixing: 30, fanQuarrel: 10, narcotics: 25, affair: 15, abortion: 25, gambling: 25, gangs: 25, schoolViolence: 30, draftDodge: 30, insubordination: 8 } as Record<string, number>,
-  clubMood: { dui: 0.03, doping: 0.03, assault: 0.02, fixing: 0.08, fanQuarrel: 0.01, narcotics: 0.03, affair: 0.01, abortion: 0.02, gambling: 0.03, gangs: 0.03, schoolViolence: 0.03, draftDodge: 0.03, insubordination: 0.005 } as Record<string, number>,
+  fans: { dui: 25, doping: 25, assault: 20, fixing: 30, fanQuarrel: 10, narcotics: 25, affair: 15, abortion: 25, gambling: 25, gangs: 25, schoolViolence: 30, draftDodge: 30, insubordination: 8, drunkBrawl: 15, drugs: 30, hazing: 20, abuse: 12 } as Record<string, number>,
+  clubMood: { dui: 0.03, doping: 0.03, assault: 0.02, fixing: 0.08, fanQuarrel: 0.01, narcotics: 0.03, affair: 0.01, abortion: 0.02, gambling: 0.03, gangs: 0.03, schoolViolence: 0.03, draftDodge: 0.03, insubordination: 0.005, drunkBrawl: 0.015, drugs: 0.04, hazing: 0.02, abuse: 0.015 } as Record<string, number>,
   /** 2.0.28: the club's own trouble, a season's chance each — illegal CCTV surveillance of its players, an
       improper word on the club's social media, fans treated badly — the fans' mood it costs and the KBO's fine (만원). */
   /** 2.0.28: the papers and the fans — a careless interview, a twisted one, an autograph or an interview refused: a
@@ -702,10 +708,19 @@ export const SCANDAL = {
     fans: { gaffe: 4, distorted: 1, autograph: 3, noInterview: 2 },
     mood: { gaffe: 0.003, distorted: 0.001, autograph: 0.004, noInterview: 0.002 },
   },
+  /** 2.0.36 (the user's request): the front office taking money under the table (a KBO fine) and players treated
+      badly (a rehab left alone, promises broken) join the club's own trouble. */
   club: {
-    rates: { cctv: 0.006, sns: 0.02, fans: 0.02 },
-    mood: { cctv: 0.04, sns: 0.015, fans: 0.02 },
-    fine: { cctv: 5000, sns: 0, fans: 0 },
+    rates: { cctv: 0.006, sns: 0.02, fans: 0.02, kickback: 0.004, neglect: 0.01 },
+    mood: { cctv: 0.04, sns: 0.015, fans: 0.02, kickback: 0.04, neglect: 0.02 },
+    fine: { cctv: 5000, sns: 0, fans: 0, kickback: 10000, neglect: 0 },
+  },
+  /** 2.0.36 (the user's request): the manager's or a coach's — a drunken brawl, hitting a player, money for playing
+      time, abuse in the clubhouse. A season's chance at a club each; he goes (a new man takes the post), the fans' mood
+      drops. */
+  staff: {
+    rates: { drunk: 0.008, assault: 0.004, kickback: 0.003, abuse: 0.006 },
+    mood: { drunk: 0.015, assault: 0.03, kickback: 0.03, abuse: 0.02 },
   },
   answer: { release: 0.02, extra: 0.01, none: -0.02 } as Record<'release' | 'extra' | 'none', number>,
   extraGames: 20,

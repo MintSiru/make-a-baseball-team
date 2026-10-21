@@ -13,7 +13,7 @@ import { overall, toGrade, type Tools } from '../draftroom';
 import type { GrowthType, Player, PlayerId, Traits } from '../model/types';
 import { battingProfile } from './battedball';
 import { fieldingOf } from './fielding';
-import { fastballOf, PITCH_LABELS, pitchingLift, repertoire, topVelocity, type FastballType, type PitchType } from './pitches';
+import { fastballOf, isKnuckleballer, PITCH_LABELS, pitchingLift, repertoire, topVelocity, type FastballType, type PitchType } from './pitches';
 import { isPitcher } from './players';
 import type { LeagueState } from './state';
 import { clutchOf, GROWTH_ORDER, temperOf, TRAIT_KEYS, traitsOf, type TraitKey } from './traits';
@@ -184,9 +184,13 @@ export function editAbility(s: LeagueState, id: PlayerId, e: AbilityEdit) {
     changed = true;
   }
   if (base.velocity != null && e.velocity !== base.velocity) {
-    // Top velocity: today's reading against his 구위 now (pitches.ts topVelocity), less what his arm slot takes off.
-    p.velocityStuff = p.hidden.current.stuff;
-    p.velocity = e.velocity! - slotVelocity(p);
+    // Top velocity: today's reading against his 구위 now (pitches.ts topVelocity), less what his arm slot takes off; a
+    // knuckleballer's slow fastball is his own (2.0.36).
+    if (isKnuckleballer(p)) p.custom = { ...p.custom, top: e.velocity! };
+    else {
+      p.velocityStuff = p.hidden.current.stuff;
+      p.velocity = e.velocity! - slotVelocity(p);
+    }
     changed = true;
   }
   if (changed) s.abilityEdits = (s.abilityEdits ?? 0) + 1;

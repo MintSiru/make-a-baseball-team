@@ -16,12 +16,13 @@ import { playDay, startSeason } from './season';
 import type { PlayerId, TeamId } from '../model/types';
 import { makeTrade, releasePlayer, replaceForeign, signFromPool } from './trade';
 import { setTempKeep, signTemp } from './tempforeign';
-import { movePlayer, registerPlayer, setLineupCard, setRole } from './entry';
+import { movePlayer, registerPlayer, setLineupCard, setRole, today } from './entry';
 import type { BullpenRole } from './engine/types';
 import { ensureNumbers, setNumber } from './numbers';
 import { setNickname } from './nicknames';
 import { addTie, editPlayer, removeTie, type PlayerEdit, type Relation } from './editor';
 import { editAbility, type AbilityEdit } from './abilityedit';
+import { gmDiscipline } from './discipline';
 import { switchPlayer } from './twoway';
 import { setBoardOn, setRule, type BoardItem } from './board';
 import { openProjects, startProject, type ProjectKind } from './ballpark';
@@ -154,6 +155,7 @@ export type Action =
   /** 2.0.34: a six-man rotation for every club (twelve clubs or more). */
   | { kind: 'sixMan'; on: boolean }
   | { kind: 'abilityEditor'; on: boolean }
+  | { kind: 'discipline'; id: PlayerId; days: number }
   | { kind: 'editAbility'; id: PlayerId; edit: AbilityEdit }
   /** 2.0.34: star a player (or take the star off). */
   | { kind: 'favorite'; id: PlayerId; on: boolean }
@@ -179,7 +181,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'askBudget', 'twoLeaguePlayoffs', 'sixMan', 'favorite', 'abilityEditor', 'editAbility'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'askBudget', 'twoLeaguePlayoffs', 'sixMan', 'favorite', 'abilityEditor', 'editAbility', 'discipline'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -438,6 +440,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     }
     case 'favorite':
       setFavorite(s, action.id, action.on);
+      break;
+    case 'discipline':
+      gmDiscipline(s, action.id, action.days, today(s));
       break;
     case 'abilityEditor':
       if (!s.user) break;

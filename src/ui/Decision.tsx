@@ -21,7 +21,7 @@ import type { Decision as DecisionT, LeagueState, RivalSettings } from '../leagu
 import { focusOptions, payrollWithout, salaryOffer, type CampPlan, type MilitaryOrder, type SalaryChoice } from '../league/userclub';
 import { eok as eokText } from '../league/fa';
 import { FaMarket } from './FaMarket';
-import { eulreul, iga, ro } from '../league/josa';
+import { eulreul, eunneun, iga, ro, wagwa } from '../league/josa';
 import { positionLabel, shortName } from '../league/views';
 import { MANAGER_STYLES, STAFF_EFFECTS, STAFF_LABELS } from '../league/staff';
 import { defaultYears, yearsFor } from '../league/staffdeals';
@@ -42,6 +42,7 @@ import { MEDDLE } from '../league/scenarios';
 import { ROUND_NAME } from '../league/postseason';
 import { motionText, playersView, type BoardVote } from '../league/board';
 import { pathwayLabel } from '../league/amateur';
+import { cityById } from '../club/cities';
 
 interface Props {
   league: LeagueState;
@@ -85,6 +86,8 @@ const TITLES: Record<DecisionT['kind'], string> = {
   board: __i18n_t("ui.decision.text.b736056d"),
   devFall: __i18n_k("ui.decision.text.f285e071"),
   devAbl: __i18n_k("ui.decision.text.37d4233b"),
+  relocate: __i18n_t("ui.decision.text.cdbe2c7a"),
+  merger: __i18n_t("ui.decision.text.55ef9dba"),
   wrapUp: __i18n_k("ui.decision.text.dce453a2"),
 };
 
@@ -500,6 +503,10 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         return { kind: 'scandal', answer: (choices.pick ?? 'extra') as 'release' | 'extra' | 'none' };
       case 'dispute':
         return { kind: 'dispute', answer: (choices.pick ?? 'settle') as 'settle' | 'fight' };
+      case 'relocate':
+        return { kind: 'relocate', answer: (choices.pick ?? (d.stage === 'propose' ? 'refuse' : d.temp ? 'temporary' : 'drop')) as 'accept' | 'refuse' | 'temporary' | 'drop' };
+      case 'merger':
+        return { kind: 'merger', vote: (choices.pick ?? 'no') as 'yes' | 'no' };
       case 'board':
         // 1.9.9: our vote on each motion (as our interest says until changed) and the motion we put, if any.
         return { kind: 'board', votes: d.motions.map((_, i) => (choices[`m${i}`] ?? d.expected[i]![league.user!.teamId] ?? 'abstain') as BoardVote), own: choices.own && choices.own !== 'none' ? Number(choices.own) : null };
@@ -562,7 +569,11 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       case 'scandal':
       case 'dispute':
       case 'meddle':
+      case 'relocate':
         setChoices({ pick: a.answer });
+        break;
+      case 'merger':
+        setChoices({ pick: a.vote });
         break;
       case 'board':
         setChoices(Object.fromEntries([...a.votes.map((v, i) => [`m${i}`, v]), ['own', a.own == null ? 'none' : String(a.own)]]));
@@ -1292,6 +1303,65 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
               </select>
             </label>
           </section>
+        </>
+      );
+      break;
+    }
+    // 2.0.37 (relocation.ts): the parent's move to a bigger city.
+    case 'relocate': {
+      const from = cityById(d.from),
+        to = cityById(d.target),
+        temp = d.temp ? cityById(d.temp) : null;
+      const options: [string, string, string][] =
+        d.stage === 'propose'
+          ? [
+              ['accept', __i18n_t("ui.decision.text.472f1d51"), __i18n_t("ui.decision.text.dc88641a", { pct: d.chance, to: to?.name ?? '' })],
+              ['refuse', __i18n_t("ui.decision.text.6547f38c"), __i18n_t("ui.decision.text.6e7849ab")],
+            ]
+          : [
+              ...(temp ? ([['temporary', __i18n_t("ui.decision.text.f4b80702"), __i18n_t("ui.decision.text.cd82bb71", { temp: temp.name, pct: d.chance })]] as [string, string, string][]) : []),
+              ['drop', __i18n_t("ui.decision.text.95917b7e"), __i18n_t("ui.decision.text.86d05374", { from: from?.name ?? '' })],
+            ];
+      const pick = choices.pick ?? (d.stage === 'propose' ? 'refuse' : temp ? 'temporary' : 'drop');
+      body = (
+        <>
+          <p>
+            {d.stage === 'propose'
+              ? __i18n_t("ui.decision.text.e75a811e", { from: from?.name ?? '', to: to?.name ?? '', m1: from?.market ?? 0, m2: to?.market ?? 0 })
+              : __i18n_t("ui.decision.text.877bb679", { to: to?.name ?? '' })}
+          </p>
+          <div class="choice-grid" role="radiogroup" aria-label={__i18n_t("ui.decision.text.cdbe2c7a")}>
+            {options.map(([k, label, note]) => (
+              <button key={k} type="button" class="choice" role="radio" aria-checked={pick === k} aria-pressed={pick === k} onClick={() => choose('pick', k)}>
+                <strong>{__i18n_display(label)}</strong>
+                <span class="muted small">{__i18n_display(note)}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      );
+      break;
+    }
+    // 2.0.37 (merger.ts): our vote on a merger.
+    case 'merger': {
+      const weak = league.teams.find((t) => t.id === d.weak)?.name ?? '',
+        partner = league.teams.find((t) => t.id === d.partner)?.name ?? '';
+      const pick = choices.pick ?? 'no';
+      const options: [string, string, string][] = [
+        ['yes', __i18n_t("ui.decision.text.a479b08f"), __i18n_t("ui.decision.text.163471bd", { partner: iga(partner), weak })],
+        ['no', __i18n_t("ui.decision.text.231ed254"), __i18n_t("ui.decision.text.3db39cd4", { weak: eunneun(weak) })],
+      ];
+      body = (
+        <>
+          <p>{__i18n_t("ui.decision.text.2081ab16", { weak, partner: wagwa(partner), clubs: d.clubs, needed: d.needed })}</p>
+          <div class="choice-grid" role="radiogroup" aria-label={__i18n_t("ui.decision.text.55ef9dba")}>
+            {options.map(([k, label, note]) => (
+              <button key={k} type="button" class="choice" role="radio" aria-checked={pick === k} aria-pressed={pick === k} onClick={() => choose('pick', k)}>
+                <strong>{__i18n_display(label)}</strong>
+                <span class="muted small">{__i18n_display(note)}</span>
+              </button>
+            ))}
+          </div>
         </>
       );
       break;

@@ -33,6 +33,10 @@ import { allStarDay } from './allstar';
 import { draftClass } from './players';
 import { applyCombine, combineDay } from './combine';
 import { scandalDay, serveSuspensions } from './scandals';
+import { disciplineDay } from './discipline';
+import { viralDay } from './viral';
+import { staffTroubleDay } from './stafftrouble';
+import { rivalDay } from './rivals';
 import { brawlGame } from './brawl';
 import { protestGame } from './protests';
 import { meddleDay } from './scenarios';
@@ -321,12 +325,18 @@ export function playDay(s: LeagueState): boolean {
   // The user's players back from training abroad, and what happened off the field today (V0.10).
   finishTrips(s, date);
   lifeDay(s, date);
+  // 2.0.36: what goes round on social media (viral.ts).
+  viralDay(s, date);
   // Our former-player manager and coaches (1.4.0).
   alumniDay(s, date);
   // 2.0.6: twins on the first team together, a manager's struggling son.
   familyDay(s, date);
   // Now and then something worse (V0.12): the club answers before the next day.
   scandalDay(s, date);
+  // 2.0.36: 문책성 2군행 (discipline.ts).
+  disciplineDay(s, date);
+  // 2.0.36: the dugout's and the front office's own trouble (stafftrouble.ts).
+  staffTroubleDay(s, date);
   // Scenario 재기 (1.6.0): the owner calls.
   meddleDay(s, date);
   returnFromService(s, date);
@@ -389,6 +399,8 @@ export function playDay(s: LeagueState): boolean {
   }
   // 1.7.0: our captain's meeting in a slump and his moment of the month (captains.ts).
   captainDay(s, date, day > 0 && s.schedule[day - 1]!.date.slice(5, 7) !== date.slice(5, 7));
+  // 2.0.36: rival players (rivals.ts).
+  rivalDay(s, date);
   playFuturesDay(s, date);
   // Every ten game days the manager looks at the whole roster again; otherwise only injuries force moves.
   maintainRosters(s, date, day > 0 && Math.floor(s.next / (firstTeamIds(s).length / 2)) % 10 === 0);
