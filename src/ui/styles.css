@@ -3678,6 +3678,15 @@ button.danger {
 .arm-meter.rest .arm-text {
   color: #c0392b;
 }
+/* Dark: a lighter red that keeps its contrast. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .arm-meter.rest .arm-text {
+    color: #ff8a80;
+  }
+}
+:root[data-theme='dark'] .arm-meter.rest .arm-text {
+  color: #ff8a80;
+}
 
 /* 2.0.34: the favourite star on the player screen and the favourites card. */
 .fav-star {
@@ -3700,4 +3709,16 @@ button.danger {
 }
 .favorites {
   margin-top: 0.75rem;
+}
+
+/* 2.0.35: the ability editor's grade tables. */
+.ability-table {
+  width: auto;
+  margin: 0.25rem 0 0.5rem;
+}
+.ability-table input[type='number'] {
+  width: 4.2rem;
+}
+.ability-editor .editor-fields input[type='number'] {
+  width: 5rem;
 }

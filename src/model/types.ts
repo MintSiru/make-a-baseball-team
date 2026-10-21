@@ -337,6 +337,17 @@ export interface Player {
   mlb?: MlbCareer;
   /** Life off the field (V0.10, the user's players only): family, form, what fans think, what happened. */
   life?: PlayerLife;
+  /** 2.0.35 (league/abilityedit.ts): what the ability editor set in place of the draws from his id — his batting
+      tendencies (pull, lift: −2 … 2), a pitcher's (pitchLift), fastball and pitches (offsets from his 변화구, shares),
+      and his fielding parts. */
+  custom?: {
+    pull?: number;
+    lift?: number;
+    pitchLift?: number;
+    fastball?: import('../league/pitches').FastballType;
+    pitches?: import('../league/pitches').Pitch[];
+    field?: Partial<Record<import('../league/abilityedit').FieldPart, number>>;
+  };
 }
 
 export interface MlbCareer {

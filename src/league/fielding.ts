@@ -57,28 +57,29 @@ const clamp = (x: number) => Math.max(20, Math.min(80, Math.round(x)));
 const normalOf = (key: string) => (hashUnit(`${key}|a`) + hashUnit(`${key}|b`) + hashUnit(`${key}|c`) - 1.5) * 2;
 
 /** His fielding in parts from a 수비 grade and a 주력 grade (hidden or scouted: the same offsets either way). */
-export function fieldingFrom(id: string, defense: number, speed: number, catcher: boolean): FieldingRatings {
+export function fieldingFrom(id: string, defense: number, speed: number, catcher: boolean, set?: Partial<Record<keyof FieldingRatings, number>>): FieldingRatings {
+  // 2.0.35 (abilityedit.ts): the parts the editor set, in place of his own offsets.
   return {
-    range: clamp(defense + 0.5 * (speed - 50) + 5 * normalOf(`range|${id}`)),
-    hands: clamp(defense + 6 * normalOf(`hands|${id}`)),
-    arm: clamp(defense + 8 * normalOf(`arm|${id}`)),
-    lead: catcher ? clamp(44 + 0.3 * (defense - 50) + 9 * normalOf(`lead|${id}`)) : null,
-    frame: catcher ? clamp(45 + 0.35 * (defense - 50) + 10 * normalOf(`frame|${id}`)) : null,
+    range: set?.range ?? clamp(defense + 0.5 * (speed - 50) + 5 * normalOf(`range|${id}`)),
+    hands: set?.hands ?? clamp(defense + 6 * normalOf(`hands|${id}`)),
+    arm: set?.arm ?? clamp(defense + 8 * normalOf(`arm|${id}`)),
+    lead: catcher ? (set?.lead ?? clamp(44 + 0.3 * (defense - 50) + 9 * normalOf(`lead|${id}`))) : null,
+    frame: catcher ? (set?.frame ?? clamp(45 + 0.35 * (defense - 50) + 10 * normalOf(`frame|${id}`))) : null,
   };
 }
 
 const catches = (p: Pick<Player, 'position' | 'alt'>) => p.position === 'C' || (p.alt ?? []).includes('C');
 
 /** The true parts (the engine's). */
-export function fieldingOf(p: Pick<Player, 'id' | 'hidden' | 'position' | 'alt'>): FieldingRatings {
+export function fieldingOf(p: Pick<Player, 'id' | 'hidden' | 'position' | 'alt' | 'custom'>): FieldingRatings {
   const h = p.hidden.current as unknown as Record<string, number>;
-  return fieldingFrom(p.id, h.defense ?? 30, h.speed ?? 30, catches(p));
+  return fieldingFrom(p.id, h.defense ?? 30, h.speed ?? 30, catches(p), p.custom?.field);
 }
 
 /** What the scouts see (the screens'). */
-export function scoutedFielding(p: Pick<Player, 'id' | 'scouting' | 'position' | 'alt'>): FieldingRatings {
+export function scoutedFielding(p: Pick<Player, 'id' | 'scouting' | 'position' | 'alt' | 'custom'>): FieldingRatings {
   const t = p.scouting.tools as unknown as Record<string, number>;
-  return fieldingFrom(p.id, t.defense ?? 30, t.speed ?? 30, catches(p));
+  return fieldingFrom(p.id, t.defense ?? 30, t.speed ?? 30, catches(p), p.custom?.field);
 }
 
 /** Sprint speed (m/s, his fastest second on a competitive run): 6.9 at 20 of 주력 to 9.3 at 80 (Statcast's 27 ft/s

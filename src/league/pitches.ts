@@ -107,6 +107,7 @@ const FASTBALL_SLOWER: Record<FastballType, number> = { '4SFB': 0, '2SFB': 1, CU
     four-seamer or a big curve in the air — as a step from 극단적 땅볼 투수 (−2) to 극단적 뜬공 투수 (2) (battedball.ts). */
 export function pitchingLift(p: Player): number {
   if (p.hidden.current.breaking == null) return 0;
+  if (p.custom?.pitchLift != null) return p.custom.pitchLift;
   const fb = fastballOf(p);
   let up = fb === '2SFB' ? -0.2 : fb === 'CUT' ? -0.05 : ((p.hidden.current.stuff ?? 50) - 50) * 0.004;
   if (p.archetype === '땅볼 유도형 선발') up -= 0.15;
@@ -120,6 +121,7 @@ export function pitchingLift(p: Player): number {
 
 export function fastballOf(p: Player): FastballType {
   if (p.hidden.current.breaking == null) return '4SFB';
+  if (p.custom?.fastball) return p.custom.fastball;
   const ground = p.archetype === '땅볼 유도형 선발';
   const w: [FastballType, number][] = [
     ['4SFB', 72],
@@ -206,9 +208,16 @@ const cache = new WeakMap<Player, { key: string; out: Pitch[] }>();
 /** The secondary pitches, best first. Hitters and players without a 변화구 tool have none. */
 export function repertoire(p: Player): Pitch[] {
   if (p.hidden.current.breaking == null) return [];
-  const key = `${p.id}|${p.role}|${p.throws}|${p.archetype}|${(p.learned ?? []).map((x) => `${x.type}${x.offset}`).join(',')}`;
+  const key = `${p.id}|${p.role}|${p.throws}|${p.archetype}|${(p.learned ?? []).map((x) => `${x.type}${x.offset}`).join(',')}|${p.custom?.pitches ? JSON.stringify(p.custom.pitches) : ''}`;
   const hit = cache.get(p);
   if (hit && hit.key === key) return hit.out;
+  // 2.0.35 (abilityedit.ts): the pitches the editor set, and any learned since.
+  if (p.custom?.pitches) {
+    const out = p.custom.pitches.map((x) => ({ ...x }));
+    for (const x of p.learned ?? []) if (!out.some((y) => y.type === x.type)) out.push({ type: x.type, offset: x.offset, usage: LEARNED_USAGE });
+    cache.set(p, { key, out });
+    return out;
+  }
   const r = rng(`pitches-${p.id}`);
   const count = countOf(p, r);
   // His fastball's family is taken (1.9.3).

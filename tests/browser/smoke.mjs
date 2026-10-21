@@ -539,6 +539,28 @@ try {
   await page.keyboard.press('Escape');
   await page.getByRole('group', { name: '우리 구단 보기' }).getByRole('button', { name: '개요', exact: true }).click();
   check((await page.locator('.favorites tbody tr').count()) === 1, 'the favourite shows on the overview');
+  // 2.0.35: the ability editor, off until turned on in the settings.
+  await page.locator('.favorites tbody button.link').first().click();
+  await page.getByRole('tab', { name: '정보' }).click();
+  check((await page.locator('.player-editor').count()) === 1 && (await page.locator('.ability-editor').count()) === 0, 'the ability editor is off by default');
+  await page.getByRole('tab', { name: '능력치' }).click();
+  await page.keyboard.press('Escape');
+  await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
+  await page.getByRole('group', { name: '능력치 에디터' }).getByRole('button', { name: '켜기' }).click();
+  await page.waitForFunction(() => document.querySelector('[aria-label="능력치 에디터"] button[aria-pressed="true"]')?.textContent?.includes('켜기'), null, { timeout: 5_000 }).catch(() => undefined);
+  await page.locator('nav.tabs').getByRole('button', { name: '우리 구단', exact: true }).click();
+  await page.getByRole('group', { name: '우리 구단 보기' }).getByRole('button', { name: '개요', exact: true }).click();
+  await page.locator('.favorites tbody button.link').first().click();
+  await page.getByRole('tab', { name: '정보' }).click();
+  await page.locator('.ability-editor summary').click();
+  const first = page.locator('.ability-editor .ability-table input').first();
+  await first.fill('77');
+  await page.locator('.ability-editor').getByRole('button', { name: '능력치 적용' }).click();
+  await page.waitForFunction(() => document.querySelector('.ability-editor .ability-table input')?.value === '77' && document.querySelector('.ability-editor button.primary')?.hasAttribute('disabled'), null, { timeout: 5_000 }).catch(() => undefined);
+  check((await first.inputValue()) === '77' && (await page.locator('.ability-editor button.primary').isDisabled()), 'the ability editor applies a grade');
+  // The player screen remembers its tab: back to the first for the checks below.
+  await page.getByRole('tab', { name: '능력치' }).click();
+  await page.keyboard.press('Escape');
 
   // 4d. The club's story, the AI article settings (no key: nothing is sent), the record room.
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();
@@ -705,13 +727,13 @@ try {
     check((await page.locator('.jersey-number').textContent()) === wanted, 'the uniform number can be set');
   }
   // 2.0.9: the editor — his hometown changes, his abilities do not.
-  await page.locator('.player-editor summary').click();
-  const town = page.locator('.player-editor .editor-fields input').nth(1);
+  await page.locator('.player-editor:not(.ability-editor) summary').click();
+  const town = page.locator('.player-editor:not(.ability-editor) .editor-fields input').nth(1);
   await town.fill('한양');
-  await page.locator('.player-editor .row-actions .primary').click();
+  await page.locator('.player-editor:not(.ability-editor) .row-actions .primary').click();
   await page.waitForFunction(() => [...document.querySelectorAll('.dialog dd')].some((d) => d.textContent === '한양'), null, { timeout: 10_000 }).catch(() => undefined);
   check(await page.evaluate(() => [...document.querySelectorAll('.dialog dd')].some((d) => d.textContent === '한양')), 'the editor changes his hometown');
-  check((await page.locator('.player-editor[open]').count()) === 1, 'the editor stays open after applying');
+  check((await page.locator('.player-editor:not(.ability-editor)[open]').count()) === 1, 'the editor stays open after applying');
   await page.screenshot({ path: join(shots, 'player.png') });
   await page.getByRole('tab', { name: '기록' }).click();
   const views = page.getByRole('group', { name: '기록 보기' });
