@@ -9034,5 +9034,8 @@
   "league.advice.text.79da61f9": "派遣する選手",
   "league.advice.text.0a99cdf9": "派遣した人数だけ費用がかかり、豪州留学ではまれに故障して春季キャンプに遅れることがあります。自動進行に任せると誰も派遣しません。",
   "league.advice.text.42518824": "球団資金の4分の1以内で最も高い(効果の大きい)場所、難しければ国内キャンプを選びます。",
-  "league.advice.text.28890b44": "場所ごとに伸びる能力が異なります。自動進行に任せるとキャンプは行いません。"
+  "league.advice.text.28890b44": "場所ごとに伸びる能力が異なります。自動進行に任せるとキャンプは行いません。",
+  "league.userclub.text.670f25ac": "尚武合格 {n}人",
+  "league.userclub.text.836f3f8c": "尚武不合格 {n}人",
+  "league.userclub.text.f51c7577": "尚武 合格{passed}人 · 不合格{failed}人"
 }

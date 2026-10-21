@@ -9034,5 +9034,8 @@
   "league.advice.text.79da61f9": "보낼 선수",
   "league.advice.text.0a99cdf9": "보낸 만큼 돈이 들고, 호주 유학은 드물게 다쳐서 봄 캠프에 늦을 수 있습니다. 자동 진행에 맡기면 아무도 보내지 않습니다.",
   "league.advice.text.42518824": "구단 자금의 4분의 1 안에서 가장 비싼(효과가 큰) 장소, 어려우면 국내 캠프를 고릅니다.",
-  "league.advice.text.28890b44": "장소마다 키우는 능력이 다릅니다. 자동 진행에 맡기면 캠프를 열지 않습니다."
+  "league.advice.text.28890b44": "장소마다 키우는 능력이 다릅니다. 자동 진행에 맡기면 캠프를 열지 않습니다.",
+  "league.userclub.text.670f25ac": "상무 합격 {n}명",
+  "league.userclub.text.836f3f8c": "상무 불합격 {n}명",
+  "league.userclub.text.f51c7577": "상무 합격 {passed}명 · 불합격 {failed}명"
 }

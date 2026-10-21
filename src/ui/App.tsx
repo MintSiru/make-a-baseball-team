@@ -170,6 +170,9 @@ export function App() {
   const acting = useRef<Promise<void>>(Promise.resolve());
   // A league built in the background while the player fills in the founding form.
   const building = useRef<{ seed: string; promise: Promise<LeagueState> } | null>(null);
+  // 2.0.33: a game loaded from a file while a new one was still being built wins: the start in progress stops at its
+  // next step instead of putting its league (and its autosave) over the loaded one.
+  const starting = useRef(0);
 
   const show = (s: LeagueState) => {
     setLeague(s);
@@ -389,15 +392,19 @@ export function App() {
   }
 
   const found = async (settings: ExpansionSettings, s: string) => {
+    const mine = ++starting.current;
     setBusy(__i18n_k("ui.app.app.found.2015bb35"));
     const era = scenarioDef(settings.scenario)?.era ?? 0;
     let base = await build(s, era);
+    if (starting.current !== mine) return;
     base = await applyInWorker(base, { kind: 'toFounding' });
+    if (starting.current !== mine) return;
     let next = applyHere(base, { kind: 'found', settings });
     // 살려야 한다: the runaway AI's five years, off the page.
     if (settings.scenario === 'rescue') {
       setBusy(__i18n_k("ui.app.app.found.8e215bcd"));
       next = await applyInWorker(next, { kind: 'rogue' });
+      if (starting.current !== mine) return;
     }
     building.current = null;
     show(next);
@@ -407,8 +414,10 @@ export function App() {
   };
 
   const spectate = async (s: string) => {
+    const mine = ++starting.current;
     setBusy(__i18n_k("ui.app.app.spectate.2015bb35"));
     const next = await build(s);
+    if (starting.current !== mine) return;
     building.current = null;
     show(next);
     setTab('standings');
@@ -423,6 +432,10 @@ export function App() {
       const state = save.snapshot?.state as LeagueState | undefined;
       if (!state?.teams) throw new SaveError('damaged', __i18n_k("ui.app.app.importSave.8f84f785"));
       building.current = null;
+      // A new game still being built is given up (see `starting`).
+      starting.current++;
+      setBusy(null);
+      setProgress('');
       setRecovering(false);
       show(state);
       setTab(state.user ? 'club' : 'standings');

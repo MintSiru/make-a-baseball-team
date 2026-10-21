@@ -9034,5 +9034,8 @@
   "league.advice.text.79da61f9": "players to send",
   "league.advice.text.0a99cdf9": "Each player sent costs money, and now and then one in Australia gets hurt and is late for spring camp. Left to auto-play, nobody is sent.",
   "league.advice.text.42518824": "The dearest (most effective) place within a quarter of the club fund, or the camp at home if none fits.",
-  "league.advice.text.28890b44": "Each place works on different abilities. Left to auto-play, no camp is held."
+  "league.advice.text.28890b44": "Each place works on different abilities. Left to auto-play, no camp is held.",
+  "league.userclub.text.670f25ac": "{n} accepted into Sangmu",
+  "league.userclub.text.836f3f8c": "{n} rejected from Sangmu",
+  "league.userclub.text.f51c7577": "Sangmu: {passed} accepted · {failed} rejected"
 }
