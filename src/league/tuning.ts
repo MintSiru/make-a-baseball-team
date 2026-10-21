@@ -199,6 +199,10 @@ export const SALARY = {
   freeAgentPerWar: 15500,
   freeAgentMax: 250000,
   veteranStar: 32000,
+  /** 2.0.37: a season below the bar (WAR under `bar`, or fewer first-team days than `days`): the old salary's weight
+      in the new one and the lowest it may go (`bad`: below replacement or barely on the first team). Otherwise 0.45
+      and 70%. */
+  cut: { bar: 0.5, days: 30, keep: 0.35, floor: 0.6, badKeep: 0.25, badFloor: 0.4 },
 } as const;
 
 /** Futures league and development by playing time (V0.4; game assumptions, docs/CALIBRATION.md). */
@@ -722,7 +726,7 @@ export const SCANDAL = {
     rates: { drunk: 0.008, assault: 0.004, kickback: 0.003, abuse: 0.006 },
     mood: { drunk: 0.015, assault: 0.03, kickback: 0.03, abuse: 0.02 },
   },
-  answer: { release: 0.02, extra: 0.01, none: -0.02 } as Record<'release' | 'extra' | 'none', number>,
+  answer: { release: 0.02, extra: 0.01, none: -0.02, voluntary: 0.015 } as Record<'release' | 'extra' | 'none' | 'voluntary', number>,
   extraGames: 20,
 };
 

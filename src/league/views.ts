@@ -3,6 +3,7 @@ import { LEAGUE_NAMES, leagueTables, sidesOf } from './twelve';
 /* Read-only views of the league for the screens. Everything here is public: scouting grades, results
    and contracts, never hidden ability. */
 import { alumnusJob } from './alumni';
+import { sportName } from './othersport';
 import { ROLE_LABELS } from '../draftroom';
 import { publicView, type PublicPlayer } from '../model/player';
 import { faOutlook, type FaOutlook } from './faclock';
@@ -380,7 +381,7 @@ function sumSplits(list: (Splits | undefined)[]): Splits | null {
 export function playerCard(s: LeagueState, id: PlayerId): PlayerCard | null {
   const p = s.players[id];
   if (!p) return null;
-  const status = p.status === 'military' ? __i18n_k("league.views.playerCard.status.78371556", { value: p.service.route === 'sangmu' ? __i18n_k("league.views.playerCard.status.d2a2ca0f") : p.service.route === 'social' ? __i18n_k("league.views.playerCard.status.f695b002") : __i18n_k("league.views.playerCard.status.519e09aa"), returnsOn: p.service.returnsOn }) : s.injuries[id] ? __i18n_k("league.views.playerCard.status.a3f7a2cf", { value: s.injuries[id]!.dtd ? __i18n_k("league.views.playerCard.status.7d657386") : __i18n_k("league.views.playerCard.status.501fb802"), injuryNote: injuryNote(s.injuries[id]) }) : p.status === 'retired' ? (alumnusJob(s, id) ? __i18n_k("league.views.playerCard.status.cfce3615", { alumnusJob: alumnusJob(s, id) }) : __i18n_k("league.views.playerCard.status.5b170d3c")) : p.status === 'overseas' ? __i18n_k("league.views.playerCard.status.fff34f4d") : p.status === 'freeAgent' ? __i18n_k("league.views.playerCard.status.d6b19ba5") : '';
+  const status = p.status === 'military' ? __i18n_k("league.views.playerCard.status.78371556", { value: p.service.route === 'sangmu' ? __i18n_k("league.views.playerCard.status.d2a2ca0f") : p.service.route === 'social' ? __i18n_k("league.views.playerCard.status.f695b002") : __i18n_k("league.views.playerCard.status.519e09aa"), returnsOn: p.service.returnsOn }) : s.injuries[id] ? __i18n_k("league.views.playerCard.status.a3f7a2cf", { value: s.injuries[id]!.dtd ? __i18n_k("league.views.playerCard.status.7d657386") : __i18n_k("league.views.playerCard.status.501fb802"), injuryNote: injuryNote(s.injuries[id]) }) : s.voluntary?.[id] ? __i18n_k("league.views.text.3a0a4531", { club: s.teams.find((t) => t.id === s.voluntary![id]!.teamId)?.short ?? '' }) : s.otherSport?.[id] ? __i18n_k("league.views.text.2ee3a1d0", { sport: sportName(s.otherSport[id]!.sport), club: s.teams.find((t) => t.id === s.otherSport![id]!.teamId)?.short ?? '' }) : p.status === 'retired' ? (alumnusJob(s, id) ? __i18n_k("league.views.playerCard.status.cfce3615", { alumnusJob: alumnusJob(s, id) }) : __i18n_k("league.views.playerCard.status.5b170d3c")) : p.status === 'overseas' ? __i18n_k("league.views.playerCard.status.fff34f4d") : p.status === 'freeAgent' ? __i18n_k("league.views.playerCard.status.d6b19ba5") : '';
   const career = careerView(s, p);
   const pitcher = isPitcher(p);
   const major = career.filter((r) => !r.futures);

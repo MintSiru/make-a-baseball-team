@@ -162,6 +162,8 @@ export interface PlayerOrigin {
   /** Nationality for foreign players. */
   nationality?: string;
   asiaQuota?: boolean;
+  /** 2.0.37 (devforeign.ts): signed as a development foreign player (육성형 외국인); still one while on a development contract. */
+  devForeign?: boolean;
   /** 1.9.6 (kyopo.ts): an overseas Korean player (재일교포), a domestic player with a Japanese-league past. */
   kyopo?: boolean;
   /** Foreign players: where he played before and what he asked for when he came (US dollars). */

@@ -50,6 +50,8 @@ import { awardHonours, computeAwards, hallOfFameCheck } from './awards';
 import { nicknameWinter } from './nicknames';
 import { seasonMoments } from './milestones';
 import { addNews, seasonNews } from './news';
+import { otherSportWinter } from './othersport';
+import { devForeignAfter, devForeignBefore, isDevForeign } from './devforeign';
 import { seasonFans } from './fans';
 import { aiStaffWinter } from './staff';
 import { runAiPosting } from './posting';
@@ -197,7 +199,7 @@ const lastRecord = (p: Player, year: number) => p.career.find((r) => r.year === 
  */
 export function growthScale(p: Player, year: number, futuresLeague: boolean): number {
   const G = FUTURES.growth;
-  if (!futuresLeague || isForeign(p) || ageIn(p, year) > G.maxAge) return 1;
+  if (!futuresLeague || (isForeign(p) && !p.origin.devForeign) || ageIn(p, year) > G.maxAge) return 1;
   const major = lastRecord(p, year);
   const minor = p.career.find((c) => c.year === year && c.level === 'futures');
   const reps = isPitcher(p)
@@ -248,7 +250,7 @@ export function developPlayer(p: Player, year: number, lostDays: number, r: () =
     next = Object.fromEntries(
       Object.entries(h.current).map(([k, v]) => [k, clamp(v! - (base + r() * span) * (k === 'stuff' || k === 'speed' ? 1.35 : 1), 20, 80)]),
     ) as Tools;
-  } else if (isForeign(p)) {
+  } else if (isForeign(p) && !p.origin.devForeign) {
     next = { ...h.current };
   } else {
     // By his growth type, genius and work ethic (1.1.0, traits.ts).
@@ -710,6 +712,8 @@ export function cutToLimits(s: LeagueState, next: number): Player[] {
     if (t.id === s.user?.teamId) continue; // the user's club is never cut by the AI
     const dev = developmentIds(s, t.id)
       .map((id) => s.players[id]!)
+      // 2.0.37: development foreign players have their own places (devforeign.ts).
+      .filter((p) => !isDevForeign(p))
       .sort((a, b) => keepValue(b, next) - keepValue(a, next));
     dev.forEach((p, i) => {
       if (i >= D.aiTarget || ageIn(p, next) > D.maxAge) release(p);
@@ -773,7 +777,7 @@ export function foreignLeaves(s: LeagueState, p: Player, next: number) {
 }
 
 export function renewForeigners(s: LeagueState, teamId: TeamId, next: number, r: () => number) {
-  const current = orgPlayers(s, teamId).filter(isForeign);
+  const current = orgPlayers(s, teamId).filter((p) => isForeign(p) && !isDevForeign(p));
   const wanted = new Set(
     current
       .filter((p) => {
@@ -818,7 +822,7 @@ export function aiForeignRenewals(s: LeagueState, next: number) {
   o.foreignRenewed = true;
 }
 
-export const foreignOn = (s: LeagueState, teamId: TeamId) => orgPlayers(s, teamId).filter(isForeign);
+export const foreignOn = (s: LeagueState, teamId: TeamId) => orgPlayers(s, teamId).filter((p) => isForeign(p) && !isDevForeign(p));
 
 /** Keeps each AI club at three foreign players (two pitchers, one hitter) plus the Asia quota from 2026. */
 export function refreshForeigners(s: LeagueState, next: number, r: () => number) {
@@ -960,6 +964,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
           .map((id) => s.players[id]!);
         retirementAlert(s, gone, o.stay ?? [], year);
         for (const p of gone) leaveLeague(s, p, 'retired');
+        // 2.0.37: now and then one leaves for another sport, and one who left comes back.
+        otherSportWinter(s, year);
         break;
       }
       case 'military': {
@@ -1073,7 +1079,10 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         );
         break;
       case 'foreign':
+        // 2.0.37: development foreign players — those three seasons in go, ready ones take a slot (devforeign.ts).
+        devForeignBefore(s, next);
         refreshForeigners(s, next, rng(`${s.seed}|foreign|${year}`));
+        devForeignAfter(s, next);
         expireForeignPool(s, year);
         // 1.9.6: overseas Korean players of a history game (kyopo.ts).
         kyopoWinter(s, next);

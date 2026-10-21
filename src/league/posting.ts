@@ -22,6 +22,7 @@ import { NPB_MOVE, POSTING } from './tuning';
 import { postingAlert } from './alerts';
 import { moveNews } from './movenews';
 import { joinMlb, joinNpb } from './mlb';
+import { staysHome } from './abroad';
 
 const P = KBO_2026.posting;
 
@@ -63,8 +64,9 @@ export function postingCandidates(s: LeagueState, teamId: TeamId, next: number):
         !(p.contract?.kind === 'freeAgent' || p.contract?.kind === 'multiYear') &&
         p.scouting.current >= POSTING.minGrade &&
         ageIn(p, next) <= POSTING.maxAge &&
-        // Not everyone dreams of the majors.
-        hashUnit(`${p.id}-mlb-dream`) < POSTING.wants,
+        // Not everyone dreams of the majors; and one talked round lately does not ask (2.0.37, abroad.ts).
+        hashUnit(`${p.id}-mlb-dream`) < POSTING.wants &&
+        !staysHome(s, p.id, next),
     )
     .sort((a, b) => b.scouting.current - a.scouting.current);
 }

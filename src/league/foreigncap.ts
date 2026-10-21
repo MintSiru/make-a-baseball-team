@@ -33,7 +33,10 @@ export const kboSeasons = (p: Pick<Player, 'career'>, season: number) => new Set
 
 /** Under the optional veteran rule (1.2.0, LeagueState.foreignVeteran): a foreign player long enough in the league
     to be counted as one of its own — no foreign slot, outside the foreign salary cap. */
-export const slotExempt = (s: LeagueState, p: Player, season: number) => !!s.foreignVeteran && isForeign(p) && kboSeasons(p, season) >= s.foreignVeteran;
+export const slotExempt = (s: LeagueState, p: Player, season: number) =>
+  (!!s.foreignVeteran && isForeign(p) && kboSeasons(p, season) >= s.foreignVeteran) ||
+  // 2.0.37: a development foreign player still in development (devforeign.ts).
+  (isForeign(p) && !!p.origin.devForeign && p.contract?.kind === 'development');
 
 /** The club's foreign players who take a foreign slot in `season`. */
 export const slotForeigners = (s: LeagueState, teamId: TeamId, season: number) => orgPlayers(s, teamId).filter((p) => isForeign(p) && !slotExempt(s, p, season));

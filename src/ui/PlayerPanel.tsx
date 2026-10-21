@@ -30,7 +30,7 @@ import type { GrowthType } from '../model/types';
 import type { Split, Splits } from '../league/engine/types';
 import { SITUATIONS, splitOf } from '../league/engine/situation';
 import type { Action } from '../league/actions';
-import { wagwa } from '../league/josa';
+import { eulreul, wagwa } from '../league/josa';
 import { checkNumber, numberHolder } from '../league/numbers';
 import { checkNickname, NICKNAME_MAX, nicknameOf, nicknameWhy } from '../league/nicknames';
 import { checkInspect } from '../league/scandals';
@@ -55,6 +55,7 @@ import { LEGACY_START } from '../league/era';
 import type { ArmSlot, Tracking } from '../league/tracking';
 import { pathwayLabel } from '../league/amateur';
 import { CareerStages, DevTable } from './CareerStages';
+import { backFrom, canReinstate, canVoluntary } from '../league/voluntary';
 
 const POSITION_NAMES: Record<string, string> = { C: __i18n_k("ui.playerPanel.pOSITION_NAMES.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("ui.playerPanel.pOSITION_NAMES.sS.3e24c7f1"), LF: __i18n_k("ui.playerPanel.pOSITION_NAMES.lF.73836db2"), CF: __i18n_k("ui.playerPanel.pOSITION_NAMES.cF.56780b2a"), RF: __i18n_k("ui.playerPanel.pOSITION_NAMES.rF.a28a0ef8") };
 
@@ -470,7 +471,7 @@ export function PlayerPanel({
           <div>
             <p class="muted">
               {__i18n_display(card.team)} · {__i18n_display(positionLabel(p))} · {__i18n_display(handedness(p))}
-              {__i18n_display(foreign ? __i18n_k("ui.playerPanel.playerPanel.151173f4", { value: p.origin.asiaQuota ? __i18n_k("ui.playerPanel.playerPanel.c66942ff") : __i18n_k("ui.playerPanel.playerPanel.5bd804b7"), nationality: p.origin.nationality, archetype: p.archetype, value2: league.foreignVeteran && kboSeasons(p, league.year) >= league.foreignVeteran ? __i18n_k("ui.playerPanel.playerPanel.1cb18f2a") : '' }) : '')}
+              {__i18n_display(foreign ? __i18n_k("ui.playerPanel.playerPanel.151173f4", { value: p.origin.asiaQuota ? __i18n_k("ui.playerPanel.playerPanel.c66942ff") : p.origin.devForeign && p.contract?.kind === 'development' ? __i18n_t("ui.playerPanel.text.618bfd0a") : __i18n_k("ui.playerPanel.playerPanel.5bd804b7"), nationality: p.origin.nationality, archetype: p.archetype, value2: league.foreignVeteran && kboSeasons(p, league.year) >= league.foreignVeteran ? __i18n_k("ui.playerPanel.playerPanel.1cb18f2a") : '' }) : '')}
             </p>
             <h2 id="player-name" tabIndex={-1} ref={heading}>
               {__i18n_display(p.name)}
@@ -1233,9 +1234,27 @@ function StatusLines({ league, id, onAct, onPlayer }: { league: LeagueState; id:
   const ours = !!league.user && p.teamId === league.user.teamId;
   const can = ours && onAct ? checkDiscipline(league, id, days) : 'no';
   const knuckle = isPitcher(p) && isKnuckleballer(p);
-  if (!down && !rivals.length && !knuckle && (!ours || !onAct || league.phase !== 'regular' || !league.rosters[p.teamId!]?.active.includes(id))) return null;
+  // 2.0.37: the voluntary retired list (voluntary.ts).
+  const held = league.voluntary?.[id];
+  const heldByUs = !!held && held.teamId === league.user?.teamId;
+  const canHold = ours && onAct ? canVoluntary(league, id) : 'no';
+  const canBack = heldByUs && onAct ? canReinstate(league, id) : 'no';
+  if (!down && !rivals.length && !knuckle && !held && (!ours || !onAct)) return null;
   return (
     <div class="status-lines small">
+      {held && (
+        <p class="notice warn">
+          {__i18n_t("ui.playerPanel.text.5d8d9b80", { club: shortName(league, held.teamId), since: held.since, back: backFrom(league, id) ?? '' })}
+          {heldByUs && onAct && (
+            <>
+              {' '}
+              <button type="button" disabled={!!canBack} title={canBack && canBack !== 'no' ? canBack : undefined} onClick={() => onAct({ kind: 'reinstate', id })}>
+                {__i18n_t("ui.playerPanel.text.1908ef40")}
+              </button>
+            </>
+          )}
+        </p>
+      )}
       {knuckle && <p><span class="tag">{__i18n_t("ui.playerPanel.text.ffc72ae8")}</span></p>}
       {down && (
         <p class="notice warn">
@@ -1273,6 +1292,14 @@ function StatusLines({ league, id, onAct, onPlayer }: { league: LeagueState; id:
             {__i18n_t("ui.playerPanel.text.61b8a853")}
           </button>
           <span class="muted">{__i18n_t("ui.playerPanel.text.9f627e49", { pct: Math.round(pushbackChance(p) * 100) })}</span>
+        </p>
+      )}
+      {ours && onAct && !canHold && (
+        <p class="inline-form">
+          <button type="button" onClick={() => window.confirm(__i18n_t("ui.playerPanel.text.d1662462", { name: eulreul(p.name) })) && onAct({ kind: 'voluntary', id })}>
+            {__i18n_t("ui.playerPanel.text.88338b66")}
+          </button>
+          <span class="muted">{__i18n_t("ui.playerPanel.text.9b500592")}</span>
         </p>
       )}
     </div>
