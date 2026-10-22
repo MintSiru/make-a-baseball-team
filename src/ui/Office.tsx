@@ -615,9 +615,11 @@ function Spending({ league, act }: { league: LeagueState; act: (a: Action) => vo
               <th scope="row">{__i18n_t("ui.office.text.e8cd6e73")}</th>
               <td class="small">{__i18n_t("ui.office.text.dfbca115", { gap: SPEND.bonus.gap })}{sp.bonusDate ? __i18n_t("ui.office.text.6c413e41", { date: sp.bonusDate }) : ''}</td>
               <td>
-                {SPEND.bonus.tiers.map((t, i) => (
-                  <span key={i}>{button('bonus', __i18n_t("ui.office.text.4a61a4ea", { money: money(t.cost), points: t.points, days: t.days }), i)} </span>
-                ))}
+                <div class="spend-tiers">
+                  {SPEND.bonus.tiers.map((t, i) => (
+                    <span key={i}>{button('bonus', __i18n_t("ui.office.text.4a61a4ea", { money: money(t.cost), points: t.points, days: t.days }), i)}</span>
+                  ))}
+                </div>
               </td>
             </tr>
             <tr>
