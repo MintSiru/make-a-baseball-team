@@ -3722,3 +3722,11 @@ button.danger {
 .ability-editor .editor-fields input[type='number'] {
   width: 5rem;
 }
+
+/* 2.0.39: the team bonus's tiers stack in a narrow cell instead of running off the table. */
+.spend-tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  align-items: flex-start;
+}
