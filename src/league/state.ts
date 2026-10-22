@@ -105,6 +105,8 @@ export interface ClubState {
   /** Marketing spend per year (만 원). */
   marketing: number;
   staff?: Partial<Record<StaffRole, StaffMember>>;
+  /** 2.0.38 (staffage.ts): heads who retired from the club — name, post, age and the winter. */
+  retiredStaff?: { name: string; role: StaffRole; age: number; year: number; playerId?: PlayerId }[];
   reports: ClubReport[];
   /** Naming-rights clubs: the sponsor, its fee and the last season of the deal; since V0.7.7 its goal, the
       first season judged against it, and the seasons missed in a row (parent.ts). */

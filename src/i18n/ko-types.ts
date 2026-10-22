@@ -9413,5 +9413,9 @@ export const koSource = {
   "ui.contracts.text.b789e35e": "보유권 선수 (임의탈퇴·임의해지)",
   "ui.contracts.text.4dcbc6f2": "임의탈퇴 {since} · {back}부터 복귀 가능",
   "ui.contracts.text.4b875b79": "다른 종목 도전 중 ({since})",
-  "league.newpitch.text.1e41a2ef": "익힐 확률은 {pct}%였습니다."
+  "league.newpitch.text.1e41a2ef": "익힐 확률은 {pct}%였습니다.",
+  "league.staffage.text.b85d4318": "{club} {role} {name}, {age}세에 은퇴",
+  "league.staffage.text.f6510043": "{club} {role} {name} 올 시즌을 끝으로 지도자 생활을 마무리한다. 다음 시즌까지는 대행 체제로 가고, 이번 겨울 스태프 결정에서 후임을 정한다.",
+  "league.staffage.text.769e4caf": "{club}의 {role} {name} {age}세의 나이로 지도자 생활을 마무리했다. 구단은 곧바로 후임을 정했다.",
+  "ui.decision.text.e9beb7a8": "{age}세"
 } as const;

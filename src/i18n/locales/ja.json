@@ -9412,5 +9412,9 @@
   "ui.contracts.text.b789e35e": "保有権のある選手（任意引退）",
   "ui.contracts.text.4dcbc6f2": "任意引退 {since}・{back}から復帰可能",
   "ui.contracts.text.4b875b79": "他競技に挑戦中（{since}～）",
-  "league.newpitch.text.1e41a2ef": "習得できる確率は{pct}%でした。"
+  "league.newpitch.text.1e41a2ef": "習得できる確率は{pct}%でした。",
+  "league.staffage.text.b85d4318": "{club}{role}の{name}、{age}歳で引退",
+  "league.staffage.text.f6510043": "{club}{role}の{name}は今季限りで指導者生活を終える。代行体制を敷き、この冬のスタッフ決定で後任を決める。",
+  "league.staffage.text.769e4caf": "{club}の{role}{name}が{age}歳で指導者生活を終えた。球団はすぐに後任を決めた。",
+  "ui.decision.text.e9beb7a8": "{age}歳"
 }

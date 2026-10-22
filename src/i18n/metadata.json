@@ -86098,5 +86098,71 @@
       }
     },
     "locations": []
+  },
+  "league.staffage.text.b85d4318": {
+    "source": "src/league/staffage.ts",
+    "line": 78,
+    "params": {
+      "club": {
+        "expression": "short"
+      },
+      "role": {
+        "expression": "STAFF_LABELS[role]"
+      },
+      "name": {
+        "expression": "m.name"
+      },
+      "age": {
+        "expression": "m.age"
+      }
+    },
+    "locations": []
+  },
+  "league.staffage.text.f6510043": {
+    "source": "src/league/staffage.ts",
+    "line": 80,
+    "params": {
+      "club": {
+        "expression": "short"
+      },
+      "role": {
+        "expression": "STAFF_LABELS[role]"
+      },
+      "name": {
+        "expression": "eunneun(m.name)",
+        "particle": "은/는"
+      }
+    },
+    "locations": []
+  },
+  "league.staffage.text.769e4caf": {
+    "source": "src/league/staffage.ts",
+    "line": 81,
+    "params": {
+      "club": {
+        "expression": "short"
+      },
+      "role": {
+        "expression": "STAFF_LABELS[role]"
+      },
+      "name": {
+        "expression": "iga(m.name)",
+        "particle": "이/가"
+      },
+      "age": {
+        "expression": "m.age"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.e9beb7a8": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1132,
+    "params": {
+      "age": {
+        "expression": "row.current.age"
+      }
+    },
+    "locations": []
   }
 }
