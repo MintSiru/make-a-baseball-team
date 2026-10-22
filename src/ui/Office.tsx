@@ -28,6 +28,8 @@ import { Help } from './Help';
 import { BudgetAsk } from './BudgetAsk';
 import { RivalryBox, TwelveSettingField } from './Twelve';
 import { favourites } from '../league/life';
+import { checkSponsor, regionSchools, schoolRegion, SCHOOLS } from '../league/schools';
+import { checkSpend, SPEND, spendSeason, type SpendKind } from '../league/spending';
 import { FACILITIES, FACILITY_KINDS, facilityLevel, facilityOptions, facilityUpkeep } from '../league/facilities';
 
 type Section = 'summary' | 'owner' | 'money' | 'fans' | 'staff' | 'ballpark' | 'facilities' | 'rival' | 'ledger';
@@ -356,6 +358,7 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
           ) : (
             <p class="muted">{__i18n_t("ui.office.office.4bf4deac")}</p>
           ))}
+          <Spending league={league} act={act} />
         </>
       ))}
 
@@ -433,6 +436,7 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
               )))}
             </select>
           </label>
+          <Schools league={league} act={act} />
         </>
       ))}
 
@@ -586,6 +590,113 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
 }
 
 /** Ballpark improvements and training facilities (V0.10): what is built, what is under way, and the next level of each. */
+/** 2.0.39: the fund's other uses (spending.ts). */
+function Spending({ league, act }: { league: LeagueState; act: (a: Action) => void }) {
+  const u = league.user;
+  if (!u) return null;
+  const sp = u.spending ?? {};
+  const season = spendSeason(league);
+  const button = (what: SpendKind, label: string, tier?: number) => {
+    const why = checkSpend(league, what, tier);
+    return (
+      <button type="button" disabled={!!why} title={why ?? undefined} onClick={() => act({ kind: 'spend', what, ...(tier !== undefined ? { tier } : {}) })}>
+        {label}
+      </button>
+    );
+  };
+  return (
+    <>
+      <h3>{__i18n_t("ui.office.text.d30fdf4b")}</h3>
+      <p class="muted">{__i18n_t("ui.office.text.d3205d4f", { fund: money(u.fund) })}</p>
+      <div class="table-wrap">
+        <table class="record-table">
+          <tbody>
+            <tr>
+              <th scope="row">{__i18n_t("ui.office.text.e8cd6e73")}</th>
+              <td class="small">{__i18n_t("ui.office.text.dfbca115", { gap: SPEND.bonus.gap })}{sp.bonusDate ? __i18n_t("ui.office.text.6c413e41", { date: sp.bonusDate }) : ''}</td>
+              <td>
+                {SPEND.bonus.tiers.map((t, i) => (
+                  <span key={i}>{button('bonus', __i18n_t("ui.office.text.4a61a4ea", { money: money(t.cost), points: t.points, days: t.days }), i)} </span>
+                ))}
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">{__i18n_t("ui.office.text.54e52255")}</th>
+              <td class="small">{__i18n_t("ui.office.text.84a6ab28", { season })}{sp.charter === season ? __i18n_t("ui.office.text.0e3bb2c1") : ''}</td>
+              <td>{button('charter', money(SPEND.charter.cost))}</td>
+            </tr>
+            <tr>
+              <th scope="row">{__i18n_t("ui.office.text.9c546993")}</th>
+              <td class="small">{__i18n_t("ui.office.text.2dd9bb41", { pct: Math.round(SPEND.fanDay.popularity * 100) })}{sp.fanDay === season ? __i18n_t("ui.office.text.39bf4e4d") : ''}</td>
+              <td>{button('fanDay', money(SPEND.fanDay.cost))}</td>
+            </tr>
+            <tr>
+              <th scope="row">{__i18n_t("ui.office.text.bceb4b9f")}</th>
+              <td class="small">{__i18n_t("ui.office.text.01250c9f", { most: SPEND.gift.most, trust: Math.round(u.trust ?? 0) })}</td>
+              <td>{button('gift', money(SPEND.gift.perPoint))}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+/** 2.0.39: the high schools of our region the club sponsors (schools.ts). */
+function Schools({ league, act }: { league: LeagueState; act: (a: Action) => void }) {
+  const [pick, setPick] = useState('');
+  const u = league.user;
+  if (!u) return null;
+  const region = schoolRegion(league);
+  const mine = u.schools ?? {};
+  const open = regionSchools(league).filter((n) => !(n in mine));
+  const why = pick ? checkSponsor(league, pick, true) : null;
+  return (
+    <>
+      <h3>{__i18n_t("ui.office.text.4df06a7c")}</h3>
+      <p class="muted">
+        {__i18n_t("ui.office.text.499ecc3c", { region: region ?? '-', max: SCHOOLS.max, cost: money(SCHOOLS.cost), most: SCHOOLS.most })}
+      </p>
+      {Object.keys(mine).length ? (
+        <ul>
+          {Object.entries(mine).map(([name, since]) => (
+            <li key={name}>
+              <strong>{name}</strong> <span class="muted">{__i18n_t("ui.office.text.495245d0", { since })}</span>{' '}
+              <button type="button" onClick={() => act({ kind: 'sponsorSchool', name, on: false })}>
+                {__i18n_t("ui.office.text.7abfaeba")}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="muted">{__i18n_t("ui.office.text.f8f05e5d")}</p>
+      )}
+      <label class="inline-form">
+        {__i18n_t("ui.office.text.dcbadde3")}
+        <select value={pick} onChange={(e) => setPick((e.currentTarget as HTMLSelectElement).value)} aria-label={__i18n_t("ui.office.text.59ebeb26")}>
+          <option value="">{__i18n_t("ui.office.text.070be890")}</option>
+          {open.map((n) => (
+            <option key={n} value={n}>
+              {n}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          disabled={!pick || !!why}
+          onClick={() => {
+            act({ kind: 'sponsorSchool', name: pick, on: true });
+            setPick('');
+          }}
+        >
+          {__i18n_t("ui.office.text.b16727a7")}
+        </button>
+      </label>
+      {why && <p class="muted">{why}</p>}
+    </>
+  );
+}
+
 function Facilities({ league, act }: { league: LeagueState; act: (a: Action) => void }) {
   const u = league.user!;
   const options = facilityOptions(league);

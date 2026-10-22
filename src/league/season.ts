@@ -65,6 +65,7 @@ import { familyDay, familyGame, pruneFamilies } from './family';
 import { featsGame } from './feats';
 import { boardValue } from './era';
 import { boardLeagues, framingWeight } from './board';
+import { seasonMoods } from './contractmood';
 
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
@@ -109,6 +110,8 @@ export function startSeason(s: LeagueState) {
   // Winter programmes abroad are over before camp (V0.10).
   finishTrips(s, s.schedule[0]?.date ?? `${s.year}-03-01`);
   for (const id of firstTeamIds(s)) setActive(s, id, chooseActive(s, id));
+  // 2.0.39: the season's moods over money (a walk year, a big deal just signed, pay far over his play).
+  seasonMoods(s);
   // The foreign players' salary cap: the season's books open with their guaranteed money (V0.7.8).
   openForeignBooks(s);
   s.futures = makeFuturesLeague(s);

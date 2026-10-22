@@ -66,6 +66,7 @@ import { autoMeddle, resolveMeddle, scenarioWinter, supportFactor } from './scen
 import { canRelease, releasePlayer } from './trade';
 import { placeVoluntary } from './voluntary';
 import { postingPersuasion } from './abroad';
+import { schoolsWinter } from './schools';
 
 /** Difficulty scales the owner's money. */
 const DIFFICULTY_MONEY = DIFFICULTY.money;
@@ -216,6 +217,8 @@ export function yearlyGrant(s: LeagueState) {
   const event = ownerEvents(s, year);
   // 1.8.2: after seasons of surplus the owner may take part of a large fund back (sweep.ts).
   ownerSweep(s, year);
+  // 2.0.39: the sponsored high schools' sums for next season (schools.ts).
+  schoolsWinter(s, year);
   const k = DIFFICULTY_MONEY[u.settings.difficulty];
   // 2.0.25: the dynamic difficulty's level for the season ahead (dynamic.ts).
   setHandicap(s, year);

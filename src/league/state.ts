@@ -467,6 +467,10 @@ export interface UserClub {
   ledger: { year: number; label: string; amount: number; settlement?: boolean; capital?: boolean; /** 1.8.2: the owner took part of the fund (sweep.ts). */ sweep?: boolean }[];
   /** 1.8.2 (sweep.ts): the winters the owner took part of the fund, and how much. */
   sweeps?: { year: number; amount: number }[];
+  /** 2.0.39 (schools.ts): high schools of the club's region it sponsors — the school's name and the first season. */
+  schools?: Record<string, number>;
+  /** 2.0.39 (spending.ts): the fund's other uses — the last bonus, the seasons of charters and fan days, gifts to the owner. */
+  spending?: { bonusDate?: string; charter?: number; fanDay?: number; giftYear?: number; giftPoints?: number };
   /** Bullpen roles the general manager set (the manager fills the rest). */
   penRoles?: Record<PlayerId, BullpenRole>;
   /** Platoon halves: players who start only against left- ('L') or right-handed ('R') starters. */
@@ -694,6 +698,8 @@ export interface LeagueState {
   /** 2.0.37 (merger.ts): mergers and sales of clubs (`teamId` the club that took a new name). */
   mergers?: { year: number; into: TeamId | null; absorbed: string; founded: string; teamId: TeamId; approved: boolean; cityId?: string }[];
   abilityEdits?: number;
+  /** 2.0.39 (contractmood.ts): the season's moods over money — a walk year, a big deal just signed, pay far over his play. */
+  moods?: { year: number; of: Record<PlayerId, { kind: 'walk' | 'settled' | 'pressure'; edge: number }> };
   /** 2.0.24 (posting.ts): the players a club may post in a winter, when not the KBO's one. */
   postingMax?: number;
   /** 2.0.24 (cap.ts): a game option — clubs far or long over the salary cap lose their next first-round pick. */

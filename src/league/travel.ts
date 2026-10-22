@@ -9,6 +9,7 @@ import type { BatterIn, TeamIn } from './engine/types';
 import { clubIn } from './lineage';
 import type { ScheduledGame } from './schedule';
 import type { LeagueState } from './state';
+import { charterShare } from './spending';
 
 export const TRAVEL = {
   /** Kilometres for one grade point, and the most a trip costs. */
@@ -111,7 +112,8 @@ export function travelCost(s: LeagueState, gameId: string, homeId: TeamId, awayI
     const km = kmBetween(homeCity(s, prevHost, s.year), here);
     return Math.min(TRAVEL.max, Math.round((km / TRAVEL.kmPerPoint) * 10) / 10);
   };
-  return { home: cost(before.home), away: cost(before.away) };
+  // 2.0.39: a club on charters feels half of it (spending.ts).
+  return { home: cost(before.home) * (1 - charterShare(s, homeId)), away: cost(before.away) * (1 - charterShare(s, awayId)) };
 }
 
 /** A side as tired as the trip made it. */

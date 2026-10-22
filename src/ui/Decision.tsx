@@ -368,6 +368,8 @@ function DraftTable({ league, onPlayer, onPick, only }: { league: LeagueState; o
                 {__i18n_display(recommended.has(p.id) && <span class="tag">{__i18n_t("ui.decision.draftTable.53acdb0d")}</span>)}
                 {__i18n_display(p.amateur.intent === 'college' && <span class="tag">{__i18n_t("ui.decision.draftTable.ae5aa8c0")}</span>)}
                 {__i18n_display(p.amateur.intent === 'abroad' && <span class="tag">{__i18n_t("ui.decision.draftTable.b9b5f9ea")}</span>)}
+                {/* 2.0.39: from a high school our club sponsors (schools.ts). */}
+                {p.education.school in (league.user?.schools ?? {}) && <span class="tag">{__i18n_t("ui.decision.text.aa4fa14d")}</span>}
                 {/* 2.0.12: a two-way prospect (투타 겸업). */}
                 {p.twoWay && <span class="tag two-way">{__i18n_t("ui.decision.text.62cb0192")}</span>}
               </td>

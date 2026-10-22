@@ -21,6 +21,9 @@ import { boardMeets, committeeMotions, holdMeeting } from './board';
 import { lotteryNews, lotteryOrder } from './lottery';
 import { endTemps } from './tempforeign';
 import { hometownClub } from './fa';
+import { draftRegionOf } from './territorial';
+import { moodWinter } from './contractmood';
+import { schoolBoost, schoolPick } from './schools';
 import { hashUnit, observe, overall, rng, toGrade, type Tools } from '../draftroom';
 import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
@@ -463,7 +466,7 @@ export function enlistAs(s: LeagueState, p: Player, next: number, route: 'sangmu
 
 // ── Free agency and salaries ─────────────────────────────────────────────────────────────────────
 
-const faSeasonsNeeded = (p: Player, next: number) => {
+export const faSeasonsNeeded = (p: Player, next: number) => {
   // 1.9.5: a league that plays history has no free agency before the winter of 1999, then the year's seasons (college
   // players one fewer from 2011; RULES.md §14).
   if (playsHistory() && next - 1 < MODERN_FROM) {
@@ -536,6 +539,8 @@ export const standardSlots = (order: TeamId[], draftYear?: number): DraftSlot[] 
 export function openDraft(s: LeagueState, draftYear: number, slots: DraftSlot[]): DraftState {
   // The class as the clubs know it after the combine (1.3.0).
   const pool = applyCombine(s.seed, draftYear, draftClass(s.seed, draftYear, s.unified));
+  // 2.0.39: the high schools our club sponsors send their players a little better (schools.ts).
+  schoolBoost(s, pool, draftYear);
   for (const p of pool) s.players[p.id] = p;
   // Draftees who went abroad and are back after the two-year wait (V0.7.3), ranked among this class.
   const back = draftReturnees(s, draftYear);
@@ -555,10 +560,11 @@ function territorialSlots(s: LeagueState, draftYear: number, slots: DraftSlot[])
   return Array.from({ length: n }, () => clubs.map((teamId) => ({ teamId, label: __i18n_k("league.offseason.text.f1f3e66a"), territorial: true }))).flat();
 }
 
-/** A prospect from the club's region (where he went to school or was born). */
-const fromRegion = (s: LeagueState, teamId: TeamId, p: Player) => hometownClub(s, teamId, p.education.region, p.birthplace);
+/** A prospect from the club's region (where he went to school or was born; 2.0.39: or from the region its city lies in). */
+const fromRegion = (s: LeagueState, teamId: TeamId, p: Player) => hometownClub(s, teamId, p.education.region, p.birthplace) || p.education.region === draftRegionOf(s, teamId);
 /** 1.9.8: who a club may take with a territorial (1차) pick: a high-school player from its region. */
-export const territorialEligible = (s: LeagueState, teamId: TeamId, p: Player) => p.origin.entryCategory !== 'college' && fromRegion(s, teamId, p);
+/** 2.0.39: high school only — the early and two-year college entrants and the overseas returnees went through too. */
+export const territorialEligible = (s: LeagueState, teamId: TeamId, p: Player) => p.origin.entryCategory === 'high-school' && fromRegion(s, teamId, p);
 
 function draftScore(s: LeagueState, p: Player, counts: Record<string, number>, r: () => number, weights: [number, number] = [0.6, 0.4]) {
   const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
@@ -601,6 +607,7 @@ export function makePick(s: LeagueState, d: DraftState, p: Player) {
   familyAtPick(s, p, slot.teamId, d.year, overall, (s.draftLog ?? []).filter((x) => x.year === d.year && x.id !== p.id).map((x) => x.id));
   logGrades(p, d.year + 1);
   if (slot.via) p.origin.pickVia = slot.via;
+  schoolPick(s, p, slot.teamId);
   d.pool = d.pool.filter((id) => id !== p.id);
   const clubs = new Set(d.slots.map((x) => x.teamId)).size;
   // AI clubs pay the slot value; the user's club negotiates each bonus after the draft (rookieBonus).
@@ -768,7 +775,20 @@ export function foreignRenewalAsk(p: Player, next: number) {
   const raise = Math.max(0, war - 2) * 150_000 + 50_000;
   // 1.9.6: a history game's cap holds for a renewal too (12만 달러 to 2004).
   const cap = historicForeignCap(next) ?? 1_800_000;
-  return Math.round(Math.min(cap, prevUsd + (p.origin.asiaQuota ? Math.min(KBO_2026.foreign.asiaQuotaRaisePerYearUSD, raise) : raise)) / 10_000) * 10_000;
+  const asked = prevUsd + (p.origin.asiaQuota ? Math.min(KBO_2026.foreign.asiaQuotaRaisePerYearUSD, raise) : raise);
+  // 2.0.39 (the user's report): a replacement signed late in the season was paid for the weeks left (a few tens of
+  // thousands of dollars) and re-signed from that; now he asks at least what a full season of him is worth.
+  return Math.round(Math.min(cap, Math.max(asked, foreignWorth(p, war))) / 10_000) * 10_000;
+}
+
+/** 2.0.39: what a full season of a foreign player is worth to re-sign (US dollars): his grade, scaled by his last
+    season (a flop is cheap, a star asks near the cap). The Asia quota player under his own cap. */
+export const FOREIGN_WORTH = { regular: { base: 450_000, perGrade: 45_000, from: 50 }, asia: { base: 90_000, perGrade: 5_000, from: 45 } };
+export function foreignWorth(p: Player, war: number): number {
+  const W = p.origin.asiaQuota ? FOREIGN_WORTH.asia : FOREIGN_WORTH.regular;
+  const form = war >= 4 ? 1.3 : war >= 2.5 ? 1.15 : war >= 1 ? 0.95 : war >= 0 ? 0.75 : 0.55;
+  const worth = (W.base + (p.scouting.current - W.from) * W.perGrade) * form;
+  return Math.max(0, p.origin.asiaQuota ? Math.min(KBO_2026.foreign.asiaQuotaCapUSD, worth) : worth);
 }
 
 /** A star foreign player may leave for MLB or NPB whatever the club offers (chance by his season). 2.0.27: less
@@ -949,6 +969,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
           if (p.proSince > year) continue; // drafted this fall, first season still ahead
           // The ceiling moves first (V0.12): a breakout, a stall, a little drift.
           driftPotential(p, year, rng(`${s.seed}|potential|${year}|${p.id}`));
+          // 2.0.39: a settled or pressured season costs a step first (contractmood.ts).
+          moodWinter(s, p, year);
           developPlayer(p, year, s.lines[p.id]?.lost ?? 0, rng(`${s.seed}|develop|${year}|${p.id}`), growthScale(p, year, futuresLeague), coachingFor(s, p, year), facilityAging(s, p));
           // A season of regular play at a new position adds it to his list (V0.11).
           learnPositions(p, s.lines[p.id]?.bat?.posG);
