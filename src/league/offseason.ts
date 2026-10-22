@@ -72,6 +72,7 @@ import { isFantasyWinter, openFantasy, runFantasy } from './fantasy';
 import type { SeasonAwards } from './awards';
 import { runTryout, tryoutYear } from './tryout';
 import { kyopoWinter } from './kyopo';
+import { staffAgeWinter } from './staffage';
 
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
@@ -185,6 +186,8 @@ export function closeSeason(s: LeagueState) {
   seasonNews(s, s.year);
   seasonFans(s, s.year, summary.table, summary.champion);
   closeRivalry(s, s.year);
+  // 2.0.38: heads age, and some retire (staffage.ts), before the clubs settle their staff.
+  staffAgeWinter(s, s.year);
   aiStaffWinter(s, s.year, summary.table);
   s.phase = 'offseason';
 }

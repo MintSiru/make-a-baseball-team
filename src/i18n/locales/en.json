@@ -9411,5 +9411,10 @@
   "ui.decision.text.852b0d20": "Off the roster, the rights kept. He can be taken back after a year, and no other club can sign him meanwhile.",
   "ui.contracts.text.b789e35e": "Players whose rights we hold (voluntarily retired)",
   "ui.contracts.text.4dcbc6f2": "Voluntarily retired {since} · may return from {back}",
-  "ui.contracts.text.4b875b79": "Trying another sport (since {since})"
+  "ui.contracts.text.4b875b79": "Trying another sport (since {since})",
+  "league.newpitch.text.1e41a2ef": "The chance of learning it was {pct}%.",
+  "league.staffage.text.b85d4318": "{club} {role} {name} retires at {age}",
+  "league.staffage.text.f6510043": "{club} {role} {name} is retiring after this season. An interim takes over, and his successor is chosen in this winter's staff decision.",
+  "league.staffage.text.769e4caf": "{club}'s {role} {name} has retired at {age}. The club has named his successor at once.",
+  "ui.decision.text.e9beb7a8": "age {age}"
 }
