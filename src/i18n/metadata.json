@@ -86088,5 +86088,15 @@
       }
     },
     "locations": []
+  },
+  "league.newpitch.text.1e41a2ef": {
+    "source": "src/league/newpitch.ts",
+    "line": 107,
+    "params": {
+      "pct": {
+        "expression": "Math.round(chance * 100)"
+      }
+    },
+    "locations": []
   }
 }

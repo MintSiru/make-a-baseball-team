@@ -9411,5 +9411,6 @@
   "ui.decision.text.852b0d20": "명단에서 빼되 보유권은 지킵니다. 1년 뒤부터 다시 받아들일 수 있고, 그동안 다른 구단도 데려갈 수 없습니다.",
   "ui.contracts.text.b789e35e": "보유권 선수 (임의탈퇴·임의해지)",
   "ui.contracts.text.4dcbc6f2": "임의탈퇴 {since} · {back}부터 복귀 가능",
-  "ui.contracts.text.4b875b79": "다른 종목 도전 중 ({since})"
+  "ui.contracts.text.4b875b79": "다른 종목 도전 중 ({since})",
+  "league.newpitch.text.1e41a2ef": "익힐 확률은 {pct}%였습니다."
 }

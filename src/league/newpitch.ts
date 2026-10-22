@@ -7,6 +7,7 @@ import { k as __i18n_k } from '../i18n/index';
    moves with it. */
 import { rng } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
+import { addAlert } from './alerts';
 import { eulreul, iga } from './josa';
 import { addNews } from './news';
 import { FAMILY, fastballOf, isKnuckleballer, PITCH_LABELS, repertoire, type PitchType } from './pitches';
@@ -89,17 +90,21 @@ export function learnWinter(s: LeagueState, year: number) {
     const took = rng(`${s.seed}|learn|${year}|${id}`)() < chance;
     if (took) learn(p, type, year);
     const pitch = PITCH_LABELS[type];
+    const title = took ? __i18n_k("league.newpitch.text.2d69c235", { name: p.name, pitch }) : __i18n_k("league.newpitch.text.ec2996e2", { name: p.name, pitch });
+    const body = took ? __i18n_k("league.newpitch.text.531305b4", { name: p.name, pitch: iga(pitch) }) : __i18n_k("league.newpitch.text.868119ab", { name: iga(p.name), pitch: eulreul(pitch) });
     addNews(s, {
       id: `learn-${year}-${id}`,
       date: `${year}-12-10`,
       kind: 'milestone',
-      title: took ? __i18n_k("league.newpitch.text.2d69c235", { name: p.name, pitch }) : __i18n_k("league.newpitch.text.ec2996e2", { name: p.name, pitch }),
-      body: took ? __i18n_k("league.newpitch.text.531305b4", { name: p.name, pitch: iga(pitch) }) : __i18n_k("league.newpitch.text.868119ab", { name: iga(p.name), pitch: eulreul(pitch) }),
+      title,
+      body,
       quotes: [],
       facts: { name: p.name, pitch, chance: Math.round(chance * 100) },
       players: [id],
       mine: true,
     });
+    // 2.0.38 (the user's request): a pop-up either way.
+    addAlert(s, { id: `learn-${year}-${id}`, date: `${year}-12-10`, kind: 'season', title, lines: [body, __i18n_k("league.newpitch.text.1e41a2ef", { pct: Math.round(chance * 100) })], tone: took ? 'good' : 'bad', players: [id] });
   }
   if (u) delete u.pitchPlans;
   // Other clubs' young arms now and then.
