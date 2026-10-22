@@ -23,6 +23,7 @@ import { bigGameEdge, clutchEdge } from './traits';
 import { inWard, WARD } from './ward';
 import { isKyopo, kyopoLimit } from './kyopo';
 import { eraUsage, type EraUsage } from '../rules/history';
+import { moodEdge } from './contractmood';
 
 const STARTER_LIMIT = ENGINE.starterLimit;
 
@@ -586,12 +587,12 @@ export function managerLean(s: LeagueState, teamId: TeamId, base: Prefer = none)
 
 /** Both clubs' engine inputs for one game: starters first, so each lineup can be set against the other starter. */
 /** A hot or cold spell, a newborn or a loss (V0.10, the user's players only) moves his main tools today; so does
-    his composure in a postseason game (1.1.0, every club). */
+    his composure in a postseason game (1.1.0, every club), and his mood over his contract (2.0.39, contractmood.ts). */
 function withForm(s: LeagueState, date: string, team: TeamIn): TeamIn {
   const big = s.phase === 'postseason';
   // 1.8.0, scenario 부상병동: our players are worn out by the trainer's programme.
   const tired = inWard(s, team.teamId) ? WARD.fatigue : 0;
-  const today = (p: Player) => formOf(p, date) - adaptPenalty(p, s.year) + (big ? bigGameEdge(p) : 0) - tired;
+  const today = (p: Player) => formOf(p, date) - adaptPenalty(p, s.year) + (big ? bigGameEdge(p) : 0) - tired + moodEdge(s, p);
   for (const b of [...team.lineup, ...(team.bench ?? [])]) {
     // 2.0.28: 클러치 (the engine uses it with runners in scoring position).
     const c = clutchEdge(s.players[b.id]!);

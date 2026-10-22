@@ -5,6 +5,7 @@ import Grades from './grades.js';
 import Tuning from './tuning.js';
 import Biography from './biography.js';
 import Contracts from './contracts.js';
+import Catalog from './catalog.js';
 
 export type Role = 'SP' | 'RP' | 'C' | 'IF' | 'OF';
 export type PitchingTool = 'stuff' | 'command' | 'breaking' | 'stamina';
@@ -104,6 +105,10 @@ const B = Biography as unknown as { DRAFT_DATE: string; DRAFT_YEAR: number };
 /** Draft Room's pool is the 2027 KBO rookie draft, held in September 2026. Ages are counted on the draft date. */
 export const DRAFT_ROOM_DRAFT_YEAR = B.DRAFT_YEAR;
 export const DRAFT_ROOM_DRAFT_DATE = B.DRAFT_DATE;
+/** 2.0.39: the eight regions amateurs grow up in (each prospect's `region`), for the clubs' territorial picks. */
+export const DRAFT_REGIONS: readonly string[] = (Biography as unknown as { REGIONS: string[] }).REGIONS;
+/** 2.0.39: the schools amateurs come from (high schools by region, for a club's sponsorship). */
+export const DRAFT_SCHOOLS: readonly { id: string; name: string; region: string; tier: string; kind: string }[] = (Catalog as unknown as { institutions: { id: string; name: string; region: string; tier: string; kind: string }[] }).institutions;
 
 export const generateDraftPool = (seed: string): DraftPool => P.generatePool(seed);
 /** Draft Room's seeded PRNG: string seed → FNV-1a → mulberry32. */

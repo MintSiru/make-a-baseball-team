@@ -34,8 +34,9 @@ export const NATIONAL_GAMES = {
   rotation: 4,
   /** Box scores are kept for this many of the latest events, play-by-play for the latest only. */
   keepBoxes: 3,
-  /** Tries for a decisive game to come out as the finish says. */
-  tries: 12,
+  /** Tries for a decisive game to come out as the finish says (2.0.39, the user's report: 12 left one event in
+      fifty with a lost semi-final under a title — 100 leave none in thousands; most fit in a few). */
+  tries: 100,
 };
 
 export type NationalStage = 'group' | 'second' | 'semi' | 'final' | 'bronze';

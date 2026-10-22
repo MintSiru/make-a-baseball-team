@@ -198,10 +198,12 @@ export function settleFinances(s: LeagueState, year: number, _table?: { teamId: 
     const report = clubReport(s, t.id, year, shares);
     if (isUser && u) {
       // Money spent or received from the fund since the last settlement (last winter's bonuses and
-      // signings, this season's fees and levies, posting fees); building work is not covered.
+      // signings, this season's fees and levies, posting fees); building work is not covered, and (2.0.39, the
+      // user's report: a −800억 season and a missed money goal after the owner took 2000억) neither is the owner's
+      // own dividend.
       const cash = u.ledger
         .slice(u.settledAt ?? 0)
-        .filter((l) => !l.settlement && !l.capital)
+        .filter((l) => !l.settlement && !l.capital && !l.sweep)
         .reduce((a, l) => a + l.amount, 0);
       report.cashFlows = cash;
       const budget = u.seasonSupport?.year === year ? u.seasonSupport : null;
@@ -255,9 +257,10 @@ export function openBooks(s: LeagueState) {
   sellSeasonTickets(s);
   const tickets = clubState(s, u.teamId).seasonTickets;
   const over = Math.max(0, payroll(s, u.teamId, s.year) - u.payrollBudget);
+  // 2.0.39 (the user's report): the owner's own dividend (sweep.ts) is not the club's spending.
   const cash = u.ledger
     .slice(u.settledAt ?? 0)
-    .filter((l) => !l.settlement && !l.capital)
+    .filter((l) => !l.settlement && !l.capital && !l.sweep)
     .reduce((a, l) => a + l.amount, 0);
   const need = Math.max(0, -operating - over - Math.min(0, cash));
   const amount = Math.min(u.support ?? need, Math.round(need / 1000) * 1000);

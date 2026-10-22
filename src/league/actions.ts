@@ -51,6 +51,8 @@ import { addCondition } from './conditions';
 import { measureHandicap } from './dynamic';
 import { exhibitionDate } from './exhibition';
 import { canReinstate, canVoluntary, placeVoluntary, reinstate } from './voluntary';
+import { sponsorSchool } from './schools';
+import { spend, type SpendKind } from './spending';
 
 export type Action =
   /** `stops` (1.6.0): end the run early at the moments the user asked to stop for (stops.ts). */
@@ -170,7 +172,11 @@ export type Action =
   | { kind: 'dynamicDifficulty'; on: boolean }
   | { kind: 'addCondition'; id: import('./conditions').ConditionId }
   /** The season-ticket discount for the coming season (V0.12). */
-  | { kind: 'seasonTickets'; discount: number };
+  | { kind: 'seasonTickets'; discount: number }
+  // 2.0.39 (schools.ts): sponsor (or stop sponsoring) a high school of the club's region.
+  | { kind: 'sponsorSchool'; name: string; on: boolean }
+  // 2.0.39 (spending.ts): the fund's other uses.
+  | { kind: 'spend'; what: SpendKind; tier?: number };
 
 export const regularOver = (s: LeagueState) => s.phase === 'regular' && s.next >= s.schedule.length;
 
@@ -187,7 +193,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'devForeign', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'askBudget', 'twoLeaguePlayoffs', 'sixMan', 'favorite', 'abilityEditor', 'editAbility', 'discipline'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'devForeign', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'askBudget', 'twoLeaguePlayoffs', 'sixMan', 'favorite', 'abilityEditor', 'editAbility', 'discipline', 'sponsorSchool', 'spend'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -529,6 +535,12 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'seasonTickets':
       if (s.user && [0, 0.1, 0.2, 0.3].includes(action.discount)) clubState(s, s.user.teamId).seasonTicketDiscount = action.discount;
+      break;
+    case 'sponsorSchool':
+      sponsorSchool(s, action.name, action.on);
+      break;
+    case 'spend':
+      spend(s, action.what, action.tier);
       break;
   }
   // Anyone who joined a club (or became a registered player) gets his number.
