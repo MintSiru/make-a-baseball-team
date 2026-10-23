@@ -152,7 +152,9 @@ describe('the Asia Series (2.0.42)', () => {
     // One of ours went to the NPB club that will win Japan this year.
     const key = `${s.seed}|asia|${s.year}`;
     const npb = NPB_CLUBS[Math.floor(hashUnit(`${key}|npb`) * NPB_CLUBS.length)]!;
-    const p = Object.values(s.players).find((x) => x.teamId === me && x.status === 'active' && x.origin.kind !== 'foreign' && x.role !== 'SP' && x.role !== 'RP')!;
+    const p = Object.values(s.players).find((x) => x.teamId === me && x.status === 'active' && x.origin.kind !== 'foreign' && x.role !== 'SP' && x.role !== 'RP' && x.career.some((c) => !c.level))!;
+    // His last KBO season was ours.
+    p.career.filter((c) => !c.level).at(-1)!.teamId = me;
     removeFromRoster(s, p);
     p.teamId = null;
     p.status = 'overseas';

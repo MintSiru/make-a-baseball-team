@@ -18,7 +18,7 @@ import type { BatterIn, RelieverIn, TeamIn } from './engine/types';
 import { clubState } from './fans';
 import { foreignName, type NamePool } from './foreign';
 import { wagwa } from './josa';
-import { armIn, lineupFor } from './manager';
+import { armIn, benchFor, lineupFor } from './manager';
 import { NPB_CLUBS } from './mlb';
 import { addNews } from './news';
 import { isPitcher } from './players';
@@ -87,10 +87,11 @@ function side(s: LeagueState, id: string, strength: number, r: () => number, ex:
   for (const p of ex) {
     if (isPitcher(p)) starter = armIn(p, ASIA.starterLimit);
     else {
-      const b = lineupFor({ ...s, away: {}, abroad: {}, suspended: {}, injuries: {} } as LeagueState, [p.id], undefined, false)[0];
+      // He bats as the designated hitter (his own bat; the made-up side keeps its gloves).
+      const b = benchFor({ ...s, away: {}, abroad: {}, suspended: {}, injuries: {} } as LeagueState, [p.id], [])[0];
       if (!b) continue;
-      const at = Math.max(0, lineup.findIndex((x) => x.pos === b.pos));
-      lineup[at === -1 ? 8 : at] = { ...b, pos: lineup[at === -1 ? 8 : at]!.pos };
+      const { defenseAt: _d, ...bat } = b;
+      lineup[8] = { ...bat, pos: 'DH' };
     }
   }
   return { teamId: id, lineup, starter, bullpen };
