@@ -116,7 +116,8 @@ export function pickValue(s: LeagueState, teamId: TeamId, round: number): number
   return Math.round((P.value[round - 1] ?? P.value[P.value.length - 1]!) * k * 10) / 10;
 }
 
-export const cashValue = (manwon: number) => (manwon / 10000) * TRADES.cash.perEok;
+/** 2.0.42: past 20억, each 억 counts half. */
+export const cashValue = (manwon: number) => ((Math.min(manwon, TRADES.cash.fullValue) + Math.max(0, manwon - TRADES.cash.fullValue) * TRADES.cash.beyond) / 10000) * TRADES.cash.perEok;
 
 const pickText = (year: number, rounds: number[]) => rounds.map((r) => __i18n_k("league.trade.pickText.8744d1db", { value: year + 1, r: r })).join('·');
 const eok = (manwon: number) => __i18n_k("league.trade.eok.db0fc332", { value: Math.round(manwon / 1000) / 10 });
@@ -138,7 +139,8 @@ export function checkTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get
   if (!give.length && !cashOut && !picksOut.length) return no(__i18n_k("league.trade.checkTrade.2d432783"));
   if (!get.length && !cashIn && !picksIn.length) return no(__i18n_k("league.trade.checkTrade.2e1f2028"));
   if (cashOut && cashIn) return no(__i18n_k("league.trade.checkTrade.da9e360c"));
-  for (const c of [cashOut, cashIn]) if (c < 0 || c > TRADES.cash.max || c % TRADES.cash.step) return no(__i18n_k("league.trade.checkTrade.4dd15c6d", { eok: eok(TRADES.cash.step), eok2: eok(TRADES.cash.max) }));
+  // 2.0.42: we may give up to 100억; we receive up to 20억.
+  for (const [c, max] of [[cashOut, TRADES.cash.userMax], [cashIn, TRADES.cash.max]] as const) if (c < 0 || c > max || c % TRADES.cash.step) return no(__i18n_k("league.trade.checkTrade.4dd15c6d", { eok: eok(TRADES.cash.step), eok2: eok(max) }));
   if (cashOut > u.fund) return no(__i18n_k("league.trade.checkTrade.90bd24fb", { eok: eok(u.fund) }));
   const ownPicks = tradablePicks(s, u.teamId),
     theirPicks = tradablePicks(s, teamId);

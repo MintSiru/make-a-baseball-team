@@ -6,6 +6,7 @@ import { nationalGamesOf } from '../league/nationalgames';
 import type { LeagueState } from '../league/state';
 import { awardsView, recordRoom, shortName, teamOf } from '../league/views';
 import { ROUND_NAME } from '../league/postseason';
+import { LEAGUE_LABEL } from '../league/asiaseries';
 import { avg, era, ip, obp, ops, slg } from '../league/stats';
 import { draftView, draftYears } from '../league/draftlog';
 import { gradeClass } from './grades';
@@ -223,7 +224,14 @@ function Seasons({ league }: { league: LeagueState }) {
               return (
                 <tr key={h.year}>
                   <td class="num">{__i18n_display(h.year)}</td>
-                  <td class="strong">{__i18n_display(h.champion ? teamOf(league, h.champion)?.name : '-')}</td>
+                  <td class="strong">
+                    {__i18n_display(h.champion ? teamOf(league, h.champion)?.name : '-')}
+                    {/* 2.0.42: the Asia Series that winter (asiaseries.ts). */}
+                    {(() => {
+                      const a = league.asia?.find((x) => x.year === h.year);
+                      return a ? <div class="muted small">{__i18n_t("ui.history.text.8dc04067", { winner: a.winner === 'kbo' ? (teamOf(league, a.kbo)?.short ?? 'KBO') : `${a.clubs[a.winner]} (${LEAGUE_LABEL[a.winner]})` })}</div> : null;
+                    })()}
+                  </td>
                   <td>{__i18n_display(shortName(league, h.table[0]!.teamId))}</td>
                   <td class="num">{__i18n_display(h.table[0]!.pct.toFixed(3))}</td>
                   <td>{__i18n_display(h.futures?.[0] ? shortName(league, h.futures[0].teamId) : '-')}</td>

@@ -60,6 +60,17 @@ export const FACILITIES: Record<FacilityKind, FacilitySpec> = {
       { cost: 400_000, upkeep: 8_000, build: 1, effect: __i18n_k("league.facilities.levels.effect.78023a36") },
     ],
   },
+  // 2.0.42 (the user's request: 구장 퀄리티): the ballpark remodelled — wider seats, a new concourse, a fan zone.
+  remodel: {
+    label: __i18n_k("league.facilities.text.ed38d1fe"),
+    group: 'ballpark',
+    note: __i18n_k("league.facilities.text.c894d638"),
+    levels: [
+      { cost: 1_500_000, upkeep: 20_000, build: 1, effect: __i18n_k("league.facilities.text.e9cdf9d8") },
+      { cost: 3_000_000, upkeep: 40_000, build: 1, effect: __i18n_k("league.facilities.text.768384df") },
+      { cost: 6_000_000, upkeep: 80_000, build: 1, effect: __i18n_k("league.facilities.text.0a987434") },
+    ],
+  },
   indoor: {
     label: __i18n_k("league.facilities.indoor.label.76426b1a"),
     group: 'training',
@@ -146,7 +157,7 @@ export const facilityAging = (s: LeagueState, p: Player) => (p.teamId && p.teamI
 
 /** Ticket revenue multiplier (premium seats), attendance demand (scoreboard), concessions (shops). */
 export const premiumShare = (s: LeagueState, teamId: TeamId) => (teamId === s.user?.teamId ? pick(facilityLevel(s, 'premium'), [0.06, 0.12]) : 0);
-export const scoreboardDemand = (s: LeagueState, teamId: TeamId) => (teamId === s.user?.teamId ? pick(facilityLevel(s, 'scoreboard'), [0.03]) : 0);
+export const scoreboardDemand = (s: LeagueState, teamId: TeamId) => (teamId === s.user?.teamId ? pick(facilityLevel(s, 'scoreboard'), [0.03]) + pick(facilityLevel(s, 'remodel'), [0.04, 0.08, 0.13]) : 0);
 export const concessionsShare = (s: LeagueState, teamId: TeamId) => (teamId === s.user?.teamId ? pick(facilityLevel(s, 'concessions'), [0.15, 0.3]) : 0);
 
 /** A year's upkeep of what is built: ballpark facilities and training facilities. */

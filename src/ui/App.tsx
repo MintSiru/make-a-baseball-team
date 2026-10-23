@@ -37,6 +37,7 @@ import { PROVIDERS, rewrite } from '../story/writer';
 import type { StoryError } from '../story/types';
 import { detailFor, type NewsItem } from '../league/news';
 import { Decision } from './Decision';
+import { noteClear } from './clears';
 import { Games } from './Games';
 import { DraftBoard } from './DraftBoard';
 import { History } from './History';
@@ -175,6 +176,8 @@ export function App() {
   const starting = useRef(0);
 
   const show = (s: LeagueState) => {
+    // 2.0.42: a won scenario is remembered for the new-game screen (clears.ts).
+    noteClear(s);
     setLeague(s);
     setVersion((v) => v + 1);
   };

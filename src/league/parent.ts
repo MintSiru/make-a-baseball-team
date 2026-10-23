@@ -81,7 +81,7 @@ export function evaluate(s: LeagueState, year: number): Evaluation | null {
   const ev: Evaluation = { year, score, lines: lines.map(({ w: _w, ...l }) => l), change, trust };
   (u.evaluations ??= []).push(ev);
   applyBudgetChange(s, change);
-  if (u.settings.firing && trust < PARENT.fireBelow && year - u.firstTeamYear >= (owner?.fireFrom ?? 2)) u.fired = year;
+  if (u.settings.firing && !u.independent && trust < PARENT.fireBelow && year - u.firstTeamYear >= (owner?.fireFrom ?? 2)) u.fired = year;
   return ev;
 }
 

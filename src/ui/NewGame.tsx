@@ -4,7 +4,8 @@ import { accentStyle } from './display';
 import { useDark } from './useDisplay';
 import { CITIES, cityById, REAL_CLUB_CITIES } from '../club/cities';
 import { NORTH_CITIES } from '../league/north';
-import { SCENARIOS, scenarioDef, withScenario, type ScenarioId } from '../league/scenarios';
+import { medalConditions, SCENARIOS, scenarioDef, withScenario, type ScenarioId } from '../league/scenarios';
+import { CLEAR_MARK, readClears } from './clears';
 import { LEGACY_TAKEN_CITIES } from '../league/legacy1982';
 import { setEra, startYear } from '../league/era';
 import { PARENT_COMPANY_TYPES, type ParentCompanyType } from '../club/types';
@@ -51,6 +52,8 @@ function recommended(cityId: string, cityName: string, color: string, name: stri
 
 export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props) {
   const dark = useDark();
+  // 2.0.42: the scenarios this browser has cleared (clears.ts).
+  const [clears] = useState(readClears);
   const [name, setName] = useState('');
   const [short, setShort] = useState('');
   const [color, setColor] = useState(COLORS[0]!);
@@ -160,7 +163,15 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
           </button>
           {__i18n_display(SCENARIOS.map((x) => (
             <button key={x.id} type="button" class="choice" role="radio" aria-checked={scenario === x.id} aria-pressed={scenario === x.id} onClick={() => pickScenario(x.id)}>
-              <strong>{__i18n_display(x.title)}</strong>
+              <strong>
+                {__i18n_display(x.title)}
+                {clears[x.id] && (
+                  <span class="clear-mark" title={__i18n_t("ui.newGame.text.330ccf22")} aria-label={__i18n_t("ui.newGame.text.330ccf22")}>
+                    {' '}
+                    {CLEAR_MARK[clears[x.id]!]}
+                  </span>
+                )}
+              </strong>
               <span class="muted">{__i18n_display(x.tagline)}</span>
               <span class="stars" aria-label={__i18n_displayText(__i18n_k("ui.newGame.newGame.2eae7ab4", { stars: x.stars }))}>
                 {__i18n_display('★'.repeat(x.stars))}
@@ -177,6 +188,15 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
             <p>
               <strong>{__i18n_t("ui.newGame.newGame.2fbea43b")}</strong> {__i18n_display(def.goal)}
             </p>
+            {medalConditions(def).length > 0 && (
+              <ul class="medal-list">
+                {medalConditions(def).map((text, i) => (
+                  <li key={i}>
+                    {['🥇', '🥈', '🥉'][i]} {text}
+                  </li>
+                ))}
+              </ul>
+            )}
             <p class="muted small">{__i18n_t("ui.newGame.newGame.1e53e8d1", { value: def.locked.length ? __i18n_k("ui.newGame.newGame.0885fd6d", { value: def.locked.map((k) => LOCK_LABEL[k] ?? k).join(' · ') }) : __i18n_k("ui.newGame.newGame.7f8c9e78") })}</p>
           </div>
         ))}

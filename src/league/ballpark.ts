@@ -5,13 +5,14 @@ import { k as __i18n_k } from '../i18n/index';
      ready next season; before 2.0.2 the fences moved in or out a step at a time),
    - build a new 22,000-seat ballpark with the city (the club prepays 25 years of use, 400억, as
      Samsung (500억) and KIA (300억) did; it opens three seasons later).
+   - 2.0.42: past 40,000 seats, a mega expansion (+10,000 at a time up to 100,000).
    Projects are paid from the fund up front: the owner's support covers operations, not buildings. */
 import type { LeagueState, StadiumProject } from './state';
 import { clubState } from './fans';
 import { BALLPARK as B } from './tuning';
 import { checkLayout, homeRunFactor, layoutCost, layoutOf, type ParkLayout } from './layout';
 
-export type ProjectKind = 'expand' | 'layout' | 'newPark' | 'dome';
+export type ProjectKind = 'expand' | 'layout' | 'newPark' | 'dome' | 'mega';
 
 export interface ProjectOption {
   kind: ProjectKind;
@@ -49,6 +50,15 @@ export function projectOptions(s: LeagueState): ProjectOption[] {
       note: __i18n_k("league.ballpark.projectOptions.note.e1639571", { value: next + B.newYears - 1 }),
       blocked: planned ? __i18n_k("league.ballpark.projectOptions.blocked.a335d518") : cap >= B.newSeats ? __i18n_k("league.ballpark.projectOptions.blocked.2b425661") : (u.projects ?? []).some((p) => p.kind === 'newPark' && p.opens >= next) ? __i18n_k("league.ballpark.projectOptions.blocked.908d3d51") : common(B.newCost),
     },
+    // 2.0.42 (the user's request): past 40,000 seats, a Camp Nou of our own.
+    {
+      kind: 'mega',
+      label: __i18n_k("league.ballpark.text.4505de41", { seats: B.megaSeats.toLocaleString('ko-KR') }),
+      cost: megaCost(s),
+      opens: next,
+      note: __i18n_k("league.ballpark.text.988cd1e7", { from: cap.toLocaleString('ko-KR'), to: Math.min(B.megaMax, cap + B.megaSeats).toLocaleString('ko-KR'), max: B.megaMax.toLocaleString('ko-KR') }),
+      blocked: cap < B.maxSeats ? __i18n_k("league.ballpark.text.79717f36", { max: B.maxSeats.toLocaleString('ko-KR') }) : cap >= B.megaMax ? __i18n_k("league.ballpark.text.65879fb0", { max: B.megaMax.toLocaleString('ko-KR') }) : common(megaCost(s)),
+    },
     // 2.0.25 (the user's request): a dome.
     {
       kind: 'dome',
@@ -60,6 +70,9 @@ export function projectOptions(s: LeagueState): ProjectOption[] {
     },
   ];
 }
+
+/** 2.0.42: a mega expansion's cost — a quarter more for each one already built. */
+export const megaCost = (s: LeagueState) => Math.round(B.megaCost * (1 + B.megaStep * (s.user?.projects ?? []).filter((p) => p.kind === 'mega').length));
 
 /** 2.0.2: rebuilding the fences to `layout` (the editor): what it costs, when it opens, its home-run factor, and why it
     cannot start now. */
@@ -86,8 +99,8 @@ export function startProject(s: LeagueState, kind: ProjectKind, layout?: ParkLay
   u.ledger.push({ year, label: __i18n_k("league.ballpark.startProject.label.a30190fe", { label: o.label }), amount: -o.cost, capital: true });
   const team = s.teams.find((t) => t.id === u.teamId)!;
   const project: StadiumProject =
-    kind === 'expand'
-      ? { kind: 'expand', label: o.label, opens: o.opens, cost: o.cost, seats: team.stadium.capacity + B.expandSeats }
+    kind === 'expand' || kind === 'mega'
+      ? { kind, label: o.label, opens: o.opens, cost: o.cost, seats: Math.min(kind === 'mega' ? B.megaMax : B.maxSeats, team.stadium.capacity + (kind === 'mega' ? B.megaSeats : B.expandSeats)) }
       : kind === 'newPark' || kind === 'dome'
         ? { kind, label: o.label, opens: o.opens, cost: o.cost, seats: kind === 'dome' ? B.domeSeats : B.newSeats }
         : { kind: 'layout', label: o.label, opens: o.opens, cost: o.cost, layout: { dist: [...layout!.dist], wall: [...layout!.wall] } };
@@ -111,10 +124,10 @@ export function openProjects(s: LeagueState, season: number) {
       const built = p.kind === 'newPark' || p.kind === 'dome';
       const name = p.kind === 'dome' ? u.newStadiumName?.trim() || __i18n_k("league.ballpark.text.0cece9d0", { region: team.region }) : p.kind === 'newPark' ? u.newStadiumName?.trim() || __i18n_k("league.ballpark.openProjects.name.577eaf4f", { region: team.region }) : team.stadium.name;
       // 2.0.25: a dome stays a dome when it is expanded.
-      const size = p.kind === 'dome' || (p.kind === 'expand' && team.stadium.size === 'dome') ? 'dome' : p.seats >= 20_000 ? 'large' : 'medium';
+      const size = p.kind === 'dome' || ((p.kind === 'expand' || p.kind === 'mega') && team.stadium.size === 'dome') ? 'dome' : p.seats >= 20_000 ? 'large' : 'medium';
       team.stadium = { ...team.stadium, name, capacity: p.seats, size, ...(built ? { ownership: 'longTermOperation' as const, park: undefined, layout: undefined } : {}) };
       // A new or bigger ballpark brings people in for a while.
-      clubState(s, u.teamId).interest += p.kind === 'dome' ? B.domeBuzz : p.kind === 'newPark' ? B.newParkBuzz : B.expandBuzz;
+      clubState(s, u.teamId).interest += p.kind === 'dome' ? B.domeBuzz : p.kind === 'newPark' ? B.newParkBuzz : p.kind === 'mega' ? B.megaBuzz : B.expandBuzz;
     }
     (u.log ??= []).push({ year: season - 1, text: __i18n_k("league.ballpark.openProjects.text.5377a7a2", { label: p.label, season: season }) });
   }

@@ -76,6 +76,7 @@ import type { SeasonAwards } from './awards';
 import { runTryout, tryoutYear } from './tryout';
 import { kyopoWinter } from './kyopo';
 import { abroadVetsWinter } from './abroadvets';
+import { playAsiaSeries } from './asiaseries';
 import { staffAgeWinter } from './staffage';
 
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
@@ -956,6 +957,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         // November events: named and played now (V0.12); anything else of the year left unfinished too.
         winterSquads(s, novemberEvents(year));
         applyInternational(s, year);
+        // 2.0.42: the Asia Series, when the league plays it (asiaseries.ts).
+        playAsiaSeries(s, year, s.history.find((h) => h.year === year)?.champion ?? null);
         break;
       case 'develop': {
         const futuresLeague = !!s.history.find((h) => h.year === year)?.futures;

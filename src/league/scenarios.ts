@@ -36,10 +36,16 @@ import { WARD } from './ward';
 
 const FANS_MIN = FANS.priceMin;
 
+/** 2.0.42 (the user's request: 시나리오별 금은동 클리어 조건). */
+export type Medal = 'gold' | 'silver' | 'bronze';
+export const MEDALS: Medal[] = ['gold', 'silver', 'bronze'];
+
 export type ScenarioId = 'seoul' | 'comeback' | 'ulleung' | 'raiders' | 'fantasy' | 'past' | 'rescue' | 'recession' | 'unpopular' | 'steel' | 'ward' | 'prodigal' | 'unified' | 'unifiedFree' | 'legacy';
 
 export interface ScenarioState {
   status: 'active' | 'won' | 'lost';
+  /** 2.0.42: the medal of a won scenario (none for a fantasy draft below grade B). */
+  medal?: Medal;
   /** The winter it was decided, and what was said. */
   decided?: number;
   text?: string;
@@ -361,7 +367,7 @@ export function fantasyPoints(s: LeagueState, year: number, teamId: TeamId): num
 export const fantasyGrade = (points: number) => (points >= 330 ? 'S' : points >= 260 ? 'A' : points >= 190 ? 'B' : points >= 120 ? 'C' : 'D');
 
 /** How the scenario stands, for the club overview. */
-export function scenarioProgress(s: LeagueState): { title: string; goal: string; lines: string[]; status: ScenarioState['status'] } | null {
+export function scenarioProgress(s: LeagueState): { title: string; goal: string; lines: string[]; status: ScenarioState['status']; medal?: Medal; medals: string[] } | null {
   const def = scenarioOf(s);
   const u = s.user;
   if (!def || !u) return null;
@@ -419,7 +425,64 @@ export function scenarioProgress(s: LeagueState): { title: string; goal: string;
     }
   }
   if (st.text) lines.push(st.text);
-  return { title: def.title, goal: def.goal, lines, status: st.status };
+  return { title: def.title, goal: def.goal, lines, status: st.status, ...(st.medal ? { medal: st.medal } : {}), medals: medalConditions(def) };
+}
+
+/** 2.0.42: the bounds of a title-within scenario's medals (seasons from the debut). */
+const withinMedals = (w: number) => [Math.ceil(w * 0.4), Math.ceil(w * 0.7), w] as const;
+
+/** 2.0.42: what each medal asks, gold first (none for a free scenario). */
+export function medalConditions(def: ScenarioDef): string[] {
+  if (def.free) return [];
+  switch (def.id) {
+    case 'seoul':
+      return [__i18n_k("league.scenarios.text.27933780"), __i18n_k("league.scenarios.text.fe809bdd"), __i18n_k("league.scenarios.text.a53cce6d")];
+    case 'comeback':
+      return [__i18n_k("league.scenarios.text.a850f0a4"), __i18n_k("league.scenarios.text.4b6d4951"), __i18n_k("league.scenarios.text.836f18f1")];
+    case 'rescue':
+      return [__i18n_k("league.scenarios.text.e8740f5d"), __i18n_k("league.scenarios.text.7e41bac0"), __i18n_k("league.scenarios.text.4b6d4951")];
+    case 'ulleung':
+      return [__i18n_k("league.scenarios.text.7d3c2370", { year: DEADLINE }), __i18n_k("league.scenarios.text.19e974de"), __i18n_k("league.scenarios.text.818aa1a9")];
+    case 'raiders':
+      return [__i18n_k("league.scenarios.text.cba61f3c", { year: DEADLINE - 4 }), __i18n_k("league.scenarios.text.cba61f3c", { year: DEADLINE - 2 }), __i18n_k("league.scenarios.text.cba61f3c", { year: DEADLINE })];
+    case 'fantasy':
+      return [__i18n_k("league.scenarios.text.7bb6a076", { n: 330 }), __i18n_k("league.scenarios.text.d4d171d9", { n: 260 }), __i18n_k("league.scenarios.text.ad3b8709", { n: 190 })];
+    default: {
+      const [g, sv, b] = withinMedals(def.titleWithin ?? 5);
+      return [__i18n_k("league.scenarios.text.ae0803c3", { n: g }), __i18n_k("league.scenarios.text.ae0803c3", { n: sv }), __i18n_k("league.scenarios.text.ae0803c3", { n: b })];
+    }
+  }
+}
+
+const MEDAL_LABEL: Record<Medal, string> = { gold: __i18n_k("league.scenarios.text.a689f7ab"), silver: __i18n_k("league.scenarios.text.4761b4b6"), bronze: __i18n_k("league.scenarios.text.dd08cf55") };
+export const medalLabel = (m: Medal) => MEDAL_LABEL[m];
+
+/** 2.0.42: the medal a scenario won this winter earns. */
+function medalFor(s: LeagueState, def: ScenarioDef, year: number, extra: { margin?: number; sum?: number }): Medal | undefined {
+  const u = s.user!;
+  const st = u.scenario!;
+  const by = (n: number, bounds: readonly number[]) => MEDALS[bounds.findIndex((b) => n <= b)] ?? 'bronze';
+  switch (def.id) {
+    case 'seoul':
+      return (extra.margin ?? 0) >= 0.05 ? 'gold' : (extra.margin ?? 0) >= 0.025 ? 'silver' : 'bronze';
+    case 'comeback':
+      return by(year - u.firstTeamYear + 1, [2, 3, 5]);
+    case 'rescue':
+      return by(year - (st.takeover ?? year - 1), [1, 2, 3]);
+    case 'ulleung': {
+      if (titles(s, u.teamId, year) > 0) return 'gold';
+      const autumns = s.history.filter((h) => h.year >= u.firstTeamYear && h.year <= year && (h.series ?? []).some((x) => x.high === u.teamId || x.low === u.teamId)).length;
+      return autumns >= 3 ? 'silver' : 'bronze';
+    }
+    case 'raiders':
+      return by(year, [DEADLINE - 4, DEADLINE - 2, DEADLINE]);
+    case 'fantasy': {
+      const g = fantasyGrade(extra.sum ?? 0);
+      return g === 'S' ? 'gold' : g === 'A' ? 'silver' : g === 'B' ? 'bronze' : undefined;
+    }
+    default:
+      return by(year - u.firstTeamYear + 1, withinMedals(def.titleWithin ?? 5));
+  }
 }
 
 /** Each winter after the owner's verdict: is the scenario won or lost? */
@@ -433,6 +496,7 @@ export function scenarioWinter(s: LeagueState, year: number) {
   if (st.status !== 'active') return;
   const me = u.teamId;
   let verdict: { status: 'won' | 'lost'; text: string } | null = null;
+  const extra: { margin?: number; sum?: number } = {};
   if (u.fired && def.id !== 'fantasy') verdict = { status: 'lost', text: __i18n_k("league.scenarios.scenarioWinter.text.fe0f46d5", { fired: u.fired }) };
   else
     switch (def.id) {
@@ -441,6 +505,7 @@ export function scenarioWinter(s: LeagueState, year: number) {
           const us = record(s, me, u.firstTeamYear, DEADLINE);
           const best = SEOUL_RIVALS.map((id) => ({ id, ...record(s, id, u.firstTeamYear, DEADLINE) })).sort((a, b) => b.pct - a.pct)[0]!;
           const name = s.teams.find((t) => t.id === best.id)?.short ?? best.id;
+          extra.margin = us.pct - best.pct;
           verdict = us.pct > best.pct ? { status: 'won', text: __i18n_k("league.scenarios.scenarioWinter.text.9e42e974", { value: us.pct.toFixed(3), name: name, value2: best.pct.toFixed(3) }) } : { status: 'lost', text: __i18n_k("league.scenarios.scenarioWinter.text.491a1010", { value: us.pct.toFixed(3), name: name, value2: best.pct.toFixed(3) }) };
         }
         break;
@@ -477,6 +542,7 @@ export function scenarioWinter(s: LeagueState, year: number) {
       case 'fantasy':
         if (year >= FANTASY.seasons.at(-1)!) {
           const sum = FANTASY.seasons.reduce((a, y) => a + (st.points?.[y] ?? 0), 0);
+          extra.sum = sum;
           verdict = { status: 'won', text: __i18n_k("league.scenarios.scenarioWinter.text.7effb243", { sum: sum, fantasyGrade: fantasyGrade(sum) }) };
         }
         break;
@@ -484,6 +550,13 @@ export function scenarioWinter(s: LeagueState, year: number) {
   if (!verdict) return;
   st.status = verdict.status;
   st.decided = year;
+  if (verdict.status === 'won') {
+    const medal = medalFor(s, def, year, extra);
+    if (medal) {
+      st.medal = medal;
+      verdict.text = `${verdict.text} ${__i18n_k("league.scenarios.text.347bc73e", { medal: MEDAL_LABEL[medal] })}`;
+    }
+  }
   st.text = verdict.text;
   const title = __i18n_k("league.scenarios.scenarioWinter.title.fd180df4", { title: def.title, value: def.id === 'fantasy' ? __i18n_k("league.scenarios.scenarioWinter.title.71d855ac") : verdict.status === 'won' ? __i18n_k("league.scenarios.scenarioWinter.title.23b64411") : __i18n_k("league.scenarios.scenarioWinter.title.732fe33a") });
   addAlert(s, { id: `scenario-${def.id}-${year}`, date: `${year}-11-30`, kind: 'achievement', title, lines: [verdict.text, __i18n_k("league.scenarios.scenarioWinter.lines.c8648025")], tone: verdict.status === 'won' ? 'good' : 'bad' });

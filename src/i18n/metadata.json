@@ -87371,5 +87371,641 @@
       }
     },
     "locations": []
+  },
+  "league.spending.text.33ad251e": {
+    "source": "src/league/spending.ts",
+    "line": 91,
+    "params": {},
+    "locations": []
+  },
+  "league.spending.text.e4ccb4f2": {
+    "source": "src/league/spending.ts",
+    "line": 92,
+    "params": {},
+    "locations": []
+  },
+  "league.spending.text.e9b3165e": {
+    "source": "src/league/spending.ts",
+    "line": 92,
+    "params": {},
+    "locations": []
+  },
+  "league.spending.text.3ae4e97b": {
+    "source": "src/league/spending.ts",
+    "line": 94,
+    "params": {},
+    "locations": []
+  },
+  "league.spending.text.efc4d27a": {
+    "source": "src/league/spending.ts",
+    "line": 95,
+    "params": {},
+    "locations": []
+  },
+  "league.spending.text.f1db2998": {
+    "source": "src/league/spending.ts",
+    "line": 96,
+    "params": {},
+    "locations": []
+  },
+  "league.spending.text.e2f3223b": {
+    "source": "src/league/spending.ts",
+    "line": 98,
+    "params": {},
+    "locations": []
+  },
+  "league.spending.text.f6661869": {
+    "source": "src/league/spending.ts",
+    "line": 143,
+    "params": {},
+    "locations": []
+  },
+  "league.spending.text.a6216900": {
+    "source": "src/league/spending.ts",
+    "line": 144,
+    "params": {
+      "cost": {
+        "expression": "Math.round(cost / 10_000)"
+      },
+      "pct": {
+        "expression": "Math.round(gain * 100)"
+      }
+    },
+    "locations": []
+  },
+  "league.spending.text.4b6e83eb": {
+    "source": "src/league/spending.ts",
+    "line": 149,
+    "params": {},
+    "locations": []
+  },
+  "league.spending.text.bb7e52cf": {
+    "source": "src/league/spending.ts",
+    "line": 151,
+    "params": {
+      "club": {
+        "expression": "team.name"
+      },
+      "owner": {
+        "expression": "u.settings.parentName"
+      }
+    },
+    "locations": []
+  },
+  "league.spending.text.0c072254": {
+    "source": "src/league/spending.ts",
+    "line": 153,
+    "params": {
+      "club": {
+        "expression": "eunneun(team.name)",
+        "particle": "은/는"
+      },
+      "cost": {
+        "expression": "Math.round(cost / 10_000)"
+      }
+    },
+    "locations": []
+  },
+  "league.ballpark.text.4505de41": {
+    "source": "src/league/ballpark.ts",
+    "line": 56,
+    "params": {
+      "seats": {
+        "expression": "B.megaSeats.toLocaleString('ko-KR')"
+      }
+    },
+    "locations": []
+  },
+  "league.ballpark.text.988cd1e7": {
+    "source": "src/league/ballpark.ts",
+    "line": 59,
+    "params": {
+      "from": {
+        "expression": "cap.toLocaleString('ko-KR')"
+      },
+      "to": {
+        "expression": "Math.min(B.megaMax, cap + B.megaSeats).toLocaleString('ko-KR')"
+      },
+      "max": {
+        "expression": "B.megaMax.toLocaleString('ko-KR')"
+      }
+    },
+    "locations": []
+  },
+  "league.ballpark.text.79717f36": {
+    "source": "src/league/ballpark.ts",
+    "line": 60,
+    "params": {
+      "max": {
+        "expression": "B.maxSeats.toLocaleString('ko-KR')"
+      }
+    },
+    "locations": []
+  },
+  "league.ballpark.text.65879fb0": {
+    "source": "src/league/ballpark.ts",
+    "line": 60,
+    "params": {
+      "max": {
+        "expression": "B.megaMax.toLocaleString('ko-KR')"
+      }
+    },
+    "locations": []
+  },
+  "league.facilities.text.ed38d1fe": {
+    "source": "src/league/facilities.ts",
+    "line": 65,
+    "params": {},
+    "locations": []
+  },
+  "league.facilities.text.c894d638": {
+    "source": "src/league/facilities.ts",
+    "line": 67,
+    "params": {},
+    "locations": []
+  },
+  "league.facilities.text.e9cdf9d8": {
+    "source": "src/league/facilities.ts",
+    "line": 69,
+    "params": {},
+    "locations": []
+  },
+  "league.facilities.text.768384df": {
+    "source": "src/league/facilities.ts",
+    "line": 70,
+    "params": {},
+    "locations": []
+  },
+  "league.facilities.text.0a987434": {
+    "source": "src/league/facilities.ts",
+    "line": 71,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.f6661869": {
+    "source": "src/ui/Office.tsx",
+    "line": 636,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.4e77ec68": {
+    "source": "src/ui/Office.tsx",
+    "line": 638,
+    "params": {
+      "n": {
+        "expression": "sp.cityCount ?? 0"
+      },
+      "total": {
+        "expression": "money(sp.cityTotal ?? 0)"
+      }
+    },
+    "locations": []
+  },
+  "ui.office.text.2f71deeb": {
+    "source": "src/ui/Office.tsx",
+    "line": 639,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.0c2f624f": {
+    "source": "src/ui/Office.tsx",
+    "line": 644,
+    "params": {
+      "money": {
+        "expression": "money(t.cost)"
+      },
+      "pct": {
+        "expression": "Math.round(cityGain(league, i) * 100)"
+      }
+    },
+    "locations": []
+  },
+  "ui.office.text.6b7b5a93": {
+    "source": "src/ui/Office.tsx",
+    "line": 650,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.6bf7dc51": {
+    "source": "src/ui/Office.tsx",
+    "line": 653,
+    "params": {
+      "year": {
+        "expression": "u.independent"
+      }
+    },
+    "locations": []
+  },
+  "ui.office.text.6392be7f": {
+    "source": "src/ui/Office.tsx",
+    "line": 654,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.bf73bbd7": {
+    "source": "src/ui/Market.tsx",
+    "line": 284,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.27933780": {
+    "source": "src/league/scenarios.ts",
+    "line": 439,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.fe809bdd": {
+    "source": "src/league/scenarios.ts",
+    "line": 439,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.a53cce6d": {
+    "source": "src/league/scenarios.ts",
+    "line": 439,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.a850f0a4": {
+    "source": "src/league/scenarios.ts",
+    "line": 441,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.4b6d4951": {
+    "source": "src/league/scenarios.ts",
+    "line": 441,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.836f18f1": {
+    "source": "src/league/scenarios.ts",
+    "line": 441,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.e8740f5d": {
+    "source": "src/league/scenarios.ts",
+    "line": 443,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.7e41bac0": {
+    "source": "src/league/scenarios.ts",
+    "line": 443,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.7d3c2370": {
+    "source": "src/league/scenarios.ts",
+    "line": 445,
+    "params": {
+      "year": {
+        "expression": "DEADLINE"
+      }
+    },
+    "locations": []
+  },
+  "league.scenarios.text.19e974de": {
+    "source": "src/league/scenarios.ts",
+    "line": 445,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.818aa1a9": {
+    "source": "src/league/scenarios.ts",
+    "line": 445,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.cba61f3c": {
+    "source": "src/league/scenarios.ts",
+    "line": 447,
+    "params": {
+      "year": {
+        "expression": "DEADLINE - 4"
+      }
+    },
+    "locations": []
+  },
+  "league.scenarios.text.7bb6a076": {
+    "source": "src/league/scenarios.ts",
+    "line": 449,
+    "params": {
+      "n": {
+        "expression": "330"
+      }
+    },
+    "locations": []
+  },
+  "league.scenarios.text.d4d171d9": {
+    "source": "src/league/scenarios.ts",
+    "line": 449,
+    "params": {
+      "n": {
+        "expression": "260"
+      }
+    },
+    "locations": []
+  },
+  "league.scenarios.text.ad3b8709": {
+    "source": "src/league/scenarios.ts",
+    "line": 449,
+    "params": {
+      "n": {
+        "expression": "190"
+      }
+    },
+    "locations": []
+  },
+  "league.scenarios.text.ae0803c3": {
+    "source": "src/league/scenarios.ts",
+    "line": 452,
+    "params": {
+      "n": {
+        "expression": "g"
+      }
+    },
+    "locations": []
+  },
+  "league.scenarios.text.a689f7ab": {
+    "source": "src/league/scenarios.ts",
+    "line": 457,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.4761b4b6": {
+    "source": "src/league/scenarios.ts",
+    "line": 457,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.dd08cf55": {
+    "source": "src/league/scenarios.ts",
+    "line": 457,
+    "params": {},
+    "locations": []
+  },
+  "league.scenarios.text.347bc73e": {
+    "source": "src/league/scenarios.ts",
+    "line": 557,
+    "params": {
+      "medal": {
+        "expression": "MEDAL_LABEL[medal]"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.f72908df": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 597,
+    "params": {
+      "medal": {
+        "expression": "medalLabel(x.medal)"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.37153dba": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 598,
+    "params": {
+      "gold": {
+        "expression": "x.medals[0]!"
+      },
+      "silver": {
+        "expression": "x.medals[1]!"
+      },
+      "bronze": {
+        "expression": "x.medals[2]!"
+      }
+    },
+    "locations": []
+  },
+  "ui.newGame.text.330ccf22": {
+    "source": "src/ui/NewGame.tsx",
+    "line": 169,
+    "params": {},
+    "locations": []
+  },
+  "league.asiaseries.text.fe91f4df": {
+    "source": "src/league/asiaseries.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.asiaseries.text.c1e4f408": {
+    "source": "src/league/asiaseries.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.asiaseries.text.232ef393": {
+    "source": "src/league/asiaseries.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.asiaseries.text.3400139e": {
+    "source": "src/league/asiaseries.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.asiaseries.text.ada53981": {
+    "source": "src/league/asiaseries.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.asiaseries.text.37a15244": {
+    "source": "src/league/asiaseries.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.asiaseries.text.24268cd4": {
+    "source": "src/league/asiaseries.ts",
+    "line": 42,
+    "params": {},
+    "locations": []
+  },
+  "league.asiaseries.text.233d5ec0": {
+    "source": "src/league/asiaseries.ts",
+    "line": 42,
+    "params": {},
+    "locations": []
+  },
+  "league.asiaseries.text.a1f2248b": {
+    "source": "src/league/asiaseries.ts",
+    "line": 42,
+    "params": {},
+    "locations": []
+  },
+  "league.asiaseries.text.3d1614e2": {
+    "source": "src/league/asiaseries.ts",
+    "line": 42,
+    "params": {},
+    "locations": []
+  },
+  "league.asiaseries.text.b9e98834": {
+    "source": "src/league/asiaseries.ts",
+    "line": 42,
+    "params": {},
+    "locations": []
+  },
+  "league.asiaseries.text.ec82d49e": {
+    "source": "src/league/asiaseries.ts",
+    "line": 42,
+    "params": {},
+    "locations": []
+  },
+  "league.asiaseries.text.172f1b6e": {
+    "source": "src/league/asiaseries.ts",
+    "line": 183,
+    "params": {
+      "home": {
+        "expression": "sideName(s, x, final.home)"
+      },
+      "hs": {
+        "expression": "final.hs"
+      },
+      "as": {
+        "expression": "final.as"
+      },
+      "away": {
+        "expression": "sideName(s, x, final.away)"
+      }
+    },
+    "locations": []
+  },
+  "league.asiaseries.text.e4dfe604": {
+    "source": "src/league/asiaseries.ts",
+    "line": 184,
+    "params": {
+      "home": {
+        "expression": "sideName(s, x, g.home)"
+      },
+      "hs": {
+        "expression": "g.hs"
+      },
+      "as": {
+        "expression": "g.as"
+      },
+      "away": {
+        "expression": "sideName(s, x, g.away)"
+      }
+    },
+    "locations": []
+  },
+  "league.asiaseries.text.4042c19f": {
+    "source": "src/league/asiaseries.ts",
+    "line": 186,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.asiaseries.text.f474bab0": {
+    "source": "src/league/asiaseries.ts",
+    "line": 186,
+    "params": {
+      "year": {
+        "expression": "x.year"
+      },
+      "champ": {
+        "expression": "champ"
+      },
+      "league": {
+        "expression": "LEAGUE_LABEL[x.winner]"
+      }
+    },
+    "locations": []
+  },
+  "league.asiaseries.text.8881747f": {
+    "source": "src/league/asiaseries.ts",
+    "line": 201,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "npb": {
+        "expression": "x.clubs.npb"
+      },
+      "club": {
+        "expression": "wagwa(s.teams.find((t) => t.id === old)?.name ?? '')",
+        "particle": "과/와"
+      }
+    },
+    "locations": []
+  },
+  "league.asiaseries.text.7fc56064": {
+    "source": "src/league/asiaseries.ts",
+    "line": 202,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "npb": {
+        "expression": "x.clubs.npb"
+      }
+    },
+    "locations": []
+  },
+  "league.asiaseries.text.24f93e00": {
+    "source": "src/league/asiaseries.ts",
+    "line": 204,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.asiaseries.text.2589c839": {
+    "source": "src/league/asiaseries.ts",
+    "line": 204,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.settings.text.d8e915cf": {
+    "source": "src/ui/Settings.tsx",
+    "line": 217,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.19a5133b": {
+    "source": "src/ui/Settings.tsx",
+    "line": 221,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.bca9c389": {
+    "source": "src/ui/Settings.tsx",
+    "line": 221,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.9625ac94": {
+    "source": "src/ui/Settings.tsx",
+    "line": 225,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.8dc04067": {
+    "source": "src/ui/History.tsx",
+    "line": 232,
+    "params": {
+      "winner": {
+        "expression": "a.winner === 'kbo' ? (teamOf(league, a.kbo)?.short ?? 'KBO') : `${a.clubs[a.winner]} (${LEAGUE_LABEL[a.winner]})`"
+      }
+    },
+    "locations": []
   }
 }

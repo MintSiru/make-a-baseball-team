@@ -3746,3 +3746,8 @@ button.danger {
     min-width: 7.5rem;
   }
 }
+
+/* 2.0.42: a cleared scenario's medal, and the medal conditions. */
+.clear-mark { font-size: 0.95em; }
+.medal-list { list-style: none; padding-left: 0; margin: 0.3rem 0; }
+.medal-list li { margin: 0.1rem 0; }
