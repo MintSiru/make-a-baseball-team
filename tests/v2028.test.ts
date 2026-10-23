@@ -390,8 +390,10 @@ describe('the calls argued, foreign players and the papers (2.0.28)', () => {
   it('argues balls and strikes only without the ABS, and the plays on the bases and the lines either way', async () => {
     const { protestGame } = await import('../src/league/protests');
     const { setEraBoard } = await import('../src/league/era');
+    // One league for both runs (it takes about a minute to make), a fresh copy each.
+    const base = createLeague('v2028-calls');
     const run = (abs: number) => {
-      const s = createLeague('v2028-calls');
+      const s = structuredClone(base);
       setEraBoard([{ from: 0, item: 'abs', value: abs }]);
       const [a, b] = s.teams.filter((t) => s.rosters[t.id]).map((t) => t.id);
       const side = (teamId: string) => {

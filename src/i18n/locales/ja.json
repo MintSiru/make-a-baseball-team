@@ -9660,5 +9660,12 @@
   "ui.decision.text.75c22395": "最後の試合を中継で観ます（それ以前の試合は歴代 › 代表で）。",
   "ui.decision.text.c4ff9f6a": "スキップ",
   "ui.decision.text.f92b4251": "結果だけ見て進みます。",
-  "ui.decision.text.36cca98c": "{name}：{result}（{games}試合）"
+  "ui.decision.text.36cca98c": "{name}：{result}（{games}試合）",
+  "league.advice.text.8c27f8dc": "代表戦の結果はもう出ているので、観なくても進行には影響しません。",
+  "league.advice.text.c4ff9f6a": "スキップ",
+  "league.advice.text.c2119c63": "観戦すると最後の試合を中継で観ます（それ以前の試合は歴代 › 代表で）。",
+  "league.advice.text.95fc0810": "まだ一枠を任せられる選手（KEEP 50以上）なら帰化を後押しします。",
+  "league.advice.text.35a9919d": "帰化を後押しする",
+  "league.advice.text.c3df1fb6": "断る",
+  "league.advice.text.70c50a89": "後押しすれば外国人枠が一つ空きますが国内選手として3年契約を抱え、断ると選手は少し寂しがります。"
 }

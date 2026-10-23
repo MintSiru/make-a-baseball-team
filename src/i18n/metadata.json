@@ -88201,5 +88201,47 @@
       }
     },
     "locations": []
+  },
+  "league.advice.text.8c27f8dc": {
+    "source": "src/league/advice.ts",
+    "line": 160,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.c4ff9f6a": {
+    "source": "src/league/advice.ts",
+    "line": 160,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.c2119c63": {
+    "source": "src/league/advice.ts",
+    "line": 160,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.95fc0810": {
+    "source": "src/league/advice.ts",
+    "line": 164,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.35a9919d": {
+    "source": "src/league/advice.ts",
+    "line": 165,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.c3df1fb6": {
+    "source": "src/league/advice.ts",
+    "line": 165,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.70c50a89": {
+    "source": "src/league/advice.ts",
+    "line": 166,
+    "params": {},
+    "locations": []
   }
 }

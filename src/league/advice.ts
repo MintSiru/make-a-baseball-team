@@ -156,6 +156,16 @@ export function adviceFor(s: LeagueState): Advice | null {
         picks: [input.answer === 'accept' ? __i18n_k("league.advice.text.b8f77b9e") : __i18n_k("league.advice.text.09797ed8")],
         tradeoff: __i18n_k("league.advice.text.5e077b7b"),
       };
+    case 'nationalWatch':
+      return { rule: __i18n_k("league.advice.text.8c27f8dc"), picks: [__i18n_k("league.advice.text.c4ff9f6a")], tradeoff: __i18n_k("league.advice.text.c2119c63") };
+    case 'naturalize': {
+      const p = d.kind === 'naturalize' ? s.players[d.id] : undefined;
+      return {
+        rule: __i18n_k("league.advice.text.95fc0810"),
+        picks: [p ? who(p.id) : '', input.answer === 'support' ? __i18n_k("league.advice.text.35a9919d") : __i18n_k("league.advice.text.c3df1fb6")].filter(Boolean),
+        tradeoff: __i18n_k("league.advice.text.70c50a89"),
+      };
+    }
     case 'meddle':
       return {
         rule: __i18n_k("league.advice.adviceFor.rule.3797364a"),

@@ -9661,5 +9661,12 @@ export const koSource = {
   "ui.decision.text.75c22395": "마지막 경기를 중계로 봅니다(지난 경기는 역대 › 국가대표에서).",
   "ui.decision.text.c4ff9f6a": "넘긴다",
   "ui.decision.text.f92b4251": "결과만 보고 계속 진행합니다.",
-  "ui.decision.text.36cca98c": "{name}: {result} ({games}경기)"
+  "ui.decision.text.36cca98c": "{name}: {result} ({games}경기)",
+  "league.advice.text.8c27f8dc": "국가대표 경기는 결과가 이미 나와 있어 보지 않아도 진행에 영향이 없습니다.",
+  "league.advice.text.c4ff9f6a": "넘긴다",
+  "league.advice.text.c2119c63": "관전하면 마지막 경기를 중계로 봅니다(지난 경기는 역대 › 국가대표에서).",
+  "league.advice.text.95fc0810": "아직 한 자리를 맡을 만한 선수(KEEP 50 이상)면 귀화를 돕습니다.",
+  "league.advice.text.35a9919d": "귀화를 돕는다",
+  "league.advice.text.c3df1fb6": "거절한다",
+  "league.advice.text.70c50a89": "도우면 외국인 한 자리가 비지만 국내 선수 3년 계약을 떠안고, 거절하면 선수가 조금 서운해합니다."
 } as const;

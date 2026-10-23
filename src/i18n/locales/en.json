@@ -9660,5 +9660,12 @@
   "ui.decision.text.75c22395": "Watch the last game live (earlier games are under History › National team).",
   "ui.decision.text.c4ff9f6a": "Skip",
   "ui.decision.text.f92b4251": "See the result and go on.",
-  "ui.decision.text.36cca98c": "{name}: {result} ({games, plural, one {# game} other {# games}})"
+  "ui.decision.text.36cca98c": "{name}: {result} ({games, plural, one {# game} other {# games}})",
+  "league.advice.text.8c27f8dc": "The national team's result is already in, so skipping the games changes nothing.",
+  "league.advice.text.c4ff9f6a": "Skip",
+  "league.advice.text.c2119c63": "Watching shows the last game live (earlier games are under History › National team).",
+  "league.advice.text.95fc0810": "Back his naturalization if he is still worth a place (KEEP 50 or more).",
+  "league.advice.text.35a9919d": "Back him",
+  "league.advice.text.c3df1fb6": "Decline",
+  "league.advice.text.70c50a89": "Backing him frees a foreign place but takes on a three-year domestic deal; declining leaves him a little hurt."
 }

@@ -67,6 +67,8 @@ describe('the winter programmes as stages (2.0.32)', () => {
     expect(s.pending?.kind).toBe('wrapUp');
     resolveDecision(s, { kind: 'wrapUp', site: 'guam' });
     expect(s.user!.dev?.camp).toMatchObject({ year: s.offseason!.year, site: 'guam' });
+    // 2.0.42: then the November tournament's games, watched or not.
+    if (s.pending?.kind === 'nationalWatch') resolveDecision(s, { kind: 'nationalWatch', answer: 'skip' });
     // And the winter goes on to its next step.
     expect(['devFall', 'devAbl', 'wrapUp']).not.toContain(s.pending?.kind);
     expect(s.offseason!.step).toBeGreaterThan(OFFSEASON_STEPS.indexOf('international'));
