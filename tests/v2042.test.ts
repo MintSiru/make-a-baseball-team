@@ -1,7 +1,10 @@
 /* 2.0.42 (the user's requests): bigger uses for a large fund — a mega expansion past 40,000 seats, a ballpark remodel,
    investing in the city, buying the club out of its owner, more cash in a trade — and a medal for each won scenario,
    remembered for the new-game screen. */
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+import type { Player } from '../src/model/types';
+import { canNaturalize, NATURALIZE, naturalizeDecision, naturalizeWinter, resolveNaturalize } from '../src/league/naturalize';
+import { isForeign, keepValue } from '../src/league/players';
 import { megaCost, openProjects, projectOptions, startProject } from '../src/league/ballpark';
 import { FACILITIES, facilityOptions, scoreboardDemand } from '../src/league/facilities';
 import { parentSupport } from '../src/league/finance';
@@ -169,5 +172,61 @@ describe('the Asia Series (2.0.42)', () => {
     expect((s.alerts ?? []).some((a) => a.id === `asia-ex-${s.year}-${p.id}`)).toBe(true);
     // Once a year.
     expect(playAsiaSeries(s, s.year, me)).toBeNull();
+  });
+});
+
+describe('naturalization (2.0.42)', () => {
+  const keep = { ...NATURALIZE };
+  afterEach(() => Object.assign(NATURALIZE, keep));
+  const veteran = (s: ReturnType<typeof loadSave>, p: Player, seasons: number) => {
+    const row = p.career.find((c) => !c.level) ?? null;
+    if (!row) return false;
+    p.career = Array.from({ length: seasons }, (_, i) => ({ ...row, year: s.year - i, teamId: p.teamId! }));
+    p.birthday = `${s.year - 32}-05-01`;
+    return true;
+  };
+
+  it('makes another club’s long-serving foreign player a domestic one, with news', () => {
+    const s = loadSave('2.0.39');
+    const me = s.user!.teamId;
+    NATURALIZE.chance = 1;
+    NATURALIZE.most = 1;
+    const p = Object.values(s.players).find((x) => isForeign(x) && x.teamId && x.teamId !== me && x.status === 'active' && keepValue(x, s.year + 1) >= 45 && x.career.some((c) => !c.level))!;
+    expect(veteran(s, p, 6)).toBe(true);
+    expect(canNaturalize(s, p, s.year + 1)).toBe(true);
+    naturalizeWinter(s, s.year + 1);
+    expect(isForeign(p)).toBe(false);
+    expect(p.origin.naturalized?.year).toBe(s.year);
+    expect(p.contract?.kind).toBe('multiYear');
+    expect(p.contract?.salaries).toHaveLength(NATURALIZE.years);
+    expect((s.news ?? []).some((n) => n.id === `naturalize-${p.id}`)).toBe(true);
+  });
+
+  it('asks us first about ours, and backing him frees a foreign place', () => {
+    const s = loadSave('2.0.39');
+    const me = s.user!.teamId;
+    NATURALIZE.chance = 1;
+    NATURALIZE.most = 1;
+    const p = Object.values(s.players).find((x) => isForeign(x) && x.teamId === me && x.status === 'active' && x.career.some((c) => !c.level))!;
+    expect(veteran(s, p, 5)).toBe(true);
+    const next = s.year + 1;
+    const d = naturalizeDecision(s, next);
+    expect(d?.kind).toBe('naturalize');
+    if (d?.kind !== 'naturalize') return;
+    expect(d.id).toBe(p.id);
+    // Asked once a winter.
+    expect(naturalizeDecision(s, next)).toBeNull();
+    resolveNaturalize(s, d, 'support', next);
+    expect(isForeign(p)).toBe(false);
+    expect(p.teamId).toBe(me);
+  });
+
+  it('leaves a short-serving foreign player alone', () => {
+    const s = loadSave('2.0.39');
+    NATURALIZE.chance = 1;
+    NATURALIZE.most = 1;
+    const p = Object.values(s.players).find((x) => isForeign(x) && x.teamId && x.status === 'active' && x.career.some((c) => !c.level))!;
+    veteran(s, p, 4);
+    expect(canNaturalize(s, p, s.year + 1)).toBe(false);
   });
 });

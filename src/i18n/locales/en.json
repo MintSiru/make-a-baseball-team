@@ -9639,5 +9639,19 @@
   "ui.settings.text.19a5133b": "On",
   "ui.settings.text.bca9c389": "Off",
   "ui.settings.text.9625ac94": "After the Korean Series, the KBO, NPB, CPBL and ABL champions meet in the Asia Series (a round robin, then a final). The Korean champion plays with its own players, and a former KBO player on the NPB champion plays too. Nothing counts toward players' records or fatigue.",
-  "ui.history.text.8dc04067": "Asia Series: {winner}"
+  "ui.history.text.8dc04067": "Asia Series: {winner}",
+  "league.naturalize.text.8cbd7735": "Took Korean nationality — a {years}-year domestic contract",
+  "league.naturalize.text.ebc363d2": "{club}'s {name} takes Korean nationality and will play as a domestic player",
+  "league.naturalize.text.a7dd9fb3": "{name}, who has played {n, plural, one {# season} other {# seasons}} in the KBO, has been naturalized. He no longer counts against the foreign-player limit and will earn ₩{annual} hundred million a year for {years, plural, one {# year} other {# years}}.",
+  "league.naturalize.text.a49e3dea": "Backed {name}'s naturalization: a {years}-year domestic contract.",
+  "league.naturalize.text.3458b9da": "{name} says he wants to be naturalized",
+  "league.naturalize.text.b523b404": "After {n, plural, one {# season} other {# seasons}} in the KBO, he says Korea has become home.",
+  "league.naturalize.text.71a47bd4": "Wanted to be naturalized, but the club did not back him",
+  "league.naturalize.text.9ca3402e": "Turned down {name}'s wish to be naturalized.",
+  "ui.decision.text.dc49c670": "Naturalization request",
+  "ui.decision.text.35a9919d": "Back him",
+  "ui.decision.text.8a15b34e": "A domestic deal for {years, plural, one {# year} other {# years}} at {money} a year. A foreign place opens.",
+  "ui.decision.text.b19f1176": "Do not back him",
+  "ui.decision.text.16d6a2c6": "He stays a foreign player. He may be hurt.",
+  "ui.decision.text.583ce1b6": "{name} ({n, plural, one {# KBO season} other {# KBO seasons}}) wants to take Korean nationality. Naturalized, he would be a domestic player outside the foreign-player limit."
 }

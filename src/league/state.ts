@@ -226,6 +226,8 @@ export type Decision =
   | { kind: 'development'; candidates: PlayerId[]; max: number }
   /** 2.0.37: our development foreign prospects for the winter (devforeign.ts). */
   | { kind: 'devForeign'; candidates: PlayerId[]; max: number }
+  /** 2.0.42 (naturalize.ts): our foreign player asks to naturalize — his KBO seasons and the domestic deal. */
+  | { kind: 'naturalize'; id: PlayerId; seasons: number; years: number; annual: number }
   /** 2.0.37: our free agents Japan is about to sign, to talk round or let go (abroad.ts). */
   | { kind: 'abroad'; rows: { id: PlayerId; years: number; total: number; chance: number }[] }
   | { kind: 'camp'; players: PlayerId[] }
@@ -475,6 +477,8 @@ export interface UserClub {
   schools?: Record<string, number>;
   /** 2.0.39 (spending.ts): the fund's other uses — the last bonus, the seasons of charters and fan days, gifts to the owner. */
   spending?: { bonusDate?: string; charter?: number; fanDay?: number; giftYear?: number; giftPoints?: number; /** 2.0.42: city investments — the last winter, how many, how much. */ cityYear?: number; cityCount?: number; cityTotal?: number };
+  /** 2.0.42 (naturalize.ts): the asks already put to the general manager (`id|season`). */
+  naturalizeAsked?: string[];
   /** 2.0.42 (spending.ts): the winter the club bought itself out of its owner. */
   independent?: number;
   /** 2.0.41 (broker.ts): the deals the club made with brokers, and the season the broker's day last came. */

@@ -1,3 +1,4 @@
+import { autoNaturalize, naturalizeDecision, resolveNaturalize } from './naturalize';
 import { k as __i18n_k } from '../i18n/index';
 import { noteMove } from './moves';
 import { FOREIGN_TROUBLE } from './scandals';
@@ -425,7 +426,8 @@ export function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       if (next < u.firstTeamYear) return null; // no foreign players in the futures year (NC precedent)
       // 2.0.37: our development foreign prospects first (an optional rule); then our own: re-sign or let go (V0.5);
       // the signing decision follows.
-      return devForeignDecision(s, next) ?? foreignRenewDecision(s, next) ?? foreignSigningDecision(s, next);
+      // 2.0.42: a long-serving foreign player of ours who asks to naturalize comes first (naturalize.ts).
+      return naturalizeDecision(s, next) ?? devForeignDecision(s, next) ?? foreignRenewDecision(s, next) ?? foreignSigningDecision(s, next);
     }
     default:
       return null;
@@ -516,6 +518,8 @@ export type DecisionInput =
   | { kind: 'roster'; ids: PlayerId[]; develop?: PlayerId[] }
   /** 2.0.37: the development foreign prospects we sign (devforeign.ts). */
   | { kind: 'devForeign'; ids: PlayerId[] }
+  /** 2.0.42: back our foreign player's naturalization or not (naturalize.ts). */
+  | { kind: 'naturalize'; answer: 'support' | 'decline' }
   /** 2.0.37: the free agents bound for Japan we try to talk round (abroad.ts). */
   | { kind: 'abroad'; persuade: PlayerId[] }
   /** The twelfth club (V0.9): its design, or null to vote it down when the board offers it. */
@@ -540,6 +544,8 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
   const next = nextSeasonOf(s);
   const payrollAfter = (ids: PlayerId[]) => projectedPayroll(s, u.teamId, next) + ids.reduce((a, id) => a + (salaryIn(s.players[id]!, next) || renewSalary(s.players[id]!, next)), 0);
   switch (input.kind) {
+    case 'naturalize':
+      return input.answer === 'support' || input.answer === 'decline' ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
     case 'tryout':
     case 'released':
     case 'devForeign': {
@@ -714,6 +720,16 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
       }
       break;
     }
+    case 'naturalize': {
+      resolveNaturalize(s, d as Extract<Decision, { kind: 'naturalize' }>, input.answer, next);
+      // Then the rest of the foreign step (a backed player frees a place).
+      const then = devForeignDecision(s, next) ?? foreignRenewDecision(s, next) ?? foreignSigningDecision(s, next);
+      if (then) {
+        s.pending = then;
+        return;
+      }
+      break;
+    }
     case 'devForeign': {
       resolveDevForeign(s, d as Extract<Decision, { kind: 'devForeign' }>, input.ids, next);
       // Then our regular foreign players: re-sign or let go, and the signings.
@@ -844,6 +860,8 @@ export function autoDecision(s: LeagueState): DecisionInput | null {
       return { kind: 'released', ids: best(d.candidates, Math.min(d.max, 5)) };
     case 'devForeign':
       return { kind: 'devForeign', ids: autoDevForeign(s, d) };
+    case 'naturalize':
+      return { kind: 'naturalize', answer: autoNaturalize(s, d, next) };
     case 'abroad':
       // Worth a try: a word costs nothing.
       return { kind: 'abroad', persuade: d.rows.map((r) => r.id) };

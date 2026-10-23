@@ -88007,5 +88007,147 @@
       }
     },
     "locations": []
+  },
+  "league.naturalize.text.8cbd7735": {
+    "source": "src/league/naturalize.ts",
+    "line": 65,
+    "params": {
+      "years": {
+        "expression": "deal.years"
+      }
+    },
+    "locations": []
+  },
+  "league.naturalize.text.ebc363d2": {
+    "source": "src/league/naturalize.ts",
+    "line": 72,
+    "params": {
+      "club": {
+        "expression": "club?.short ?? ''"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.naturalize.text.a7dd9fb3": {
+    "source": "src/league/naturalize.ts",
+    "line": 73,
+    "params": {
+      "n": {
+        "expression": "kboSeasons(p)"
+      },
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      },
+      "years": {
+        "expression": "deal.years"
+      },
+      "annual": {
+        "expression": "Math.round(deal.annual / 1000) / 10"
+      }
+    },
+    "locations": []
+  },
+  "league.naturalize.text.a49e3dea": {
+    "source": "src/league/naturalize.ts",
+    "line": 79,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "years": {
+        "expression": "deal.years"
+      }
+    },
+    "locations": []
+  },
+  "league.naturalize.text.3458b9da": {
+    "source": "src/league/naturalize.ts",
+    "line": 99,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.naturalize.text.b523b404": {
+    "source": "src/league/naturalize.ts",
+    "line": 99,
+    "params": {
+      "n": {
+        "expression": "kboSeasons(p)"
+      }
+    },
+    "locations": []
+  },
+  "league.naturalize.text.71a47bd4": {
+    "source": "src/league/naturalize.ts",
+    "line": 111,
+    "params": {},
+    "locations": []
+  },
+  "league.naturalize.text.9ca3402e": {
+    "source": "src/league/naturalize.ts",
+    "line": 112,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.dc49c670": {
+    "source": "src/ui/Decision.tsx",
+    "line": 87,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.35a9919d": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1336,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.8a15b34e": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1336,
+    "params": {
+      "years": {
+        "expression": "d.years"
+      },
+      "money": {
+        "expression": "money(d.annual)"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.b19f1176": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1337,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.16d6a2c6": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1337,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.583ce1b6": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1341,
+    "params": {
+      "name": {
+        "expression": "p?.name ?? ''"
+      },
+      "n": {
+        "expression": "d.seasons"
+      }
+    },
+    "locations": []
   }
 }

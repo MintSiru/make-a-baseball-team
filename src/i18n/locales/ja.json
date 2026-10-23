@@ -9639,5 +9639,19 @@
   "ui.settings.text.19a5133b": "開催",
   "ui.settings.text.bca9c389": "開催しない",
   "ui.settings.text.9625ac94": "韓国シリーズの後、KBO・NPB・CPBL・ABLの優勝チームが戦うアジアシリーズ（総当たりの後に決勝）を開きます。韓国の優勝チームは自軍の選手で試合をし、NPB優勝チームにKBO出身選手がいればその選手も出場します。選手の記録や疲労には残りません。",
-  "ui.history.text.8dc04067": "アジアシリーズ：{winner}"
+  "ui.history.text.8dc04067": "アジアシリーズ：{winner}",
+  "league.naturalize.text.8cbd7735": "韓国国籍を取得 — 国内選手として{years}年契約",
+  "league.naturalize.text.ebc363d2": "{club}の{name}、韓国国籍を取得…国内選手としてプレー",
+  "league.naturalize.text.a7dd9fb3": "KBOで{n}シーズンをプレーした{name}が帰化した。今後は外国人選手枠に含まれず、{years}年間年俸{annual}億ウォンを受け取る。",
+  "league.naturalize.text.a49e3dea": "{name}の帰化を支援した：国内選手として{years}年契約。",
+  "league.naturalize.text.3458b9da": "{name}、帰化したい意向を表明",
+  "league.naturalize.text.b523b404": "KBOで{n}シーズンをプレーし、韓国に根を下ろしたという。",
+  "league.naturalize.text.71a47bd4": "帰化を望んだが球団が支援しなかった",
+  "league.naturalize.text.9ca3402e": "{name}の帰化要請を受け入れなかった。",
+  "ui.decision.text.dc49c670": "帰化の要請",
+  "ui.decision.text.35a9919d": "帰化を支援する",
+  "ui.decision.text.8a15b34e": "国内選手として{years}年、年{money}。外国人枠が1つ空く。",
+  "ui.decision.text.b19f1176": "支援しない",
+  "ui.decision.text.16d6a2c6": "外国人選手のまま。寂しく思うかもしれない。",
+  "ui.decision.text.583ce1b6": "{name}選手（KBO{n}シーズン）が韓国国籍を取りたいという。帰化すれば外国人選手枠に含まれない国内選手になる。"
 }

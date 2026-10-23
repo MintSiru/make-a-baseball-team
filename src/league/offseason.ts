@@ -77,6 +77,7 @@ import { runTryout, tryoutYear } from './tryout';
 import { kyopoWinter } from './kyopo';
 import { abroadVetsWinter } from './abroadvets';
 import { playAsiaSeries } from './asiaseries';
+import { naturalizeWinter } from './naturalize';
 import { staffAgeWinter } from './staffage';
 
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
@@ -1106,6 +1107,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
           next,
           rng(`${s.seed}|limits|${year}`),
         );
+        // 2.0.42: the AI clubs' long-serving foreign players who naturalize (naturalize.ts), before the foreign step.
+        naturalizeWinter(s, next);
         break;
       case 'foreign':
         // 2.0.37: development foreign players — those three seasons in go, ready ones take a slot (devforeign.ts).

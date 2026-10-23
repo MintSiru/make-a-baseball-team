@@ -9640,5 +9640,19 @@ export const koSource = {
   "ui.settings.text.19a5133b": "연다",
   "ui.settings.text.bca9c389": "열지 않음",
   "ui.settings.text.9625ac94": "한국시리즈가 끝나면 KBO·NPB·CPBL·ABL 우승팀이 겨루는 아시아 시리즈(풀리그 뒤 결승)를 엽니다. 한국 우승팀은 제 선수로 직접 경기하고, NPB 우승팀에 KBO 출신 선수가 있으면 그 선수도 뜁니다. 선수 기록과 피로에는 남지 않습니다.",
-  "ui.history.text.8dc04067": "아시아 시리즈: {winner}"
+  "ui.history.text.8dc04067": "아시아 시리즈: {winner}",
+  "league.naturalize.text.8cbd7735": "한국 국적 취득 — 국내 선수로 {years}년 계약",
+  "league.naturalize.text.ebc363d2": "{club} {name}, 한국 국적 취득… 국내 선수로 뛴다",
+  "league.naturalize.text.a7dd9fb3": "KBO에서 {n}시즌을 뛴 {name} 귀화했다. 이제 외국인 선수 한도에 들지 않고, {years}년 동안 연 {annual}억 원을 받는다.",
+  "league.naturalize.text.a49e3dea": "{name}의 귀화를 도왔다: 국내 선수로 {years}년 계약.",
+  "league.naturalize.text.3458b9da": "{name}, 귀화하고 싶다는 뜻을 밝혔다",
+  "league.naturalize.text.b523b404": "KBO에서 {n}시즌을 뛰며 한국에 뿌리를 내렸다고 한다.",
+  "league.naturalize.text.71a47bd4": "귀화를 원했지만 구단이 지원하지 않았다",
+  "league.naturalize.text.9ca3402e": "{name}의 귀화 요청을 받아들이지 않았다.",
+  "ui.decision.text.dc49c670": "귀화 요청",
+  "ui.decision.text.35a9919d": "귀화를 돕는다",
+  "ui.decision.text.8a15b34e": "국내 선수로 {years}년, 연 {money}. 외국인 한 자리가 빈다.",
+  "ui.decision.text.b19f1176": "지원하지 않는다",
+  "ui.decision.text.16d6a2c6": "외국인 선수로 남는다. 서운해할 수 있다.",
+  "ui.decision.text.583ce1b6": "{name} 선수(KBO {n}시즌)가 한국 국적을 얻고 싶다고 한다. 귀화하면 외국인 선수 한도에 들지 않는 국내 선수가 된다."
 } as const;
