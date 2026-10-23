@@ -16,6 +16,10 @@ import { assignUnifiedLeagues, NORTH_AI_CLUBS } from '../src/league/unified';
 import { openProjects, projectOptions, startProject } from '../src/league/ballpark';
 import { BALLPARK } from '../src/league/tuning';
 import { loadSave } from './helpers';
+import { abroadVetsWinter, isAbroadVet } from '../src/league/abroadvets';
+import { canMove } from '../src/league/entry';
+import { signFromPool } from '../src/league/trade';
+import { repairState } from '../src/save/migrate';
 
 const pendingOf = (s: LeagueState): Decision | null => s.pending;
 
@@ -177,4 +181,30 @@ describe('unified Korea added to a twelve-club league (2.0.43, the user\u2019s r
     expect(s.twelve!.format).toBe('single');
     expect(s.twelve!.leagues).toBeUndefined();
   }, 300_000);
+});
+
+describe('a veteran home from abroad signed from the pool can play (2.0.43, user report)', () => {
+  it('is active once signed, can be registered, and an old save is repaired at load', () => {
+    const s = loadSave('2.0.39');
+    expect(s.phase).toBe('regular');
+    // Winters until one waits in the pool.
+    for (let next = s.year + 1; next < s.year + 40 && !(s.pool ?? []).some((id) => isAbroadVet(s.players[id]!)); next++) abroadVetsWinter(s, next);
+    const id = (s.pool ?? []).find((x) => isAbroadVet(s.players[x]!))!;
+    expect(id).toBeDefined();
+    expect(s.players[id]!.status).toBe('freeAgent');
+    s.user!.entry = 'manual';
+    signFromPool(s, id);
+    const p = s.players[id]!;
+    expect(p.status).toBe('active');
+    expect(p.teamId).toBe(s.user!.teamId);
+    // A place on the first team (it was full), then he can be registered.
+    const r = s.rosters[s.user!.teamId]!;
+    apply(s, { kind: 'move', id: r.active.at(-1)!, to: 'futures' });
+    expect(canMove(s, id, 'active')).toBeNull();
+    // A save from before the fix: signed, but still a free agent.
+    p.status = 'freeAgent';
+    expect(canMove(s, id, 'active')).not.toBeNull();
+    repairState(s);
+    expect(p.status).toBe('active');
+  });
 });

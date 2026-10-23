@@ -4,7 +4,7 @@ import { k as __i18n_k } from '../i18n/index';
    start, so a save may also carry a snapshot taken at a season boundary; loading then replays only
    the inputs recorded after it. V0.1 has no decisions yet, so snapshots and inputs stay empty. */
 import { RELEASE, SIM_VERSION } from '../core/version';
-import { migrateState, MIGRATABLE } from './migrate';
+import { migrateState, MIGRATABLE, repairState } from './migrate';
 import { stateProblem } from './check';
 import type { GameDate } from '../model/types';
 
@@ -81,6 +81,7 @@ export function parseSave(text: string): SaveFile {
     if (!state?.teams || !state.rosters) throw new SaveError('damaged', __i18n_k("save.format.parseSave.8f84f785"));
     try {
       migrateState(state, from);
+      repairState(state);
     } catch {
       throw new SaveError('otherSim', __i18n_k("save.format.parseSave.cab491bc", { from: from }), from);
     }
@@ -89,6 +90,7 @@ export function parseSave(text: string): SaveFile {
     return { ...(s as SaveFile), sim: SIM_VERSION, migratedFrom: from };
   }
   // 1.4.1: the league inside must be whole too, or the page would break showing it.
+  if (s.snapshot?.state) repairState(s.snapshot.state);
   const problem = s.snapshot ? stateProblem(s.snapshot.state) : null;
   if (problem) throw new SaveError('damaged', __i18n_k("save.format.parseSave.7796c03c", { problem: problem }));
   return s as SaveFile;
