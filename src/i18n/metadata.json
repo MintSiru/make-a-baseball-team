@@ -88262,5 +88262,164 @@
       }
     },
     "locations": []
+  },
+  "league.clubmove.text.e8451a28": {
+    "source": "src/league/clubmove.ts",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "league.clubmove.text.0a7464e8": {
+    "source": "src/league/clubmove.ts",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "league.clubmove.text.53416536": {
+    "source": "src/league/clubmove.ts",
+    "line": 32,
+    "params": {},
+    "locations": []
+  },
+  "league.clubmove.text.b77f9a73": {
+    "source": "src/league/clubmove.ts",
+    "line": 83,
+    "params": {},
+    "locations": []
+  },
+  "league.clubmove.text.db42ddad": {
+    "source": "src/league/clubmove.ts",
+    "line": 84,
+    "params": {},
+    "locations": []
+  },
+  "league.clubmove.text.262f8f56": {
+    "source": "src/league/clubmove.ts",
+    "line": 85,
+    "params": {
+      "value": {
+        "expression": "b.deposit / 10000"
+      }
+    },
+    "locations": []
+  },
+  "league.clubmove.text.6f0111bb": {
+    "source": "src/league/clubmove.ts",
+    "line": 89,
+    "params": {
+      "from": {
+        "expression": "eulreul(from.name)",
+        "particle": "을/를"
+      },
+      "to": {
+        "expression": "to.name"
+      }
+    },
+    "locations": []
+  },
+  "league.clubmove.text.aaaa729d": {
+    "source": "src/league/clubmove.ts",
+    "line": 91,
+    "params": {
+      "from": {
+        "expression": "eunneun(from.short)",
+        "particle": "은/는"
+      }
+    },
+    "locations": []
+  },
+  "league.clubmove.text.fda4d79f": {
+    "source": "src/league/clubmove.ts",
+    "line": 92,
+    "params": {
+      "to": {
+        "expression": "eunneun(to.short)",
+        "particle": "은/는"
+      },
+      "next": {
+        "expression": "year + 1"
+      },
+      "firstTeam": {
+        "expression": "firstTeam"
+      }
+    },
+    "locations": []
+  },
+  "league.unified.text.477ff03d": {
+    "source": "src/league/unified.ts",
+    "line": 85,
+    "params": {},
+    "locations": []
+  },
+  "league.unified.text.86157827": {
+    "source": "src/league/unified.ts",
+    "line": 88,
+    "params": {
+      "firstTeam": {
+        "expression": "firstTeam"
+      }
+    },
+    "locations": []
+  },
+  "league.expansion.text.703b052f": {
+    "source": "src/league/expansion.ts",
+    "line": 610,
+    "params": {},
+    "locations": []
+  },
+  "ui.newGame.text.88ee64f5": {
+    "source": "src/ui/NewGame.tsx",
+    "line": 328,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.1283a834": {
+    "source": "src/ui/Office.tsx",
+    "line": 557,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.26896dc2": {
+    "source": "src/ui/Office.tsx",
+    "line": 557,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.4d3521f9": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 119,
+    "params": {},
+    "locations": []
+  },
+  "ui.twelve.text.caf7c90a": {
+    "source": "src/ui/Twelve.tsx",
+    "line": 161,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.4d651381": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1027,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.e631fdf3": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1030,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.e68fc213": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1034,
+    "params": {
+      "next": {
+        "expression": "d.year + 1"
+      },
+      "firstTeam": {
+        "expression": "d.year + 2"
+      }
+    },
+    "locations": []
   }
 }

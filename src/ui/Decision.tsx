@@ -15,6 +15,7 @@ import { ForeignOffers, offerOf, offersFor, RenewOffers, renewOffersFor } from '
 import { eventById } from '../league/international';
 import { kboLine, poolEntry } from '../league/foreignpool';
 import { autoDecision, checkDecision, projectedPayroll, type DecisionInput } from '../league/expansion';
+import { moveBlocked } from '../league/clubmove';
 import { sangmuChance } from '../league/offseason';
 import { ageIn, isPitcher, keepValue } from '../league/players';
 import type { Decision as DecisionT, LeagueState, RivalSettings } from '../league/state';
@@ -404,6 +405,8 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
   const [plans, setPlans] = useState<Record<PlayerId, CampPlan>>({});
   const [rival, setRival] = useState<RivalSettings | null>(d.kind === 'rival' ? d.suggestion : null);
   const [vote, setVote] = useState(true);
+  // 2.0.43: take the new club over (clubmove.ts).
+  const [move, setMove] = useState(false);
   // 1.5.0: why the scouts recommend it, shown once the recommendation is filled in.
   const [advice, setAdvice] = useState<Advice | null>(null);
   // Consecutive decisions of one kind (draft picks, compensation per free agent) start from a clean slate.
@@ -518,7 +521,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       case 'roster':
         return { kind: 'roster', ids: [...selected], develop: [...develop].filter((id) => selected.has(id)) };
       case 'rival':
-        return { kind: 'rival', settings: vote ? (rival ?? d.suggestion) : null };
+        return { kind: 'rival', settings: vote ? (rival ?? d.suggestion) : null, ...(vote && move ? { move: true } : {}) };
       case 'rivalProtect':
         return { kind: 'rivalProtect', ids: [...selected] };
       case 'scandal':
@@ -1018,6 +1021,20 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
             </div>
           ))}
           {__i18n_display(vote && <RivalForm league={league} value={rival ?? d.suggestion} onChange={setRival} />)}
+          {/* 2.0.43 (the user's request): the general manager may leave his club and take the new one over. */}
+          {vote && (
+            <fieldset class="choice-set club-move">
+              <legend>{__i18n_t("ui.decision.text.4d651381")}</legend>
+              <label class="check">
+                <input type="checkbox" checked={move} disabled={!!moveBlocked(league)} onChange={(e) => setMove((e.currentTarget as HTMLInputElement).checked)} />
+                {__i18n_t("ui.decision.text.e631fdf3")}
+              </label>
+              <p class="muted small">
+                {moveBlocked(league) ??
+                  __i18n_t("ui.decision.text.e68fc213", { next: d.year + 1, firstTeam: d.year + 2 })}
+              </p>
+            </fieldset>
+          )}
         </>
       );
       break;

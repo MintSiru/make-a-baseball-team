@@ -575,6 +575,8 @@ export interface UserClub {
   budgetWhy?: { season: number; base: number; scale: number; dynamic: number; floor: number; gifts: number };
   /** 2.0.28: trades the AI clubs offer us (offers.ts), open until they run out. */
   tradeOffers?: import('./offers').TradeOffer[];
+  /** 2.0.43 (clubmove.ts): the clubs the general manager ran before this one — id, name, first and last winter. */
+  former?: { teamId: TeamId; name: string; from: number; to: number }[];
 }
 
 /** A private training centre abroad (V0.10). */

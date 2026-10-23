@@ -143,13 +143,14 @@ export function foundRival(s: LeagueState, settings: RivalSettings, year: number
   };
   s.teams.push(team);
   s.rosters[RIVAL_ID] = emptyRoster();
-  s.twelve = { teamId: RIVAL_ID, cityId: city.id, founded: year, firstTeam, format: settings.format, gm: settings.gm, manager: settings.manager };
+  // 2.0.43: in a unified league the two leagues of eight are the league's own (unified.ts), not the twelve clubs'.
+  s.twelve = { teamId: RIVAL_ID, cityId: city.id, founded: year, firstTeam, format: s.unified ? 'single' : settings.format, gm: settings.gm, manager: settings.manager };
   clubState(s, RIVAL_ID);
   const staff = staffOf(s, RIVAL_ID);
   staff.manager.style = settings.manager;
   const signed = rivalTryout(s, year, RIVAL_ID, settings.gm);
   const date = `${year}-12-10`;
-  const format = settings.format === 'two' ? __i18n_k("league.rival.foundRival.format.6374c518") : __i18n_k("league.rival.foundRival.format.a14f2bc9");
+  const format = s.twelve.format === 'two' ? __i18n_k("league.rival.foundRival.format.6374c518") : __i18n_k("league.rival.foundRival.format.a14f2bc9");
   addNews(s, {
     date,
     kind: 'season',
@@ -353,7 +354,8 @@ export function rivalStep(s: LeagueState, step: OffseasonStep) {
   }
   // 1.9.5: a legacy league's new clubs (ours too) get the existing clubs' allocation after the special draft.
   if (step === 'special') legacyAllocations(s, next);
-  if (!s.twelve) return;
+  // 2.0.43: the twelfth club is ours when we moved to it (clubmove.ts): its winter is our decisions, not the AI's.
+  if (!s.twelve || s.twelve.teamId === s.user?.teamId) return;
   if (step === 'special') rivalSpecialDraft(s, next);
   if (step === 'released') rivalFill(s, next);
   if (step === 'check') rivalTrim(s, next);

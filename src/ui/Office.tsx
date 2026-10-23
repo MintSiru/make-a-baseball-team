@@ -553,6 +553,8 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
         <>
           {__i18n_display(league.twelve ? (
             <RivalryBox league={league} onAct={onAct} />
+          ) : league.unified ? (
+            <p class="muted">{u.settings.twelve && u.settings.twelve.mode !== 'off' ? __i18n_t("ui.office.text.1283a834") : __i18n_t("ui.office.text.26896dc2")}</p>
           ) : (
             <>
               <p>{__i18n_t("ui.office.office.8a0c79d3")}</p>

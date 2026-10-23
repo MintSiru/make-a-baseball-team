@@ -596,7 +596,7 @@ export function openMarket(s: LeagueState, next: number): FaMarket {
     limit,
     userLimit: entering ? EXPANSION_DEFAULTS.freeAgentSigns : limit,
     userFree: entering,
-    ...(s.twelve && s.twelve.firstTeam === next ? { newClub: s.twelve.teamId } : {}),
+    ...(s.twelve && s.twelve.firstTeam === next && s.twelve.teamId !== u?.teamId ? { newClub: s.twelve.teamId } : {}),
     ...(aiFoundingClubs(s).some((c) => c.firstTeam === next) ? { northClubs: aiFoundingClubs(s).filter((c) => c.firstTeam === next).map((c) => c.teamId) } : {}),
     talks: {},
     order: [],

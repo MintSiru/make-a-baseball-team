@@ -3,7 +3,7 @@ import type { LeagueState } from '../league/state';
 import { exhibitionView, halfStandingsView, lastDayScores, shortName, standingsView } from '../league/views';
 import { postseasonNote } from '../league/historic';
 import { rulesFor } from '../rules/history';
-import { LEAGUE_NAMES, leagueTables, playoffsOf, seasonSeries, sidesOf, twelveClubs } from '../league/twelve';
+import { LEAGUE_NAMES, leagueTables, playoffsOf, rivalId, seasonSeries, sidesOf, twelveClubs } from '../league/twelve';
 import { postseasonView, roundName } from '../league/postseason';
 import type { Action } from '../league/actions';
 import { PostseasonBracket } from './Bracket';
@@ -34,7 +34,8 @@ export function Standings({ league, onTeam, onBox, onAct }: { league: LeagueStat
   } else if (league.historical && !two && postseasonNote(league.year)) groups[0] = { title: null, rows, cut: 4 };
   const note = league.historical ? postseasonNote(league.year) : null;
   const series = seasonSeries(league);
-  const rival = league.twelve && twelveClubs(league) ? league.teams.find((t) => t.id === league.twelve!.teamId) : null;
+  // 2.0.43: our former club when we took the twelfth club over (twelve.ts rivalId).
+  const rival = league.twelve && twelveClubs(league) ? (league.teams.find((t) => t.id === rivalId(league)) ?? null) : null;
   return (
     <section aria-labelledby="standings-title">
       <h2 id="standings-title">{__i18n_t("ui.standings.standings.89ee1808", { year: league.year })}</h2>

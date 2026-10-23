@@ -8,7 +8,7 @@ import { rivalCities, rivalTeam } from '../league/rival';
 import { allTime } from '../league/rivalry';
 import { MANAGER_STYLES } from '../league/staff';
 import type { GmStyle, LeagueFormat, LeagueState, ManagerStyle, RivalSettings, TwelveSetting } from '../league/state';
-import { GM_STYLES, LEAGUE_NAMES, seasonSeries } from '../league/twelve';
+import { GM_STYLES, LEAGUE_NAMES, rivalId, seasonSeries } from '../league/twelve';
 
 const MODES: [TwelveSetting['mode'], string, string][] = [
   ['off', __i18n_k("ui.twelve.mODES.d58fa73a"), __i18n_k("ui.twelve.mODES.4c6c6e01")],
@@ -114,6 +114,10 @@ export function RivalForm({ league, value, onChange }: { league: LeagueState; va
           )))}
         </div>
       </fieldset>
+      {/* 2.0.43: a unified league already has its two leagues of eight (unified.ts). */}
+      {league.unified ? (
+        <p class="muted small">{__i18n_t("ui.twelve.text.4d3521f9")}</p>
+      ) : (
       <fieldset class="choice-set">
         <legend>{__i18n_t("ui.twelve.rivalForm.cce80683")}</legend>
         <div class="choice-grid">
@@ -134,6 +138,7 @@ export function RivalForm({ league, value, onChange }: { league: LeagueState; va
           )))}
         </div>
       </fieldset>
+      )}
     </div>
   );
 }
@@ -141,7 +146,9 @@ export function RivalForm({ league, value, onChange }: { league: LeagueState; va
 /** The rival and the rivalry's record, for the front office. */
 export function RivalryBox({ league, onAct }: { league: LeagueState; onAct?: (a: Action) => void }) {
   const tw = league.twelve;
-  const team = rivalTeam(league);
+  // 2.0.43: when we took the twelfth club over, the rival is the club we left (clubmove.ts).
+  const moved = !!tw && tw.teamId === league.user?.teamId;
+  const team = moved ? league.teams.find((t) => t.id === rivalId(league)) : rivalTeam(league);
   if (!tw || !team) return null;
   const now = seasonSeries(league);
   const total = allTime(league);
@@ -149,7 +156,13 @@ export function RivalryBox({ league, onAct }: { league: LeagueState; onAct?: (a:
   const side = tw.leagues && league.user ? tw.leagues[league.user.teamId] : undefined;
   return (
     <div class="rivalry-box">
+      {moved ? (
+        <p>
+          <span class="swatch" style={{ background: team.color }} aria-hidden="true" /> <strong>{team.name}</strong> {__i18n_t("ui.twelve.text.caf7c90a")}
+        </p>
+      ) : (
       <p>{__i18n_rich("ui.twelve.rivalryBox.8f237969", { value: <span class="swatch" style={{ background: team.color }} aria-hidden="true" />, value2: <strong>{__i18n_display(team.name)}</strong>, region: team.region, name: team.parent.name, label: GM_STYLES[tw.gm].label, value3: ' ', label2: MANAGER_STYLES[tw.manager].label })}</p>
+      )}
       <p class="muted">{__i18n_t("ui.twelve.rivalryBox.dff71c74", { founded: tw.founded, firstTeam: tw.firstTeam, value: tw.format === 'two' ? __i18n_k("ui.twelve.rivalryBox.8e1ac6e9", { value: side ? __i18n_k("ui.twelve.rivalryBox.5aac59f8", { value: LEAGUE_NAMES[side] }) : '' }) : __i18n_k("ui.twelve.rivalryBox.94667733") })}</p>
       {__i18n_display(played && (
         <p>{__i18n_rich("ui.twelve.rivalryBox.b9749b8e", { value: ' ', value2: <strong>{__i18n_t("ui.twelve.rivalryBox.eae1f95b", { w: now.w, l: now.l, value: now.t ? __i18n_k("ui.twelve.rivalryBox.136ac74d", { value: now.t }) : '' })}</strong> })}</p>

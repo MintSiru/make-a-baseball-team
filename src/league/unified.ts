@@ -44,10 +44,10 @@ export const isUnified = (s: LeagueState) => !!s.unified;
 export const northClub = (s: LeagueState, teamId: TeamId) => s.unified?.clubs.find((c) => c.teamId === teamId);
 
 /** Founds the north's five other clubs with ours (in the founding summer, after ours). */
-export function foundNorthClubs(s: LeagueState, year: number, firstTeam: number, ourCity: string) {
+export function foundNorthClubs(s: LeagueState, year: number, firstTeam: number, ourCity: string, count = NORTH_AI_CLUBS) {
   const r = rng(`${s.seed}|unified|${year}`);
   // The biggest markets left, ours taken out.
-  const cities = NORTH_CITIES.filter((c) => c.id !== ourCity).slice(0, NORTH_AI_CLUBS);
+  const cities = NORTH_CITIES.filter((c) => c.id !== ourCity).slice(0, count);
   const start = Math.floor(r() * NORTH_NICKNAMES.length);
   const clubs: NorthClub[] = [];
   cities.forEach((city, i) => {
@@ -80,8 +80,13 @@ export function foundNorthClubs(s: LeagueState, year: number, firstTeam: number,
   }
   const names = clubs.map((c) => s.teams.find((t) => t.id === c.teamId)!.name);
   const date = `${year}-07-20`;
-  const title = __i18n_k("league.unified.text.27bc4887", { firstTeam });
-  const lines = [__i18n_k("league.unified.text.74c77977", { names: iga(names.join(', ')) }), __i18n_k("league.unified.text.d1dbb2ef", { firstTeam })];
+  // 2.0.43: four with the twelve-club setting — the sixteenth is the twelfth club, when it comes.
+  const four = clubs.length < NORTH_AI_CLUBS;
+  const title = four ? __i18n_k("league.unified.text.477ff03d") : __i18n_k("league.unified.text.27bc4887", { firstTeam });
+  const lines = [
+    __i18n_k("league.unified.text.74c77977", { names: iga(names.join(', ')) }),
+    four ? __i18n_k("league.unified.text.86157827", { firstTeam }) : __i18n_k("league.unified.text.d1dbb2ef", { firstTeam }),
+  ];
   addNews(s, { id: `unified-${year}`, date, kind: 'season', title, body: lines.join(' '), quotes: [], facts: { clubs: names.length + 1, firstTeam }, players: [], mine: true });
   addAlert(s, { id: `unified-${year}`, date, kind: 'season', title, lines });
   milestone(s, year, title, 'unified');
@@ -107,6 +112,9 @@ export function assignUnifiedLeagues(s: LeagueState) {
   const ids = firstTeamIds(s);
   const north = [...(me ? [me] : []), ...u.clubs.map((c) => c.teamId)].filter((id) => ids.includes(id));
   if (north.length < u.clubs.length) return;
+  // 2.0.43: with the twelve-club setting, one league of fifteen until the twelfth club reaches the first team too.
+  const twelve = s.user?.settings.twelve;
+  if (twelve && twelve.mode !== 'off' && !(s.twelve && ids.includes(s.twelve.teamId))) return;
   const table = s.history.at(-1)?.table ?? [];
   const old = ids
     .filter((id) => !north.includes(id))

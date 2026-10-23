@@ -569,8 +569,9 @@ export const withScenario = (settings: ExpansionSettings, id: ScenarioId | null)
   const def = scenarioDef(id);
   if (!def) return { ...settings, scenario: null };
   const locked = Object.fromEntries(def.locked.filter((k) => k in def.fixed).map((k) => [k, def.fixed[k]]));
-  // 1.9.2: the north's scenarios: sixteen clubs, no twelfth club. 1.9.5: nor the legacy start (its clubs come in history's years).
-  if (def.north || def.legacy) {
+  // 1.9.5: no twelfth club in the legacy start (its clubs come in history's years). 2.0.43: the north's scenarios may have
+  // one (four northern clubs with ours, the twelfth club the sixteenth: unified.ts).
+  if (def.legacy) {
     const { twelve: _twelve, ...rest } = settings;
     return { ...rest, ...locked, scenario: def.id };
   }

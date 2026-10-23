@@ -14,7 +14,7 @@ import { NORTH_AI_CLUBS, NORTH_TRYOUT } from '../src/league/unified';
 import { rng } from '../src/draftroom';
 
 const settings = (scenario: 'unified' | 'unifiedFree'): ExpansionSettings =>
-  withScenario({ name: '평양 범', short: '평양', color: '#1f6fb2', cityId: 'pyongyang', parentType: 'conglomerate', parentName: '대동그룹', stadium: 'existing', promotion: 'afterFutures', difficulty: 'normal', scenario: null, twelve: { mode: 'year', year: 2030 } }, scenario);
+  withScenario({ name: '평양 범', short: '평양', color: '#1f6fb2', cityId: 'pyongyang', parentType: 'conglomerate', parentName: '대동그룹', stadium: 'existing', promotion: 'afterFutures', difficulty: 'normal', scenario: null }, scenario);
 
 const isNorth = (region: string) => (NORTH_REGIONS as readonly string[]).includes(region);
 
@@ -55,14 +55,16 @@ describe('the north: cities, names, schools', () => {
     for (let i = 0; i < 300; i++) expect(northName('김민준', rng(`n${i}`), new Set())).not.toMatch(/일성|정일|정은|정남|정철|한솔/);
   });
 
-  it('the scenarios: a deadline and a sandbox, northern homes, no twelfth club', () => {
+  it('the scenarios: a deadline and a sandbox, northern homes; 2.0.43 a twelfth club only when asked for', () => {
     expect(scenarioDef('unified')!.titleWithin).toBe(10);
     expect(scenarioDef('unifiedFree')!.free).toBe(true);
     for (const id of ['unified', 'unifiedFree'] as const) {
       const st = settings(id);
       expect(st.twelve).toBeUndefined();
       expect(st.scenario).toBe(id);
+      expect(withScenario({ ...st, twelve: { mode: 'year', year: 2030 } }, id).twelve).toEqual({ mode: 'year', year: 2030 });
     }
+    expect(withScenario({ ...settings('unified'), twelve: { mode: 'year', year: 2030 } }, 'legacy').twelve).toBeUndefined();
   });
 });
 
