@@ -17,10 +17,10 @@ import { gameMoments, milestone } from './milestones';
 import { gameNews, milestoneNews, monthNews } from './news';
 import { parkFactor } from './clubs';
 import { assignSquads, futuresPreference, futuresSquad, makeFuturesLeague } from './futures';
-import { chooseActive, matchInputs } from './manager';
+import { chooseActive, firstTeamSize, matchInputs } from './manager';
 import { noteEligibility } from './postentry';
 import { assignUnifiedLeagues } from './unified';
-import { manualReplacements } from './entry';
+import { manualReplacements, MIN_FIRST_TEAM } from './entry';
 import { ensureNumbers } from './numbers';
 import { attendance, clubState, recordGate } from './fans';
 import { staffOf } from './staff';
@@ -280,8 +280,9 @@ function maintainRosters(s: LeagueState, date: string, reshuffle: boolean) {
     const r = s.rosters[teamId]!;
     const hurt = r.active.some((id) => offRoster(s, id)) || back.has(teamId);
     if (teamId === manual) {
-      // The general manager's roster stands; only players who cannot play are replaced.
-      if (hurt) {
+      // The general manager's roster stands; only players who cannot play are replaced — and (2.0.41) a first team
+      // left short by a 문책성 2군행 (discipline.ts) is filled back to the minimum.
+      if (hurt || r.active.length < Math.min(firstTeamSize(s, teamId), MIN_FIRST_TEAM)) {
         const ideal = chooseActive(s, teamId);
         manualReplacements(s, (candidates) => ideal.find((id) => candidates.includes(id)) ?? candidates[0]);
       }

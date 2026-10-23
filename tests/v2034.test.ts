@@ -9,7 +9,7 @@ import { contractBook } from '../src/league/contractbook';
 import { yearlyGrant } from '../src/league/userclub';
 import { orgIds, type LeagueState } from '../src/league/state';
 import { ageIn, isPitcher } from '../src/league/players';
-import { armReady, bullpenFor } from '../src/league/manager';
+import { armReady, available, bullpenFor } from '../src/league/manager';
 import { FAVORITES_MAX, favoritesView, isFavorite, setFavorite } from '../src/league/favorites';
 
 const base = (() => {
@@ -195,7 +195,8 @@ describe('how ready an arm is (2.0.34)', () => {
   it('goes by the same rules the manager picks his bullpen by, and says when a resting arm is back', () => {
     const s = fresh('v2034-arm');
     const team = s.teams.find((t) => t.firstTeamFrom !== null && t.firstTeamFrom <= s.year)!.id;
-    const pen = s.rosters[team]!.active.filter((id) => isPitcher(s.players[id]!)).slice(0, 6);
+    // Six healthy arms (2.0.41: the league of this seed has one hurt).
+    const pen = s.rosters[team]!.active.filter((id) => isPitcher(s.players[id]!) && available(s, id)).slice(0, 6);
     const date = `${s.year}-05-10`;
     const day = (n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
     // Yesterday 35 pitches, the day before 10 pitches a second day running, three days ago 60, today, and two fresh.
