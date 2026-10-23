@@ -62,7 +62,7 @@ function retiredNumber(s: LeagueState, teamId: TeamId, r: { number: number; play
   const best = [...here].sort((a, b) => b.war - a.war)[0];
   const story: string[] = [];
   if (isForeign(p)) story.push(__i18n_k("league.legacy.retiredNumber.8d08ffd5", { value: p.origin.nationality ?? __i18n_k("league.legacy.retiredNumber.380ce337") }));
-  else if (p.origin.draftYear && p.origin.overallPick) story.push(__i18n_k("league.legacy.retiredNumber.b6618d6a", { draftYear: p.origin.draftYear, overallPick: p.origin.overallPick }));
+  else if (p.origin.draftYear && p.origin.overallPick) story.push(__i18n_k("league.legacy.retiredNumber.b6618d6a", { draftYear: p.origin.draftYear + 1, overallPick: p.origin.overallPick }));
   else if (p.origin.pathway) story.push(p.origin.pathway);
   const debut = major.length ? Math.min(...major.map((c) => c.year)) : null;
   if (debut) story.push(__i18n_k("league.legacy.retiredNumber.36545ce7", { debut: debut }));

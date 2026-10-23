@@ -49,7 +49,7 @@ export function rivalText(s: LeagueState, me: PlayerId, other: PlayerId, why: Ri
     o = s.players[other];
   if (!p || !o) return '';
   if (why === 'peers') return __i18n_k("league.rivals.text.14b62ed6", { year: born(p), pos: positionLabel(p) });
-  if (why === 'draft') return __i18n_k("league.rivals.text.1884b087", { year: p.origin.draftYear ?? '' });
+  if (why === 'draft') return __i18n_k("league.rivals.text.1884b087", { year: p.origin.draftYear ? p.origin.draftYear + 1 : '' });
   return isPitcher(p) ? __i18n_k("league.rivals.text.86d1981a") : __i18n_k("league.rivals.text.208e7ab2");
 }
 

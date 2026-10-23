@@ -124,7 +124,7 @@ export function draftWatchDay(s: LeagueState, date: string) {
         id,
         date,
         kind: 'month',
-        title: __i18n_k("league.draftlog.text.122888e6", { year: s.year, name: top[0]!.name }),
+        title: __i18n_k("league.draftlog.text.122888e6", { year: s.year + 1, name: top[0]!.name }),
         body: [
           __i18n_k("league.draftlog.text.df0d0ff9", { a: who(top[0]!), b: who(top[1]!), c: who(top[2]!) }),
           ...top.map((p) => {
