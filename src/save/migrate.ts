@@ -140,6 +140,8 @@ export function migrateState(raw: unknown, from: string): LeagueState {
   // a season past the deadlines lets everyone in this year, and a postseason under way plays its round as it stands.
   const stops = s.user?.settings.stops;
   if (stops?.includes('bigGame') && !stops.includes('postEntry')) stops.push('postEntry');
+  // 2.0.42: a club that stops for its big games stops for the national team's too (national.ts).
+  if (stops?.includes('bigGame') && !stops.includes('national')) stops.push('national');
   // 1.9.3: the fans' nicknames from the record so far (no news for them).
   if (s.history.length) nicknameWinter(s, s.history.at(-1)!.year, false);
   // The ability graph starts from today's report.

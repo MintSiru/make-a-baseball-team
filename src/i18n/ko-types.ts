@@ -9654,5 +9654,12 @@ export const koSource = {
   "ui.decision.text.8a15b34e": "국내 선수로 {years}년, 연 {money}. 외국인 한 자리가 빈다.",
   "ui.decision.text.b19f1176": "지원하지 않는다",
   "ui.decision.text.16d6a2c6": "외국인 선수로 남는다. 서운해할 수 있다.",
-  "ui.decision.text.583ce1b6": "{name} 선수(KBO {n}시즌)가 한국 국적을 얻고 싶다고 한다. 귀화하면 외국인 선수 한도에 들지 않는 국내 선수가 된다."
+  "ui.decision.text.583ce1b6": "{name} 선수(KBO {n}시즌)가 한국 국적을 얻고 싶다고 한다. 귀화하면 외국인 선수 한도에 들지 않는 국내 선수가 된다.",
+  "league.stops.text.21b1d89b": "국가대표 경기",
+  "ui.decision.text.21b1d89b": "국가대표 경기",
+  "ui.decision.text.29fbd51e": "관전한다",
+  "ui.decision.text.75c22395": "마지막 경기를 중계로 봅니다(지난 경기는 역대 › 국가대표에서).",
+  "ui.decision.text.c4ff9f6a": "넘긴다",
+  "ui.decision.text.f92b4251": "결과만 보고 계속 진행합니다.",
+  "ui.decision.text.36cca98c": "{name}: {result} ({games}경기)"
 } as const;

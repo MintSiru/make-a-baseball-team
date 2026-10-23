@@ -3,7 +3,13 @@
    remembered for the new-game screen. */
 import { afterEach, describe, expect, it } from 'vitest';
 import type { Player } from '../src/model/types';
-import { canNaturalize, NATURALIZE, naturalizeDecision, naturalizeWinter, resolveNaturalize } from '../src/league/naturalize';
+import { canNaturalize, NATURALIZE, naturalizeChance, naturalizeDecision, naturalizeWinter, resolveNaturalize } from '../src/league/naturalize';
+import { finishEvent, takeNationalWatch } from '../src/league/national';
+import { INTERNATIONAL } from '../src/league/international';
+import { stopsOf } from '../src/league/stops';
+import { apply } from '../src/league/actions';
+import { traitsOf } from '../src/league/traits';
+import type { Decision, LeagueState } from '../src/league/state';
 import { isForeign, keepValue } from '../src/league/players';
 import { megaCost, openProjects, projectOptions, startProject } from '../src/league/ballpark';
 import { FACILITIES, facilityOptions, scoreboardDemand } from '../src/league/facilities';
@@ -228,5 +234,55 @@ describe('naturalization (2.0.42)', () => {
     const p = Object.values(s.players).find((x) => isForeign(x) && x.teamId && x.status === 'active' && x.career.some((c) => !c.level))!;
     veteran(s, p, 4);
     expect(canNaturalize(s, p, s.year + 1)).toBe(false);
+  });
+});
+
+describe('naturalization and loyalty (2.0.42)', () => {
+  it('is likelier for a devoted player, and for years with his club', () => {
+    const s = loadSave('2.0.39');
+    const p = Object.values(s.players).find((x) => isForeign(x) && x.teamId && x.career.some((c) => !c.level))!;
+    const row = p.career.find((c) => !c.level)!;
+    p.career = Array.from({ length: 6 }, (_, i) => ({ ...row, year: s.year - i, teamId: i < 3 ? p.teamId! : 'other' }));
+    p.hidden.traits = { ...traitsOf(p) };
+    const traits = p.hidden.traits as unknown as Record<string, number>;
+    traits.loyalty = 30;
+    const cool = naturalizeChance(p);
+    traits.loyalty = 85;
+    const warm = naturalizeChance(p);
+    expect(warm).toBeGreaterThan(cool);
+    p.career = p.career.map((c) => ({ ...c, teamId: p.teamId! }));
+    p.career.push({ ...row, year: s.year - 6, teamId: p.teamId! }, { ...row, year: s.year - 7, teamId: p.teamId! });
+    expect(naturalizeChance(p)).toBeGreaterThan(warm);
+    expect(naturalizeChance(p)).toBeLessThanOrEqual(NATURALIZE.most * NATURALIZE.loyalMost);
+  });
+});
+
+/** The decision waiting (read through a call: the test set it to null above). */
+const pendingOf = (x: LeagueState) => x.pending;
+
+describe('watching the national team (2.0.42)', () => {
+  it('stops when a tournament is over, to watch its deciding game or go on', () => {
+    const s = loadSave('2.0.39');
+    s.pending = null;
+    const e = INTERNATIONAL.find((x) => x.year >= s.year && !s.international.some((y) => y.id === x.id && y.finish))!;
+    finishEvent(s, e);
+    expect(s.nationalWatchDue).toBe(e.id);
+    expect(takeNationalWatch(s)).toBe(true);
+    const d = pendingOf(s) as Extract<Decision, { kind: 'nationalWatch' }>;
+    expect(d.kind).toBe('nationalWatch');
+    const entry = s.international.find((x) => x.id === e.id)!;
+    expect(entry.watch!.games.some((g) => g.id === d.gameId)).toBe(true);
+    expect(entry.watch!.boxes!.length).toBeGreaterThan(0);
+    apply(s, { kind: 'decide', input: { kind: 'nationalWatch', answer: 'skip' } });
+    expect(pendingOf(s)?.kind).not.toBe('nationalWatch');
+    expect(takeNationalWatch(s)).toBe(false);
+  });
+
+  it('does not stop when the stop is off', () => {
+    const s = loadSave('2.0.39');
+    s.user!.settings.stops = stopsOf(s).filter((k) => k !== 'national');
+    const e = INTERNATIONAL.find((x) => x.year >= s.year && !s.international.some((y) => y.id === x.id && y.finish))!;
+    finishEvent(s, e);
+    expect(s.nationalWatchDue).toBeUndefined();
   });
 });

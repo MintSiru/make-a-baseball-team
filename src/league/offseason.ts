@@ -77,6 +77,7 @@ import { runTryout, tryoutYear } from './tryout';
 import { kyopoWinter } from './kyopo';
 import { abroadVetsWinter } from './abroadvets';
 import { playAsiaSeries } from './asiaseries';
+import { takeNationalWatch } from './national';
 import { naturalizeWinter } from './naturalize';
 import { staffAgeWinter } from './staffage';
 
@@ -960,6 +961,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         applyInternational(s, year);
         // 2.0.42: the Asia Series, when the league plays it (asiaseries.ts).
         playAsiaSeries(s, year, s.history.find((h) => h.year === year)?.champion ?? null);
+        // 2.0.42: the November tournament's games, watched or not (the step runs again after: it is all done once).
+        if (takeNationalWatch(s)) return 'waiting';
         break;
       case 'develop': {
         const futuresLeague = !!s.history.find((h) => h.year === year)?.futures;

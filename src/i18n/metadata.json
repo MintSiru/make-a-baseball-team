@@ -88149,5 +88149,57 @@
       }
     },
     "locations": []
+  },
+  "league.stops.text.21b1d89b": {
+    "source": "src/league/stops.ts",
+    "line": 25,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.21b1d89b": {
+    "source": "src/ui/Decision.tsx",
+    "line": 88,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.29fbd51e": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1339,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.75c22395": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1339,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.c4ff9f6a": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1340,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.f92b4251": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1340,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.36cca98c": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1344,
+    "params": {
+      "name": {
+        "expression": "d.name"
+      },
+      "result": {
+        "expression": "d.result"
+      },
+      "games": {
+        "expression": "d.games"
+      }
+    },
+    "locations": []
   }
 }

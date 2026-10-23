@@ -705,7 +705,15 @@ export function App() {
         ))}
         <Guard resetKey={`${tab}|${clubView}`} onBack={() => setTab(tab === 'standings' ? (shown.user ? 'club' : 'leaders') : 'standings')}>
         <TutorialCard league={shown} tab={tab} view={tab === 'club' ? clubView : undefined} onAct={(a) => act(a, __i18n_k("ui.app.app.aca4b433"), false)} />
-        {__i18n_display(tab === 'decision' && shown.pending && <Decision league={shown} onPlayer={setPlayerId} onSubmit={(input) => act({ kind: 'decide', input }, __i18n_k("ui.app.app.7890cafc"), false)} onAct={(a) => act(a, __i18n_k("ui.app.app.7890cafc"), false)} />)}
+        {__i18n_display(tab === 'decision' && shown.pending && <Decision league={shown} onPlayer={setPlayerId} onSubmit={(input) => {
+              // 2.0.42: the national team's deciding game, opened live when the general manager chooses to watch it.
+              const watch = input.kind === 'nationalWatch' && input.answer === 'watch' && shown.pending?.kind === 'nationalWatch' ? shown.pending.gameId : null;
+              act({ kind: 'decide', input }, __i18n_k("ui.app.app.7890cafc"), false);
+              if (watch) {
+                setBoxLive(true);
+                setBoxId(watch);
+              }
+            }} onAct={(a) => act(a, __i18n_k("ui.app.app.7890cafc"), false)} />)}
         {__i18n_display(tab === 'club' && shown.user && (
           <MyClub
             league={shown}

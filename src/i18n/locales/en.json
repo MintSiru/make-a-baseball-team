@@ -9653,5 +9653,12 @@
   "ui.decision.text.8a15b34e": "A domestic deal for {years, plural, one {# year} other {# years}} at {money} a year. A foreign place opens.",
   "ui.decision.text.b19f1176": "Do not back him",
   "ui.decision.text.16d6a2c6": "He stays a foreign player. He may be hurt.",
-  "ui.decision.text.583ce1b6": "{name} ({n, plural, one {# KBO season} other {# KBO seasons}}) wants to take Korean nationality. Naturalized, he would be a domestic player outside the foreign-player limit."
+  "ui.decision.text.583ce1b6": "{name} ({n, plural, one {# KBO season} other {# KBO seasons}}) wants to take Korean nationality. Naturalized, he would be a domestic player outside the foreign-player limit.",
+  "league.stops.text.21b1d89b": "National team games",
+  "ui.decision.text.21b1d89b": "National team games",
+  "ui.decision.text.29fbd51e": "Watch",
+  "ui.decision.text.75c22395": "Watch the last game live (earlier games are under History › National team).",
+  "ui.decision.text.c4ff9f6a": "Skip",
+  "ui.decision.text.f92b4251": "See the result and go on.",
+  "ui.decision.text.36cca98c": "{name}: {result} ({games, plural, one {# game} other {# games}})"
 }

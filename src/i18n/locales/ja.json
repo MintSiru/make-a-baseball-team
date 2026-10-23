@@ -9653,5 +9653,12 @@
   "ui.decision.text.8a15b34e": "国内選手として{years}年、年{money}。外国人枠が1つ空く。",
   "ui.decision.text.b19f1176": "支援しない",
   "ui.decision.text.16d6a2c6": "外国人選手のまま。寂しく思うかもしれない。",
-  "ui.decision.text.583ce1b6": "{name}選手（KBO{n}シーズン）が韓国国籍を取りたいという。帰化すれば外国人選手枠に含まれない国内選手になる。"
+  "ui.decision.text.583ce1b6": "{name}選手（KBO{n}シーズン）が韓国国籍を取りたいという。帰化すれば外国人選手枠に含まれない国内選手になる。",
+  "league.stops.text.21b1d89b": "代表戦",
+  "ui.decision.text.21b1d89b": "代表戦",
+  "ui.decision.text.29fbd51e": "観戦する",
+  "ui.decision.text.75c22395": "最後の試合を中継で観ます（それ以前の試合は歴代 › 代表で）。",
+  "ui.decision.text.c4ff9f6a": "スキップ",
+  "ui.decision.text.f92b4251": "結果だけ見て進みます。",
+  "ui.decision.text.36cca98c": "{name}：{result}（{games}試合）"
 }

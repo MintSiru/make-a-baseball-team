@@ -14,6 +14,7 @@ import { marketValue } from './fa';
 import { iga } from './josa';
 import { addNews } from './news';
 import { ageIn, isForeign, keepValue } from './players';
+import { traitsOf } from './traits';
 import { firstTeamIds, orgPlayers, type Decision, type LeagueState } from './state';
 import { minimumSalaryFor } from '../rules/kbo2026';
 
@@ -27,6 +28,12 @@ export const NATURALIZE = {
   most: 0.08,
   /** The domestic deal he signs (seasons). */
   years: 3,
+  /** 2.0.42 (the user's request: 구단에 애정이 높을수록): his loyalty (the hidden trait, 50 average) moves the chance —
+      × (1 + (loyalty − 50) × perLoyalty) — and seasons with his present club past the five more (× per season), up to
+      `most` × `loyalMost` for the most devoted. */
+  perLoyalty: 0.025,
+  perClubSeason: 0.1,
+  loyalMost: 2,
   /** What it does for his fans and his club's fans. */
   fans: 6,
   interest: 0.03,
@@ -43,8 +50,18 @@ export function canNaturalize(s: LeagueState, p: Player, next: number): boolean 
 /** Whether he wants to this winter (drawn from his id: the same on every load). */
 export function wantsToNaturalize(s: LeagueState, p: Player, next: number): boolean {
   if (!canNaturalize(s, p, next)) return false;
-  const chance = Math.min(NATURALIZE.most, NATURALIZE.chance + NATURALIZE.perSeason * (kboSeasons(p) - NATURALIZE.seasons));
-  return hashUnit(`${s.seed}|naturalize|${p.id}|${next}`) < chance;
+  return hashUnit(`${s.seed}|naturalize|${p.id}|${next}`) < naturalizeChance(p);
+}
+
+/** Seasons he has played for his present club. */
+export const clubSeasons = (p: Player) => new Set(p.career.filter((c) => !c.level && c.teamId === p.teamId).map((c) => c.year)).size;
+
+/** His chance in a winter: the seasons he has played here, his loyalty and his years with his club. */
+export function naturalizeChance(p: Player): number {
+  const N = NATURALIZE;
+  const base = Math.min(N.most, N.chance + N.perSeason * (kboSeasons(p) - N.seasons));
+  const loyal = Math.max(0.3, 1 + (traitsOf(p).loyalty - 50) * N.perLoyalty) * (1 + N.perClubSeason * Math.max(0, clubSeasons(p) - N.seasons));
+  return Math.min(N.most * N.loyalMost, base * loyal);
 }
 
 /** The domestic deal he signs: a free agent's annual for three seasons. */

@@ -518,6 +518,8 @@ export type DecisionInput =
   | { kind: 'roster'; ids: PlayerId[]; develop?: PlayerId[] }
   /** 2.0.37: the development foreign prospects we sign (devforeign.ts). */
   | { kind: 'devForeign'; ids: PlayerId[] }
+  /** 2.0.42: watch the national team's deciding game or go on (the UI opens it; nothing changes in the league). */
+  | { kind: 'nationalWatch'; answer: 'watch' | 'skip' }
   /** 2.0.42: back our foreign player's naturalization or not (naturalize.ts). */
   | { kind: 'naturalize'; answer: 'support' | 'decline' }
   /** 2.0.37: the free agents bound for Japan we try to talk round (abroad.ts). */
@@ -546,6 +548,8 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
   switch (input.kind) {
     case 'naturalize':
       return input.answer === 'support' || input.answer === 'decline' ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
+    case 'nationalWatch':
+      return input.answer === 'watch' || input.answer === 'skip' ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
     case 'tryout':
     case 'released':
     case 'devForeign': {
@@ -720,6 +724,8 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
       }
       break;
     }
+    case 'nationalWatch':
+      break;
     case 'naturalize': {
       resolveNaturalize(s, d as Extract<Decision, { kind: 'naturalize' }>, input.answer, next);
       // Then the rest of the foreign step (a backed player frees a place).
@@ -862,6 +868,8 @@ export function autoDecision(s: LeagueState): DecisionInput | null {
       return { kind: 'devForeign', ids: autoDevForeign(s, d) };
     case 'naturalize':
       return { kind: 'naturalize', answer: autoNaturalize(s, d, next) };
+    case 'nationalWatch':
+      return { kind: 'nationalWatch', answer: 'skip' };
     case 'abroad':
       // Worth a try: a word costs nothing.
       return { kind: 'abroad', persuade: d.rows.map((r) => r.id) };

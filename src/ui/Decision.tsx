@@ -85,6 +85,7 @@ const TITLES: Record<DecisionT['kind'], string> = {
   meddle: __i18n_k("ui.decision.tITLES.meddle.8a1f72de"),
   broker: __i18n_t("ui.decision.text.b7f8c3bf"),
   naturalize: __i18n_t("ui.decision.text.dc49c670"),
+  nationalWatch: __i18n_t("ui.decision.text.21b1d89b"),
   fantasyPick: __i18n_k("ui.decision.tITLES.fantasyPick.bc92c419"),
   postEntry: __i18n_t("ui.decision.text.2bfab379"),
   board: __i18n_t("ui.decision.text.b736056d"),
@@ -461,6 +462,8 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         return { kind: 'broker', answer: (choices.pick ?? 'refuse') as 'accept' | 'refuse' };
       case 'naturalize':
         return { kind: 'naturalize', answer: (choices.pick ?? 'support') as 'support' | 'decline' };
+      case 'nationalWatch':
+        return { kind: 'nationalWatch', answer: (choices.pick ?? 'watch') as 'watch' | 'skip' };
       case 'specialDraft':
         return { kind: 'specialDraft', picks: special };
       case 'military':
@@ -593,6 +596,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       case 'meddle':
       case 'broker':
       case 'naturalize':
+      case 'nationalWatch':
       case 'relocate':
         setChoices({ pick: a.answer });
         break;
@@ -1323,6 +1327,28 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
                 <span class="muted small">{__i18n_display(note)}</span>
               </button>
             )))}
+          </div>
+        </>
+      );
+      break;
+    }
+    case 'nationalWatch': {
+      // 2.0.42: the national team's tournament is over (national.ts).
+      const pick = choices.pick ?? 'watch';
+      const options: [string, string, string][] = [
+        ['watch', __i18n_t("ui.decision.text.29fbd51e"), __i18n_t("ui.decision.text.75c22395")],
+        ['skip', __i18n_t("ui.decision.text.c4ff9f6a"), __i18n_t("ui.decision.text.f92b4251")],
+      ];
+      body = (
+        <>
+          <p>{__i18n_t("ui.decision.text.36cca98c", { name: d.name, result: d.result, games: d.games })}</p>
+          <div class="choice-grid" role="radiogroup" aria-label={__i18n_t("ui.decision.text.21b1d89b")}>
+            {options.map(([k, label, note]) => (
+              <button key={k} type="button" class="choice" role="radio" aria-checked={pick === k} aria-pressed={pick === k} onClick={() => choose('pick', k)}>
+                <strong>{label}</strong>
+                <span class="muted small">{note}</span>
+              </button>
+            ))}
           </div>
         </>
       );

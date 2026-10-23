@@ -226,6 +226,8 @@ export type Decision =
   | { kind: 'development'; candidates: PlayerId[]; max: number }
   /** 2.0.37: our development foreign prospects for the winter (devforeign.ts). */
   | { kind: 'devForeign'; candidates: PlayerId[]; max: number }
+  /** 2.0.42 (national.ts): the national team's tournament is over — watch its deciding game, or go on. */
+  | { kind: 'nationalWatch'; eventId: string; name: string; result: string; gameId: string; games: number }
   /** 2.0.42 (naturalize.ts): our foreign player asks to naturalize — his KBO seasons and the domestic deal. */
   | { kind: 'naturalize'; id: PlayerId; seasons: number; years: number; annual: number }
   /** 2.0.37: our free agents Japan is about to sign, to talk round or let go (abroad.ts). */
@@ -692,6 +694,8 @@ export interface LeagueState {
   retiredBarRise?: boolean;
   /** 2.0.22 (travel.ts): false — no tiredness from the road. */
   travelFatigue?: boolean;
+  /** 2.0.42 (national.ts): a tournament just over whose games the general manager is asked about (the 'national' stop). */
+  nationalWatchDue?: string;
   /** 2.0.42 (asiaseries.ts): the Asia Series after the Korean Series (off unless set), and the ones played. */
   asiaSeries?: boolean;
   asia?: import('./asiaseries').AsiaSeries[];
