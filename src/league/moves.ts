@@ -171,17 +171,27 @@ export function moveHistory(s: LeagueState, p: Pick<Player, 'id' | 'career' | 'o
     row(String(b.year), 'change', a.teamId, b.teamId);
   }
   // 상무: each run of seasons there, 입대 the winter before the first and 전역 in June of the last (18 months).
+  // He goes in and comes back as his club's: enlisting is a winter thing, so a club season in the year of his last
+  // one there is the one he came back to; else the club he next left (a 2차 pick, a release) or his next club.
   const years = [...new Set(all.filter((c) => c.teamId === SANGMU).map((c) => c.year))].sort((a, b) => a - b);
+  const dated = [...noted].sort((a, b) => a.date.localeCompare(b.date));
+  const yearOf = (date: string) => Number(date.slice(0, 4));
   for (let i = 0; i < years.length; ) {
     let j = i;
     while (j + 1 < years.length && years[j + 1] === years[j]! + 1) j++;
     const y0 = years[i]!,
       y1 = years[j]!;
+    const enlisted = `${y0 - 1}-12-01`,
+      discharged = `${y1}-06-15`;
     const before = [...career].reverse().find((c) => c.year < y0);
-    const after = career.find((c) => c.year >= y1 && c.year > y0) ?? career.find((c) => c.year === y1 && y1 > y0);
-    row(`${y0 - 1}-12-01`, 'enlist', before?.teamId ?? p.teamId ?? null, SANGMU);
+    const moved = dated.filter((m) => m.date < enlisted && m.to && yearOf(m.date) >= (before?.year ?? -Infinity)).at(-1);
+    const later = career.find((c) => c.year > y1);
+    const left = dated.find((m) => m.date > discharged && m.from && (!later || yearOf(m.date) <= later.year));
+    const back = career.find((c) => c.year === y1)?.teamId ?? left?.from ?? later?.teamId ?? p.teamId ?? null;
+    // With no club season before (he went straight in), he went in as the club he came back to.
+    row(enlisted, 'enlist', moved?.to ?? before?.teamId ?? (pick && pick.year < y0 ? pick.teamId : null) ?? back, SANGMU);
     const serving = p.status === 'military' && p.service?.route === 'sangmu' && j === years.length - 1;
-    if (!serving) row(`${y1}-06-15`, 'discharge', SANGMU, after?.teamId ?? p.teamId ?? null);
+    if (!serving) row(discharged, 'discharge', SANGMU, back);
     i = j + 1;
   }
   for (const m of noted) row(m.date, m.kind, m.from, m.to, m.note ?? '');
