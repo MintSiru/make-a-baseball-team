@@ -54,7 +54,8 @@ import { disputeDecision } from './dispute';
 import { relocationDecision } from './relocation';
 import { mergerDecision } from './merger';
 import { homecomings } from './returnees';
-import { conditionUnified, foundNorthClubs } from './unified';
+import { conditionUnified, foundNorthClubs, NORTH_AI_CLUBS } from './unified';
+import { moveBlocked, moveToClub } from './clubmove';
 import { autoProtect, checkRival, checkRivalProtect, resolveRival, resolveRivalProtect, rivalDecision, rivalProtectDecision, rivalStep } from './rival';
 import {
   autoAnnual,
@@ -224,7 +225,8 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
       tone: 'bad',
     });
   // 1.9.2, 통일 한국: the north's five other clubs are founded with ours (unified.ts).
-  if (settings.scenario === 'unified' || settings.scenario === 'unifiedFree') foundNorthClubs(s, y0, firstTeamYear, settings.cityId);
+  // 2.0.43: with the twelfth club to come (the twelve-club setting), four of them, so the league still ends at sixteen.
+  if (settings.scenario === 'unified' || settings.scenario === 'unifiedFree') foundNorthClubs(s, y0, firstTeamYear, settings.cityId, settings.twelve && settings.twelve.mode !== 'off' ? NORTH_AI_CLUBS - 1 : NORTH_AI_CLUBS);
   // A citizen club is founded by the mayor elected in June 2026 (parent.ts).
   if (settings.parentType === 'citizen') s.user.mayor = electMayor(s, y0);
   spend(s, __i18n_k("league.expansion.foundClub.b77f9a73"), b.entryFee, true);
@@ -286,9 +288,11 @@ const inFoundingPeriod = (s: LeagueState, next: number) => !!s.user && next <= s
 function draftSlots(s: LeagueState, draftYear: number, order: TeamId[]): DraftSlot[] {
   const founding: { teamId: TeamId; first: boolean }[] = [];
   const u = s.user;
-  if (u && !order.includes(u.teamId) && draftYear + 1 <= u.firstTeamYear) founding.push({ teamId: u.teamId, first: draftYear === startYear() });
+  // 2.0.43: our club's own first draft is its founding year's (the twelfth club's, when we moved to it).
+  const ourFounded = s.teams.find((t) => t.id === u?.teamId)?.founded ?? startYear();
+  if (u && !order.includes(u.teamId) && draftYear + 1 <= u.firstTeamYear) founding.push({ teamId: u.teamId, first: draftYear === (u.former?.length ? ourFounded : startYear()) });
   const tw = s.twelve;
-  if (tw && !order.includes(tw.teamId) && draftYear + 1 <= tw.firstTeam) founding.push({ teamId: tw.teamId, first: draftYear === tw.founded });
+  if (tw && tw.teamId !== u?.teamId && !order.includes(tw.teamId) && draftYear + 1 <= tw.firstTeam) founding.push({ teamId: tw.teamId, first: draftYear === tw.founded });
   // 1.9.2: the north's clubs, after ours.
   for (const c of aiFoundingClubs(s)) if (!order.includes(c.teamId) && draftYear + 1 <= c.firstTeam) founding.push({ teamId: c.teamId, first: draftYear === c.founded });
   if (!founding.length) return standardSlots(order, draftYear);
@@ -525,7 +529,7 @@ export type DecisionInput =
   /** 2.0.37: the free agents bound for Japan we try to talk round (abroad.ts). */
   | { kind: 'abroad'; persuade: PlayerId[] }
   /** The twelfth club (V0.9): its design, or null to vote it down when the board offers it. */
-  | { kind: 'rival'; settings: RivalSettings | null }
+  | { kind: 'rival'; settings: RivalSettings | null; /** 2.0.43: the general manager takes the new club over (clubmove.ts). */ move?: boolean }
   | { kind: 'rivalProtect'; ids: PlayerId[] }
   /** 1.9.9: our vote on each motion, and the motion we put (an index into the options), if any. */
   | { kind: 'board'; votes: BoardVote[]; own: number | null }
@@ -602,7 +606,9 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       return input.persuade.every((id) => dd.rows.some((r) => r.id === id)) ? null : __i18n_k("league.expansion.checkDecision.98ce3a2b");
     }
     case 'rival':
-      return checkRival(s, d as Extract<Decision, { kind: 'rival' }>, input.settings);
+      // 2.0.43: moving to the new club takes a club to move to, and a game that allows it (clubmove.ts).
+      if (input.move && !input.settings) return __i18n_k("league.expansion.text.703b052f");
+      return (input.move ? moveBlocked(s) : null) ?? checkRival(s, d as Extract<Decision, { kind: 'rival' }>, input.settings);
     case 'rivalProtect':
       return checkRivalProtect(d as Extract<Decision, { kind: 'rivalProtect' }>, input.ids);
     case 'foreign': {
@@ -693,6 +699,7 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
       break;
     case 'rival':
       resolveRival(s, d as Extract<Decision, { kind: 'rival' }>, input.settings);
+      if (input.move && input.settings && s.twelve) moveToClub(s, s.twelve.teamId, s.twelve.founded, input.settings, s.twelve.firstTeam);
       break;
     case 'board':
       resolveBoard(s, d as Extract<Decision, { kind: 'board' }>, input.votes, input.own);

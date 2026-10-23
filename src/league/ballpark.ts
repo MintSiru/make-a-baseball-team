@@ -39,8 +39,10 @@ export function projectOptions(s: LeagueState): ProjectOption[] {
       label: __i18n_k("league.ballpark.projectOptions.label.5d3212d6", { value: B.expandSeats.toLocaleString('ko-KR') }),
       cost: B.expandCost,
       opens: next,
-      note: __i18n_k("league.ballpark.projectOptions.note.163bcfa3", { value: cap.toLocaleString('ko-KR'), value2: (cap + B.expandSeats).toLocaleString('ko-KR') }),
-      blocked: cap + B.expandSeats > B.maxSeats ? __i18n_k("league.ballpark.projectOptions.blocked.b238d74e", { value: B.maxSeats.toLocaleString('ko-KR') }) : common(B.expandCost),
+      // 2.0.43 (user report: a 23,000-seat dome stuck at 38,000): the last expansion fills up to the 40,000 cap, so the
+      // mega expansion can follow from any size.
+      note: __i18n_k("league.ballpark.projectOptions.note.163bcfa3", { value: cap.toLocaleString('ko-KR'), value2: Math.min(B.maxSeats, cap + B.expandSeats).toLocaleString('ko-KR') }),
+      blocked: cap >= B.maxSeats ? __i18n_k("league.ballpark.projectOptions.blocked.b238d74e", { value: B.maxSeats.toLocaleString('ko-KR') }) : common(B.expandCost),
     },
     {
       kind: 'newPark',

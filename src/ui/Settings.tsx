@@ -314,7 +314,7 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
                   <button type="button" disabled={busy || !!why} title={why ?? undefined} onClick={() => window.confirm(__i18n_t("ui.settings.text.d726f01d", { title: def.title })) && onAct({ kind: 'addCondition', id })}>
                     {on ? __i18n_t("ui.settings.text.dde1413e", { title: def.title }) : __i18n_t("ui.settings.text.5f2644a4", { title: def.title })}
                   </button>{' '}
-                  <span class="muted small">{conditionText(id, league.offseason?.year ?? league.year)}</span>
+                  <span class="muted small">{conditionText(id, league.offseason?.year ?? league.year, !!league.twelve)}</span>
                 </li>
               );
             })}

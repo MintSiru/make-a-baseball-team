@@ -98,7 +98,10 @@ describe('ballpark expansion cap', () => {
     const expand = () => projectOptions(s).find((o) => o.kind === 'expand')!;
     team.stadium.capacity = 30_000;
     expect(expand().blocked ?? '').not.toContain('40,000');
+    // 2.0.43 (user report): from 38,000 the last expansion fills up to 40,000; only then is it closed.
     team.stadium.capacity = 38_000;
+    expect(expand().blocked ?? '').not.toContain('40,000');
+    team.stadium.capacity = 40_000;
     expect(expand().blocked).toContain('40,000');
   });
 });

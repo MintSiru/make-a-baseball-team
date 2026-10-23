@@ -168,3 +168,10 @@ export function migrateState(raw: unknown, from: string): LeagueState {
   s.sim = SIM_VERSION;
   return s;
 }
+
+/** Repairs safe on any save, of any version, run at every load (format.ts). 2.0.43 (user report): a player signed from
+    the pool before the fix kept his free agent's status and could never play — a player on a club is active. */
+export function repairState(raw: unknown) {
+  const s = raw as LeagueState;
+  for (const p of Object.values(s.players ?? {})) if (p.teamId && p.status === 'freeAgent' && p.contract?.teamId === p.teamId) p.status = 'active';
+}

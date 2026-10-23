@@ -347,7 +347,8 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     }
     case 'twelveSetting': {
       const u = s.user;
-      if (!u || s.twelve) break;
+      // 2.0.43: a unified league's clubs are counted at its founding (four or five from the north), so it stays as set.
+      if (!u || s.twelve || s.unified) break;
       const st = action.setting;
       if (st.mode === 'off') delete u.settings.twelve;
       else u.settings.twelve = st.mode === 'year' ? { mode: 'year', year: Math.max(u.firstTeamYear, st.year ?? u.firstTeamYear) } : { mode: 'event' };

@@ -320,10 +320,13 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
         </div>
       </section>
 
-      {__i18n_display(!def?.north && (<section class="form-block" aria-labelledby="ng-twelve">
+      {/* 2.0.43 (the user's request): the twelve-club setting in a unified game too — four northern clubs with ours,
+          and the twelfth club makes sixteen. */}
+      {!def?.legacy && (<section class="form-block" aria-labelledby="ng-twelve">
         <h3 id="ng-twelve">{__i18n_t("ui.newGame.newGame.a91a78ef")}</h3>
         <TwelveSettingField value={twelveSetting} from={twelveFrom} onChange={setTwelve} />
-      </section>))}
+        {def?.north && twelveSetting.mode !== 'off' && <p class="muted small">{__i18n_t("ui.newGame.text.88ee64f5")}</p>}
+      </section>)}
 
       <section class="form-block" aria-labelledby="ng-rules">
         <h3 id="ng-rules">{__i18n_t("ui.newGame.newGame.595d660f")}</h3>

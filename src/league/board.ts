@@ -592,7 +592,8 @@ export function boardLeagues(s: LeagueState) {
   if (two === undefined) return;
   const tw = s.twelve;
   if (two === 1) {
-    if (tw && twelveClubs(s)) {
+    // 2.0.43: a unified league with the twelfth club keeps its own two leagues of eight (unified.ts).
+    if (tw && twelveClubs(s) && !s.unified) {
       tw.format = 'two';
       tw.leagues ??= assignLeagues(s);
       return;

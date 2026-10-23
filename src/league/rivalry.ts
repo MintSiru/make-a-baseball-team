@@ -6,7 +6,7 @@ import type { Player, TeamId } from '../model/types';
 import { addAlert } from './alerts';
 import { clubState } from './fans';
 import { addNews } from './news';
-import { seasonSeries, twelveClubs } from './twelve';
+import { rivalId, seasonSeries, twelveClubs } from './twelve';
 import { FANS, RIVAL } from './tuning';
 
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
@@ -37,8 +37,9 @@ export function allTime(s: LeagueState): { w: number; l: number; t: number; seas
 /** After the season: the series goes into the record, the fans of the winning side feel it, and an article. */
 export function closeRivalry(s: LeagueState, year: number) {
   const tw = s.twelve,
-    u = s.user;
-  if (!tw || !u || !twelveClubs(s, year)) return;
+    u = s.user,
+    rid = rivalId(s);
+  if (!tw || !u || !rid || !twelveClubs(s, year)) return;
   const r = seasonSeries(s);
   if (r.w + r.l + r.t === 0) return;
   tw.h2h = [...(tw.h2h ?? []).filter((x) => x.year !== year), { year, ...r }];
@@ -46,13 +47,13 @@ export function closeRivalry(s: LeagueState, year: number) {
   const k = clamp((r.w - r.l) * R.perGame, -R.most, R.most);
   for (const [id, sign] of [
     [u.teamId, 1],
-    [tw.teamId, -1],
+    [rid, -1],
   ] as const) {
     const c = clubState(s, id);
     c.interest = clamp(c.interest + sign * k, FANS.interestMin, FANS.interestMax);
   }
   const me = short(s, u.teamId),
-    them = short(s, tw.teamId);
+    them = short(s, rid);
   const total = allTime(s);
   const verdict = r.w > r.l ? __i18n_k("league.rivalry.closeRivalry.verdict.3896cfcd", { me: me }) : r.w < r.l ? __i18n_k("league.rivalry.closeRivalry.verdict.d817524d", { them: them }) : __i18n_k("league.rivalry.closeRivalry.verdict.e157d122");
   addNews(s, {
@@ -89,10 +90,10 @@ export function crossing(
   date = s.phase === 'regular' ? (s.schedule[Math.max(0, s.next - 1)]?.date ?? `${s.year}-04-01`) : `${s.year}-11-01`,
   alert = true,
 ) {
-  const tw = s.twelve,
-    u = s.user;
-  if (!tw || !u) return;
-  const pair = (from === u.teamId && to === tw.teamId) || (from === tw.teamId && to === u.teamId);
+  const u = s.user,
+    rid = rivalId(s);
+  if (!u || !rid) return;
+  const pair = (from === u.teamId && to === rid) || (from === rid && to === u.teamId);
   if (!pair) return;
   const f = fondness(p, from);
   if (f < 0.2) return;

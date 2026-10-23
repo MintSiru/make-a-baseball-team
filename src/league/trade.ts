@@ -446,6 +446,9 @@ export function signFromPool(s: LeagueState, id: PlayerId) {
   const u = s.user!;
   const p = s.players[id]!;
   const season = s.phase === 'regular' ? s.year : s.year + 1;
+  // 2.0.43 (user report): an unattached arrival (a veteran home from abroad, a kyopo player, a returnee) waits in the pool
+  // as a free agent; signed, he is one of ours like anyone else — without this he could not be registered or play.
+  p.status = 'active';
   p.teamId = u.teamId;
   p.contract = { teamId: u.teamId, kind: 'standard', signedIn: s.year, signingBonus: 0, salaries: [{ season, amount: poolAsk(s, p) }] };
   s.rosters[u.teamId]!.futures.push(id);

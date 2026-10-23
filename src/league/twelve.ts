@@ -24,6 +24,10 @@ export const NATURAL_RIVALS: [TeamId, TeamId][] = [
   ['hanwha', 'kiwoom'],
 ];
 
+/** The user's club's rival: the twelfth club, or 2.0.43 (clubmove.ts) the club he left when he took the twelfth club over. */
+export const rivalId = (s: LeagueState): TeamId | null =>
+  !s.twelve ? null : s.user?.teamId === s.twelve.teamId ? (s.user.former?.at(-1)?.teamId ?? null) : s.twelve.teamId;
+
 /** Twelve clubs in the first team this season. */
 export const twelveClubs = (s: LeagueState, year = s.year) => !!s.twelve && firstTeamIds(s, year).includes(s.twelve.teamId);
 
@@ -71,7 +75,8 @@ export function rivalPairs(s: LeagueState, teams: TeamId[]): Map<TeamId, TeamId>
     pairs.set(a, b);
     pairs.set(b, a);
   };
-  if (s.user && s.twelve) link(s.user.teamId, s.twelve.teamId);
+  const them = rivalId(s);
+  if (s.user && them) link(s.user.teamId, them);
   for (const [a, b] of NATURAL_RIVALS) link(a, b);
   const left = [...teams].filter((id) => !pairs.has(id)).sort();
   for (let i = 0; i + 1 < left.length; i += 2) link(left[i]!, left[i + 1]!);
@@ -127,7 +132,7 @@ export const madePostseason = (summary: Pick<SeasonSummary, 'series' | 'table'>,
 export function seasonSeries(s: LeagueState): { w: number; l: number; t: number } {
   const out = { w: 0, l: 0, t: 0 };
   const me = s.user?.teamId,
-    them = s.twelve?.teamId;
+    them = rivalId(s);
   if (!me || !them) return out;
   for (const g of s.scores) {
     if (!((g.home === me && g.away === them) || (g.home === them && g.away === me))) continue;
@@ -142,7 +147,7 @@ export function seasonSeries(s: LeagueState): { w: number; l: number; t: number 
 /** Whether a game is the rivalry (the user's club against the twelfth club). */
 export const isRivalry = (s: LeagueState, home: TeamId, away: TeamId) => {
   const me = s.user?.teamId,
-    them = s.twelve?.teamId;
+    them = rivalId(s);
   return !!me && !!them && ((home === me && away === them) || (home === them && away === me));
 };
 
