@@ -7,7 +7,7 @@ import { k as __i18n_k } from '../i18n/index';
    1.3.0: the postseason goes game day by game day (startPostseason, postseasonDay, postseasonRound) so the user can
    watch each game and choose our starter and an all-out plan before it (manager.ts); playPostseason plays it all
    through, with the same results as before. */
-import type { TeamId } from '../model/types';
+import type { PlayerId, TeamId } from '../model/types';
 import { playGame, currentStandings, record } from './season';
 import { firstTeamIds, type LeagueState, type SeriesResult } from './state';
 import { clubState, leaguePrice } from './fans';
@@ -15,8 +15,9 @@ import { POSTSEASON_GATE } from './tuning';
 import { compactBox, isUserGame, keepBox } from './boxscore';
 import { gameMoments } from './milestones';
 import { addNews, gameNews } from './news';
+import { addAlert } from './alerts';
 import { eunneun, iga, wagwa } from './josa';
-import type { PlayEvent } from './engine/types';
+import type { PlayEvent, TeamBox } from './engine/types';
 import { leagueTables, playoffsOf, sidesOf } from './twelve';
 import { stopsOf } from './stops';
 import { openEntries, restoreFirstTeams, settleOurEntry } from './postentry';
@@ -40,6 +41,10 @@ export interface LiveSeries {
   hw: number;
   lw: number;
   games: SeriesResult['games'];
+  /** 2.0.41: each player's part in the series so far (seriesMvp), by club. */
+  parts?: Record<TeamId, Record<PlayerId, number>>;
+  /** 2.0.41: each player's series line (for the MVP's article). */
+  lines?: Record<PlayerId, { ab: number; h: number; hr: number; rbi: number; outs: number; er: number; k: number; w: number; sv: number }>;
 }
 
 /** The bracket: the series of the round being played, and how the next round is drawn. */
@@ -68,7 +73,49 @@ const allHome = (n: number) => Array<boolean>(n).fill(true);
 
 export const live = (round: SeriesResult['round'], high: TeamId, low: TeamId, need: number, homes: boolean[], date: string, headStart = 0): LiveSeries => ({ round, high, low, need, homes, date, i: 0, hw: headStart, lw: 0, games: [] });
 const over = (x: LiveSeries) => x.hw >= x.need || x.lw >= x.need || x.i >= x.homes.length + 3;
-export const result = (x: LiveSeries): SeriesResult => ({ round: x.round, high: x.high, low: x.low, highWins: x.hw, lowWins: x.lw, winner: x.hw >= x.need ? x.high : x.low, games: x.games });
+export function result(x: LiveSeries): SeriesResult {
+  const winner = x.hw >= x.need ? x.high : x.low;
+  const mvp = seriesMvp(x, winner);
+  return { round: x.round, high: x.high, low: x.low, highWins: x.hw, lowWins: x.lw, winner, games: x.games, ...(mvp ? { mvp } : {}) };
+}
+
+/** 2.0.41 (the user's request: 한국시리즈 MVP, and the wild card's, the semi-playoff's and the playoff's): a player's
+    part in a game — a hitter's hits, extra bases, runs driven in and scored, walks and steals; a pitcher's innings,
+    strikeouts, wins and saves, less the runs and runners he gave up. */
+export const MVP_WEIGHTS = {
+  bat: { h: 1, d: 0.5, t: 1, hr: 1.5, rbi: 0.8, r: 0.5, bb: 0.4, sb: 0.3, k: -0.1 },
+  pit: { inning: 0.6, k: 0.15, er: -0.8, baserunner: -0.15, w: 1.5, sv: 1.2, hld: 0.5 },
+};
+function addParts(x: LiveSeries, box: TeamBox) {
+  const B = MVP_WEIGHTS.bat,
+    P = MVP_WEIGHTS.pit;
+  const team = ((x.parts ??= {})[box.teamId] ??= {});
+  const line = (id: PlayerId) => ((x.lines ??= {})[id] ??= { ab: 0, h: 0, hr: 0, rbi: 0, outs: 0, er: 0, k: 0, w: 0, sv: 0 });
+  for (const b of box.batting) {
+    team[b.id] = (team[b.id] ?? 0) + b.h * B.h + b.d * B.d + b.t * B.t + b.hr * B.hr + b.rbi * B.rbi + b.r * B.r + (b.bb + b.hbp) * B.bb + b.sb * B.sb + b.k * B.k;
+    const l = line(b.id);
+    l.ab += b.ab;
+    l.h += b.h;
+    l.hr += b.hr;
+    l.rbi += b.rbi;
+  }
+  for (const p of box.pitching) {
+    team[p.id] = (team[p.id] ?? 0) + (p.outs / 3) * P.inning + p.k * P.k + p.er * P.er + (p.h + p.bb + p.hbp) * P.baserunner + p.w * P.w + p.sv * P.sv + p.hld * P.hld;
+    const l = line(p.id);
+    l.outs += p.outs;
+    l.er += p.er;
+    l.k += p.k;
+    l.w += p.w;
+    l.sv += p.sv;
+  }
+}
+/** The winners' best part in the series (the first listed on a tie). */
+function seriesMvp(x: LiveSeries, winner: TeamId): PlayerId | null {
+  let best: PlayerId | null = null,
+    top = -Infinity;
+  for (const [id, v] of Object.entries(x.parts?.[winner] ?? {})) if (v > top) [best, top] = [id, v];
+  return best;
+}
 
 /** 1.8.4: a postseason ticket at `home`'s park in `round` (만 원, on average): its regular price times the round's factor. */
 export const postseasonTicket = (s: LeagueState, home: TeamId, round: SeriesResult['round']) => leaguePrice(s.year) * clubState(s, home).price * POSTSEASON_GATE.price[round];
@@ -76,6 +123,9 @@ export const postseasonTicket = (s: LeagueState, home: TeamId, round: SeriesResu
 /** One game of a series on its date. */
 function playSeriesGame(s: LeagueState, x: LiveSeries) {
   const i = x.i;
+  // 2.0.41 (the user's report: a first-place club opened the Korean Series with its 4th starter): a series starts its
+  // clubs' rotations over from the top, the ace first if he is rested (starterFor takes the next rested one if not).
+  if (i === 0) for (const t of [x.high, x.low]) s.rotation[t] = 0;
   const highHome = x.homes[Math.min(i, x.homes.length - 1)]!;
   const [home, away] = highHome ? [x.high, x.low] : [x.low, x.high];
   // 1.7.0: with two leagues, two series of a round run side by side; the higher seed tells their games apart (both
@@ -96,6 +146,8 @@ function playSeriesGame(s: LeagueState, x: LiveSeries) {
     const gate = Math.round(att * postseasonTicket(s, home, x.round));
     s.postseasonGate = (s.postseasonGate ?? 0) + gate;
     x.games.push({ id, date, home, away, hs: out.home.runs, as: out.away.runs, att, gate });
+    addParts(x, out.home);
+    addParts(x, out.away);
     const box = compactBox(out, id, date, att);
     keepBox(s, box, log);
     if (log) {
@@ -307,6 +359,8 @@ export const ROUND_NAME: Record<SeriesResult['round'], string> = { wildcard: __i
 
 /** Our club's series, won or lost: an article and an alert. */
 function seriesNews(s: LeagueState, ended: LiveSeries[]) {
+  // 2.0.41: each series' MVP in the news (ours a pop-up too).
+  for (const x of ended) mvpNews(s, x);
   const u = s.user;
   if (!u) return;
   for (const x of ended) {
@@ -331,6 +385,31 @@ function seriesNews(s: LeagueState, ended: LiveSeries[]) {
     });
   }
 }
+/** 2.0.41: a series' MVP: an article, and for one of ours a pop-up. */
+function mvpNews(s: LeagueState, x: LiveSeries) {
+  const r = result(x);
+  const p = r.mvp ? s.players[r.mvp] : undefined;
+  if (!p) return;
+  const club = s.teams.find((t) => t.id === r.winner)?.short ?? '';
+  const round = roundName(s, x.round);
+  const line = seriesLine(x, p.id);
+  const title = __i18n_k("league.postseason.text.0034f194", { round, name: p.name, club });
+  const body = __i18n_k("league.postseason.text.5f6ff67d", { round, club, name: iga(p.name), line });
+  const date = x.games.at(-1)?.date ?? x.date;
+  const id = `series-mvp-${s.year}-${x.round}-${x.high}`;
+  const ours = p.teamId === s.user?.teamId;
+  addNews(s, { id, date, kind: 'game', title, body, quotes: [], facts: { round, player: p.name, club }, players: [p.id], ...(ours ? { mine: true } : {}) });
+  if (ours) addAlert(s, { id, date, kind: 'award', title, lines: [body], tone: 'good', players: [p.id] });
+}
+
+/** His series in a line: a pitcher's innings, earned runs and strikeouts; a hitter's hits and home runs. */
+function seriesLine(x: LiveSeries, id: PlayerId): string {
+  const l = x.lines?.[id];
+  if (!l) return '';
+  if (l.outs >= 3 && l.ab === 0) return __i18n_k("league.postseason.text.121462b5", { ip: `${Math.floor(l.outs / 3)}${l.outs % 3 ? `.${l.outs % 3}` : ''}`, er: l.er, k: l.k, w: l.w, sv: l.sv });
+  return __i18n_k("league.postseason.text.ee6e6eea", { ab: l.ab, h: l.h, hr: l.hr, rbi: l.rbi });
+}
+
 export const champion = (s: LeagueState): TeamId | null => s.postseason.find((x) => x.round === 'ks')?.winner ?? null;
 
 // ── For the screen ───────────────────────────────────────────────────────────────────────────────

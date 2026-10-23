@@ -554,10 +554,13 @@ try {
   await page.getByRole('tab', { name: '정보' }).click();
   await page.locator('.ability-editor summary').click();
   const first = page.locator('.ability-editor .ability-table input').first();
-  await first.fill('77');
+  // 2.0.41: one point below what he has — always a change, and never above his potential (77 could be either).
+  const was = Number(await first.inputValue());
+  const want = String(was > 20 ? was - 1 : was + 1);
+  await first.fill(want);
   await page.locator('.ability-editor').getByRole('button', { name: '능력치 적용' }).click();
-  await page.waitForFunction(() => document.querySelector('.ability-editor .ability-table input')?.value === '77' && document.querySelector('.ability-editor button.primary')?.hasAttribute('disabled'), null, { timeout: 5_000 }).catch(() => undefined);
-  check((await first.inputValue()) === '77' && (await page.locator('.ability-editor button.primary').isDisabled()), 'the ability editor applies a grade');
+  await page.waitForFunction((v) => document.querySelector('.ability-editor .ability-table input')?.value === v && document.querySelector('.ability-editor button.primary')?.hasAttribute('disabled'), want, { timeout: 5_000 }).catch(() => undefined);
+  check((await first.inputValue()) === want && (await page.locator('.ability-editor button.primary').isDisabled()), 'the ability editor applies a grade');
   // The player screen remembers its tab: back to the first for the checks below.
   await page.getByRole('tab', { name: '능력치' }).click();
   await page.keyboard.press('Escape');

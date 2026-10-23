@@ -17,10 +17,10 @@ import { gameMoments, milestone } from './milestones';
 import { gameNews, milestoneNews, monthNews } from './news';
 import { parkFactor } from './clubs';
 import { assignSquads, futuresPreference, futuresSquad, makeFuturesLeague } from './futures';
-import { chooseActive, matchInputs } from './manager';
+import { chooseActive, firstTeamSize, matchInputs } from './manager';
 import { noteEligibility } from './postentry';
 import { assignUnifiedLeagues } from './unified';
-import { manualReplacements } from './entry';
+import { manualReplacements, MIN_FIRST_TEAM } from './entry';
 import { ensureNumbers } from './numbers';
 import { attendance, clubState, recordGate } from './fans';
 import { staffOf } from './staff';
@@ -40,6 +40,7 @@ import { rivalDay } from './rivals';
 import { brawlGame } from './brawl';
 import { protestGame } from './protests';
 import { meddleDay } from './scenarios';
+import { brokerDay } from './broker';
 import { openBooks } from './finance';
 import { rosterLimit } from './offseason';
 import { finishEvent, marchEvents, nationalTeamBack, nationalTeamCalls, nationalTeamLeaves } from './national';
@@ -279,8 +280,9 @@ function maintainRosters(s: LeagueState, date: string, reshuffle: boolean) {
     const r = s.rosters[teamId]!;
     const hurt = r.active.some((id) => offRoster(s, id)) || back.has(teamId);
     if (teamId === manual) {
-      // The general manager's roster stands; only players who cannot play are replaced.
-      if (hurt) {
+      // The general manager's roster stands; only players who cannot play are replaced — and (2.0.41) a first team
+      // left short by a 문책성 2군행 (discipline.ts) is filled back to the minimum.
+      if (hurt || r.active.length < Math.min(firstTeamSize(s, teamId), MIN_FIRST_TEAM)) {
         const ideal = chooseActive(s, teamId);
         manualReplacements(s, (candidates) => ideal.find((id) => candidates.includes(id)) ?? candidates[0]);
       }
@@ -345,6 +347,8 @@ export function playDay(s: LeagueState): boolean {
   staffTroubleDay(s, date);
   // Scenario 재기 (1.6.0): the owner calls.
   meddleDay(s, date);
+  // 2.0.41: a broker's offer, or an old deal coming out (broker.ts).
+  brokerDay(s, date);
   returnFromService(s, date);
   nationalTeamAway(s, date);
   nationalTeamBack(s, date);

@@ -150,6 +150,12 @@ export function adviceFor(s: LeagueState): Advice | null {
         tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.27bd7e9c", { value: exempt.length ? __i18n_k("league.advice.adviceFor.tradeoff.950b51b3", { length: exempt.length }) : '' }),
       };
     }
+    case 'broker':
+      return {
+        rule: __i18n_k("league.advice.text.df8609c5"),
+        picks: [input.answer === 'accept' ? __i18n_k("league.advice.text.b8f77b9e") : __i18n_k("league.advice.text.09797ed8")],
+        tradeoff: __i18n_k("league.advice.text.5e077b7b"),
+      };
     case 'meddle':
       return {
         rule: __i18n_k("league.advice.adviceFor.rule.3797364a"),

@@ -73,7 +73,9 @@ describe('the board’s changes over the rules', () => {
     // The season was played as the rules then said.
     const games = rulesFor(s.year - 1).gamesPerClub;
     const last = s.history.at(-1)!.table;
-    expect(Math.max(...last.map((r) => r.w + r.l + r.t))).toBe(games);
+    // A tie for a place is played off: one game more (tiebreak.ts).
+    expect(Math.max(...last.map((r) => r.w + r.l + r.t)) - games).toBeGreaterThanOrEqual(0);
+    expect(Math.max(...last.map((r) => r.w + r.l + r.t)) - games).toBeLessThanOrEqual(1);
     setEra(0);
   });
 

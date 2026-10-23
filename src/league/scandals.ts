@@ -25,6 +25,7 @@ import { GROWTH, SCANDAL as S } from './tuning';
 import { temperFactor, troubleFactor } from './traits';
 import { isMarried } from './life';
 import { maybeDiscipline } from './discipline';
+import { BROKER, brokerTested } from './broker';
 
 export type Offense = 'dui' | 'doping' | 'assault' | 'fixing' | RareOffense;
 /** 2.0.28 (the user's request): 불륜, 낙태 종용, 불법 도박, 조직폭력배 연루, 학교 폭력, 병역 비리, 감독·코치에게 항명. */
@@ -252,8 +253,13 @@ function dopingDay(s: LeagueState, date: string, r: () => number, k: number) {
   for (const p of orgPlayers(s, u.teamId)) {
     const x = p.life?.suspicion;
     if (!x) continue;
-    // The next sign.
-    const most = x.real ? REAL_SIGNS.length : S.doping.rumourSigns;
+    // 2.0.41: a broker's program (broker.ts) ends on its own after its days.
+    if (x.broker && date >= addDays(x.since, BROKER.doping.days)) {
+      stopDoping(p);
+      continue;
+    }
+    // The next sign (the broker's coordinator hides all but the first).
+    const most = x.broker ? 1 : x.real ? REAL_SIGNS.length : S.doping.rumourSigns;
     if (x.signs < most && x.next <= date) {
       const sign = REAL_SIGNS[x.signs]!;
       const [title, body] = SIGNS[sign](p);
@@ -264,9 +270,11 @@ function dopingDay(s: LeagueState, date: string, r: () => number, k: number) {
     // A rumour about a clean player dies down.
     if (!x.real && date >= addDays(x.since, S.doping.rumourDays)) delete p.life!.suspicion;
     // The KBO's testers come by.
-    else if (x.real && date >= addDays(x.since, S.doping.graceDays) && r() < S.doping.test) {
+    else if (x.real && date >= addDays(x.since, S.doping.graceDays) && r() < S.doping.test * (x.broker ? BROKER.doping.testShare : 1)) {
+      const broker = x.broker;
       stopDoping(p);
       incident(s, p, 'doping', date, r);
+      if (broker) brokerTested(s, p, date);
     }
   }
 }
@@ -388,8 +396,14 @@ function penalty(p: Player, offense: Offense, r: () => number, hid: boolean): { 
   }
 }
 
+/** 2.0.41 (broker.ts): a broker's deal comes out — the player's penalty as for any such offense; only the first of
+    them asks the club for its answer (`respond`). */
+export function brokerIncident(s: LeagueState, p: Player, offense: 'doping' | 'draftDodge', date: string, respond: boolean): boolean {
+  return incident(s, p, offense, date, rng(`${s.seed}|broker-incident|${p.id}|${date}`), false, respond);
+}
+
 /** It happened (or came out): the penalty, the news, the fans; a decision for the club unless he is gone for good. */
-function incident(s: LeagueState, p: Player, offense: Offense, date: string, r: () => number, hid = false): boolean {
+function incident(s: LeagueState, p: Player, offense: Offense, date: string, r: () => number, hid = false, respond = true): boolean {
   const u = s.user!;
   const pen = penalty(p, offense, r, hid);
   const life = (p.life ??= {});
@@ -424,6 +438,7 @@ function incident(s: LeagueState, p: Player, offense: Offense, date: string, r: 
   }
   // 2.0.28: an offense the KBO does not punish leaves him free to play (the club decides).
   if (pen.games || pen.years) (s.suspended ??= {})[p.id] = { reason: __i18n_k("league.scandals.incident.reason.df64fc10", { value: LABEL[offense] }), since: date, ...(pen.games ? { games: pen.games } : {}), ...(pen.years ? { until: addDays(date, 365 * pen.years) } : {}) };
+  if (!respond) return false;
   s.pending = { kind: 'scandal', id: p.id, offense, penalty: pen.text };
   return true;
 }

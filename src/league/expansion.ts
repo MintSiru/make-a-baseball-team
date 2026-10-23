@@ -352,7 +352,7 @@ function foreignCandidates(s: LeagueState, next: number): Player[] {
   return out;
 }
 
-function decide(s: LeagueState, step: OffseasonStep): Decision | null {
+export function decide(s: LeagueState, step: OffseasonStep): Decision | null {
   const u = s.user;
   const o = s.offseason;
   if (!u || !o) return null;
@@ -405,8 +405,13 @@ function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       // The AI never cuts the user's club; over the limit (after foreign signings), the user chooses whom to release.
       const size = registeredIds(s, u.teamId).length;
       if (size <= rosterLimit(next)) return null;
-      const candidates = registeredIds(s, u.teamId).filter((id) => !isForeign(s.players[id]!));
-      return { kind: 'roster', candidates, release: size - rosterLimit(next), limit: rosterLimit(next) };
+      const domestic = registeredIds(s, u.teamId).filter((id) => !isForeign(s.players[id]!));
+      // 2.0.41 (the user's request): this fall's draftees are not on the list (unless there are too few others).
+      const fresh = (id: PlayerId) => s.players[id]!.origin.kind === 'draftClass' && s.players[id]!.origin.draftYear === next - 1;
+      const release = size - rosterLimit(next);
+      const others = domestic.filter((id) => !fresh(id));
+      const candidates = others.length >= release ? others : domestic;
+      return { kind: 'roster', candidates, release, limit: rosterLimit(next) };
     }
     case 'released': {
       // Every winter the user's club gets the first look at players the other clubs let go.

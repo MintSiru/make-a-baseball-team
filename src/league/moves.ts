@@ -146,7 +146,9 @@ export function moveHistory(s: LeagueState, p: Pick<Player, 'id' | 'career' | 'o
   const pick = s.draftLog?.find((x) => x.id === p.id);
   const career = [...p.career].sort((a, b) => a.year - b.year);
   const first = career[0];
-  if (pick) row(`${pick.year}-09-15`, 'draft', null, pick.teamId, pick.territorial ? __i18n_k("league.moves.text.f1f3e66a") : __i18n_k("league.moves.text.55390f32", { label: pick.label, overall: pick.overall }));
+  // 2.0.41 (the user's report: a 2차 first pick read "1R · 전체 12순위" after eleven 1차 picks): a 2차 pick by its
+  // number among the 2차 picks.
+  if (pick) row(`${pick.year}-09-15`, 'draft', null, pick.teamId, pick.territorial ? __i18n_k("league.moves.text.f1f3e66a") : pick.second ? __i18n_k("league.moves.text.02ba8320", { label: pick.label, overall: pick.second }) : __i18n_k("league.moves.text.55390f32", { label: pick.label, overall: pick.overall }));
   else if (first && !p.moves?.some((m) => m.date.slice(0, 4) < String(first.year))) row(String(first.year), p.origin.kind === 'foreign' ? 'foreignSign' : 'join', null, first.teamId);
   // Club changes before the moves were noted (a save from before 2.0.28): each new club in his career.
   const noted = p.moves ?? [];

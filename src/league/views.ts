@@ -730,11 +730,15 @@ export function recordRoom(s: LeagueState, teamId?: TeamId) {
 
 /** Every season's awards with names and clubs. */
 export function awardsView(s: LeagueState) {
-  const who = (id: PlayerId | null, year: number) => {
+  const me = s.user?.teamId;
+  const color = s.teams.find((t) => t.id === me)?.color;
+  const who = (id: PlayerId | null, year: number, club?: TeamId) => {
     if (!id) return null;
     const p = s.players[id];
     const c = p?.career.find((x) => x.year === year && !x.level);
-    return { id, name: p?.name ?? '?', team: c ? shortName(s, c.teamId) : '' };
+    const teamId = club ?? c?.teamId;
+    // 2.0.41 (the user's request): our club's winners in its colour.
+    return { id, name: p?.name ?? '?', team: teamId ? shortName(s, teamId) : '', ...(me && teamId === me && color ? { color } : {}) };
   };
   return [...s.history]
     .reverse()
@@ -746,6 +750,8 @@ export function awardsView(s: LeagueState) {
       gg: h.awards!.goldenGloves.map((g) => ({ pos: g.pos, ...who(g.id, h.year)! })),
       defense: (h.awards!.defense ?? []).map((g) => ({ pos: g.pos, ...who(g.id, h.year)! })),
       titles: h.awards!.titles.map((t) => ({ label: t.label, value: t.value, ...who(t.id, h.year)! })),
+      // 2.0.41: the postseason's MVPs, round by round (the club he won it with).
+      series: (h.series ?? []).filter((x) => x.mvp).map((x) => ({ round: x.round, ...who(x.mvp!, h.year, x.winner)! })),
     }));
 }
 

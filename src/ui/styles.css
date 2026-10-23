@@ -3730,3 +3730,19 @@ button.danger {
   gap: 0.3rem;
   align-items: flex-start;
 }
+
+/* 2.0.41: our club's award winners stand out in the club's colour. */
+.link.ours-award {
+  font-weight: 700;
+  border-bottom: 2px solid;
+  text-decoration: none;
+}
+
+/* 2.0.41 (the user's report): on a phone the name column's tags wrap under the name, so it does not cover the stats. */
+@media (max-width: 600px) {
+  .squad-table td.name-cell {
+    white-space: normal;
+    max-width: 44vw;
+    min-width: 7.5rem;
+  }
+}
