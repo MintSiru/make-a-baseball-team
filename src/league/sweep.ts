@@ -37,6 +37,8 @@ export function seasonSurplus(s: LeagueState, year: number): number {
 export function sweepProblem(s: LeagueState, year: number): string | null {
   const u = s.user;
   if (!u) return 'no club';
+  // 2.0.42: an independent club has no owner to take it (spending.ts).
+  if (u.independent) return 'independent';
   const type = u.settings.parentType;
   if (u.fund < SWEEP.threshold[type]) return 'fund below the threshold';
   const last = u.sweeps?.at(-1)?.year ?? -Infinity;

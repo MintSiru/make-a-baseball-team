@@ -176,7 +176,9 @@ export type Action =
   // 2.0.39 (schools.ts): sponsor (or stop sponsoring) a high school of the club's region.
   | { kind: 'sponsorSchool'; name: string; on: boolean }
   // 2.0.39 (spending.ts): the fund's other uses.
-  | { kind: 'spend'; what: SpendKind; tier?: number };
+  | { kind: 'spend'; what: SpendKind; tier?: number }
+  // 2.0.42 (asiaseries.ts).
+  | { kind: 'asiaSeries'; on: boolean };
 
 export const regularOver = (s: LeagueState) => s.phase === 'regular' && s.next >= s.schedule.length;
 
@@ -193,7 +195,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'devForeign', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'askBudget', 'twoLeaguePlayoffs', 'sixMan', 'favorite', 'abilityEditor', 'editAbility', 'discipline', 'sponsorSchool', 'spend'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'devForeign', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'askBudget', 'twoLeaguePlayoffs', 'sixMan', 'favorite', 'abilityEditor', 'editAbility', 'discipline', 'sponsorSchool', 'spend', 'asiaSeries'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -541,6 +543,12 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'spend':
       spend(s, action.what, action.tier);
+      break;
+    case 'asiaSeries':
+      // 2.0.42: the Asia Series on or off (asiaseries.ts).
+      if (!s.user) break;
+      if (action.on) s.asiaSeries = true;
+      else delete s.asiaSeries;
       break;
   }
   // Anyone who joined a club (or became a registered player) gets his number.

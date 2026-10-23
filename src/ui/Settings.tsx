@@ -213,6 +213,16 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
             ))}
           </div>
           <p class="muted small">{__i18n_t("ui.settings.text.ee54e0ef")}</p>
+          {/* 2.0.42 (asiaseries.ts): the Asia Series after the Korean Series. */}
+          <h3>{__i18n_t("ui.settings.text.d8e915cf")}</h3>
+          <div class="segmented" role="group" aria-label={__i18n_t("ui.settings.text.d8e915cf")}>
+            {([false, true] as const).map((on) => (
+              <button key={String(on)} type="button" aria-pressed={!!league.asiaSeries === on} disabled={busy} onClick={() => !!league.asiaSeries !== on && onAct({ kind: 'asiaSeries', on })}>
+                {on ? __i18n_t("ui.settings.text.19a5133b") : __i18n_t("ui.settings.text.bca9c389")}
+              </button>
+            ))}
+          </div>
+          <p class="muted small">{__i18n_t("ui.settings.text.9625ac94")}</p>
           {/* 2.0.22 (travel.ts): tiredness from the road. */}
           <h3>{__i18n_t("ui.settings.text.0d58aa7c")}</h3>
           <div class="segmented" role="group" aria-label={__i18n_displayText(__i18n_t("ui.settings.text.0d58aa7c"))}>

@@ -43,7 +43,7 @@ import { meddleDay } from './scenarios';
 import { brokerDay } from './broker';
 import { openBooks } from './finance';
 import { rosterLimit } from './offseason';
-import { finishEvent, marchEvents, nationalTeamBack, nationalTeamCalls, nationalTeamLeaves } from './national';
+import { finishEvent, marchEvents, nationalTeamBack, nationalTeamCalls, nationalTeamLeaves, takeNationalWatch } from './national';
 import { currentValue, isForeign } from './players';
 import { makeSchedule } from './schedule';
 import { addTiebreaker, isTiebreaker } from './tiebreak';
@@ -324,6 +324,8 @@ export function playDay(s: LeagueState): boolean {
   if (s.phase !== 'regular' || s.next >= s.schedule.length) return false;
   // The game waits while the user has something to decide (an in-season decision, V0.12).
   if (s.pending) return false;
+  // 2.0.42: a tournament just over waits for the general manager's word on watching it (national.ts).
+  if (takeNationalWatch(s)) return false;
   // 2.0.30: the spring games come first, a date at a time (exhibition.ts).
   if (exhibitionDate(s)) return playExhibitionDay(s, (box, day, lines) => record(s, box, day, lines)) || s.next < s.schedule.length;
   const date = s.schedule[s.next]!.date;

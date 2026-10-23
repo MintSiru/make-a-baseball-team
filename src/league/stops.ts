@@ -10,8 +10,8 @@ import { firstTeamIds, type LeagueState } from './state';
 import { standings } from './standings';
 import { twoLeagues } from './twelve';
 
-export type StopKind = 'injury' | 'deadline' | 'debut' | 'race' | 'bigGame' | 'postEntry';
-export const STOP_KINDS: StopKind[] = ['injury', 'deadline', 'debut', 'race', 'bigGame', 'postEntry'];
+export type StopKind = 'injury' | 'deadline' | 'debut' | 'race' | 'bigGame' | 'postEntry' | 'national';
+export const STOP_KINDS: StopKind[] = ['injury', 'deadline', 'debut', 'race', 'bigGame', 'postEntry', 'national'];
 export const STOP_LABEL: Record<StopKind, string> = {
   injury: __i18n_k("league.stops.sTOP_LABEL.injury.8609c770"),
   deadline: __i18n_k("league.stops.sTOP_LABEL.deadline.9b2951ae"),
@@ -21,6 +21,8 @@ export const STOP_LABEL: Record<StopKind, string> = {
   bigGame: __i18n_k("league.stops.text.f08a5ece"),
   // 1.9.0 (postentry.ts): before each of our postseason series, to hand in the entry.
   postEntry: __i18n_k("league.stops.text.3b819fa3"),
+  // 2.0.42 (national.ts): when the national team's tournament is over, to watch its games or go on.
+  national: __i18n_k("league.stops.text.21b1d89b"),
 };
 /** Out this long or more stops the run. */
 const LONG = 21;

@@ -22,7 +22,7 @@ import { clubStanding, injuryNote, rates, shortName } from '../league/views';
 import { money } from './format';
 import { Squad, type Row, type SquadKey } from './Squad';
 import { Office } from './Office';
-import { scenarioProgress } from '../league/scenarios';
+import { medalLabel, scenarioProgress } from '../league/scenarios';
 import { startYear } from '../league/era';
 import { Lineup } from './Lineup';
 import { Story } from './Story';
@@ -592,6 +592,12 @@ function ScenarioCard({ league }: { league: LeagueState }) {
           <li key={line}>{__i18n_display(line)}</li>
         )))}
       </ul>
+      {x.medals.length > 0 && (
+        <p class="muted small">
+          {x.medal ? __i18n_t("ui.myClub.text.f72908df", { medal: medalLabel(x.medal) }) : ''}
+          {__i18n_t("ui.myClub.text.37153dba", { gold: x.medals[0]!, silver: x.medals[1]!, bronze: x.medals[2]! })}
+        </p>
+      )}
     </section>
   );
 }

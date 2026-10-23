@@ -178,6 +178,8 @@ export function parentSupport(s: LeagueState, teamId: TeamId, deficit: number, y
   if (teamId !== s.user?.teamId) return deficit;
   // The founding years (before the first-team debut) are the owner's investment: all covered.
   if (year < s.user.firstTeamYear) return deficit;
+  // 2.0.42: an independent club has no owner to cover it (spending.ts).
+  if (s.user.independent) return 0;
   return Math.min(deficit, s.user.support ?? deficit);
 }
 
@@ -263,10 +265,11 @@ export function openBooks(s: LeagueState) {
     .filter((l) => !l.settlement && !l.capital && !l.sweep)
     .reduce((a, l) => a + l.amount, 0);
   const need = Math.max(0, -operating - over - Math.min(0, cash));
-  const amount = Math.min(u.support ?? need, Math.round(need / 1000) * 1000);
+  // 2.0.42: an independent club gets no support (spending.ts).
+  const amount = u.independent ? 0 : Math.min(u.support ?? need, Math.round(need / 1000) * 1000);
   u.seasonSupport = { year: s.year, amount };
   u.fund += amount;
-  u.ledger.push({ year: s.year, label: __i18n_k("league.finance.openBooks.label.4119d9fc", { year: s.year, supportLabel: supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type) }), amount, settlement: true });
+  if (amount || !u.independent) u.ledger.push({ year: s.year, label: __i18n_k("league.finance.openBooks.label.4119d9fc", { year: s.year, supportLabel: supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type) }), amount, settlement: true });
   if (tickets?.year === s.year && tickets.paid) {
     u.fund += tickets.paid;
     u.ledger.push({ year: s.year, label: __i18n_k("league.finance.openBooks.label.086c82a0", { year: s.year, value: tickets.sold.toLocaleString('ko-KR'), value2: Math.round(tickets.discount * 100) }), amount: tickets.paid, settlement: true });

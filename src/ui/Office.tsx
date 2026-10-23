@@ -29,7 +29,7 @@ import { BudgetAsk } from './BudgetAsk';
 import { RivalryBox, TwelveSettingField } from './Twelve';
 import { favourites } from '../league/life';
 import { checkSponsor, regionSchools, schoolRegion, SCHOOLS } from '../league/schools';
-import { checkSpend, SPEND, spendSeason, type SpendKind } from '../league/spending';
+import { checkSpend, cityGain, costOf, SPEND, spendSeason, type SpendKind } from '../league/spending';
 import { FACILITIES, FACILITY_KINDS, facilityLevel, facilityOptions, facilityUpkeep } from '../league/facilities';
 
 type Section = 'summary' | 'owner' | 'money' | 'fans' | 'staff' | 'ballpark' | 'facilities' | 'rival' | 'ledger';
@@ -499,7 +499,7 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
           <h3>{__i18n_t("ui.office.office.dd5f98fe")}</h3>
           <p class="muted">{__i18n_t("ui.office.office.3239d1e3")}</p>
           <div class="table-wrap">
-            <table class="record-table">
+            <table class="record-table spend">
               <tbody>
                 {__i18n_display(projectOptions(league).map((o) => (
                   <tr key={o.kind}>
@@ -609,7 +609,7 @@ function Spending({ league, act }: { league: LeagueState; act: (a: Action) => vo
       <h3>{__i18n_t("ui.office.text.d30fdf4b")}</h3>
       <p class="muted">{__i18n_t("ui.office.text.d3205d4f", { fund: money(u.fund) })}</p>
       <div class="table-wrap">
-        <table class="record-table">
+        <table class="record-table spend">
           <tbody>
             <tr>
               <th scope="row">{__i18n_t("ui.office.text.e8cd6e73")}</th>
@@ -631,6 +631,30 @@ function Spending({ league, act }: { league: LeagueState; act: (a: Action) => vo
               <th scope="row">{__i18n_t("ui.office.text.9c546993")}</th>
               <td class="small">{__i18n_t("ui.office.text.2dd9bb41", { pct: Math.round(SPEND.fanDay.popularity * 100) })}{sp.fanDay === season ? __i18n_t("ui.office.text.39bf4e4d") : ''}</td>
               <td>{button('fanDay', money(SPEND.fanDay.cost))}</td>
+            </tr>
+            <tr>
+              <th scope="row">{__i18n_t("ui.office.text.f6661869")}</th>
+              <td class="small">
+                {__i18n_t("ui.office.text.26adc812")}
+                {sp.cityCount ? __i18n_t("ui.office.text.185d66c3", { n: sp.cityCount, total: money(sp.cityTotal ?? 0) }) : ''}
+                {sp.cityYear === league.year && league.phase === 'offseason' ? __i18n_t("ui.office.text.2f71deeb") : ''}
+              </td>
+              <td>
+                <div class="spend-tiers">
+                  {SPEND.city.tiers.map((t, i) => (
+                    <span key={i}>{button('city', __i18n_t("ui.office.text.0c2f624f", { money: money(t.cost), pct: Math.round(cityGain(league, i) * 100) }), i)}</span>
+                  ))}
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">{__i18n_t("ui.office.text.6b7b5a93")}</th>
+              <td class="small">
+                {u.independent
+                  ? __i18n_t("ui.office.text.6bf7dc51", { year: u.independent })
+                  : __i18n_t("ui.office.text.6392be7f")}
+              </td>
+              <td>{u.independent ? '—' : button('independence', money(costOf('independence', 0, league)))}</td>
             </tr>
             <tr>
               <th scope="row">{__i18n_t("ui.office.text.bceb4b9f")}</th>

@@ -156,7 +156,7 @@ export interface Evaluation {
 
 export interface StadiumProject {
   /** 'fences': a run factor of before 2.0.2; 'layout': the 2.0.2 editor's fences. */
-  kind: 'expand' | 'fences' | 'layout' | 'newPark' | 'dome';
+  kind: 'expand' | 'fences' | 'layout' | 'newPark' | 'dome' | 'mega';
   label: string;
   /** Opens before this season. */
   opens: number;
@@ -226,6 +226,10 @@ export type Decision =
   | { kind: 'development'; candidates: PlayerId[]; max: number }
   /** 2.0.37: our development foreign prospects for the winter (devforeign.ts). */
   | { kind: 'devForeign'; candidates: PlayerId[]; max: number }
+  /** 2.0.42 (national.ts): the national team's tournament is over — watch its deciding game, or go on. */
+  | { kind: 'nationalWatch'; eventId: string; name: string; result: string; gameId: string; games: number }
+  /** 2.0.42 (naturalize.ts): our foreign player asks to naturalize — his KBO seasons and the domestic deal. */
+  | { kind: 'naturalize'; id: PlayerId; seasons: number; years: number; annual: number }
   /** 2.0.37: our free agents Japan is about to sign, to talk round or let go (abroad.ts). */
   | { kind: 'abroad'; rows: { id: PlayerId; years: number; total: number; chance: number }[] }
   | { kind: 'camp'; players: PlayerId[] }
@@ -474,7 +478,11 @@ export interface UserClub {
   /** 2.0.39 (schools.ts): high schools of the club's region it sponsors — the school's name and the first season. */
   schools?: Record<string, number>;
   /** 2.0.39 (spending.ts): the fund's other uses — the last bonus, the seasons of charters and fan days, gifts to the owner. */
-  spending?: { bonusDate?: string; charter?: number; fanDay?: number; giftYear?: number; giftPoints?: number };
+  spending?: { bonusDate?: string; charter?: number; fanDay?: number; giftYear?: number; giftPoints?: number; /** 2.0.42: city investments — the last winter, how many, how much. */ cityYear?: number; cityCount?: number; cityTotal?: number };
+  /** 2.0.42 (naturalize.ts): the asks already put to the general manager (`id|season`). */
+  naturalizeAsked?: string[];
+  /** 2.0.42 (spending.ts): the winter the club bought itself out of its owner. */
+  independent?: number;
   /** 2.0.41 (broker.ts): the deals the club made with brokers, and the season the broker's day last came. */
   broker?: { deals: import('./broker').BrokerDeal[]; seen?: number };
   /** Bullpen roles the general manager set (the manager fills the rest). */
@@ -586,7 +594,7 @@ export interface TrainingTrip {
 }
 
 /** What the club can build (V0.10): ballpark improvements and training facilities. */
-export type FacilityKind = 'premium' | 'scoreboard' | 'turf' | 'concessions' | 'indoor' | 'gym' | 'rehab' | 'analytics' | 'futuresPark' | 'dorm';
+export type FacilityKind = 'premium' | 'scoreboard' | 'turf' | 'concessions' | 'indoor' | 'gym' | 'rehab' | 'analytics' | 'futuresPark' | 'dorm' | 'remodel';
 
 export type Promotion = 'afterFutures' | 'immediate';
 export type Difficulty = 'easy' | 'normal' | 'hard';
@@ -686,6 +694,11 @@ export interface LeagueState {
   retiredBarRise?: boolean;
   /** 2.0.22 (travel.ts): false — no tiredness from the road. */
   travelFatigue?: boolean;
+  /** 2.0.42 (national.ts): a tournament just over whose games the general manager is asked about (the 'national' stop). */
+  nationalWatchDue?: string;
+  /** 2.0.42 (asiaseries.ts): the Asia Series after the Korean Series (off unless set), and the ones played. */
+  asiaSeries?: boolean;
+  asia?: import('./asiaseries').AsiaSeries[];
   /** 2.0.34 (the user's request): every club turns a six-man rotation — chosen in a league of twelve clubs or more. */
   sixMan?: boolean;
   /** 2.0.35 (abilityedit.ts): the ability editor turned on in the settings, and how many edits it has made. */

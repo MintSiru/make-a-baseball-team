@@ -328,7 +328,9 @@ export const TRADES = {
   ai: { perSeason: 6, chance: 0.5, evenOut: 0.45, deadline: 2 },
   /** Cash in a trade (V0.7.8): value per 억 (1 = a club takes 1억 as one point of value), the most in one
       trade (만 원, a game limit; real deals: 손아섭 3억 + a pick, 2025; 박동원 10억 + a pick, 2022). */
-  cash: { perEok: 1, max: 200_000, step: 10_000 },
+  /** 2.0.42 (the user's request): our club may give up to 100억 in a trade; past 20억 each 억 is worth half to the
+      other club. Clubs among themselves and what we receive stay within 20억. */
+  cash: { perEok: 1, max: 200_000, step: 10_000, userMax: 1_000_000, fullValue: 200_000, beyond: 0.5 },
   /** Draft picks in a trade (V0.7.8): value by round for a mid-order pick, how much the club's place in the
       order moves it (the worst club's pick × (1 + spread), the best's × (1 − spread)), and the KBO limit of
       two picks of one draft given away per club, only in trades with players (2019 rule). 2.0.29 (the user's report:
@@ -560,6 +562,13 @@ export const BALLPARK = {
   domeYears: 4,
   domeBuzz: 0.35,
   domeGate: 1.03,
+  /** 2.0.42 (the user's request: 캄프누처럼 증축): past 40,000 seats, +10,000 at a time up to 100,000 — 1,000억 the first,
+      a quarter more each after (upper decks over a full ballpark cost more than the first rings). */
+  megaSeats: 10_000,
+  megaCost: 10_000_000,
+  megaStep: 0.25,
+  megaMax: 100_000,
+  megaBuzz: 0.08,
 } as const;
 
 /** Injuries (V0.7.7, injuries.ts). Chances per game appearance for a player of average hidden risk

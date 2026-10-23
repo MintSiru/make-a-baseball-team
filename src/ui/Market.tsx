@@ -183,6 +183,8 @@ function PickList({
 // ── Trades ───────────────────────────────────────────────────────────────────────────────────────
 
 const CASH_STEPS = [0, 10_000, 20_000, 30_000, 50_000, 70_000, 100_000, 150_000, 200_000];
+/** 2.0.42: what we give may go up to 100억. */
+const CASH_OUT_STEPS = [...CASH_STEPS, 300_000, 500_000, 700_000, 1_000_000];
 
 function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void; initial?: { teamId: TeamId; id: PlayerId } | null }) {
   const u = league.user!;
@@ -262,7 +264,7 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
         <label>
           우리가 줄 현금
           <select value={cashOut} onChange={(e) => setCashOut(Number((e.currentTarget as HTMLSelectElement).value))}>
-            {__i18n_display(CASH_STEPS.map((v) => (
+            {__i18n_display(CASH_OUT_STEPS.map((v) => (
               <option key={v} value={v}>
                 {__i18n_display(v ? money(v) : __i18n_k("ui.market.trade.d58fa73a"))}
               </option>
@@ -279,6 +281,7 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
             )))}
           </select>
         </label>
+        <span class="muted small">{__i18n_t("ui.market.text.bf73bbd7")}</span>
         <div class="pick-chips" role="group" aria-label={__i18n_t("ui.market.trade.cd679f4e")}>
           <span class="muted small">{__i18n_t("ui.market.trade.3de0ba9d", { draft: draft })}</span>
           {__i18n_display(ownPicks.length ? (

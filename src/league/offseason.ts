@@ -76,6 +76,9 @@ import type { SeasonAwards } from './awards';
 import { runTryout, tryoutYear } from './tryout';
 import { kyopoWinter } from './kyopo';
 import { abroadVetsWinter } from './abroadvets';
+import { playAsiaSeries } from './asiaseries';
+import { takeNationalWatch } from './national';
+import { naturalizeWinter } from './naturalize';
 import { staffAgeWinter } from './staffage';
 
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
@@ -956,6 +959,10 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         // November events: named and played now (V0.12); anything else of the year left unfinished too.
         winterSquads(s, novemberEvents(year));
         applyInternational(s, year);
+        // 2.0.42: the Asia Series, when the league plays it (asiaseries.ts).
+        playAsiaSeries(s, year, s.history.find((h) => h.year === year)?.champion ?? null);
+        // 2.0.42: the November tournament's games, watched or not (the step runs again after: it is all done once).
+        if (takeNationalWatch(s)) return 'waiting';
         break;
       case 'develop': {
         const futuresLeague = !!s.history.find((h) => h.year === year)?.futures;
@@ -1103,6 +1110,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
           next,
           rng(`${s.seed}|limits|${year}`),
         );
+        // 2.0.42: the AI clubs' long-serving foreign players who naturalize (naturalize.ts), before the foreign step.
+        naturalizeWinter(s, next);
         break;
       case 'foreign':
         // 2.0.37: development foreign players — those three seasons in go, ready ones take a slot (devforeign.ts).

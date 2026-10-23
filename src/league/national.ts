@@ -22,6 +22,7 @@ import { addNews } from './news';
 import { isForeign, isPitcher } from './players';
 import type { Decision, LeagueState, NationalEntry } from './state';
 import { NATIONAL as N } from './tuning';
+import { stopsOf } from './stops';
 
 const short = (s: LeagueState, id: string | null | undefined) => s.teams.find((t) => t.id === id)?.short ?? '';
 const POS: Record<string, string> = { C: __i18n_k("league.national.pOS.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("league.national.pOS.sS.3e24c7f1"), LF: __i18n_k("league.national.pOS.lF.73836db2"), CF: __i18n_k("league.national.pOS.cF.56780b2a"), RF: __i18n_k("league.national.pOS.rF.a28a0ef8") };
@@ -135,7 +136,23 @@ export function finishEvent(s: LeagueState, e: InternationalEvent) {
     addNews(s, { id: `crowd-${e.id}`, date: e.dates.to, kind: 'season', title, body, quotes: [], facts: { event: e.name, crowd: `${crowd > 0 ? '+' : '−'}${pct}%` }, players: [], mine: false });
   }
   resultAlert(s, e, entry, hurt);
+  // 2.0.42: the 'national' stop — the game asks whether to watch its games (takeNationalWatch).
+  if (s.user && entry.watch?.games.length && stopsOf(s).includes('national')) s.nationalWatchDue = e.id;
   return entry;
+}
+
+/** 2.0.42: a tournament just over and the 'national' stop on: the decision to watch its deciding game or go on.
+    True when it was set (the season or the winter waits for it). */
+export function takeNationalWatch(s: LeagueState): boolean {
+  const id = s.nationalWatchDue;
+  if (!id || s.pending) return false;
+  delete s.nationalWatchDue;
+  const e = eventById(id);
+  const entry = s.international.find((x) => x.id === id);
+  const games = entry?.watch?.games ?? [];
+  if (!e || !entry?.finish || !games.length) return false;
+  s.pending = { kind: 'nationalWatch', eventId: id, name: e.name, result: finishText(e, entry.finish), gameId: games.at(-1)!.id, games: games.length };
+  return true;
 }
 
 /** Finishes every event of `year` not yet finished (the winter step; also anything left over). */
