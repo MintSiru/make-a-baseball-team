@@ -88421,5 +88421,18 @@
       }
     },
     "locations": []
+  },
+  "league.conditions.text.02d7b8e0": {
+    "source": "src/league/conditions.ts",
+    "line": 91,
+    "params": {
+      "year": {
+        "expression": "year"
+      },
+      "first": {
+        "expression": "year + 2"
+      }
+    },
+    "locations": []
   }
 }

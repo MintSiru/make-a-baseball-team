@@ -53,7 +53,6 @@ export function checkCondition(s: LeagueState, id: ConditionId): string | null {
   if (id === 'unified') {
     if (s.unified) return __i18n_k("league.conditions.text.2befe98b");
     if (s.legacy) return __i18n_k("league.conditions.text.0a76c05b");
-    if (s.twelve) return __i18n_k("league.conditions.text.5b7fa9cd");
     if (s.leagueSides) return __i18n_k("league.conditions.text.e80a6259");
     if (s.offseason && s.offseason.done.includes('develop')) return __i18n_k("league.conditions.text.fba5a77f");
   }
@@ -66,11 +65,12 @@ export function addCondition(s: LeagueState, id: ConditionId) {
   const year = s.offseason?.year ?? s.year;
   (s.conditions ??= []).push({ id, from: year });
   const u = s.user!;
-  // No twelfth club after the north's six.
-  if (id === 'unified') u.settings = { ...u.settings, twelve: { mode: 'off' } };
+  // No twelfth club after the north's six; 2.0.43 (the user's request): a league that already has its twelfth club takes
+  // four from the north instead, sixteen all the same (unified.ts conditionUnified).
+  if (id === 'unified' && !s.twelve) u.settings = { ...u.settings, twelve: { mode: 'off' } };
   const def = scenarioDef(SOURCE[id])!;
   const title = __i18n_k("league.conditions.text.43a37a10", { title: def.title });
-  const lines = [conditionText(id, year)];
+  const lines = [conditionText(id, year, !!s.twelve)];
   const date = s.phase === 'regular' ? (s.schedule[s.next]?.date ?? `${s.year}-10-01`) : `${year}-11-01`;
   addNews(s, { id: `condition-${id}-${year}`, date, kind: 'season', title, body: lines.join(' '), quotes: [], facts: { condition: def.title, year }, players: [], mine: true });
   addAlert(s, { id: `condition-${id}-${year}`, date, kind: 'season', title, lines });
@@ -78,7 +78,7 @@ export function addCondition(s: LeagueState, id: ConditionId) {
 }
 
 /** What the condition does from now. */
-export function conditionText(id: ConditionId, year: number): string {
+export function conditionText(id: ConditionId, year: number, twelve = false): string {
   switch (id) {
     case 'recession':
       return __i18n_k("league.conditions.text.2e127e72");
@@ -87,6 +87,8 @@ export function conditionText(id: ConditionId, year: number): string {
     case 'ward':
       return __i18n_k("league.conditions.text.fb016e56");
     case 'unified':
-      return __i18n_k("league.conditions.text.a987f399", { year, first: year + 2 });
+      return twelve
+        ? __i18n_k("league.conditions.text.02d7b8e0", { year, first: year + 2 })
+        : __i18n_k("league.conditions.text.a987f399", { year, first: year + 2 });
   }
 }

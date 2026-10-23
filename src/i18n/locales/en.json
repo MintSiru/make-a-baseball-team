@@ -9689,5 +9689,6 @@
   "ui.twelve.text.caf7c90a": "— the club we left, now our rival.",
   "ui.decision.text.4d651381": "Change clubs",
   "ui.decision.text.e631fdf3": "Move to this club as its first GM",
-  "ui.decision.text.e68fc213": "Another front office takes over your current club (its players and fund stay with it), and you start again with the new club's founding fund and owner. You choose the priority draft picks, the special draft and the free agents without compensation; the club plays the futures in {next} and joins the first team in {firstTeam}. Your achievements and timeline carry over."
+  "ui.decision.text.e68fc213": "Another front office takes over your current club (its players and fund stay with it), and you start again with the new club's founding fund and owner. You choose the priority draft picks, the special draft and the free agents without compensation; the club plays the futures in {next} and joins the first team in {firstTeam}. Your achievements and timeline carry over.",
+  "league.conditions.text.02d7b8e0": "The two Koreas have unified peacefully: four northern clubs are founded in the winter of {year}, and from {first} the league plays as sixteen clubs, the twelfth club among them, in two leagues."
 }

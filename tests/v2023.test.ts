@@ -71,7 +71,7 @@ describe('conditions added to a game under way', () => {
     for (const c of north) expect(s.rosters[c]!.active.length).toBeGreaterThan(20);
   });
 
-  it('is refused in a league already in two leagues or with a twelfth club', () => {
+  it('is refused in a league already in two leagues (2.0.43: a twelfth club is welcome)', () => {
     const s = createLeague('v2023-refuse');
     apply(s, { kind: 'toFounding' });
     apply(s, { kind: 'found', settings });

@@ -9,8 +9,13 @@ import { foundRival, RIVAL_ID, suggestRival } from '../src/league/rival';
 import { makeSchedule } from '../src/league/schedule';
 import { withScenario } from '../src/league/scenarios';
 import { firstTeamIds, registeredIds, type Decision, type ExpansionSettings, type LeagueState } from '../src/league/state';
-import { rivalId, twelveGames } from '../src/league/twelve';
+import { assignLeagues, rivalId, sidesOf, twelveGames } from '../src/league/twelve';
+import { addCondition, checkCondition } from '../src/league/conditions';
+import { conditionUnified } from '../src/league/unified';
 import { assignUnifiedLeagues, NORTH_AI_CLUBS } from '../src/league/unified';
+import { openProjects, projectOptions, startProject } from '../src/league/ballpark';
+import { BALLPARK } from '../src/league/tuning';
+import { loadSave } from './helpers';
 
 const pendingOf = (s: LeagueState): Decision | null => s.pending;
 
@@ -116,4 +121,60 @@ describe('taking the twelfth club over (2.0.43)', () => {
     const drafted = Object.values(s.players).filter((p) => p.origin.kind === 'draftClass' && p.origin.draftYear === 2027 && p.teamId === RIVAL_ID);
     expect(drafted.length).toBeGreaterThanOrEqual(10);
   }, 900_000);
+});
+
+describe('ballpark expansion to the cap (2.0.43, user report)', () => {
+  it('a 23,000-seat dome grown 3,000 at a time reaches 40,000 and then the mega expansion', () => {
+    const s = loadSave('2.0.39');
+    s.phase = 'offseason';
+    s.offseason = { year: s.year, step: 0, done: [] } as never;
+    s.pending = null;
+    s.user!.fund = 200_000_000;
+    s.user!.projects = [];
+    const team = s.teams.find((t) => t.id === s.user!.teamId)!;
+    team.stadium = { ...team.stadium, size: 'dome', capacity: 38_000 };
+    const expand = projectOptions(s).find((o) => o.kind === 'expand')!;
+    expect(expand.blocked).toBeNull();
+    expect(projectOptions(s).find((o) => o.kind === 'mega')!.blocked).toBeTruthy();
+    startProject(s, 'expand');
+    openProjects(s, s.year + 1);
+    // The next winter.
+    (s.offseason as unknown as { year: number }).year += 1;
+    expect(team.stadium.capacity).toBe(BALLPARK.maxSeats);
+    expect(team.stadium.size).toBe('dome');
+    expect(projectOptions(s).find((o) => o.kind === 'expand')!.blocked).toBeTruthy();
+    expect(projectOptions(s).find((o) => o.kind === 'mega')!.blocked).toBeNull();
+  });
+});
+
+describe('unified Korea added to a twelve-club league (2.0.43, the user\u2019s request)', () => {
+  it('four northern clubs join the twelve: sixteen in two leagues of eight, the twelve clubs\u2019 own leagues set aside', () => {
+    const s = createLeague('v2043-condition');
+    apply(s, { kind: 'toFounding' });
+    apply(s, { kind: 'found', settings: { name: '청주 독수리', short: '독수리', color: '#1f6fb2', cityId: 'cheongju', parentType: 'conglomerate', parentName: '청주그룹', stadium: 'existing', promotion: 'immediate', difficulty: 'normal', scenario: null, twelve: { mode: 'year', year: 2026 } } });
+    s.pending = null;
+    foundRival(s, { ...suggestRival(s, 2026), format: 'two' }, 2026);
+    s.year = 2028;
+    s.twelve!.leagues = assignLeagues(s);
+    expect(firstTeamIds(s)).toHaveLength(12);
+    // The winter of 2028, before its development step.
+    s.phase = 'offseason';
+    s.offseason = { year: 2028, step: 0, done: [] } as never;
+    expect(checkCondition(s, 'unified')).toBeNull();
+    addCondition(s, 'unified');
+    expect(s.user!.settings.twelve?.mode).toBe('year');
+    conditionUnified(s, 2028);
+    expect(s.unified!.clubs).toHaveLength(NORTH_AI_CLUBS - 1);
+    expect(s.unified!.clubs.every((c) => c.firstTeam === 2030)).toBe(true);
+    s.year = 2030;
+    s.phase = 'regular';
+    assignUnifiedLeagues(s);
+    const ids = firstTeamIds(s);
+    expect(ids).toHaveLength(16);
+    const sides = sidesOf(s)!;
+    expect(ids.filter((id) => sides[id] === 'dream')).toHaveLength(8);
+    expect(s.unified!.clubs.filter((c) => sides[c.teamId] === 'dream')).toHaveLength(2);
+    expect(s.twelve!.format).toBe('single');
+    expect(s.twelve!.leagues).toBeUndefined();
+  }, 300_000);
 });

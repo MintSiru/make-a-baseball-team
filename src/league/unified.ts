@@ -96,8 +96,9 @@ export function foundNorthClubs(s: LeagueState, year: number, firstTeam: number,
     game already under way — this winter, their first team the season after next. */
 export function conditionUnified(s: LeagueState, year: number) {
   const u = s.user;
-  if (!u || s.unified || s.twelve || s.legacy || s.leagueSides || !s.conditions?.some((c) => c.id === 'unified')) return;
-  foundNorthClubs(s, year, year + 2, u.settings.cityId);
+  if (!u || s.unified || s.legacy || s.leagueSides || !s.conditions?.some((c) => c.id === 'unified')) return;
+  // 2.0.43: four with a twelfth club already in the league (sixteen all the same).
+  foundNorthClubs(s, year, year + 2, u.settings.cityId, s.twelve ? NORTH_AI_CLUBS - 1 : NORTH_AI_CLUBS);
 }
 
 /**
@@ -114,7 +115,7 @@ export function assignUnifiedLeagues(s: LeagueState) {
   if (north.length < u.clubs.length) return;
   // 2.0.43: with the twelve-club setting, one league of fifteen until the twelfth club reaches the first team too.
   const twelve = s.user?.settings.twelve;
-  if (twelve && twelve.mode !== 'off' && !(s.twelve && ids.includes(s.twelve.teamId))) return;
+  if ((s.twelve || (twelve && twelve.mode !== 'off')) && !(s.twelve && ids.includes(s.twelve.teamId))) return;
   const table = s.history.at(-1)?.table ?? [];
   const old = ids
     .filter((id) => !north.includes(id))
@@ -125,4 +126,9 @@ export function assignUnifiedLeagues(s: LeagueState) {
   snake(north);
   snake(old);
   s.leagueSides = { sides };
+  // 2.0.43: a twelve-club league's own two leagues of six give way to the sixteen clubs' two of eight.
+  if (s.twelve?.format === 'two') {
+    s.twelve.format = 'single';
+    delete s.twelve.leagues;
+  }
 }
