@@ -174,6 +174,8 @@ export interface SeriesResult {
   lowWins: number;
   winner: TeamId;
   games: GameScore[];
+  /** 2.0.41 (the user's request): the series' most valuable player, from the winners (postseason.ts). */
+  mvp?: PlayerId;
 }
 
 export interface SeasonSummary {
@@ -269,6 +271,8 @@ export type Decision =
   | { kind: 'board'; motions: import('./board').BoardMotion[]; expected: Record<TeamId, import('./board').BoardVote>[]; options: import('./board').BoardMotion[]; optionYes: number[]; need: number }
   /** The owner's order in the season (1.6.0, scenario 재기): what he said, the trust a refusal costs, his manager. */
   | { kind: 'meddle'; order: import('./scenarios').MeddleOrder; date: string; lines: string[]; refuse: number; manager?: StaffMember }
+  /** 2.0.41 (broker.ts): a broker's offer — papers out of military service, or a doping program. */
+  | { kind: 'broker'; offer: import('./broker').BrokerOffer; ids: PlayerId[]; cost: number; date: string; lines: string[] }
   /** 판타지 드래프트 (1.6.0, fantasy.ts): our turn. */
   | { kind: 'fantasyPick'; overall: number; round: number; rounds: number }
   /** 1.9.0 (postentry.ts): our entry before a postseason series; `late` were registered after the deadline. */
@@ -471,6 +475,8 @@ export interface UserClub {
   schools?: Record<string, number>;
   /** 2.0.39 (spending.ts): the fund's other uses — the last bonus, the seasons of charters and fan days, gifts to the owner. */
   spending?: { bonusDate?: string; charter?: number; fanDay?: number; giftYear?: number; giftPoints?: number };
+  /** 2.0.41 (broker.ts): the deals the club made with brokers, and the season the broker's day last came. */
+  broker?: { deals: import('./broker').BrokerDeal[]; seen?: number };
   /** Bullpen roles the general manager set (the manager fills the rest). */
   penRoles?: Record<PlayerId, BullpenRole>;
   /** Platoon halves: players who start only against left- ('L') or right-handed ('R') starters. */

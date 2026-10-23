@@ -29,6 +29,7 @@ import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry, toForeignPool
 import { featureOpen } from './features';
 import { rulesFor } from '../rules/history';
 import { allianceAgainst, tradeBarred } from './dynasty';
+import { abroadVetAsk } from './abroadvets';
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 const shortOf = (s: LeagueState, id: TeamId | null) => s.teams.find((t) => t.id === id)?.short ?? '-';
@@ -417,7 +418,10 @@ export function poolAsk(s: LeagueState, p: Player) {
   const season = s.phase === 'regular' ? s.year : s.year + 1;
   // 2.0.27: an unsigned free agent asks what he did in the market (×0.7), not a renewal salary.
   const full = Math.max(minimumSalaryFor(season), renewSalary(p, season), p.life?.unsigned != null && season <= p.life.unsigned + 1 ? (p.life.unsignedAsk ?? 0) : 0);
-  return s.phase === 'regular' ? Math.max(minimumSalaryFor(season), Math.round((full * Math.max(0.3, seasonShareLeft(s))) / 100) * 100) : full;
+  // 2.0.41: a veteran home from abroad asks for a free agent's money (abroadvets.ts).
+  const vet = p.origin.abroadVet && !p.career.some((c) => !c.level) ? abroadVetAsk(p, season) : 0;
+  const ask = Math.max(full, vet);
+  return s.phase === 'regular' ? Math.max(minimumSalaryFor(season), Math.round((ask * Math.max(0.3, seasonShareLeft(s))) / 100) * 100) : ask;
 }
 
 export function canSignFromPool(s: LeagueState, id: PlayerId): string | null {

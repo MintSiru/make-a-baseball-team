@@ -166,6 +166,8 @@ export interface PlayerOrigin {
   devForeign?: boolean;
   /** 1.9.6 (kyopo.ts): an overseas Korean player (재일교포), a domestic player with a Japanese-league past. */
   kyopo?: boolean;
+  /** 2.0.41 (abroadvets.ts): a Korean veteran home from a career abroad, never in the KBO before. */
+  abroadVet?: boolean;
   /** Foreign players: where he played before and what he asked for when he came (US dollars). */
   background?: { level: ForeignLevel; text: string; ask: number; /** 1.7.0: an old big-league name. */ veteran?: boolean };
 }
@@ -431,7 +433,7 @@ export interface PlayerLife {
   unsignedAsk?: number;
   /** 1.6.0: an injury that ended his career (the date): he retires after the season, however he is asked. */
   careerOver?: string;
-  suspicion?: { since: string; signs: number; real: boolean; next: string; boost?: { tool: 'stuff' | 'power'; delta: number } };
+  suspicion?: { since: string; signs: number; real: boolean; next: string; boost?: { tool: 'stuff' | 'power'; delta: number }; /** 2.0.41: a broker's program (broker.ts). */ broker?: boolean };
   inspected?: number;
 }
 

@@ -5,6 +5,7 @@ import { nationalView, retiredNumbersView } from '../league/legacy';
 import { nationalGamesOf } from '../league/nationalgames';
 import type { LeagueState } from '../league/state';
 import { awardsView, recordRoom, shortName, teamOf } from '../league/views';
+import { ROUND_NAME } from '../league/postseason';
 import { avg, era, ip, obp, ops, slg } from '../league/stats';
 import { draftView, draftYears } from '../league/draftlog';
 import { gradeClass } from './grades';
@@ -47,10 +48,11 @@ export function History({ league, onPlayer, onBox }: { league: LeagueState; onPl
   );
 }
 
-const Who = ({ x, onPlayer }: { x: { id: string; name: string; team: string } | null; onPlayer: (id: string) => void }) =>
+/** 2.0.41: an award winner; one of ours in our club's colour. */
+const Who = ({ x, onPlayer }: { x: { id: string; name: string; team: string; color?: string } | null; onPlayer: (id: string) => void }) =>
   x ? (
     <>
-      <button type="button" class="link" onClick={() => onPlayer(x.id)}>
+      <button type="button" class={x.color ? 'link ours-award' : 'link'} style={x.color ? { color: x.color, borderBottomColor: x.color } : undefined} onClick={() => onPlayer(x.id)}>
         {__i18n_display(x.name)}
       </button>
       <span class="muted small"> {__i18n_display(x.team)}</span>
@@ -87,6 +89,17 @@ function Awards({ league, onPlayer }: { league: LeagueState; onPlayer: (id: stri
                 <span key={i}>
                   {g.pos} <Who x={g} onPlayer={onPlayer} />
                   {i < y.defense.length - 1 ? ' · ' : ''}
+                </span>
+              ))}
+            </p>
+          )}
+          {y.series.length > 0 && (
+            <p class="small">
+              <strong>{__i18n_t("ui.history.text.3bc9f2c2")}</strong>{' '}
+              {y.series.map((m, i) => (
+                <span key={i}>
+                  {ROUND_NAME[m.round]} <Who x={m} onPlayer={onPlayer} />
+                  {i < y.series.length - 1 ? ' · ' : ''}
                 </span>
               ))}
             </p>

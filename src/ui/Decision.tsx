@@ -83,6 +83,7 @@ const TITLES: Record<DecisionT['kind'], string> = {
   scandal: __i18n_k("ui.decision.tITLES.scandal.562ddfd9"),
   dispute: __i18n_k("ui.decision.tITLES.dispute.8cc0c1f5"),
   meddle: __i18n_k("ui.decision.tITLES.meddle.8a1f72de"),
+  broker: __i18n_t("ui.decision.text.b7f8c3bf"),
   fantasyPick: __i18n_k("ui.decision.tITLES.fantasyPick.bc92c419"),
   postEntry: __i18n_t("ui.decision.text.2bfab379"),
   board: __i18n_t("ui.decision.text.b736056d"),
@@ -417,8 +418,8 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
               ? String(d.year)
               : d.kind === 'foreign'
                 ? String(d.round ?? 1)
-                : d.kind === 'meddle'
-                  ? `${d.date}-${d.order}`
+                : d.kind === 'meddle' || d.kind === 'broker'
+                  ? `${d.date}-${d.kind === 'meddle' ? d.order : d.offer}`
                   : d.kind === 'postEntry'
                     ? `${d.round}-${d.opp}`
                     : '';
@@ -455,6 +456,8 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         return null;
       case 'meddle':
         return { kind: 'meddle', answer: (choices.pick ?? 'obey') as 'obey' | 'refuse' };
+      case 'broker':
+        return { kind: 'broker', answer: (choices.pick ?? 'refuse') as 'accept' | 'refuse' };
       case 'specialDraft':
         return { kind: 'specialDraft', picks: special };
       case 'military':
@@ -585,6 +588,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       case 'scandal':
       case 'dispute':
       case 'meddle':
+      case 'broker':
       case 'relocate':
         setChoices({ pick: a.answer });
         break;
@@ -1309,6 +1313,31 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
           ))}
           <p class="muted small">{__i18n_t("ui.decision.decision.5399f1da", { value: Math.round(u.trust ?? 60) })}</p>
           <div class="choice-grid" role="radiogroup" aria-label={__i18n_t("ui.decision.decision.2c0219be")}>
+            {__i18n_display(options.map(([k, label, note]) => (
+              <button key={k} type="button" class="choice" role="radio" aria-checked={pick === k} aria-pressed={pick === k} onClick={() => choose('pick', k)}>
+                <strong>{__i18n_display(label)}</strong>
+                <span class="muted small">{__i18n_display(note)}</span>
+              </button>
+            )))}
+          </div>
+        </>
+      );
+      break;
+    }
+    case 'broker': {
+      // 2.0.41: a broker's offer (broker.ts).
+      const pick = choices.pick ?? 'refuse';
+      const options: [string, string, string][] = [
+        ['refuse', __i18n_t("ui.decision.text.c3df1fb6"), __i18n_t("ui.decision.text.a71797db")],
+        ['accept', __i18n_t("ui.decision.text.b483a4d3"), __i18n_t("ui.decision.text.c19f94d8", { cost: Math.round(d.cost / 10_000) })],
+      ];
+      body = (
+        <>
+          {__i18n_display(d.lines.map((line) => (
+            <p key={line}>{__i18n_display(line)}</p>
+          )))}
+          <p class="muted small">{__i18n_t("ui.decision.text.3692a702", { names: d.ids.map((id) => league.players[id]?.name ?? '').join(', ') })}</p>
+          <div class="choice-grid" role="radiogroup" aria-label={__i18n_t("ui.decision.text.b7f8c3bf")}>
             {__i18n_display(options.map(([k, label, note]) => (
               <button key={k} type="button" class="choice" role="radio" aria-checked={pick === k} aria-pressed={pick === k} onClick={() => choose('pick', k)}>
                 <strong>{__i18n_display(label)}</strong>

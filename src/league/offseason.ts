@@ -75,6 +75,7 @@ import { isFantasyWinter, openFantasy, runFantasy } from './fantasy';
 import type { SeasonAwards } from './awards';
 import { runTryout, tryoutYear } from './tryout';
 import { kyopoWinter } from './kyopo';
+import { abroadVetsWinter } from './abroadvets';
 import { staffAgeWinter } from './staffage';
 
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
@@ -1111,6 +1112,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         expireForeignPool(s, year);
         // 1.9.6: overseas Korean players of a history game (kyopo.ts).
         kyopoWinter(s, next);
+        // 2.0.41: Korean veterans home from abroad, in any game (abroadvets.ts).
+        abroadVetsWinter(s, next);
         break;
       case 'check':
         break; // the user's club over the limit after foreign signings: a user decision (expansion.ts)

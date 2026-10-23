@@ -6,6 +6,7 @@ import type { SeasonAwards } from './awards';
 import type { LeagueState } from './state';
 import { achievementAlert } from './alerts';
 import { madePostseason } from './twelve';
+import { awardLabel } from './awards';
 
 export interface Achievement {
   id: string;
@@ -33,6 +34,25 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'posting', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.9433ab29"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.b2a47079") },
   { id: 'retiredNumber', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.adad27c2"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.0fb75504") },
   { id: 'hallOfFame', label: __i18n_k("league.milestones.aCHIEVEMENTS.label.6999864f"), note: __i18n_k("league.milestones.aCHIEVEMENTS.note.ffcebc4c") },
+  // 2.0.41 (the user's request: more to chase late in a game).
+  { id: 'cycle', label: __i18n_k("league.milestones.text.2fd46a6d"), note: __i18n_k("league.milestones.text.fb3c95f5") },
+  { id: 'twentyRuns', label: __i18n_k("league.milestones.text.f5faea80"), note: __i18n_k("league.milestones.text.87fc321a") },
+  { id: 'ninetyWins', label: __i18n_k("league.milestones.text.d712d1f3"), note: __i18n_k("league.milestones.text.194ddfeb") },
+  { id: 'backToBack', label: __i18n_k("league.milestones.text.718e5a38"), note: __i18n_k("league.milestones.text.4e4272bb") },
+  { id: 'fiveTitles', label: __i18n_k("league.milestones.text.45ed871f"), note: __i18n_k("league.milestones.text.c95259d0") },
+  { id: 'ksSweep', label: __i18n_k("league.milestones.text.52567bdd"), note: __i18n_k("league.milestones.text.635d9d0a") },
+  { id: 'underdog', label: __i18n_k("league.milestones.text.93114238"), note: __i18n_k("league.milestones.text.42036e5d") },
+  { id: 'ksMvp', label: __i18n_k("league.milestones.text.f26ece0b"), note: __i18n_k("league.milestones.text.f46d1d4e") },
+  { id: 'turnaround', label: __i18n_k("league.milestones.text.2cf5752c"), note: __i18n_k("league.milestones.text.61338741") },
+  { id: 'tenSeasons', label: __i18n_k("league.milestones.text.2a787494"), note: __i18n_k("league.milestones.text.064ea32a") },
+  { id: 'tripleCrown', label: __i18n_k("league.milestones.text.df312758"), note: __i18n_k("league.milestones.text.8cfaf37e") },
+  { id: 'pitchingCrown', label: __i18n_k("league.milestones.text.39d8313f"), note: __i18n_k("league.milestones.text.6f8caffb") },
+  { id: 'fortyHomers', label: __i18n_k("league.milestones.text.c1d4499c"), note: __i18n_k("league.milestones.text.f62e8e11") },
+  { id: 'twoHundredHits', label: __i18n_k("league.milestones.text.a9add065"), note: __i18n_k("league.milestones.text.9c188925") },
+  { id: 'twentyWins', label: __i18n_k("league.milestones.text.12efaf1a"), note: __i18n_k("league.milestones.text.72f70073") },
+  { id: 'fortySaves', label: __i18n_k("league.milestones.text.0a0d4860"), note: __i18n_k("league.milestones.text.026b2acd") },
+  { id: 'goldenFour', label: __i18n_k("league.milestones.text.39cf1ee0"), note: __i18n_k("league.milestones.text.e5d15044") },
+  { id: 'richClub', label: __i18n_k("league.milestones.text.f6cb86bd"), note: __i18n_k("league.milestones.text.b57a563f") },
 ];
 
 /** 1.9.7: the legacy start's own (a game that plays history): a title in each decade, the split season's both halves,
@@ -89,6 +109,12 @@ export function gameMoments(s: LeagueState, box: StoredBox) {
     // Home team scoring the winning run in its last half inning.
     if (us === 1 && box.line[1].length === box.line[0].length && (box.line[1].at(-1) ?? 0) > 0) unlock(s, 'walkOff', year, __i18n_k("league.milestones.gameMoments.7f5f8b64", { date: box.date, opp: opp }));
   }
+  // 2.0.41: a cycle by one of ours (bat rows: id, pos, ab, r, h, rbi, hr, bb, k, 2b, 3b, sb), and twenty runs.
+  for (const b of box.bat[us] ?? []) {
+    const [h, hr, d, t] = [Number(b[4]), Number(b[6]), Number(b[9]), Number(b[10])];
+    if (d >= 1 && t >= 1 && hr >= 1 && h - d - t - hr >= 1) unlock(s, 'cycle', year, __i18n_k("league.milestones.text.98d8d119", { name: s.players[String(b[0])]?.name ?? '', date: box.date, opp }));
+  }
+  if (box.rhe[us][0] >= 20) unlock(s, 'twentyRuns', year, __i18n_k("league.milestones.text.9e741f84", { date: box.date, opp, runs: box.rhe[us][0] }));
   // 1.9.8: three strikeouts on nine pitches by one of ours.
   const imm = box.imm?.[us]?.[0];
   if (imm) unlock(s, 'immaculate', year, __i18n_k("league.milestones.text.da856f9f", { name: s.players[imm.pitcher]?.name ?? '', date: box.date, opp, inning: imm.inning }));
@@ -135,6 +161,7 @@ export function seasonMoments(s: LeagueState, year: number, awards: SeasonAwards
     const c = p.career.find((x) => x.year === year && !x.level && x.teamId === u.teamId);
     if (c && c.war >= 5 && p.origin.draftYear && p.career.every((x) => x.teamId === u.teamId)) unlock(s, 'homegrown', year, `${p.name} WAR ${c.war.toFixed(1)}`);
   }
+  moreMoments(s, year, awards);
   if (s.historical) legacyMoments(s, year);
   const report = s.clubs?.[u.teamId]?.reports.find((r) => r.year === year);
   if (report) {
@@ -162,4 +189,47 @@ function legacyMoments(s: LeagueState, year: number) {
     if (p.id.startsWith('ft') && c.war >= 4) unlock(s, 'tryoutGem', year, `${p.name} WAR ${c.war.toFixed(1)}`);
   }
   if (year - u.firstTeamYear + 1 >= 40) unlock(s, 'fortySeasons', year);
+}
+
+/** 2.0.41: the more achievements at the end of a season. */
+function moreMoments(s: LeagueState, year: number, awards: SeasonAwards | undefined) {
+  const u = s.user!;
+  const h = s.history.find((x) => x.year === year)!;
+  const row = h.table.find((r) => r.teamId === u.teamId);
+  if (row && row.w >= 90) unlock(s, 'ninetyWins', year, __i18n_k("league.milestones.text.305ee214", { w: row.w }));
+  const titles = s.history.filter((x) => x.champion === u.teamId).map((x) => x.year);
+  if (h.champion === u.teamId) {
+    if (titles.includes(year - 1)) unlock(s, 'backToBack', year, `${year - 1}–${year}`);
+    if (titles.length >= 5) unlock(s, 'fiveTitles', year);
+    const ks = h.series?.find((x) => x.round === 'ks');
+    if (ks && (ks.winner === ks.high ? ks.lowWins : ks.highWins) === 0) unlock(s, 'ksSweep', year);
+    if (row && row.rank >= 4) unlock(s, 'underdog', year, __i18n_k("league.milestones.text.8485ba74", { rank: row.rank }));
+  }
+  const ksMvp = h.series?.find((x) => x.round === 'ks' && x.winner === u.teamId)?.mvp;
+  if (ksMvp) unlock(s, 'ksMvp', year, s.players[ksMvp]?.name ?? '');
+  const before = s.history.find((x) => x.year === year - 1);
+  const beforeRow = before?.table.find((r) => r.teamId === u.teamId);
+  if (before && beforeRow && beforeRow.rank === before.table.length && madePostseason(h, u.teamId)) unlock(s, 'turnaround', year);
+  if (year - u.firstTeamYear + 1 >= 10) unlock(s, 'tenSeasons', year);
+  const ours = (id: string) => s.players[id]?.career.find((c) => c.year === year && !c.level)?.teamId === u.teamId;
+  const titleOf = (code: string) => awards?.titles.find((t) => t.label === awardLabel(code))?.id;
+  const crown = (codes: string[]) => {
+    const ids = codes.map(titleOf);
+    return ids[0] && ids.every((id) => id === ids[0]) && ours(ids[0]) ? ids[0] : null;
+  };
+  const bat = crown(['avg', 'hr', 'rbi']);
+  if (bat) unlock(s, 'tripleCrown', year, s.players[bat]!.name);
+  const pit = crown(['w', 'era', 'k']);
+  if (pit) unlock(s, 'pitchingCrown', year, s.players[pit]!.name);
+  if (awards && awards.goldenGloves.filter((g) => ours(g.id)).length >= 4) unlock(s, 'goldenFour', year);
+  for (const p of Object.values(s.players)) {
+    const c = p.career.find((x) => x.year === year && !x.level && x.teamId === u.teamId);
+    if (!c) continue;
+    const name = p.name;
+    if ((c.bat?.hr ?? 0) >= 40) unlock(s, 'fortyHomers', year, __i18n_k("league.milestones.text.ef5d550d", { name, n: c.bat!.hr }));
+    if ((c.bat?.h ?? 0) >= 200) unlock(s, 'twoHundredHits', year, __i18n_k("league.milestones.text.7dbbe71c", { name, n: c.bat!.h }));
+    if ((c.pit?.w ?? 0) >= 20) unlock(s, 'twentyWins', year, __i18n_k("league.milestones.text.f922f439", { name, n: c.pit!.w }));
+    if ((c.pit?.sv ?? 0) >= 40) unlock(s, 'fortySaves', year, __i18n_k("league.milestones.text.49bd338a", { name, n: c.pit!.sv }));
+  }
+  if (u.fund >= 10_000_000) unlock(s, 'richClub', year);
 }

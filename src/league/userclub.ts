@@ -63,6 +63,7 @@ import { resolveMerger } from './merger';
 import { conditionMoney } from './conditions';
 import { DYNAMIC, handicap, setHandicap } from './dynamic';
 import { autoMeddle, resolveMeddle, scenarioWinter, supportFactor } from './scenarios';
+import { autoBroker, checkBroker, resolveBroker } from './broker';
 import { canRelease, releasePlayer } from './trade';
 import { placeVoluntary } from './voluntary';
 import { postingPersuasion } from './abroad';
@@ -116,6 +117,7 @@ export type AnnualInput =
   | { kind: 'merger'; vote: 'yes' | 'no' }
   /** Obey the owner or not (1.6.0). */
   | { kind: 'meddle'; answer: 'obey' | 'refuse' }
+  | { kind: 'broker'; answer: 'accept' | 'refuse' }
   /** 2.0.32 (development.ts): who goes to the fall league or to Australia (none: nobody), the wrap-up camp's place
       (null: none this year). */
   | { kind: 'devFall'; ids: PlayerId[] }
@@ -419,6 +421,8 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
       return ['yes', 'no'].includes(input.vote) ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
     case 'meddle':
       return ['obey', 'refuse'].includes(input.answer) ? null : __i18n_k("league.userclub.checkAnnual.db09d1ab");
+    case 'broker':
+      return checkBroker(s, d as Extract<Decision, { kind: 'broker' }>, input.answer);
     case 'returnee': {
       const dd = d as Extract<Decision, { kind: 'returnee' }>;
       if (input.ids.some((id) => !dd.rows.some((r) => r.id === id))) return __i18n_k("league.userclub.checkAnnual.98ce3a2b");
@@ -698,6 +702,9 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
     case 'meddle':
       resolveMeddle(s, d as Extract<Decision, { kind: 'meddle' }>, input.answer);
       return null;
+    case 'broker':
+      resolveBroker(s, d as Extract<Decision, { kind: 'broker' }>, input.answer);
+      return null;
     case 'scandal': {
       // The release needs the game not to be waiting on this decision any more.
       s.pending = null;
@@ -900,6 +907,8 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
       return { kind: 'merger', vote: 'no' };
     case 'meddle':
       return { kind: 'meddle', answer: autoMeddle(s, d) };
+    case 'broker':
+      return { kind: 'broker', answer: autoBroker() };
     case 'retire':
       // Ask the ones who can still help: a regular's grade, a fair chance to say yes.
       return { kind: 'retire', ids: d.rows.filter((r) => s.players[r.id]!.scouting.current >= 50 && r.chance >= 0.3).map((r) => r.id) };
@@ -987,7 +996,7 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
 }
 
 export const isAnnual = (kind: Decision['kind']) =>
-  ['military', 'rookieBonus', 'development', 'camp', 'faRound', 'faOptions', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting', 'returnee', 'sponsor', 'staff', 'retire', 'national', 'scandal', 'dispute', 'meddle', 'postEntry', 'devFall', 'devAbl', 'wrapUp', 'relocate', 'merger'].includes(kind);
+  ['military', 'rookieBonus', 'development', 'camp', 'faRound', 'faOptions', 'faProtect', 'faCompensation', 'salaries', 'secondProtect', 'secondPick', 'foreignRenew', 'posting', 'returnee', 'sponsor', 'staff', 'retire', 'national', 'scandal', 'dispute', 'meddle', 'broker', 'postEntry', 'devFall', 'devAbl', 'wrapUp', 'relocate', 'merger'].includes(kind);
 
 // ── Salary talks ─────────────────────────────────────────────────────────────────────────────────
 

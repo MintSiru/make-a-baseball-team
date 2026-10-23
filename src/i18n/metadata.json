@@ -86581,5 +86581,795 @@
       }
     },
     "locations": []
+  },
+  "league.postseason.text.0034f194": {
+    "source": "src/league/postseason.ts",
+    "line": 396,
+    "params": {
+      "round": {
+        "expression": "round"
+      },
+      "name": {
+        "expression": "p.name"
+      },
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.postseason.text.5f6ff67d": {
+    "source": "src/league/postseason.ts",
+    "line": 397,
+    "params": {
+      "round": {
+        "expression": "round"
+      },
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      },
+      "line": {
+        "expression": "line"
+      }
+    },
+    "locations": []
+  },
+  "league.postseason.text.121462b5": {
+    "source": "src/league/postseason.ts",
+    "line": 409,
+    "params": {
+      "ip": {
+        "expression": "`${Math.floor(l.outs / 3)}${l.outs % 3 ? `.${l.outs % 3}` : ''}`"
+      },
+      "er": {
+        "expression": "l.er"
+      },
+      "k": {
+        "expression": "l.k"
+      },
+      "w": {
+        "expression": "l.w"
+      },
+      "sv": {
+        "expression": "l.sv"
+      }
+    },
+    "locations": []
+  },
+  "league.postseason.text.ee6e6eea": {
+    "source": "src/league/postseason.ts",
+    "line": 410,
+    "params": {
+      "ab": {
+        "expression": "l.ab"
+      },
+      "h": {
+        "expression": "l.h"
+      },
+      "hr": {
+        "expression": "l.hr"
+      },
+      "rbi": {
+        "expression": "l.rbi"
+      }
+    },
+    "locations": []
+  },
+  "ui.history.text.3bc9f2c2": {
+    "source": "src/ui/History.tsx",
+    "line": 98,
+    "params": {},
+    "locations": []
+  },
+  "league.moves.text.02ba8320": {
+    "source": "src/league/moves.ts",
+    "line": 151,
+    "params": {
+      "label": {
+        "expression": "pick.label"
+      },
+      "overall": {
+        "expression": "pick.second"
+      }
+    },
+    "locations": []
+  },
+  "ui.squad.text.c8b4b844": {
+    "source": "src/ui/Squad.tsx",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "ui.squad.text.82ee1a8f": {
+    "source": "src/ui/Squad.tsx",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.2fd46a6d": {
+    "source": "src/league/milestones.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.fb3c95f5": {
+    "source": "src/league/milestones.ts",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.f5faea80": {
+    "source": "src/league/milestones.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.87fc321a": {
+    "source": "src/league/milestones.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.d712d1f3": {
+    "source": "src/league/milestones.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.194ddfeb": {
+    "source": "src/league/milestones.ts",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.718e5a38": {
+    "source": "src/league/milestones.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.4e4272bb": {
+    "source": "src/league/milestones.ts",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.45ed871f": {
+    "source": "src/league/milestones.ts",
+    "line": 42,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.c95259d0": {
+    "source": "src/league/milestones.ts",
+    "line": 42,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.52567bdd": {
+    "source": "src/league/milestones.ts",
+    "line": 43,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.635d9d0a": {
+    "source": "src/league/milestones.ts",
+    "line": 43,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.93114238": {
+    "source": "src/league/milestones.ts",
+    "line": 44,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.42036e5d": {
+    "source": "src/league/milestones.ts",
+    "line": 44,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.f26ece0b": {
+    "source": "src/league/milestones.ts",
+    "line": 45,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.f46d1d4e": {
+    "source": "src/league/milestones.ts",
+    "line": 45,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.2cf5752c": {
+    "source": "src/league/milestones.ts",
+    "line": 46,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.61338741": {
+    "source": "src/league/milestones.ts",
+    "line": 46,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.2a787494": {
+    "source": "src/league/milestones.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.064ea32a": {
+    "source": "src/league/milestones.ts",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.df312758": {
+    "source": "src/league/milestones.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.8cfaf37e": {
+    "source": "src/league/milestones.ts",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.39d8313f": {
+    "source": "src/league/milestones.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.6f8caffb": {
+    "source": "src/league/milestones.ts",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.c1d4499c": {
+    "source": "src/league/milestones.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.f62e8e11": {
+    "source": "src/league/milestones.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.a9add065": {
+    "source": "src/league/milestones.ts",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.9c188925": {
+    "source": "src/league/milestones.ts",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.12efaf1a": {
+    "source": "src/league/milestones.ts",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.72f70073": {
+    "source": "src/league/milestones.ts",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.0a0d4860": {
+    "source": "src/league/milestones.ts",
+    "line": 53,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.026b2acd": {
+    "source": "src/league/milestones.ts",
+    "line": 53,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.39cf1ee0": {
+    "source": "src/league/milestones.ts",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.e5d15044": {
+    "source": "src/league/milestones.ts",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.f6cb86bd": {
+    "source": "src/league/milestones.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.b57a563f": {
+    "source": "src/league/milestones.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.milestones.text.98d8d119": {
+    "source": "src/league/milestones.ts",
+    "line": 115,
+    "params": {
+      "name": {
+        "expression": "s.players[String(b[0])]?.name ?? ''"
+      },
+      "date": {
+        "expression": "box.date"
+      },
+      "opp": {
+        "expression": "opp"
+      }
+    },
+    "locations": []
+  },
+  "league.milestones.text.9e741f84": {
+    "source": "src/league/milestones.ts",
+    "line": 117,
+    "params": {
+      "date": {
+        "expression": "box.date"
+      },
+      "opp": {
+        "expression": "opp"
+      },
+      "runs": {
+        "expression": "box.rhe[us][0]"
+      }
+    },
+    "locations": []
+  },
+  "league.milestones.text.305ee214": {
+    "source": "src/league/milestones.ts",
+    "line": 199,
+    "params": {
+      "w": {
+        "expression": "row.w"
+      }
+    },
+    "locations": []
+  },
+  "league.milestones.text.8485ba74": {
+    "source": "src/league/milestones.ts",
+    "line": 206,
+    "params": {
+      "rank": {
+        "expression": "row.rank"
+      }
+    },
+    "locations": []
+  },
+  "league.milestones.text.ef5d550d": {
+    "source": "src/league/milestones.ts",
+    "line": 229,
+    "params": {
+      "name": {
+        "expression": "name"
+      },
+      "n": {
+        "expression": "c.bat!.hr"
+      }
+    },
+    "locations": []
+  },
+  "league.milestones.text.7dbbe71c": {
+    "source": "src/league/milestones.ts",
+    "line": 230,
+    "params": {
+      "name": {
+        "expression": "name"
+      },
+      "n": {
+        "expression": "c.bat!.h"
+      }
+    },
+    "locations": []
+  },
+  "league.milestones.text.f922f439": {
+    "source": "src/league/milestones.ts",
+    "line": 231,
+    "params": {
+      "name": {
+        "expression": "name"
+      },
+      "n": {
+        "expression": "c.pit!.w"
+      }
+    },
+    "locations": []
+  },
+  "league.milestones.text.49bd338a": {
+    "source": "src/league/milestones.ts",
+    "line": 232,
+    "params": {
+      "name": {
+        "expression": "name"
+      },
+      "n": {
+        "expression": "c.pit!.sv"
+      }
+    },
+    "locations": []
+  },
+  "league.abroadvets.text.01393d64": {
+    "source": "src/league/abroadvets.ts",
+    "line": 66,
+    "params": {
+      "n": {
+        "expression": "arrived.length"
+      }
+    },
+    "locations": []
+  },
+  "league.abroadvets.text.e8c6c659": {
+    "source": "src/league/abroadvets.ts",
+    "line": 70,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "age": {
+        "expression": "ageIn(p, next)"
+      },
+      "team": {
+        "expression": "team(p.teamId)"
+      },
+      "from": {
+        "expression": "p.origin.background!.text"
+      }
+    },
+    "locations": []
+  },
+  "league.abroadvets.text.944db513": {
+    "source": "src/league/abroadvets.ts",
+    "line": 71,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "age": {
+        "expression": "ageIn(p, next)"
+      },
+      "from": {
+        "expression": "p.origin.background!.text"
+      }
+    },
+    "locations": []
+  },
+  "league.abroadvets.text.a74f081d": {
+    "source": "src/league/abroadvets.ts",
+    "line": 85,
+    "params": {
+      "n": {
+        "expression": "free.length"
+      }
+    },
+    "locations": []
+  },
+  "league.abroadvets.text.ed2b4285": {
+    "source": "src/league/abroadvets.ts",
+    "line": 86,
+    "params": {},
+    "locations": []
+  },
+  "league.abroadvets.text.547db359": {
+    "source": "src/league/abroadvets.ts",
+    "line": 114,
+    "params": {},
+    "locations": []
+  },
+  "league.abroadvets.text.1226adf5": {
+    "source": "src/league/abroadvets.ts",
+    "line": 114,
+    "params": {},
+    "locations": []
+  },
+  "league.abroadvets.text.7a3b1ce6": {
+    "source": "src/league/abroadvets.ts",
+    "line": 121,
+    "params": {},
+    "locations": []
+  },
+  "league.broker.text.b6ab4651": {
+    "source": "src/league/broker.ts",
+    "line": 99,
+    "params": {
+      "name": {
+        "expression": "targets[0]!.name"
+      }
+    },
+    "locations": []
+  },
+  "league.broker.text.9c948c5b": {
+    "source": "src/league/broker.ts",
+    "line": 100,
+    "params": {
+      "cost": {
+        "expression": "won(cost)"
+      },
+      "name": {
+        "expression": "targets[0]!.name"
+      }
+    },
+    "locations": []
+  },
+  "league.broker.text.d477848d": {
+    "source": "src/league/broker.ts",
+    "line": 101,
+    "params": {
+      "seasons": {
+        "expression": "BROKER.military.seasons"
+      },
+      "chance": {
+        "expression": "Math.round(BROKER.military.exposure * 100)"
+      },
+      "fine": {
+        "expression": "won(BROKER.caught.fine)"
+      },
+      "trust": {
+        "expression": "BROKER.caught.trust"
+      }
+    },
+    "locations": []
+  },
+  "league.broker.text.e5c78610": {
+    "source": "src/league/broker.ts",
+    "line": 104,
+    "params": {
+      "names": {
+        "expression": "names"
+      }
+    },
+    "locations": []
+  },
+  "league.broker.text.339b9061": {
+    "source": "src/league/broker.ts",
+    "line": 105,
+    "params": {
+      "cost": {
+        "expression": "won(cost)"
+      },
+      "days": {
+        "expression": "BROKER.doping.days"
+      }
+    },
+    "locations": []
+  },
+  "league.broker.text.8d798dc0": {
+    "source": "src/league/broker.ts",
+    "line": 106,
+    "params": {
+      "seasons": {
+        "expression": "BROKER.doping.seasons"
+      },
+      "chance": {
+        "expression": "Math.round(BROKER.doping.exposure * 100)"
+      },
+      "fine": {
+        "expression": "won(BROKER.caught.fine)"
+      },
+      "trust": {
+        "expression": "BROKER.caught.trust"
+      }
+    },
+    "locations": []
+  },
+  "league.broker.text.410cd9bf": {
+    "source": "src/league/broker.ts",
+    "line": 109,
+    "params": {},
+    "locations": []
+  },
+  "league.broker.text.e01450a5": {
+    "source": "src/league/broker.ts",
+    "line": 109,
+    "params": {},
+    "locations": []
+  },
+  "league.broker.text.20384fde": {
+    "source": "src/league/broker.ts",
+    "line": 115,
+    "params": {},
+    "locations": []
+  },
+  "league.broker.text.28f75cea": {
+    "source": "src/league/broker.ts",
+    "line": 116,
+    "params": {},
+    "locations": []
+  },
+  "league.broker.text.7a05b0e6": {
+    "source": "src/league/broker.ts",
+    "line": 127,
+    "params": {},
+    "locations": []
+  },
+  "league.broker.text.fdf15b56": {
+    "source": "src/league/broker.ts",
+    "line": 127,
+    "params": {},
+    "locations": []
+  },
+  "league.broker.text.ef18ebb8": {
+    "source": "src/league/broker.ts",
+    "line": 132,
+    "params": {},
+    "locations": []
+  },
+  "league.broker.text.8190c179": {
+    "source": "src/league/broker.ts",
+    "line": 139,
+    "params": {},
+    "locations": []
+  },
+  "league.broker.text.9e0492f2": {
+    "source": "src/league/broker.ts",
+    "line": 140,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "cost": {
+        "expression": "won(d.cost)"
+      }
+    },
+    "locations": []
+  },
+  "league.broker.text.5f9503dd": {
+    "source": "src/league/broker.ts",
+    "line": 148,
+    "params": {
+      "names": {
+        "expression": "players.map((p) => p.name).join(', ')"
+      },
+      "cost": {
+        "expression": "won(d.cost)"
+      }
+    },
+    "locations": []
+  },
+  "league.broker.text.cc6a15d4": {
+    "source": "src/league/broker.ts",
+    "line": 200,
+    "params": {},
+    "locations": []
+  },
+  "league.broker.text.b4d3dade": {
+    "source": "src/league/broker.ts",
+    "line": 200,
+    "params": {},
+    "locations": []
+  },
+  "league.broker.text.e9f5d343": {
+    "source": "src/league/broker.ts",
+    "line": 204,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.broker.text.8bce2c73": {
+    "source": "src/league/broker.ts",
+    "line": 204,
+    "params": {
+      "club": {
+        "expression": "club"
+      }
+    },
+    "locations": []
+  },
+  "league.broker.text.655d6dd0": {
+    "source": "src/league/broker.ts",
+    "line": 206,
+    "params": {},
+    "locations": []
+  },
+  "league.broker.text.1708dea9": {
+    "source": "src/league/broker.ts",
+    "line": 206,
+    "params": {},
+    "locations": []
+  },
+  "league.broker.text.5044bb96": {
+    "source": "src/league/broker.ts",
+    "line": 207,
+    "params": {
+      "fine": {
+        "expression": "won(BROKER.caught.fine)"
+      },
+      "trust": {
+        "expression": "BROKER.caught.trust"
+      }
+    },
+    "locations": []
+  },
+  "league.advice.text.df8609c5": {
+    "source": "src/league/advice.ts",
+    "line": 155,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.b8f77b9e": {
+    "source": "src/league/advice.ts",
+    "line": 156,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.09797ed8": {
+    "source": "src/league/advice.ts",
+    "line": 156,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.5e077b7b": {
+    "source": "src/league/advice.ts",
+    "line": 157,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.b7f8c3bf": {
+    "source": "src/ui/Decision.tsx",
+    "line": 86,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.c3df1fb6": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1331,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.a71797db": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1331,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.b483a4d3": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1332,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.c19f94d8": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1332,
+    "params": {
+      "cost": {
+        "expression": "Math.round(d.cost / 10_000)"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.3692a702": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1339,
+    "params": {
+      "names": {
+        "expression": "d.ids.map((id) => league.players[id]?.name ?? '').join(', ')"
+      }
+    },
+    "locations": []
   }
 }

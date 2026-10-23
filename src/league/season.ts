@@ -40,6 +40,7 @@ import { rivalDay } from './rivals';
 import { brawlGame } from './brawl';
 import { protestGame } from './protests';
 import { meddleDay } from './scenarios';
+import { brokerDay } from './broker';
 import { openBooks } from './finance';
 import { rosterLimit } from './offseason';
 import { finishEvent, marchEvents, nationalTeamBack, nationalTeamCalls, nationalTeamLeaves } from './national';
@@ -345,6 +346,8 @@ export function playDay(s: LeagueState): boolean {
   staffTroubleDay(s, date);
   // Scenario 재기 (1.6.0): the owner calls.
   meddleDay(s, date);
+  // 2.0.41: a broker's offer, or an old deal coming out (broker.ts).
+  brokerDay(s, date);
   returnFromService(s, date);
   nationalTeamAway(s, date);
   nationalTeamBack(s, date);
