@@ -9668,5 +9668,7 @@ export const koSource = {
   "league.advice.text.95fc0810": "아직 한 자리를 맡을 만한 선수(KEEP 50 이상)면 귀화를 돕습니다.",
   "league.advice.text.35a9919d": "귀화를 돕는다",
   "league.advice.text.c3df1fb6": "거절한다",
-  "league.advice.text.70c50a89": "도우면 외국인 한 자리가 비지만 국내 선수 3년 계약을 떠안고, 거절하면 선수가 조금 서운해합니다."
+  "league.advice.text.70c50a89": "도우면 외국인 한 자리가 비지만 국내 선수 3년 계약을 떠안고, 거절하면 선수가 조금 서운해합니다.",
+  "ui.office.text.26adc812": "겨울에 한 번. 교통·관광·주거에 투자해 팬층을 영구히 늘립니다(작은 도시일수록 효과가 크고, 투자할수록 조금씩 줄어듦).",
+  "ui.office.text.185d66c3": " 지금까지 {n}번, {total}."
 } as const;

@@ -88243,5 +88243,24 @@
     "line": 166,
     "params": {},
     "locations": []
+  },
+  "ui.office.text.26adc812": {
+    "source": "src/ui/Office.tsx",
+    "line": 638,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.185d66c3": {
+    "source": "src/ui/Office.tsx",
+    "line": 639,
+    "params": {
+      "n": {
+        "expression": "sp.cityCount"
+      },
+      "total": {
+        "expression": "money(sp.cityTotal ?? 0)"
+      }
+    },
+    "locations": []
   }
 }

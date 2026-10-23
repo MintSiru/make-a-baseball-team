@@ -9667,5 +9667,7 @@
   "league.advice.text.95fc0810": "Back his naturalization if he is still worth a place (KEEP 50 or more).",
   "league.advice.text.35a9919d": "Back him",
   "league.advice.text.c3df1fb6": "Decline",
-  "league.advice.text.70c50a89": "Backing him frees a foreign place but takes on a three-year domestic deal; declining leaves him a little hurt."
+  "league.advice.text.70c50a89": "Backing him frees a foreign place but takes on a three-year domestic deal; declining leaves him a little hurt.",
+  "ui.office.text.26adc812": "Once a winter. Investing in transport, tourism and housing grows the fan base for good (more in a small city, a little less each time).",
+  "ui.office.text.185d66c3": " So far: {n, plural, one {# time} other {# times}}, {total}."
 }
