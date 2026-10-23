@@ -47,7 +47,7 @@ export function lotteryOrder(s: LeagueState, draftYear: number, order: TeamId[])
 export function lotteryNews(s: LeagueState, res: LotteryResult) {
   const short = (id: TeamId) => s.teams.find((t) => t.id === id)?.short ?? id;
   const lines = res.after.slice(0, LOTTERY.draws).map((id, i) => __i18n_k("league.lottery.text.99764c50", { n: i + 1, club: short(id), was: res.before.indexOf(id) + 1 }));
-  const title = __i18n_k("league.lottery.text.b9733d2e", { year: res.year, club: short(res.after[0]!) });
+  const title = __i18n_k("league.lottery.text.b9733d2e", { year: res.year + 1, club: short(res.after[0]!) });
   addNews(s, { id: `lottery-${res.year}`, date: `${res.year}-09-01`, kind: 'season', title, body: lines.join(' · '), quotes: [], facts: { year: res.year, first: short(res.after[0]!) }, players: [], mine: false });
   const me = s.user?.teamId;
   if (me && res.drawn.includes(me)) {

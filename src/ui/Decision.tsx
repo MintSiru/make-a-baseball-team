@@ -1013,7 +1013,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         <>
           <p>{__i18n_t("ui.decision.decision.8e274406", { value: d.event
               ? __i18n_k("ui.decision.decision.dc51d0c5")
-              : __i18n_k("ui.decision.decision.6347b252", { year: d.year }), value2: ' ', year: d.year, value3: d.year + 1, value4: d.year + 2 })}</p>
+              : __i18n_k("ui.decision.decision.6347b252", { year: d.year }), value2: ' ', year: d.year + 1, value3: d.year + 1, value4: d.year + 2 })}</p>
           {__i18n_display(d.event && (
             <div class="segmented" role="group" aria-label={__i18n_t("ui.decision.decision.28889241")}>
               <button type="button" aria-pressed={vote} onClick={() => setVote(true)}>{__i18n_t("ui.decision.decision.70830ad8")}</button>

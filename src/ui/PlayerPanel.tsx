@@ -60,6 +60,10 @@ import { backFrom, canReinstate, canVoluntary } from '../league/voluntary';
 const POSITION_NAMES: Record<string, string> = { C: __i18n_k("ui.playerPanel.pOSITION_NAMES.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("ui.playerPanel.pOSITION_NAMES.sS.3e24c7f1"), LF: __i18n_k("ui.playerPanel.pOSITION_NAMES.lF.73836db2"), CF: __i18n_k("ui.playerPanel.pOSITION_NAMES.cF.56780b2a"), RF: __i18n_k("ui.playerPanel.pOSITION_NAMES.rF.a28a0ef8") };
 
 /** Our coaches' read of our player, our scouts' of anyone else (1.1.0): hidden traits, as sure as the staff are. */
+/** 2.0.43 (user report): a draft is named for the season its players join, as the KBO names it (the 2030 draft is held
+    in the fall of 2029; the candidates' board already says so). `draftYear` is the fall it was held. */
+const draftName = (draftYear: number | undefined) => (draftYear ? draftYear + 1 : draftYear);
+
 export function TraitReportBox({ report }: { report: TraitReport }) {
   const tone = (r: TraitReport['reads'][number]) => {
     if (r.level == null || r.key === 'growth') return '';
@@ -771,15 +775,15 @@ export function PlayerPanel({
                   {__i18n_display(p.origin.preLeague
                     ? __i18n_t("ui.playerPanel.text.03bc4d29")
                     : p.origin.territorial
-                    ? __i18n_t("ui.playerPanel.text.5c04ff7e", { draftYear: p.origin.draftYear })
+                    ? __i18n_t("ui.playerPanel.text.5c04ff7e", { draftYear: draftName(p.origin.draftYear) })
                     : p.origin.secondPick
-                    ? __i18n_t("ui.playerPanel.text.384f9d5e", { draftYear: p.origin.draftYear, n: p.origin.secondPick })
+                    ? __i18n_t("ui.playerPanel.text.384f9d5e", { draftYear: draftName(p.origin.draftYear), n: p.origin.secondPick })
                     : p.origin.overallPick
-                    ? __i18n_k("ui.playerPanel.playerPanel.083f725c", { draftYear: p.origin.draftYear, overallPick: p.origin.overallPick })
+                    ? __i18n_k("ui.playerPanel.playerPanel.083f725c", { draftYear: draftName(p.origin.draftYear), overallPick: p.origin.overallPick })
                     : foreign
                       ? __i18n_k("ui.playerPanel.playerPanel.117bde8b", { proSince: p.proSince })
                       : p.origin.draftYear
-                        ? __i18n_k("ui.playerPanel.playerPanel.04a68f8e", { draftYear: p.origin.draftYear })
+                        ? __i18n_k("ui.playerPanel.playerPanel.04a68f8e", { draftYear: draftName(p.origin.draftYear) })
                         : '-')}
                 </dd>
               </div>

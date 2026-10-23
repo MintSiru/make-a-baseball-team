@@ -208,3 +208,24 @@ describe('a veteran home from abroad signed from the pool can play (2.0.43, user
     expect(p.status).toBe('active');
   });
 });
+
+describe('상무 in the moves (2.0.43, user report)', () => {
+  it('shows 입대 and 전역 once each, by name, and no club changes for the service', async () => {
+    const { moveHistory } = await import('../src/league/moves');
+    const s = loadSave('2.0.39');
+    const p = s.rosters[s.user!.teamId]!.active.map((id) => s.players[id]!).find((x) => x.origin.kind !== 'foreign')!;
+    const club = p.teamId!;
+    const line = (year: number, teamId: string, level?: 'futures') => ({ ...p.career[0]!, year, teamId, ...(level ? { level } : {}) });
+    // A first-team season, 상무 for two (the futures league), back to his club's futures in June, then the first team.
+    p.career = [line(2026, club), line(2026, club, 'futures'), line(2027, 'sangmu', 'futures'), line(2028, 'sangmu', 'futures'), line(2028, club, 'futures'), line(2029, club)];
+    p.moves = [];
+    const rows = moveHistory(s, p);
+    const kinds = rows.map((r) => r.kind).filter((k) => k !== 'draft' && k !== 'join');
+    expect(kinds, JSON.stringify(rows)).toEqual(['enlist', 'discharge']);
+    const [enlist, discharge] = rows.filter((r) => r.kind === 'enlist' || r.kind === 'discharge');
+    expect(enlist!.to).toBe('상무');
+    expect(discharge!.from).toBe('상무');
+    expect(enlist!.date < discharge!.date).toBe(true);
+    expect(rows.some((r) => r.from === 'sangmu' || r.to === 'sangmu')).toBe(false);
+  });
+});

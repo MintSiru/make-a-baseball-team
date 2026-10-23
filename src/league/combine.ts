@@ -118,7 +118,7 @@ export function combineDay(s: LeagueState, date: string, players: () => Player[]
     id: `combine-${s.year}`,
     date,
     kind: 'month',
-    title: __i18n_k("league.combine.combineDay.title.51429558", { year: s.year, length: came.length }),
+    title: __i18n_k("league.combine.combineDay.title.51429558", { year: s.year + 1, length: came.length }),
     body: __i18n_k("league.combine.combineDay.body.5733fa39", { length: came.length, value: velo ? __i18n_k("league.combine.combineDay.body.a10da8d9", { name: velo.p.name, value: velo.line.value }) : '', value2: sprint ? __i18n_k("league.combine.combineDay.body.f86b4c4f", { name: sprint.p.name, value: sprint.line.value }) : '', value3: exit ? __i18n_k("league.combine.combineDay.body.e4449607", { value: iga(`${exit.p.name}(${exit.line.value})`) }) : '' }),
     quotes: [],
     facts: { year: s.year, attended: came.length },

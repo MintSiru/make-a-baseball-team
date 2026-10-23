@@ -9,6 +9,7 @@ import type { Player, PlayerId, TeamId } from '../model/types';
 import { today } from './entry';
 import type { Move } from './movenews';
 import type { LeagueState } from './state';
+import { SANGMU } from './futures';
 
 export type MoveKind =
   | 'draft'
@@ -32,7 +33,10 @@ export type MoveKind =
   | 'abroad'
   | 'returnee'
   | 'retire'
-  | 'change';
+  | 'change'
+  /** 2.0.43: 상무 service, read off his career (the screen only). */
+  | 'enlist'
+  | 'discharge';
 
 export interface MoveEntry {
   date: string;
@@ -66,11 +70,14 @@ export const MOVE_LABELS: Record<MoveKind, string> = {
   returnee: __i18n_k("league.moves.text.14a364f7"),
   retire: __i18n_k("league.moves.text.5b170d3c"),
   change: __i18n_k("league.moves.text.b16017b2"),
+  enlist: __i18n_k("league.moves.text.5e4e3a00"),
+  discharge: __i18n_k("league.moves.text.f4c1ea1e"),
 };
 
 const KEEP = 40;
 const dateOf = (s: LeagueState) => (s.phase === 'regular' ? today(s) : `${s.year}-11-01`);
-const short = (s: LeagueState, id: TeamId | null) => (id ? (s.teams.find((t) => t.id === id)?.short ?? id) : '');
+// 2.0.43 (user report: 「sangmu」): 상무 by its name, as everywhere else (views.ts shortName).
+const short = (s: LeagueState, id: TeamId | null) => (id === SANGMU ? __i18n_k("league.views.shortName.d2a2ca0f") : id ? (s.teams.find((t) => t.id === id)?.short ?? id) : '');
 
 /** Notes a move on the player. */
 export function noteMove(s: LeagueState, p: Player | undefined, kind: MoveKind, from: TeamId | null, to: TeamId | null, note?: string, date = dateOf(s)) {
@@ -140,11 +147,14 @@ export interface MoveRow {
 
 /** His moves, first to last: how he came in (his draft pick, or his first club), then each one noted, and for a
     save from before 2.0.28 the club changes his career shows. */
-export function moveHistory(s: LeagueState, p: Pick<Player, 'id' | 'career' | 'origin' | 'moves'>): MoveRow[] {
+export function moveHistory(s: LeagueState, p: Pick<Player, 'id' | 'career' | 'origin' | 'moves'> & Partial<Pick<Player, 'teamId' | 'status' | 'service'>>): MoveRow[] {
   const rows: MoveRow[] = [];
   const row = (date: string, kind: MoveKind, from: TeamId | null, to: TeamId | null, note = '') => rows.push({ date, kind, label: MOVE_LABELS[kind], from: short(s, from), to: short(s, to), note });
   const pick = s.draftLog?.find((x) => x.id === p.id);
-  const career = [...p.career].sort((a, b) => a.year - b.year);
+  // 2.0.43 (user report: 팀 → 상무 → 팀 shown twice): 상무 is service, not a club change — his seasons there are left
+  // out of the club changes and shown once each way as 입대 and 전역 below.
+  const all = [...p.career].sort((a, b) => a.year - b.year);
+  const career = all.filter((c) => c.teamId !== SANGMU);
   const first = career[0];
   // 2.0.41 (the user's report: a 2차 first pick read "1R · 전체 12순위" after eleven 1차 picks): a 2차 pick by its
   // number among the 2차 picks.
@@ -159,6 +169,20 @@ export function moveHistory(s: LeagueState, p: Pick<Player, 'id' | 'career' | 'o
     if (a.teamId === b.teamId || b.year > since) continue;
     if (noted.some((m) => m.to === b.teamId && Number(m.date.slice(0, 4)) >= a.year && Number(m.date.slice(0, 4)) <= b.year)) continue;
     row(String(b.year), 'change', a.teamId, b.teamId);
+  }
+  // 상무: each run of seasons there, 입대 the winter before the first and 전역 in June of the last (18 months).
+  const years = [...new Set(all.filter((c) => c.teamId === SANGMU).map((c) => c.year))].sort((a, b) => a - b);
+  for (let i = 0; i < years.length; ) {
+    let j = i;
+    while (j + 1 < years.length && years[j + 1] === years[j]! + 1) j++;
+    const y0 = years[i]!,
+      y1 = years[j]!;
+    const before = [...career].reverse().find((c) => c.year < y0);
+    const after = career.find((c) => c.year >= y1 && c.year > y0) ?? career.find((c) => c.year === y1 && y1 > y0);
+    row(`${y0 - 1}-12-01`, 'enlist', before?.teamId ?? p.teamId ?? null, SANGMU);
+    const serving = p.status === 'military' && p.service?.route === 'sangmu' && j === years.length - 1;
+    if (!serving) row(`${y1}-06-15`, 'discharge', SANGMU, after?.teamId ?? p.teamId ?? null);
+    i = j + 1;
   }
   for (const m of noted) row(m.date, m.kind, m.from, m.to, m.note ?? '');
   return rows.sort((a, b) => a.date.localeCompare(b.date));

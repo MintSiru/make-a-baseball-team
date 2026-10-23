@@ -9690,5 +9690,7 @@
   "ui.decision.text.4d651381": "球団移籍",
   "ui.decision.text.e631fdf3": "この球団に移って初代GMを務める",
   "ui.decision.text.e68fc213": "今の球団は別のフロントが引き継ぎ（選手と資金はそのまま残る）、新球団の創設資金と親会社で再出発します。新人優先指名・特別指名・補償なしのFAを自分で選び、{next}年のファームを経て{firstTeam}年に1軍に上がります。実績と年表は引き継がれます。",
-  "league.conditions.text.02d7b8e0": "南北が平和的に統一しました：{year}年冬に北側の4球団が創設され、{first}年から12球団目を含む16球団の2リーグ制で戦います。"
+  "league.conditions.text.02d7b8e0": "南北が平和的に統一しました：{year}年冬に北側の4球団が創設され、{first}年から12球団目を含む16球団の2リーグ制で戦います。",
+  "league.moves.text.5e4e3a00": "入隊",
+  "league.moves.text.f4c1ea1e": "除隊"
 }
