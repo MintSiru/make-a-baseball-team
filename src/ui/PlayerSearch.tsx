@@ -94,8 +94,9 @@ export function PlayerSearch({
       .map((id) => league.players[id])
       .filter((p): p is Player => !!p && p.status === 'active')
       .filter((p) => (!q || p.name.includes(q)) && ageIn(p, season) <= maxAge && p.scouting.current >= minNow && (shownFuture(p) ?? 0) >= minFuture && matchesPos(p))
-      .filter((p) => !tradable || canTrade(p));
-  }, [league, pos, also, club, maxAge, minNow, minFuture, name, tradable]);
+      // 2.0.46: another club's not-for-sale players are not to be had (ours we may still offer).
+      .filter((p) => !tradable || (canTrade(p) && (p.teamId === u.teamId || !nfs.has(p.id))));
+  }, [league, pos, also, club, maxAge, minNow, minFuture, name, tradable, nfs]);
 
   const lastWar = (p: Player) => p.career.filter((c) => !c.level).at(-1)?.war ?? null;
   const pay = (p: Player) => salaryIn(p, season) || salaryIn(p, season - 1);
