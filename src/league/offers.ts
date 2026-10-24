@@ -7,13 +7,14 @@ import { k as __i18n_k } from '../i18n/index';
 
    2.0.45 (the user's request: 에이스에게도 계속 트레이드 요청이 온다 — NFS): the general manager can mark players not for
    sale. The clubs then look past them for the next player they would want, and an offer standing for one of them is
-   withdrawn. We can still trade him ourselves. */
+   withdrawn. We can still trade him ourselves. 2.0.46: a club never offers one of its own not-for-sale players (nfs.ts). */
 import type { PlayerId, TeamId } from '../model/types';
 import { addAlert } from './alerts';
 import { tradeBarred } from './dynasty';
 import { today } from './entry';
 import { iga } from './josa';
 import { currentValue, ageIn, futureValue } from './players';
+import { aiNotForSale, notForSale } from './nfs';
 import { firstTeamIds, type LeagueState, type TradeExtras } from './state';
 import { clubStrategy, planFactor, spotOf, SPOT_LABEL } from './strategy';
 import { checkTrade, extrasText, makeTrade, pickValue, tradablePicks, tradableOf, tradeValue, tradeWindow } from './trade';
@@ -59,9 +60,7 @@ export function standingOffers(s: LeagueState): TradeOffer[] {
   return (u.tradeOffers = liveOffers(s));
 }
 
-/** Ours marked not for sale (2.0.45): only those still with us. */
-export const notForSale = (s: LeagueState): PlayerId[] => (s.user?.notForSale ?? []).filter((id) => s.players[id]?.teamId === s.user!.teamId);
-export const isNotForSale = (s: LeagueState, id: PlayerId) => notForSale(s).includes(id);
+export { isNotForSale, notForSale } from './nfs';
 
 /** Marks one of ours not for sale, or lifts it; an offer standing for him is withdrawn. */
 export function setNotForSale(s: LeagueState, id: PlayerId, on: boolean) {
@@ -92,8 +91,9 @@ function wanted(s: LeagueState, teamId: TeamId, r: () => number) {
 function package_(s: LeagueState, teamId: TeamId, target: PlayerId) {
   const vt = tradeValue(s, s.players[target]!);
   const spot = spotOf(s.players[target]!);
+  const kept = new Set(aiNotForSale(s, teamId));
   const theirs = tradableOf(s, teamId)
-    .filter((p) => spotOf(p) !== spot || s.players[target]!.position !== p.position)
+    .filter((p) => !kept.has(p.id) && (spotOf(p) !== spot || s.players[target]!.position !== p.position))
     .map((p) => ({ p, v: tradeValue(s, p) }))
     .filter((x) => x.v > 0)
     .sort((a, b) => b.v - a.v)

@@ -9699,5 +9699,9 @@
   "ui.market.text.5ae2062f": "Not for sale",
   "ui.market.text.1e814dcd": "Remove NFS from {name}",
   "ui.market.text.a7abea5b": "remove",
-  "ui.market.text.84a11a94": "Other clubs will not ask for these players. You can still offer them in trades yourself."
+  "ui.market.text.84a11a94": "Other clubs will not ask for these players. You can still offer them in trades yourself.",
+  "league.trade.text.ef29b40b": "{club} keeps them not for sale (NFS): {names}",
+  "ui.playerPanel.text.e57e866c": "His club keeps him not for sale (NFS). He cannot be traded for.",
+  "ui.market.text.7fcf8c64": "Not for sale: {names} — this club will not part with them on any terms",
+  "ui.playerSearch.text.70671b21": "His club keeps him not for sale (NFS)"
 }
