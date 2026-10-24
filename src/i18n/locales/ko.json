@@ -9692,5 +9692,12 @@
   "ui.decision.text.e68fc213": "지금 구단은 다른 프런트가 맡고(선수단·자금은 그대로 남음), 새 구단의 창단 자금과 모기업으로 다시 시작합니다. 신인 우선 지명·특별 지명·보상 없는 FA를 직접 고르고 {next}년 퓨처스를 거쳐 {firstTeam}년 1군에 오릅니다. 업적과 연대기는 이어집니다.",
   "league.conditions.text.02d7b8e0": "남북이 평화롭게 통일했습니다: {year}년 겨울 북측 4개 구단이 창단해 {first}년부터 12구단과 함께 16개 구단 양대리그로 치릅니다.",
   "league.moves.text.5e4e3a00": "입대",
-  "league.moves.text.f4c1ea1e": "전역"
+  "league.moves.text.f4c1ea1e": "전역",
+  "ui.playerPanel.text.3804d242": "트레이드 불가(NFS) 지정을 풉니다",
+  "ui.playerPanel.text.13fca61e": "트레이드 불가(NFS)로 지정합니다: 다른 구단이 이 선수를 달라는 트레이드를 제의하지 않습니다",
+  "ui.market.text.b4b3baf3": "선수 화면의 NFS 단추로 트레이드 불가 선수를 지정하면, 다른 구단이 그 선수를 달라는 트레이드를 제의하지 않습니다.",
+  "ui.market.text.5ae2062f": "트레이드 불가",
+  "ui.market.text.1e814dcd": "{name} 트레이드 불가 해제",
+  "ui.market.text.a7abea5b": "해제",
+  "ui.market.text.84a11a94": "다른 구단은 이 선수들을 달라고 하지 않습니다. 직접 내놓는 트레이드는 그대로 할 수 있습니다."
 }

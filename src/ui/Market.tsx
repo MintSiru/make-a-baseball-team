@@ -43,7 +43,7 @@ import { positionKey, useSort } from './sort';
 import { Help } from './Help';
 import { PlayerSearch, type PosFilter } from './PlayerSearch';
 import { TRADES } from '../league/tuning';
-import { liveOffers, type TradeOffer } from '../league/offers';
+import { isNotForSale, liveOffers, notForSale, type TradeOffer } from '../league/offers';
 
 type View = 'trade' | 'search' | 'release' | 'foreign' | 'news';
 
@@ -165,6 +165,7 @@ function PickList({
                   {__i18n_display(p.name)}
                 </button>
                 {__i18n_display(p.contract?.kind === 'development' && <span class="tag">{__i18n_t("ui.market.pickList.818f3b79")}</span>)}
+                {isNotForSale(league, p.id) && <span class="tag nfs">NFS</span>}
               </td>
               <td>{__i18n_display(positionLabel(p))}</td>
               <td class="num">{__i18n_display(ageIn(p, league.year))}</td>
@@ -242,6 +243,7 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
   return (
     <>
       <Offers league={league} onPlayer={onPlayer} onAct={(a) => (setSent((u.log ?? []).length), onAct(a))} onTweak={tweak} />
+      <NotForSale league={league} onPlayer={onPlayer} onAct={onAct} />
       <Help title={__i18n_t("ui.market.trade.a8916b94")}>{__i18n_t("ui.market.trade.39de664b", { money: money(TRADES.cash.max) })}</Help>
       {__i18n_display(closed && <p class="notice">{__i18n_display(closed)}</p>)}
       <div class="team-chips" role="group" aria-label={__i18n_t("ui.market.trade.d1837717")}>
@@ -400,6 +402,29 @@ function Offers({ league, onPlayer, onAct, onTweak }: { league: LeagueState; onP
         );
       })}
     </section>
+  );
+}
+
+/** 2.0.45: ours marked not for sale (NFS), which the AI clubs do not ask for. */
+function NotForSale({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void }) {
+  const ids = notForSale(league);
+  if (!ids.length) return <p class="muted small">{__i18n_t("ui.market.text.b4b3baf3")}</p>;
+  return (
+    <p class="small nfs-list">
+      <span class="tag nfs">NFS</span> {__i18n_t("ui.market.text.5ae2062f")}:{' '}
+      {ids.map((id, i) => (
+        <span key={id}>
+          {i > 0 && ', '}
+          <button type="button" class="link" onClick={() => onPlayer(id)}>
+            {__i18n_display(league.players[id]!.name)}
+          </button>{' '}
+          <button type="button" class="link small" onClick={() => onAct({ kind: 'notForSale', id, on: false })} aria-label={__i18n_t("ui.market.text.1e814dcd", { name: league.players[id]!.name })}>
+            {__i18n_t("ui.market.text.a7abea5b")}
+          </button>
+        </span>
+      ))}
+      <span class="muted"> · {__i18n_t("ui.market.text.84a11a94")}</span>
+    </p>
   );
 }
 

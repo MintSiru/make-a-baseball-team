@@ -6,6 +6,7 @@ import { moveHistory } from '../league/moves';
 import type { FieldTotals } from '../league/fielding';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { isFavorite } from '../league/favorites';
+import { isNotForSale } from '../league/offers';
 import { armReady } from '../league/manager';
 import { ArmMeter } from './ArmMeter';
 import { useFocusTrap } from './modal';
@@ -486,6 +487,18 @@ export function PlayerPanel({
               {onAct && league.user && (
                 <button type="button" class={`fav-star${isFavorite(league, p.id) ? ' on' : ''}`} aria-pressed={isFavorite(league, p.id)} title={isFavorite(league, p.id) ? __i18n_t("ui.playerPanel.text.40e258b4") : __i18n_t("ui.playerPanel.text.d57680be")} aria-label={isFavorite(league, p.id) ? __i18n_t("ui.playerPanel.text.40e258b4") : __i18n_t("ui.playerPanel.text.d57680be")} onClick={() => onAct({ kind: 'favorite', id: p.id, on: !isFavorite(league, p.id) })}>
                   {isFavorite(league, p.id) ? '★' : '☆'}
+                </button>
+              )}
+              {/* 2.0.45 (the user's request): one of ours not for sale — the AI clubs stop asking for him (offers.ts). */}
+              {onAct && league.user && p.teamId === league.user.teamId && (
+                <button
+                  type="button"
+                  class={`nfs-toggle${isNotForSale(league, p.id) ? ' on' : ''}`}
+                  aria-pressed={isNotForSale(league, p.id)}
+                  title={isNotForSale(league, p.id) ? __i18n_t("ui.playerPanel.text.3804d242") : __i18n_t("ui.playerPanel.text.13fca61e")}
+                  onClick={() => onAct({ kind: 'notForSale', id: p.id, on: !isNotForSale(league, p.id) })}
+                >
+                  NFS
                 </button>
               )}
             </h2>
