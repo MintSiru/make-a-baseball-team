@@ -9692,5 +9692,12 @@
   "ui.decision.text.e68fc213": "Another front office takes over your current club (its players and fund stay with it), and you start again with the new club's founding fund and owner. You choose the priority draft picks, the special draft and the free agents without compensation; the club plays the futures in {next} and joins the first team in {firstTeam}. Your achievements and timeline carry over.",
   "league.conditions.text.02d7b8e0": "The two Koreas have unified peacefully: four northern clubs are founded in the winter of {year}, and from {first} the league plays as sixteen clubs, the twelfth club among them, in two leagues.",
   "league.moves.text.5e4e3a00": "Enlisted",
-  "league.moves.text.f4c1ea1e": "Discharged"
+  "league.moves.text.f4c1ea1e": "Discharged",
+  "ui.playerPanel.text.3804d242": "Make him available for trades again (remove NFS)",
+  "ui.playerPanel.text.13fca61e": "Mark him not for sale (NFS): other clubs will stop offering trades for him",
+  "ui.market.text.b4b3baf3": "Mark a player not for sale with the NFS button on his screen, and other clubs will stop offering trades for him.",
+  "ui.market.text.5ae2062f": "Not for sale",
+  "ui.market.text.1e814dcd": "Remove NFS from {name}",
+  "ui.market.text.a7abea5b": "remove",
+  "ui.market.text.84a11a94": "Other clubs will not ask for these players. You can still offer them in trades yourself."
 }

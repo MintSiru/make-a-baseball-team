@@ -88446,5 +88446,51 @@
     "line": 74,
     "params": {},
     "locations": []
+  },
+  "ui.playerPanel.text.3804d242": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 498,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.13fca61e": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 498,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.b4b3baf3": {
+    "source": "src/ui/Market.tsx",
+    "line": 411,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.5ae2062f": {
+    "source": "src/ui/Market.tsx",
+    "line": 414,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.1e814dcd": {
+    "source": "src/ui/Market.tsx",
+    "line": 421,
+    "params": {
+      "name": {
+        "expression": "league.players[id]!.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.a7abea5b": {
+    "source": "src/ui/Market.tsx",
+    "line": 422,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.84a11a94": {
+    "source": "src/ui/Market.tsx",
+    "line": 426,
+    "params": {},
+    "locations": []
   }
 }

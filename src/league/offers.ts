@@ -3,7 +3,11 @@ import { k as __i18n_k } from '../i18n/index';
    our roster with its plan (strategy.ts) — a contender for a ready player at the spot it lacks most, a rebuilding club
    for a young one, the rest for whoever helps most — and offers the most it would still give for him (checkTrade, its
    own view), one or two of its players and maybe a pick. The offer waits ten days in the market's trade screen; we
-   take it, turn it down, or let it lapse. Nothing changes for a league without a user club. */
+   take it, turn it down, or let it lapse. Nothing changes for a league without a user club.
+
+   2.0.45 (the user's request: 에이스에게도 계속 트레이드 요청이 온다 — NFS): the general manager can mark players not for
+   sale. The clubs then look past them for the next player they would want, and an offer standing for one of them is
+   withdrawn. We can still trade him ourselves. */
 import type { PlayerId, TeamId } from '../model/types';
 import { addAlert } from './alerts';
 import { tradeBarred } from './dynasty';
@@ -55,12 +59,27 @@ export function standingOffers(s: LeagueState): TradeOffer[] {
   return (u.tradeOffers = liveOffers(s));
 }
 
+/** Ours marked not for sale (2.0.45): only those still with us. */
+export const notForSale = (s: LeagueState): PlayerId[] => (s.user?.notForSale ?? []).filter((id) => s.players[id]?.teamId === s.user!.teamId);
+export const isNotForSale = (s: LeagueState, id: PlayerId) => notForSale(s).includes(id);
+
+/** Marks one of ours not for sale, or lifts it; an offer standing for him is withdrawn. */
+export function setNotForSale(s: LeagueState, id: PlayerId, on: boolean) {
+  const u = s.user;
+  if (!u || s.players[id]?.teamId !== u.teamId) return;
+  const list = notForSale(s).filter((x) => x !== id);
+  if (on) list.push(id);
+  u.notForSale = list;
+  if (on && u.tradeOffers) u.tradeOffers = u.tradeOffers.filter((o) => !o.give.includes(id));
+}
+
 /** The player `teamId` wants from us, and why. */
 function wanted(s: LeagueState, teamId: TeamId, r: () => number) {
   const u = s.user!;
   const plan = clubStrategy(s, teamId);
+  const kept = new Set(notForSale(s));
   const fits = tradableOf(s, u.teamId).filter((p) =>
-    plan.mode === 'rebuild' ? ageIn(p, s.year) <= 24 && futureValue(p) >= 50 : currentValue(p) >= 48 && (plan.mode === 'balanced' || ageIn(p, s.year) >= 24) && (!plan.needs.length || plan.needs.includes(spotOf(p))),
+    !kept.has(p.id) && (plan.mode === 'rebuild' ? ageIn(p, s.year) <= 24 && futureValue(p) >= 50 : currentValue(p) >= 48 && (plan.mode === 'balanced' || ageIn(p, s.year) >= 24) && (!plan.needs.length || plan.needs.includes(spotOf(p)))),
   );
   const ranked = fits.map((p) => ({ p, v: tradeValue(s, p) * planFactor(s, plan, p) })).filter((x) => x.v > 2).sort((a, b) => b.v - a.v);
   const pick = ranked[Math.floor(r() * Math.min(3, ranked.length))];
