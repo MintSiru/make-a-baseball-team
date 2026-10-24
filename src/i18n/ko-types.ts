@@ -9700,5 +9700,9 @@ export const koSource = {
   "ui.market.text.5ae2062f": "트레이드 불가",
   "ui.market.text.1e814dcd": "{name} 트레이드 불가 해제",
   "ui.market.text.a7abea5b": "해제",
-  "ui.market.text.84a11a94": "다른 구단은 이 선수들을 달라고 하지 않습니다. 직접 내놓는 트레이드는 그대로 할 수 있습니다."
+  "ui.market.text.84a11a94": "다른 구단은 이 선수들을 달라고 하지 않습니다. 직접 내놓는 트레이드는 그대로 할 수 있습니다.",
+  "league.trade.text.ef29b40b": "{club} 트레이드 불가(NFS)로 묶어 둔 선수입니다: {names}",
+  "ui.playerPanel.text.e57e866c": "구단이 트레이드 불가(NFS)로 묶어 둔 선수입니다. 트레이드로 데려올 수 없습니다",
+  "ui.market.text.7fcf8c64": "트레이드 불가: {names} — 이 구단은 어떤 조건에도 내주지 않습니다",
+  "ui.playerSearch.text.70671b21": "구단이 트레이드 불가(NFS)로 묶어 둔 선수입니다"
 } as const;

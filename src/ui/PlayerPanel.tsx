@@ -7,6 +7,7 @@ import type { FieldTotals } from '../league/fielding';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { isFavorite } from '../league/favorites';
 import { isNotForSale } from '../league/offers';
+import { aiNotForSale } from '../league/nfs';
 import { armReady } from '../league/manager';
 import { ArmMeter } from './ArmMeter';
 import { useFocusTrap } from './modal';
@@ -500,6 +501,12 @@ export function PlayerPanel({
                 >
                   NFS
                 </button>
+              )}
+              {/* 2.0.46: an AI club's own not-for-sale players (nfs.ts). */}
+              {p.teamId && p.teamId !== league.user?.teamId && aiNotForSale(league, p.teamId).includes(p.id) && (
+                <span class="tag nfs" title={__i18n_t("ui.playerPanel.text.e57e866c")}>
+                  NFS
+                </span>
               )}
             </h2>
             {/* 2.0.34: a pitcher on a club — how ready his arm is. */}

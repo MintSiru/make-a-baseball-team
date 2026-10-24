@@ -5,7 +5,7 @@ import { k as __i18n_k } from '../i18n/index';
 
    AI clubs judge every move by public grades only: a player is worth his keep value above a
    replacement level, more the longer he is under club control, less the more he is paid. */
-import { ro } from './josa';
+import { iga, ro } from './josa';
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { foreignReplacements, KBO_2026, minimumSalaryFor } from '../rules/kbo2026';
@@ -30,6 +30,7 @@ import { featureOpen } from './features';
 import { rulesFor } from '../rules/history';
 import { allianceAgainst, tradeBarred } from './dynasty';
 import { abroadVetAsk } from './abroadvets';
+import { aiNotForSale } from './nfs';
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 const shortOf = (s: LeagueState, id: TeamId | null) => s.teams.find((t) => t.id === id)?.short ?? '-';
@@ -153,6 +154,10 @@ export function checkTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get
   if (gives.some((p) => !p || p.teamId !== u.teamId || p.status !== 'active')) return no(__i18n_k("league.trade.checkTrade.fc6590eb"));
   if (gets.some((p) => !p || p.teamId !== teamId || p.status !== 'active')) return no(__i18n_k("league.trade.checkTrade.0020a88c"));
   if ([...gives, ...gets].some((p) => isForeign(p!))) return no(__i18n_k("league.trade.checkTrade.04e6af4f"));
+  // 2.0.46: a player the club keeps not for sale (nfs.ts) is not to be had at any price.
+  const kept = aiNotForSale(s, teamId);
+  const nfs = gets.filter((p) => kept.includes(p!.id));
+  if (nfs.length) return no(__i18n_k("league.trade.text.ef29b40b", { club: iga(shortOf(s, teamId)), names: nfs.map((p) => p!.name).join(', ') }));
   if ([...gives, ...gets].some((p) => p!.proSince > s.year)) return no(__i18n_k("league.trade.checkTrade.c34af80a"));
   if ([...gives, ...gets].some((p) => p!.origin.pickVia && p!.proSince >= s.year)) return no(__i18n_k("league.trade.checkTrade.0aad4b2f"));
   const devCount = (xs: typeof gives) => xs.filter((p) => p!.contract?.kind === 'development').length;
@@ -248,6 +253,8 @@ export function aiDeadlineDeals(s: LeagueState, r: () => number) {
   const clubs = firstTeamIds(s).filter((id) => id !== s.user?.teamId && s.rosters[id]);
   const plans = new Map(clubs.map((id) => [id, clubStrategy(s, id)]));
   const sellers = clubs.filter((id) => plans.get(id)!.mode === 'rebuild');
+  // 2.0.46: neither side gives up a player it keeps not for sale (nfs.ts).
+  const keptBy = (id: TeamId) => new Set(aiNotForSale(s, id));
   let made = 0;
   for (const a of clubs.filter((id) => plans.get(id)!.mode === 'contend')) {
     if (made >= TRADES.ai.deadline || !sellers.length || r() > TRADES.ai.chance) continue;
@@ -256,13 +263,14 @@ export function aiDeadlineDeals(s: LeagueState, r: () => number) {
     if (!want) continue;
     const target = sellers
       .flatMap((b) => tradableOf(s, b).map((p) => ({ b, p })))
-      .filter(({ p }) => spotOf(p) === want && ageIn(p, s.year) >= 26 && currentValue(p) >= 50)
+      .filter(({ b, p }) => !keptBy(b).has(p.id) && spotOf(p) === want && ageIn(p, s.year) >= 26 && currentValue(p) >= 50)
       .sort((x, y) => currentValue(y.p) - currentValue(x.p))[0];
     if (!target) continue;
     const seller = plans.get(target.b)!;
     const price = tradeValue(s, target.p) * TRADES.accept.premium;
+    const buyerKeeps = keptBy(a);
     const young = tradableOf(s, a)
-      .filter((p) => ageIn(p, s.year) <= 24 && spotOf(p) !== want)
+      .filter((p) => !buyerKeeps.has(p.id) && ageIn(p, s.year) <= 24 && spotOf(p) !== want)
       .map((p) => ({ p, v: tradeValue(s, p) * planFactor(s, seller, p) }))
       .filter((x) => x.v >= price && tradeValue(s, target.p) * planFactor(s, plan, target.p) >= tradeValue(s, x.p) * 0.9)
       .sort((x, y) => x.v - y.v)[0];
@@ -291,15 +299,18 @@ export function aiTrades(s: LeagueState, r: () => number) {
     const b = clubs[Math.floor(r() * clubs.length)]!;
     if (a === b || tradeBarred(s, a, b)) continue;
     // A's third-best at some spot for B's surplus at another, within 15% of each other's value.
+    // 2.0.46: neither club gives up a player it keeps not for sale (nfs.ts).
+    const keptA = new Set(aiNotForSale(s, a)),
+      keptB = new Set(aiNotForSale(s, b));
     const fromA = spots(a)
-      .filter((p) => spots(a).filter((q) => groupOf(q) === groupOf(p) && currentValue(q) >= currentValue(p)).length >= 3)
+      .filter((p) => !keptA.has(p.id) && spots(a).filter((q) => groupOf(q) === groupOf(p) && currentValue(q) >= currentValue(p)).length >= 3)
       .sort((x, y) => tradeValue(s, y) - tradeValue(s, x))[0];
     if (!fromA) continue;
     const need = groupOf(fromA);
     const vA = tradeValue(s, fromA);
     // Even values, or a gap made up with cash or a pick (V0.7.8).
     const options = spots(b)
-      .filter((p) => groupOf(p) !== need && !(p.origin.pickVia && p.proSince >= s.year))
+      .filter((p) => !keptB.has(p.id) && groupOf(p) !== need && !(p.origin.pickVia && p.proSince >= s.year))
       .map((p) => ({ p, gap: tradeValue(s, p) - vA }))
       .filter((x) => Math.abs(x.gap) <= Math.max(2, vA * TRADES.ai.evenOut))
       .sort((x, y) => Math.abs(x.gap) - Math.abs(y.gap))

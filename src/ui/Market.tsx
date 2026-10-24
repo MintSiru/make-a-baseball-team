@@ -43,7 +43,8 @@ import { positionKey, useSort } from './sort';
 import { Help } from './Help';
 import { PlayerSearch, type PosFilter } from './PlayerSearch';
 import { TRADES } from '../league/tuning';
-import { isNotForSale, liveOffers, notForSale, type TradeOffer } from '../league/offers';
+import { liveOffers, notForSale, type TradeOffer } from '../league/offers';
+import { aiNotForSale, clubNotForSale } from '../league/nfs';
 
 type View = 'trade' | 'search' | 'release' | 'foreign' | 'news';
 
@@ -115,9 +116,12 @@ function PickList({
   onPlayer,
   extra,
   action,
+  nfs,
 }: {
   league: LeagueState;
   players: Player[];
+  /** 2.0.45: the players not for sale, tagged. */
+  nfs?: Set<PlayerId>;
   selected?: Set<PlayerId>;
   toggle?: (id: PlayerId) => void;
   onPlayer: (id: string) => void;
@@ -165,7 +169,7 @@ function PickList({
                   {__i18n_display(p.name)}
                 </button>
                 {__i18n_display(p.contract?.kind === 'development' && <span class="tag">{__i18n_t("ui.market.pickList.818f3b79")}</span>)}
-                {isNotForSale(league, p.id) && <span class="tag nfs">NFS</span>}
+                {nfs?.has(p.id) && <span class="tag nfs">NFS</span>}
               </td>
               <td>{__i18n_display(positionLabel(p))}</td>
               <td class="num">{__i18n_display(ageIn(p, league.year))}</td>
@@ -208,6 +212,8 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
       .filter((p) => !isForeign(p) && p.proSince <= league.year && !(p.origin.pickVia && p.proSince >= league.year));
   const ours = useMemo(() => tradable(u.teamId), [league, u.teamId]);
   const theirs = useMemo(() => tradable(teamId), [league, teamId]);
+  // 2.0.45–2.0.46: ours marked not for sale and the other club's own (nfs.ts).
+  const nfs = useMemo(() => new Set([...clubNotForSale(league, u.teamId), ...clubNotForSale(league, teamId)]), [league, u.teamId, teamId]);
   const flip = (set: Set<PlayerId>, id: PlayerId) => {
     const s = new Set(set);
     if (s.has(id)) s.delete(id);
@@ -341,11 +347,11 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
       <div class="two-col">
         <div>
           <h3>{__i18n_t("ui.market.trade.9b230d96")}</h3>
-          <PickList league={league} players={ours} selected={give} toggle={(id) => setGive((s) => flip(s, id))} onPlayer={onPlayer} extra={value} />
+          <PickList league={league} players={ours} selected={give} toggle={(id) => setGive((s) => flip(s, id))} onPlayer={onPlayer} extra={value} nfs={nfs} />
         </div>
         <div>
           <h3>{__i18n_t("ui.market.trade.7b33091a", { shortName: shortName(league, teamId) })}</h3>
-          <PickList league={league} players={theirs} selected={get} toggle={(id) => setGet((s) => flip(s, id))} onPlayer={onPlayer} extra={value} />
+          <PickList league={league} players={theirs} selected={get} toggle={(id) => setGet((s) => flip(s, id))} onPlayer={onPlayer} extra={value} nfs={nfs} />
         </div>
       </div>
     </>
@@ -638,7 +644,16 @@ function News({ league }: { league: LeagueState }) {
 /** The other club's plan before anything is on the table (1.6.0). */
 function TradePlan({ league, teamId }: { league: LeagueState; teamId: TeamId }) {
   const plan = clubStrategy(league, teamId);
+  const kept = aiNotForSale(league, teamId).map((id) => league.players[id]!.name);
   return (
+    <>
     <p class="muted small">{__i18n_t("ui.market.tradePlan.a20e77f2", { shortName: shortName(league, teamId), value: MODE_LABEL[plan.mode], why: plan.why, value2: plan.needs.length ? __i18n_k("ui.market.tradePlan.a75fd3fd", { value: plan.needs.map((k) => SPOT_LABEL[k]).join(', ') }) : '', value3: plan.age.toFixed(1), value4: plan.room > 0 ? money(plan.room) : __i18n_k("ui.market.tradePlan.d58fa73a") })}</p>
+    {/* 2.0.46: the club's own not-for-sale players (nfs.ts). */}
+    {kept.length > 0 && (
+      <p class="muted small">
+        <span class="tag nfs">NFS</span> {__i18n_t("ui.market.text.7fcf8c64", { names: kept.join(', ') })}
+      </p>
+    )}
+    </>
   );
 }

@@ -88492,5 +88492,41 @@
     "line": 426,
     "params": {},
     "locations": []
+  },
+  "league.trade.text.ef29b40b": {
+    "source": "src/league/trade.ts",
+    "line": 160,
+    "params": {
+      "club": {
+        "expression": "iga(shortOf(s, teamId))",
+        "particle": "이/가"
+      },
+      "names": {
+        "expression": "nfs.map((p) => p!.name).join(', ')"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.e57e866c": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 507,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.7fcf8c64": {
+    "source": "src/ui/Market.tsx",
+    "line": 654,
+    "params": {
+      "names": {
+        "expression": "kept.join(', ')"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerSearch.text.70671b21": {
+    "source": "src/ui/PlayerSearch.tsx",
+    "line": 207,
+    "params": {},
+    "locations": []
   }
 }

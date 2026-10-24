@@ -9699,5 +9699,9 @@
   "ui.market.text.5ae2062f": "トレード不可",
   "ui.market.text.1e814dcd": "{name}のトレード不可を解除",
   "ui.market.text.a7abea5b": "解除",
-  "ui.market.text.84a11a94": "他球団はこれらの選手を求めてきません。自分から出すトレードはこれまでどおりできます。"
+  "ui.market.text.84a11a94": "他球団はこれらの選手を求めてきません。自分から出すトレードはこれまでどおりできます。",
+  "league.trade.text.ef29b40b": "{club}がトレード不可(NFS)にしている選手です: {names}",
+  "ui.playerPanel.text.e57e866c": "球団がトレード不可(NFS)にしている選手です。トレードで獲得できません",
+  "ui.market.text.7fcf8c64": "トレード不可: {names} — この球団はどんな条件でも手放しません",
+  "ui.playerSearch.text.70671b21": "球団がトレード不可(NFS)にしている選手です"
 }

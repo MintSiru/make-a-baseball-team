@@ -9,6 +9,7 @@ import { ageIn, isForeign, isPitcher } from '../league/players';
 import { POSITION_SHORT, secondaryPositions } from '../league/positions';
 import { orgIds, type LeagueState } from '../league/state';
 import { canSignFromPool, poolAsk, tradeValue } from '../league/trade';
+import { clubNotForSale } from '../league/nfs';
 import { positionLabel, shortName, statLine } from '../league/views';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { moneyShort } from './format';
@@ -79,6 +80,8 @@ export function PlayerSearch({
   // Trade rules (trade.ts): registered domestic players, not this year's draftees or development players.
   const canTrade = (p: Player) => !isForeign(p) && p.contract?.kind !== 'development' && p.proSince <= league.year && !(p.origin.pickVia && p.proSince >= league.year);
 
+  // 2.0.45–2.0.46: the players not for sale at their clubs (nfs.ts).
+  const nfs = useMemo(() => new Set(league.teams.filter((t) => league.rosters[t.id]).flatMap((t) => clubNotForSale(league, t.id))), [league]);
   const rows = useMemo(() => {
     const ids =
       club === 'pool'
@@ -201,7 +204,7 @@ export function PlayerSearch({
                       {__i18n_display(pool ? (
                         <button type="button" disabled={!!signProblem} title={__i18n_displayText(signProblem ?? '')} onClick={() => onAct({ kind: 'signPool', id: p.id })}>{__i18n_t("ui.playerSearch.playerSearch.b4116369")}</button>
                       ) : mine ? null : (
-                        <button type="button" disabled={!canTrade(p)} title={__i18n_displayText(canTrade(p) ? '' : __i18n_k("ui.playerSearch.playerSearch.629e3590"))} onClick={() => onTrade(p.teamId!, p.id)}>{__i18n_t("ui.playerSearch.playerSearch.428749ee")}</button>
+                        <button type="button" disabled={!canTrade(p) || nfs.has(p.id)} title={__i18n_displayText(nfs.has(p.id) ? __i18n_t("ui.playerSearch.text.70671b21") : canTrade(p) ? '' : __i18n_k("ui.playerSearch.playerSearch.629e3590"))} onClick={() => onTrade(p.teamId!, p.id)}>{__i18n_t("ui.playerSearch.playerSearch.428749ee")}</button>
                       ))}
                     </td>
                     <td>
@@ -211,6 +214,7 @@ export function PlayerSearch({
                       {__i18n_display(p.contract?.kind === 'development' && <span class="tag">{__i18n_t("ui.playerSearch.playerSearch.818f3b79")}</span>)}
                       {__i18n_display(isForeign(p) && <span class="tag">{__i18n_t("ui.playerSearch.playerSearch.5bd804b7")}</span>)}
                       {p.twoWay && <span class="tag two-way">{__i18n_t("ui.playerSearch.text.62cb0192")}</span>}
+                      {nfs.has(p.id) && <span class="tag nfs">NFS</span>}
                     </td>
                     <td>{__i18n_display(pool ? __i18n_k("ui.playerSearch.playerSearch.50b7405a") : shortName(league, p.teamId!))}</td>
                     <td>
