@@ -630,7 +630,14 @@ try {
   // 5. The market: trade screen with a live verdict, the other views.
   await page.getByRole('button', { name: '이적시장', exact: true }).click();
   await page.locator('.pick-table').first().locator('input[type=checkbox]').first().check();
-  await page.locator('.pick-table').nth(1).locator('input[type=checkbox]').first().check();
+  // 2.0.46: their not-for-sale players are refused with the reason; anyone else gets the club's verdict.
+  const theirRows = page.locator('.pick-table').nth(1).locator('tbody tr');
+  const kept = theirRows.filter({ has: page.locator('.tag.nfs') }).first();
+  check((await theirRows.filter({ has: page.locator('.tag.nfs') }).count()) === 3, 'the other club keeps three not for sale');
+  await kept.locator('input[type=checkbox]').check();
+  check((await page.locator('.trade-bar').textContent())?.includes('NFS'), 'a not-for-sale player is refused');
+  await kept.locator('input[type=checkbox]').uncheck();
+  await theirRows.filter({ hasNot: page.locator('.tag.nfs') }).first().locator('input[type=checkbox]').check();
   check((await page.locator('.trade-bar').textContent())?.includes('상대 구단'), 'trade verdict shown');
   await page.screenshot({ path: join(shots, 'market.png'), fullPage: false });
   // 0.10.1: find a right fielder anywhere in the league and take him to a trade proposal.
