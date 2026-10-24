@@ -2,6 +2,7 @@
    negotiations, scouting, the trade desk and the owner's patience. */
 import { IDBFactory } from 'fake-indexeddb';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { aiNotForSale } from '../src/league/nfs';
 import { apply, regularOver } from '../src/league/actions';
 import { autoDecision, EXPANSION_ID } from '../src/league/expansion';
 import { fitOf, type FaTalk } from '../src/league/fa';
@@ -166,7 +167,9 @@ describe('difficulty', () => {
   it('the AI trade desk is easier to please on easy and harder on hard', () => {
     const ours = orgPlayers(s, EXPANSION_ID).filter((p) => p.status === 'active' && !isForeign(p) && p.proSince < s.year).sort((a, b) => tradeValue(s, b) - tradeValue(s, a));
     const other = s.teams.find((t) => t.id !== EXPANSION_ID && s.rosters[t.id])!.id;
-    const theirs = orgPlayers(s, other).filter((p) => p.status === 'active' && !isForeign(p) && p.proSince < s.year).sort((a, b) => tradeValue(s, b) - tradeValue(s, a));
+    // 2.0.46: their best for sale (a club keeps its core not for sale, nfs.ts).
+    const kept = aiNotForSale(s, other);
+    const theirs = orgPlayers(s, other).filter((p) => p.status === 'active' && !isForeign(p) && p.proSince < s.year && !kept.includes(p.id)).sort((a, b) => tradeValue(s, b) - tradeValue(s, a));
     const margin = (level: Difficulty) => at(level, (x) => checkTrade(x, other, [ours[0]!.id], [theirs[0]!.id]));
     const easy = margin('easy'),
       normal = margin('normal'),
