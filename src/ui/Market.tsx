@@ -5,7 +5,7 @@ import type { Action } from '../league/actions';
 import { usdTotal } from '../league/contracts';
 import { usd } from '../league/foreign';
 import { kboLine, poolEntry } from '../league/foreignpool';
-import { deadMoney, projectedPayroll } from '../league/market';
+import { deadMoney, deadMoneyAhead, projectedPayroll } from '../league/market';
 import { eulreul } from '../league/josa';
 import { ageIn, isForeign } from '../league/players';
 import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from '../league/state';
@@ -472,8 +472,9 @@ function Release({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
         )}
       />
       <h3>{__i18n_t("ui.market.release.5cba39f3")}</h3>
-      {__i18n_display((u.deadMoney ?? []).length > 0 && (
-        <p class="muted">{__i18n_t("ui.market.release.6b11fc45", { value: (u.deadMoney ?? []).map((x) => `${x.season} ${x.label} ${money(x.amount)}`).join(' · ') })}</p>
+      {/* 2.0.48: only what is still to pay (the past seasons' was paid in their books). */}
+      {__i18n_display(deadMoneyAhead(league).length > 0 && (
+        <p class="muted">{__i18n_t("ui.market.release.6b11fc45", { value: deadMoneyAhead(league).map((x) => `${x.season} ${x.label} ${money(x.amount)}`).join(' · ') })}</p>
       ))}
       <PickList
         league={league}

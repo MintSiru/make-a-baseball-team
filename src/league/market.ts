@@ -81,6 +81,14 @@ export function projectedPayroll(s: LeagueState, teamId: TeamId, season: number,
 /** Salary the user's club still pays players it released (released players' guaranteed money). */
 export const deadMoney = (s: LeagueState, season: number) => (s.user?.deadMoney ?? []).filter((x) => x.season === season).reduce((a, x) => a + x.amount, 0);
 
+/** 2.0.48 (user report: 2030년에 교체한 외국인의 잔여 연봉이 2036년에도 보인다): the released players' money still to pay —
+    this season's (the coming one's in the winter) and later. Each season's is paid in that season's books
+    (finance.ts) and counted in that season's payroll only; the screen listed the paid ones of past seasons as well. */
+export function deadMoneyAhead(s: LeagueState) {
+  const from = s.phase === 'offseason' && s.offseason ? s.offseason.year + 1 : s.year;
+  return (s.user?.deadMoney ?? []).filter((x) => x.season >= from);
+}
+
 /** What the signing club owes the former club: cash with a player, or cash only (RULES.md §4). */
 export function compensationCash(grade: FaGrade, salary: number) {
   const c = F.compensation[grade];
