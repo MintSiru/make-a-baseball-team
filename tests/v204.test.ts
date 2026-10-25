@@ -66,8 +66,11 @@ describe('a season of records', () => {
   });
 
   it('ranks the regulars from 1 to 100, the better xwOBA higher', () => {
+    // The regulars the ranking itself counts (two plate appearances per team game; 2.0.47: was a fixed 80, which
+    // early in a season let in a hitter below the ranking's own field).
+    const games = percentilesOf(s, Object.keys(s.lines)[0]!).games;
     const regs = Object.entries(s.lines)
-      .filter(([id, l]) => l.bat && !isPitcher(s.players[id]!) && l.bat.pa >= 80)
+      .filter(([id, l]) => l.bat && !isPitcher(s.players[id]!) && l.bat.pa >= Math.max(80, games * 2))
       .map(([id, l]) => ({ id, x: xwobaOf(l.bat!)! }))
       .sort((a, b) => a.x - b.x);
     const low = percentilesOf(s, regs[0]!.id).batting!,
