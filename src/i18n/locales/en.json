@@ -9703,5 +9703,10 @@
   "league.trade.text.ef29b40b": "{club} keeps them not for sale (NFS): {names}",
   "ui.playerPanel.text.e57e866c": "His club keeps him not for sale (NFS). He cannot be traded for.",
   "ui.market.text.7fcf8c64": "Not for sale: {names} — this club will not part with them on any terms",
-  "ui.playerSearch.text.70671b21": "His club keeps him not for sale (NFS)"
+  "ui.playerSearch.text.70671b21": "His club keeps him not for sale (NFS)",
+  "ui.decision.text.0997dcac": "Back by the first game ({date}): {names}",
+  "league.news.text.a6af2cbd": "The team winning matters more than my numbers. The veterans led the way.",
+  "league.news.text.2db708b3": "I'm the youngest here, I just worked hard to keep up with the older guys.",
+  "league.interviews.text.57ad7ebd": "The veterans made it possible. I want to thank the older guys.",
+  "league.interviews.text.e6ba4169": "I still have a lot to learn. I'll watch the veterans and help the team however I can."
 }

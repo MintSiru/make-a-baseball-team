@@ -55,7 +55,7 @@ type Prefer = (p: Player) => number;
 const none: Prefer = () => 0;
 
 /** Choose the first-team roster: 13–14 pitchers (5 starters), two catchers, the best of the rest. */
-export function chooseActive(s: LeagueState, teamId: TeamId, opts?: { size?: number; pitchers?: number; from?: PlayerId[] }): PlayerId[] {
+export function chooseActive(s: LeagueState, teamId: TeamId, opts?: { size?: number; pitchers?: number; from?: PlayerId[]; vetted?: boolean }): PlayerId[] {
   const size = opts?.size ?? firstTeamSize(s, teamId);
   const pitchersWanted = opts?.pitchers ?? (size >= 29 ? 14 : 13);
   // Development players cannot be registered until they are converted (RULES.md §6). 1.9.0: a postseason entry
@@ -76,7 +76,8 @@ export function chooseActive(s: LeagueState, teamId: TeamId, opts?: { size?: num
   );
   const pool = (opts?.from ?? registeredIds(s, teamId))
     .map((id) => s.players[id]!)
-    .filter((p) => !offRoster(s, p.id) && p.status === 'active' && !kyopo.has(p.id));
+    // 2.0.47: a postseason entry's `from` is vetted already (one back by the first game may be out today).
+    .filter((p) => (opts?.vetted || !offRoster(s, p.id)) && p.status === 'active' && !kyopo.has(p.id));
   const pitchers = pool.filter(isPitcher).sort((a, b) => val(b) - val(a));
   const hitters = pool.filter((p) => !isPitcher(p)).sort((a, b) => val(b) - val(a));
   const chosen: Player[] = [];

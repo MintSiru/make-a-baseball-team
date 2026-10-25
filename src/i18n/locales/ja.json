@@ -9703,5 +9703,10 @@
   "league.trade.text.ef29b40b": "{club}がトレード不可(NFS)にしている選手です: {names}",
   "ui.playerPanel.text.e57e866c": "球団がトレード不可(NFS)にしている選手です。トレードで獲得できません",
   "ui.market.text.7fcf8c64": "トレード不可: {names} — この球団はどんな条件でも手放しません",
-  "ui.playerSearch.text.70671b21": "球団がトレード不可(NFS)にしている選手です"
+  "ui.playerSearch.text.70671b21": "球団がトレード不可(NFS)にしている選手です",
+  "ui.decision.text.0997dcac": "初戦({date})までに復帰: {names}",
+  "league.news.text.a6af2cbd": "自分の記録よりチームが勝ったことが大事です。先輩方がしっかり引っ張ってくれました。",
+  "league.news.text.2db708b3": "末っ子なので、先輩たちについていこうと必死にやっただけです。",
+  "league.interviews.text.57ad7ebd": "先輩方が引っ張ってくれたおかげです。先輩たちにありがとうと言いたいです。",
+  "league.interviews.text.e6ba4169": "まだ学ぶことばかりです。先輩方を見ながらチームの力になりたいです。"
 }

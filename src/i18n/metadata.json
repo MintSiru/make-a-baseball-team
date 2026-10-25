@@ -88528,5 +88528,42 @@
     "line": 207,
     "params": {},
     "locations": []
+  },
+  "ui.decision.text.0997dcac": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1001,
+    "params": {
+      "date": {
+        "expression": "(d.from ?? '').slice(5).replace('-', '/')"
+      },
+      "names": {
+        "expression": "Object.entries(d.back)\n                  .map(([id, day]) => `${league.players[id]?.name ?? id} ${day.slice(5).replace('-', '/')}`)\n                  .join(', ')"
+      }
+    },
+    "locations": []
+  },
+  "league.news.text.a6af2cbd": {
+    "source": "src/league/news.ts",
+    "line": 79,
+    "params": {},
+    "locations": []
+  },
+  "league.news.text.2db708b3": {
+    "source": "src/league/news.ts",
+    "line": 79,
+    "params": {},
+    "locations": []
+  },
+  "league.interviews.text.57ad7ebd": {
+    "source": "src/league/interviews.ts",
+    "line": 67,
+    "params": {},
+    "locations": []
+  },
+  "league.interviews.text.e6ba4169": {
+    "source": "src/league/interviews.ts",
+    "line": 107,
+    "params": {},
+    "locations": []
   }
 }

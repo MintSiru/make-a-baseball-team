@@ -4,13 +4,19 @@ import { k as __i18n_k } from '../i18n/index';
    team play). Only players registered with the club by July 31 may be in it, foreign players by August 15 (S83): the
    league notes who they were on those days. The entry becomes the club's first team for the series; when the
    postseason is over each club gets its regular-season first team back. The user's club chooses its own before each
-   series (a decision, unless the stop for it is off), the others the manager's way. */
+   series (a decision, unless the stop for it is off), the others the manager's way.
+
+   2.0.47 (user report: 부상·문책성 2군으로 빠져 있던 선수는 포스트시즌 경기가 복귀 뒤에 열려도 엔트리에 못 넣는다): a player
+   who is out now but back by the series' first game (an injury healed, a 문책성 2군행 or a suspension served by then)
+   may be in the entry; he plays once he is back. During the postseason the days pass for them too (upkeep below): an
+   injury heals, a stay in the futures and a suspension end on their dates. */
 import type { PlayerId, TeamId } from '../model/types';
 import { KBO_2026 } from '../rules/kbo2026';
-import { offRoster } from './injuries';
 import { chooseActive } from './manager';
 import { isForeign, isPitcher } from './players';
 import { registeredIds, type Decision, type LeagueState, type SeriesResult } from './state';
+
+const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 import { stopsOf } from './stops';
 
 export const ENTRY = KBO_2026.league.postseasonEntry;
@@ -46,36 +52,58 @@ export function noteEligibility(s: LeagueState) {
   if (lateForeign) e.foreign ??= snap(true);
 }
 
+/** The day he is back from what keeps him out (an injury, a 문책성 2군행, the national team, a suspension served by
+    date), or null when nothing does; Infinity when it is not by a date (a suspension in games, training abroad). */
+export function backOn(s: LeagueState, id: PlayerId): string | null | typeof Infinity {
+  if (s.abroad?.[id]) return Infinity;
+  const sus = s.suspended?.[id];
+  if (sus && (sus.games || !sus.until)) return Infinity;
+  const i = s.injuries[id];
+  const dates = [i && !i.dtd ? i.until : '', s.discipline?.[id]?.until ?? '', sus?.until ?? '', s.away?.[id] ? addDays(s.away[id]!, 1) : ''].filter(Boolean);
+  return dates.length ? dates.sort().at(-1)! : null;
+}
+
 /** Why a registered player cannot be in the club's entry, or null. A league without the lists (a save from before
-    1.9.0, or a season that never reached the deadline) lets everyone in. */
-export function entryProblem(s: LeagueState, teamId: TeamId, id: PlayerId): 'late' | 'out' | null {
+    1.9.0, or a season that never reached the deadline) lets everyone in. 2.0.47: `by`, the series' first game — one
+    back by then may be in it. */
+export function entryProblem(s: LeagueState, teamId: TeamId, id: PlayerId, by?: string): 'late' | 'out' | null {
   const p = s.players[id]!;
   const e = s.postEntry?.year === s.year ? s.postEntry : undefined;
   const list = (isForeign(p) ? e?.foreign : e?.domestic)?.[teamId];
   if (list && !list.includes(id)) return 'late';
-  if (p.status !== 'active' || offRoster(s, id)) return 'out';
+  if (p.status !== 'active') return 'out';
+  const back = backOn(s, id);
+  if (back !== null && (!by || back > by)) return 'out';
   return null;
 }
 
 /** The players a club may put in its entry. */
-export const entryCandidates = (s: LeagueState, teamId: TeamId) => registeredIds(s, teamId).filter((id) => !entryProblem(s, teamId, id));
+export const entryCandidates = (s: LeagueState, teamId: TeamId, by?: string) => registeredIds(s, teamId).filter((id) => !entryProblem(s, teamId, id, by));
 
 /** The manager's entry: the first team's shape, thirty strong, from the eligible players. */
-export const chooseEntry = (s: LeagueState, teamId: TeamId) => chooseActive(s, teamId, { size: ENTRY.registered, pitchers: ENTRY_PITCHERS, from: entryCandidates(s, teamId) });
+export const chooseEntry = (s: LeagueState, teamId: TeamId, by?: string) =>
+  chooseActive(s, teamId, { size: ENTRY.registered, pitchers: ENTRY_PITCHERS, from: entryCandidates(s, teamId, by), vetted: true });
 
 /** What the scouts suggest for the user's club: the general manager's first team as it stands (the eligible ones),
-    filled up to thirty the manager's way. */
-export function suggestedEntry(s: LeagueState, teamId: TeamId): PlayerId[] {
-  const ok = new Set(entryCandidates(s, teamId));
+    filled up to thirty the manager's way. 2.0.47: one out now but back by the first game goes in when the manager
+    would take him (off the first team while he was hurt or sent down), in place of the first team's least wanted. */
+export function suggestedEntry(s: LeagueState, teamId: TeamId, by?: string): PlayerId[] {
+  const ok = new Set(entryCandidates(s, teamId, by));
   const keep = (stateOf(s).before?.[teamId] ?? s.rosters[teamId]!.active).filter((id) => ok.has(id));
-  const out = [...keep];
-  for (const id of chooseEntry(s, teamId)) if (out.length < ENTRY.registered && !out.includes(id)) out.push(id);
+  const pick = chooseEntry(s, teamId, by);
+  const want = new Set(pick);
+  let out = [...new Set([...keep, ...pick.filter((id) => backOn(s, id) !== null)])];
+  while (out.length > ENTRY.registered) {
+    const drop = [...out].reverse().find((id) => !want.has(id)) ?? out.at(-1)!;
+    out = out.filter((id) => id !== drop);
+  }
+  for (const id of pick) if (out.length < ENTRY.registered && !out.includes(id)) out.push(id);
   return out;
 }
 
 /** Why an entry the user hands in does not stand, or null. */
-export function checkEntry(s: LeagueState, teamId: TeamId, ids: PlayerId[]): string | null {
-  const ok = new Set(entryCandidates(s, teamId));
+export function checkEntry(s: LeagueState, teamId: TeamId, ids: PlayerId[], by?: string): string | null {
+  const ok = new Set(entryCandidates(s, teamId, by));
   if (new Set(ids).size !== ids.length || ids.some((id) => !ok.has(id))) return __i18n_k("league.postentry.text.6fa5ccf1");
   if (ids.length > ENTRY.registered) return __i18n_k("league.postentry.text.51d475e7", { max: ENTRY.registered });
   if (ids.length < ENTRY_MIN.players) return __i18n_k("league.postentry.text.1716fc61", { min: ENTRY_MIN.players });
@@ -97,15 +125,17 @@ export function applyEntry(s: LeagueState, teamId: TeamId, ids: PlayerId[], roun
 }
 
 /** The entry decision for the user's club before a series. */
-export function entryDecision(s: LeagueState, round: SeriesResult['round'], opp: TeamId): Decision {
+export function entryDecision(s: LeagueState, round: SeriesResult['round'], opp: TeamId, by?: string): Decision {
   const teamId = s.user!.teamId;
-  const candidates = entryCandidates(s, teamId);
-  const late = registeredIds(s, teamId).filter((id) => entryProblem(s, teamId, id) === 'late');
-  return { kind: 'postEntry', round, opp, candidates, late, size: ENTRY.registered, suggested: suggestedEntry(s, teamId) };
+  const candidates = entryCandidates(s, teamId, by);
+  const late = registeredIds(s, teamId).filter((id) => entryProblem(s, teamId, id, by) === 'late');
+  // 2.0.47: those out now who are back by the first game, with the day.
+  const back = Object.fromEntries(candidates.map((id) => [id, backOn(s, id)]).filter((x): x is [PlayerId, string] => typeof x[1] === 'string'));
+  return { kind: 'postEntry', round, opp, candidates, late, size: ENTRY.registered, suggested: suggestedEntry(s, teamId, by), ...(by ? { from: by } : {}), ...(Object.keys(back).length ? { back } : {}) };
 }
 
 /** A new round's series: every club in them hands in its entry (the user's club through a decision with `stops`). */
-export function openEntries(s: LeagueState, series: { round: SeriesResult['round']; high: TeamId; low: TeamId }[], stops: boolean) {
+export function openEntries(s: LeagueState, series: { round: SeriesResult['round']; high: TeamId; low: TeamId; date?: string }[], stops: boolean) {
   const me = s.user?.teamId;
   for (const x of series)
     for (const [teamId, opp] of [
@@ -113,9 +143,9 @@ export function openEntries(s: LeagueState, series: { round: SeriesResult['round
       [x.low, x.high],
     ] as const) {
       if (!s.rosters[teamId] || stateOf(s).round?.[teamId] === x.round) continue;
-      if (teamId !== me) applyEntry(s, teamId, chooseEntry(s, teamId), x.round);
-      else if (stops && stopsOf(s).includes('postEntry') && !s.pending) s.pending = entryDecision(s, x.round, opp);
-      else applyEntry(s, teamId, suggestedEntry(s, teamId), x.round);
+      if (teamId !== me) applyEntry(s, teamId, chooseEntry(s, teamId, x.date), x.round);
+      else if (stops && stopsOf(s).includes('postEntry') && !s.pending) s.pending = entryDecision(s, x.round, opp, x.date);
+      else applyEntry(s, teamId, suggestedEntry(s, teamId, x.date), x.round);
     }
 }
 
@@ -124,7 +154,7 @@ export function settleOurEntry(s: LeagueState) {
   const d = s.pending;
   if (d?.kind !== 'postEntry' || !s.user) return;
   s.pending = null;
-  applyEntry(s, s.user.teamId, d.suggested.filter((id) => !entryProblem(s, s.user!.teamId, id)), d.round);
+  applyEntry(s, s.user.teamId, d.suggested.filter((id) => !entryProblem(s, s.user!.teamId, id, d.from)), d.round);
 }
 
 /** The postseason is over: each club gets its regular-season first team back (those still with it). */
@@ -141,4 +171,14 @@ export function restoreFirstTeams(s: LeagueState) {
     r.active = back;
   }
   delete e.before;
+}
+
+/** 2.0.47: a postseason game day — an injury that has healed, a stay in the futures or a suspension by date that has
+    run out, and a national-team call that is over end (the regular season's day does this in season.ts, discipline.ts
+    and scandals.ts). A player in his club's entry plays again from today. */
+export function postseasonUpkeep(s: LeagueState, date: string) {
+  for (const [id, i] of Object.entries(s.injuries)) if (i.until <= date) delete s.injuries[id];
+  for (const [id, d] of Object.entries(s.discipline ?? {})) if (d.until <= date) delete s.discipline![id];
+  for (const [id, x] of Object.entries(s.suspended ?? {})) if (!x.games && x.until && x.until <= date) delete s.suspended![id];
+  for (const [id, until] of Object.entries(s.away)) if (until < date) delete s.away[id];
 }

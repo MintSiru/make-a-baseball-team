@@ -20,7 +20,7 @@ import { eunneun, iga, wagwa } from './josa';
 import type { PlayEvent, TeamBox } from './engine/types';
 import { leagueTables, playoffsOf, sidesOf } from './twelve';
 import { stopsOf } from './stops';
-import { openEntries, restoreFirstTeams, settleOurEntry } from './postentry';
+import { openEntries, postseasonUpkeep, restoreFirstTeams, settleOurEntry } from './postentry';
 import { drawHistoric, historicNext } from './historic';
 import { rulesFor } from '../rules/history';
 import { boardValue } from './era';
@@ -295,6 +295,8 @@ export function postseasonDay(s: LeagueState, stops = false): boolean {
   const playing = b.live.filter((x) => !over(x));
   if (playing.length) {
     const date = playing.reduce((m, x) => (x.date < m ? x.date : m), playing[0]!.date);
+    // 2.0.47: the day's returns (an injury healed, a stay in the futures over) before its games.
+    postseasonUpkeep(s, date);
     for (const x of playing) if (x.date === date) playSeriesGame(s, x);
   }
   if (b.live.every(over)) {

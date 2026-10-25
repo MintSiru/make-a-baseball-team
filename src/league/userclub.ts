@@ -468,7 +468,7 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
       return null;
     }
     case 'postEntry':
-      return checkEntry(s, u.teamId, input.ids);
+      return checkEntry(s, u.teamId, input.ids, (d as Extract<Decision, { kind: 'postEntry' }>).from);
     case 'secondProtect': {
       const dd = d as Extract<Decision, { kind: 'secondProtect' }>;
       if (input.ids.some((id) => !dd.candidates.includes(id))) return __i18n_k("league.userclub.checkAnnual.ac069ce3");

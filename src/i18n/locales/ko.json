@@ -9703,5 +9703,10 @@
   "league.trade.text.ef29b40b": "{club} 트레이드 불가(NFS)로 묶어 둔 선수입니다: {names}",
   "ui.playerPanel.text.e57e866c": "구단이 트레이드 불가(NFS)로 묶어 둔 선수입니다. 트레이드로 데려올 수 없습니다",
   "ui.market.text.7fcf8c64": "트레이드 불가: {names} — 이 구단은 어떤 조건에도 내주지 않습니다",
-  "ui.playerSearch.text.70671b21": "구단이 트레이드 불가(NFS)로 묶어 둔 선수입니다"
+  "ui.playerSearch.text.70671b21": "구단이 트레이드 불가(NFS)로 묶어 둔 선수입니다",
+  "ui.decision.text.0997dcac": "첫 경기({date})까지 복귀: {names}",
+  "league.news.text.a6af2cbd": "제 기록보다 팀이 이긴 게 중요합니다. 선배님들이 잘 이끌어 주셨습니다.",
+  "league.news.text.2db708b3": "막내라 형들 따라가려고 열심히 했을 뿐입니다.",
+  "league.interviews.text.57ad7ebd": "선배님들이 잘 이끌어 주셔서 가능했습니다. 형들한테 고맙다는 말 하고 싶습니다.",
+  "league.interviews.text.e6ba4169": "아직 배울 게 많습니다. 선배님들 보면서 팀에 보탬이 되겠습니다."
 }

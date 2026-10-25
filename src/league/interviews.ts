@@ -10,7 +10,7 @@ import { k as __i18n_k } from '../i18n/index';
    the simulation's streams. */
 import { hashUnit } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
-import type { NewsItem } from './news';
+import { isJunior, type NewsItem } from './news';
 import { isPitcher } from './players';
 import type { LeagueState } from './state';
 import { traitsOf } from './traits';
@@ -64,6 +64,7 @@ const VOICE: Record<string, string[]> = {
   '큰 무대를 즐기는 대담형': [__i18n_k("league.interviews.vOICE.73a481f8"), __i18n_k("league.interviews.vOICE.13b61ecf")],
 };
 const VOICE_DEFAULT = [__i18n_k("league.interviews.vOICE_DEFAULT.9ba6d873"), __i18n_k("league.interviews.vOICE_DEFAULT.145ee447")];
+const YOUNG_VOICE = [__i18n_k("league.interviews.vOICE.fb60b78f"), __i18n_k("league.interviews.text.57ad7ebd")];
 
 /** The second question and answer: how he did it. */
 function howQA(p: Player, o: Occasion, key: string): [string, string] {
@@ -88,7 +89,7 @@ function howQA(p: Player, o: Occasion, key: string): [string, string] {
 }
 
 /** The last question: what next — by what matters most to him. */
-function nextQA(p: Player, key: string): [string, string] {
+function nextQA(p: Player, key: string, year: number): [string, string] {
   const t = traitsOf(p);
   const top = (
     [
@@ -101,7 +102,10 @@ function nextQA(p: Player, key: string): [string, string] {
     .slice()
     .sort((a, b) => b[1] - a[1])[0]![0];
   const answers: Record<typeof top, string[]> = {
-    leadership: [__i18n_k("league.interviews.answers.leadership.6752c3f0"), __i18n_k("league.interviews.answers.leadership.aa2d1116")],
+    // 2.0.47: a young player does not speak of leading his juniors.
+    leadership: isJunior(p, year)
+      ? [__i18n_k("league.interviews.text.e6ba4169"), __i18n_k("league.interviews.answers.leadership.aa2d1116")]
+      : [__i18n_k("league.interviews.answers.leadership.6752c3f0"), __i18n_k("league.interviews.answers.leadership.aa2d1116")],
     mental: [__i18n_k("league.interviews.answers.mental.267ad626"), __i18n_k("league.interviews.answers.mental.b3e99734")],
     work: [__i18n_k("league.interviews.answers.work.a3887809"), __i18n_k("league.interviews.answers.work.2d3e6e38")],
     loyalty: [__i18n_k("league.interviews.answers.loyalty.2c1ea707"), __i18n_k("league.interviews.answers.loyalty.6c5d2711")],
@@ -114,9 +118,10 @@ export function heroInterview(s: LeagueState, id: PlayerId, date: string, o: Occ
   const p = s.players[id];
   if (!p || !s.user || p.teamId !== s.user.teamId) return null;
   if (hashUnit(`iv-chance-${key}`) >= CHANCE[o.kind]) return null;
-  const a1 = pick(VOICE[p.personality] ?? VOICE_DEFAULT, `${key}-1`);
+  // 2.0.47 (user report): a young leader thanks his seniors, not his juniors.
+  const a1 = pick(p.personality === '책임감 강한 리더' && isJunior(p, s.year) ? YOUNG_VOICE : (VOICE[p.personality] ?? VOICE_DEFAULT), `${key}-1`);
   const [q2, a2] = howQA(p, o, `${key}-2`);
-  const [q3, a3] = nextQA(p, `${key}-3`);
+  const [q3, a3] = nextQA(p, `${key}-3`, s.year);
   const headline = a1.split(/[.!]/)[0]!.trim();
   return {
     id: `hiv-${key}`,

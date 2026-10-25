@@ -995,6 +995,17 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
           <p>{__i18n_t("ui.decision.text.a72848c6", { round: __i18n_displayText(ROUND_NAME[d.round]), opp: shortName(league, d.opp), size: d.size })}</p>
           <p class="muted">{__i18n_t("ui.decision.text.49fb9fbe", { count: picked.length, pitchers, hitters: picked.length - pitchers, foreign })}</p>
           {__i18n_display(d.late.length > 0 && <p class="muted">{__i18n_t("ui.decision.text.38dae898", { names: d.late.map((id) => league.players[id]?.name ?? id).join(', ') })}</p>)}
+          {/* 2.0.47: out now (hurt, sent down) but back by the first game — he may be in it and plays once he is back. */}
+          {d.back && Object.keys(d.back).length > 0 && (
+            <p class="muted">
+              {__i18n_t("ui.decision.text.0997dcac", {
+                date: (d.from ?? '').slice(5).replace('-', '/'),
+                names: Object.entries(d.back)
+                  .map(([id, day]) => `${league.players[id]?.name ?? id} ${day.slice(5).replace('-', '/')}`)
+                  .join(', '),
+              })}
+            </p>
+          )}
           <PlayerTable league={league} players={byValue(d.candidates)} selected={selected} toggle={toggle} onPlayer={onPlayer} max={d.size} />
         </>
       );
