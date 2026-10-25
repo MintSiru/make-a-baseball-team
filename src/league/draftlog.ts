@@ -85,7 +85,7 @@ export function draftView(s: LeagueState, year: number): DraftRow[] {
                 : __i18n_k("league.draftlog.text.3e2ba13a");
       return {
         ...x,
-        club: shortName(s, x.teamId),
+        club: shortName(s, x.teamId, x.year),
         now,
         inLeague: !!p,
         seasons: major.filter((c) => (c.bat?.g ?? 0) + (c.pit?.g ?? 0) > 0).length,

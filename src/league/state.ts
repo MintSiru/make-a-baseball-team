@@ -718,8 +718,9 @@ export interface LeagueState {
   voluntary?: Record<PlayerId, { teamId: TeamId; since: string; why: 'club' | 'scandal'; salary: number }>;
   /** 2.0.37 (abroad.ts): our players talked out of going abroad, and the winter they agreed. */
   abroadStay?: Record<PlayerId, number>;
-  /** 2.0.37 (merger.ts): mergers and sales of clubs (`teamId` the club that took a new name). */
-  mergers?: { year: number; into: TeamId | null; absorbed: string; founded: string; teamId: TeamId; approved: boolean; cityId?: string }[];
+  /** 2.0.37 (merger.ts): mergers and sales of clubs (`teamId` the club that took a new name). 2.0.49: `absorbedShort`
+      the old short name, for the records of the seasons before (views.ts clubNameIn). */
+  mergers?: { year: number; into: TeamId | null; absorbed: string; absorbedShort?: string; founded: string; teamId: TeamId; approved: boolean; cityId?: string }[];
   abilityEdits?: number;
   /** 2.0.39 (contractmood.ts): the season's moods over money — a walk year, a big deal just signed, pay far over his play. */
   moods?: { year: number; of: Record<PlayerId, { kind: 'walk' | 'settled' | 'pressure'; edge: number }> };

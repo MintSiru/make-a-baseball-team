@@ -89,12 +89,13 @@ function newIdentity(s: LeagueState, teamId: TeamId, r: () => number) {
   const nick = NICKNAMES.filter((n) => !used.has(n))[Math.floor(r() * NICKNAMES.length) % Math.max(1, NICKNAMES.filter((n) => !used.has(n)).length)] ?? NICKNAMES[0]!;
   const company = COMPANIES[Math.floor(r() * COMPANIES.length)]!;
   const city = team.region.split('·')[0] ?? team.region;
-  const old = team.name;
+  const old = team.name,
+    oldShort = team.short;
   team.name = `${city} ${nick}`;
   team.short = nick;
   team.color = COLORS[Math.floor(r() * COLORS.length)]!;
   team.parent = { type: 'conglomerate', name: company };
-  return { old, name: team.name, company };
+  return { old, oldShort, name: team.name, company };
 }
 
 function merge(s: LeagueState, weak: TeamId, partner: TeamId, year: number, r: () => number) {
@@ -118,7 +119,7 @@ function merge(s: LeagueState, weak: TeamId, partner: TeamId, year: number, r: (
   c.popularity = Math.round(oldPop * MERGER.keep + (FANS.newClub.base + 50 * FANS.newClub.perMarket) * (1 - MERGER.keep));
   c.interest = FANS.newClub.novelty;
   clubState(s, partner).popularity += Math.round(oldPop * MERGER.follow);
-  (s.mergers ??= []).push({ year, into: partner, absorbed: id.old, founded: id.name, teamId: weak, approved: true });
+  (s.mergers ??= []).push({ year, into: partner, absorbed: id.old, absorbedShort: id.oldShort, founded: id.name, teamId: weak, approved: true });
   milestone(s, year, __i18n_k("league.merger.text.8c205f11", { old: id.old, into, name: id.name }));
   const date = `${year}-12-02`;
   const title = __i18n_k("league.merger.text.9894ef87", { old: id.old, into });
@@ -129,7 +130,7 @@ function merge(s: LeagueState, weak: TeamId, partner: TeamId, year: number, r: (
 
 function sell(s: LeagueState, weak: TeamId, year: number, r: () => number, yes: number, needed: number) {
   const id = newIdentity(s, weak, r);
-  (s.mergers ??= []).push({ year, into: null, absorbed: id.old, founded: id.name, teamId: weak, approved: false });
+  (s.mergers ??= []).push({ year, into: null, absorbed: id.old, absorbedShort: id.oldShort, founded: id.name, teamId: weak, approved: false });
   milestone(s, year, __i18n_k("league.merger.text.b87b1463", { old: id.old, company: id.company, name: id.name }));
   const date = `${year}-12-02`;
   const title = __i18n_k("league.merger.text.72ae1d82", { old: id.old, company: id.company });

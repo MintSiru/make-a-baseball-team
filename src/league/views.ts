@@ -22,6 +22,7 @@ import { rulesFor } from '../rules/history';
 import { halfTables } from './historic';
 import type { StandingRow } from './standings';
 import { SANGMU } from './futures';
+import { clubNameIn } from './clubnames';
 import { cardFor, lineupFor, managerLean, penRoles, PEN_ROLE_LABELS, rotationFor, armReady } from './manager';
 import { isDevelopment, type LeagueState } from './state';
 import { captaincyLift } from './captains';
@@ -40,7 +41,12 @@ import { nationalBox, nationalLog, nationalName, nationalTeamName } from './nati
 const LEADER = 68;
 
 export const teamOf = (s: LeagueState, id: TeamId | null) => s.teams.find((t) => t.id === id);
-export const shortName = (s: LeagueState, id: TeamId | null) => (id === SANGMU ? __i18n_k("league.views.shortName.d2a2ca0f") : id === 'dream' ? __i18n_k("league.views.shortName.c2c3ed38") : id === 'nanum' ? __i18n_k("league.views.shortName.ca6f7a21") : (teamOf(s, id)?.short ?? '-'));
+export { clubNameIn };
+/** A club's short name; with `year`, the one it had that season (clubNameIn). */
+export const shortName = (s: LeagueState, id: TeamId | null, year?: number) =>
+  id === SANGMU ? __i18n_k("league.views.shortName.d2a2ca0f") : id === 'dream' ? __i18n_k("league.views.shortName.c2c3ed38") : id === 'nanum' ? __i18n_k("league.views.shortName.ca6f7a21") : ((year != null ? clubNameIn(s, id, year)?.short : undefined) ?? teamOf(s, id)?.short ?? '-');
+/** A club's full name in `year` (clubNameIn). */
+export const teamNameIn = (s: LeagueState, id: TeamId | null, year: number) => clubNameIn(s, id, year)?.name ?? teamOf(s, id)?.name;
 
 export const positionLabel = (p: Pick<Player, 'role' | 'position'>) =>
   p.position ? ({ C: __i18n_k("league.views.positionLabel.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("league.views.positionLabel.sS.3e24c7f1"), LF: __i18n_k("league.views.positionLabel.lF.73836db2"), CF: __i18n_k("league.views.positionLabel.cF.56780b2a"), RF: __i18n_k("league.views.positionLabel.rF.a28a0ef8") } as const)[p.position] : ROLE_LABELS[p.role];
@@ -268,7 +274,7 @@ export function careerView(s: LeagueState, p: Player): CareerRow[] {
   const played = (c: { bat: BatTotals | null; pit: PitTotals | null }) => (c.bat?.g ?? 0) + (c.pit?.g ?? 0) > 0;
   const rows: CareerRow[] = p.career
     .filter(played)
-    .map((c: SeasonRecord) => ({ year: c.year, team: shortName(s, c.teamId), teamId: c.teamId, futures: c.level === 'futures', age: c.age, days: c.days, bat: c.bat, pit: c.pit, war: c.war, current: false }));
+    .map((c: SeasonRecord) => ({ year: c.year, team: shortName(s, c.teamId, c.year), teamId: c.teamId, futures: c.level === 'futures', age: c.age, days: c.days, bat: c.bat, pit: c.pit, war: c.war, current: false }));
   // 2.0.10: once the season is closed its record is in the career while its lines stay until the next season
   // starts; the season showed twice (and counted twice in the totals).
   const closed = (futures: boolean) => p.career.some((c) => c.year === s.year && (c.level === 'futures') === futures);
@@ -665,7 +671,7 @@ export function recordRoom(s: LeagueState, teamId?: TeamId) {
     rows: top(
       seasons.flatMap(({ p, c }) => {
         const v = pick(c, p);
-        return v == null || (!low && v <= 0) ? [] : [{ id: p.id, name: p.name, team: shortName(s, c.teamId), year: c.year, value: show(v), key: v }];
+        return v == null || (!low && v <= 0) ? [] : [{ id: p.id, name: p.name, team: shortName(s, c.teamId, c.year), year: c.year, value: show(v), key: v }];
       }),
       5,
       low,
@@ -738,7 +744,7 @@ export function awardsView(s: LeagueState) {
     const c = p?.career.find((x) => x.year === year && !x.level);
     const teamId = club ?? c?.teamId;
     // 2.0.41 (the user's request): our club's winners in its colour.
-    return { id, name: p?.name ?? '?', team: teamId ? shortName(s, teamId) : '', ...(me && teamId === me && color ? { color } : {}) };
+    return { id, name: p?.name ?? '?', team: teamId ? shortName(s, teamId, year) : '', ...(me && teamId === me && color ? { color } : {}) };
   };
   return [...s.history]
     .reverse()

@@ -4,7 +4,7 @@ import { useState } from 'preact/hooks';
 import { nationalView, retiredNumbersView } from '../league/legacy';
 import { nationalGamesOf } from '../league/nationalgames';
 import type { LeagueState } from '../league/state';
-import { awardsView, recordRoom, shortName, teamOf } from '../league/views';
+import { awardsView, recordRoom, shortName, teamNameIn } from '../league/views';
 import { ROUND_NAME } from '../league/postseason';
 import { LEAGUE_LABEL } from '../league/asiaseries';
 import { avg, era, ip, obp, ops, slg } from '../league/stats';
@@ -225,16 +225,16 @@ function Seasons({ league }: { league: LeagueState }) {
                 <tr key={h.year}>
                   <td class="num">{__i18n_display(h.year)}</td>
                   <td class="strong">
-                    {__i18n_display(h.champion ? teamOf(league, h.champion)?.name : '-')}
+                    {__i18n_display(h.champion ? teamNameIn(league, h.champion, h.year) : '-')}
                     {/* 2.0.42: the Asia Series that winter (asiaseries.ts). */}
                     {(() => {
                       const a = league.asia?.find((x) => x.year === h.year);
-                      return a ? <div class="muted small">{__i18n_t("ui.history.text.8dc04067", { winner: a.winner === 'kbo' ? (teamOf(league, a.kbo)?.short ?? 'KBO') : `${a.clubs[a.winner]} (${LEAGUE_LABEL[a.winner]})` })}</div> : null;
+                      return a ? <div class="muted small">{__i18n_t("ui.history.text.8dc04067", { winner: a.winner === 'kbo' ? shortName(league, a.kbo, h.year) : `${a.clubs[a.winner]} (${LEAGUE_LABEL[a.winner]})` })}</div> : null;
                     })()}
                   </td>
-                  <td>{__i18n_display(shortName(league, h.table[0]!.teamId))}</td>
+                  <td>{__i18n_display(shortName(league, h.table[0]!.teamId, h.year))}</td>
                   <td class="num">{__i18n_display(h.table[0]!.pct.toFixed(3))}</td>
-                  <td>{__i18n_display(h.futures?.[0] ? shortName(league, h.futures[0].teamId) : '-')}</td>
+                  <td>{__i18n_display(h.futures?.[0] ? shortName(league, h.futures[0].teamId, h.year) : '-')}</td>
                   <td class="num">{__i18n_display((b.h / b.ab).toFixed(3))}</td>
                   <td class="num">{__i18n_display((obp(b) + slg(b)).toFixed(3))}</td>
                   <td class="num">{__i18n_display(era(h.totals.pit).toFixed(2))}</td>
@@ -271,7 +271,7 @@ function FuturesTable({ league }: { league: LeagueState }) {
             {__i18n_display(h.futures!.map((r) => (
               <tr key={r.teamId}>
                 <td class="num">{__i18n_display(r.rank)}</td>
-                <td>{__i18n_display(shortName(league, r.teamId))}</td>
+                <td>{__i18n_display(shortName(league, r.teamId, h.year))}</td>
                 <td class="num">{__i18n_display(r.w)}</td>
                 <td class="num">{__i18n_display(r.l)}</td>
                 <td class="num">{__i18n_display(r.t)}</td>
