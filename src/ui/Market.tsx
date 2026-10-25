@@ -5,7 +5,7 @@ import type { Action } from '../league/actions';
 import { usdTotal } from '../league/contracts';
 import { usd } from '../league/foreign';
 import { kboLine, poolEntry } from '../league/foreignpool';
-import { deadMoney, projectedPayroll } from '../league/market';
+import { deadMoney, deadMoneyAhead, projectedPayroll } from '../league/market';
 import { eulreul } from '../league/josa';
 import { ageIn, isForeign } from '../league/players';
 import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from '../league/state';
@@ -13,6 +13,7 @@ import { booksOf } from '../league/foreigncap';
 import { previewPlayers } from './preview';
 import { checkTemp, tempEligible, tempMarket, tempPrice, tempsOf, tempWindow } from '../league/tempforeign';
 import {
+  canMakeDevelopment,
   canRelease,
   canReplaceForeign,
   canSignFromPool,
@@ -472,17 +473,30 @@ function Release({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
         )}
       />
       <h3>{__i18n_t("ui.market.release.5cba39f3")}</h3>
-      {__i18n_display((u.deadMoney ?? []).length > 0 && (
-        <p class="muted">{__i18n_t("ui.market.release.6b11fc45", { value: (u.deadMoney ?? []).map((x) => `${x.season} ${x.label} ${money(x.amount)}`).join(' · ') })}</p>
+      {/* 2.0.48: only what is still to pay (the past seasons' was paid in their books). */}
+      {__i18n_display(deadMoneyAhead(league).length > 0 && (
+        <p class="muted">{__i18n_t("ui.market.release.6b11fc45", { value: deadMoneyAhead(league).map((x) => `${x.season} ${x.label} ${money(x.amount)}`).join(' · ') })}</p>
       ))}
       <PickList
         league={league}
         players={ours}
         onPlayer={onPlayer}
         extra={{ title: __i18n_k("ui.market.release.title.cbf383ec"), value: (p) => money(p.contract?.salaries.find((x) => x.season === league.year)?.amount ?? 0), sort: (p) => p.contract?.salaries.find((x) => x.season === league.year)?.amount ?? 0 }}
-        action={(p) => (
-          <button type="button" disabled={!!canRelease(league, p.id)} title={__i18n_displayText(canRelease(league, p.id) ?? '')} onClick={() => release(p)}>{__i18n_t("ui.market.release.e16b5dd5")}</button>
-        )}
+        action={(p) =>
+          // 2.0.48 (the user's request): in the winter, a move to a development contract (육성선수) any time.
+          league.phase === 'offseason' ? (
+            <button
+              type="button"
+              disabled={!!canMakeDevelopment(league, p.id)}
+              title={__i18n_displayText(canMakeDevelopment(league, p.id) ?? __i18n_t("ui.market.text.b031ad15"))}
+              onClick={() => window.confirm(__i18n_t("ui.market.text.0cbf16e5", { name: p.name })) && onAct({ kind: 'toDevelopment', id: p.id })}
+            >
+              {__i18n_t("ui.market.text.f26636b0")}
+            </button>
+          ) : (
+            <button type="button" disabled={!!canRelease(league, p.id)} title={__i18n_displayText(canRelease(league, p.id) ?? '')} onClick={() => release(p)}>{__i18n_t("ui.market.release.e16b5dd5")}</button>
+          )
+        }
       />
     </>
   );

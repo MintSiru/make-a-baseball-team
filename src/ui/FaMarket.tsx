@@ -31,10 +31,11 @@ import {
 } from '../league/fa';
 import { wagwa } from '../league/josa';
 import { ageIn } from '../league/players';
+import { fanAffinity } from '../league/life';
 import type { LeagueState } from '../league/state';
 import { FA } from '../league/tuning';
 import { positionLabel, shortName, statLine } from '../league/views';
-import type { FaPromise, PlayerId } from '../model/types';
+import type { FaPromise, Player, PlayerId } from '../model/types';
 import { salaryCapFor } from '../rules/kbo2026';
 import { money, moneyShort, parseEok, shownLevel } from './format';
 import { gradeClass, shownFuture } from './grades';
@@ -51,6 +52,9 @@ interface Props {
 const eok = (manwon: number) => Math.round(manwon / 1000) / 10;
 const manwon = (x: number) => Math.max(0, Math.round((Number.isFinite(x) ? x : 0) * 100) * 100);
 const lastWar = (league: LeagueState, id: PlayerId) => league.players[id]!.career.filter((c) => !c.level).at(-1)?.war;
+
+/** 2.0.48: a free agent who has yet to do his military service (미필). */
+const unserved = (p: Player) => p.service.military === 'pending';
 
 export function demandText(d: FaDemand) {
   switch (d.kind) {
@@ -239,6 +243,18 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
                           {__i18n_display(p.name)}
                         </button>
                         {__i18n_display(t.from === me && <span class="tag">{__i18n_t("ui.faMarket.faMarket.466570d3")}</span>)}
+                        {/* 2.0.48 (the user's requests): our own free agent's standing with our fans, and anyone still owing his service. */}
+                        {t.from === me && (
+                          <span class="muted small" title={__i18n_t("ui.faMarket.text.b372f393")}>
+                            {' '}
+                            {__i18n_t("ui.faMarket.text.2bc6a8af", { n: fanAffinity(league, p, me) })}
+                          </span>
+                        )}
+                        {unserved(p) && (
+                          <span class="tag unserved" title={__i18n_t("ui.faMarket.text.a3a3e707")}>
+                            {__i18n_t("ui.faMarket.text.90125b88")}
+                          </span>
+                        )}
                         {__i18n_display(m.gift?.id === t.id && <span class="tag">{__i18n_t("ui.faMarket.faMarket.cf76b767")}</span>)}
                       </td>
                       <td>
@@ -414,6 +430,13 @@ function TalkPanel({
           {__i18n_display(p.name)}
         </button>{__i18n_display(' ')}
         <span class="muted small">{__i18n_t("ui.faMarket.talkPanel.66b8b5b2", { positionLabel: positionLabel(p), ageIn: ageIn(p, next), shortName: shortName(league, t.from), value: t.free ? __i18n_k("ui.faMarket.talkPanel.4c0223d3") : __i18n_k("ui.faMarket.talkPanel.3f69daa3", { grade: t.grade }) })}</span>
+        {/* 2.0.48: still owing his service; and ours, how our fans feel about him. */}
+        {unserved(p) && (
+          <span class="tag unserved" title={__i18n_t("ui.faMarket.text.a3a3e707")}>
+            {__i18n_t("ui.faMarket.text.90125b88")}
+          </span>
+        )}
+        {t.from === me && <span class="muted small"> · {__i18n_t("ui.faMarket.text.2bc6a8af", { n: fanAffinity(league, p, me) })}</span>}
       </h3>
       <p class="small">
         <span class={gradeClass(p.scouting.current)}>{__i18n_t("ui.faMarket.talkPanel.24fc8609", { current: p.scouting.current })}</span> · <span class={gradeClass(p.scouting.futureValue)}>{__i18n_t("ui.faMarket.talkPanel.92982abd", { futureValue: p.scouting.futureValue })}</span> ·{__i18n_display(' ')}

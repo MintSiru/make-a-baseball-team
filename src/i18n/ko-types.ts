@@ -9842,5 +9842,19 @@ export const koSource = {
   "league.news.text.5d8f21a3": "유니폼 입고 와 주시는 팬분들 보면 힘이 납니다.",
   "league.news.text.3cba5ac2": "가을에 더 높은 곳에서 인사드리겠습니다.",
   "league.news.text.c2c0d53c": "팀 분위기는 어떤가?",
-  "league.news.text.b1bd11e1": "팬들에게 한마디."
+  "league.news.text.b1bd11e1": "팬들에게 한마디.",
+  "league.trade.text.31cfbc2d": "우리 국내 선수만 육성선수로 돌릴 수 있습니다.",
+  "league.trade.text.390d4207": "육성 전환은 오프시즌에만 할 수 있습니다.",
+  "league.trade.text.11f90bd0": "이미 육성선수입니다.",
+  "league.trade.text.583d078b": "FA·다년 계약으로 보장된 선수는 육성선수로 돌릴 수 없습니다.",
+  "league.trade.text.29ca89fd": "육성선수는 {age}세까지입니다.",
+  "league.trade.text.02990310": "육성선수가 이미 {cap}명입니다.",
+  "league.trade.text.da64f900": "{name}, 육성선수로 전환 ({next}시즌 최저 연봉)",
+  "ui.market.text.b031ad15": "다음 시즌 육성선수(최저 연봉)로 돌립니다. 등록선수 수에서 빠집니다.",
+  "ui.market.text.0cbf16e5": "{name}의 계약을 다음 시즌 육성선수 계약(최저 연봉)으로 바꿀까요?",
+  "ui.market.text.f26636b0": "육성 전환",
+  "ui.faMarket.text.b372f393": "우리 팬들의 호감도 (0~100)",
+  "ui.faMarket.text.2bc6a8af": "팬 호감 {n}",
+  "ui.faMarket.text.a3a3e707": "병역 미필: 영입하면 입대 시기를 챙겨야 합니다",
+  "ui.faMarket.text.90125b88": "미필"
 } as const;

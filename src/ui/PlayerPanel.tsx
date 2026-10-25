@@ -1137,7 +1137,13 @@ function PlayerEditor({ league, id, onAct }: { league: LeagueState; id: string; 
   const [draft, setDraft] = useState<PlayerEdit>(() => editOf(p));
   // Applied (or another player opened): start again from what he has now, the editor staying open.
   const current = JSON.stringify(editOf(p));
-  useEffect(() => setDraft(editOf(p)), [current]);
+  // 2.0.48: only on a change, not when the editor first mounts (a slow first effect undid what was typed before it ran).
+  const seen = useRef(current);
+  useEffect(() => {
+    if (seen.current === current) return;
+    seen.current = current;
+    setDraft(editOf(p));
+  }, [current]);
   const [rel, setRel] = useState<Relation>('brother');
   const [query, setQuery] = useState('');
   const problem = checkPlayerEdit(league, id, draft);
@@ -1336,7 +1342,12 @@ function AbilityEditor({ league, id, onAct }: { league: LeagueState; id: string;
   const p = league.players[id]!;
   const current = JSON.stringify(abilityOf(p));
   const [draft, setDraft] = useState<AbilityEdit>(() => abilityOf(p));
-  useEffect(() => setDraft(abilityOf(p)), [current]);
+  const seen = useRef(current);
+  useEffect(() => {
+    if (seen.current === current) return;
+    seen.current = current;
+    setDraft(abilityOf(p));
+  }, [current]);
   const problem = checkAbilityEdit(league, id, draft);
   const changed = JSON.stringify(draft) !== current;
   const num = (v: string) => (v.trim() === '' ? NaN : Number(v));
