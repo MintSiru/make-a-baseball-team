@@ -47,7 +47,9 @@ describe('who may play in the postseason', () => {
     for (const id of playing) {
       expect(s.rosters[id]!.active.length).toBeLessThanOrEqual(ENTRY.registered);
       expect(s.rosters[id]!.active.length).toBeGreaterThanOrEqual(26);
-      expect(s.rosters[id]!.active.every((p) => !entryProblem(s, id, p))).toBe(true);
+      // 2.0.47: eligible by the series' first game (one back from an injury by then may be in it).
+      const first = series.find((x) => x.high === id || x.low === id)!.date;
+      expect(s.rosters[id]!.active.every((p) => !entryProblem(s, id, p, first))).toBe(true);
     }
     // The best player of a club out of the postseason, moved to one in it now: not eligible.
     const out = s.teams.find((t) => s.rosters[t.id] && !playing.includes(t.id) && t.id !== s.user?.teamId)!.id;

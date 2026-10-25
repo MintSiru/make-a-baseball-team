@@ -280,7 +280,7 @@ export type Decision =
   /** 판타지 드래프트 (1.6.0, fantasy.ts): our turn. */
   | { kind: 'fantasyPick'; overall: number; round: number; rounds: number }
   /** 1.9.0 (postentry.ts): our entry before a postseason series; `late` were registered after the deadline. */
-  | { kind: 'postEntry'; round: SeriesResult['round']; opp: TeamId; candidates: PlayerId[]; late: PlayerId[]; size: number; suggested: PlayerId[] };
+  | { kind: 'postEntry'; round: SeriesResult['round']; opp: TeamId; candidates: PlayerId[]; late: PlayerId[]; size: number; suggested: PlayerId[]; /** 2.0.47: the series' first game, and those back by then (the day). */ from?: string; back?: Record<PlayerId, string> };
 
 // ── The twelfth club (V0.9) ───────────────────────────────────────────────────────────────────────
 

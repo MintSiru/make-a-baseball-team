@@ -322,9 +322,11 @@ describe('논쟁성, arguing the calls, and the rare scandals (2.0.28)', () => {
 
   it('lets most arguments go, throws the hotheads out far more often, and writes up the ejections', async () => {
     const { protestGame } = await import('../src/league/protests');
-    // Our club's arguments (their count is kept on our players' pages), once hot-headed and once calm.
+    // Our club's arguments (their count is kept on our players' pages), once hot-headed and once calm (one league,
+    // copied for each run: making it twice outran the time limit).
+    const base = createLeague('v2028-protest');
     const run = (temper: number) => {
-      const s = createLeague('v2028-protest');
+      const s = structuredClone(base);
       const [a, b] = s.teams.filter((t) => s.rosters[t.id]).map((t) => t.id);
       s.user = { teamId: a! } as never;
       const side = (teamId: string, t: number) => {

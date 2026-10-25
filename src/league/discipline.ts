@@ -7,7 +7,11 @@ import { k as __i18n_k } from '../i18n/index';
 
    He is off the first team until the date (he plays in the futures meanwhile; the KBO's ten days before he can be
    registered again are the shortest stay). A player with a short fuse (논란성, 논쟁성: traits.ts) is likelier to answer
-   back in public: the stay grows, his form and the fans' fondness drop. One who takes it well may come back sharper. */
+   back in public: the stay grows, his form and the fans' fondness drop. One who takes it well may come back sharper.
+
+   2.0.47 (user report: 감독의 문책성 2군행이 너무 잦다): a deeper slump before the manager acts (a hitter's OPS under .400
+   in 40 plate appearances, a starter's ERA 9 in ten innings, a reliever's 11 in five), a smaller chance (0.1, was 0.14),
+   and at most one of a club's players at a look. */
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { addAlert } from './alerts';
@@ -24,9 +28,9 @@ export const DISCIPLINE = {
   days: { slump: 10, scandal: 10, gm: [10, 20] as const, pushback: 10 },
   /** A slump since the last look: a hitter's OPS under this in this many plate appearances; a pitcher's ERA over this
       in this many outs (a starter, a reliever). */
-  slump: { pa: 35, ops: 0.45, sp: { outs: 30, era: 8 }, rp: { outs: 12, era: 9.5 } },
+  slump: { pa: 40, ops: 0.4, sp: { outs: 30, era: 9 }, rp: { outs: 15, era: 11 } },
   /** The chance a slumping player is sent down (a club's best much less), and one in a row. */
-  chance: { slump: 0.14, star: 0.3, scandal: 0.3 },
+  chance: { slump: 0.1, star: 0.3, scandal: 0.3 },
   /** Answering back: base, and per point of 논란성 / 논쟁성 above 50 (below lowers it). */
   pushback: { base: 0.08, controversy: 0.004, temper: 0.006, min: 0.02, max: 0.6 },
   /** Taking it well: the chance he comes back sharper, and by how much (grade points, days). */
@@ -140,6 +144,8 @@ export function disciplineDay(s: LeagueState, date: string) {
   const S = DISCIPLINE.slump;
   const next: Record<PlayerId, number[]> = {};
   for (const team of firstTeamIds(s)) {
+    // 2.0.47: at most one of a club's players at a look.
+    let sent = false;
     for (const id of s.rosters[team]?.active ?? []) {
       const p = s.players[id];
       if (!p) continue;
@@ -153,9 +159,12 @@ export function disciplineDay(s: LeagueState, date: string) {
         const lim = p.role === 'SP' ? S.sp : S.rp;
         slump = outs >= lim.outs && (27 * er) / outs >= lim.era;
       } else slump = pa >= S.pa && ob / Math.max(1, den) + tb / Math.max(1, ab) < S.ops;
-      if (!slump) continue;
+      if (!slump || sent) continue;
       const chance = DISCIPLINE.chance.slump * (p.scouting.current >= DISCIPLINE.star || isForeign(p) ? DISCIPLINE.chance.star : 1);
-      if (r() < chance) sendDown(s, p, 'slump', DISCIPLINE.days.slump, date, r);
+      if (r() < chance) {
+        sendDown(s, p, 'slump', DISCIPLINE.days.slump, date, r);
+        sent = true;
+      }
     }
   }
   s.formMark = { date, lines: next };

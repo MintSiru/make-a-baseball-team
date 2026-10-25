@@ -78,12 +78,15 @@ export function naturalize(s: LeagueState, p: Player, next: number) {
   delete p.origin.nationality;
   p.contract = { teamId, kind: 'multiYear', signedIn: next - 1, signingBonus: 0, salaries: Array.from({ length: deal.years }, (_, i) => ({ season: next + i, amount: deal.annual })) };
   p.service.military = 'exempt';
-  const life = (p.life ??= {});
-  life.fans = Math.min(30, (life.fans ?? 0) + NATURALIZE.fans);
-  (life.events ??= []).push({ date: `${next - 1}-12-10`, text: __i18n_k("league.naturalize.text.8cbd7735", { years: deal.years }), tone: 'good' });
   const club = s.teams.find((t) => t.id === teamId);
   const mine = teamId === s.user?.teamId;
-  addNews(s, {
+  // 2.0.47: his story is kept for our players only (life.ts), and the history before the club writes no news.
+  if (mine) {
+    const life = (p.life ??= {});
+    life.fans = Math.min(30, (life.fans ?? 0) + NATURALIZE.fans);
+    (life.events ??= []).push({ date: `${next - 1}-12-10`, text: __i18n_k("league.naturalize.text.8cbd7735", { years: deal.years }), tone: 'good' });
+  }
+  if (s.user) addNews(s, {
     id: `naturalize-${p.id}`,
     date: `${next - 1}-12-10`,
     kind: 'move',

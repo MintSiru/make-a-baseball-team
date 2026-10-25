@@ -8,13 +8,18 @@ import { k as __i18n_k } from '../i18n/index';
    The user's club hears when its players are named and may ask to keep one at home (RULES.md §11: clubs cannot
    refuse a call-up, but a request citing an injury or his condition is common). An injured player is excused; a
    healthy one only sometimes, and the fans and the player himself remember it, the more so when the event could
-   have spared him military service. */
+   have spared him military service.
+
+   2.0.47 (user report: 미국에 있을 때 올림픽 금메달을 땄는데 군대에 간다): Koreans playing abroad (MLB, NPB, the minors) are
+   called up for the Olympics and the World Baseball Classic too, and a medal spares them their service like anyone
+   (before, only the KBO's players were ever named). The Asian Games, the Premier12 and the APBC take the KBO's
+   players only, as their clubs abroad do not release them. */
 import { startYear } from './era';
 import { rng } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
 import { addAlert } from './alerts';
 import { clubState } from './fans';
-import { CROWD_EFFECT, INTERNATIONAL, announceDate, eventById, eventsIn, exempts, finishText, ODDS, timing, type Finish, type InternationalEvent } from './international';
+import { CROWD_EFFECT, INTERNATIONAL, announceDate, eventById, eventsIn, exempts, finishText, ODDS, timing, type EventKind, type Finish, type InternationalEvent } from './international';
 import { iga } from './josa';
 import { playNationalGames } from './nationalgames';
 import { fullTimeManager } from './board';
@@ -33,10 +38,16 @@ const pending = (p: Player) => p.service.military === 'pending' || p.service.mil
 // ── The squad ────────────────────────────────────────────────────────────────────────────────────
 
 /** Everyone the event could pick: domestic players at a club (soldiers included), within its limits. */
+/** The events that call up players abroad as well (2.0.47). */
+const ABROAD_EVENTS: readonly EventKind[] = ['olympics', 'wbc'];
+
 function eligible(s: LeagueState, e: InternationalEvent, young: boolean): Player[] {
   const L = e.limit;
   return Object.values(s.players).filter((p) => {
-    if ((p.status !== 'active' && p.status !== 'military') || !p.teamId || isForeign(p)) return false;
+    if (isForeign(p)) return false;
+    const home = (p.status === 'active' || p.status === 'military') && !!p.teamId;
+    const abroad = p.status === 'overseas' && ABROAD_EVENTS.includes(e.kind);
+    if (!home && !abroad) return false;
     if (!L) return true;
     return young ? ageAt(p, e.year) <= L.maxAge || e.year - p.proSince < L.maxProYears : ageAt(p, e.year) <= L.wildcardMaxAge;
   });
@@ -44,12 +55,27 @@ function eligible(s: LeagueState, e: InternationalEvent, young: boolean): Player
 
 const byGrade = (a: Player, b: Player) => b.scouting.current - a.scouting.current || a.id.localeCompare(b.id);
 
-/** Adds the best of `pool` to `squad` up to `n`, at most `perClub` from a club. */
-function fill(squad: Player[], pool: Player[], n: number, perClub: number | undefined, skip: Set<PlayerId>) {
-  const from = (teamId: string) => squad.filter((p) => p.teamId === teamId).length;
-  for (const p of [...pool].sort(byGrade)) {
+/** 2.0.47: a squad of `size` is half pitchers (at most) and half hitters (at most 60%), two catchers among them — by
+    grade alone, the players abroad (many of them pitchers) once left an Olympic squad short of nine hitters. */
+const shape = (size: number) => ({ pitchers: Math.round(size / 2), hitters: size - Math.round(size * 0.4), catchers: 2 });
+
+/** Adds the best of `pool` to `squad` up to `n`, at most `perClub` from a club (players abroad count as one club),
+    within the squad's shape for `size`. */
+function fill(squad: Player[], pool: Player[], n: number, perClub: number | undefined, skip: Set<PlayerId>, size: number) {
+  const from = (teamId: string | null) => squad.filter((p) => p.teamId === teamId).length;
+  const S = shape(size);
+  const ok = (p: Player) => !squad.includes(p) && !skip.has(p.id) && !(perClub && from(p.teamId) >= perClub);
+  const sorted = [...pool].sort(byGrade);
+  // The catchers first, then the best within the shape.
+  for (const p of sorted) {
+    if (squad.length >= n || squad.filter((q) => q.position === 'C').length >= S.catchers) break;
+    if (p.position === 'C' && ok(p)) squad.push(p);
+  }
+  for (const p of sorted) {
     if (squad.length >= n) break;
-    if (squad.includes(p) || skip.has(p.id) || (perClub && from(p.teamId!) >= perClub)) continue;
+    if (!ok(p)) continue;
+    const pitchers = squad.filter(isPitcher).length;
+    if (isPitcher(p) ? pitchers >= S.pitchers : squad.length - pitchers >= S.hitters) continue;
     squad.push(p);
   }
 }
@@ -60,8 +86,8 @@ export function selectNationalTeam(s: LeagueState, e: InternationalEvent): Natio
   if (existing) return existing;
   const squad: Player[] = [];
   const L = e.limit;
-  fill(squad, eligible(s, e, true), e.squad - (L?.wildcards ?? 0), e.perClub, new Set());
-  if (L) fill(squad, eligible(s, e, false), e.squad, e.perClub, new Set());
+  fill(squad, eligible(s, e, true), e.squad - (L?.wildcards ?? 0), e.perClub, new Set(), e.squad);
+  if (L) fill(squad, eligible(s, e, false), e.squad, e.perClub, new Set(), e.squad);
   const entry: NationalEntry = { id: e.id, year: e.year, name: e.name, kind: e.kind, medal: false, squad: squad.map((p) => p.id) };
   s.international.push(entry);
   return entry;
@@ -72,8 +98,8 @@ function replace(s: LeagueState, e: InternationalEvent, entry: NationalEntry, id
   entry.squad = entry.squad.filter((x) => x !== id);
   const squad = entry.squad.map((x) => s.players[x]!).filter(Boolean);
   const skip = new Set([...(entry.excused ?? []), id]);
-  fill(squad, eligible(s, e, true), squad.length + 1, e.perClub, skip);
-  if (e.limit && squad.length <= entry.squad.length) fill(squad, eligible(s, e, false), squad.length + 1, e.perClub, skip);
+  fill(squad, eligible(s, e, true), squad.length + 1, e.perClub, skip, e.squad);
+  if (e.limit && squad.length <= entry.squad.length) fill(squad, eligible(s, e, false), squad.length + 1, e.perClub, skip, e.squad);
   entry.squad = squad.map((p) => p.id);
 }
 
