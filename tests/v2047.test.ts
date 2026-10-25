@@ -145,3 +145,41 @@ describe('interviews say more things (2.0.47)', () => {
     expect(new Set(mine).size).toBeGreaterThan(8);
   });
 });
+
+describe('players abroad play for the national team (2.0.47)', () => {
+  it('a star abroad is named for the Olympics (not the Asian Games) and a medal spares him his service', async () => {
+    const { selectNationalTeam, finishEvent } = await import('../src/league/national');
+    const { INTERNATIONAL } = await import('../src/league/international');
+    const base = loadSave('2.0.46');
+    const olympics = INTERNATIONAL.find((e) => e.kind === 'olympics' && e.year > base.year)!;
+    const asian = INTERNATIONAL.find((e) => e.kind === 'asianGames' && e.year > base.year)!;
+    // Our best unserved hitter goes to America (posted), the way the user's player did.
+    const star = best(base, base.user!.teamId).find((p) => !isPitcher(p) && p.service.military === 'pending')!;
+    const abroad = (s: LeagueState) => {
+      const p = s.players[star.id]!;
+      for (const k of ['active', 'futures', 'third'] as const) s.rosters[p.teamId!]![k] = s.rosters[p.teamId!]![k].filter((x) => x !== p.id);
+      p.teamId = null;
+      p.status = 'overseas';
+      p.scouting.current = 80;
+      return p;
+    };
+    const s0 = structuredClone(base);
+    abroad(s0);
+    expect(selectNationalTeam(s0, olympics).squad).toContain(star.id);
+    expect(selectNationalTeam(s0, asian).squad).not.toContain(star.id);
+    // A medal (some seed gives one): he is exempt, abroad as he is.
+    let medal = false;
+    for (let i = 0; i < 40 && !medal; i++) {
+      const s = structuredClone(base);
+      s.seed = `v2047-olympics-${i}`;
+      const p = abroad(s);
+      const entry = finishEvent(s, olympics);
+      if (!entry.medal) continue;
+      medal = true;
+      expect(entry.squad).toContain(p.id);
+      expect(p.service.military).toBe('exempt');
+      expect(p.status).toBe('overseas');
+    }
+    expect(medal).toBe(true);
+  });
+});

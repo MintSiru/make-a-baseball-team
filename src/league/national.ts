@@ -8,13 +8,18 @@ import { k as __i18n_k } from '../i18n/index';
    The user's club hears when its players are named and may ask to keep one at home (RULES.md §11: clubs cannot
    refuse a call-up, but a request citing an injury or his condition is common). An injured player is excused; a
    healthy one only sometimes, and the fans and the player himself remember it, the more so when the event could
-   have spared him military service. */
+   have spared him military service.
+
+   2.0.47 (user report: 미국에 있을 때 올림픽 금메달을 땄는데 군대에 간다): Koreans playing abroad (MLB, NPB, the minors) are
+   called up for the Olympics and the World Baseball Classic too, and a medal spares them their service like anyone
+   (before, only the KBO's players were ever named). The Asian Games, the Premier12 and the APBC take the KBO's
+   players only, as their clubs abroad do not release them. */
 import { startYear } from './era';
 import { rng } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
 import { addAlert } from './alerts';
 import { clubState } from './fans';
-import { CROWD_EFFECT, INTERNATIONAL, announceDate, eventById, eventsIn, exempts, finishText, ODDS, timing, type Finish, type InternationalEvent } from './international';
+import { CROWD_EFFECT, INTERNATIONAL, announceDate, eventById, eventsIn, exempts, finishText, ODDS, timing, type EventKind, type Finish, type InternationalEvent } from './international';
 import { iga } from './josa';
 import { playNationalGames } from './nationalgames';
 import { fullTimeManager } from './board';
@@ -33,10 +38,16 @@ const pending = (p: Player) => p.service.military === 'pending' || p.service.mil
 // ── The squad ────────────────────────────────────────────────────────────────────────────────────
 
 /** Everyone the event could pick: domestic players at a club (soldiers included), within its limits. */
+/** The events that call up players abroad as well (2.0.47). */
+const ABROAD_EVENTS: readonly EventKind[] = ['olympics', 'wbc'];
+
 function eligible(s: LeagueState, e: InternationalEvent, young: boolean): Player[] {
   const L = e.limit;
   return Object.values(s.players).filter((p) => {
-    if ((p.status !== 'active' && p.status !== 'military') || !p.teamId || isForeign(p)) return false;
+    if (isForeign(p)) return false;
+    const home = (p.status === 'active' || p.status === 'military') && !!p.teamId;
+    const abroad = p.status === 'overseas' && ABROAD_EVENTS.includes(e.kind);
+    if (!home && !abroad) return false;
     if (!L) return true;
     return young ? ageAt(p, e.year) <= L.maxAge || e.year - p.proSince < L.maxProYears : ageAt(p, e.year) <= L.wildcardMaxAge;
   });
