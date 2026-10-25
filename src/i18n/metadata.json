@@ -89395,5 +89395,112 @@
     "line": 388,
     "params": {},
     "locations": []
+  },
+  "league.trade.text.31cfbc2d": {
+    "source": "src/league/trade.ts",
+    "line": 371,
+    "params": {},
+    "locations": []
+  },
+  "league.trade.text.390d4207": {
+    "source": "src/league/trade.ts",
+    "line": 372,
+    "params": {},
+    "locations": []
+  },
+  "league.trade.text.11f90bd0": {
+    "source": "src/league/trade.ts",
+    "line": 373,
+    "params": {},
+    "locations": []
+  },
+  "league.trade.text.583d078b": {
+    "source": "src/league/trade.ts",
+    "line": 374,
+    "params": {},
+    "locations": []
+  },
+  "league.trade.text.29ca89fd": {
+    "source": "src/league/trade.ts",
+    "line": 376,
+    "params": {
+      "age": {
+        "expression": "OFFSEASON.development.maxAge"
+      }
+    },
+    "locations": []
+  },
+  "league.trade.text.02990310": {
+    "source": "src/league/trade.ts",
+    "line": 377,
+    "params": {
+      "cap": {
+        "expression": "OFFSEASON.development.cap"
+      }
+    },
+    "locations": []
+  },
+  "league.trade.text.da64f900": {
+    "source": "src/league/trade.ts",
+    "line": 395,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "next": {
+        "expression": "next"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.b031ad15": {
+    "source": "src/ui/Market.tsx",
+    "line": 491,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.0cbf16e5": {
+    "source": "src/ui/Market.tsx",
+    "line": 492,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.f26636b0": {
+    "source": "src/ui/Market.tsx",
+    "line": 494,
+    "params": {},
+    "locations": []
+  },
+  "ui.faMarket.text.b372f393": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 248,
+    "params": {},
+    "locations": []
+  },
+  "ui.faMarket.text.2bc6a8af": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 250,
+    "params": {
+      "n": {
+        "expression": "fanAffinity(league, p, me)"
+      }
+    },
+    "locations": []
+  },
+  "ui.faMarket.text.a3a3e707": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 254,
+    "params": {},
+    "locations": []
+  },
+  "ui.faMarket.text.90125b88": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 255,
+    "params": {},
+    "locations": []
   }
 }

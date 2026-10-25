@@ -30,3 +30,42 @@ describe('released players’ money (2.0.48)', () => {
     expect(deadMoneyAhead(s).map((x) => x.id)).toEqual(['next']);
   });
 });
+
+describe('a move to a development contract in the winter (2.0.48)', () => {
+  it('any time in the offseason, under the roster limit too, within the rules', async () => {
+    const { apply } = await import('../src/league/actions');
+    const { canMakeDevelopment } = await import('../src/league/trade');
+    const { ageIn, isForeign } = await import('../src/league/players');
+    const { developmentIds, registeredIds } = await import('../src/league/state');
+    const { OFFSEASON } = await import('../src/league/tuning');
+    const s = loadSave('2.0.46');
+    const team = s.user!.teamId;
+    const next = s.year + 1;
+    const young = registeredIds(s, team)
+      .map((id) => s.players[id]!)
+      .find((p) => !isForeign(p) && p.status === 'active' && ageIn(p, next) <= OFFSEASON.development.maxAge && (p.contract?.kind === 'rookie' || p.contract?.kind === 'standard'))!;
+    // In the season: not yet.
+    expect(canMakeDevelopment(s, young.id)).toContain('오프시즌');
+    // The winter (well under the limit of 68).
+    s.phase = 'offseason';
+    s.offseason = { year: s.year, step: 0 } as never;
+    s.pending = null;
+    expect(registeredIds(s, team).length).toBeLessThan(68);
+    expect(canMakeDevelopment(s, young.id)).toBeNull();
+    const before = developmentIds(s, team).length;
+    apply(s, { kind: 'toDevelopment', id: young.id });
+    expect(s.players[young.id]!.contract?.kind).toBe('development');
+    expect(s.players[young.id]!.contract?.salaries[0]!.season).toBe(next);
+    expect(developmentIds(s, team).length).toBe(before + 1);
+    expect(registeredIds(s, team)).not.toContain(young.id);
+    expect(canMakeDevelopment(s, young.id)).toContain('이미');
+    // Not a player too old, a foreign player, or one with guaranteed years.
+    const old = registeredIds(s, team).map((id) => s.players[id]!).find((p) => !isForeign(p) && ageIn(p, next) > OFFSEASON.development.maxAge && (p.contract?.kind === 'rookie' || p.contract?.kind === 'standard'));
+    if (old) expect(canMakeDevelopment(s, old.id)).toContain('세까지');
+    const foreign = registeredIds(s, team).map((id) => s.players[id]!).find(isForeign)!;
+    expect(canMakeDevelopment(s, foreign.id)).toContain('국내');
+    const other = registeredIds(s, team).map((id) => s.players[id]!).find((p) => !isForeign(p) && p.id !== young.id && ageIn(p, next) <= OFFSEASON.development.maxAge)!;
+    other.contract = { ...other.contract!, kind: 'fa' } as never;
+    expect(canMakeDevelopment(s, other.id)).toContain('FA');
+  });
+});

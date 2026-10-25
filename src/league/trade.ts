@@ -13,13 +13,13 @@ import { foreignContract, renewSalary, salaryIn } from './contracts';
 import { today } from './entry';
 import { splitContract } from './foreign';
 import { movePlayer } from './market';
-import { faSeasonsFor, leaveLeague, removeFromRoster, rosterLimit } from './offseason';
+import { developmentContract, faSeasonsFor, leaveLeague, removeFromRoster, rosterLimit } from './offseason';
 import { ageIn, currentValue, isForeign, isPitcher, keepValue, makeForeign, veteranOnMarket } from './players';
 import { currentStandings } from './season';
-import { firstTeamIds, orgPlayers, registeredIds, type DraftSlot, type LeagueState, type TradeExtras } from './state';
+import { developmentIds, firstTeamIds, orgPlayers, registeredIds, type DraftSlot, type LeagueState, type TradeExtras } from './state';
 import { crossing } from './rivalry';
 import { farewell } from './life';
-import { TRADES, DIFFICULTY } from './tuning';
+import { OFFSEASON, TRADES, DIFFICULTY } from './tuning';
 import { moveNews } from './movenews';
 import { cashFactor, clubStrategy, pickFactor, planFactor, planGuard, planReasons, spotOf } from './strategy';
 import { capRoom, chargeForeign, slotForeigners } from './foreigncap';
@@ -359,6 +359,40 @@ export function canRelease(s: LeagueState, id: PlayerId): string | null {
   if (s.pending || s.phase === 'offseason') return __i18n_k("league.trade.canRelease.d220cb44");
   if (s.phase === 'regular' && s.rosters[u.teamId]!.active.includes(id) && s.rosters[u.teamId]!.active.length <= 26) return __i18n_k("league.trade.canRelease.ca05e46e");
   return null;
+}
+
+/** 2.0.48 (the user's request: 68명이 넘지 않아도 육성 전환): why one of our registered players cannot be moved to a
+    development contract (육성선수) for next season now, or null. It is a winter matter (방출 뒤 육성 재계약), any time
+    in the offseason, for a domestic player on a rookie or ordinary contract (not one with guaranteed years: a free
+    agent's or a multi-year deal), young enough (27 or under next season), while the club is under the cap of 30. */
+export function canMakeDevelopment(s: LeagueState, id: PlayerId): string | null {
+  const u = s.user;
+  const p = s.players[id];
+  if (!u || !p || p.teamId !== u.teamId || p.status !== 'active' || isForeign(p)) return __i18n_k("league.trade.text.31cfbc2d");
+  if (s.phase !== 'offseason' || !s.offseason) return __i18n_k("league.trade.text.390d4207");
+  if (p.contract?.kind === 'development') return __i18n_k("league.trade.text.11f90bd0");
+  if (p.contract && p.contract.kind !== 'rookie' && p.contract.kind !== 'standard') return __i18n_k("league.trade.text.583d078b");
+  const next = s.offseason.year + 1;
+  if (ageIn(p, next) > OFFSEASON.development.maxAge) return __i18n_k("league.trade.text.29ca89fd", { age: OFFSEASON.development.maxAge });
+  if (developmentIds(s, u.teamId).length >= OFFSEASON.development.cap) return __i18n_k("league.trade.text.02990310", { cap: OFFSEASON.development.cap });
+  return null;
+}
+
+/** He signs a development contract for next season at the minimum salary; he stays with the club off the register. */
+export function makeDevelopment(s: LeagueState, id: PlayerId) {
+  const problem = canMakeDevelopment(s, id);
+  if (problem) throw new Error(problem);
+  const u = s.user!;
+  const p = s.players[id]!;
+  const next = s.offseason!.year + 1;
+  p.contract = developmentContract(u.teamId, next);
+  // Off the first team: he works with the futures.
+  const r = s.rosters[u.teamId]!;
+  if (r.active.includes(id)) {
+    r.active = r.active.filter((x) => x !== id);
+    if (!r.futures.includes(id)) r.futures.push(id);
+  }
+  (u.log ??= []).push({ year: s.offseason!.year, text: __i18n_k("league.trade.text.da64f900", { name: p.name, next }) });
 }
 
 /** Releases a user's player: during the season he goes on waivers for seven days; after it he is free at once. */

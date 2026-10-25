@@ -3795,3 +3795,9 @@ button.danger {
 .clear-mark { font-size: 0.95em; }
 .medal-list { list-style: none; padding-left: 0; margin: 0.3rem 0; }
 .medal-list li { margin: 0.1rem 0; }
+
+/* 2.0.48: a free agent who still owes his military service. */
+.tag.unserved {
+  border-color: var(--bad);
+  color: var(--bad);
+}

@@ -13,6 +13,7 @@ import { booksOf } from '../league/foreigncap';
 import { previewPlayers } from './preview';
 import { checkTemp, tempEligible, tempMarket, tempPrice, tempsOf, tempWindow } from '../league/tempforeign';
 import {
+  canMakeDevelopment,
   canRelease,
   canReplaceForeign,
   canSignFromPool,
@@ -481,9 +482,21 @@ function Release({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
         players={ours}
         onPlayer={onPlayer}
         extra={{ title: __i18n_k("ui.market.release.title.cbf383ec"), value: (p) => money(p.contract?.salaries.find((x) => x.season === league.year)?.amount ?? 0), sort: (p) => p.contract?.salaries.find((x) => x.season === league.year)?.amount ?? 0 }}
-        action={(p) => (
-          <button type="button" disabled={!!canRelease(league, p.id)} title={__i18n_displayText(canRelease(league, p.id) ?? '')} onClick={() => release(p)}>{__i18n_t("ui.market.release.e16b5dd5")}</button>
-        )}
+        action={(p) =>
+          // 2.0.48 (the user's request): in the winter, a move to a development contract (육성선수) any time.
+          league.phase === 'offseason' ? (
+            <button
+              type="button"
+              disabled={!!canMakeDevelopment(league, p.id)}
+              title={__i18n_displayText(canMakeDevelopment(league, p.id) ?? __i18n_t("ui.market.text.b031ad15"))}
+              onClick={() => window.confirm(__i18n_t("ui.market.text.0cbf16e5", { name: p.name })) && onAct({ kind: 'toDevelopment', id: p.id })}
+            >
+              {__i18n_t("ui.market.text.f26636b0")}
+            </button>
+          ) : (
+            <button type="button" disabled={!!canRelease(league, p.id)} title={__i18n_displayText(canRelease(league, p.id) ?? '')} onClick={() => release(p)}>{__i18n_t("ui.market.release.e16b5dd5")}</button>
+          )
+        }
       />
     </>
   );

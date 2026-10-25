@@ -9841,5 +9841,19 @@
   "league.news.text.5d8f21a3": "ユニフォームを着て来てくれるファンを見ると力が湧きます。",
   "league.news.text.3cba5ac2": "秋にはもっと高いところでご挨拶します。",
   "league.news.text.c2c0d53c": "チームの雰囲気はどう？",
-  "league.news.text.b1bd11e1": "ファンに一言。"
+  "league.news.text.b1bd11e1": "ファンに一言。",
+  "league.trade.text.31cfbc2d": "育成選手にできるのは自球団の国内選手だけです。",
+  "league.trade.text.390d4207": "育成契約への切り替えはオフシーズンにしかできません。",
+  "league.trade.text.11f90bd0": "すでに育成選手です。",
+  "league.trade.text.583d078b": "FA・複数年契約で保証された選手は育成選手にできません。",
+  "league.trade.text.29ca89fd": "育成選手は{age}歳までです。",
+  "league.trade.text.02990310": "育成選手がすでに{cap}人います。",
+  "league.trade.text.da64f900": "{name}、育成選手に切り替え({next}シーズン最低年俸)",
+  "ui.market.text.b031ad15": "来季の育成選手(最低年俸)に切り替えます。登録選手の人数から外れます。",
+  "ui.market.text.0cbf16e5": "{name}の契約を来季の育成契約(最低年俸)に変更しますか？",
+  "ui.market.text.f26636b0": "育成に切り替え",
+  "ui.faMarket.text.b372f393": "自球団ファンの好感度(0〜100)",
+  "ui.faMarket.text.2bc6a8af": "ファン好感度 {n}",
+  "ui.faMarket.text.a3a3e707": "兵役未了: 獲得したら入隊時期に注意が必要です",
+  "ui.faMarket.text.90125b88": "兵役未了"
 }

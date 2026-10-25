@@ -9841,5 +9841,19 @@
   "league.news.text.5d8f21a3": "Seeing fans come in our jerseys gives me strength.",
   "league.news.text.3cba5ac2": "We'll greet you from somewhere higher this fall.",
   "league.news.text.c2c0d53c": "How's the mood in the clubhouse?",
-  "league.news.text.b1bd11e1": "A word for the fans."
+  "league.news.text.b1bd11e1": "A word for the fans.",
+  "league.trade.text.31cfbc2d": "Only our own domestic players can be moved to a development contract.",
+  "league.trade.text.390d4207": "Moving a player to a development contract is only possible in the offseason.",
+  "league.trade.text.11f90bd0": "He is already a development player.",
+  "league.trade.text.583d078b": "A player with guaranteed years (a free agent's or a multi-year deal) cannot be moved to a development contract.",
+  "league.trade.text.29ca89fd": "Development players must be {age} or younger.",
+  "league.trade.text.02990310": "The club already has {cap} development players.",
+  "league.trade.text.da64f900": "{name} moved to a development contract (minimum salary for {next})",
+  "ui.market.text.b031ad15": "Moves him to a development contract (minimum salary) for next season. He no longer counts toward the registered roster.",
+  "ui.market.text.0cbf16e5": "Change {name}'s contract to a development contract (minimum salary) for next season?",
+  "ui.market.text.f26636b0": "To development",
+  "ui.faMarket.text.b372f393": "How our fans feel about him (0–100)",
+  "ui.faMarket.text.2bc6a8af": "Fans {n}",
+  "ui.faMarket.text.a3a3e707": "Military service not yet done: if you sign him, plan for when he enlists",
+  "ui.faMarket.text.90125b88": "Unserved"
 }
