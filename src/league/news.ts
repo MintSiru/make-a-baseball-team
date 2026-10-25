@@ -9,7 +9,8 @@ import type { StoredBox } from './boxscore';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { eulreul, eunneun, iga, wagwa } from './josa';
 import { ageIn, isPitcher } from './players';
-import type { LeagueState } from './state';
+import { firstTeamIds, type LeagueState } from './state';
+import { standings } from './standings';
 import type { PlayEvent } from './engine/types';
 import { gameDetail, monthDetail, seasonDetail } from './gamedetail';
 import { isRivalry, madePostseason, seasonSeries } from './twelve';
@@ -61,22 +62,23 @@ export function addNews(s: LeagueState, item: Omit<NewsItem, 'id'> & { id?: stri
 
 /** What a player says after a big day, by personality (Draft Room's eight). */
 const PLAYER_VOICE: Record<string, string[]> = {
-  '차분한 노력파': [__i18n_k("league.news.pLAYER_VOICE.6f28190f"), __i18n_k("league.news.pLAYER_VOICE.43437f4c")],
-  '승부욕 강한 도전자': [__i18n_k("league.news.pLAYER_VOICE.a37e3e6e"), __i18n_k("league.news.pLAYER_VOICE.a8d952e7")],
-  '밝은 분위기 메이커': [__i18n_k("league.news.pLAYER_VOICE.7bbd73e1"), __i18n_k("league.news.pLAYER_VOICE.71596a58")],
-  '분석을 즐기는 연구형': [__i18n_k("league.news.pLAYER_VOICE.56278469"), __i18n_k("league.news.pLAYER_VOICE.8f657060")],
-  '책임감 강한 리더': [__i18n_k("league.news.pLAYER_VOICE.66ebf08e"), __i18n_k("league.news.pLAYER_VOICE.48501724")],
-  '말보다 행동하는 실천형': [__i18n_k("league.news.pLAYER_VOICE.67c03433"), __i18n_k("league.news.pLAYER_VOICE.fd9b828c")],
-  '꾸준함을 믿는 성실형': [__i18n_k("league.news.pLAYER_VOICE.939ec82c"), __i18n_k("league.news.pLAYER_VOICE.3588afff")],
-  '큰 무대를 즐기는 대담형': [__i18n_k("league.news.pLAYER_VOICE.26c3db30"), __i18n_k("league.news.pLAYER_VOICE.4ac1ef38")],
+  // 2.0.47 (the user's request: 인터뷰 다양성): more ways to say it.
+  '차분한 노력파': [__i18n_k("league.news.pLAYER_VOICE.6f28190f"), __i18n_k("league.news.pLAYER_VOICE.43437f4c"), __i18n_k("league.news.text.7d869c5e"), __i18n_k("league.news.text.9baf0cd4")],
+  '승부욕 강한 도전자': [__i18n_k("league.news.pLAYER_VOICE.a37e3e6e"), __i18n_k("league.news.pLAYER_VOICE.a8d952e7"), __i18n_k("league.news.text.6c080e12"), __i18n_k("league.news.text.64e1d989")],
+  '밝은 분위기 메이커': [__i18n_k("league.news.pLAYER_VOICE.7bbd73e1"), __i18n_k("league.news.pLAYER_VOICE.71596a58"), __i18n_k("league.news.text.01187bf8"), __i18n_k("league.news.text.5dabf556")],
+  '분석을 즐기는 연구형': [__i18n_k("league.news.pLAYER_VOICE.56278469"), __i18n_k("league.news.pLAYER_VOICE.8f657060"), __i18n_k("league.news.text.74907486"), __i18n_k("league.news.text.8f82fb79")],
+  '책임감 강한 리더': [__i18n_k("league.news.pLAYER_VOICE.66ebf08e"), __i18n_k("league.news.pLAYER_VOICE.48501724"), __i18n_k("league.news.text.0793fe24"), __i18n_k("league.news.text.468da582")],
+  '말보다 행동하는 실천형': [__i18n_k("league.news.pLAYER_VOICE.67c03433"), __i18n_k("league.news.pLAYER_VOICE.fd9b828c"), __i18n_k("league.news.text.0a9472bd"), __i18n_k("league.news.text.0ae6f5ea")],
+  '꾸준함을 믿는 성실형': [__i18n_k("league.news.pLAYER_VOICE.939ec82c"), __i18n_k("league.news.pLAYER_VOICE.3588afff"), __i18n_k("league.news.text.c7107127"), __i18n_k("league.news.text.1380353d")],
+  '큰 무대를 즐기는 대담형': [__i18n_k("league.news.pLAYER_VOICE.26c3db30"), __i18n_k("league.news.pLAYER_VOICE.4ac1ef38"), __i18n_k("league.news.text.bee3b86c"), __i18n_k("league.news.text.2cb79723")],
 };
-const PLAYER_DEFAULT = [__i18n_k("league.news.pLAYER_DEFAULT.088e0249"), __i18n_k("league.news.pLAYER_DEFAULT.d58cd953")];
+const PLAYER_DEFAULT = [__i18n_k("league.news.pLAYER_DEFAULT.088e0249"), __i18n_k("league.news.pLAYER_DEFAULT.d58cd953"), __i18n_k("league.news.text.6d1233ec"), __i18n_k("league.news.text.830638fb")];
 
 /** 2.0.47 (user report: 19살 신인이 「후배들이 버텨 줘서」): the leader's voice speaks of juniors and of being a 고참; a
     young player (25 or under) speaks of his seniors instead. */
 export const JUNIOR_AGE = 25;
 export const isJunior = (p: Player, year: number) => ageIn(p, year) <= JUNIOR_AGE;
-const YOUNG_LEADER = [__i18n_k("league.news.text.a6af2cbd"), __i18n_k("league.news.text.2db708b3")];
+const YOUNG_LEADER = [__i18n_k("league.news.text.a6af2cbd"), __i18n_k("league.news.text.2db708b3"), __i18n_k("league.news.text.13a22620")];
 /** His voice after a big day: his personality's, a young leader's his own. */
 export const playerVoice = (p: Player, year: number) => (p.personality === '책임감 강한 리더' && isJunior(p, year) ? YOUNG_LEADER : (PLAYER_VOICE[p.personality] ?? PLAYER_DEFAULT));
 
@@ -342,14 +344,48 @@ export function interviewNews(s: LeagueState, id: PlayerId, date: string) {
   const line = s.lines[id];
   const key = `iv-${id}-${date}`;
   const good = line?.bat ? line.bat.pa > 30 && (line.bat.h + line.bat.bb) / Math.max(1, line.bat.pa) > 0.34 : line?.pit ? line.pit.outs > 30 && (27 * line.pit.er) / line.pit.outs < 4 : false;
-  const q1 = good ? __i18n_k("league.news.interviewNews.q1.f481ec23") : __i18n_k("league.news.interviewNews.q1.10793648");
-  const a1 = good ? pick(playerVoice(p, s.year), key) : pick([__i18n_k("league.news.interviewNews.a1.66bfcd95"), __i18n_k("league.news.interviewNews.a1.b3a23a87"), __i18n_k("league.news.interviewNews.a1.52c16524")], key);
+  // 2.0.47 (the user's request: 인터뷰 다양성): more ways to ask and answer, and a word on the club's mood by where it stands.
+  const q1 = good
+    ? pick([__i18n_k("league.news.interviewNews.q1.f481ec23"), __i18n_k("league.news.text.d5acbf36"), __i18n_k("league.news.text.727b961f")], `${key}-q1`)
+    : pick([__i18n_k("league.news.interviewNews.q1.10793648"), __i18n_k("league.news.text.3eabeba0"), __i18n_k("league.news.text.8ca44223")], `${key}-q1`);
+  const a1 = good
+    ? pick(playerVoice(p, s.year), key)
+    : pick(
+        [
+          __i18n_k("league.news.interviewNews.a1.66bfcd95"),
+          __i18n_k("league.news.interviewNews.a1.b3a23a87"),
+          __i18n_k("league.news.interviewNews.a1.52c16524"),
+          __i18n_k("league.news.text.88eaaa98"),
+          __i18n_k("league.news.text.5f13e606"),
+          __i18n_k("league.news.text.50fdc0f2"),
+        ],
+        key,
+      );
+  const teams = firstTeamIds(s);
+  const rank = p.teamId ? standings(teams, s.scores).findIndex((r) => r.teamId === p.teamId) + 1 : 0;
+  const mood =
+    rank && rank <= 3
+      ? [__i18n_k("league.news.text.7a33d354"), __i18n_k("league.news.text.7f9f7531")]
+      : rank && rank > teams.length - 3
+        ? [__i18n_k("league.news.text.07e25f7b"), __i18n_k("league.news.text.6617153e")]
+        : [__i18n_k("league.news.text.54475007"), __i18n_k("league.news.text.6d7d8b45")];
+  const fans = pick(
+    [
+      __i18n_k("league.news.interviewNews.body.1be6ebe9"),
+      __i18n_k("league.news.interviewNews.body.c32b651a"),
+      __i18n_k("league.news.interviewNews.body.528c32ea"),
+      __i18n_k("league.news.text.072085d1"),
+      __i18n_k("league.news.text.5d8f21a3"),
+      __i18n_k("league.news.text.3cba5ac2"),
+    ],
+    `${key}-2`,
+  );
   addNews(s, {
     id: key,
     date,
     kind: 'interview',
     title: __i18n_k("league.news.interviewNews.title.3fc9d6c5", { name: p.name }),
-    body: __i18n_k("league.news.interviewNews.body.6a739d6c", { q1: q1, a1: a1, pick: pick([__i18n_k("league.news.interviewNews.body.1be6ebe9"), __i18n_k("league.news.interviewNews.body.c32b651a"), __i18n_k("league.news.interviewNews.body.528c32ea")], `${key}-2`) }),
+    body: `— ${q1}\n${a1}\n— ${__i18n_k("league.news.text.c2c0d53c")}\n${pick(mood, `${key}-m`)}\n— ${__i18n_k("league.news.text.b1bd11e1")}\n${fans}`,
     quotes: [],
     facts: { player: p.name, personality: p.personality, ...(line?.bat ? { pa: line.bat.pa, h: line.bat.h, hr: line.bat.hr } : {}), ...(line?.pit ? { outs: line.pit.outs, er: line.pit.er, k: line.pit.k } : {}) },
     detail: interviewDetail(s, p, date),

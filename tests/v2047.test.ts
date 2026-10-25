@@ -114,3 +114,34 @@ describe('a young player talks like one (2.0.47)', () => {
     expect(playerVoice(old, s.year).join(' ')).toContain('후배');
   });
 });
+
+describe('interviews say more things (2.0.47)', () => {
+  it('a hero interview varies its questions and answers, and a GM interview speaks of the club', async () => {
+    const { heroInterview } = await import('../src/league/interviews');
+    const { interviewNews } = await import('../src/league/news');
+    const s = loadSave('2.0.46');
+    const team = s.user!.teamId;
+    const pitcher = best(s, team).find((p) => isPitcher(p))!;
+    const hitter = best(s, team).find((p) => !isPitcher(p))!;
+    const date = s.schedule[s.next]!.date;
+    const bodies = new Set<string>(),
+      firsts = new Set<string>();
+    let fourth = 0;
+    for (let i = 0; i < 120; i++) {
+      const p = i % 2 ? pitcher : hitter;
+      const n = heroInterview(s, p.id, date, i % 2 ? { kind: 'noHit' } : { kind: 'milestone', label: '100홈런' }, `t-${i}`)!;
+      bodies.add(n.body);
+      firsts.add(n.body.split('\n')[1]!);
+      if (n.body.split('\n').length > 6) fourth++;
+    }
+    expect(bodies.size).toBeGreaterThan(100);
+    expect(firsts.size).toBeGreaterThanOrEqual(10);
+    expect(fourth).toBeGreaterThan(10);
+    // The GM's interview: three questions, the club's mood among them.
+    for (let d = 0; d < 12; d++) interviewNews(s, hitter.id, addDays(date, d));
+    const mine = s.news.filter((x) => x.id.startsWith(`iv-${hitter.id}-`)).map((x) => x.body);
+    expect(mine.length).toBe(12);
+    expect(mine.every((b) => b.includes('팀 분위기는 어떤가?'))).toBe(true);
+    expect(new Set(mine).size).toBeGreaterThan(8);
+  });
+});
