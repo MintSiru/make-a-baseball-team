@@ -139,7 +139,7 @@ describe('interviews say more things (2.0.47)', () => {
     expect(fourth).toBeGreaterThan(10);
     // The GM's interview: three questions, the club's mood among them.
     for (let d = 0; d < 12; d++) interviewNews(s, hitter.id, addDays(date, d));
-    const mine = s.news.filter((x) => x.id.startsWith(`iv-${hitter.id}-`)).map((x) => x.body);
+    const mine = (s.news ?? []).filter((x) => x.id.startsWith(`iv-${hitter.id}-`)).map((x) => x.body);
     expect(mine.length).toBe(12);
     expect(mine.every((b) => b.includes('팀 분위기는 어떤가?'))).toBe(true);
     expect(new Set(mine).size).toBeGreaterThan(8);
