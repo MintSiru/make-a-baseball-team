@@ -37,7 +37,7 @@ export interface PostRow {
 
 /** His postseason lines, oldest first, this postseason's (still being played or not yet filed) last. */
 export function postRows(s: LeagueState, p: Player): PostRow[] {
-  const rows: PostRow[] = (p.post ?? []).map((r) => ({ year: r.year, team: shortName(s, r.teamId), result: postResult(s, r.year, r.teamId), bat: r.bat, pit: r.pit, current: false }));
+  const rows: PostRow[] = (p.post ?? []).map((r) => ({ year: r.year, team: shortName(s, r.teamId, r.year), result: postResult(s, r.year, r.teamId), bat: r.bat, pit: r.pit, current: false }));
   const now = s.postLines?.[p.id];
   if (now && (now.bat || now.pit)) rows.push({ year: s.year, team: shortName(s, now.teamId), result: postResult(s, s.year, now.teamId), bat: now.bat, pit: now.pit, current: true });
   return rows;

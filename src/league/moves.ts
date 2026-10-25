@@ -10,6 +10,7 @@ import { today } from './entry';
 import type { Move } from './movenews';
 import type { LeagueState } from './state';
 import { SANGMU } from './futures';
+import { clubNameIn } from './clubnames';
 
 export type MoveKind =
   | 'draft'
@@ -77,7 +78,9 @@ export const MOVE_LABELS: Record<MoveKind, string> = {
 const KEEP = 40;
 const dateOf = (s: LeagueState) => (s.phase === 'regular' ? today(s) : `${s.year}-11-01`);
 // 2.0.43 (user report: 「sangmu」): 상무 by its name, as everywhere else (views.ts shortName).
-const short = (s: LeagueState, id: TeamId | null) => (id === SANGMU ? __i18n_k("league.views.shortName.d2a2ca0f") : id ? (s.teams.find((t) => t.id === id)?.short ?? id) : '');
+// 2.0.49: a club by the name it had that year (clubnames.ts), not a new one it took after a merger or a sale.
+const short = (s: LeagueState, id: TeamId | null, year?: number) =>
+  id === SANGMU ? __i18n_k("league.views.shortName.d2a2ca0f") : id ? ((year != null ? clubNameIn(s, id, year)?.short : undefined) ?? s.teams.find((t) => t.id === id)?.short ?? id) : '';
 
 /** Notes a move on the player. */
 export function noteMove(s: LeagueState, p: Player | undefined, kind: MoveKind, from: TeamId | null, to: TeamId | null, note?: string, date = dateOf(s)) {
@@ -149,7 +152,7 @@ export interface MoveRow {
     save from before 2.0.28 the club changes his career shows. */
 export function moveHistory(s: LeagueState, p: Pick<Player, 'id' | 'career' | 'origin' | 'moves'> & Partial<Pick<Player, 'teamId' | 'status' | 'service'>>): MoveRow[] {
   const rows: MoveRow[] = [];
-  const row = (date: string, kind: MoveKind, from: TeamId | null, to: TeamId | null, note = '') => rows.push({ date, kind, label: MOVE_LABELS[kind], from: short(s, from), to: short(s, to), note });
+  const row = (date: string, kind: MoveKind, from: TeamId | null, to: TeamId | null, note = '') => rows.push({ date, kind, label: MOVE_LABELS[kind], from: short(s, from, Number(date.slice(0, 4))), to: short(s, to, Number(date.slice(0, 4))), note });
   const pick = s.draftLog?.find((x) => x.id === p.id);
   // 2.0.43 (user report: 팀 → 상무 → 팀 shown twice): 상무 is service, not a club change — his seasons there are left
   // out of the club changes and shown once each way as 입대 and 전역 below.

@@ -129,7 +129,7 @@ export function nationalView(s: LeagueState) {
       for (const id of e.squad) {
         const c = s.players[id]?.career.find((x) => x.year === e.year && !x.level) ?? s.players[id]?.career.find((x) => x.year === e.year);
         // Abroad, at school or otherwise without a KBO season that year.
-        const team = c ? shortName(s, c.teamId) : '그 밖';
+        const team = c ? shortName(s, c.teamId, e.year) : '그 밖';
         count.set(team, (count.get(team) ?? 0) + 1);
       }
       const ours = s.user ? e.squad.filter((id) => s.players[id]?.career.some((x) => x.year === e.year && x.teamId === s.user!.teamId)) : [];
