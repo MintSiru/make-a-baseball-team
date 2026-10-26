@@ -23,7 +23,8 @@ jobs:
       - run: npx vitest run --shard=${{ matrix.shard }}/6
 
   build:
-    runs-on: ubuntu-latest
+    # Playwright's browser download does not know ubuntu-latest's newer image yet (ubuntu26.04): the release it supports.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
