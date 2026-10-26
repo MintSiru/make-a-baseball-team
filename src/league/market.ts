@@ -14,6 +14,7 @@ import { removeFromRoster } from './offseason';
 import { ageIn, isForeign, keepValue } from './players';
 import { orgIds, orgPlayers, registeredIds, type Decision, type LeagueState } from './state';
 import { MARKET, PARENT } from './tuning';
+import { featureOpen } from './features';
 import { rng } from '../draftroom';
 
 export type FaGrade = 'A' | 'B' | 'C';
@@ -46,7 +47,13 @@ export function faGrades(s: LeagueState, next: number, fas: Player[]): Record<Pl
   const rank = (ids: PlayerId[], id: PlayerId) => ids.filter((x) => (pay.get(x) ?? 0) > (pay.get(id) ?? 0)).length + 1;
   const all = domestic.map((p) => p.id);
   const out: Record<PlayerId, FaGrade> = {};
+  // 2.0.50: a league that plays history grades its free agents from 2021; before, every one cost the same as an A.
+  const graded = featureOpen('faGrades', next);
   for (const p of fas) {
+    if (!graded) {
+      out[p.id] = 'A';
+      continue;
+    }
     if (ageIn(p, next) >= F.grade.cFromAge) {
       out[p.id] = 'C';
       continue;

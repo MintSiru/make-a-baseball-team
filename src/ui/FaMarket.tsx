@@ -37,6 +37,7 @@ import { FA } from '../league/tuning';
 import { positionLabel, shortName, statLine } from '../league/views';
 import type { FaPromise, Player, PlayerId } from '../model/types';
 import { salaryCapFor } from '../rules/kbo2026';
+import { salaryCapOn } from '../league/features';
 import { money, moneyShort, parseEok, shownLevel } from './format';
 import { gradeClass, shownFuture } from './grades';
 import { positionKey, useSort } from './sort';
@@ -175,12 +176,15 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
           <dt>{__i18n_t("ui.faMarket.faMarket.1293394a")}</dt>
           <dd title={__i18n_t("ui.faMarket.faMarket.86aff787")}>{__i18n_t("ui.faMarket.faMarket.9891f1a2", { moneyShort: moneyShort(reserve) })}</dd>
         </div>
-        <div>
-          <dt>{__i18n_t("ui.faMarket.faMarket.c868d2a2", { next: next })}</dt>
-          <dd class={capNow + capAdd > cap ? 'minus' : ''} title={__i18n_displayText(__i18n_t("ui.faMarket.text.7e44855e"))}>
-            {__i18n_display(moneyShort(Math.round(capNow + capAdd)))} / {__i18n_display(moneyShort(cap))}
-          </dd>
-        </div>
+        {/* 2.0.50: no salary cap before 2023 in a league that plays history. */}
+        {__i18n_display(salaryCapOn(next) && (
+          <div>
+            <dt>{__i18n_t("ui.faMarket.faMarket.c868d2a2", { next: next })}</dt>
+            <dd class={capNow + capAdd > cap ? 'minus' : ''} title={__i18n_displayText(__i18n_t("ui.faMarket.text.7e44855e"))}>
+              {__i18n_display(moneyShort(Math.round(capNow + capAdd)))} / {__i18n_display(moneyShort(cap))}
+            </dd>
+          </div>
+        ))}
       </dl>
       {__i18n_display(base + c <= u.payrollBudget && base + c + reserve > u.payrollBudget && (
         <p class="notice warn">{__i18n_t("ui.faMarket.faMarket.8694e6c8", { moneyShort: moneyShort(reserve), moneyShort2: moneyShort(base + c + reserve - u.payrollBudget) })}</p>

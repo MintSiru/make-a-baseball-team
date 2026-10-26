@@ -11,6 +11,7 @@ import { k as __i18n_k } from '../i18n/index';
    The books open on opening day with every foreign player's guaranteed money (a player let go mid-season
    stays on them), take in-season replacements as they sign and options as they are paid, and close after
    the season. An expansion club's extra foreign slot adds one new-signing cap (game assumption). */
+import { featureOpen } from './features';
 import type { Player, TeamId } from '../model/types';
 import { foreignNewCapUsd, foreignTotalCapUsd, KBO_2026 } from '../rules/kbo2026';
 import { MANWON_PER_USD, usdTotal } from './contracts';
@@ -47,9 +48,15 @@ export const capPlayers = (s: LeagueState, teamId: TeamId, season: number) =>
 
 /** The club's cap for `season` with these players: $4M, the tenure raises, and an expansion club's extra slot. */
 export function foreignCap(s: LeagueState, teamId: TeamId, season: number, players = capPlayers(s, teamId, season)): number {
+  if (!foreignCapOn(season)) return NO_CAP;
   const extra = Math.max(0, foreignSlots(s, teamId, season).regular - F.regular);
   return foreignTotalCapUsd() + extra * foreignNewCapUsd() + players.reduce((a, p) => a + F.tenureRaiseUSD * tenureWith(p, teamId, season), 0);
 }
+
+/** 2.0.50: whether the cap is there in `season` (a league that plays history: from 2023, features.ts). */
+export const foreignCapOn = (season: number) => featureOpen('foreignCap', season);
+/** The "cap" of a season without one: nothing goes over it (a finite number, as it is kept in the books). */
+const NO_CAP = Number.MAX_SAFE_INTEGER;
 
 /** What these contracts cost at most (options counted in full), US dollars. */
 export const foreignCost = (players: Player[]) => players.reduce((a, p) => a + usdTotal(p.contract), 0);
@@ -109,6 +116,7 @@ export interface ForeignCapRecord {
 
 /** After the season: options paid go on the books; a club over the cap pays the levy (the user's from its fund). */
 export function settleForeignCap(s: LeagueState, year: number) {
+  if (!foreignCapOn(year)) return;
   const books = s.foreignBooks ?? {};
   for (const teamId of firstTeamIds(s, year)) {
     const b = books[teamId]?.season === year ? books[teamId]! : null;

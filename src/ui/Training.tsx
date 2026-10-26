@@ -14,7 +14,7 @@ import { LEARN, learnable, learnChance } from '../league/newpitch';
 import { PITCH_LABELS, repertoire, type PitchType } from '../league/pitches';
 import { positionLabel } from '../league/views';
 import { money } from './format';
-import { CAMP_IDS, CAMP_SITES, checkCamp, checkDev, DEV, devCandidates, devYear, type CampSite } from '../league/development';
+import { CAMP_IDS, CAMP_SITES, campClosed, checkCamp, checkDev, DEV, devCandidates, devYear, type CampSite } from '../league/development';
 import { positionKey, useSort } from './sort';
 
 const focusText = (keys: ToolKey[] | undefined) => (keys ?? []).map((k) => TOOL_LABELS[k] ?? k).join('·');
@@ -370,19 +370,21 @@ function DevSection({ league, kind, onAct, onPlayer }: { league: LeagueState; ki
 }
 
 /** The camp's places to pick from (here and in the winter's wrap-up camp decision, 2.0.32). */
-export function CampChoices({ site, onPick, onNone }: { site: CampSite | null; onPick: (site: CampSite) => void; onNone?: () => void }) {
+export function CampChoices({ site, year, onPick, onNone }: { site: CampSite | null; year: number; onPick: (site: CampSite) => void; onNone?: () => void }) {
   return (
     <div class="choice-grid">
       {CAMP_IDS.map((id) => {
         const C = CAMP_SITES[id];
+        // 2.0.50: a league that plays history goes abroad only from the place's year.
+        const closed = campClosed(id, year);
         return (
-          <button key={id} type="button" class="choice" aria-pressed={site === id} onClick={() => onPick(id)}>
+          <button key={id} type="button" class="choice" aria-pressed={site === id} disabled={!!closed} title={__i18n_displayText(closed ?? '')} onClick={() => onPick(id)}>
             <strong>{__i18n_display(C.name())}</strong>
             <span class="muted">{C.cost ? money(C.cost) : __i18n_t("ui.training.text.06048927")}</span>
             <span class="muted small">
               {__i18n_t("ui.training.text.77e97665", { p: focusText(C.pitcher), h: focusText(C.hitter) })}
             </span>
-            <span class="muted small">{__i18n_display(C.note())}</span>
+            <span class="muted small">{__i18n_display(closed ?? C.note())}</span>
           </button>
         );
       })}
@@ -399,7 +401,7 @@ export function CampChoices({ site, onPick, onNone }: { site: CampSite | null; o
 
 /** 2.0.29: the November camp abroad, under its own tab (2.0.31). */
 function WrapCamp({ league, onAct }: { league: LeagueState; onAct: (a: Action) => void }) {
-  const [site, setSite] = useState<CampSite>('okinawa');
+  const [site, setSite] = useState<CampSite>(() => (campClosed('okinawa', devYear(league)) ? 'home' : 'okinawa'));
   const camp = league.user?.dev?.camp;
   const year = devYear(league);
   const why = checkCamp(league, site);
@@ -407,7 +409,7 @@ function WrapCamp({ league, onAct }: { league: LeagueState; onAct: (a: Action) =
     <section class="dev-programs">
       <h3>{__i18n_t("ui.training.text.dce453a2")}</h3>
       <p class="muted small">{__i18n_t("ui.training.text.e8c26099")}</p>
-      <CampChoices site={site} onPick={setSite} />
+      <CampChoices site={site} year={year} onPick={setSite} />
       {camp?.year === year ? (
         <p class="muted">{__i18n_t("ui.training.text.d517e650", { place: CAMP_SITES[camp.site].name(), n: camp.players })}</p>
       ) : (

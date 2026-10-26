@@ -50,6 +50,7 @@ import { DIFFICULTY, FOREIGN_TALKS, OFFSEASON, PARENT } from './tuning';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './foreignpool';
 import { marchEvents, nextNationalDecision, novemberEvents } from './national';
 import { devDecision } from './development';
+import { developmentClosed } from './features';
 import { disputeDecision } from './dispute';
 import { relocationDecision } from './relocation';
 import { mergerDecision } from './merger';
@@ -597,6 +598,8 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       if (input.ids.length < dd.release) return __i18n_k("league.expansion.checkDecision.a1e081c4", { limit: dd.limit, release: dd.release });
       const develop = input.develop ?? [];
       if (develop.some((id) => !input.ids.includes(id))) return __i18n_k("league.expansion.checkDecision.22686096");
+      // 2.0.50: no development contracts before there were any (a league that plays history).
+      if (develop.length && developmentClosed(nextSeasonOf(s))) return developmentClosed(nextSeasonOf(s));
       // Only new conversions count: a club can already be over the cap through trades or the second draft.
       if (develop.length && developmentIds(s, u.teamId).length + develop.length > OFFSEASON.development.cap) return __i18n_k("league.expansion.checkDecision.bb840372", { cap: OFFSEASON.development.cap });
       return null;

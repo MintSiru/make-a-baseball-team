@@ -16,6 +16,7 @@ import { EXPANSION_DEFAULTS, minimumSalaryFor, salaryCapFor } from '../rules/kbo
 import { addAlert } from './alerts';
 import { bonusShare, renewSalary, salaryIn } from './contracts';
 import { capTotal } from './cap';
+import { salaryCapOn } from './features';
 import { eulreul, iga, ro, wagwa } from './josa';
 import { clubState } from './fans';
 import { aiCompensation, compensationCash, externalLimit, faGrades, moneyFor, parentGiftFor, projectedPayroll, protectedBy, type FaGrade, type FaQueueItem } from './market';
@@ -506,7 +507,9 @@ export const capHit = (o: FaOffer) => o.annual + o.bonus / o.years + (o.options 
     season's pay for foreign players still to be re-signed or replaced) and bonuses spread. Free agents still on
     the market (`without`) are left out: whoever signs them counts them then. */
 export function capRoomFor(s: LeagueState, teamId: TeamId, next: number, without?: Set<PlayerId>) {
-  // 2.0.21: the same top-40 total, foreign players out, as the season's settlement (cap.ts).
+  // 2.0.21: the same top-40 total, foreign players out, as the season's settlement (cap.ts). 2.0.50: no limit in a
+  // season without a cap (a league that plays history, before 2023).
+  if (!salaryCapOn(next)) return Infinity;
   return salaryCapFor(next) - capTotal(s, teamId, next, { estimate: true, ...(without ? { without } : {}) });
 }
 

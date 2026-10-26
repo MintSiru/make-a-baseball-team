@@ -9,7 +9,7 @@ import { deadMoney, deadMoneyAhead, projectedPayroll } from '../league/market';
 import { eulreul } from '../league/josa';
 import { ageIn, isForeign } from '../league/players';
 import { firstTeamIds, orgPlayers, registeredIds, type LeagueState } from '../league/state';
-import { booksOf } from '../league/foreigncap';
+import { booksOf, foreignCapOn } from '../league/foreigncap';
 import { previewPlayers } from './preview';
 import { checkTemp, tempEligible, tempMarket, tempPrice, tempsOf, tempWindow } from '../league/tempforeign';
 import {
@@ -522,7 +522,7 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
   const asiaUsed = league.asiaChanges?.[u.teamId] ?? 0;
   // The foreign salary cap this season (V0.7.8): what is on the books and what the pick would add.
   const inFirst = firstTeamIds(league).includes(u.teamId);
-  const books = inFirst && league.phase === 'regular' ? booksOf(league, u.teamId) : null;
+  const books = inFirst && league.phase === 'regular' && foreignCapOn(league.year) ? booksOf(league, u.teamId) : null;
   const incoming = inId ? market.find((p) => p.id === inId) : undefined;
   const adds = incoming && !incoming.origin.asiaQuota ? foreignPriceNow(league, incoming) : 0;
   return (

@@ -15,6 +15,7 @@ import type { Player, PlayerId, TeamId } from '../model/types';
 import { KBO_2026 } from '../rules/kbo2026';
 import { foreignContract } from './contracts';
 import { today } from './entry';
+import { featureClosed, featureOpen } from './features';
 import { addAlert } from './alerts';
 import { wagwa } from './josa';
 import { firstTeamSize } from './manager';
@@ -54,7 +55,8 @@ export const isTemp = (s: LeagueState, id: PlayerId) => (s.tempForeign ?? []).so
 
 /** The club's foreign players out long enough for a stand-in and without one. */
 export function tempEligible(s: LeagueState, teamId: TeamId): Player[] {
-  if (s.phase !== 'regular') return [];
+  // 2.0.50: a league that plays history has the rule from 2024 (features.ts).
+  if (s.phase !== 'regular' || !featureOpen('tempForeign', s.year)) return [];
   const covered = new Set(tempsOf(s, teamId).map((t) => t.for));
   return orgPlayers(s, teamId).filter((p) => {
     const inj = s.injuries[p.id];
@@ -64,6 +66,8 @@ export function tempEligible(s: LeagueState, teamId: TeamId): Player[] {
 
 /** Why a stand-in cannot be signed for `forId` now (null if he can). */
 export function tempWindow(s: LeagueState, teamId: TeamId, forId: PlayerId): string | null {
+  const closed = featureClosed('tempForeign', s.year);
+  if (closed) return closed;
   if (s.phase !== 'regular') return __i18n_k("league.tempforeign.text.bff9d532");
   if (today(s) > `${s.year}-${KBO_2026.foreign.replacementDeadline}`) return __i18n_k("league.tempforeign.text.d457abc2");
   if (!tempEligible(s, teamId).some((p) => p.id === forId)) return __i18n_k("league.tempforeign.text.7b8ea04f");

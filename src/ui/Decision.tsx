@@ -31,13 +31,14 @@ import type { Player, PlayerId, TeamId } from '../model/types';
 import { money } from './format';
 import { serviceNote } from '../league/military';
 import { goalText } from '../league/parent';
-import { capPlayers, foreignCap, foreignCost } from '../league/foreigncap';
+import { capPlayers, foreignCap, foreignCapOn, foreignCost } from '../league/foreigncap';
 import { gradeClass, shownFuture } from './grades';
 import { positionKey, useSort, type SortColumn } from './sort';
 import { RivalForm } from './Twelve';
 import { CampChoices } from './Training';
 import { BudgetAsk } from './BudgetAsk';
-import { campSuggestion, devSuggestion, type CampSite } from '../league/development';
+import { campSuggestion, devSuggestion, devYear, type CampSite } from '../league/development';
+import { developmentOpen } from '../league/features';
 import { FantasyBoard } from './FantasyDraft';
 import { MEDDLE } from '../league/scenarios';
 import { ROUND_NAME } from '../league/postseason';
@@ -216,6 +217,7 @@ function ForeignCapLine({ league, next, adding }: { league: LeagueState; next: n
   const cap = foreignCap(league, u.teamId, next, [...staying, ...regular.map((a) => a.p)]);
   const total = foreignCost(staying) + regular.reduce((a, x) => a + x.total, 0);
   const over = total - cap;
+  if (!foreignCapOn(next)) return null;
   return (
     <p class={over > 0 ? 'notice warn' : 'muted'}>{__i18n_t("ui.decision.foreignCapLine.da9d4e52", { next: next, usd: usd(total), usd2: usd(cap), value: over > 0 ? __i18n_k("ui.decision.foreignCapLine.4f534145", { usd: usd(over) }) : '' })}</p>
   );
@@ -782,7 +784,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
             max={d.release}
             extra={{ title: __i18n_k("ui.decision.decision.title.cbf383ec"), value: (p) => money(salaryIn(p, next)), sort: (p) => salaryIn(p, next) }}
           />
-          {__i18n_display(selected.size > 0 && (
+          {__i18n_display(selected.size > 0 && developmentOpen(next) && (
             <fieldset class="develop-picks">
               <legend>{__i18n_t("ui.decision.decision.e8a27ced")}</legend>
               {__i18n_display([...selected].map((id) => (
@@ -936,7 +938,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         <>
           <p>{__i18n_t("ui.decision.text.cc6bd830")}</p>
           <p class="muted">{__i18n_t("ui.decision.text.2d25decb", { fund: money(u.fund) })}</p>
-          <CampChoices site={site === 'none' ? null : (site as CampSite)} onPick={(x) => choose('site', x)} onNone={() => choose('site', 'none')} />
+          <CampChoices site={site === 'none' ? null : (site as CampSite)} year={devYear(league)} onPick={(x) => choose('site', x)} onNone={() => choose('site', 'none')} />
         </>
       );
       break;
