@@ -6,7 +6,7 @@ import { k as __i18n_k } from '../i18n/index';
 import { playsHistory } from './era';
 import { rulesFor } from '../rules/history';
 
-export type Feature = 'trip' | 'extension' | 'pickTrade' | 'combine' | 'namingRights' | 'premium' | 'scoreboard' | 'analytics' | 'futuresPark' | 'tempForeign' | 'foreignCap' | 'faGrades' | 'asiaSeries';
+export type Feature = 'trip' | 'extension' | 'pickTrade' | 'combine' | 'namingRights' | 'premium' | 'scoreboard' | 'analytics' | 'futuresPark' | 'tempForeign' | 'foreignCap' | 'faGrades' | 'asiaSeries' | 'fallLeague' | 'abl' | 'campAbroad';
 
 /** The first season each is there in a history game. */
 export const FEATURE_FROM: Record<Feature, number> = {
@@ -32,6 +32,13 @@ export const FEATURE_FROM: Record<Feature, number> = {
   foreignCap: 2023,
   faGrades: 2021,
   asiaSeries: 2005,
+  // The autumn and winter of development.ts (the user's request, the same check): the fall instructional league in
+  // Miyazaki (NPB's Phoenix League, from 2004), a winter in Australia (today's ABL, from its 2010–11 season), and a
+  // wrap-up camp abroad (from 1989, when going abroad was made free; game assumption). The California lab is a
+  // private training centre abroad: `trip`'s year.
+  fallLeague: 2004,
+  abl: 2010,
+  campAbroad: 1989,
 };
 
 /** Whether `feature` is there in `year` (always, unless the league plays history). */

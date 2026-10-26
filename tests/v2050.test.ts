@@ -1,13 +1,15 @@
 /* 2.0.50 (the user's request: check again what the legacy start must keep shut): in a league that plays the KBO's
    history, development contracts (육성선수) from 2005, the salary cap and the foreign players' cap from 2023, the
    injury replacement foreign player from 2024, the free agents' grades from 2021, the Asia Series from 2005, and the
-   development foreign players' rule only once there are both foreign players and development contracts. Every other
+   development foreign players' rule only once there are both foreign players and development contracts; the fall
+   instructional league from 2004, a winter in Australia from 2010, a wrap-up camp abroad from 1989. Every other
    game has them all from the start. */
 import { afterAll, describe, expect, it } from 'vitest';
 import { apply } from '../src/league/actions';
 import { playAsiaSeries } from '../src/league/asiaseries';
 import { setEra } from '../src/league/era';
 import { capRoomFor } from '../src/league/fa';
+import { campClosed, campSuggestion, checkCamp, checkDev, devDecision } from '../src/league/development';
 import { devForeignClosed, developmentClosed, developmentOpen, featureOpen, salaryCapOn } from '../src/league/features';
 import { foreignCap, foreignCapOn } from '../src/league/foreigncap';
 import { createLeague } from '../src/league/history';
@@ -66,6 +68,17 @@ describe('the legacy start keeps later rules shut (2.0.50)', () => {
     p.teamId = me;
     p.contract = { ...p.contract!, kind: 'standard' };
     expect(canMakeDevelopment(s, p.id)).toContain('2005');
+    // The fall league (2004), Australia (2010) and a camp abroad (1989; the California lab 2014): only the camp at home.
+    const young = (s.rosters[me]!.futures ?? []).slice(0, 2);
+    expect(checkDev(s, 'fall', young)).toContain('2004');
+    expect(checkDev(s, 'abl', young)).toContain('2010');
+    expect(devDecision(s)?.kind).toBe('wrapUp');
+    expect(checkCamp(s, 'okinawa')).toContain('1989');
+    expect(checkCamp(s, 'home')).toBeNull();
+    expect(campClosed('guam', 1989)).toBeNull();
+    expect(campClosed('california', 2012)).toContain('2014');
+    expect(campClosed('california', 2013)).toBeNull();
+    expect(campSuggestion(s)).toBe('home');
     // The Asia Series is not played before 2005, even when turned on.
     s.asiaSeries = true;
     expect(playAsiaSeries(s, 1990, firstTeamIds(s)[0]!)).toBeNull();

@@ -14,6 +14,7 @@ import { k as __i18n_k } from '../i18n/index';
    The money comes from the club's fund; the user's club only (AI clubs go too, but the game does not keep it). The
    records are kept on the player (his records tab: league/amateur.ts and the records tab) and the gains go into his
    ability as a training trip's do (training.ts). Game assumptions throughout. */
+import { featureClosed } from './features';
 import { rng, TOOL_LABELS, type AmateurRecord, type ToolKey } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
 import { addAlert } from './alerts';
@@ -77,6 +78,9 @@ export function checkDev(s: LeagueState, kind: 'fall' | 'abl', ids: PlayerId[]):
   if (!seasonOver(s)) return __i18n_k("league.development.text.17f768d2");
   if (kind === 'abl' && s.phase !== 'offseason') return __i18n_k("league.development.text.e19b69d8");
   const year = devYear(s);
+  // 2.0.50: a league that plays history has them from their years (features.ts).
+  const closed = featureClosed(kind === 'fall' ? 'fallLeague' : 'abl', year);
+  if (closed) return closed;
   if ((kind === 'fall' ? u.dev?.fall : u.dev?.abl) === year) return __i18n_k("league.development.text.75edbde0");
   const max = kind === 'fall' ? DEV.fall.max : DEV.abl.max;
   if (!ids.length) return __i18n_k("league.development.text.b1b73e32");
@@ -168,11 +172,18 @@ export function sendDev(s: LeagueState, kind: 'fall' | 'abl', ids: PlayerId[]) {
   addNews(s, { id: `dev-${kind}-${year}`, date, kind: 'interview', title, body: lines.join(' / '), quotes: [], facts: { n: ids.length }, players: ids, mine: true });
 }
 
+/** 2.0.50: why a league that plays history cannot hold the camp there in the November of `year` yet, or null — abroad
+    from 1989, the California lab with the private training trips (the season after, from 2014; features.ts). */
+export const campClosed = (site: CampSite, year: number): string | null =>
+  site === 'home' ? null : site === 'california' ? featureClosed('trip', year + 1) : featureClosed('campAbroad', year);
+
 export function checkCamp(s: LeagueState, site: CampSite): string | null {
   const u = s.user;
   if (!u) return __i18n_k("league.development.text.23b5d156");
   if (s.phase !== 'offseason') return __i18n_k("league.development.text.e2e21c28");
   if (u.dev?.camp?.year === devYear(s)) return __i18n_k("league.development.text.6738bf92");
+  const closed = campClosed(site, devYear(s));
+  if (closed) return closed;
   if (u.fund < CAMP_SITES[site].cost) return __i18n_k("league.development.text.428500a2");
   return null;
 }
@@ -227,7 +238,7 @@ export function devDecision(s: LeagueState, after?: DevStage): Decision | null {
       continue;
     }
     const kind = stage === 'devFall' ? 'fall' : 'abl';
-    if ((kind === 'fall' ? u.dev?.fall : u.dev?.abl) === year) continue;
+    if ((kind === 'fall' ? u.dev?.fall : u.dev?.abl) === year || featureClosed(kind === 'fall' ? 'fallLeague' : 'abl', year)) continue;
     const candidates = devCandidates(s, kind);
     if (candidates.length && u.fund >= DEV[kind].cost) return { kind: stage as 'devFall' | 'devAbl', candidates: candidates.map((p) => p.id), max: DEV[kind].max, cost: DEV[kind].cost };
   }

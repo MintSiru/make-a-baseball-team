@@ -37,7 +37,7 @@ import { positionKey, useSort, type SortColumn } from './sort';
 import { RivalForm } from './Twelve';
 import { CampChoices } from './Training';
 import { BudgetAsk } from './BudgetAsk';
-import { campSuggestion, devSuggestion, type CampSite } from '../league/development';
+import { campSuggestion, devSuggestion, devYear, type CampSite } from '../league/development';
 import { developmentOpen } from '../league/features';
 import { FantasyBoard } from './FantasyDraft';
 import { MEDDLE } from '../league/scenarios';
@@ -938,7 +938,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         <>
           <p>{__i18n_t("ui.decision.text.cc6bd830")}</p>
           <p class="muted">{__i18n_t("ui.decision.text.2d25decb", { fund: money(u.fund) })}</p>
-          <CampChoices site={site === 'none' ? null : (site as CampSite)} onPick={(x) => choose('site', x)} onNone={() => choose('site', 'none')} />
+          <CampChoices site={site === 'none' ? null : (site as CampSite)} year={devYear(league)} onPick={(x) => choose('site', x)} onNone={() => choose('site', 'none')} />
         </>
       );
       break;
