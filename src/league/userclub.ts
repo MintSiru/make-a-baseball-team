@@ -53,6 +53,7 @@ import { splitContract } from './foreign';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type SalaryRow, type StaffRole, type UserClub } from './state';
 import { OFFSEASON as O, PARENT, TALKS, DIFFICULTY } from './tuning';
+import { developmentOpen } from './features';
 import { lifeWinter } from './life';
 import { CAMP_IDS, checkCamp, checkDev, devDecision, holdCamp, sendDev, type CampSite } from './development';
 import { autoNational, marchEvents, nextNationalDecision, novemberEvents, resolveNational } from './national';
@@ -290,7 +291,7 @@ export function rookieBonusDecision(s: LeagueState, d: DraftState): Decision | n
 export function developmentDecision(s: LeagueState, d: DraftState): Decision | null {
   const u = s.user!;
   const room = Math.min(O.development.perYear, O.development.cap - developmentIds(s, u.teamId).length);
-  if (room <= 0 || !d.pool.length) return null;
+  if (room <= 0 || !d.pool.length || !developmentOpen(d.year + 1)) return null;
   const candidates = d.pool
     .map((id) => s.players[id]!)
     .sort((a, b) => a.amateur.draftRank - b.amateur.draftRank)

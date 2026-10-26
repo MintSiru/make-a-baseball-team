@@ -29,6 +29,7 @@ import { crossing } from './rivalry';
 import { farewell } from './life';
 import { GM_STYLES, gmValue } from './twelve';
 import { OFFSEASON, RIVAL } from './tuning';
+import { developmentOpen } from './features';
 
 export const RIVAL_ID = 'rival';
 
@@ -375,7 +376,7 @@ export function rivalTrim(s: LeagueState, next: number, club?: FoundingClub) {
     .sort((a, b) => gmValue(a, next, tw.gm) - gmValue(b, next, tw.gm))
     .slice(0, over);
   for (const p of cut) {
-    if (ageIn(p, next) <= D.convertAge && dev < D.aiTarget) {
+    if (ageIn(p, next) <= D.convertAge && dev < D.aiTarget && developmentOpen(next)) {
       p.contract = developmentContract(tw.teamId, next);
       dev++;
     } else leaveLeague(s, p, 'retired');

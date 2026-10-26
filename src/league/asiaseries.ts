@@ -9,6 +9,7 @@ import { k as __i18n_k } from '../i18n/index';
    NPB champion has a player who went there from the KBO, he plays for it — and if he faces his old club, or ours,
    it is news. Games between the other three are drawn by strength. Nothing is kept on the players' records and no
    one tires: the games only make the tournament's story, on their own random stream. */
+import { featureOpen } from './features';
 import { hashUnit, rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { addAlert } from './alerts';
@@ -115,7 +116,8 @@ function kboSide(s: LeagueState, teamId: TeamId, game: number, vs: 'L' | 'R'): T
 
 /** Plays the year's Asia Series (when the league plays it), with the KBO champion `kbo`. */
 export function playAsiaSeries(s: LeagueState, year: number, kbo: TeamId | null): AsiaSeries | null {
-  if (!s.asiaSeries || !kbo || !s.rosters[kbo] || (s.asia ?? []).some((x) => x.year === year)) return null;
+  // 2.0.50: a league that plays history has it from 2005, when the real one began (features.ts).
+  if (!s.asiaSeries || !featureOpen('asiaSeries', year) || !kbo || !s.rosters[kbo] || (s.asia ?? []).some((x) => x.year === year)) return null;
   const key = `${s.seed}|asia|${year}`;
   const clubs: Record<Foreign, string> = { npb: pickClub(NPB_CLUBS, `${key}|npb`), cpbl: pickClub(CPBL_CLUBS, `${key}|cpbl`), abl: pickClub(ABL_CLUBS, `${key}|abl`) };
   const ex = exKboWith(s, clubs.npb);

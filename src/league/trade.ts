@@ -26,7 +26,7 @@ import { capRoom, chargeForeign, slotForeigners } from './foreigncap';
 import { failedToAdapt } from './adapt';
 import { firstTeamSize, foreignSlots } from './manager';
 import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry, toForeignPool } from './foreignpool';
-import { featureOpen } from './features';
+import { developmentClosed, featureOpen } from './features';
 import { rulesFor } from '../rules/history';
 import { allianceAgainst, tradeBarred } from './dynasty';
 import { abroadVetAsk } from './abroadvets';
@@ -373,6 +373,8 @@ export function canMakeDevelopment(s: LeagueState, id: PlayerId): string | null 
   if (p.contract?.kind === 'development') return __i18n_k("league.trade.text.11f90bd0");
   if (p.contract && p.contract.kind !== 'rookie' && p.contract.kind !== 'standard') return __i18n_k("league.trade.text.583d078b");
   const next = s.offseason.year + 1;
+  const closed = developmentClosed(next);
+  if (closed) return closed;
   if (ageIn(p, next) > OFFSEASON.development.maxAge) return __i18n_k("league.trade.text.29ca89fd", { age: OFFSEASON.development.maxAge });
   if (developmentIds(s, u.teamId).length >= OFFSEASON.development.cap) return __i18n_k("league.trade.text.02990310", { cap: OFFSEASON.development.cap });
   return null;

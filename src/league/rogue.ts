@@ -6,6 +6,7 @@ import { noteMove } from './moves';
    big extensions for players past thirty, a manager it likes, tickets at the top price, money spent on its own
    projects. The general manager watches (one long action, no input) and takes over in the winter of the fifth season
    with what is left. */
+import { featureOpen } from './features';
 import { rng } from '../draftroom';
 import { apply, regularOver } from './actions';
 import { addAlert } from './alerts';
@@ -73,11 +74,11 @@ function rogueWinter(s: LeagueState, year: number): string[] {
     done.push(__i18n_k("league.rogue.rogueWinter.d84a0d78", { name: p.name, ageIn: ageIn(p, next), team: team, name2: vet.name, ageIn2: ageIn(vet, next) }));
     addNews(s, { id: `rogue-trade-${year}-${p.id}`, date: `${year}-11-15`, kind: 'move', title: __i18n_k("league.rogue.rogueWinter.title.53320f19", { name: p.name, name2: vet.name }), body: __i18n_k("league.rogue.rogueWinter.body.df2bfd43", { team: team, name: p.name, ageIn: ageIn(vet, next), name2: vet.name }), quotes: [], facts: {}, players: [p.id, vet.id], mine: true });
   }
-  // Big deals for players past thirty.
+  // Big deals for players past thirty (2.0.50: non-FA multi-year deals only when there are any, features.ts).
   const old = ours()
     .filter((p) => ageIn(p, next) >= 30)
     .sort((a, b) => currentValue(b) - currentValue(a))
-    .slice(0, ROGUE.extensions);
+    .slice(0, featureOpen('extension', next) ? ROGUE.extensions : 0);
   for (const p of old) {
     const annual = Math.round((Math.max(renewSalary(p, next), salaryIn(p, year)) * ROGUE.extensionRaise) / 1000) * 1000;
     p.contract = { teamId: me, kind: 'multiYear', signedIn: year, signingBonus: 0, salaries: Array.from({ length: ROGUE.extensionYears }, (_, i) => ({ season: next + i, amount: annual })) };

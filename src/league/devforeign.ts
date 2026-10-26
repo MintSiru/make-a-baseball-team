@@ -7,6 +7,7 @@ import { k as __i18n_k } from '../i18n/index';
    foreign slot open may register one (he then takes the slot, on a foreign contract from the winter). Three seasons
    in development and he is let go. Our club picks its prospects each winter; the other clubs sign and register
    theirs on their own. */
+import { devForeignClosed } from './features';
 import { rng, type Tools } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { minimumSalaryFor } from '../rules/kbo2026';
@@ -48,8 +49,9 @@ const NATIONS: [string, Pool, number][] = [
   [__i18n_k("league.devforeign.text.8a9d64bd"), 'west', 0.05],
 ];
 
-/** The rule's places a club (0 when off). */
-export const devForeignPlaces = (s: LeagueState) => s.devForeign ?? 0;
+/** The rule's places a club in `season` (0 when off; 2.0.50: and in a league that plays history, before there were
+    both foreign players, 1998, and development contracts, 2005). */
+export const devForeignPlaces = (s: LeagueState, season: number) => (devForeignClosed(season) ? 0 : (s.devForeign ?? 0));
 /** A development foreign player still in development (no slot, outside the cap). */
 export const isDevForeign = (p: Player) => isForeign(p) && !!p.origin.devForeign && isDevelopment(p);
 export const devForeignersOf = (s: LeagueState, teamId: TeamId) => orgPlayers(s, teamId).filter(isDevForeign);
@@ -90,7 +92,7 @@ export function makeDevForeign(seed: string, id: string, season: number): Player
 /** Our club's prospects this winter: the places left after those leaving, and a list to choose from. */
 export function devForeignDecision(s: LeagueState, next: number): Decision | null {
   const u = s.user;
-  const places = devForeignPlaces(s);
+  const places = devForeignPlaces(s, next);
   if (!u || !places) return null;
   const staying = devForeignersOf(s, u.teamId).filter((p) => seasonsIn(p, next) < DEV_FOREIGN.seasons);
   const max = places - staying.length;
@@ -160,7 +162,7 @@ export function devForeignBefore(s: LeagueState, next: number) {
 
 /** After the clubs' foreign moves: each AI club fills its open places now and then. */
 export function devForeignAfter(s: LeagueState, next: number) {
-  const places = devForeignPlaces(s);
+  const places = devForeignPlaces(s, next);
   if (!places) return;
   const r = rng(`${s.seed}|dev-foreign-ai|${next}`);
   for (const t of s.teams) {

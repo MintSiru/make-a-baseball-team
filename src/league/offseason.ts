@@ -27,6 +27,7 @@ import { schoolBoost, schoolPick } from './schools';
 import { hashUnit, observe, overall, rng, toGrade, type Tools } from '../draftroom';
 import type { Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
+import { developmentOpen } from './features';
 import { budgetBonus, foreignContract, MANWON_PER_USD, renewSalary, rookieContract, salaryIn, slotBonus, usdTotal } from './contracts';
 import { splitContract } from './foreign';
 import { foreignSlots } from './manager';
@@ -658,9 +659,9 @@ function runDraft(s: LeagueState, d: DraftState): 'wait' | 'done' {
     }
   }
   if (!d.developmentDone) {
-    // Development contracts (육성선수) for the best of the rest.
+    // Development contracts (육성선수) for the best of the rest (2.0.50: when there are any that year).
     const order = [...new Set(d.slots.map((x) => x.teamId))].filter((id) => !(userDrafts && id === userTeam));
-    for (let k = 0; k < O.development.signings; k++)
+    for (let k = 0; developmentOpen(d.year + 1) && k < O.development.signings; k++)
       for (const teamId of order) {
         if (developmentIds(s, teamId).length >= (teamId === userTeam ? O.development.cap : O.development.aiTarget)) continue;
         const r = rng(`${s.seed}|draft-dev|${d.year}|${k}|${teamId}`);
@@ -729,8 +730,9 @@ export function cutToLimits(s: LeagueState, next: number): Player[] {
       // 2.0.37: development foreign players have their own places (devforeign.ts).
       .filter((p) => !isDevForeign(p))
       .sort((a, b) => keepValue(b, next) - keepValue(a, next));
+    // 2.0.50: none before there were any (a legacy save from before: the ones it has go).
     dev.forEach((p, i) => {
-      if (i >= D.aiTarget || ageIn(p, next) > D.maxAge) release(p);
+      if (i >= D.aiTarget || ageIn(p, next) > D.maxAge || !developmentOpen(next)) release(p);
     });
     const ids = registeredIds(s, t.id);
     if (ids.length <= limit) continue;
@@ -742,7 +744,7 @@ export function cutToLimits(s: LeagueState, next: number): Player[] {
       .slice(0, ids.length - limit);
     let devCount = developmentIds(s, t.id).length;
     for (const p of cut) {
-      if (ageIn(p, next) <= D.convertAge && devCount < D.aiTarget) {
+      if (ageIn(p, next) <= D.convertAge && devCount < D.aiTarget && developmentOpen(next)) {
         p.contract = developmentContract(t.id, next);
         devCount++;
       } else release(p);

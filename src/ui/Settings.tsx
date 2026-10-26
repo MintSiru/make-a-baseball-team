@@ -9,6 +9,7 @@ import { RELEASE, SIM_VERSION } from '../core/version';
 import { PARENT_COMPANY_TYPES } from '../club/types';
 import { FICTIONAL_LABELS, labelOf, labelProblems, realLabels, CLUB_NAME, CLUB_SHORT, COMPANY_NAME, BALLPARK_NAME, type ClubLabel } from '../league/clubs';
 import { sixManAllowed } from '../league/manager';
+import { devForeignClosed, featureClosed } from '../league/features';
 import type { Action } from '../league/actions';
 import type { LeagueState } from '../league/state';
 import type { SaveStore } from '../save/store';
@@ -213,6 +214,8 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
             ))}
           </div>
           <p class="muted small">{__i18n_t("ui.settings.text.ee54e0ef")}</p>
+          {/* 2.0.50: a league that plays history has no foreign players before 1998, no development contracts before 2005. */}
+          {__i18n_display(devForeignClosed(league.offseason ? league.offseason.year + 1 : league.year) && <p class="notice">{__i18n_display(devForeignClosed(league.offseason ? league.offseason.year + 1 : league.year))}</p>)}
           {/* 2.0.42 (asiaseries.ts): the Asia Series after the Korean Series. */}
           <h3>{__i18n_t("ui.settings.text.d8e915cf")}</h3>
           <div class="segmented" role="group" aria-label={__i18n_t("ui.settings.text.d8e915cf")}>
@@ -223,6 +226,7 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
             ))}
           </div>
           <p class="muted small">{__i18n_t("ui.settings.text.9625ac94")}</p>
+          {__i18n_display(featureClosed('asiaSeries', league.year) && <p class="notice">{__i18n_display(featureClosed('asiaSeries', league.year))}</p>)}
           {/* 2.0.22 (travel.ts): tiredness from the road. */}
           <h3>{__i18n_t("ui.settings.text.0d58aa7c")}</h3>
           <div class="segmented" role="group" aria-label={__i18n_displayText(__i18n_t("ui.settings.text.0d58aa7c"))}>

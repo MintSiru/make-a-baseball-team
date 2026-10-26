@@ -17,7 +17,8 @@ import { defaultYears, dismissalCost, extendProblem, extensionSalary, fireProble
 import { AlumnusTag } from './Alumni';
 import { LayoutEditor } from './LayoutEditor';
 import { firstTeamIds, type ClubReport, type LeagueState, type StaffRole } from '../league/state';
-import { booksOf } from '../league/foreigncap';
+import { booksOf, foreignCapOn } from '../league/foreigncap';
+import { salaryCapOn } from '../league/features';
 import { usd } from '../league/foreign';
 import { FANS, POSTSEASON_GATE } from '../league/tuning';
 import { checkStadiumName, STADIUM_NAME_MAX } from '../league/userclub';
@@ -240,12 +241,15 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
             <p class="card-value">{__i18n_display(current ? signed(current.operating) : last ? signed(last.operating) : '-')}</p>
             <p class="card-sub">{__i18n_t("ui.office.office.4f849627")}</p>
           </div>
-          <div class="card">
-            <p class="card-label">{__i18n_t("ui.office.office.b2f10443", { year: league.year })}</p>
-            <p class="card-value">{__i18n_display(money(capTotal(league, u.teamId, league.year)))}</p>
-            <p class="card-sub">{__i18n_t("ui.office.office.a5785887", { money: money(salaryCapFor(league.year)), value: capFloorFor(league.year) ? __i18n_k("ui.office.office.75c3db8c", { money: money(capFloorFor(league.year)!) }) : '' })}</p>
-          </div>
-          {__i18n_display(firstTeamIds(league).includes(u.teamId) && league.phase === 'regular' && (
+          {/* 2.0.50: the salary cap (2023) and the foreign players' cap (2023) only in their years in a league that plays history. */}
+          {__i18n_display(salaryCapOn(league.year) && (
+            <div class="card">
+              <p class="card-label">{__i18n_t("ui.office.office.b2f10443", { year: league.year })}</p>
+              <p class="card-value">{__i18n_display(money(capTotal(league, u.teamId, league.year)))}</p>
+              <p class="card-sub">{__i18n_t("ui.office.office.a5785887", { money: money(salaryCapFor(league.year)), value: capFloorFor(league.year) ? __i18n_k("ui.office.office.75c3db8c", { money: money(capFloorFor(league.year)!) }) : '' })}</p>
+            </div>
+          ))}
+          {__i18n_display(firstTeamIds(league).includes(u.teamId) && league.phase === 'regular' && foreignCapOn(league.year) && (
             <div class="card">
               <p class="card-label">{__i18n_t("ui.office.office.2f4e295b")}</p>
               <p class="card-value">{__i18n_display(usd(booksOf(league, u.teamId).spent))}</p>
