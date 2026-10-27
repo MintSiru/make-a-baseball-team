@@ -1,3 +1,4 @@
+import { clubNameIn } from './clubnames';
 import { k as __i18n_k } from '../i18n/index';
 /* Our players in the major leagues (1.7.0, from the 1.6 feedback: 포스팅으로 MLB에 진출한 선수 확인, MLB 성적 표시).
    A player who signs through the posting system (posting.ts) joins a big-league club, and each winter his season
@@ -201,8 +202,10 @@ export function mlbView(s: LeagueState) {
     .sort((a, b) => b.mlb!.posted - a.mlb!.posted || b.mlb!.total - a.mlb!.total)
     .map((p) => {
       const m = p.mlb!;
-      const from = p.career.filter((c) => !c.level && c.year <= m.posted).at(-1)?.teamId;
-      const club = from ? (s.teams.find((t) => t.id === from)?.short ?? from) : '';
+      const last = p.career.filter((c) => !c.level && c.year <= m.posted).at(-1);
+      const from = last?.teamId;
+      // 2.0.55 (the user's report): the club by the name it had when he left, not a new one founded in its place.
+      const club = from ? (clubNameIn(s, from, last!.year)?.short ?? s.teams.find((t) => t.id === from)?.short ?? from) : '';
       const status = m.back !== undefined ? (p.teamId ? __i18n_k("league.mlb.text.b2a2812a", { club: s.teams.find((t) => t.id === p.teamId)?.short ?? '' }) : __i18n_k("league.mlb.text.27473dab")) : m.ended !== undefined || p.status === 'retired' ? __i18n_k("league.mlb.text.5b170d3c") : m.league === 'npb' ? __i18n_k("league.mlb.text.120ad45f", { club: m.seasons.at(-1)?.club ?? m.club }) : __i18n_k("league.mlb.text.61a94fdb", { club: m.seasons.at(-1)?.club ?? m.club });
       return { id: p.id, name: p.name, pitcher: isPitcher(p), kboClub: club, kboTeamId: from ?? null, posted: m.posted, years: m.years, total: m.total, club: m.club, status, totals: mlbTotals(p), npb: m.league === 'npb' };
     });
