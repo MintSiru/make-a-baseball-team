@@ -256,7 +256,8 @@ export type Decision =
   // The twelfth club (V0.9, rival.ts): design it (or, offered by the board, vote it down), then protect our players
   // from its special draft
   | { kind: 'rival'; year: number; event: boolean; suggestion: RivalSettings }
-  | { kind: 'rivalProtect'; candidates: PlayerId[]; protect: number; fee: number }
+  /** 2.0.54: `club` a legacy league's new club (or clubs), `allocation` the players it is handed besides (legacy1982.ts). */
+  | { kind: 'rivalProtect'; candidates: PlayerId[]; protect: number; fee: number; club?: string; allocation?: number }
   /** Our players who want to retire (V0.11): the chance each listens if the club asks him to play on. */
   | { kind: 'retire'; rows: { id: PlayerId; chance: number }[] }
   /** Our players named for a national team (V0.12): hurt, and whether the event could spare him the army. */

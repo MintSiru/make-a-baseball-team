@@ -3801,3 +3801,14 @@ button.danger {
   border-color: var(--bad);
   color: var(--bad);
 }
+
+/* 2.0.54: the scouts' notes beside each prospect in the draft (Decision.tsx DraftTable). */
+.pick-table .draft-memo {
+  min-width: 16em;
+  max-width: 28em;
+  white-space: normal;
+  line-height: 1.35;
+}
+.pick-table .draft-memo .tag {
+  margin-right: 0.3em;
+}

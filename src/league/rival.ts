@@ -1,6 +1,6 @@
 import { k as __i18n_k } from '../i18n/index';
 import { noteMove } from './moves';
-import { legacyAllocations } from './legacy1982';
+import { ALLOCATION, legacyAllocations } from './legacy1982';
 /* The twelfth club, the rival (V0.9). The player designs it (or lets the scouts suggest one) when it is founded:
    in a set winter, or when the board puts a twelfth club to the clubs (and the player may vote it down).
 
@@ -225,13 +225,17 @@ export const specialEligible = (s: LeagueState, teamId: TeamId, next: number): P
 /** The winter before the twelfth club's first first-team season: the user's club protects its 20. */
 export function rivalProtectDecision(s: LeagueState, next: number): Decision | null {
   // 2.0.23: or the north's clubs' (a unified condition added to a game under way, conditions.ts), one list for all five.
-  const tw = s.twelve?.firstTeam === next ? s.twelve : s.unified?.clubs.find((c) => c.firstTeam === next),
-    u = s.user;
+  // 2.0.54 (the user's report: a legacy league's new club took its pick with no word from us): any new club the AI
+  // runs, a legacy league's too (with its allocation, legacy1982.ts, from outside the same list).
+  const u = s.user;
+  const legacy = (s.legacy?.clubs ?? []).filter((c) => c.firstTeam === next && !c.picks);
+  const tw = s.twelve?.firstTeam === next && s.twelve.teamId !== u?.teamId ? s.twelve : (s.unified?.clubs.find((c) => c.firstTeam === next) ?? legacy[0]);
   if (!tw || !u || tw.firstTeam !== next || tw.picks || !firstTeamIds(s, next - 1).includes(u.teamId)) return null;
   const P = EXPANSION_DEFAULTS.specialDraft;
   const candidates = specialEligible(s, u.teamId, next);
   if (candidates.length <= P.protected) return null;
-  return { kind: 'rivalProtect', candidates: candidates.map((p) => p.id), protect: P.protected, fee: P.feePerPlayer };
+  const club = legacy.includes(tw as FoundingClub) ? legacy.map((c) => s.teams.find((t) => t.id === c.teamId)?.name ?? c.teamId).join('·') : undefined;
+  return { kind: 'rivalProtect', candidates: candidates.map((p) => p.id), protect: P.protected, fee: P.feePerPlayer, ...(club ? { club, ...(next <= ALLOCATION.until ? { allocation: ALLOCATION.perClub * legacy.length } : {}) } : {}) };
 }
 
 export function checkRivalProtect(d: Extract<Decision, { kind: 'rivalProtect' }>, ids: PlayerId[]): string | null {
