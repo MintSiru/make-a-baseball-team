@@ -79,7 +79,7 @@ const TITLES: Record<DecisionT['kind'], string> = {
   sponsor: __i18n_k("ui.decision.tITLES.sponsor.3c4370aa"),
   staff: __i18n_k("ui.decision.tITLES.staff.b72feac0"),
   rival: __i18n_k("ui.decision.tITLES.rival.427e4250"),
-  rivalProtect: __i18n_k("ui.decision.tITLES.rivalProtect.bc489ffa"),
+  rivalProtect: __i18n_t("ui.decision.text.6d80a87c"),
   retire: __i18n_k("ui.decision.tITLES.retire.7ebe7c63"),
   national: __i18n_k("ui.decision.tITLES.national.e3a9398c"),
   scandal: __i18n_k("ui.decision.tITLES.scandal.562ddfd9"),
@@ -346,6 +346,8 @@ function DraftTable({ league, onPlayer, onPick, only }: { league: LeagueState; o
     current: { value: (p) => p.scouting.current },
     future: { value: (p) => shownFuture(p) ?? -1 },
     velocity: { value: (p) => p.velocity ?? 0 },
+    // 2.0.54 (the user's request: the prospects tab's notes during the draft itself).
+    range: { value: (p) => p.scouting.ceiling },
   });
   return (
     <div class="table-wrap" tabIndex={0}>
@@ -360,6 +362,8 @@ function DraftTable({ league, onPlayer, onPick, only }: { league: LeagueState; o
             {__i18n_display(th('current', __i18n_k("ui.decision.draftTable.001e4be2"), true))}
             {__i18n_display(th('future', __i18n_k("ui.decision.draftTable.6e0caec5"), true))}
             {__i18n_display(th('velocity', __i18n_k("ui.decision.draftTable.b8c2e079"), true))}
+            {th('range', __i18n_t("ui.decision.text.67bff0a7"), true)}
+            <th>{__i18n_t("ui.decision.text.989d5649")}</th>
             <th aria-label={__i18n_t("ui.decision.draftTable.68a26d9d")} />
           </tr>
         </thead>
@@ -385,6 +389,17 @@ function DraftTable({ league, onPlayer, onPick, only }: { league: LeagueState; o
               <td class={`num ${gradeClass(p.scouting.current)}`}>{__i18n_display(p.scouting.current)}</td>
               <td class={`num strong ${gradeClass(shownFuture(p))}`}>{__i18n_display(shownFuture(p) ?? '-')}</td>
               <td class="num">{__i18n_display(p.velocity ?? '-')}</td>
+              <td class="num" title={__i18n_displayText(p.scouting.uncertainty)}>
+                {p.scouting.floor}~{p.scouting.ceiling}
+              </td>
+              <td class="draft-memo small">
+                {p.scouting.tags.map((t) => (
+                  <span key={t} class="tag">
+                    {__i18n_displayText(t)}
+                  </span>
+                ))}
+                <span class="plus">{__i18n_displayText(p.scouting.strength)}</span> <span class="minus">{__i18n_displayText(p.scouting.weakness)}</span>
+              </td>
               <td>
                 <button type="button" class="pick" onClick={() => onPick(p.id)}>{__i18n_t("ui.decision.draftTable.68a26d9d")}</button>
               </td>
@@ -1054,7 +1069,14 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
     case 'rivalProtect':
       body = (
         <>
-          {league.twelve ? (
+          {d.club ? (
+            // 2.0.54: a legacy league's new club, and its allocation from outside the same list.
+            <p>
+              {__i18n_t("ui.decision.text.0c77b2dd", { club: d.club, protect: d.protect, size: selected.size, money: money(d.fee) })}
+              {d.allocation ? __i18n_t("ui.decision.text.27224360", { n: d.allocation }) : ''}{' '}
+              {__i18n_t("ui.decision.text.35aeec9c")}
+            </p>
+          ) : league.twelve ? (
             <p>{__i18n_t("ui.decision.decision.b82fa189", { name: league.teams.find((t) => t.id === league.twelve?.teamId)?.name, protect: d.protect, size: selected.size, value: ' ', money: money(d.fee) })}</p>
           ) : (
             <p>{__i18n_t("ui.decision.text.5ba5d51a", { protect: d.protect, size: selected.size, money: money(d.fee) })}</p>

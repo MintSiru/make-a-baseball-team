@@ -7,8 +7,9 @@ import { useState } from 'preact/hooks';
 import { usd } from '../league/foreign';
 import type { LeagueState } from '../league/state';
 import { rates, rosterView } from '../league/views';
-import { money } from './format';
-import { gradeClass, rowFuture } from './grades';
+import { money, toolKeysFor } from './format';
+import { gradeClass, rowFuture, showsFutureDetail } from './grades';
+import { TOOL_LABELS } from '../draftroom';
 import { positionKey, useSort } from './sort';
 
 export type Row = ReturnType<typeof rosterView>['active'][number];
@@ -219,6 +220,74 @@ function HitterTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; onP
 }
 
 /** The squads of `teamId` behind a segmented control. `actions` gets the squad the row is in. */
+/** 2.0.54 (the user's request: the players' ratings and potential at a glance, as in OOTP): each tool the scouts grade,
+    now and (where it is shown) what they see him becoming. */
+function RatingsTable({ league, rows, pitchers, onPlayer, actions }: { league: LeagueState; rows: Row[]; pitchers: boolean; onPlayer: (id: string) => void; actions?: (r: Row) => ComponentChildren }) {
+  const keys = toolKeysFor(pitchers ? 'SP' : 'C');
+  const player = (r: Row) => league.players[r.id]!;
+  const now = (r: Row, k: (typeof keys)[number]) => player(r).scouting.tools[k] ?? 0;
+  const later = (r: Row, k: (typeof keys)[number]) => (showsFutureDetail(player(r)) ? player(r).scouting.futureTools[k] : undefined);
+  const { sorted, th } = useSort(
+    rows,
+    {
+      name: { value: (r) => r.name },
+      pos: { value: (r) => positionKey(r.pos), first: 1 },
+      age: { value: (r) => r.age, first: 1 },
+      grade: { value: (r) => r.grade },
+      future: { value: (r) => rowFuture(r) ?? -1 },
+      ...Object.fromEntries(keys.map((k) => [k, { value: (r: Row) => now(r, k) }])),
+      velocity: { value: (r) => player(r).velocity ?? 0 },
+    },
+    { key: 'pos', dir: 1 },
+  );
+  if (!rows.length) return null;
+  const cell = (n: number, f: number | undefined) => (
+    <>
+      <span class={gradeClass(n)}>{n}</span>
+      {f != null && f !== n && <span class="muted small"> →{f}</span>}
+    </>
+  );
+  return (
+    <div class="table-wrap" tabIndex={0}>
+      <table class="record-table squad-table ratings-table">
+        <thead>
+          <tr>
+            {th('name', pitchers ? __i18n_t("ui.squad.text.ef406667") : __i18n_t("ui.squad.text.5db174c6"))}
+            {th('pos', __i18n_t("ui.squad.text.81922a91"))}
+            {th('age', __i18n_t("ui.squad.text.6c620e5c"), true)}
+            {th('grade', __i18n_t("ui.squad.text.f7c86d76"), true)}
+            {th('future', __i18n_t("ui.squad.text.6e0caec5"), true)}
+            {keys.map((k) => th(k as never, __i18n_displayText(TOOL_LABELS[k]), true))}
+            {pitchers && th('velocity', __i18n_t("ui.squad.text.b8c2e079"), true)}
+            {actions && <th class="actions-head">{__i18n_t("ui.squad.text.c686d054")}</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((r) => (
+            <tr key={r.id} class="player-row">
+              <Name r={r} onPlayer={onPlayer} />
+              <td>{__i18n_display(r.pos)}</td>
+              <td class="num">{r.age}</td>
+              <td class={`num ${gradeClass(r.grade)}`}>{r.grade}</td>
+              <td class={`num strong ${gradeClass(rowFuture(r))}`}>{rowFuture(r) ?? '-'}</td>
+              {keys.map((k) => (
+                <td key={k} class="num">
+                  {cell(now(r, k), later(r, k))}
+                </td>
+              ))}
+              {pitchers && <td class="num">{player(r).velocity ?? '-'}</td>}
+              {actions && <td>{actions(r)}</td>}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** The table view the screen was left on (records or ratings). */
+let lastView: 'stats' | 'ratings' = 'stats';
+
 export function Squad({
   league,
   teamId,
@@ -238,6 +307,11 @@ export function Squad({
   const roster = rosterView(league, teamId);
   // A club not in the first team yet (the expansion club's first year) opens on its futures squad.
   const [key, setKey] = useState<SquadKey>(roster.active.length ? 'active' : 'futures');
+  const [view, setViewState] = useState(lastView);
+  const setView = (v: typeof view) => {
+    lastView = v;
+    setViewState(v);
+  };
   const rows = roster[key];
   const note = SQUADS.find((x) => x.key === key)?.note;
   const futuresNumbers = key === 'futures' || key === 'third' || key === 'military';
@@ -251,13 +325,31 @@ export function Squad({
             </button>
           )))}
         </div>
+        <div class="segmented" role="group" aria-label={__i18n_t("ui.squad.text.b38d51fa")}>
+          <button type="button" aria-pressed={view === 'stats'} onClick={() => setView('stats')}>
+            {__i18n_t("ui.squad.text.d84b6f4b")}
+          </button>
+          <button type="button" aria-pressed={view === 'ratings'} onClick={() => setView('ratings')}>
+            {__i18n_t("ui.squad.text.9e9117d0")}
+          </button>
+        </div>
         {__i18n_display(toolbar)}
       </div>
       {__i18n_display(note && <p class="muted">{__i18n_display(note)}</p>)}
       {__i18n_display(futuresNumbers && <p class="muted">{__i18n_t("ui.squad.squad.8bd0631b")}</p>)}
       {__i18n_display(!rows.length && <p class="empty">{__i18n_t("ui.squad.squad.8abc45cd")}</p>)}
-      <PitcherTable rows={rows.filter((r) => r.pitcher)} onPlayer={onPlayer} actions={actions?.(key)} posControl={posControl?.(key)} />
-      <HitterTable rows={rows.filter((r) => !r.pitcher)} onPlayer={onPlayer} actions={actions?.(key)} posControl={posControl?.(key)} />
+      {view === 'ratings' ? (
+        <>
+          <RatingsTable league={league} rows={rows.filter((r) => r.pitcher)} pitchers onPlayer={onPlayer} actions={actions?.(key)} />
+          <RatingsTable league={league} rows={rows.filter((r) => !r.pitcher)} pitchers={false} onPlayer={onPlayer} actions={actions?.(key)} />
+          <p class="muted small">{__i18n_t("ui.squad.text.132cd595")}</p>
+        </>
+      ) : (
+        <>
+          <PitcherTable rows={rows.filter((r) => r.pitcher)} onPlayer={onPlayer} actions={actions?.(key)} posControl={posControl?.(key)} />
+          <HitterTable rows={rows.filter((r) => !r.pitcher)} onPlayer={onPlayer} actions={actions?.(key)} posControl={posControl?.(key)} />
+        </>
+      )}
     </div>
   );
 }

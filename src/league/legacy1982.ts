@@ -147,21 +147,24 @@ export function legacyLeagues(s: LeagueState, year: number) {
     best it keeps out of it (a game assumption after the 1980s allocations: with six to eight clubs and no free agency
     until 1999 one special-draft pick a club is far too little; with three each a new club wins about a third of its
     games in its first season, about 빙그레's .290 of 1986). */
-export const ALLOCATION = { perClub: 3, keep: 10 };
+export const ALLOCATION = { perClub: 3, keep: 10, until: 2000 };
+/* 2.0.54 (the user's report: a new club took every club's core and went straight to the top): the allocations only
+   to 2000 (SK took over 쌍방울's players); NC (2013) and KT (2015) built with the special draft, as they did. Our club
+   gives from outside its own protected list (the special draft's, rival.ts). */
 
 /** The winter before a new club's first first-team season in a legacy league (ours, or one the AI founded): every
     other first-team club hands it three players beyond its best ten, free (after the special draft). */
 export function legacyAllocations(s: LeagueState, next: number) {
-  if (!isLegacy(s)) return;
+  if (!isLegacy(s) || next > ALLOCATION.until) return;
   const u = s.user;
   const clubs = [...(u && u.firstTeamYear === next ? [u.teamId] : []), ...(s.legacy?.clubs ?? []).filter((c) => c.firstTeam === next).map((c) => c.teamId)];
   for (const to of clubs) {
     const got: string[] = [];
     for (const from of firstTeamIds(s, next - 1)) {
       if (from === to || clubs.includes(from)) continue;
-      const give = specialEligible(s, from, next)
-        .sort((a, b) => keepValue(b, next) - keepValue(a, next))
-        .slice(ALLOCATION.keep, ALLOCATION.keep + ALLOCATION.perClub);
+      const ranked = specialEligible(s, from, next).sort((a, b) => keepValue(b, next) - keepValue(a, next));
+      const kept = from === u?.teamId ? s.offseason?.rivalProtect : undefined;
+      const give = kept ? ranked.filter((p) => !kept.includes(p.id)).slice(0, ALLOCATION.perClub) : ranked.slice(ALLOCATION.keep, ALLOCATION.keep + ALLOCATION.perClub);
       for (const p of give) {
         removeFromRoster(s, p);
         noteMove(s, p, 'special', from, to);
