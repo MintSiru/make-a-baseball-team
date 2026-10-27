@@ -89502,5 +89502,197 @@
     "line": 255,
     "params": {},
     "locations": []
+  },
+  "ui.clubSquad.text.42526528": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 24,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.ed8464a3": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 26,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.39429c7a": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 26,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.5b8607a3": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 26,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.b3000412": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 30,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.5ff2cf7d": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.d6656b55": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 40,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.81922a91": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 45,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.c37450d6": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 46,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.586be0bc": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.e0cee61a": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 48,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.0a3d002c": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 49,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.1eb19e0a": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.bb6ef1b2": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.7e66b88d": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.9162d3a3": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 53,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.fed1c588": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.91e54831": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.cad4826e": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 93,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.a88271df": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 101,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.3b1908b7": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 102,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.36260e2c": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 103,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.639a1f2f": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 104,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.f0f9146b": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 105,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.3f349ed1": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 106,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.0f355a0a": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 135,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.f3f4087e": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 143,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.a3fa83d2": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 146,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.9329045a": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 147,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.7091a480": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 181,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubSquad.text.8f14636a": {
+    "source": "src/ui/ClubSquad.tsx",
+    "line": 183,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubRecords.text.27572b83": {
+    "source": "src/ui/ClubRecords.tsx",
+    "line": 47,
+    "params": {},
+    "locations": []
   }
 }
