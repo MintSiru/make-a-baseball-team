@@ -35,11 +35,12 @@ const SQUAD: Record<EventKind, number> = { asianGames: 24, olympics: 24, wbc: 30
 
 /** Chances of each finish for an event without a real result (game assumption from Korea's recent record). */
 export const ODDS: Record<EventKind, [Finish, number][]> = {
+  // 2.0.51 (the user's request: missing the exemption 5–10% of the time at most): gold 93% (with a club's manager
+  // leading the team as well, 겸임, a little less — national.ts).
   asianGames: [
-    ['champion', 0.55],
-    ['runnerUp', 0.25],
-    ['third', 0.15],
-    ['fourth', 0.05],
+    ['champion', 0.93],
+    ['runnerUp', 0.05],
+    ['third', 0.02],
   ],
   olympics: [
     ['champion', 0.1],
