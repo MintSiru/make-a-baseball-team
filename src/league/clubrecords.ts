@@ -4,6 +4,7 @@
 
    Each season's manager (every club's) and the user's captain are kept with the season's summary from 2.0.5; the
    seasons before show none. */
+import { sameClub } from './clubnames';
 import type { PlayerId, TeamId } from '../model/types';
 import { retiredNumbersView } from './legacy';
 import { roundName } from './postseason';
@@ -123,6 +124,7 @@ export function clubRecords(s: LeagueState, teamId: TeamId) {
     },
     room: recordRoom(s, teamId),
     retired: retiredNumbersView(s).filter((r) => r.teamId === teamId),
-    hall: (s.hallOfFame ?? []).filter((h) => h.teams.includes(teamId)),
+    // 2.0.55: those who played for the club as it is now (a merged club's old players are the old club's).
+    hall: (s.hallOfFame ?? []).filter((h) => h.teams.includes(teamId) && (s.players[h.id]?.career ?? []).some((c) => !c.level && c.teamId === teamId && sameClub(s, teamId, c.year))),
   };
 }

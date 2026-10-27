@@ -14,6 +14,7 @@ import { k as __i18n_k } from '../i18n/index';
    called up for the Olympics and the World Baseball Classic too, and a medal spares them their service like anyone
    (before, only the KBO's players were ever named). The Asian Games, the Premier12 and the APBC take the KBO's
    players only, as their clubs abroad do not release them. */
+import { MLB } from './mlb';
 import { startYear } from './era';
 import { rng } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
@@ -46,7 +47,10 @@ function eligible(s: LeagueState, e: InternationalEvent, young: boolean): Player
   return Object.values(s.players).filter((p) => {
     if (isForeign(p)) return false;
     const home = (p.status === 'active' || p.status === 'military') && !!p.teamId;
-    const abroad = p.status === 'overseas' && ABROAD_EVENTS.includes(e.kind);
+    // 2.0.55 (the user's report: players long retired in the lineups of the games watched): a player abroad keeps that
+    // status after his career there ends (mlb.ts), so only one still playing — not retired abroad, not past the age
+    // the leagues abroad keep a player to.
+    const abroad = p.status === 'overseas' && ABROAD_EVENTS.includes(e.kind) && p.mlb?.ended === undefined && ageAt(p, e.year) <= MLB.maxAge;
     if (!home && !abroad) return false;
     if (!L) return true;
     return young ? ageAt(p, e.year) <= L.maxAge || e.year - p.proSince < L.maxProYears : ageAt(p, e.year) <= L.wildcardMaxAge;

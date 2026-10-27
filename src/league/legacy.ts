@@ -66,7 +66,8 @@ function retiredNumber(s: LeagueState, teamId: TeamId, r: { number: number; play
   else if (p.origin.pathway) story.push(p.origin.pathway);
   const debut = major.length ? Math.min(...major.map((c) => c.year)) : null;
   if (debut) story.push(__i18n_k("league.legacy.retiredNumber.36545ce7", { debut: debut }));
-  const elsewhere = [...new Set(major.filter((c) => c.teamId !== teamId).map((c) => shortName(s, c.teamId)))];
+  // 2.0.55: the other clubs by the names they had in his seasons there.
+  const elsewhere = [...new Set(major.filter((c) => c.teamId !== teamId).map((c) => shortName(s, c.teamId, c.year)))];
   if (from !== null) story.push(__i18n_k("league.legacy.retiredNumber.76721474", { shortName: shortName(s, teamId), from: from, to: to, length: here.length, value: elsewhere.length ? __i18n_k("league.legacy.retiredNumber.b1fbc56e", { value: elsewhere.join('·') }) : '' }));
   if (best && best.war >= 3) story.push(__i18n_k("league.legacy.retiredNumber.f16fe1e7", { year: best.year, value: best.war.toFixed(1) }));
   if (honours.length) story.push(honours.join(', '));

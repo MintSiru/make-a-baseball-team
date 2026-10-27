@@ -5,6 +5,7 @@ import { k as __i18n_k } from '../i18n/index';
    club and players (games, records, injuries, moves, life off the field) as minor alerts the screen can
    leave out of the pop-ups. The screen shows new ones in a pop-up and keeps the list in the club's news.
    Only in a game with the player's club, and never part of the simulation. */
+import { careerClubs, sameClub } from './clubnames';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import type { SeasonAwards } from './awards';
 import type { NewsItem, NewsKind } from './news';
@@ -95,13 +96,14 @@ export function awardAlert(s: LeagueState, year: number, a: SeasonAwards) {
 export function hallAlert(s: LeagueState, p: Player, entry: { year: number; war: number; seasons: number; teams: TeamId[]; line: string }) {
   const u = s.user;
   if (!u) return;
-  const ours = entry.teams.includes(u.teamId);
+  // 2.0.55: our club as it is now (not an old one under its id, clubnames.ts).
+  const ours = p.career.some((c) => !c.level && c.teamId === u.teamId && sameClub(s, u.teamId, c.year));
   addAlert(s, {
     id: `hof-${p.id}`,
     date: `${entry.year}-11-10`,
     kind: 'hall',
     title: __i18n_k("league.alerts.hallAlert.title.e6f29807", { name: p.name }),
-    lines: [__i18n_k("league.alerts.hallAlert.lines.9171e8ea", { seasons: entry.seasons, value: entry.war.toFixed(1), line: entry.line }), __i18n_k("league.alerts.hallAlert.lines.7b1d533f", { value: entry.teams.map((t) => short(s, t)).join(', '), value2: ours ? __i18n_k("league.alerts.hallAlert.lines.99bec7e4") : '' }), ...(p.honors ?? []).slice(-3)],
+    lines: [__i18n_k("league.alerts.hallAlert.lines.9171e8ea", { seasons: entry.seasons, value: entry.war.toFixed(1), line: entry.line }), __i18n_k("league.alerts.hallAlert.lines.7b1d533f", { value: careerClubs(s, p.career).join(', '), value2: ours ? __i18n_k("league.alerts.hallAlert.lines.99bec7e4") : '' }), ...(p.honors ?? []).slice(-3)],
     tone: ours ? 'good' : undefined,
     players: [p.id],
   });

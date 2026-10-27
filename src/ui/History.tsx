@@ -5,6 +5,7 @@ import { nationalView, retiredNumbersView } from '../league/legacy';
 import { nationalGamesOf } from '../league/nationalgames';
 import type { LeagueState } from '../league/state';
 import { awardsView, recordRoom, shortName, teamNameIn } from '../league/views';
+import { careerClubs } from '../league/clubnames';
 import { ROUND_NAME } from '../league/postseason';
 import { LEAGUE_LABEL } from '../league/asiaseries';
 import { avg, era, ip, obp, ops, slg } from '../league/stats';
@@ -183,7 +184,7 @@ function Hall({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string
                       {__i18n_display(h.name)}
                     </button>
                   </td>
-                  <td>{__i18n_display(h.teams.map((t) => shortName(league, t)).join(' · '))}</td>
+                  <td>{__i18n_display(league.players[h.id] ? careerClubs(league, league.players[h.id]!.career).join(' · ') : h.teams.map((t) => shortName(league, t)).join(' · '))}</td>
                   <td class="num">{__i18n_display(h.seasons)}</td>
                   <td class="num strong">{__i18n_display(h.war.toFixed(1))}</td>
                   <td>{__i18n_display(h.line)}</td>
