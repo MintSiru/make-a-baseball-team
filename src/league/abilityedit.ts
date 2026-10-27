@@ -56,6 +56,19 @@ export interface AbilityEdit {
 const devOf = (p: Player, type: PitchType) => p.pitchDev?.[type] ?? (type === 'KC' ? (p.pitchDev?.CB ?? 0) : 0);
 
 /** What the editor starts from: his abilities as they truly are. */
+/** 2.0.53 (a pitcher with a pitch thrown under 1%, or over 60%, could never have any edit applied: the editor started
+    from values its own check refused): each pitch's share within the editor's range, the total under its cap. */
+function withinUsage(list: NonNullable<AbilityEdit['pitches']>): NonNullable<AbilityEdit['pitches']> {
+  const U = ABILITY.usage;
+  const out = list.map((x) => ({ ...x, usage: Math.min(U.max, Math.max(U.min, x.usage)) }));
+  for (let over = out.reduce((a, x) => a + x.usage, 0) - U.total; over > 0; over--) {
+    const top = out.reduce((a, x) => (x.usage > a.usage ? x : a));
+    if (top.usage <= U.min) break;
+    top.usage--;
+  }
+  return out;
+}
+
 export function abilityOf(p: Player): AbilityEdit {
   const pitcher = isPitcher(p);
   const round = (t: Tools) => Object.fromEntries(Object.entries(t).map(([k, v]) => [k, Math.round(v as number)])) as AbilityEdit['current'];
@@ -78,7 +91,7 @@ export function abilityOf(p: Player): AbilityEdit {
     fastball: pitcher ? fastballOf(p) : null,
     pitches:
       pitcher && breaking != null
-        ? repertoire(p).map((x) => ({ type: x.type, grade: clampGrade(breaking + x.offset + devOf(p, x.type)), usage: Math.round(x.usage * 100) }))
+        ? withinUsage(repertoire(p).map((x) => ({ type: x.type, grade: clampGrade(breaking + x.offset + devOf(p, x.type)), usage: Math.round(x.usage * 100) })))
         : null,
     field: f ? { range: f.range, hands: f.hands, arm: f.arm, ...(f.lead != null ? { lead: f.lead } : {}), ...(f.frame != null ? { frame: f.frame } : {}) } : null,
   };

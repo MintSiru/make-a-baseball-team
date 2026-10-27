@@ -3,9 +3,10 @@
 import { displayText as __i18n_displayText, t as __i18n_t } from '../i18n/index';
 import { useState } from 'preact/hooks';
 import { clubRecords } from '../league/clubrecords';
+import { ClubSquad } from './ClubSquad';
 import type { LeagueState } from '../league/state';
 
-type Part = 'years' | 'career' | 'season' | 'honours';
+type Part = 'years' | 'squad' | 'career' | 'season' | 'honours';
 
 type Board = { label: string; rows: { id: string; name: string; team: string; year?: number; value: string }[] };
 
@@ -42,6 +43,8 @@ export function ClubRecords({ league, teamId, onPlayer }: { league: LeagueState;
   const t = r.totals;
   const parts: [Part, string][] = [
     ['years', __i18n_t("ui.clubRecords.text.e3d69cf7")],
+    // 2.0.52: each season's best nine, rotation and bullpen (ClubSquad.tsx).
+    ['squad', __i18n_t("ui.clubRecords.text.27572b83")],
     ['career', __i18n_t("ui.clubRecords.text.cefd0d88")],
     ['season', __i18n_t("ui.clubRecords.text.7fbedced")],
     ['honours', __i18n_t("ui.clubRecords.text.7d02419b")],
@@ -117,6 +120,7 @@ export function ClubRecords({ league, teamId, onPlayer }: { league: LeagueState;
           <p class="muted">{__i18n_t("ui.clubRecords.text.59dd0785")}</p>
         ))}
       {part === 'years' && <p class="muted small">{__i18n_t("ui.clubRecords.text.90fb1442")}</p>}
+      {part === 'squad' && <ClubSquad league={league} teamId={teamId} onPlayer={onPlayer} />}
       {part === 'career' && (
         <>
           <Boards boards={r.room.career} onPlayer={onPlayer} years={false} />

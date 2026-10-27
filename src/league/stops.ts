@@ -10,8 +10,8 @@ import { firstTeamIds, type LeagueState } from './state';
 import { standings } from './standings';
 import { twoLeagues } from './twelve';
 
-export type StopKind = 'injury' | 'deadline' | 'debut' | 'race' | 'bigGame' | 'postEntry' | 'national';
-export const STOP_KINDS: StopKind[] = ['injury', 'deadline', 'debut', 'race', 'bigGame', 'postEntry', 'national'];
+export type StopKind = 'injury' | 'deadline' | 'debut' | 'race' | 'bigGame' | 'postEntry' | 'national' | 'offer';
+export const STOP_KINDS: StopKind[] = ['injury', 'deadline', 'debut', 'race', 'offer', 'bigGame', 'postEntry', 'national'];
 export const STOP_LABEL: Record<StopKind, string> = {
   injury: __i18n_k("league.stops.sTOP_LABEL.injury.8609c770"),
   deadline: __i18n_k("league.stops.sTOP_LABEL.deadline.9b2951ae"),
@@ -23,13 +23,21 @@ export const STOP_LABEL: Record<StopKind, string> = {
   postEntry: __i18n_k("league.stops.text.3b819fa3"),
   // 2.0.42 (national.ts): when the national team's tournament is over, to watch its games or go on.
   national: __i18n_k("league.stops.text.21b1d89b"),
+  // 2.0.53 (the user's request): another club's trade offer (offers.ts), to answer it before it runs out.
+  offer: __i18n_k("league.stops.text.56d2d14d"),
 };
 /** Out this long or more stops the run. */
 const LONG = 21;
 /** The places that reach the postseason in one league. */
 const SPOTS = 5;
 
-export const stopsOf = (s: LeagueState): StopKind[] => s.user?.settings.stops ?? STOP_KINDS;
+/** 2.0.53: the trade offers' stop is its own setting (on unless turned off), so a club that chose its stops before
+    has it too. */
+export const stopsOf = (s: LeagueState): StopKind[] => {
+  const u = s.user;
+  if (!u?.settings.stops) return u?.settings.offerStop === false ? STOP_KINDS.filter((k) => k !== 'offer') : STOP_KINDS;
+  return STOP_KINDS.filter((k) => (k === 'offer' ? u.settings.offerStop !== false : u.settings.stops!.includes(k)));
+};
 
 const deadlineWeek = (year: number) => {
   const [m, d] = KBO_2026.trade.deadline.split('-').map(Number);
@@ -75,6 +83,7 @@ export function watchStops(s: LeagueState): () => boolean {
   const first = firstTeamIds(s, s.year).includes(u.teamId);
   const played = () => s.scores.filter((g) => g.home === u.teamId || g.away === u.teamId).length;
   const debutDue = on.has('debut') && first && s.year === u.firstTeamYear && played() === 0;
+  const offered = new Set((u.tradeOffers ?? []).map((o) => o.id));
   return () => {
     const last = s.schedule[s.next - 1]?.date ?? '';
     const coming = s.schedule[s.next]?.date;
@@ -94,6 +103,11 @@ export function watchStops(s: LeagueState): () => boolean {
         addAlert(s, { id: `stop-deadline-${s.year}`, date: last, kind: 'season', title: __i18n_k("league.stops.watchStops.title.9b2951ae"), lines: [__i18n_k("league.stops.watchStops.lines.0a521729")] });
         return true;
       }
+    }
+    // 2.0.53: a new trade offer (its alert is the offer's own, offers.ts).
+    if (on.has('offer') && (u.tradeOffers ?? []).some((o) => !offered.has(o.id))) {
+      for (const o of u.tradeOffers ?? []) offered.add(o.id);
+      return true;
     }
     if (debutDue && played() > 0) {
       addAlert(s, { id: `stop-debut-${s.year}`, date: last, kind: 'achievement', title: __i18n_k("league.stops.watchStops.title.fa9df9f2"), lines: [__i18n_k("league.stops.watchStops.lines.998b94c9")], tone: 'good' });
