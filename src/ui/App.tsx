@@ -594,6 +594,12 @@ export function App() {
         </button>
       )}
       <button type="button" onClick={() => act({ kind: 'days', days: 1 }, __i18n_k("ui.app.app.controls.e39c3d6f"), false)}>{__i18n_t("ui.app.app.controls.c3537d9a")}</button>
+      {/* 2.0.53 (the user's request): the spring games to the last, the next day opening day. */}
+      {exhibitionDate(league) && (
+        <button type="button" onClick={() => act({ kind: 'exhibitionEnd' }, __i18n_k("ui.app.app.controls.e39c3d6f"), false)}>
+          {__i18n_t("ui.app.text.a63e57e6")}
+        </button>
+      )}
       <button type="button" onClick={() => act({ kind: 'days', days: 6, stops: true }, __i18n_k("ui.app.app.controls.e39c3d6f"), false)}>{__i18n_t("ui.app.app.controls.3d84dffe")}</button>
       <button type="button" onClick={() => act({ kind: 'days', days: 26, stops: true }, __i18n_k("ui.app.app.controls.3b268e0d"), true)}>{__i18n_t("ui.app.app.controls.f425e3ef")}</button>
       <button type="button" onClick={() => act({ kind: 'regularEnd', stops: true }, __i18n_k("ui.app.app.controls.8373c66d"), true)}>{__i18n_t("ui.app.app.controls.1e9ed42f")}</button>

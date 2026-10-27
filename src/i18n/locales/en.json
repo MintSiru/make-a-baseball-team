@@ -9887,5 +9887,7 @@
   "ui.clubSquad.text.9329045a": "HLD",
   "ui.clubSquad.text.7091a480": "No pitcher came on in relief.",
   "ui.clubSquad.text.8f14636a": "The best nine are the players who started most at each position (one position each); the rotation the five with the most starts; the bullpen the closer with the most saves, the setup men with the most holds, then by relief appearances. WAR for a season in progress is worked out when it ends.",
-  "ui.clubRecords.text.27572b83": "Squads by year"
+  "ui.clubRecords.text.27572b83": "Squads by year",
+  "league.stops.text.56d2d14d": "Another club makes a trade offer",
+  "ui.app.text.a63e57e6": "To the end of spring games"
 }

@@ -341,9 +341,9 @@ try {
   await page.getByRole('group', { name: '난이도' }).getByRole('button', { name: '보통', exact: true }).click();
   await page.waitForFunction(() => document.querySelector('[aria-label="난이도"] [aria-pressed="true"]')?.textContent === '보통');
   check(true, 'difficulty switches back and forth');
-  // 1.6.0: the moments a run of days stops for, all on to begin with (1.7.1: and before our postseason games; 1.9.0: and for our postseason entry; 2.0.42: and the national team's games).
+  // 1.6.0: the moments a run of days stops for, all on to begin with (1.7.1: and before our postseason games; 1.9.0: and for our postseason entry; 2.0.42: and the national team's games; 2.0.53: and a trade offer).
   const stopsBox = page.getByRole('group', { name: '진행 중 멈출 순간' });
-  check((await stopsBox.getByRole('checkbox').count()) === 7 && (await stopsBox.getByRole('checkbox').first().isChecked()), 'the stops are listed and on');
+  check((await stopsBox.getByRole('checkbox').count()) === 8 && (await stopsBox.getByRole('checkbox').first().isChecked()), 'the stops are listed and on');
   await page.getByRole('button', { name: /결정할 일/ }).click();
   const log = [];
   await decideAll(page, log);
@@ -356,6 +356,14 @@ try {
   await decideAll(page, log);
   check(log.filter((t) => t === '신인 드래프트').length >= 15, `first draft gives many picks (${log.filter((t) => t === '신인 드래프트').length})`);
   await waitSeason(page, 2027);
+  // 2.0.53: the spring games to the last in one go; the next day is opening day.
+  const spring = page.getByRole('button', { name: '시범경기 끝까지', exact: true });
+  check((await spring.count()) === 1, 'the spring games can be played to the last');
+  if (await spring.count()) {
+    await spring.click();
+    await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled);
+    check((await spring.count()) === 0 && ((await status(page)) ?? '').includes('2027 정규시즌'), `the spring games are over (${await status(page)})`);
+  }
   await page.getByRole('button', { name: '1주', exact: true }).click();
   await page.waitForFunction(() => !document.querySelector('fieldset.controls')?.disabled);
   await page.getByRole('button', { name: '우리 구단', exact: true }).click();

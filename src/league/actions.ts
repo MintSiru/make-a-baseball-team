@@ -58,6 +58,8 @@ export type Action =
   /** `stops` (1.6.0): end the run early at the moments the user asked to stop for (stops.ts). */
   | { kind: 'days'; days: number; stops?: boolean }
   | { kind: 'regularEnd'; stops?: boolean }
+  /** 2.0.53 (the user's request): the spring games played to the last, the next day opening day. */
+  | { kind: 'exhibitionEnd' }
   | { kind: 'postseason'; stops?: boolean }
   /** 1.3.0: the postseason step by step — draw the bracket, the next game day, the rest of the round. */
   | { kind: 'postseasonStart' }
@@ -217,6 +219,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       while (playDay(s)) if (stop?.()) break;
       break;
     }
+    case 'exhibitionEnd':
+      while (exhibitionDate(s) && playDay(s));
+      break;
     case 'toFounding':
       while (s.year === startYear() && (nextDate(s) ?? '9999') < foundingDate() && playDay(s));
       break;
@@ -339,7 +344,8 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     case 'stops': {
       const u = s.user;
       if (!u) break;
-      u.settings.stops = STOP_KINDS.filter((k) => action.kinds.includes(k));
+      u.settings.stops = STOP_KINDS.filter((k) => k !== 'offer' && action.kinds.includes(k));
+      u.settings.offerStop = action.kinds.includes('offer');
       break;
     }
     case 'autoPrep': {

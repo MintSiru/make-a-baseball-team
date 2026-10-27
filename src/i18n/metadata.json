@@ -89694,5 +89694,17 @@
     "line": 47,
     "params": {},
     "locations": []
+  },
+  "league.stops.text.56d2d14d": {
+    "source": "src/league/stops.ts",
+    "line": 27,
+    "params": {},
+    "locations": []
+  },
+  "ui.app.text.a63e57e6": {
+    "source": "src/ui/App.tsx",
+    "line": 600,
+    "params": {},
+    "locations": []
   }
 }

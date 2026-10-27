@@ -617,6 +617,8 @@ export interface ExpansionSettings {
   scenario: import('./scenarios').ScenarioId | null;
   /** The moments a run of days stops for (1.6.0, stops.ts); all of them when missing. */
   stops?: import('./stops').StopKind[];
+  /** 2.0.53: stop a run of days for a trade offer (stops.ts); on unless false. */
+  offerStop?: boolean;
   /** The owner may fire the general manager after bad evaluations (V0.6; off in the sandbox). */
   firing?: boolean;
   /** Tutorial mode (V0.7.5): a guide from the founding through the futures year (promotion after futures). */
