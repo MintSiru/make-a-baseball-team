@@ -157,6 +157,9 @@ export const OFFSEASON = {
   military: {
     mustAge: 28,
     minAge: 20,
+    /** 2.0.56 (the user's request: a high-school player after his first season, 19 by the next April): our club may
+        send him; the other clubs keep their own habit (minAge). */
+    userMinAge: 19,
     byRoute: { futures: 0.3, cameo: 0.2, backup: 0.12, regular: 0.03, rehab: 0.35 } as Record<string, number>,
     byAge: [
       [20, 0.8],

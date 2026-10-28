@@ -268,8 +268,12 @@ export function openBooks(s: LeagueState) {
   // 2.0.42: an independent club gets no support (spending.ts).
   const amount = u.independent ? 0 : Math.min(u.support ?? need, Math.round(need / 1000) * 1000);
   u.seasonSupport = { year: s.year, amount };
-  u.fund += amount;
-  if (amount || !u.independent) u.ledger.push({ year: s.year, label: __i18n_k("league.finance.openBooks.label.4119d9fc", { year: s.year, supportLabel: supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type) }), amount, settlement: true });
+  // 2.0.56: what came in advance in the winter is part of it — the rest now, or the unneeded part back.
+  const advance = u.supportAdvance?.season === s.year ? u.supportAdvance.amount : 0;
+  delete u.supportAdvance;
+  u.fund += amount - advance;
+  if (advance) u.ledger.push({ year: s.year, label: __i18n_k("league.finance.text.6cf8c8bb", { year: s.year, supportLabel: supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type), amount: Math.round(amount / 1000) / 10, advance: Math.round(advance / 1000) / 10 }), amount: amount - advance, settlement: true });
+  else if (amount || !u.independent) u.ledger.push({ year: s.year, label: __i18n_k("league.finance.openBooks.label.4119d9fc", { year: s.year, supportLabel: supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type) }), amount, settlement: true });
   if (tickets?.year === s.year && tickets.paid) {
     u.fund += tickets.paid;
     u.ledger.push({ year: s.year, label: __i18n_k("league.finance.openBooks.label.086c82a0", { year: s.year, value: tickets.sold.toLocaleString('ko-KR'), value2: Math.round(tickets.discount * 100) }), amount: tickets.paid, settlement: true });
@@ -322,3 +326,21 @@ export function projectedReport(s: LeagueState, teamId: TeamId): ClubReport {
 }
 
 export const ticketPriceWon = (s: LeagueState, teamId: TeamId, year = s.year) => Math.round(leaguePrice(year) * clubState(s, teamId).price * 10000);
+
+/** 2.0.56 (the user's report: an empty fund in the winter and the first-round pick lost for his signing bonus): when the
+    winter opens, the owner pays next season's support in advance — its limit for the season — and settles it on
+    opening day (openBooks): what the season needs is paid in all, as before (the winter's spending among it), the rest
+    goes back. By opening day the fund is where it would have been; in the winter it has the money for the rookies'
+    bonuses and the free agents. None before the first first-team season (the founding fund covers it) or for an
+    independent club. */
+export function advanceSupport(s: LeagueState, year: number) {
+  const u = s.user;
+  const next = year + 1;
+  if (!u || u.independent || u.support == null || next < u.firstTeamYear || !firstTeamIds(s, next).includes(u.teamId)) return;
+  if (u.supportAdvance?.season === next) return;
+  const amount = Math.round(u.support / 1000) * 1000;
+  if (amount <= 0) return;
+  u.supportAdvance = { season: next, amount };
+  u.fund += amount;
+  u.ledger.push({ year, label: __i18n_k("league.finance.text.d4be3c9f", { next, supportLabel: supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type) }), amount, settlement: true });
+}

@@ -1,10 +1,13 @@
-import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 import { startYear } from '../league/era';
 import { useState } from 'preact/hooks';
 import { nationalView, retiredNumbersView } from '../league/legacy';
 import { nationalGamesOf } from '../league/nationalgames';
 import type { LeagueState } from '../league/state';
-import { awardsView, recordRoom, shortName, teamNameIn } from '../league/views';
+import { awardsView, positionLabel, recordRoom, shortName, teamNameIn } from '../league/views';
+import { faClass, faClassYears } from '../league/faclass';
+import { faGrades } from '../league/market';
+import { ageIn } from '../league/players';
 import { careerClubs } from '../league/clubnames';
 import { ROUND_NAME } from '../league/postseason';
 import { LEAGUE_LABEL } from '../league/asiaseries';
@@ -13,7 +16,7 @@ import { draftView, draftYears } from '../league/draftlog';
 import { gradeClass } from './grades';
 import { MlbList } from './Mlb';
 
-type View = 'seasons' | 'awards' | 'records' | 'hall' | 'retired' | 'national' | 'draft' | 'mlb';
+type View = 'seasons' | 'awards' | 'records' | 'hall' | 'retired' | 'national' | 'draft' | 'mlb' | 'fa';
 
 export function History({ league, onPlayer, onBox }: { league: LeagueState; onPlayer: (id: string) => void; onBox?: (id: string) => void }) {
   const [view, setView] = useState<View>('seasons');
@@ -31,6 +34,8 @@ export function History({ league, onPlayer, onBox }: { league: LeagueState; onPl
             ['national', __i18n_k("ui.history.history.3243618b")],
             ['draft', __i18n_t("ui.history.text.dddce47e")],
             ['mlb', __i18n_t("ui.history.text.c02cebf4")],
+            // 2.0.56 (the user's request): each winter's free agents (faclass.ts).
+            ['fa', __i18n_t("ui.history.text.c919853c")],
           ] as [View, string][]
         ).map(([id, label]) => (
           <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>
@@ -46,6 +51,7 @@ export function History({ league, onPlayer, onBox }: { league: LeagueState; onPl
       {__i18n_display(view === 'national' && <National league={league} onPlayer={onPlayer} onBox={onBox} />)}
       {view === 'draft' && <Drafts league={league} onPlayer={onPlayer} />}
       {view === 'mlb' && <MlbList league={league} onPlayer={onPlayer} />}
+      {view === 'fa' && <FaList league={league} onPlayer={onPlayer} />}
     </section>
   );
 }
@@ -530,6 +536,76 @@ function Drafts({ league, onPlayer }: { league: LeagueState; onPlayer: (id: stri
           </tbody>
         </table>
       </div>
+    </>
+  );
+}
+
+/** 2.0.56: a winter's free agents — who filed, his club and grade, where he signed and on what terms; before the market
+    opens, the players due to file. */
+function FaList({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
+  const years = faClassYears(league);
+  const [pick, setPick] = useState<number | null>(null);
+  const year = pick != null && years.includes(pick) ? pick : years[0]!;
+  const rows = faClass(league, year);
+  const due = rows.some((r) => r.due);
+  const grades = due ? faGrades(league, year + 1, rows.map((r) => league.players[r.id]!).filter(Boolean)) : {};
+  const rank = (r: (typeof rows)[number]) => ({ A: 0, B: 1, C: 2 })[(r.grade ?? grades[r.id] ?? '') as 'A'] ?? 3;
+  const sorted = [...rows].sort((a, b) => rank(a) - rank(b) || (league.players[b.id]?.scouting.current ?? 0) - (league.players[a.id]?.scouting.current ?? 0));
+  const result = (r: (typeof rows)[number]) => (r.due ? __i18n_t("ui.history.text.211facc4") : r.to === undefined ? __i18n_t("ui.history.text.e7bf361a") : r.to === null ? __i18n_t("ui.history.text.7e6bf393") : r.to === r.from ? __i18n_t("ui.history.text.309227c5") : __i18n_t("ui.history.text.d9e53b92", { club: shortName(league, r.to, year + 1) }));
+  return (
+    <>
+      <label class="inline">
+        {__i18n_t("ui.history.text.b3000412")}{' '}
+        <select value={String(year)} onChange={(e) => setPick(Number((e.currentTarget as HTMLSelectElement).value))}>
+          {years.map((y) => (
+            <option key={y} value={String(y)}>
+              {__i18n_t("ui.history.text.31c7a446", { year: y })}
+            </option>
+          ))}
+        </select>
+      </label>
+      <p class="muted small">{due ? __i18n_t("ui.history.text.afd55962") : __i18n_t("ui.history.text.97e8f6b5")}</p>
+      {sorted.length ? (
+        <div class="table-wrap" tabIndex={0}>
+          <table class="record-table">
+            <thead>
+              <tr>
+                <th>{__i18n_t("ui.history.text.c37450d6")}</th>
+                <th>{__i18n_t("ui.history.text.81922a91")}</th>
+                <th class="num">{__i18n_t("ui.history.text.6c620e5c")}</th>
+                <th class="num">{__i18n_t("ui.history.text.001e4be2")}</th>
+                <th>{__i18n_t("ui.history.text.fb0bbd1d")}</th>
+                <th>{__i18n_t("ui.history.text.89dbf513")}</th>
+                <th>{__i18n_t("ui.history.text.71d855ac")}</th>
+                <th>{__i18n_t("ui.history.text.479ab3e8")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map((r) => {
+                const p = league.players[r.id];
+                return (
+                  <tr key={r.id}>
+                    <td>
+                      <button type="button" class="link" onClick={() => onPlayer(r.id)}>
+                        {p?.name ?? r.id}
+                      </button>
+                    </td>
+                    <td>{p ? __i18n_display(positionLabel(p)) : '-'}</td>
+                    <td class="num">{p ? ageIn(p, year + 1) : '-'}</td>
+                    <td class="num">{p?.scouting.current ?? '-'}</td>
+                    <td>{shortName(league, r.from, year)}</td>
+                    <td>{r.grade ?? grades[r.id] ?? '-'}</td>
+                    <td>{result(r)}</td>
+                    <td class="small">{r.terms ? __i18n_displayText(r.terms) : '-'}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p class="muted">{__i18n_t("ui.history.text.6a453eb6")}</p>
+      )}
     </>
   );
 }

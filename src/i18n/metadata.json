@@ -89831,5 +89831,141 @@
     "line": 345,
     "params": {},
     "locations": []
+  },
+  "league.finance.text.d4be3c9f": {
+    "source": "src/league/finance.ts",
+    "line": 344,
+    "params": {
+      "next": {
+        "expression": "next"
+      },
+      "supportLabel": {
+        "expression": "supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type)"
+      }
+    },
+    "locations": []
+  },
+  "ui.history.text.c919853c": {
+    "source": "src/ui/History.tsx",
+    "line": 38,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.211facc4": {
+    "source": "src/ui/History.tsx",
+    "line": 554,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.e7bf361a": {
+    "source": "src/ui/History.tsx",
+    "line": 554,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.7e6bf393": {
+    "source": "src/ui/History.tsx",
+    "line": 554,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.309227c5": {
+    "source": "src/ui/History.tsx",
+    "line": 554,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.d9e53b92": {
+    "source": "src/ui/History.tsx",
+    "line": 554,
+    "params": {
+      "club": {
+        "expression": "shortName(league, r.to, year + 1)"
+      }
+    },
+    "locations": []
+  },
+  "ui.history.text.b3000412": {
+    "source": "src/ui/History.tsx",
+    "line": 558,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.31c7a446": {
+    "source": "src/ui/History.tsx",
+    "line": 562,
+    "params": {
+      "year": {
+        "expression": "y"
+      }
+    },
+    "locations": []
+  },
+  "ui.history.text.afd55962": {
+    "source": "src/ui/History.tsx",
+    "line": 567,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.97e8f6b5": {
+    "source": "src/ui/History.tsx",
+    "line": 567,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.6c620e5c": {
+    "source": "src/ui/History.tsx",
+    "line": 575,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.001e4be2": {
+    "source": "src/ui/History.tsx",
+    "line": 576,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.fb0bbd1d": {
+    "source": "src/ui/History.tsx",
+    "line": 577,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.89dbf513": {
+    "source": "src/ui/History.tsx",
+    "line": 578,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.479ab3e8": {
+    "source": "src/ui/History.tsx",
+    "line": 580,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.6a453eb6": {
+    "source": "src/ui/History.tsx",
+    "line": 607,
+    "params": {},
+    "locations": []
+  },
+  "league.finance.text.6cf8c8bb": {
+    "source": "src/league/finance.ts",
+    "line": 275,
+    "params": {
+      "year": {
+        "expression": "s.year"
+      },
+      "supportLabel": {
+        "expression": "supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type)"
+      },
+      "amount": {
+        "expression": "Math.round(amount / 1000) / 10"
+      },
+      "advance": {
+        "expression": "Math.round(advance / 1000) / 10"
+      }
+    },
+    "locations": []
   }
 }

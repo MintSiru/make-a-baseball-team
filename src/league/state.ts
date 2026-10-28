@@ -540,6 +540,8 @@ export interface UserClub {
   settledAt?: number;
   /** The season's support from the owner, fixed and paid at opening (V0.12, finance.ts). */
   seasonSupport?: { year: number; amount: number };
+  /** 2.0.56: next season's support paid in advance when the winter opens (finance.ts), settled on opening day. */
+  supportAdvance?: { season: number; amount: number };
   /** The general manager has picked staff once (the first winter always asks). */
   staffSeen?: boolean;
   /** Guaranteed salary still owed to players the club released (counts against the payroll budget). The
@@ -721,6 +723,8 @@ export interface LeagueState {
   voluntary?: Record<PlayerId, { teamId: TeamId; since: string; why: 'club' | 'scandal'; salary: number }>;
   /** 2.0.37 (abroad.ts): our players talked out of going abroad, and the winter they agreed. */
   abroadStay?: Record<PlayerId, number>;
+  /** 2.0.56 (faclass.ts): each winter's free agents, written when the market closes. */
+  faHistory?: import('./faclass').FaClass[];
   /** 2.0.37 (merger.ts): mergers and sales of clubs (`teamId` the club that took a new name). 2.0.49: `absorbedShort`
       the old short name, for the records of the seasons before (views.ts clubNameIn). */
   mergers?: { year: number; into: TeamId | null; absorbed: string; absorbedShort?: string; founded: string; teamId: TeamId; approved: boolean; cityId?: string }[];

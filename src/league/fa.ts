@@ -1,3 +1,4 @@
+import { recordFaClass } from './faclass';
 import { k as __i18n_k } from '../i18n/index';
 import { noteMove } from './moves';
 /* The free-agent negotiation (V0.8, RULES.md §4 and §9). From the day after the list is published every club
@@ -999,6 +1000,8 @@ function closeUnsigned(s: LeagueState, m: FaMarket, t: FaTalk, day: number, next
 
 /** After the last round: the owner's free agent, the winter's summary for the user. */
 export function closeMarket(s: LeagueState, m: FaMarket, next: number) {
+  // 2.0.56: the winter's class, for the free agents' list (faclass.ts).
+  recordFaClass(s, m, termsText);
   const u = s.user;
   if (!u) return;
   const g = m.gift;
