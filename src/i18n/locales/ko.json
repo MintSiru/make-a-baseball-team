@@ -9908,7 +9908,6 @@
   "ui.squad.text.d84b6f4b": "기록",
   "ui.squad.text.9e9117d0": "능력치",
   "ui.squad.text.132cd595": "스카우트가 매긴 등급입니다(20~80). 화살표는 스카우트가 보는 미래 등급입니다. 이름을 누르면 선수 정보창이 뜹니다.",
-  "league.finance.text.79305518": "{year} 시즌 {supportLabel} 정산 (확정 {amount}억 − 겨울 선지급 {advance}억)",
   "league.finance.text.d4be3c9f": "{next} 시즌 {supportLabel} 선지급",
   "ui.history.text.c919853c": "FA",
   "ui.history.text.211facc4": "FA 예정",
@@ -9925,5 +9924,6 @@
   "ui.history.text.fb0bbd1d": "원 소속",
   "ui.history.text.89dbf513": "등급",
   "ui.history.text.479ab3e8": "조건",
-  "ui.history.text.6a453eb6": "이 겨울의 FA가 없습니다."
+  "ui.history.text.6a453eb6": "이 겨울의 FA가 없습니다.",
+  "league.finance.text.6cf8c8bb": "{year} {supportLabel} (시즌 예산 확정 {amount}억 − 겨울 선지급 {advance}억)"
 }

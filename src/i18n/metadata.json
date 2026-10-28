@@ -89832,25 +89832,6 @@
     "params": {},
     "locations": []
   },
-  "league.finance.text.79305518": {
-    "source": "src/league/finance.ts",
-    "line": 275,
-    "params": {
-      "year": {
-        "expression": "s.year"
-      },
-      "supportLabel": {
-        "expression": "supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type)"
-      },
-      "amount": {
-        "expression": "Math.round(amount / 1000) / 10"
-      },
-      "advance": {
-        "expression": "Math.round(advance / 1000) / 10"
-      }
-    },
-    "locations": []
-  },
   "league.finance.text.d4be3c9f": {
     "source": "src/league/finance.ts",
     "line": 344,
@@ -89966,6 +89947,25 @@
     "source": "src/ui/History.tsx",
     "line": 607,
     "params": {},
+    "locations": []
+  },
+  "league.finance.text.6cf8c8bb": {
+    "source": "src/league/finance.ts",
+    "line": 275,
+    "params": {
+      "year": {
+        "expression": "s.year"
+      },
+      "supportLabel": {
+        "expression": "supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type)"
+      },
+      "amount": {
+        "expression": "Math.round(amount / 1000) / 10"
+      },
+      "advance": {
+        "expression": "Math.round(advance / 1000) / 10"
+      }
+    },
     "locations": []
   }
 }

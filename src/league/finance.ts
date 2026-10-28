@@ -272,7 +272,7 @@ export function openBooks(s: LeagueState) {
   const advance = u.supportAdvance?.season === s.year ? u.supportAdvance.amount : 0;
   delete u.supportAdvance;
   u.fund += amount - advance;
-  if (advance) u.ledger.push({ year: s.year, label: __i18n_k("league.finance.text.79305518", { year: s.year, supportLabel: supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type), amount: Math.round(amount / 1000) / 10, advance: Math.round(advance / 1000) / 10 }), amount: amount - advance, settlement: true });
+  if (advance) u.ledger.push({ year: s.year, label: __i18n_k("league.finance.text.6cf8c8bb", { year: s.year, supportLabel: supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type), amount: Math.round(amount / 1000) / 10, advance: Math.round(advance / 1000) / 10 }), amount: amount - advance, settlement: true });
   else if (amount || !u.independent) u.ledger.push({ year: s.year, label: __i18n_k("league.finance.openBooks.label.4119d9fc", { year: s.year, supportLabel: supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type) }), amount, settlement: true });
   if (tickets?.year === s.year && tickets.paid) {
     u.fund += tickets.paid;

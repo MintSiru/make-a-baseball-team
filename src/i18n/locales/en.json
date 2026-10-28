@@ -9908,7 +9908,6 @@
   "ui.squad.text.d84b6f4b": "Stats",
   "ui.squad.text.9e9117d0": "Ratings",
   "ui.squad.text.132cd595": "The scouts' grades (20–80). The arrow is the grade they see him growing into. Click a name for the player's panel.",
-  "league.finance.text.79305518": "{year} {supportLabel}, settled (confirmed {amount} less the winter's advance of {advance})",
   "league.finance.text.d4be3c9f": "{next} {supportLabel}, paid in advance",
   "ui.history.text.c919853c": "FA",
   "ui.history.text.211facc4": "Due",
@@ -9925,5 +9924,6 @@
   "ui.history.text.fb0bbd1d": "Club",
   "ui.history.text.89dbf513": "Grade",
   "ui.history.text.479ab3e8": "Terms",
-  "ui.history.text.6a453eb6": "No free agents that winter."
+  "ui.history.text.6a453eb6": "No free agents that winter.",
+  "league.finance.text.6cf8c8bb": "{year} {supportLabel} (Season Budget Finalized: {amount} less the winter's advance of {advance})"
 }
