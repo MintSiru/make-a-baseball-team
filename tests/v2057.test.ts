@@ -56,3 +56,21 @@ describe('the owner’s free agent over the owner’s limit (2.0.57)', () => {
     expect(u.fund).toBe(fund);
   });
 });
+
+describe('the winter’s advance settled on opening day (2.0.57)', () => {
+  it('takes back no more than the fund has: the season opens at nothing or more', async () => {
+    const { openBooks } = await import('../src/league/finance');
+    const s = loadSave('2.0.55');
+    const u = s.user!;
+    // Opening day of next season, the advance spent in the winter down to an empty fund.
+    s.year += 1;
+    u.support = 500_000;
+    u.supportAdvance = { season: s.year, amount: 500_000 };
+    u.fund = 30_000;
+    openBooks(s);
+    expect(u.fund).toBeGreaterThanOrEqual(0);
+    expect(u.seasonSupport!.year).toBe(s.year);
+    expect(u.seasonSupport!.amount).toBeLessThanOrEqual(u.support);
+    expect(u.supportAdvance).toBeUndefined();
+  });
+});

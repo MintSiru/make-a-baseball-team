@@ -267,12 +267,16 @@ export function openBooks(s: LeagueState) {
   const need = Math.max(0, -operating - over - Math.min(0, cash));
   // 2.0.42: an independent club gets no support (spending.ts).
   const amount = u.independent ? 0 : Math.min(u.support ?? need, Math.round(need / 1000) * 1000);
-  u.seasonSupport = { year: s.year, amount };
-  // 2.0.56: what came in advance in the winter is part of it — the rest now, or the unneeded part back.
+  // 2.0.56: what came in advance in the winter is part of it — the rest now, or the unneeded part back. 2.0.57: back
+  // only as far as the fund has it — what the winter spent of the advance (within the owner's limit) stays paid, so
+  // the season opens with no less than nothing, as it did before the advance.
   const advance = u.supportAdvance?.season === s.year ? u.supportAdvance.amount : 0;
   delete u.supportAdvance;
-  u.fund += amount - advance;
-  if (advance) u.ledger.push({ year: s.year, label: __i18n_k("league.finance.text.6cf8c8bb", { year: s.year, supportLabel: supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type), amount: Math.round(amount / 1000) / 10, advance: Math.round(advance / 1000) / 10 }), amount: amount - advance, settlement: true });
+  const back = Math.min(Math.max(0, advance - amount), Math.max(0, u.fund));
+  const paid = advance ? Math.max(amount, advance - back) : amount;
+  u.seasonSupport = { year: s.year, amount: paid };
+  u.fund += paid - advance;
+  if (advance) u.ledger.push({ year: s.year, label: __i18n_k("league.finance.text.6cf8c8bb", { year: s.year, supportLabel: supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type), amount: Math.round(paid / 1000) / 10, advance: Math.round(advance / 1000) / 10 }), amount: paid - advance, settlement: true });
   else if (amount || !u.independent) u.ledger.push({ year: s.year, label: __i18n_k("league.finance.openBooks.label.4119d9fc", { year: s.year, supportLabel: supportLabel(s.teams.find((t) => t.id === u.teamId)!.parent.type) }), amount, settlement: true });
   if (tickets?.year === s.year && tickets.paid) {
     u.fund += tickets.paid;
