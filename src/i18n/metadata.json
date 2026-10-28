@@ -89967,5 +89967,11 @@
       }
     },
     "locations": []
+  },
+  "ui.faMarket.text.0febb9e9": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 197,
+    "params": {},
+    "locations": []
   }
 }

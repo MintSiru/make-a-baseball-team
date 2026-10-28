@@ -191,7 +191,11 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
       ))}
       <BudgetAsk league={league} onAct={onAct} />
       {__i18n_display(m.gift && !m.talks[m.gift.id]!.signed && (
-        <p class="notice good">{__i18n_rich("ui.faMarket.faMarket.35ffaa19", { value: <strong>{__i18n_t("ui.faMarket.faMarket.17f613d4")}</strong>, name: league.players[m.gift.id]!.name, money: money(m.gift.total), value2: ' ', value3: <button type="button" class="link" onClick={() => setSel(m.gift!.id)}>{__i18n_t("ui.faMarket.faMarket.858d3c58")}</button> })}</p>
+        <>
+          <p class="notice good">{__i18n_rich("ui.faMarket.faMarket.35ffaa19", { value: <strong>{__i18n_t("ui.faMarket.faMarket.17f613d4")}</strong>, name: league.players[m.gift.id]!.name, money: money(m.gift.total), value2: ' ', value3: <button type="button" class="link" onClick={() => setSel(m.gift!.id)}>{__i18n_t("ui.faMarket.faMarket.858d3c58")}</button> })}</p>
+          {/* 2.0.57 (the user's report): more than the limit may be offered; the club pays the rest. */}
+          <p class="muted small">{__i18n_t("ui.faMarket.text.0febb9e9")}</p>
+        </>
       ))}
 
       <div class="fa-grid">

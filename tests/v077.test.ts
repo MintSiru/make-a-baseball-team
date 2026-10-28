@@ -248,7 +248,8 @@ describe('owners (V0.7.7)', () => {
     c.user!.fund = 0;
     const offer = splitOffer(m.gift.total - 5000, t.price.years, 0.5, 0, 2027);
     expect(checkDecision(c, { kind: 'faRound', offers: { [g.id]: offer }, run: 'round' })).toBeNull();
-    expect(checkDecision(c, { kind: 'faRound', offers: { [g.id]: splitOffer(m.gift.total + 20000, t.price.years, 0.5, 0, 2027) }, run: 'round' })).toMatch(/모기업 지원 한도/);
+    // 2.0.57: more than the limit is an offer too, its rest the club's: here, with no budget, over it.
+    expect(checkDecision(c, { kind: 'faRound', offers: { [g.id]: splitOffer(m.gift.total + 20000, t.price.years, 0.5, 0, 2027) }, run: 'round' })).toMatch(/연봉 예산/);
     // He takes it (nobody else bids here): nothing from the fund, his cost on top of the budget.
     t.offers = {};
     t.interest = {};

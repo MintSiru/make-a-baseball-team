@@ -917,7 +917,7 @@ export function faContract(teamId: TeamId, next: number, o: FaOffer, p: Player, 
   return { teamId, kind: 'freeAgent', signedIn: next - 1, signingBonus: o.bonus, salaries: Array.from({ length: o.years }, (_, i) => ({ season: next + i, amount: o.annual })), fa };
 }
 
-function signTalk(s: LeagueState, m: FaMarket, t: FaTalk, teamId: TeamId, o: FaOffer, day: number, next: number) {
+export function signTalk(s: LeagueState, m: FaMarket, t: FaTalk, teamId: TeamId, o: FaOffer, day: number, next: number) {
   const p = s.players[t.id]!;
   const u = s.user;
   const me = u?.teamId;
@@ -940,10 +940,20 @@ function signTalk(s: LeagueState, m: FaMarket, t: FaTalk, teamId: TeamId, o: FaO
   const gift = m.gift?.id === p.id && teamId === me;
   if (u && teamId === me) {
     if (gift) {
-      // The owner pays the whole deal (salary and bonus spread over it) outside the payroll budget.
-      const annual = o.annual + Math.round(o.bonus / o.years);
+      // The owner pays the deal (salary and bonus spread over it) outside the payroll budget, up to its limit; 2.0.57:
+      // a bigger deal's rest is the club's, in its payroll budget (or from the fund, a bonus paid at once).
+      const share = ownerShare(m, p.id, o);
+      const annual = Math.round((o.annual + (o.prepaid ? 0 : o.bonus / o.years)) * share);
       (u.parentGifts ??= []).push({ id: p.id, name: p.name, annual, from: next, to: next + o.years - 1 });
       u.payrollBudget += annual;
+      if (o.prepaid && o.bonus) {
+        // The owner's part of a bonus paid at once is the owner's: the club pays its own part now.
+        const own = Math.round(o.bonus * (1 - share));
+        if (own) {
+          u.fund -= own;
+          u.ledger.push({ year, label: __i18n_k("league.fa.signTalk.label.7d3d0d9c", { name: p.name }), amount: -own });
+        }
+      }
       (u.log ??= []).push({ year, text: __i18n_k("league.fa.signTalk.text.273dec18", { name: p.name, termsText: termsText(o) }) });
     } else if (o.prepaid && o.bonus) {
       u.fund -= o.bonus;
@@ -1077,15 +1087,20 @@ function offersAfter(s: LeagueState, m: FaMarket, input: RoundInput) {
     it is paid at once from the fund. */
 export const budgetUse = (o: FaOffer) => o.annual + (o.prepaid ? 0 : Math.round(o.bonus / o.years));
 
+/** 2.0.57 (the user's report: an offer over the owner's limit could not be made): the part of an offer to the owner's
+    free agent the owner pays — all of it up to its limit, that much of a bigger deal (the club pays the rest). */
+export const ownerShare = (m: FaMarket, id: PlayerId, o: FaOffer) => (m.gift?.id === id ? Math.min(1, m.gift.total / Math.max(1, guaranteed(o))) : 0);
+
 /** What the user's club has put on the table: next season's payroll budget, and bonuses paid at once from the
-    fund (the owner's free agent aside). */
+    fund (the owner's free agent: only the part over the owner's limit). */
 export function openCommitments(s: LeagueState, m: FaMarket, offers: Record<PlayerId, FaOffer>) {
   let budget = 0,
     fund = 0;
   for (const [id, o] of Object.entries(offers)) {
-    if (m.gift?.id === id && guaranteed(o) <= m.gift.total) continue;
-    budget += budgetUse(o);
-    if (o.prepaid) fund += o.bonus;
+    const club = 1 - ownerShare(m, id, o);
+    if (club <= 0) continue;
+    budget += Math.round(budgetUse(o) * club);
+    if (o.prepaid) fund += Math.round(o.bonus * club);
   }
   return { budget, fund };
 }
@@ -1102,9 +1117,8 @@ export function userOffers(s: LeagueState, m: FaMarket): Record<PlayerId, FaOffe
 }
 
 /** The most guaranteed money an offer of this shape to him can carry: within the payroll budget and the fund left
-    after the club's other offers (the owner's free agent: up to the owner's limit). */
+    after the club's other offers (the owner's free agent: the owner's limit, and what the club can add to it). */
 export function maxGuaranteed(s: LeagueState, m: FaMarket, t: FaTalk, o: FaOffer, next: number, offers: Record<PlayerId, FaOffer>) {
-  if (m.gift?.id === t.id) return m.gift.total;
   const u = s.user!;
   const others = Object.fromEntries(Object.entries(offers).filter(([id]) => id !== t.id));
   const c = openCommitments(s, m, others);
@@ -1113,7 +1127,8 @@ export function maxGuaranteed(s: LeagueState, m: FaMarket, t: FaTalk, o: FaOffer
   const perYear = budgetUse(o) / g;
   let most = perYear > 0 ? budgetRoom / perYear : Infinity;
   if (o.prepaid && o.bonus > 0) most = Math.min(most, (u.fund - c.fund) / (o.bonus / g));
-  return Math.max(0, Math.floor(most / 1000) * 1000);
+  const gift = m.gift?.id === t.id ? m.gift.total : 0;
+  return Math.max(0, Math.floor((gift + Math.max(0, most)) / 1000) * 1000);
 }
 
 /** Next season's payroll without the club's own free agents still on the market. */
@@ -1137,7 +1152,6 @@ export function checkRound(s: LeagueState, m: FaMarket, input: RoundInput, next:
     if (o.options > guaranteed(o)) return __i18n_k("league.fa.checkRound.789893cb", { name: name });
     if (o.extra && (!Number.isInteger(o.extra.years) || o.extra.years < 1 || o.extra.years > 2 || !['club', 'player'].includes(o.extra.holder))) return __i18n_k("league.fa.checkRound.6bdbb415", { name: name });
     if (o.promises?.some((x) => !t.demands.some((d) => d.kind === x))) return __i18n_k("league.fa.checkRound.c23d79fa", { name: name });
-    if (m.gift?.id === id && guaranteed(o) > m.gift.total) return __i18n_k("league.fa.checkRound.543bd63d", { name: name, eok: eok(m.gift.total) });
     if (o.ceiling !== undefined && (!Number.isFinite(o.ceiling) || o.ceiling < guaranteed(o))) return __i18n_k("league.fa.checkRound.499acba4", { name: name });
   }
   const offers = offersAfter(s, m, input);
