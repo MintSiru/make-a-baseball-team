@@ -54,6 +54,7 @@ import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { developmentIds, orgIds, orgPlayers, type Decision, type DraftState, type LeagueState, type SalaryRow, type StaffRole, type UserClub } from './state';
 import { OFFSEASON as O, PARENT, TALKS, DIFFICULTY } from './tuning';
 import { developmentOpen } from './features';
+import { advanceSupport } from './finance';
 import { lifeWinter } from './life';
 import { CAMP_IDS, checkCamp, checkDev, devDecision, holdCamp, sendDev, type CampSite } from './development';
 import { autoNational, marchEvents, nextNationalDecision, novemberEvents, resolveNational } from './national';
@@ -245,6 +246,8 @@ export function yearlyGrant(s: LeagueState) {
     floor,
     gifts: giftPayroll(u, next),
   };
+  // 2.0.56: next season's support in advance, for the winter's signing bonuses (finance.ts).
+  advanceSupport(s, year);
 }
 
 /** The least an owner budgets for pay (V0.16): enough over the league's floor for the foreign players and a
@@ -265,7 +268,7 @@ export function militaryDecision(s: LeagueState): Decision | null {
   const M = O.military;
   // The winter's medical exams come first: an operation can mean 4급 (social service only) or 5급 (exempt).
   medicalReview(s, next - 1);
-  const candidates = orgPlayers(s, u.teamId).filter((p) => !isForeign(p) && p.status === 'active' && p.service.military === 'pending' && ageIn(p, next) >= M.minAge);
+  const candidates = orgPlayers(s, u.teamId).filter((p) => !isForeign(p) && p.status === 'active' && p.service.military === 'pending' && ageIn(p, next) >= M.userMinAge);
   if (!candidates.length) return null;
   const byAge = candidates.sort((a, b) => ageIn(b, next) - ageIn(a, next) || b.scouting.current - a.scouting.current);
   const social = byAge.filter(socialOnly).map((p) => p.id);
