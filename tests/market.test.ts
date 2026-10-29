@@ -8,6 +8,7 @@ import { freeAgentsFor } from '../src/league/offseason';
 import { isForeign, keepValue } from '../src/league/players';
 import { orgPlayers, registeredIds, type LeagueState } from '../src/league/state';
 import { checkTrade, foreignMarket, tradeValue, tradeWindow } from '../src/league/trade';
+import { aiNotForSale } from '../src/league/nfs';
 import { numbersCheck } from '../src/story/writer';
 import { endRegular } from './helpers';
 
@@ -44,7 +45,8 @@ describe('trades', () => {
     expect(checkTrade(s, 'kia', [scrub.id], [star.id]).accepted).toBe(false);
     const ourBest = byValue(ours)[0]!;
     // Clearly in their favour, whatever the club's strategy weighs (a contender marks down a prospect).
-    const cheaper = byValue(theirs).find((p) => tradeValue(s, p) * 1.4 + 1 <= tradeValue(s, ourBest))!;
+    const kept = aiNotForSale(s, 'kia');
+    const cheaper = byValue(theirs).find((p) => !kept.includes(p.id) && tradeValue(s, p) * 1.4 + 1 <= tradeValue(s, ourBest))!;
     const c = checkTrade(s, 'kia', [ourBest.id], [cheaper.id]);
     expect(c.problem).toBeNull();
     expect(c.accepted).toBe(true);
