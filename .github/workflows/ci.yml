@@ -36,3 +36,10 @@ jobs:
       - run: npm run build
       - run: npx playwright-core install --with-deps chromium
       - run: npm run test:browser
+      # 2.0.59: the smoke's screenshots (with failure.png) when it fails, its league being random.
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-screenshots
+          path: tests/browser/screenshots
+          retention-days: 7
