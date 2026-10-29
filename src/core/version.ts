@@ -2,4 +2,4 @@
    version is refused instead of silently replaying into a different history. Bump it whenever
    simulated results change for the same seed and inputs. */
 export const SIM_VERSION = '2.0.59';
-export const RELEASE = '2.0.60';
+export const RELEASE = '2.0.61';

@@ -7,6 +7,7 @@
 import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { gunzipSync } from 'node:zlib';
 import { chromium } from 'playwright-core';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -607,7 +608,10 @@ try {
   await page.locator('nav.tabs').getByRole('button', { name: '순위', exact: true }).click();
   await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
   const [download] = await Promise.all([page.waitForEvent('download'), page.locator('#settings-save').getByRole('button', { name: '진행 파일 저장' }).click()]);
-  const file = readFileSync(await download.path(), 'utf8');
+  // 2.0.61: the file comes packed (gzip) where the browser can.
+  const raw = readFileSync(await download.path());
+  const file = (raw[0] === 0x1f && raw[1] === 0x8b ? gunzipSync(raw) : raw).toString('utf8');
+  check(/\.json(\.gz)?$/.test(download.suggestedFilename()) && file.includes('"kbo-expansion-save"'), 'an exported save opens as a save');
   check(file.length > 1000 && !file.includes(SECRET), 'an exported save holds no API key');
   const stored = await page.evaluate(
     () =>
