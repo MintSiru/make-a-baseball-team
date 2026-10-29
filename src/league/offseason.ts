@@ -578,6 +578,29 @@ function draftScore(s: LeagueState, p: Player, counts: Record<string, number>, r
 }
 
 /** The pick an AI club (or the auto-pick for the user) would make. */
+/** 2.0.60 (the user's request): the priority the general manager sets before leaving a pick to the scouts — a position
+    (선발·불펜·포수·내야·외야) and a pathway (고졸·대졸·그 밖), either or both. The draft table shows only those
+    players, and the scouts pick among them (any of the rest when none is left). */
+export type DraftPathway = 'hs' | 'college' | 'other';
+export interface DraftPrefer {
+  role?: import('../draftroom').Role;
+  path?: DraftPathway;
+}
+export const DRAFT_ROLES: import('../draftroom').Role[] = ['SP', 'RP', 'C', 'IF', 'OF'];
+export const DRAFT_PATHS: DraftPathway[] = ['hs', 'college', 'other'];
+/** High school, college (four-year, early entry, two-year) or the rest (independent clubs, back from abroad). */
+export const draftPathOf = (p: Player): DraftPathway => (p.origin.pathway === '고졸' ? 'hs' : /대|2년제/.test(p.origin.pathway) ? 'college' : 'other');
+export const fitsPrefer = (p: Player, pr: DraftPrefer | undefined) => !pr || ((!pr.role || p.role === pr.role) && (!pr.path || draftPathOf(p) === pr.path));
+
+/** The scouts' pick for us under the general manager's priority; their own pick when no one fits it. */
+export function preferredDraftChoice(s: LeagueState, d: DraftState, teamId: TeamId, pickNo: number): Player | null {
+  if (d.prefer && (d.prefer.role || d.prefer.path)) {
+    const p = aiDraftChoice(s, { ...d, pool: d.pool.filter((id) => fitsPrefer(s.players[id]!, d.prefer)) }, teamId, pickNo);
+    if (p) return p;
+  }
+  return aiDraftChoice(s, d, teamId, pickNo);
+}
+
 export function aiDraftChoice(s: LeagueState, d: DraftState, teamId: TeamId, pickNo: number): Player | null {
   const r = rng(`${s.seed}|draft-picks|${d.year}|${pickNo}`);
   const counts = orgCounts(s, teamId);

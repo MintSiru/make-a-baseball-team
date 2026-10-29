@@ -9,9 +9,27 @@ import { traitReport } from '../league/reports';
 import type { LeagueState } from '../league/state';
 import { ageIn } from '../league/players';
 import type { PlayerId } from '../model/types';
+import { loadDisplay } from './display';
+import { wonOfUsd } from './format';
 
 const MAN = 10_000;
 const toMan = (n: number) => String(Math.round(n / MAN));
+
+/** 2.0.60: dollars with the won they come to below (not when the screen shows dollars). */
+function Usd({ n }: { n: number }) {
+  return (
+    <>
+      {__i18n_display(usd(n))}
+      <Won n={n} />
+    </>
+  );
+}
+function Won({ n }: { n: number }) {
+  if (loadDisplay().currency === 'usd' || !Number.isFinite(n) || !n) return null;
+  return <span class="won-of-usd muted small">≈{__i18n_display(wonOfUsd(n))}</span>;
+}
+/** A typed figure in 만 달러, in won. */
+const typed = (text: string | undefined, fallback: number) => (text !== undefined && text !== '' && Number.isFinite(Number(text)) ? Number(text) * MAN : fallback);
 
 /** Our offer to a candidate: what the screen holds, or his ask within the cap. */
 export function offerOf(league: LeagueState, id: PlayerId, t: ForeignTerms, choices: Record<string, string>): ForeignOffer {
@@ -70,8 +88,9 @@ export function ForeignOffers({
                 <td class="num">
                   {__i18n_display(usd(t.counter ?? t.ask))}
                   {__i18n_display(t.counter ? <span class="tag">{__i18n_t("ui.foreignTalks.foreignOffers.239c3bd1")}</span> : null)}
+                  <Won n={t.counter ?? t.ask} />
                 </td>
-                <td class="num">{__i18n_display(t.fee ? usd(t.fee) : '-')}</td>
+                <td class="num">{t.fee ? <Usd n={t.fee} /> : '-'}</td>
                 <td>{__i18n_display(t.rival ? t.rival.label : '-')}</td>
                 <td>
                   <input
@@ -83,6 +102,7 @@ export function ForeignOffers({
                     value={choices[`g:${id}`] ?? toMan(offer.guaranteed)}
                     onInput={(e) => choose(`g:${id}`, (e.currentTarget as HTMLInputElement).value)}
                   />
+                  <Won n={offer.guaranteed} />
                 </td>
                 <td>
                   <input
@@ -94,9 +114,11 @@ export function ForeignOffers({
                     value={choices[`o:${id}`] ?? toMan(offer.options)}
                     onInput={(e) => choose(`o:${id}`, (e.currentTarget as HTMLInputElement).value)}
                   />
+                  <Won n={offer.options} />
                 </td>
                 <td class={`num ${total > cap ? 'minus' : ''}`}>
                   {__i18n_display(usd(total))} / {__i18n_display(usd(cap))}
+                  <Won n={total} />
                 </td>
                 <td>{__i18n_display(outlook(t, offer))}</td>
               </tr>
@@ -148,7 +170,9 @@ export function RenewOffers({
                 <td>
                   {__i18n_display(p.name)} <span class="muted small">{__i18n_t("ui.foreignTalks.renewOffers.8ff6b63f", { ageIn: ageIn(p, next) })}</span>
                 </td>
-                <td class="num">{__i18n_display(usd(r.ask))}</td>
+                <td class="num">
+                  <Usd n={r.ask} />
+                </td>
                 <td>
                   <input
                     type="number"
@@ -159,6 +183,7 @@ export function RenewOffers({
                     value={choices[`a:${r.id}`] ?? toMan(r.ask)}
                     onInput={(e) => choose(`a:${r.id}`, (e.currentTarget as HTMLInputElement).value)}
                   />
+                  <Won n={typed(choices[`a:${r.id}`], r.ask)} />
                 </td>
                 <td>
                   <select aria-label={__i18n_displayText(__i18n_k("ui.foreignTalks.renewOffers.2b11bcb2", { name: p.name }))} value={choices[`y:${r.id}`] ?? '1'} onChange={(e) => choose(`y:${r.id}`, (e.currentTarget as HTMLSelectElement).value)}>

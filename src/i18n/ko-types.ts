@@ -9965,5 +9965,21 @@ export const koSource = {
   "ui.boxScore.text.06f76e12": "서스펜디드 게임 ({date} 시작)",
   "ui.playerPanel.text.f3e2e36a": "선발 등판 (GS)",
   "ui.playerPanel.text.a88271df": "선발",
-  "ui.squad.text.a88271df": "선발"
+  "ui.squad.text.a88271df": "선발",
+  "ui.decision.text.a88271df": "선발",
+  "ui.decision.text.5b8607a3": "불펜",
+  "ui.decision.text.5f31470d": "포수",
+  "ui.decision.text.0c733fda": "내야",
+  "ui.decision.text.aa487065": "외야",
+  "ui.decision.text.24d8cd41": "고졸",
+  "ui.decision.text.22aa6019": "대학",
+  "ui.decision.text.ba687438": "독립·해외 등",
+  "ui.decision.text.a0914b4d": "우선순위",
+  "ui.decision.text.ea4014c4": "우선순위: 포지션",
+  "ui.decision.text.934dd25e": "전체",
+  "ui.decision.text.45590c05": "우선순위: 경로",
+  "ui.decision.text.b5b47031": "우선순위에 맞는 선수가 남지 않았습니다. 우선순위를 바꾸거나, 스카우트에게 맡기면 전체에서 고릅니다.",
+  "ui.decision.text.8dcbba5b": "우선순위 {what}: 표에는 이 선수들만 보이고, 「스카우트에게 맡기기」도 이 안에서 고릅니다(남은 선수가 없으면 전체에서). 다음 지명에도 이어집니다.",
+  "ui.decision.text.f69f49bc": "우선순위(포지션·경로)를 고르면 표에 그 선수들만 보이고, 「스카우트에게 맡기기」도 그 안에서 고릅니다.",
+  "league.expansion.text.df63d8ec": "우선순위를 다시 고르세요."
 } as const;

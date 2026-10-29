@@ -71,6 +71,12 @@ export const moneyShort = (real: number, year?: number) => {
   return converted(manwon, true) ?? (Math.abs(manwon) >= 10000 ? __i18n_k("ui.format.moneyShort.db0fc332", { value: (manwon / 10000).toFixed(1).replace(/\.0$/, '') }) : __i18n_k("ui.format.moneyShort.cd1481f0", { value: manwon.toLocaleString('ko-KR') }));
 };
 
+/** 2.0.60 (the user's request: 외국인 계약금을 매번 환율로 계산하기 불편): US dollars and, beside them, what they come to
+    at the game's rate (MANWON_PER_USD) in the money the screen shows — "85만 달러 (≈11.9억)". Dollars alone when the
+    display is in dollars. */
+export const wonOfUsd = (dollars: number, year?: number) => moneyShort(Math.round(dollars * MANWON_PER_USD), year);
+export const usdWon = (dollars: number, year?: number) => (loadDisplay().currency === 'usd' ? usd(dollars) : `${usd(dollars)} (≈${wonOfUsd(dollars, year)})`);
+
 /** 만 원 amounts as "1억 7,500만" / "3,000만". */
 /** `year`: the season whose prices a nominal amount shows at (the season on screen if not given). */
 export function money(real: number, year?: number) {

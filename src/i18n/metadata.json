@@ -90324,5 +90324,105 @@
     "line": 96,
     "params": {},
     "locations": []
+  },
+  "ui.decision.text.a88271df": {
+    "source": "src/ui/Decision.tsx",
+    "line": 333,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.5b8607a3": {
+    "source": "src/ui/Decision.tsx",
+    "line": 333,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.5f31470d": {
+    "source": "src/ui/Decision.tsx",
+    "line": 333,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.0c733fda": {
+    "source": "src/ui/Decision.tsx",
+    "line": 333,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.aa487065": {
+    "source": "src/ui/Decision.tsx",
+    "line": 333,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.24d8cd41": {
+    "source": "src/ui/Decision.tsx",
+    "line": 334,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.22aa6019": {
+    "source": "src/ui/Decision.tsx",
+    "line": 334,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.ba687438": {
+    "source": "src/ui/Decision.tsx",
+    "line": 334,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.a0914b4d": {
+    "source": "src/ui/Decision.tsx",
+    "line": 340,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.ea4014c4": {
+    "source": "src/ui/Decision.tsx",
+    "line": 341,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.934dd25e": {
+    "source": "src/ui/Decision.tsx",
+    "line": 343,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.45590c05": {
+    "source": "src/ui/Decision.tsx",
+    "line": 351,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.b5b47031": {
+    "source": "src/ui/Decision.tsx",
+    "line": 392,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.8dcbba5b": {
+    "source": "src/ui/Decision.tsx",
+    "line": 714,
+    "params": {
+      "what": {
+        "expression": "preferText(draftPrefer)"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.f69f49bc": {
+    "source": "src/ui/Decision.tsx",
+    "line": 715,
+    "params": {},
+    "locations": []
+  },
+  "league.expansion.text.df63d8ec": {
+    "source": "src/league/expansion.ts",
+    "line": 587,
+    "params": {},
+    "locations": []
   }
 }

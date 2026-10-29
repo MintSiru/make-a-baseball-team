@@ -10,6 +10,7 @@ import { roleLabel } from './format';
 import { gradeClass } from './grades';
 import { useSort } from './sort';
 import { pathwayLabel } from '../league/amateur';
+import { draftPathOf } from '../league/offseason';
 import { FASTBALL_LABELS, fastballOf, pitchLabel, repertoire } from '../league/pitches';
 
 type RoleFilter = 'all' | Role;
@@ -33,7 +34,7 @@ const pitchesOf = (p: Player) => {
   return { codes: [fb, ...rest.map((x) => x.type)], names: [__i18n_displayText(FASTBALL_LABELS[fb]), ...rest.map((x) => __i18n_displayText(pitchLabel(p, x.type)))] };
 };
 
-const pathOf = (p: Player): Exclude<PathFilter, 'all'> => (p.origin.pathway === '고졸' ? 'hs' : /대|2년제/.test(p.origin.pathway) ? 'college' : 'other');
+const pathOf = (p: Player): Exclude<PathFilter, 'all'> => draftPathOf(p);
 
 interface Props {
   /** The draft held in September of this year (it fills next season's rosters). */

@@ -30,7 +30,9 @@ import { clubOptionsDue } from './fa';
 import { foreignSlots } from './manager';
 import {
   advanceOffseason,
-  aiDraftChoice,
+  DRAFT_PATHS,
+  DRAFT_ROLES,
+  preferredDraftChoice,
   aiForeignRenewals,
   developmentContract,
   foreignOn,
@@ -513,7 +515,7 @@ setOffseasonHooks({ begin: yearlyGrant, draftSlots, decide, rookies: rookieBonus
 
 export type DecisionInput =
   | { kind: 'tryout'; ids: PlayerId[] }
-  | { kind: 'draftPick'; id: PlayerId | null } // null: let the scouts pick
+  | { kind: 'draftPick'; id: PlayerId | null; prefer?: import('./offseason').DraftPrefer } // null: let the scouts pick (2.0.60: under the priority)
   /** 판타지 드래프트 (1.6.0): a player, or null for the scouts' pick; `autoUntil` hands our picks to the scouts through that round. */
   | { kind: 'fantasyPick'; id: PlayerId | null; autoUntil?: number }
   | { kind: 'specialDraft'; picks: Record<TeamId, PlayerId> }
@@ -582,6 +584,7 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       if (input.id && !draft.pool.includes(input.id)) return __i18n_k("league.expansion.checkDecision.11dcd2b0");
       const eligible = (d as Extract<Decision, { kind: 'draftPick' }>).eligible;
       if (input.id && eligible && !eligible.includes(input.id)) return __i18n_k("league.expansion.text.ad8fb12b");
+      if (input.prefer && ((input.prefer.role && !DRAFT_ROLES.includes(input.prefer.role)) || (input.prefer.path && !DRAFT_PATHS.includes(input.prefer.path)))) return __i18n_k("league.expansion.text.df63d8ec");
       return null;
     }
     case 'specialDraft': {
@@ -667,8 +670,14 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
     }
     case 'draftPick': {
       const draft = s.offseason!.draft!;
-      // No one picked: the scouts' choice (for a territorial pick, the region's best).
-      const p = input.id ? s.players[input.id]! : aiDraftChoice(s, draft, u.teamId, draft.next + 1)!;
+      // 2.0.60: the priority stays for the draft's later picks.
+      if (input.prefer) {
+        const pr = { ...(input.prefer.role ? { role: input.prefer.role } : {}), ...(input.prefer.path ? { path: input.prefer.path } : {}) };
+        if (pr.role || pr.path) draft.prefer = pr;
+        else delete draft.prefer;
+      }
+      // No one picked: the scouts' choice (for a territorial pick, the region's best), under the priority.
+      const p = input.id ? s.players[input.id]! : preferredDraftChoice(s, draft, u.teamId, draft.next + 1)!;
       makePick(s, draft, p);
       break;
     }
