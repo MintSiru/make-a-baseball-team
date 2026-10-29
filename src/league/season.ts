@@ -412,7 +412,6 @@ export function playDay(s: LeagueState): boolean {
     }
     if (out?.called?.kind === 'suspended') {
       suspend(s, out, log, date);
-      s.next++;
       continue;
     }
     s.next++;

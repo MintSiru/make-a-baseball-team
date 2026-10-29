@@ -11,7 +11,8 @@ import { makeSchedule } from '../src/league/schedule';
 import { firstTeamIds, registeredIds, type Decision, type LeagueState, type RivalSettings } from '../src/league/state';
 import { assignLeagues, leagueTables, twelveGames } from '../src/league/twelve';
 import { currentStandings } from '../src/league/season';
-import { attendance, clubState } from '../src/league/fans';
+import { attendance, clubState, rivalsMeet } from '../src/league/fans';
+import { PLAYER_RIVALS } from '../src/league/tuning';
 import { endRegular } from './helpers';
 
 let s: LeagueState;
@@ -210,6 +211,8 @@ describe('twelve clubs', () => {
     c.teams.find((t) => t.id === EXPANSION_ID)!.stadium.capacity = 100_000;
     clubState(c, RIVAL_ID).popularity = clubState(c, 'kia').popularity;
     const g = { id: '2029-9999', date: '2029-05-02', home: EXPANSION_ID };
-    expect(attendance(c, { ...g, away: RIVAL_ID }) / attendance(c, { ...g, away: 'kia' })).toBeCloseTo(1.15, 2);
+    // 2.0.36: rival players meeting add their own bit to either game (2.0.59: the league as it went may have them).
+    const players = (away: string) => (rivalsMeet(c, EXPANSION_ID, away) ? PLAYER_RIVALS.crowd : 1);
+    expect(attendance(c, { ...g, away: RIVAL_ID }) / attendance(c, { ...g, away: 'kia' })).toBeCloseTo((1.15 * players(RIVAL_ID)) / players('kia'), 2);
   });
 });

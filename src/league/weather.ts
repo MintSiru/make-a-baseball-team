@@ -250,6 +250,8 @@ export interface SuspendedGame {
 
 export function suspend(s: LeagueState, out: GameOut, log: PlayEvent[] | undefined, today: string) {
   const g = s.schedule[s.next]!;
+  // It leaves today for the day it is finished (one game on the schedule, as a game called off).
+  s.schedule.splice(s.next, 1);
   const at = out.called!;
   const score: [number, number] = [out.away.lineScore.slice(0, at.inning).reduce((a, x) => a + x, 0), out.home.lineScore.slice(0, at.inning - 1).reduce((a, x) => a + x, 0)];
   const to = nextMeeting(s, g, today, 366)?.date ?? makeupDate(s, g, today);
