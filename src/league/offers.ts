@@ -184,7 +184,7 @@ export function aiOffers(s: LeagueState, date: string, r: () => number) {
     .map((x) => x.id);
   let made = 0;
   for (const teamId of clubs) {
-    if (made >= OFFERS.perRound || open.length >= OFFERS.open) break;
+    if (made >= OFFERS.perRound || open.filter((o) => !o.block).length >= OFFERS.open) break;
     if (r() > OFFERS.chance) continue;
     const want = wanted(s, teamId, r);
     if (!want || open.some((o) => o.give.includes(want.p.id))) continue;
