@@ -3,7 +3,7 @@
 2026년, KBO 11번째 구단의 초대 단장이 되어 창단부터 우승까지 구단을 키우는 운영 시뮬레이션입니다. 설치나 서버 없이 HTML 파일 하나로 브라우저에서 실행됩니다.
 
 - **바로 플레이:** https://mintsiru.github.io/make-a-baseball-team/
-- **현재 버전:** **2.0.57** · 버전별 요약은 [`docs/CHANGELOG.md`](docs/CHANGELOG.md), 앞으로의 계획은 [`ROADMAP.md`](ROADMAP.md)
+- **현재 버전:** **2.0.58** · 버전별 요약은 [`docs/CHANGELOG.md`](docs/CHANGELOG.md), 앞으로의 계획은 [`ROADMAP.md`](ROADMAP.md)
 - **언어:** 한국어 · English · 日本語
 
 ## 시작하는 법
