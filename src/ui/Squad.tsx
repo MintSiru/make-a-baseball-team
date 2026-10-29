@@ -69,6 +69,7 @@ function PitcherTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; on
       grade: { value: (r) => r.grade },
       future: { value: (r) => rowFuture(r) ?? -1 },
       g: { value: (r) => p(r)?.g ?? 0 },
+      gs: { value: (r) => p(r)?.gs ?? 0 },
       wl: { value: (r) => (p(r)?.w ?? 0) - (p(r)?.l ?? 0) },
       svh: { value: (r) => (p(r)?.sv ?? 0) + (p(r)?.hld ?? 0) },
       ip: { value: (r) => p(r)?.outs ?? 0 },
@@ -92,6 +93,7 @@ function PitcherTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; on
             {__i18n_display(th('grade', __i18n_k("ui.squad.pitcherTable.001e4be2"), true))}
             {__i18n_display(th('future', __i18n_k("ui.squad.pitcherTable.6e0caec5"), true))}
             {__i18n_display(th('g', __i18n_k("ui.squad.pitcherTable.e0cee61a"), true))}
+            {th('gs', __i18n_t("ui.squad.text.a88271df"), true)}
             {__i18n_display(th('wl', __i18n_k("ui.squad.pitcherTable.9660dd73"), true))}
             {__i18n_display(th('svh', __i18n_k("ui.squad.pitcherTable.df8372bc"), true))}
             {__i18n_display(th('ip', __i18n_k("ui.squad.pitcherTable.639a1f2f"), true))}
@@ -122,6 +124,7 @@ function PitcherTable({ rows, onPlayer, actions, posControl }: { rows: Row[]; on
                 <td class={`num ${gradeClass(r.grade)}`}>{__i18n_display(r.grade)}</td>
                 <td class={`num strong ${gradeClass(rowFuture(r))}`}>{__i18n_display(rowFuture(r) ?? '-')}</td>
                 <td class="num">{__i18n_display(x?.g ?? '-')}</td>
+                <td class="num">{__i18n_display(x?.gs ?? '-')}</td>
                 <td class="num">{__i18n_display(x ? `${x.w}-${x.l}` : '-')}</td>
                 <td class="num">{__i18n_display(x ? `${x.sv}/${x.hld}` : '-')}</td>
                 <td class="num">{__i18n_display(x ? rates.ip(x.outs) : '-')}</td>

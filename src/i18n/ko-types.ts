@@ -9962,5 +9962,8 @@ export const koSource = {
   "league.weather.text.3b1908b7": "승",
   "league.weather.text.36260e2c": "패",
   "ui.boxScore.text.c2c542a6": "강우 콜드 ({inning}회)",
-  "ui.boxScore.text.06f76e12": "서스펜디드 게임 ({date} 시작)"
+  "ui.boxScore.text.06f76e12": "서스펜디드 게임 ({date} 시작)",
+  "ui.playerPanel.text.f3e2e36a": "선발 등판 (GS)",
+  "ui.playerPanel.text.a88271df": "선발",
+  "ui.squad.text.a88271df": "선발"
 } as const;

@@ -9961,5 +9961,8 @@
   "league.weather.text.3b1908b7": "勝ち",
   "league.weather.text.36260e2c": "負け",
   "ui.boxScore.text.c2c542a6": "降雨コールド（{inning}回）",
-  "ui.boxScore.text.06f76e12": "サスペンデッドゲーム（{date}開始）"
+  "ui.boxScore.text.06f76e12": "サスペンデッドゲーム（{date}開始）",
+  "ui.playerPanel.text.f3e2e36a": "先発登板（GS）",
+  "ui.playerPanel.text.a88271df": "先発",
+  "ui.squad.text.a88271df": "先発"
 }

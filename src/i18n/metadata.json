@@ -90306,5 +90306,23 @@
       }
     },
     "locations": []
+  },
+  "ui.playerPanel.text.f3e2e36a": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 279,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.a88271df": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 279,
+    "params": {},
+    "locations": []
+  },
+  "ui.squad.text.a88271df": {
+    "source": "src/ui/Squad.tsx",
+    "line": 96,
+    "params": {},
+    "locations": []
   }
 }

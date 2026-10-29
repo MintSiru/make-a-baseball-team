@@ -9961,5 +9961,8 @@
   "league.weather.text.3b1908b7": "win",
   "league.weather.text.36260e2c": "loss",
   "ui.boxScore.text.c2c542a6": "Called for rain (after inning {inning})",
-  "ui.boxScore.text.06f76e12": "Suspended game (began {date})"
+  "ui.boxScore.text.06f76e12": "Suspended game (began {date})",
+  "ui.playerPanel.text.f3e2e36a": "Games started (GS)",
+  "ui.playerPanel.text.a88271df": "GS",
+  "ui.squad.text.a88271df": "GS"
 }
