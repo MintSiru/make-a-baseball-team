@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from 'preact/hooks';
 import type { Action } from '../league/actions';
 import { Help } from './Help';
 import { decisionTip } from './tutorial';
-import { draftContracts, TOOL_LABELS, type Difficulty } from '../draftroom';
+import { draftContracts, TOOL_LABELS, type Difficulty, type Role } from '../draftroom';
 import { salaryIn, usdTotal } from '../league/contracts';
 import { usd } from '../league/foreign';
 import { dealTotal } from '../league/foreigntalks';
@@ -16,7 +16,7 @@ import { eventById } from '../league/international';
 import { kboLine, poolEntry } from '../league/foreignpool';
 import { autoDecision, checkDecision, projectedPayroll, type DecisionInput } from '../league/expansion';
 import { moveBlocked } from '../league/clubmove';
-import { sangmuChance } from '../league/offseason';
+import { DRAFT_PATHS, DRAFT_ROLES, fitsPrefer, sangmuChance, type DraftPathway, type DraftPrefer } from '../league/offseason';
 import { ageIn, isPitcher, keepValue } from '../league/players';
 import type { Decision as DecisionT, LeagueState, RivalSettings } from '../league/state';
 import { focusOptions, payrollWithout, salaryOffer, type CampPlan, type MilitaryOrder, type SalaryChoice } from '../league/userclub';
@@ -28,7 +28,7 @@ import { MANAGER_STYLES, STAFF_EFFECTS, STAFF_LABELS } from '../league/staff';
 import { defaultYears, yearsFor } from '../league/staffdeals';
 import type { Position } from '../model/position';
 import type { Player, PlayerId, TeamId } from '../model/types';
-import { money } from './format';
+import { money, usdWon } from './format';
 import { serviceNote } from '../league/military';
 import { goalText } from '../league/parent';
 import { capPlayers, foreignCap, foreignCapOn, foreignCost } from '../league/foreigncap';
@@ -219,7 +219,7 @@ function ForeignCapLine({ league, next, adding }: { league: LeagueState; next: n
   const over = total - cap;
   if (!foreignCapOn(next)) return null;
   return (
-    <p class={over > 0 ? 'notice warn' : 'muted'}>{__i18n_t("ui.decision.foreignCapLine.da9d4e52", { next: next, usd: usd(total), usd2: usd(cap), value: over > 0 ? __i18n_k("ui.decision.foreignCapLine.4f534145", { usd: usd(over) }) : '' })}</p>
+    <p class={over > 0 ? 'notice warn' : 'muted'}>{__i18n_t("ui.decision.foreignCapLine.da9d4e52", { next: next, usd: usdWon(total), usd2: usdWon(cap), value: over > 0 ? __i18n_k("ui.decision.foreignCapLine.4f534145", { usd: usdWon(over) }) : '' })}</p>
   );
 }
 
@@ -329,10 +329,50 @@ function PlayerTable({
 }
 
 /** The draft board on the clock: every heading sorts, the scouts' top three are marked. */
-function DraftTable({ league, onPlayer, onPick, only }: { league: LeagueState; onPlayer: (id: PlayerId) => void; onPick: (id: PlayerId) => void; only?: PlayerId[] }) {
+/** 2.0.60: the general manager's priority for the scouts' picks — a position and a pathway (offseason.ts). */
+const ROLE_PRIORITY: Record<Role, string> = { SP: __i18n_t("ui.decision.text.a88271df"), RP: __i18n_t("ui.decision.text.5b8607a3"), C: __i18n_t("ui.decision.text.5f31470d"), IF: __i18n_t("ui.decision.text.0c733fda"), OF: __i18n_t("ui.decision.text.aa487065") };
+const PATH_PRIORITY: Record<DraftPathway, string> = { hs: __i18n_t("ui.decision.text.24d8cd41"), college: __i18n_t("ui.decision.text.22aa6019"), other: __i18n_t("ui.decision.text.ba687438") };
+export const preferText = (pr: DraftPrefer) => [pr.role && ROLE_PRIORITY[pr.role], pr.path && PATH_PRIORITY[pr.path]].filter(Boolean).join(' · ');
+
+function DraftPriority({ prefer, setPrefer }: { prefer: DraftPrefer; setPrefer: (pr: DraftPrefer) => void }) {
+  return (
+    <div class="controls draft-priority">
+      <strong>{__i18n_t("ui.decision.text.a0914b4d")}</strong>
+      <div class="segmented" role="group" aria-label={__i18n_t("ui.decision.text.ea4014c4")}>
+        <button type="button" aria-pressed={!prefer.role} onClick={() => setPrefer({ ...prefer, role: undefined })}>
+          {__i18n_t("ui.decision.text.934dd25e")}
+        </button>
+        {DRAFT_ROLES.map((r) => (
+          <button key={r} type="button" aria-pressed={prefer.role === r} onClick={() => setPrefer({ ...prefer, role: r })}>
+            {ROLE_PRIORITY[r]}
+          </button>
+        ))}
+      </div>
+      <div class="segmented" role="group" aria-label={__i18n_t("ui.decision.text.45590c05")}>
+        <button type="button" aria-pressed={!prefer.path} onClick={() => setPrefer({ ...prefer, path: undefined })}>
+          {__i18n_t("ui.decision.text.934dd25e")}
+        </button>
+        {DRAFT_PATHS.map((x) => (
+          <button key={x} type="button" aria-pressed={prefer.path === x} onClick={() => setPrefer({ ...prefer, path: x })}>
+            {PATH_PRIORITY[x]}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DraftTable({ league, onPlayer, onPick, only, prefer }: { league: LeagueState; onPlayer: (id: PlayerId) => void; onPick: (id: PlayerId) => void; only?: PlayerId[]; prefer?: DraftPrefer }) {
   const draft = league.offseason!.draft!;
-  // 1.9.8: a territorial pick shows only the region's high-school players.
-  const pool = useMemo(() => (only ?? draft.pool).map((id) => league.players[id]!).sort((a, b) => a.amateur.draftRank - b.amateur.draftRank), [draft.pool.length, only]);
+  // 1.9.8: a territorial pick shows only the region's high-school players. 2.0.60: and only those the priority asks for.
+  const pool = useMemo(
+    () =>
+      (only ?? draft.pool)
+        .map((id) => league.players[id]!)
+        .filter((p) => fitsPrefer(p, prefer))
+        .sort((a, b) => a.amateur.draftRank - b.amateur.draftRank),
+    [draft.pool.length, only, prefer?.role, prefer?.path],
+  );
   const recommended = useMemo(() => {
     const score = (p: Player) => (shownFuture(p) ?? p.scouting.current) * 0.6 + p.scouting.current * 0.4;
     return new Set([...pool].sort((a, b) => score(b) - score(a) || a.amateur.draftRank - b.amateur.draftRank).slice(0, 3).map((p) => p.id));
@@ -349,6 +389,7 @@ function DraftTable({ league, onPlayer, onPick, only }: { league: LeagueState; o
     // 2.0.54 (the user's request: the prospects tab's notes during the draft itself).
     range: { value: (p) => p.scouting.ceiling },
   });
+  if (!pool.length) return <p class="muted">{__i18n_t("ui.decision.text.b5b47031")}</p>;
   return (
     <div class="table-wrap" tabIndex={0}>
       <table class="record-table pick-table">
@@ -426,6 +467,8 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
   const [move, setMove] = useState(false);
   // 1.5.0: why the scouts recommend it, shown once the recommendation is filled in.
   const [advice, setAdvice] = useState<Advice | null>(null);
+  // 2.0.60: the draft's priority for the scouts, kept for its later picks.
+  const [draftPrefer, setDraftPrefer] = useState<DraftPrefer>(() => league.offseason?.draft?.prefer ?? {});
   // Consecutive decisions of one kind (draft picks, compensation per free agent) start from a clean slate.
   const stage =
     d.kind === 'draftPick' || d.kind === 'fantasyPick'
@@ -665,7 +708,13 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         <>
           <p>{__i18n_rich("ui.decision.decision.0a4eef4a", { value: draft.year + 1, label: d.label, overall: d.overall, length: draft.pool.length, length2: mine.length, value2: ' ', value3: <span class="muted">{__i18n_display(mine.map((p) => p.name).join(', ') || __i18n_k("ui.decision.decision.d58fa73a"))}</span> })}</p>
           {d.eligible ? <p class="notice">{__i18n_t("ui.decision.text.262e41d5", { n: d.eligible.length })}</p> : <p class="muted">{__i18n_t("ui.decision.decision.bd4cd855")}</p>}
-          <DraftTable league={league} onPlayer={onPlayer} onPick={(id) => onSubmit({ kind: 'draftPick', id })} only={d.eligible} />
+          <DraftPriority prefer={draftPrefer} setPrefer={setDraftPrefer} />
+          <p class="muted small">
+            {draftPrefer.role || draftPrefer.path
+              ? __i18n_t("ui.decision.text.8dcbba5b", { what: preferText(draftPrefer) })
+              : __i18n_t("ui.decision.text.f69f49bc")}
+          </p>
+          <DraftTable league={league} onPlayer={onPlayer} onPick={(id) => onSubmit({ kind: 'draftPick', id, prefer: draftPrefer })} only={d.eligible} prefer={draftPrefer} />
         </>
       );
       break;
@@ -774,7 +823,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
                 onPlayer={onPlayer}
                 extra={{
                   title: __i18n_k("ui.decision.decision.title.aff747f0"),
-                  value: (p) => (p.contract?.usd ? `${usd(usdTotal(p.contract))} (${usd(p.contract.usd.bonus)}·${usd(p.contract.usd.salary)}·${usd(p.contract.usd.options)})` : '-'),
+                  value: (p) => (p.contract?.usd ? `${usdWon(usdTotal(p.contract))} (${usd(p.contract.usd.bonus)}·${usd(p.contract.usd.salary)}·${usd(p.contract.usd.options)})` : '-'),
                   sort: (p) => usdTotal(p.contract),
                 }}
               />
@@ -1116,7 +1165,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
             onPlayer={onPlayer}
             extra={{
               title: __i18n_k("ui.decision.decision.title.440e928f"),
-              value: (p) => (byId[p.id]!.leaving ? __i18n_k("ui.decision.decision.value.731f5f57", { value: byId[p.id]!.war.toFixed(1) }) : `${byId[p.id]!.war.toFixed(1)} · ${usd(byId[p.id]!.ask)}`),
+              value: (p) => (byId[p.id]!.leaving ? __i18n_k("ui.decision.decision.value.731f5f57", { value: byId[p.id]!.war.toFixed(1) }) : `${byId[p.id]!.war.toFixed(1)} · ${usdWon(byId[p.id]!.ask)}`),
               sort: (p) => byId[p.id]!.war,
             }}
           />
@@ -1344,7 +1393,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
                       {league.players[r.id]?.name ?? '?'}
                     </button>
                   </td>
-                  <td>{__i18n_t("ui.decision.text.26246615", { years: r.years, total: usd(r.total) })}</td>
+                  <td>{__i18n_t("ui.decision.text.26246615", { years: r.years, total: usdWon(r.total) })}</td>
                   <td class="num">{Math.round(r.chance * 100)}%</td>
                 </tr>
               ))}
@@ -1806,7 +1855,10 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       {__i18n_display(body)}
       <div class="actions">
         {__i18n_display(d.kind === 'draftPick' ? (
-          <button type="button" onClick={() => onSubmit({ kind: 'draftPick', id: null })}>{__i18n_t("ui.decision.decision.ef320e15")}</button>
+          <button type="button" onClick={() => onSubmit({ kind: 'draftPick', id: null, prefer: draftPrefer })}>
+            {__i18n_t("ui.decision.decision.ef320e15")}
+            {draftPrefer.role || draftPrefer.path ? ` (${preferText(draftPrefer)})` : ''}
+          </button>
         ) : d.kind === 'fantasyPick' ? (
           <>
             <button type="button" onClick={() => onSubmit({ kind: 'fantasyPick', id: null })}>{__i18n_t("ui.decision.decision.34a2fe1f")}</button>

@@ -3818,3 +3818,9 @@ button.danger {
 .pick-table .draft-memo .tag {
   margin-right: 0.3em;
 }
+
+/* 2.0.60: the won a dollar figure comes to, under it (ForeignTalks.tsx). */
+.won-of-usd {
+  display: block;
+  white-space: nowrap;
+}

@@ -9964,5 +9964,21 @@
   "ui.boxScore.text.06f76e12": "Suspended game (began {date})",
   "ui.playerPanel.text.f3e2e36a": "Games started (GS)",
   "ui.playerPanel.text.a88271df": "GS",
-  "ui.squad.text.a88271df": "GS"
+  "ui.squad.text.a88271df": "GS",
+  "ui.decision.text.a88271df": "SP",
+  "ui.decision.text.5b8607a3": "Bullpen",
+  "ui.decision.text.5f31470d": "C",
+  "ui.decision.text.0c733fda": "IF",
+  "ui.decision.text.aa487065": "OF",
+  "ui.decision.text.24d8cd41": "High school",
+  "ui.decision.text.22aa6019": "College",
+  "ui.decision.text.ba687438": "Independent/abroad",
+  "ui.decision.text.a0914b4d": "Priority",
+  "ui.decision.text.ea4014c4": "Priority: position",
+  "ui.decision.text.934dd25e": "All",
+  "ui.decision.text.45590c05": "Priority: pathway",
+  "ui.decision.text.b5b47031": "No player fitting the priority is left. Change it, or delegate it to the scouts and they choose from everyone.",
+  "ui.decision.text.8dcbba5b": "Priority {what}: the table shows only these players, and \"Delegate to Scouts\" picks among them (from everyone when none is left). It carries over to the next picks.",
+  "ui.decision.text.f69f49bc": "Choose a priority (position, pathway) and the table shows only those players, and \"Delegate to Scouts\" picks among them.",
+  "league.expansion.text.df63d8ec": "Choose the priority again."
 }

@@ -389,6 +389,8 @@ export interface DraftState {
   /** The user's club has settled its rookies' bonuses and its development signings. */
   bonusDone?: boolean;
   userDevelopmentDone?: boolean;
+  /** 2.0.60 (offseason.ts): the general manager's priority for the scouts' picks (a position, a pathway). */
+  prefer?: import('./offseason').DraftPrefer;
 }
 
 export interface OffseasonState {

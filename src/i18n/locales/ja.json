@@ -9964,5 +9964,21 @@
   "ui.boxScore.text.06f76e12": "サスペンデッドゲーム（{date}開始）",
   "ui.playerPanel.text.f3e2e36a": "先発登板（GS）",
   "ui.playerPanel.text.a88271df": "先発",
-  "ui.squad.text.a88271df": "先発"
+  "ui.squad.text.a88271df": "先発",
+  "ui.decision.text.a88271df": "先発",
+  "ui.decision.text.5b8607a3": "救援",
+  "ui.decision.text.5f31470d": "捕手",
+  "ui.decision.text.0c733fda": "内野",
+  "ui.decision.text.aa487065": "外野",
+  "ui.decision.text.24d8cd41": "高卒",
+  "ui.decision.text.22aa6019": "大学",
+  "ui.decision.text.ba687438": "独立・海外など",
+  "ui.decision.text.a0914b4d": "優先順位",
+  "ui.decision.text.ea4014c4": "優先順位：ポジション",
+  "ui.decision.text.934dd25e": "全体",
+  "ui.decision.text.45590c05": "優先順位：経歴",
+  "ui.decision.text.b5b47031": "優先順位に合う選手が残っていません。優先順位を変えるか、スカウトに一任すれば全体から選びます。",
+  "ui.decision.text.8dcbba5b": "優先順位 {what}：表にはこの選手だけが表示され、「スカウトに一任」もこの中から選びます（残っていなければ全体から）。次の指名にも引き継がれます。",
+  "ui.decision.text.f69f49bc": "優先順位（ポジション・経歴）を選ぶと、表にはその選手だけが表示され、「スカウトに一任」もその中から選びます。",
+  "league.expansion.text.df63d8ec": "優先順位を選び直してください。"
 }
