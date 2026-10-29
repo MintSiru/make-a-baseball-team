@@ -15,7 +15,7 @@ import type { CalendarPhase, Player, PlayerId } from '../model/types';
 import { makeSave, parseSave, SaveError, serializeSave } from '../save/format';
 import { AUTO_SLOT, autosaveHold, BACKUP_EVERY, openStore, rotateBackups, setAsideDamaged, type SaveStore } from '../save/store';
 import { autoSaver, type AutoSaver } from '../save/autosave';
-import { readSaveFile } from '../save/compress';
+import { packText, readSaveFile } from '../save/compress';
 import { BoxScore } from './BoxScore';
 import { NewGameDialog } from './NewGameDialog';
 import { StorySettings } from './StorySettings';
@@ -503,11 +503,17 @@ export function App() {
   };
   actRef.current = act;
 
-  const exportSave = () => {
-    const blob = new Blob([serializeSave(snapshotSave(league))], { type: 'application/json' });
+  const exportSave = async () => {
+    // The game as it is now (before the packing, which takes a moment: a new game may be on its way).
+    const text = serializeSave(snapshotSave(league));
+    const name = `kbo-expansion-${league.seed}-${league.year}.json`;
+    // 2.0.61 (the user's report: a 30MB save too big to send anywhere): the file packed, a fifth of the size or less —
+    // it opens as before (readSaveFile); plain JSON where the browser cannot pack it.
+    const gz = await packText(text);
+    const blob = gz ? new Blob([gz as BlobPart], { type: 'application/gzip' }) : new Blob([text], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `kbo-expansion-${league.seed}-${league.year}.json`;
+    a.download = gz ? `${name}.gz` : name;
     document.body.append(a);
     a.click();
     a.remove();
@@ -661,7 +667,7 @@ export function App() {
         <NewGameDialog
           onClose={() => setNewGameAsk(false)}
           onSaveAndStart={() => {
-            exportSave();
+            void exportSave();
             setNewGameAsk(false);
             setLeague(null);
           }}
