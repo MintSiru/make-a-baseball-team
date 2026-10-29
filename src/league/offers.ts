@@ -30,6 +30,8 @@ export interface TradeOffer {
   get: PlayerId[];
   extras: TradeExtras;
   why: string;
+  /** 2.0.59: brought by the trade block. */
+  block?: boolean;
 }
 
 export const OFFERS = {
@@ -70,6 +72,59 @@ export function setNotForSale(s: LeagueState, id: PlayerId, on: boolean) {
   if (on) list.push(id);
   u.notForSale = list;
   if (on && u.tradeOffers) u.tradeOffers = u.tradeOffers.filter((o) => !o.give.includes(id));
+  // Not for sale is off the trade block.
+  if (on) u.tradeBlock = tradeBlock(s).filter((x) => x !== id);
+}
+
+/** 2.0.59 (the user's request): ours on the trade block — still ours. */
+export const tradeBlock = (s: LeagueState): PlayerId[] => (s.user?.tradeBlock ?? []).filter((id) => s.players[id]?.teamId === s.user!.teamId);
+
+/** How many clubs come with an offer for a player on the block. */
+export const BLOCK = { clubs: 3 };
+
+/** We put one of ours on the trade block (or take him off): up to three clubs that want him make their best offer at
+    once — what they would still give for him, of fair value (package_) — and on the later offer days the clubs look
+    again when none of his offers stands. Off the block, the offers it brought are withdrawn. */
+export function setTradeBlock(s: LeagueState, id: PlayerId, on: boolean) {
+  const u = s.user;
+  if (!u || s.players[id]?.teamId !== u.teamId) return;
+  u.tradeBlock = tradeBlock(s).filter((x) => x !== id);
+  if (!on) {
+    if (u.tradeOffers) u.tradeOffers = u.tradeOffers.filter((o) => !(o.block && o.give.includes(id)));
+    return;
+  }
+  u.tradeBlock.push(id);
+  u.notForSale = notForSale(s).filter((x) => x !== id);
+  blockOffers(s, id, today(s));
+}
+
+/** The clubs' offers for one of ours on the block: the best fair offer of each club that wants him, the best three. */
+export function blockOffers(s: LeagueState, id: PlayerId, date: string): number {
+  const u = s.user;
+  const p = s.players[id];
+  if (!u || !p || tradeWindow(s)) return 0;
+  const standing = standingOffers(s);
+  const deals = firstTeamIds(s)
+    .filter((teamId) => teamId !== u.teamId && s.rosters[teamId] && !tradeBarred(s, u.teamId, teamId) && !standing.some((o) => o.teamId === teamId && o.give.includes(id)))
+    .map((teamId) => ({ teamId, deal: package_(s, teamId, id) }))
+    .filter((x): x is { teamId: TeamId; deal: NonNullable<ReturnType<typeof package_>> } => !!x.deal)
+    .sort((a, b) => b.deal.v - a.deal.v || a.teamId.localeCompare(b.teamId))
+    .slice(0, Math.max(0, BLOCK.clubs - standing.filter((o) => o.give.includes(id)).length));
+  for (const { teamId, deal } of deals) {
+    const offer: TradeOffer = { id: `block-${date}-${teamId}-${id}`, teamId, date, expires: addDays(date, OFFERS.days), give: [id], get: deal.get, extras: deal.extras, why: __i18n_k("league.offers.text.6a939700"), block: true };
+    (u.tradeOffers ??= []).push(offer);
+  }
+  addAlert(s, {
+    id: `block-${date}-${id}`,
+    date,
+    kind: 'move',
+    title: __i18n_k("league.offers.text.20f77778", { name: p.name }),
+    lines: deals.length
+      ? [...deals.map((x) => offerText(s, u.tradeOffers!.find((o) => o.id === `block-${date}-${x.teamId}-${id}`)!)), __i18n_k("league.offers.text.d91240b6", { date: addDays(date, OFFERS.days) })]
+      : [__i18n_k("league.offers.text.ce628c92")],
+    players: [id, ...deals.flatMap((x) => x.deal.get)],
+  });
+  return deals.length;
 }
 
 /** The player `teamId` wants from us, and why. */
@@ -119,6 +174,8 @@ function package_(s: LeagueState, teamId: TeamId, target: PlayerId) {
 export function aiOffers(s: LeagueState, date: string, r: () => number) {
   const u = s.user;
   if (!u || tradeWindow(s)) return;
+  // 2.0.59: the clubs look again at ours on the block whose offers have all gone.
+  for (const id of tradeBlock(s)) if (!standingOffers(s).some((o) => o.give.includes(id))) blockOffers(s, id, date);
   const open = standingOffers(s);
   const clubs = firstTeamIds(s)
     .filter((id) => id !== u.teamId && s.rosters[id] && !tradeBarred(s, u.teamId, id) && !open.some((o) => o.teamId === id))

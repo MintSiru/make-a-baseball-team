@@ -580,6 +580,8 @@ export interface UserClub {
   tradeOffers?: import('./offers').TradeOffer[];
   /** 2.0.45 (offers.ts): our players marked not for sale — the AI clubs do not ask for them. */
   notForSale?: PlayerId[];
+  /** 2.0.59 (offers.ts): ours put on the trade block, for the clubs' offers. */
+  tradeBlock?: PlayerId[];
   /** 2.0.43 (clubmove.ts): the clubs the general manager ran before this one — id, name, first and last winter. */
   former?: { teamId: TeamId; name: string; from: number; to: number }[];
 }

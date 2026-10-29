@@ -57,7 +57,7 @@ import { ENGINE } from './tuning';
 import { carryOverInjuries, offRoster, rollInjuries } from './injuries';
 import { openForeignBooks } from './foreigncap';
 import { assignLeagues, sidesOf, twelveClubs, twelveGames } from './twelve';
-import { postpone, weatherFor } from './weather';
+import { postpone, typhoonDay, weatherFor } from './weather';
 import { finishTrips } from './training';
 import { exhibitionDate, planExhibitions, playExhibitionDay } from './exhibition';
 import { addSituations } from './engine/situation';
@@ -361,6 +361,8 @@ export function playDay(s: LeagueState): boolean {
   marketEvents(s, date);
   // 2.0.18: stand-ins for foreign players out six weeks or more (tempforeign.ts).
   tempForeignDay(s, date);
+  // 2.0.59: a typhoon through our city (weather.ts).
+  typhoonDay(s, date);
   // The All-Star voting and game (1.2.0), the draft combine (1.3.0).
   allStarDay(s, date);
   combineDay(s, date, () => applyCombine(s.seed, s.year, draftClass(s.seed, s.year, s.unified)));

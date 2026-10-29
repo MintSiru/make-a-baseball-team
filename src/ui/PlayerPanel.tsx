@@ -6,7 +6,7 @@ import { moveHistory } from '../league/moves';
 import type { FieldTotals } from '../league/fielding';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { isFavorite } from '../league/favorites';
-import { isNotForSale } from '../league/offers';
+import { isNotForSale, tradeBlock } from '../league/offers';
 import { aiNotForSale } from '../league/nfs';
 import { armReady } from '../league/manager';
 import { ArmMeter } from './ArmMeter';
@@ -500,6 +500,18 @@ export function PlayerPanel({
                   onClick={() => onAct({ kind: 'notForSale', id: p.id, on: !isNotForSale(league, p.id) })}
                 >
                   NFS
+                </button>
+              )}
+              {/* 2.0.59 (the user's request): one of ours on the trade block — up to three clubs make an offer (offers.ts). */}
+              {onAct && league.user && p.teamId === league.user.teamId && (
+                <button
+                  type="button"
+                  class={`nfs-toggle block-toggle${tradeBlock(league).includes(p.id) ? ' on' : ''}`}
+                  aria-pressed={tradeBlock(league).includes(p.id)}
+                  title={tradeBlock(league).includes(p.id) ? __i18n_t("ui.playerPanel.text.8171d94b") : __i18n_t("ui.playerPanel.text.9445466f")}
+                  onClick={() => onAct({ kind: 'tradeBlock', id: p.id, on: !tradeBlock(league).includes(p.id) })}
+                >
+                  {__i18n_t("ui.playerPanel.text.6213f395")}
                 </button>
               )}
               {/* 2.0.46: an AI club's own not-for-sale players (nfs.ts). */}

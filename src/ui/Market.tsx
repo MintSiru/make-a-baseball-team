@@ -44,7 +44,7 @@ import { positionKey, useSort } from './sort';
 import { Help } from './Help';
 import { PlayerSearch, type PosFilter } from './PlayerSearch';
 import { TRADES } from '../league/tuning';
-import { liveOffers, notForSale, type TradeOffer } from '../league/offers';
+import { BLOCK, liveOffers, notForSale, tradeBlock, type TradeOffer } from '../league/offers';
 import { aiNotForSale, clubNotForSale } from '../league/nfs';
 
 type View = 'trade' | 'search' | 'release' | 'foreign' | 'news';
@@ -250,6 +250,7 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
   return (
     <>
       <Offers league={league} onPlayer={onPlayer} onAct={(a) => (setSent((u.log ?? []).length), onAct(a))} onTweak={tweak} />
+      <TradeBlock league={league} onPlayer={onPlayer} onAct={onAct} closed={!!closed} />
       <NotForSale league={league} onPlayer={onPlayer} onAct={onAct} />
       <Help title={__i18n_t("ui.market.trade.a8916b94")}>{__i18n_t("ui.market.trade.39de664b", { money: money(TRADES.cash.max) })}</Help>
       {__i18n_display(closed && <p class="notice">{__i18n_display(closed)}</p>)}
@@ -431,6 +432,29 @@ function NotForSale({ league, onPlayer, onAct }: { league: LeagueState; onPlayer
         </span>
       ))}
       <span class="muted"> · {__i18n_t("ui.market.text.84a11a94")}</span>
+    </p>
+  );
+}
+
+/** 2.0.59 (the user's request): ours on the trade block, for which up to three clubs make their offers (offers.ts). */
+function TradeBlock({ league, onPlayer, onAct, closed }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void; closed: boolean }) {
+  const ids = tradeBlock(league);
+  if (!ids.length) return <p class="muted small">{__i18n_t("ui.market.text.04c26492", { n: BLOCK.clubs })}</p>;
+  return (
+    <p class="small nfs-list">
+      <span class="tag block">{__i18n_t("ui.market.text.6213f395")}</span> {__i18n_t("ui.market.text.6a939700")}:{' '}
+      {ids.map((id, i) => (
+        <span key={id}>
+          {i > 0 && ', '}
+          <button type="button" class="link" onClick={() => onPlayer(id)}>
+            {__i18n_display(league.players[id]!.name)}
+          </button>{' '}
+          <button type="button" class="link small" onClick={() => onAct({ kind: 'tradeBlock', id, on: false })} aria-label={__i18n_t("ui.market.text.848f66f7", { name: league.players[id]!.name })}>
+            {__i18n_t("ui.market.text.7835577c")}
+          </button>
+        </span>
+      ))}
+      <span class="muted"> · {closed ? __i18n_t("ui.market.text.778fd6e6") : __i18n_t("ui.market.text.7a062973")}</span>
     </p>
   );
 }

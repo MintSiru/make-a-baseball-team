@@ -12,11 +12,12 @@ import { k as __i18n_k } from '../i18n/index';
 import { rng } from '../draftroom';
 import type { TeamId } from '../model/types';
 import { addAlert } from './alerts';
+import { FACILITIES } from './facilities';
 import type { ScheduledGame } from './schedule';
 import type { LeagueState } from './state';
 import { isTiebreaker } from './tiebreak';
 
-export type Weather = 'rain' | 'heat' | 'snow';
+export type Weather = 'rain' | 'heat' | 'snow' | 'typhoon';
 
 /** Chances a game is called off, by month (1–12), before the home city's weights. */
 export const WEATHER = {
@@ -72,9 +73,44 @@ function homeCity(s: LeagueState, teamId: TeamId): string | undefined {
   return undefined;
 }
 
-export function climateOf(s: LeagueState, teamId: TeamId): Climate {
+type Zone = keyof typeof ZONES;
+export const zoneOf = (s: LeagueState, teamId: TeamId): Zone => {
   const city = homeCity(s, teamId);
-  return ZONES[(city && CITY_ZONE[city]) || CLUB_ZONE[teamId] || 'central']!;
+  return (city && CITY_ZONE[city]) || CLUB_ZONE[teamId] || 'central';
+};
+export const climateOf = (s: LeagueState, teamId: TeamId): Climate => ZONES[zoneOf(s, teamId)]!;
+
+/** 2.0.59 (the user's request): typhoons in August and September — the south coast and the islands always in the
+    path, the rest less often the further north. One that comes in stops the games in its path for one to three days,
+    and may wreck a part of our ballpark when it comes through our city. Drawn from the date alone (the game's own
+    stream untouched); about one a season, as the KBO has had (game assumption). */
+export const TYPHOON = {
+  months: [8, 9],
+  perDay: 0.018,
+  /** Chance each zone is in a typhoon's path. */
+  path: { island: 1, south: 1, southwest: 0.6, basin: 0.5, central: 0.25, gangwon: 0.2, north1: 0.1, north2: 0.05, north3: 0 } as Record<Zone, number>,
+  /** Our ballpark in its path: the chance something is wrecked (a facility a level down, else a repair bill), 만 원. */
+  damage: 0.35,
+  repair: [50_000, 150_000] as [number, number],
+};
+
+/** A typhoon that comes in on `date`: how many days it stays and the zones in its path. */
+function typhoonFrom(s: LeagueState, date: string): { days: number; zones: Set<Zone> } | null {
+  if (!TYPHOON.months.includes(Number(date.slice(5, 7)))) return null;
+  const r = rng(`${s.seed}|typhoon|${date}`);
+  if (r() >= TYPHOON.perDay) return null;
+  const days = 1 + Math.floor(r() * 3);
+  const zones = new Set((Object.keys(TYPHOON.path) as Zone[]).filter((z) => r() < (TYPHOON.path[z] ?? 0)));
+  return { days, zones };
+}
+
+/** The zones a typhoon is over on `date` (one that came in today or in the two days before), or null. */
+export function typhoonOn(s: LeagueState, date: string): Set<Zone> | null {
+  for (let k = 0; k < 3; k++) {
+    const t = typhoonFrom(s, addDays(date, -k));
+    if (t && k < t.days) return t.zones;
+  }
+  return null;
 }
 
 const postponedTimes = (id: string) => Number(id.match(/-r(\d+)$/)?.[1] ?? 0);
@@ -86,6 +122,8 @@ export function weatherFor(s: LeagueState, g: ScheduledGame): Weather | null {
   // A dome: our own, or 고척 (the existing clubs' parks are not marked by size).
   const park = s.teams.find((t) => t.id === g.home)?.stadium;
   if (park?.size === 'dome' || /돔|Dome/.test(park?.name ?? '')) return null;
+  // A typhoon over the park: called off, whatever else.
+  if (typhoonOn(s, g.date)?.has(zoneOf(s, g.home))) return 'typhoon';
   const month = Number(g.date.slice(5, 7));
   const c = climateOf(s, g.home);
   const x = rng(`${s.seed}|weather|${g.id}`)();
@@ -126,7 +164,37 @@ export function postpone(s: LeagueState, why: Weather, today: string) {
   if (me && (g.home === me || g.away === me)) {
     const opp = s.teams.find((t) => t.id === (g.home === me ? g.away : g.home))?.short ?? '';
     const park = s.teams.find((t) => t.id === g.home)?.stadium.name ?? '';
-    const title = why === 'rain' ? __i18n_k("league.weather.text.7833e9a9", { opp }) : why === 'heat' ? __i18n_k("league.weather.text.1f19a24e", { opp }) : __i18n_k("league.weather.text.923eee13", { opp });
+    const title = why === 'rain' ? __i18n_k("league.weather.text.7833e9a9", { opp }) : why === 'heat' ? __i18n_k("league.weather.text.1f19a24e", { opp }) : why === 'typhoon' ? __i18n_k("league.weather.text.f22de627", { opp }) : __i18n_k("league.weather.text.923eee13", { opp });
     addAlert(s, { id: `called-off-${g.id}-${today}`, date: today, kind: 'season', title, lines: [__i18n_k("league.weather.text.a1812490", { date: today.slice(5).replace('-', '/'), park, to: to.slice(5).replace('-', '/') })] });
   }
+}
+
+/** Our ballpark's facilities a typhoon can wreck. */
+const BALLPARK_FACILITIES = (Object.keys(FACILITIES) as (keyof typeof FACILITIES)[]).filter((k) => FACILITIES[k].group === 'ballpark');
+
+/** The day a typhoon comes in: through our city, it may wreck a part of the ballpark — a facility a level down, or
+    (none to lose) a repair bill from the fund. */
+export function typhoonDay(s: LeagueState, date: string) {
+  const u = s.user;
+  const t = u ? typhoonFrom(s, date) : null;
+  if (!u || !t || !t.zones.has(zoneOf(s, u.teamId))) return;
+  const park = s.teams.find((x) => x.id === u.teamId)?.stadium;
+  if (park?.size === 'dome') return;
+  const r = rng(`${s.seed}|typhoon-damage|${date}`);
+  const lines = [__i18n_k("league.weather.text.64a11807", { days: t.days })];
+  if (r() < TYPHOON.damage) {
+    const built = BALLPARK_FACILITIES.filter((k) => (u.facilities?.[k] ?? 0) > 0);
+    if (built.length) {
+      const kind = built[Math.floor(r() * built.length)]!;
+      u.facilities![kind] = u.facilities![kind]! - 1;
+      lines.push(__i18n_k("league.weather.text.124f0633", { facility: FACILITIES[kind].label }));
+    } else {
+      const [lo, hi] = TYPHOON.repair;
+      const cost = Math.round((lo + r() * (hi - lo)) / 1000) * 1000;
+      u.fund -= cost;
+      u.ledger.push({ year: s.year, label: __i18n_k("league.weather.text.2a3db7ab"), amount: -cost });
+      lines.push(__i18n_k("league.weather.text.f3f62f86", { eok: Math.round(cost / 1000) / 10 }));
+    }
+  }
+  addAlert(s, { id: `typhoon-${date}`, date, kind: 'season', title: __i18n_k("league.weather.text.ff4e0f68"), lines, tone: 'bad' });
 }
