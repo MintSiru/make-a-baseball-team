@@ -120,14 +120,22 @@ export function moneyFor(s: LeagueState, payer: TeamId, payee: TeamId, amount: n
 }
 
 /** Players a club does not have to list: foreign players, this winter's free-agent signings and this fall's draftees. */
-const autoProtected = (p: Player, next: number) => isForeign(p) || p.proSince >= next || (p.contract?.kind === 'freeAgent' && p.contract.signedIn === next - 1);
+/** Left out of the lists on their own: foreign players, this fall's draftees, this winter's free-agent signings, and
+    (2.0.58, the user's report: a free agent of ours still on the market was taken as compensation, and signing him
+    again brought him back) this winter's free agents still on the market — they are under no club's contract. */
+const autoProtected = (s: LeagueState, p: Player, next: number) =>
+  isForeign(p) || p.proSince >= next || (p.contract?.kind === 'freeAgent' && p.contract.signedIn === next - 1) || onMarket(s, p.id);
+const onMarket = (s: LeagueState, id: PlayerId) => {
+  const t = s.offseason?.fa?.talks[id];
+  return !!t && !t.signed && !t.gone;
+};
 
 /** The players an AI club protects: its best by keep value (20 for an A-grade signing, 25 for B). */
 export function protectedBy(s: LeagueState, teamId: TeamId, grade: 'A' | 'B', next: number): Set<PlayerId> {
   const n = F.compensation[grade].protected!;
   const listable = registeredIds(s, teamId)
     .map((id) => s.players[id]!)
-    .filter((p) => !autoProtected(p, next))
+    .filter((p) => !autoProtected(s, p, next))
     .sort((a, b) => keepValue(b, next) - keepValue(a, next));
   return new Set(listable.slice(0, n).map((p) => p.id));
 }
@@ -136,7 +144,7 @@ export function protectedBy(s: LeagueState, teamId: TeamId, grade: 'A' | 'B', ne
 export function compensationPool(s: LeagueState, teamId: TeamId, protectedIds: Set<PlayerId>, next: number) {
   return registeredIds(s, teamId)
     .map((id) => s.players[id]!)
-    .filter((p) => !autoProtected(p, next) && !protectedIds.has(p.id))
+    .filter((p) => !autoProtected(s, p, next) && !protectedIds.has(p.id))
     .sort((a, b) => keepValue(b, next) - keepValue(a, next));
 }
 
@@ -185,7 +193,7 @@ export function queuedDecision(s: LeagueState, item: FaQueueItem, next: number):
   if (item.kind === 'protect') {
     const candidates = registeredIds(s, item.to)
       .map((id) => s.players[id]!)
-      .filter((p) => !autoProtected(p, next))
+      .filter((p) => !autoProtected(s, p, next))
       .sort((a, b) => keepValue(b, next) - keepValue(a, next))
       .map((p) => p.id);
     return { kind: 'faProtect', fa: item.fa, grade: item.grade, from: item.from, protect: F.compensation[item.grade].protected!, candidates };
