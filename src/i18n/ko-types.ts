@@ -9887,7 +9887,7 @@ export const koSource = {
   "ui.clubSquad.text.a3fa83d2": "세이브",
   "ui.clubSquad.text.9329045a": "홀드",
   "ui.clubSquad.text.7091a480": "구원 등판한 투수가 없습니다.",
-  "ui.clubSquad.text.8f14636a": "베스트 나인은 포지션마다 선발 출전이 가장 많은 선수(한 선수는 한 자리만), 선발 로테이션은 선발 등판이 많은 다섯 명, 불펜은 세이브가 가장 많은 마무리와 홀드가 많은 필승조, 그리고 구원 등판이 많은 순서입니다. 진행 중인 시즌의 WAR은 시즌이 끝나면 계산됩니다.",
+  "ui.clubSquad.text.8f14636a": "베스트 나인은 포지션마다 선발 출전이 가장 많은 선수(한 선수는 한 자리만), 선발 로테이션은 선발 등판이 많은 다섯 명(6선발 로테이션이거나 여섯째가 15경기 이상 선발이면 여섯 명), 불펜은 세이브가 가장 많은 마무리와 홀드가 많은 필승조, 그리고 구원 등판이 많은 순서입니다. 진행 중인 시즌의 WAR은 시즌이 끝나면 계산됩니다.",
   "ui.clubRecords.text.27572b83": "연도별 선수단",
   "league.stops.text.56d2d14d": "다른 구단이 트레이드를 제안했을 때",
   "ui.app.text.a63e57e6": "시범경기 끝까지",
@@ -9950,5 +9950,17 @@ export const koSource = {
   "ui.market.text.848f66f7": "{name} 트레이드 블록에서 내리기",
   "ui.market.text.7835577c": "내리기",
   "ui.market.text.778fd6e6": "트레이드 기간이 열리면 제안일에 구단들이 다시 알아봅니다.",
-  "ui.market.text.7a062973": "제안이 모두 끝나면 다음 제안일에 다시 알아봅니다."
+  "ui.market.text.7a062973": "제안이 모두 끝나면 다음 제안일에 다시 알아봅니다.",
+  "league.weather.text.b53333ba": "우천 노게임: {opp}전",
+  "league.weather.text.cc9bad43": "{date} {park} 경기가 {inning}회에 비로 중단되었습니다. 5회를 마치지 못해 노게임 — 기록은 남지 않고 {to}에 다시 치릅니다.",
+  "league.weather.text.8b4c4174": "{to} 더블헤더 1차전으로 치릅니다.",
+  "league.weather.text.25c0d49d": "서스펜디드 게임: {opp}전",
+  "league.weather.text.8d8e0633": "{inning}회초 원정 {away} : 홈 {home}에서 비로 중단되었습니다. {to} 경기에 앞서 그 상황부터 이어서 치릅니다.",
+  "league.weather.text.29563a62": "강우 콜드: {opp}전",
+  "league.weather.text.77bf8121": "{inning}회 {ours} : {theirs}에서 비로 끝났습니다. 강우 콜드 무승부.",
+  "league.weather.text.772c0f91": "{inning}회 {ours} : {theirs}에서 비로 끝났습니다. 강우 콜드 {result}.",
+  "league.weather.text.3b1908b7": "승",
+  "league.weather.text.36260e2c": "패",
+  "ui.boxScore.text.c2c542a6": "강우 콜드 ({inning}회)",
+  "ui.boxScore.text.06f76e12": "서스펜디드 게임 ({date} 시작)"
 } as const;

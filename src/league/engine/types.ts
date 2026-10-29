@@ -112,6 +112,8 @@ export interface GameIn {
   /** 2.0.17 (board.ts ABS): how much a catcher's framing counts — 1 with the umpires calling, 0.5 with challenges,
       absent or 0 with the full ABS. */
   framing?: number;
+  /** 2.0.59 (weather.ts): the game is called after this half-inning (its top, or the whole inning) — rain. */
+  stopAfter?: { inning: number; top: boolean };
 }
 
 /** One side of a platoon split: plate appearances against left- or right-handers. */
@@ -220,6 +222,9 @@ export interface GameOut {
   away: TeamBox;
   /** 'home' | 'away' | 'tie' */
   result: 'home' | 'away' | 'tie';
+  /** 2.0.59 (weather.ts): rain stopped it after this half-inning — a final score (강우 콜드), no game yet (노게임, played
+      again), or to be finished another day (서스펜디드). Set by the season, not the engine. */
+  called?: { inning: number; top: boolean; kind: 'final' | 'noGame' | 'suspended' };
 }
 
 /** Play-by-play (V0.7): one event per plate appearance or pitching change, recorded only on request. */

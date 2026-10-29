@@ -1,13 +1,15 @@
 /* 2.0.52 (the user's request): a club's season by its players — the best nine (the one who started most at each
    position), the starting rotation and the bullpen — for every season it played, this one included (its lines so far).
-   Display only. */
+   Display only. 2.0.59 (the user's report: 6선발로 돌려도 5선발까지만 보임): a sixth starter too — this season with the
+   six-man rotation on, or any season he started as a regular (15 games or more). */
 import type { BatTotals, PitTotals, PlayerId, TeamId } from '../model/types';
 import type { FieldPos } from './engine/types';
+import { rotationSize } from './manager';
 import type { LeagueState } from './state';
 
 export const SQUAD_POSITIONS: FieldPos[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
-/** How many starters and relievers the tables show. */
-export const SQUAD = { rotation: 5, bullpen: 8 };
+/** How many starters and relievers the tables show; a sixth starter with this many starts or more. */
+export const SQUAD = { rotation: 5, sixth: 15, bullpen: 8 };
 
 export interface SquadLine {
   id: PlayerId;
@@ -68,10 +70,9 @@ export function clubSquad(s: LeagueState, teamId: TeamId, year: number) {
   // The rotation: the most starts; the bullpen: the rest by relief games, the closer (most saves) and the setup men
   // (holds) first.
   const pitchers = lines.filter((l) => (l.pit?.g ?? 0) > 0);
-  const rotation: SquadPitcher[] = pitchers
-    .filter((l) => l.pit!.gs > 0)
-    .sort((a, b) => b.pit!.gs - a.pit!.gs || b.pit!.outs - a.pit!.outs || a.id.localeCompare(b.id))
-    .slice(0, SQUAD.rotation);
+  const starters = pitchers.filter((l) => l.pit!.gs > 0).sort((a, b) => b.pit!.gs - a.pit!.gs || b.pit!.outs - a.pit!.outs || a.id.localeCompare(b.id));
+  const six = (year === s.year && rotationSize(s) >= 6) || (starters[SQUAD.rotation]?.pit!.gs ?? 0) >= SQUAD.sixth;
+  const rotation: SquadPitcher[] = starters.slice(0, SQUAD.rotation + (six ? 1 : 0));
   const relief = (l: SquadLine) => l.pit!.g - l.pit!.gs;
   const pen = pitchers.filter((l) => !rotation.some((r) => r.id === l.id) && relief(l) > 0);
   const closer = [...pen].sort((a, b) => b.pit!.sv - a.pit!.sv || relief(b) - relief(a))[0];

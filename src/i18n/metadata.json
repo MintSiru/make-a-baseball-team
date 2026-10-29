@@ -90161,5 +90161,150 @@
     "line": 457,
     "params": {},
     "locations": []
+  },
+  "league.weather.text.b53333ba": {
+    "source": "src/league/weather.ts",
+    "line": 232,
+    "params": {
+      "opp": {
+        "expression": "opp"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.cc9bad43": {
+    "source": "src/league/weather.ts",
+    "line": 234,
+    "params": {
+      "date": {
+        "expression": "day(today)"
+      },
+      "park": {
+        "expression": "park"
+      },
+      "inning": {
+        "expression": "noGameIn"
+      },
+      "to": {
+        "expression": "day(to)"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.8b4c4174": {
+    "source": "src/league/weather.ts",
+    "line": 235,
+    "params": {
+      "to": {
+        "expression": "day(to)"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.25c0d49d": {
+    "source": "src/league/weather.ts",
+    "line": 267,
+    "params": {
+      "opp": {
+        "expression": "opp"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.8d8e0633": {
+    "source": "src/league/weather.ts",
+    "line": 268,
+    "params": {
+      "inning": {
+        "expression": "at.inning"
+      },
+      "away": {
+        "expression": "score[0]"
+      },
+      "home": {
+        "expression": "score[1]"
+      },
+      "to": {
+        "expression": "day(to)"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.29563a62": {
+    "source": "src/league/weather.ts",
+    "line": 284,
+    "params": {
+      "opp": {
+        "expression": "opp"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.77bf8121": {
+    "source": "src/league/weather.ts",
+    "line": 285,
+    "params": {
+      "inning": {
+        "expression": "out.called.inning"
+      },
+      "ours": {
+        "expression": "ours"
+      },
+      "theirs": {
+        "expression": "theirs"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.772c0f91": {
+    "source": "src/league/weather.ts",
+    "line": 285,
+    "params": {
+      "inning": {
+        "expression": "out.called.inning"
+      },
+      "ours": {
+        "expression": "ours"
+      },
+      "theirs": {
+        "expression": "theirs"
+      },
+      "result": {
+        "expression": "ours > theirs ? L('승') : L('패')"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.3b1908b7": {
+    "source": "src/league/weather.ts",
+    "line": 285,
+    "params": {},
+    "locations": []
+  },
+  "league.weather.text.36260e2c": {
+    "source": "src/league/weather.ts",
+    "line": 285,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.c2c542a6": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 91,
+    "params": {
+      "inning": {
+        "expression": "v.called"
+      }
+    },
+    "locations": []
+  },
+  "ui.boxScore.text.06f76e12": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 92,
+    "params": {
+      "date": {
+        "expression": "v.from"
+      }
+    },
+    "locations": []
   }
 }

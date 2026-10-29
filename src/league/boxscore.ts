@@ -25,6 +25,9 @@ export interface StoredBox {
   pit: [PitRow[], PitRow[]];
   /** 1.9.8: immaculate innings, away then home. */
   imm?: [{ pitcher: string; inning: number }[], { pitcher: string; inning: number }[]];
+  /** 2.0.59 (weather.ts): rain ended it after this inning (강우 콜드); a suspended game's first day. */
+  called?: number;
+  from?: string;
 }
 
 /** 1.7.0: a substitute's position as "PH:SS" (how he came in, then where he played). */
@@ -32,7 +35,7 @@ const batRows = (b: TeamBox): BatRow[] => b.batting.map((l) => [l.id, l.sub ? `$
 const pitRows = (b: TeamBox): PitRow[] =>
   b.pitching.map((l) => [l.id, l.outs, l.h, l.r, l.er, l.bb + l.hbp, l.k, l.hr, l.pitches, l.w ? 'W' : l.l ? 'L' : l.sv ? 'S' : l.hld ? 'H' : '']);
 
-export function compactBox(out: GameOut, id: string, date: string, att?: number): StoredBox {
+export function compactBox(out: GameOut, id: string, date: string, att?: number, from?: string): StoredBox {
   return {
     id,
     date,
@@ -48,6 +51,8 @@ export function compactBox(out: GameOut, id: string, date: string, att?: number)
     bat: [batRows(out.away), batRows(out.home)],
     pit: [pitRows(out.away), pitRows(out.home)],
     ...(out.away.immaculate || out.home.immaculate ? { imm: [out.away.immaculate ?? [], out.home.immaculate ?? []] as StoredBox['imm'] } : {}),
+    ...(out.called ? { called: out.called.inning } : {}),
+    ...(from ? { from } : {}),
   };
 }
 

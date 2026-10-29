@@ -522,7 +522,7 @@ export function boxView(s: LeagueState, id: string) {
   };
   const log = s.pbp?.[id] ?? nationalLog(s, id);
   const plays = log?.map((ev, n) => ({ ev, text: playText(ev, `${id}-${n}`, name), half: halfLabel(ev.i, ev.top) }));
-  return { id, date: b.date, innings: b.innings, att: b.att, away: side(0), home: side(1), plays: plays ?? null };
+  return { id, date: b.date, innings: b.innings, att: b.att, away: side(0), home: side(1), plays: plays ?? null, called: b.called, from: b.from };
 }
 
 /** Games you can open: the user's this season, then the league's latest days (newest first). */

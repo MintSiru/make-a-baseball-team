@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { apply, regularOver } from '../src/league/actions';
 import { autoDecision } from '../src/league/expansion';
 import { firstTeamIds, type LeagueState } from '../src/league/state';
-import { typhoonDay, typhoonOn, weatherFor, zoneOf, type Weather } from '../src/league/weather';
+import { callRuling, typhoonDay, typhoonOn, weatherFor, zoneOf, type Weather } from '../src/league/weather';
 import { BLOCK, setNotForSale, setTradeBlock, standingOffers, tradeBlock } from '../src/league/offers';
 import { pickValue, tradeValue } from '../src/league/trade';
 import { isForeign } from '../src/league/players';
@@ -68,12 +68,29 @@ describe('a season with the weather (2.0.59)', () => {
     const counts = firstTeamIds(s).map((t) => played[t] ?? 0);
     expect(new Set(counts).size).toBe(1);
     for (let i = 1; i < s.schedule.length; i++) expect(s.schedule[i]!.date >= s.schedule[i - 1]!.date).toBe(true);
-    // A club plays one game a day.
-    const days = new Set<string>();
-    for (const g of s.scores) for (const t of [g.home, g.away]) {
-      expect(days.has(`${t}|${g.date}`)).toBe(false);
-      days.add(`${t}|${g.date}`);
+    // A club plays one game a day, two only in a doubleheader (or a suspended game's end) against the same club.
+    const days = new Map<string, string[]>();
+    for (const g of s.scores)
+      for (const t of [g.home, g.away]) {
+        const k = `${t}|${g.date}`;
+        days.set(k, [...(days.get(k) ?? []), g.home === t ? g.away : g.home]);
+      }
+    for (const opps of days.values()) {
+      expect(opps.length).toBeLessThanOrEqual(2);
+      if (opps.length === 2) expect(opps[0]).toBe(opps[1]);
     }
+    // Rain during games: some no games, some called with the score standing (after five innings at least), now and
+    // then a suspended game finished later; doubleheaders outside July and August.
+    const dh = off.filter((x) => x.dh);
+    expect(dh.length).toBeGreaterThan(0);
+    for (const x of dh) expect(['07', '08']).not.toContain(x.date.slice(5, 7));
+    expect(off.filter((x) => x.noGame).length).toBeGreaterThan(0);
+    const called = s.scores.filter((g) => g.called);
+    expect(called.length).toBeGreaterThan(0);
+    for (const g of called) expect(g.called).toBeGreaterThanOrEqual(4);
+    for (const g of s.scores.filter((x) => x.from)) expect(g.date > g.from!).toBe(true);
+    expect(Object.keys(s.suspendedGames ?? {})).toEqual([]);
+    console.log('weather', off.length, 'dh', dh.length, 'noGame', off.filter((x) => x.noGame).length, 'called', called.length, 'suspended', s.scores.filter((x) => x.from).length, 'last', s.schedule.at(-1)?.date);
   });
 });
 
@@ -143,5 +160,25 @@ describe('the trade block (2.0.59)', () => {
     setTradeBlock(s, p.id, true);
     setTradeBlock(s, p.id, false);
     expect(standingOffers(s).some((o) => o.block)).toBe(false);
+  });
+});
+
+describe('rain during a game (2.0.59)', () => {
+  it('no game before five innings, the score of the last whole inning, suspended when the visitors just tied or led', () => {
+    const at = (inning: number, top: boolean) => ({ inning, top });
+    const nine = [0, 1, 0, 0, 2, 0, 0, 0, 1];
+    // Over by then: nothing.
+    expect(callRuling(nine, [0, 0, 0, 3, 0, 0, 0, 2], at(9, true))).toBeNull();
+    expect(callRuling(nine, [0, 0, 0, 1, 0, 0, 0, 0, 0], at(9, false))).toBeNull();
+    // Before five innings.
+    expect(callRuling(nine, [0, 0, 0, 0, 0, 0, 0, 0, 0], at(4, false))?.kind).toBe('noGame');
+    expect(callRuling(nine, [0, 0, 0, 0, 0, 0, 0, 0, 0], at(5, true))?.kind).toBe('noGame');
+    // Four and a half with the home side ahead; five whole innings.
+    expect(callRuling(nine, [0, 0, 4, 0, 0, 0, 0, 0, 0], at(5, true))).toEqual({ kind: 'final', inning: 5, top: true });
+    expect(callRuling(nine, [0, 0, 0, 0, 0, 0, 0, 0, 0], at(6, false))).toEqual({ kind: 'final', inning: 6, top: false });
+    // The visitors tie it in the top of the 7th, the home side yet to bat: suspended.
+    expect(callRuling([0, 0, 0, 0, 0, 0, 2, 0, 0], [0, 2, 0, 0, 0, 0, 0, 0, 0], at(7, true))?.kind).toBe('suspended');
+    // The visitors already ahead: the score after six stands.
+    expect(callRuling([1, 0, 0, 0, 0, 0, 2, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], at(7, true))).toEqual({ kind: 'final', inning: 6, top: false });
   });
 });

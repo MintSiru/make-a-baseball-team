@@ -8,9 +8,17 @@ import { k as __i18n_k } from '../i18n/index';
    last date when neither club plays — that period has no rest days. A game called off again goes on later again, at
    most twice; then it is played whatever the sky. First-team regular-season games only; the draws are the game's
    own (its id), so the same seed calls off the same games. Monthly chances are game assumptions shaped on the KBO's
-   recent seasons (40–60 games called off a season, most in the July rains). */
+   recent seasons (40–60 games called off a season, most in the July rains).
+
+   Later the same version (the user's request): rain that comes during a game — before five innings 노게임 (played
+   again like a game called off), after them 강우 콜드 (the score stands, a tie a draw) or, when the visitors have just
+   tied or taken the lead in an inning the home side has not batted in, 서스펜디드: finished from there the next time
+   the two meet (or on a makeup day), before that day's game, with the lineups it stopped with. And 더블헤더: a game called off goes to the next day of
+   the same series as the day's first game (not in the July–August heat, the KBO's 혹서기). Game assumptions on the
+   KBO's rules (야구규칙 7.01·7.02). */
 import { rng } from '../draftroom';
 import type { TeamId } from '../model/types';
+import type { GameOut, PlayEvent } from './engine/types';
 import { addAlert } from './alerts';
 import { FACILITIES } from './facilities';
 import type { ScheduledGame } from './schedule';
@@ -18,6 +26,11 @@ import type { LeagueState } from './state';
 import { isTiebreaker } from './tiebreak';
 
 export type Weather = 'rain' | 'heat' | 'snow' | 'typhoon';
+
+/** Rain during a game: its chance against the day's chance of a game called off, and the innings it can come in. */
+export const RAIN_IN_GAME = { share: 0.3, from: 2, to: 9 };
+/** 더블헤더: a game called off is played the next day of its series as the first of two, but not in these months. */
+export const DOUBLEHEADER = { offMonths: [7, 8], withinDays: 2 };
 
 /** Chances a game is called off, by month (1–12), before the home city's weights. */
 export const WEATHER = {
@@ -116,12 +129,19 @@ export function typhoonOn(s: LeagueState, date: string): Set<Zone> | null {
 const postponedTimes = (id: string) => Number(id.match(/-r(\d+)$/)?.[1] ?? 0);
 const baseId = (id: string) => id.replace(/-r\d+$/, '');
 
+/** A dome: our own, or 고척 (the existing clubs' parks are not marked by size). */
+function isDome(s: LeagueState, teamId: TeamId) {
+  const park = s.teams.find((t) => t.id === teamId)?.stadium;
+  return park?.size === 'dome' || /돔|Dome/.test(park?.name ?? '');
+}
+
+/** A suspended game being finished. */
+export const isResumed = (id: string) => /-s$/.test(id);
+
 /** Whether the weather calls off this game today, and why. */
 export function weatherFor(s: LeagueState, g: ScheduledGame): Weather | null {
-  if (postponedTimes(g.id) >= WEATHER.maxPostponed) return null;
-  // A dome: our own, or 고척 (the existing clubs' parks are not marked by size).
-  const park = s.teams.find((t) => t.id === g.home)?.stadium;
-  if (park?.size === 'dome' || /돔|Dome/.test(park?.name ?? '')) return null;
+  if (postponedTimes(g.id) >= WEATHER.maxPostponed || isResumed(g.id)) return null;
+  if (isDome(s, g.home)) return null;
   // A typhoon over the park: called off, whatever else.
   if (typhoonOn(s, g.date)?.has(zoneOf(s, g.home))) return 'typhoon';
   const month = Number(g.date.slice(5, 7));
@@ -136,12 +156,41 @@ export function weatherFor(s: LeagueState, g: ScheduledGame): Weather | null {
   return null;
 }
 
+/** Rain that comes during this game: the inning it stops play in, after the top half or the whole inning; or null. */
+export function rainDuring(s: LeagueState, g: ScheduledGame): { inning: number; top: boolean } | null {
+  if (isResumed(g.id) || isDome(s, g.home)) return null;
+  const r = rng(`${s.seed}|rain-in-game|${g.id}`);
+  if (r() >= (WEATHER.rain[Number(g.date.slice(5, 7))] ?? 0) * climateOf(s, g.home).rain * RAIN_IN_GAME.share) return null;
+  return { inning: RAIN_IN_GAME.from + Math.floor(r() * (RAIN_IN_GAME.to - RAIN_IN_GAME.from + 1)), top: r() < 0.5 };
+}
+
+export type Ruling = { kind: 'final' | 'noGame' | 'suspended'; inning: number; top: boolean } | null;
+
+/** What rain at `at` makes of a game that went as `away`/`home` (its line score played out): nothing if the game was
+    over by then; before five innings (four and a half with the home side ahead) no game; after the whole inning the
+    score stands; after its top half, the home side ahead — over; the visitors having just tied or gone ahead —
+    suspended; else the score of the last whole inning stands. */
+export function callRuling(away: number[], home: number[], at: { inning: number; top: boolean }): Ruling {
+  const n = away.length,
+    I = at.inning;
+  if (I > n || (I === n && (at.top ? home.length < n : true)) || (!at.top && home.length < I)) return null;
+  const sum = (xs: number[], k: number) => xs.slice(0, k).reduce((a, x) => a + x, 0);
+  if (!at.top) return I >= 5 ? { kind: 'final', inning: I, top: false } : { kind: 'noGame', inning: I, top: false };
+  const a = sum(away, I),
+    a0 = sum(away, I - 1),
+    h = sum(home, I - 1);
+  if (h > a) return I >= 5 ? { kind: 'final', inning: I, top: true } : { kind: 'noGame', inning: I, top: true };
+  if (I - 1 < 5) return { kind: 'noGame', inning: I, top: true };
+  if (a > a0 && a0 <= h) return { kind: 'suspended', inning: I, top: true };
+  return { kind: 'final', inning: I - 1, top: false };
+}
+
 const addDays = (date: string, n: number) => new Date(Date.parse(`${date}T12:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
 
 /** The day a called-off game is played: from September a free Monday (the KBO's late-season Monday games), else the
     first day after the season's own last date — after today, and when neither club plays. */
 function makeupDate(s: LeagueState, g: ScheduledGame, today: string): string {
-  const own = s.schedule.filter((x) => !/-r\d+$/.test(x.id) && !isTiebreaker(x.id)).reduce((a, x) => (x.date > a ? x.date : a), today);
+  const own = s.schedule.filter((x) => !/-(r\d+|s)$/.test(x.id) && !isTiebreaker(x.id)).reduce((a, x) => (x.date > a ? x.date : a), today);
   const busy = new Set(s.schedule.filter((x) => x.home === g.home || x.away === g.home || x.home === g.away || x.away === g.away).map((x) => x.date));
   const september = `${today.slice(0, 4)}-09-01`;
   const monday = (d: string) => new Date(`${d}T12:00:00Z`).getUTCDay() === 1;
@@ -150,23 +199,92 @@ function makeupDate(s: LeagueState, g: ScheduledGame, today: string): string {
   return d;
 }
 
-/** Today's game at `s.next` is called off: it leaves today and goes on its makeup day. */
-export function postpone(s: LeagueState, why: Weather, today: string) {
-  const g = s.schedule[s.next]!;
-  s.schedule.splice(s.next, 1);
-  const to = makeupDate(s, g, today);
-  const moved: ScheduledGame = { ...g, id: `${baseId(g.id)}-r${postponedTimes(g.id) + 1}`, date: to };
-  let at = s.schedule.findIndex((x, i) => i >= s.next && x.date > to);
+const plays = (x: ScheduledGame, t: TeamId) => x.home === t || x.away === t;
+const samePair = (x: ScheduledGame, g: ScheduledGame) => plays(x, g.home) && plays(x, g.away);
+
+/** The two clubs' next game within `days` — a day of the same series — when it is their only game that day. */
+function nextMeeting(s: LeagueState, g: ScheduledGame, today: string, days: number): ScheduledGame | undefined {
+  const next = s.schedule.find((x, i) => i >= s.next && x !== g && x.date > today && x.date <= addDays(today, days) && samePair(x, g) && !isTiebreaker(x.id));
+  if (!next || s.schedule.some((x) => x !== next && x.date === next.date && (plays(x, g.home) || plays(x, g.away)))) return undefined;
+  return next;
+}
+
+/** Puts `moved` on its day, before that day's games (a doubleheader's first game, a suspended game's end). */
+function insertFirst(s: LeagueState, moved: ScheduledGame) {
+  let at = s.schedule.findIndex((x, i) => i >= s.next && x.date >= moved.date);
   if (at < 0) at = s.schedule.length;
   s.schedule.splice(at, 0, moved);
-  (s.calledOff ??= []).push({ id: g.id, date: today, home: g.home, away: g.away, why, to });
+}
+
+/** Today's game at `s.next` is called off (or rain made it no game): it leaves today and goes on its makeup day — the
+    next day of its series as a doubleheader's first game when it can. */
+export function postpone(s: LeagueState, why: Weather, today: string, noGameIn?: number) {
+  const g = s.schedule[s.next]!;
+  s.schedule.splice(s.next, 1);
+  const dh = why !== 'typhoon' && !DOUBLEHEADER.offMonths.includes(Number(today.slice(5, 7))) && !postponedTimes(g.id) ? nextMeeting(s, g, today, DOUBLEHEADER.withinDays) : undefined;
+  const to = dh ? dh.date : makeupDate(s, g, today);
+  insertFirst(s, { ...g, id: `${baseId(g.id)}-r${postponedTimes(g.id) + 1}`, date: to });
+  (s.calledOff ??= []).push({ id: g.id, date: today, home: g.home, away: g.away, why, to, ...(dh ? { dh: true } : {}), ...(noGameIn ? { noGame: true } : {}) });
   const me = s.user?.teamId;
   if (me && (g.home === me || g.away === me)) {
     const opp = s.teams.find((t) => t.id === (g.home === me ? g.away : g.home))?.short ?? '';
     const park = s.teams.find((t) => t.id === g.home)?.stadium.name ?? '';
-    const title = why === 'rain' ? __i18n_k("league.weather.text.7833e9a9", { opp }) : why === 'heat' ? __i18n_k("league.weather.text.1f19a24e", { opp }) : why === 'typhoon' ? __i18n_k("league.weather.text.f22de627", { opp }) : __i18n_k("league.weather.text.923eee13", { opp });
-    addAlert(s, { id: `called-off-${g.id}-${today}`, date: today, kind: 'season', title, lines: [__i18n_k("league.weather.text.a1812490", { date: today.slice(5).replace('-', '/'), park, to: to.slice(5).replace('-', '/') })] });
+    const title = noGameIn ? __i18n_k("league.weather.text.b53333ba", { opp }) : why === 'rain' ? __i18n_k("league.weather.text.7833e9a9", { opp }) : why === 'heat' ? __i18n_k("league.weather.text.1f19a24e", { opp }) : why === 'typhoon' ? __i18n_k("league.weather.text.f22de627", { opp }) : __i18n_k("league.weather.text.923eee13", { opp });
+    const day = (d: string) => d.slice(5).replace('-', '/');
+    const lines = [noGameIn ? __i18n_k("league.weather.text.cc9bad43", { date: day(today), park, inning: noGameIn, to: day(to) }) : __i18n_k("league.weather.text.a1812490", { date: day(today), park, to: day(to) })];
+    if (dh) lines.push(__i18n_k("league.weather.text.8b4c4174", { to: day(to) }));
+    addAlert(s, { id: `called-off-${g.id}-${today}`, date: today, kind: 'season', title, lines });
   }
+}
+
+/** A suspended game: its whole play (drawn on the day, so its first part is what was played), kept until the day it
+    is finished — the two clubs' next meeting (else a makeup day) — and played before that day's game. */
+export interface SuspendedGame {
+  from: string;
+  at: { inning: number; top: boolean };
+  /** The score when it stopped (away, home). */
+  score: [number, number];
+  out: GameOut;
+  log?: PlayEvent[];
+}
+
+export function suspend(s: LeagueState, out: GameOut, log: PlayEvent[] | undefined, today: string) {
+  const g = s.schedule[s.next]!;
+  const at = out.called!;
+  const score: [number, number] = [out.away.lineScore.slice(0, at.inning).reduce((a, x) => a + x, 0), out.home.lineScore.slice(0, at.inning - 1).reduce((a, x) => a + x, 0)];
+  const to = nextMeeting(s, g, today, 366)?.date ?? makeupDate(s, g, today);
+  const id = `${baseId(g.id)}-s`;
+  insertFirst(s, { ...g, id, date: to });
+  (s.suspendedGames ??= {})[id] = { from: today, at: { inning: at.inning, top: at.top }, score, out, ...(log ? { log } : {}) };
+  const me = s.user?.teamId;
+  if (me && (g.home === me || g.away === me)) {
+    const opp = s.teams.find((t) => t.id === (g.home === me ? g.away : g.home))?.short ?? '';
+    const day = (d: string) => d.slice(5).replace('-', '/');
+    addAlert(s, {
+      id: `suspended-${g.id}`,
+      date: today,
+      kind: 'season',
+      title: __i18n_k("league.weather.text.25c0d49d", { opp }),
+      lines: [__i18n_k("league.weather.text.8d8e0633", { inning: at.inning, away: score[0], home: score[1], to: day(to) })],
+    });
+  }
+}
+
+/** A game rain called after five innings, to the user: the score stands. */
+export function calledGameNote(s: LeagueState, out: GameOut, g: ScheduledGame, today: string) {
+  const me = s.user?.teamId;
+  if (!me || !out.called || (g.home !== me && g.away !== me)) return;
+  const opp = s.teams.find((t) => t.id === (g.home === me ? g.away : g.home))?.short ?? '';
+  const ours = g.home === me ? out.home.runs : out.away.runs,
+    theirs = g.home === me ? out.away.runs : out.home.runs;
+  addAlert(s, {
+    id: `rain-called-${g.id}`,
+    date: today,
+    kind: 'season',
+    title: __i18n_k("league.weather.text.29563a62", { opp }),
+    lines: [ours === theirs ? __i18n_k("league.weather.text.77bf8121", { inning: out.called.inning, ours, theirs }) : __i18n_k("league.weather.text.772c0f91", { inning: out.called.inning, ours, theirs, result: ours > theirs ? __i18n_k("league.weather.text.3b1908b7") : __i18n_k("league.weather.text.36260e2c") })],
+    tone: ours > theirs ? 'good' : ours < theirs ? 'bad' : undefined,
+  });
 }
 
 /** Our ballpark's facilities a typhoon can wreck. */
@@ -177,9 +295,7 @@ const BALLPARK_FACILITIES = (Object.keys(FACILITIES) as (keyof typeof FACILITIES
 export function typhoonDay(s: LeagueState, date: string) {
   const u = s.user;
   const t = u ? typhoonFrom(s, date) : null;
-  if (!u || !t || !t.zones.has(zoneOf(s, u.teamId))) return;
-  const park = s.teams.find((x) => x.id === u.teamId)?.stadium;
-  if (park?.size === 'dome') return;
+  if (!u || !t || !t.zones.has(zoneOf(s, u.teamId)) || isDome(s, u.teamId)) return;
   const r = rng(`${s.seed}|typhoon-damage|${date}`);
   const lines = [__i18n_k("league.weather.text.64a11807", { days: t.days })];
   if (r() < TYPHOON.damage) {

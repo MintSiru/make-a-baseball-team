@@ -9886,7 +9886,7 @@
   "ui.clubSquad.text.a3fa83d2": "セーブ",
   "ui.clubSquad.text.9329045a": "ホールド",
   "ui.clubSquad.text.7091a480": "救援登板した投手はいません。",
-  "ui.clubSquad.text.8f14636a": "ベストナインは各ポジションで先発出場が最も多い選手（一人一ポジション）、先発ローテーションは先発登板の多い五人、ブルペンはセーブ最多の抑えとホールドの多い勝ちパターン、その後は救援登板の多い順です。進行中のシーズンのWARはシーズン終了後に計算されます。",
+  "ui.clubSquad.text.8f14636a": "ベストナインは各ポジションで先発出場が最も多い選手（一人一ポジション）、先発ローテーションは先発登板の多い五人（6人ローテーション、または六人目が15試合以上先発なら六人）、ブルペンはセーブ最多の抑えとホールドの多い勝ちパターン、その後は救援登板の多い順です。進行中のシーズンのWARはシーズン終了後に計算されます。",
   "ui.clubRecords.text.27572b83": "年度別選手団",
   "league.stops.text.56d2d14d": "他球団からトレードの提案が来たとき",
   "ui.app.text.a63e57e6": "オープン戦終了まで",
@@ -9949,5 +9949,17 @@
   "ui.market.text.848f66f7": "{name}をトレードブロックから外す",
   "ui.market.text.7835577c": "外す",
   "ui.market.text.778fd6e6": "トレード期間が始まれば、提案日に各球団が改めて打診します。",
-  "ui.market.text.7a062973": "提案がすべて終われば、次の提案日に改めて打診します。"
+  "ui.market.text.7a062973": "提案がすべて終われば、次の提案日に改めて打診します。",
+  "league.weather.text.b53333ba": "降雨ノーゲーム：{opp}戦",
+  "league.weather.text.cc9bad43": "{date}の{park}での試合は{inning}回に雨で中断されました。5回に達せずノーゲームとなり、記録は残らず、{to}に改めて行います。",
+  "league.weather.text.8b4c4174": "{to}のダブルヘッダー第1試合として行います。",
+  "league.weather.text.25c0d49d": "サスペンデッドゲーム：{opp}戦",
+  "league.weather.text.8d8e0633": "{inning}回表、ビジター{away}：ホーム{home}で雨により中断されました。{to}の試合に先立ち、その場面から再開します。",
+  "league.weather.text.29563a62": "降雨コールド：{opp}戦",
+  "league.weather.text.77bf8121": "{inning}回{ours}：{theirs}で雨により終了しました。降雨コールド引き分け。",
+  "league.weather.text.772c0f91": "{inning}回{ours}：{theirs}で雨により終了しました。降雨コールド{result}。",
+  "league.weather.text.3b1908b7": "勝ち",
+  "league.weather.text.36260e2c": "負け",
+  "ui.boxScore.text.c2c542a6": "降雨コールド（{inning}回）",
+  "ui.boxScore.text.06f76e12": "サスペンデッドゲーム（{date}開始）"
 }

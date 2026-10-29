@@ -726,7 +726,9 @@ export interface LeagueState {
   /** 2.0.37 (abroad.ts): our players talked out of going abroad, and the winter they agreed. */
   abroadStay?: Record<PlayerId, number>;
   /** 2.0.59 (weather.ts): this season's games called off for the weather and the day each went to. */
-  calledOff?: { id: string; date: string; home: TeamId; away: TeamId; why: import('./weather').Weather; to: string }[];
+  calledOff?: { id: string; date: string; home: TeamId; away: TeamId; why: import('./weather').Weather; to: string; dh?: true; noGame?: true }[];
+  /** 2.0.59 (weather.ts): suspended games waiting to be finished, by their schedule id (`-s`). */
+  suspendedGames?: Record<string, import('./weather').SuspendedGame>;
   /** 2.0.56 (faclass.ts): each winter's free agents, written when the market closes. */
   faHistory?: import('./faclass').FaClass[];
   /** 2.0.37 (merger.ts): mergers and sales of clubs (`teamId` the club that took a new name). 2.0.49: `absorbedShort`
