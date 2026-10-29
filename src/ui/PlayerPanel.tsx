@@ -6,7 +6,7 @@ import { moveHistory } from '../league/moves';
 import type { FieldTotals } from '../league/fielding';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { isFavorite } from '../league/favorites';
-import { isNotForSale } from '../league/offers';
+import { isNotForSale, tradeBlock } from '../league/offers';
 import { aiNotForSale } from '../league/nfs';
 import { armReady } from '../league/manager';
 import { ArmMeter } from './ArmMeter';
@@ -276,6 +276,7 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
               <th class="num">{__i18n_t("ui.playerPanel.seasonTable.d5bc99dd")}</th>
               <th>{__i18n_t("ui.playerPanel.seasonTable.58756112")}</th>
               <th class="num">{__i18n_t("ui.playerPanel.seasonTable.e0cee61a")}</th>
+              <th class="num" title={__i18n_t("ui.playerPanel.text.f3e2e36a")}>{__i18n_t("ui.playerPanel.text.a88271df")}</th>
               <th class="num">{__i18n_t("ui.playerPanel.seasonTable.3b1908b7")}</th>
               <th class="num">{__i18n_t("ui.playerPanel.seasonTable.36260e2c")}</th>
               <th class="num">{__i18n_t("ui.playerPanel.seasonTable.c5e4d00d")}</th>
@@ -305,6 +306,7 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
                     {__i18n_display(r.futures && <span class="tag">{__i18n_t("ui.playerPanel.seasonTable.e6607847")}</span>)}
                   </td>
                   <td class="num">{__i18n_display(r.pit?.g ?? 0)}</td>
+                  <td class="num">{__i18n_display(r.pit?.gs ?? 0)}</td>
                   <td class="num">{__i18n_display(r.pit?.w ?? 0)}</td>
                   <td class="num">{__i18n_display(r.pit?.l ?? 0)}</td>
                   <td class="num">{__i18n_display(r.pit?.sv ?? 0)}</td>
@@ -329,6 +331,7 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
               <tr>
                 <th colSpan={2}>{__i18n_t("ui.playerPanel.seasonTable.55972bcf", { seasons: t.seasons })}</th>
                 <td class="num">{__i18n_display(t.pit.g)}</td>
+                <td class="num">{__i18n_display(t.pit.gs ?? 0)}</td>
                 <td class="num">{__i18n_display(t.pit.w)}</td>
                 <td class="num">{__i18n_display(t.pit.l)}</td>
                 <td class="num">{__i18n_display(t.pit.sv)}</td>
@@ -500,6 +503,18 @@ export function PlayerPanel({
                   onClick={() => onAct({ kind: 'notForSale', id: p.id, on: !isNotForSale(league, p.id) })}
                 >
                   NFS
+                </button>
+              )}
+              {/* 2.0.59 (the user's request): one of ours on the trade block — up to three clubs make an offer (offers.ts). */}
+              {onAct && league.user && p.teamId === league.user.teamId && (
+                <button
+                  type="button"
+                  class={`nfs-toggle block-toggle${tradeBlock(league).includes(p.id) ? ' on' : ''}`}
+                  aria-pressed={tradeBlock(league).includes(p.id)}
+                  title={tradeBlock(league).includes(p.id) ? __i18n_t("ui.playerPanel.text.8171d94b") : __i18n_t("ui.playerPanel.text.9445466f")}
+                  onClick={() => onAct({ kind: 'tradeBlock', id: p.id, on: !tradeBlock(league).includes(p.id) })}
+                >
+                  {__i18n_t("ui.playerPanel.text.6213f395")}
                 </button>
               )}
               {/* 2.0.46: an AI club's own not-for-sale players (nfs.ts). */}
@@ -979,6 +994,7 @@ function PostTable({ rows, totals, pitcher }: { rows: PostRow[]; totals: ReturnT
               <th>{__i18n_t("ui.playerPanel.postTable.58756112")}</th>
               <th>{__i18n_t("ui.playerPanel.postTable.71d855ac")}</th>
               <th class="num">{__i18n_t("ui.playerPanel.postTable.e0cee61a")}</th>
+              <th class="num" title={__i18n_t("ui.playerPanel.text.f3e2e36a")}>{__i18n_t("ui.playerPanel.text.a88271df")}</th>
               <th class="num">{__i18n_t("ui.playerPanel.postTable.3b1908b7")}</th>
               <th class="num">{__i18n_t("ui.playerPanel.postTable.36260e2c")}</th>
               <th class="num">{__i18n_t("ui.playerPanel.postTable.c5e4d00d")}</th>
@@ -997,6 +1013,7 @@ function PostTable({ rows, totals, pitcher }: { rows: PostRow[]; totals: ReturnT
                 <td>{__i18n_display(r.team)}</td>
                 <td>{__i18n_display(r.result === '우승' ? <strong>{__i18n_t("ui.playerPanel.postTable.894badc3")}</strong> : r.result)}</td>
                 <td class="num">{__i18n_display(r.pit?.g ?? 0)}</td>
+                <td class="num">{__i18n_display(r.pit?.gs ?? 0)}</td>
                 <td class="num">{__i18n_display(r.pit?.w ?? 0)}</td>
                 <td class="num">{__i18n_display(r.pit?.l ?? 0)}</td>
                 <td class="num">{__i18n_display(r.pit?.sv ?? 0)}</td>
@@ -1014,6 +1031,7 @@ function PostTable({ rows, totals, pitcher }: { rows: PostRow[]; totals: ReturnT
               <tr>
                 <th colSpan={3}>{__i18n_t("ui.playerPanel.postTable.26da3deb", { years: t.years, value: t.titles ? __i18n_k("ui.playerPanel.postTable.77ae974d", { titles: t.titles }) : '' })}</th>
                 <td class="num">{__i18n_display(t.pit.g)}</td>
+                <td class="num">{__i18n_display(t.pit.gs ?? 0)}</td>
                 <td class="num">{__i18n_display(t.pit.w)}</td>
                 <td class="num">{__i18n_display(t.pit.l)}</td>
                 <td class="num">{__i18n_display(t.pit.sv)}</td>

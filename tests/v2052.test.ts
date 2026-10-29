@@ -21,7 +21,7 @@ describe('a club’s season by its players (2.0.52)', () => {
       const c = s.players[h!.id]!.career.find((x) => x.year === past && x.teamId === team && !x.level)!;
       expect(c.bat?.posG?.[h!.pos]).toBe(h!.starts);
     }
-    expect(sq.rotation.length).toBe(SQUAD.rotation);
+    expect(sq.rotation.length).toBe((sq.rotation[SQUAD.rotation]?.pit!.gs ?? 0) >= SQUAD.sixth ? SQUAD.rotation + 1 : SQUAD.rotation);
     for (let i = 1; i < sq.rotation.length; i++) expect(sq.rotation[i - 1]!.pit!.gs).toBeGreaterThanOrEqual(sq.rotation[i]!.pit!.gs);
     expect(sq.bullpen.length).toBeGreaterThan(3);
     expect(sq.bullpen.length).toBeLessThanOrEqual(SQUAD.bullpen);

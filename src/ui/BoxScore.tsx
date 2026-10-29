@@ -87,6 +87,9 @@ export function BoxScore({
           {__i18n_display(v.date)}
           {__i18n_display(v.att ? __i18n_k("ui.boxScore.boxScore.d6a1dfb9", { value: v.att.toLocaleString('ko-KR') }) : '')}
           {__i18n_display(v.innings > 9 ? __i18n_k("ui.boxScore.boxScore.c0c99b3b", { innings: v.innings }) : '')}
+          {/* 2.0.59: rain (weather.ts). */}
+          {v.called ? ` · ${__i18n_t("ui.boxScore.text.c2c542a6", { inning: v.called })}` : ''}
+          {v.from ? ` · ${__i18n_t("ui.boxScore.text.06f76e12", { date: v.from })}` : ''}
         </p>
         <h2 id="box-title" tabIndex={-1} ref={heading}>
           {__i18n_display(v.away.short)} {__i18n_display(live ? liveScore[0] : v.away.rhe[0])} : {__i18n_display(live ? liveScore[1] : v.home.rhe[0])} {__i18n_display(v.home.short)}

@@ -11,7 +11,7 @@ import { captainDay } from './captains';
 import { adaptDay } from './adapt';
 import { freakDay } from './freak';
 import { simulateGame } from './engine/game';
-import { emptySplit, type GameOut, type PlayEvent, type Splits, type TeamBox } from './engine/types';
+import { emptySplit, type GameIn, type GameOut, type PlayEvent, type Splits, type TeamBox } from './engine/types';
 import { compactBox, isUserGame, keepBox } from './boxscore';
 import { gameMoments, milestone } from './milestones';
 import { gameNews, milestoneNews, monthNews } from './news';
@@ -57,6 +57,7 @@ import { ENGINE } from './tuning';
 import { carryOverInjuries, offRoster, rollInjuries } from './injuries';
 import { openForeignBooks } from './foreigncap';
 import { assignLeagues, sidesOf, twelveClubs, twelveGames } from './twelve';
+import { calledGameNote, callRuling, isResumed, postpone, rainDuring, suspend, typhoonDay, weatherFor } from './weather';
 import { finishTrips } from './training';
 import { exhibitionDate, planExhibitions, playExhibitionDay } from './exhibition';
 import { addSituations } from './engine/situation';
@@ -75,6 +76,9 @@ export function startSeason(s: LeagueState) {
   // 2.0.6: family ties to men gone from the records over the winter.
   pruneFamilies(s);
   s.phase = 'regular';
+  // 2.0.59: last season's games called off (weather.ts).
+  delete s.calledOff;
+  delete s.suspendedGames;
   // 1.9.5: a legacy league's opening day — the clubs founded this year, the year's names, the leagues, the rules.
   legacySeason(s);
   // Twelve clubs (V0.9): two leagues are drawn once, before the first twelve-club season.
@@ -298,7 +302,7 @@ function gameRng(s: LeagueState, id: string) {
   return rng(`${s.seed}|game|${id}`);
 }
 
-export function playGame(s: LeagueState, homeId: TeamId, awayId: TeamId, id: string, date: string, maxInnings: number | null, log?: PlayEvent[]): GameOut | null {
+export function playGame(s: LeagueState, homeId: TeamId, awayId: TeamId, id: string, date: string, maxInnings: number | null, log?: PlayEvent[], rain?: { inning: number; top: boolean } | null): GameOut | null {
   const { home: home0, away: away0 } = matchInputs(s, date, { teamId: homeId }, { teamId: awayId });
   if (!home0 || !away0) return null;
   // 2.0.22: a side that came from another city for this series plays its first game tired (travel.ts).
@@ -316,7 +320,19 @@ export function playGame(s: LeagueState, homeId: TeamId, awayId: TeamId, id: str
   const layout = host ? layoutOf(host) : undefined;
   // 2.0.17: the umpires (no ABS or challenges) let a catcher's framing count.
   const framing = framingWeight(s.year);
-  return simulateGame({ gameId: id, home, away, maxInnings, park, balls, ...(layout ? { layout } : {}), ...(ghost ? { ghostFrom: 10 } : {}), ...(three ? { threeBatter: true } : {}), ...(framing ? { framing } : {}) }, gameRng(s, id), log);
+  const input: GameIn = { gameId: id, home, away, maxInnings, park, balls, ...(layout ? { layout } : {}), ...(ghost ? { ghostFrom: 10 } : {}), ...(three ? { threeBatter: true } : {}), ...(framing ? { framing } : {}) };
+  if (!rain) return simulateGame(input, gameRng(s, id), log);
+  // 2.0.59: rain during the game (weather.ts). The game is drawn whole, then what the rain makes of it; a game called
+  // with its score standing is drawn again to that point (the same draws, so the same game up to there).
+  const fresh = (): GameIn => ({ ...(structuredClone({ ...input, balls: undefined }) as GameIn), balls: rng(`${s.seed}|balls|${id}`) });
+  const wholeLog: PlayEvent[] | undefined = log && [];
+  const whole = simulateGame(fresh(), gameRng(s, id), wholeLog);
+  const ruling = callRuling(whole.away.lineScore, whole.home.lineScore, rain);
+  if (!ruling || ruling.kind !== 'final') {
+    if (log) log.push(...wholeLog!);
+    return ruling ? { ...whole, called: ruling } : whole;
+  }
+  return { ...simulateGame({ ...fresh(), stopAfter: { inning: ruling.inning, top: ruling.top } }, gameRng(s, id), log), called: ruling };
 }
 
 /** Plays every game on the next date. Returns false when the regular season is over. */
@@ -358,6 +374,8 @@ export function playDay(s: LeagueState): boolean {
   marketEvents(s, date);
   // 2.0.18: stand-ins for foreign players out six weeks or more (tempforeign.ts).
   tempForeignDay(s, date);
+  // 2.0.59: a typhoon through our city (weather.ts).
+  typhoonDay(s, date);
   // The All-Star voting and game (1.2.0), the draft combine (1.3.0).
   allStarDay(s, date);
   combineDay(s, date, () => applyCombine(s.seed, s.year, draftClass(s.seed, s.year, s.unified)));
@@ -374,12 +392,31 @@ export function playDay(s: LeagueState): boolean {
   }
   while (s.next < s.schedule.length && s.schedule[s.next]!.date === date) {
     const g = s.schedule[s.next]!;
-    const log: PlayEvent[] | undefined = isUserGame(s, g.home, g.away) ? [] : undefined;
+    // 2.0.59: rain, a heat wave or snow calls it off: it goes to the end of the season (weather.ts).
+    const sky = isTiebreaker(g.id) ? null : weatherFor(s, g);
+    if (sky) {
+      postpone(s, sky, date);
+      continue;
+    }
+    // 2.0.59: a suspended game finished today, before the day's game: the whole of it was drawn on its first day.
+    const kept = isResumed(g.id) ? s.suspendedGames?.[g.id] : undefined;
+    if (kept) delete s.suspendedGames![g.id];
+    const log: PlayEvent[] | undefined = kept ? kept.log : isUserGame(s, g.home, g.away) ? [] : undefined;
     // 1.9.5: a tiebreaker is played until it is decided; a league that plays history stops at its year's limit.
     const limit = isTiebreaker(g.id) ? null : s.historical || boardValue('extras', s.year) !== undefined ? rulesFor(s.year).extraInnings : ENGINE.maxInnings;
-    const out = playGame(s, g.home, g.away, g.id, date, limit, log);
+    const out = kept ? { ...kept.out, called: undefined } : playGame(s, g.home, g.away, g.id, date, limit, log, isTiebreaker(g.id) ? null : rainDuring(s, g));
+    // 2.0.59: rain before five innings — no game, played again; a suspended game — finished another day.
+    if (out?.called?.kind === 'noGame') {
+      postpone(s, 'rain', date, out.called.inning);
+      continue;
+    }
+    if (out?.called?.kind === 'suspended') {
+      suspend(s, out, log, date);
+      continue;
+    }
     s.next++;
     if (!out) continue;
+    if (out.called) calledGameNote(s, out, g, date);
     record(s, out.home, date);
     record(s, out.away, date);
     // 2.0.15: home and road, and the ballpark.
@@ -389,7 +426,7 @@ export function playDay(s: LeagueState): boolean {
     serveSuspensions(s, g.away);
     const att = attendance(s, { id: g.id, date, home: g.home, away: g.away });
     recordGate(s, g.home, att);
-    s.scores.push({ id: g.id, date, home: g.home, away: g.away, hs: out.home.runs, as: out.away.runs, att });
+    s.scores.push({ id: g.id, date, home: g.home, away: g.away, hs: out.home.runs, as: out.away.runs, att, ...(out.called ? { called: out.called.inning } : {}), ...(kept ? { from: kept.from } : {}) });
     // 2.0.6: relatives on the two sides.
     familyGame(s, out.home, out.away, date);
     // 2.0.7: perfect games, no-hitters, cycles, home runs in a row.
@@ -398,7 +435,7 @@ export function playDay(s: LeagueState): boolean {
     brawlGame(s, out, g.id, date);
     // 2.0.28: arguing a call, now and then an ejection (protests.ts).
     protestGame(s, out, g.id, date);
-    const box = compactBox(out, g.id, date, att);
+    const box = compactBox(out, g.id, date, att, kept?.from);
     keepBox(s, box, log);
     if (log) {
       gameMoments(s, box);

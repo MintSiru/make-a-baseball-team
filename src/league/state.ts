@@ -580,6 +580,8 @@ export interface UserClub {
   tradeOffers?: import('./offers').TradeOffer[];
   /** 2.0.45 (offers.ts): our players marked not for sale — the AI clubs do not ask for them. */
   notForSale?: PlayerId[];
+  /** 2.0.59 (offers.ts): ours put on the trade block, for the clubs' offers. */
+  tradeBlock?: PlayerId[];
   /** 2.0.43 (clubmove.ts): the clubs the general manager ran before this one — id, name, first and last winter. */
   former?: { teamId: TeamId; name: string; from: number; to: number }[];
 }
@@ -723,6 +725,10 @@ export interface LeagueState {
   voluntary?: Record<PlayerId, { teamId: TeamId; since: string; why: 'club' | 'scandal'; salary: number }>;
   /** 2.0.37 (abroad.ts): our players talked out of going abroad, and the winter they agreed. */
   abroadStay?: Record<PlayerId, number>;
+  /** 2.0.59 (weather.ts): this season's games called off for the weather and the day each went to. */
+  calledOff?: { id: string; date: string; home: TeamId; away: TeamId; why: import('./weather').Weather; to: string; dh?: true; noGame?: true }[];
+  /** 2.0.59 (weather.ts): suspended games waiting to be finished, by their schedule id (`-s`). */
+  suspendedGames?: Record<string, import('./weather').SuspendedGame>;
   /** 2.0.56 (faclass.ts): each winter's free agents, written when the market closes. */
   faHistory?: import('./faclass').FaClass[];
   /** 2.0.37 (merger.ts): mergers and sales of clubs (`teamId` the club that took a new name). 2.0.49: `absorbedShort`

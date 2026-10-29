@@ -3726,6 +3726,12 @@ button.danger {
   cursor: pointer;
   opacity: 0.6;
 }
+.block-toggle.on,
+.tag.block {
+  border-color: var(--accent);
+  color: var(--accent);
+  opacity: 1;
+}
 .nfs-toggle.on,
 .tag.nfs {
   border-color: var(--bad);

@@ -89973,5 +89973,356 @@
     "line": 197,
     "params": {},
     "locations": []
+  },
+  "league.weather.text.7833e9a9": {
+    "source": "src/league/weather.ts",
+    "line": 124,
+    "params": {
+      "opp": {
+        "expression": "opp"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.1f19a24e": {
+    "source": "src/league/weather.ts",
+    "line": 124,
+    "params": {
+      "opp": {
+        "expression": "opp"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.923eee13": {
+    "source": "src/league/weather.ts",
+    "line": 124,
+    "params": {
+      "opp": {
+        "expression": "opp"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.a1812490": {
+    "source": "src/league/weather.ts",
+    "line": 125,
+    "params": {
+      "date": {
+        "expression": "today.slice(5).replace('-', '/')"
+      },
+      "park": {
+        "expression": "park"
+      },
+      "to": {
+        "expression": "to.slice(5).replace('-', '/')"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.f22de627": {
+    "source": "src/league/weather.ts",
+    "line": 167,
+    "params": {
+      "opp": {
+        "expression": "opp"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.64a11807": {
+    "source": "src/league/weather.ts",
+    "line": 184,
+    "params": {
+      "days": {
+        "expression": "t.days"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.124f0633": {
+    "source": "src/league/weather.ts",
+    "line": 190,
+    "params": {
+      "facility": {
+        "expression": "FACILITIES[kind].label"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.2a3db7ab": {
+    "source": "src/league/weather.ts",
+    "line": 195,
+    "params": {},
+    "locations": []
+  },
+  "league.weather.text.f3f62f86": {
+    "source": "src/league/weather.ts",
+    "line": 196,
+    "params": {
+      "eok": {
+        "expression": "Math.round(cost / 1000) / 10"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.ff4e0f68": {
+    "source": "src/league/weather.ts",
+    "line": 199,
+    "params": {},
+    "locations": []
+  },
+  "league.offers.text.6a939700": {
+    "source": "src/league/offers.ts",
+    "line": 114,
+    "params": {},
+    "locations": []
+  },
+  "league.offers.text.20f77778": {
+    "source": "src/league/offers.ts",
+    "line": 121,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.offers.text.ce628c92": {
+    "source": "src/league/offers.ts",
+    "line": 124,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.8171d94b": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 511,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.9445466f": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 511,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.6213f395": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 514,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.04c26492": {
+    "source": "src/ui/Market.tsx",
+    "line": 442,
+    "params": {
+      "n": {
+        "expression": "BLOCK.clubs"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.6213f395": {
+    "source": "src/ui/Market.tsx",
+    "line": 445,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.6a939700": {
+    "source": "src/ui/Market.tsx",
+    "line": 445,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.848f66f7": {
+    "source": "src/ui/Market.tsx",
+    "line": 452,
+    "params": {
+      "name": {
+        "expression": "league.players[id]!.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.7835577c": {
+    "source": "src/ui/Market.tsx",
+    "line": 453,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.778fd6e6": {
+    "source": "src/ui/Market.tsx",
+    "line": 457,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.7a062973": {
+    "source": "src/ui/Market.tsx",
+    "line": 457,
+    "params": {},
+    "locations": []
+  },
+  "league.weather.text.b53333ba": {
+    "source": "src/league/weather.ts",
+    "line": 232,
+    "params": {
+      "opp": {
+        "expression": "opp"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.cc9bad43": {
+    "source": "src/league/weather.ts",
+    "line": 234,
+    "params": {
+      "date": {
+        "expression": "day(today)"
+      },
+      "park": {
+        "expression": "park"
+      },
+      "inning": {
+        "expression": "noGameIn"
+      },
+      "to": {
+        "expression": "day(to)"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.8b4c4174": {
+    "source": "src/league/weather.ts",
+    "line": 235,
+    "params": {
+      "to": {
+        "expression": "day(to)"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.25c0d49d": {
+    "source": "src/league/weather.ts",
+    "line": 267,
+    "params": {
+      "opp": {
+        "expression": "opp"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.8d8e0633": {
+    "source": "src/league/weather.ts",
+    "line": 268,
+    "params": {
+      "inning": {
+        "expression": "at.inning"
+      },
+      "away": {
+        "expression": "score[0]"
+      },
+      "home": {
+        "expression": "score[1]"
+      },
+      "to": {
+        "expression": "day(to)"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.29563a62": {
+    "source": "src/league/weather.ts",
+    "line": 284,
+    "params": {
+      "opp": {
+        "expression": "opp"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.77bf8121": {
+    "source": "src/league/weather.ts",
+    "line": 285,
+    "params": {
+      "inning": {
+        "expression": "out.called.inning"
+      },
+      "ours": {
+        "expression": "ours"
+      },
+      "theirs": {
+        "expression": "theirs"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.772c0f91": {
+    "source": "src/league/weather.ts",
+    "line": 285,
+    "params": {
+      "inning": {
+        "expression": "out.called.inning"
+      },
+      "ours": {
+        "expression": "ours"
+      },
+      "theirs": {
+        "expression": "theirs"
+      },
+      "result": {
+        "expression": "ours > theirs ? L('승') : L('패')"
+      }
+    },
+    "locations": []
+  },
+  "league.weather.text.3b1908b7": {
+    "source": "src/league/weather.ts",
+    "line": 285,
+    "params": {},
+    "locations": []
+  },
+  "league.weather.text.36260e2c": {
+    "source": "src/league/weather.ts",
+    "line": 285,
+    "params": {},
+    "locations": []
+  },
+  "ui.boxScore.text.c2c542a6": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 91,
+    "params": {
+      "inning": {
+        "expression": "v.called"
+      }
+    },
+    "locations": []
+  },
+  "ui.boxScore.text.06f76e12": {
+    "source": "src/ui/BoxScore.tsx",
+    "line": 92,
+    "params": {
+      "date": {
+        "expression": "v.from"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.f3e2e36a": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 279,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.a88271df": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 279,
+    "params": {},
+    "locations": []
+  },
+  "ui.squad.text.a88271df": {
+    "source": "src/ui/Squad.tsx",
+    "line": 96,
+    "params": {},
+    "locations": []
   }
 }

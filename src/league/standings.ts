@@ -11,6 +11,9 @@ export interface GameScore {
   att?: number;
   /** 1.8.4: a postseason game's ticket money (만 원), split between the league and the two clubs. */
   gate?: number;
+  /** 2.0.59 (weather.ts): rain ended it after this inning (강우 콜드); `from` a suspended game's first day. */
+  called?: number;
+  from?: string;
 }
 
 export interface StandingRow {

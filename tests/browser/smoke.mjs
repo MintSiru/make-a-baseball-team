@@ -28,8 +28,13 @@ const check = (ok, message) => {
 const status = (page) => page.locator('.status').first().textContent();
 const waitStatus = (page, text, timeout = 120_000) => page.waitForFunction((t) => document.querySelector('.status')?.textContent?.includes(t), text, { timeout });
 // 2.0.30: a season opens with its spring games (시범경기) before the regular season.
-const waitSeason = (page, year = '', timeout = 120_000) =>
-  page.waitForFunction((y) => [`${y} 정규시즌`, `${y} 시범경기`].some((t) => document.querySelector('.status')?.textContent?.includes(t.trim())), String(year), { timeout });
+// 2.0.59: or (`orDecision`) a decision waiting in the season — the status line then says so instead.
+const waitSeason = (page, year = '', timeout = 120_000, orDecision = false) =>
+  page.waitForFunction(
+    ([y, d]) => [`${y} 정규시즌`, `${y} 시범경기`, ...(d ? ['결정할 일이 있습니다'] : [])].some((t) => document.querySelector('.status')?.textContent?.includes(t.trim())),
+    [String(year), orDecision],
+    { timeout },
+  );
 const noOverflow = async (page, label) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   check(overflow <= 0, `${label}: page scrolls sideways by ${overflow}px`);
@@ -69,6 +74,12 @@ async function decideEach(page, log) {
   let handPicked = false;
   for (let i = 0; i < 80; i++) {
     const decision = page.locator('#decision-title');
+    // 2.0.59: a decision that came while another tab was opened (the season's run of days stops for it and its
+    // screen comes forward, but the run may have gone to the games since): back to it first.
+    if (!(await decision.count()) && (await page.locator('.tabs .tab-waiting').count())) {
+      await page.locator('.tabs .tab-waiting').click();
+      await decision.waitFor({ timeout: 10_000 });
+    }
     if (!(await decision.count())) return;
     const title = (await decision.textContent()) ?? '';
     log.push(title);
@@ -193,9 +204,12 @@ async function playSeason(page, log = []) {
 }
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_BIN || undefined });
+/** 2.0.59: the main page, for what it showed when a step failed (the run's random league is gone with it). */
+let main = null;
 try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const page = await context.newPage();
+  main = page;
   const errors = [];
   page.on('pageerror', (e) => (errors.push(e.message), console.log('page error:', e.message)));
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
@@ -793,7 +807,7 @@ try {
   await page.keyboard.press('Escape');
   const saved = await status(page);
   await page.reload();
-  await waitSeason(page, '', 60_000);
+  await waitSeason(page, '', 60_000, true);
   const autosave = (await page.locator('.save-actions .muted').textContent()) ?? '';
   if (autosave.includes('자동 저장됨')) check((await status(page)) === saved, `reload restores the game (${saved} → ${await status(page)})`);
 
@@ -846,6 +860,22 @@ try {
   check((await p2.locator('.standings tbody tr').count()) === 10, 'spectator league has ten clubs');
   await phone.close();
 } catch (e) {
+  // 2.0.59: what the screen showed — the status line, any dialog, the day controls — and a picture of it.
+  if (main)
+    try {
+      await main.screenshot({ path: join(shots, 'failure.png') });
+      const seen = await main.evaluate(() => ({
+        status: document.querySelector('.status')?.textContent ?? null,
+        controls: document.querySelector('fieldset.controls')?.textContent?.slice(0, 400) ?? null,
+        disabled: !!document.querySelector('fieldset.controls')?.disabled,
+        decision: document.querySelector('#decision-title')?.textContent ?? null,
+        dialogs: [...document.querySelectorAll('[role="dialog"], [role="alertdialog"]')].map((d) => (d.textContent ?? '').slice(0, 300)),
+        headings: [...document.querySelectorAll('h1, h2')].map((h) => h.textContent).slice(0, 8),
+      }));
+      console.log('on failure:', JSON.stringify(seen, null, 1));
+    } catch {
+      // The page itself may be what failed.
+    }
   // On CI, as an annotation too: the job log is not the only place the reason shows.
   if (process.env.GITHUB_ACTIONS) console.log(`::error title=browser smoke::${String(e?.stack ?? e).slice(0, 4000).replace(/%/g, '%25').replace(/\r?\n/g, '%0A')}`);
   throw e;

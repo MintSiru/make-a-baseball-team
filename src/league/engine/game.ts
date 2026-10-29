@@ -732,11 +732,14 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
   while (!over) {
     inning++;
     away.box.lineScore.push(halfInning(away, home, false));
+    // 2.0.59: rain calls it after the top half.
+    if (game.stopAfter?.top && inning >= game.stopAfter.inning) break;
     if (inning >= 9 && home.box.runs > away.box.runs) {
       break; // home team does not bat in the bottom half
     }
     home.box.lineScore.push(halfInning(home, away, true));
     if (over) break;
+    if (game.stopAfter && inning >= game.stopAfter.inning) break;
     if (inning >= 9 && home.box.runs !== away.box.runs) break;
     if (game.maxInnings !== null && inning >= game.maxInnings) break;
   }
@@ -746,7 +749,8 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
     const last = s.apps[s.apps.length - 1]!;
     last.exitLead = lead(s);
   }
-  if (result !== 'tie' && state.goAhead) decide(result === 'home' ? home : away, result === 'home' ? away : home, state.goAhead);
+  // A game called after five innings or less: four innings make a starter's win (official scoring).
+  if (result !== 'tie' && state.goAhead) decide(result === 'home' ? home : away, result === 'home' ? away : home, state.goAhead, game.stopAfter && inning <= 5 ? 12 : 15);
   for (const s of [home, away]) {
     const sp = s.apps[0]!.line;
     if (sp.outs >= 18 && sp.er <= 3) sp.qs = 1;
@@ -758,10 +762,10 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
 }
 
 /** Wins, losses, saves and holds (simplified official scoring). */
-function decide(winner: Side, loser: Side, goAhead: { winnerApp: number; loserApp: number }) {
+function decide(winner: Side, loser: Side, goAhead: { winnerApp: number; loserApp: number }, starterOuts = 15) {
   let w = goAhead.winnerApp;
   // A starter needs five innings for the win; otherwise it goes to the reliever who got the most outs.
-  if (w === 0 && winner.apps[0]!.line.outs < 15 && winner.apps.length > 1) {
+  if (w === 0 && winner.apps[0]!.line.outs < starterOuts && winner.apps.length > 1) {
     w = 1;
     for (let i = 2; i < winner.apps.length; i++) if (winner.apps[i]!.line.outs > winner.apps[w]!.line.outs) w = i;
   }
