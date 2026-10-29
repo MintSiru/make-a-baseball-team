@@ -9926,5 +9926,9 @@
   "ui.history.text.479ab3e8": "Terms",
   "ui.history.text.6a453eb6": "No free agents that winter.",
   "league.finance.text.6cf8c8bb": "{year} {supportLabel} (Season Budget Finalized: {amount} less the winter's advance of {advance})",
-  "ui.faMarket.text.0febb9e9": "You may offer more than the limit: the club pays the rest from its payroll budget (from the fund for a bonus paid at once)."
+  "ui.faMarket.text.0febb9e9": "You may offer more than the limit: the club pays the rest from its payroll budget (from the fund for a bonus paid at once).",
+  "league.weather.text.7833e9a9": "Rained out: vs {opp}",
+  "league.weather.text.1f19a24e": "Called off for the heat: vs {opp}",
+  "league.weather.text.923eee13": "Called off for snow and cold: vs {opp}",
+  "league.weather.text.a1812490": "The {date} game at {park} was called off and is now on {to}."
 }

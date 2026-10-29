@@ -9927,5 +9927,9 @@ export const koSource = {
   "ui.history.text.479ab3e8": "조건",
   "ui.history.text.6a453eb6": "이 겨울의 FA가 없습니다.",
   "league.finance.text.6cf8c8bb": "{year} {supportLabel} (시즌 예산 확정 {amount}억 − 겨울 선지급 {advance}억)",
-  "ui.faMarket.text.0febb9e9": "한도를 넘게 제안해도 됩니다: 넘는 몫은 구단 연봉 예산에서(계약금 일시불이면 구단 자금에서) 냅니다."
+  "ui.faMarket.text.0febb9e9": "한도를 넘게 제안해도 됩니다: 넘는 몫은 구단 연봉 예산에서(계약금 일시불이면 구단 자금에서) 냅니다.",
+  "league.weather.text.7833e9a9": "우천 취소: {opp}전",
+  "league.weather.text.1f19a24e": "폭염 취소: {opp}전",
+  "league.weather.text.923eee13": "폭설·한파 취소: {opp}전",
+  "league.weather.text.a1812490": "{date} {park} 경기가 취소되어 {to}로 다시 잡혔습니다."
 } as const;

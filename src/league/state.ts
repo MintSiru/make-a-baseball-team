@@ -723,6 +723,8 @@ export interface LeagueState {
   voluntary?: Record<PlayerId, { teamId: TeamId; since: string; why: 'club' | 'scandal'; salary: number }>;
   /** 2.0.37 (abroad.ts): our players talked out of going abroad, and the winter they agreed. */
   abroadStay?: Record<PlayerId, number>;
+  /** 2.0.59 (weather.ts): this season's games called off for the weather and the day each went to. */
+  calledOff?: { id: string; date: string; home: TeamId; away: TeamId; why: import('./weather').Weather; to: string }[];
   /** 2.0.56 (faclass.ts): each winter's free agents, written when the market closes. */
   faHistory?: import('./faclass').FaClass[];
   /** 2.0.37 (merger.ts): mergers and sales of clubs (`teamId` the club that took a new name). 2.0.49: `absorbedShort`

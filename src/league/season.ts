@@ -57,6 +57,7 @@ import { ENGINE } from './tuning';
 import { carryOverInjuries, offRoster, rollInjuries } from './injuries';
 import { openForeignBooks } from './foreigncap';
 import { assignLeagues, sidesOf, twelveClubs, twelveGames } from './twelve';
+import { postpone, weatherFor } from './weather';
 import { finishTrips } from './training';
 import { exhibitionDate, planExhibitions, playExhibitionDay } from './exhibition';
 import { addSituations } from './engine/situation';
@@ -75,6 +76,8 @@ export function startSeason(s: LeagueState) {
   // 2.0.6: family ties to men gone from the records over the winter.
   pruneFamilies(s);
   s.phase = 'regular';
+  // 2.0.59: last season's games called off (weather.ts).
+  delete s.calledOff;
   // 1.9.5: a legacy league's opening day — the clubs founded this year, the year's names, the leagues, the rules.
   legacySeason(s);
   // Twelve clubs (V0.9): two leagues are drawn once, before the first twelve-club season.
@@ -374,6 +377,12 @@ export function playDay(s: LeagueState): boolean {
   }
   while (s.next < s.schedule.length && s.schedule[s.next]!.date === date) {
     const g = s.schedule[s.next]!;
+    // 2.0.59: rain, a heat wave or snow calls it off: it goes to the end of the season (weather.ts).
+    const sky = isTiebreaker(g.id) ? null : weatherFor(s, g);
+    if (sky) {
+      postpone(s, sky, date);
+      continue;
+    }
     const log: PlayEvent[] | undefined = isUserGame(s, g.home, g.away) ? [] : undefined;
     // 1.9.5: a tiebreaker is played until it is decided; a league that plays history stops at its year's limit.
     const limit = isTiebreaker(g.id) ? null : s.historical || boardValue('extras', s.year) !== undefined ? rulesFor(s.year).extraInnings : ENGINE.maxInnings;

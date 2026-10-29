@@ -9926,5 +9926,9 @@
   "ui.history.text.479ab3e8": "条件",
   "ui.history.text.6a453eb6": "この冬のFAはいません。",
   "league.finance.text.6cf8c8bb": "{year} {supportLabel}（シーズン予算確定 {amount}億 − 冬の前払い{advance}億）",
-  "ui.faMarket.text.0febb9e9": "上限を超えて提示してもかまいません。超えた分は球団の年俸予算から（契約金一括払いなら球団資金から）支払います。"
+  "ui.faMarket.text.0febb9e9": "上限を超えて提示してもかまいません。超えた分は球団の年俸予算から（契約金一括払いなら球団資金から）支払います。",
+  "league.weather.text.7833e9a9": "雨天中止：{opp}戦",
+  "league.weather.text.1f19a24e": "猛暑中止：{opp}戦",
+  "league.weather.text.923eee13": "大雪・寒波中止：{opp}戦",
+  "league.weather.text.a1812490": "{date}の{park}での試合は中止となり、{to}に組み直されました。"
 }
