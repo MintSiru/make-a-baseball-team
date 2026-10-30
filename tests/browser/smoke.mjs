@@ -878,6 +878,24 @@ try {
       await noOverflow(page, `new ${width} club ${name}`);
       if (name === '프런트 · 재정') for (const sub of ['연봉표', '계약']) await page.getByRole('group', { name: '프런트 · 재정' }).getByRole('button', { name: sub, exact: true }).click();
     }
+    // 2.0.63: the squad's detail in two pages; the lineup's spots fixed and freed from the table.
+    await views.getByRole('button', { name: '선수단' }).first().click();
+    await page.getByRole('group', { name: '표 보기' }).getByRole('button', { name: '상세', exact: true }).click();
+    await page.getByRole('group', { name: '상세 기록 쪽' }).getByRole('button', { name: '2 / 2' }).click();
+    check(((await page.locator('.squad-table thead').first().textContent()) ?? '').includes('FIP'), `new ${width}: the squad's second detail page`);
+    await noOverflow(page, `new ${width} squad detail`);
+    await page.getByRole('group', { name: '표 보기' }).getByRole('button', { name: '시즌', exact: true }).click();
+    await views.getByRole('button', { name: '라인업 · 로테이션' }).click();
+    const third = page.locator('.bat-sheet tbody tr').nth(2).locator('.fix-toggle');
+    if (await third.count()) {
+      const before = await third.getAttribute('aria-pressed');
+      await third.click();
+      await page.waitForFunction((b) => document.querySelectorAll('.bat-sheet tbody tr')[2]?.querySelector('.fix-toggle')?.getAttribute('aria-pressed') !== b, before);
+      await page.locator('.bat-sheet tbody tr').nth(2).locator('.fix-toggle').click();
+      await page.waitForFunction((b) => document.querySelectorAll('.bat-sheet tbody tr')[2]?.querySelector('.fix-toggle')?.getAttribute('aria-pressed') === b, before);
+    }
+    await axeCheck(page, `new ${width} lineup`);
+    await views.getByRole('button', { name: '개요 · 브리핑' }).first().click();
     check((await page.getByRole('heading', { name: '단장 브리핑' }).count()) === 1, `new ${width}: the overview opens with the briefing`);
     check((await page.locator('.dash-3 .sheet-box').count()) >= 3, `new ${width}: the overview's three boards`);
     await page.screenshot({ path: join(shots, `new-${width}.png`) });

@@ -800,9 +800,15 @@ function Management({ league, onPlayer, onAct, setMsg }: { league: LeagueState; 
     ];
     return (
       <>
-        <Gauges items={quotas.map(([label, n, of]) => ({ label, value: `${n} / ${of}`, n, of }))}>{toolbar}</Gauges>
-        <CaptainsCard league={league} onAct={onAct} />
-        <Squad league={league} teamId={u.teamId} onPlayer={onPlayer} actions={buttons} posControl={roleControl} />
+        <Gauges items={quotas.map(([label, n, of]) => ({ label, value: `${n} / ${of}`, n, of }))}>
+          <span class="entry-mode">
+            <span class="muted small" aria-hidden="true">
+              {__i18n_t("ui.myClub.management.toolbar.eb9e29cc")}
+            </span>
+            {toolbar}
+          </span>
+        </Gauges>
+        <Squad league={league} teamId={u.teamId} onPlayer={onPlayer} actions={buttons} posControl={roleControl} toolbar={<CaptainsCard league={league} onAct={onAct} />} />
       </>
     );
   }
@@ -840,8 +846,31 @@ function CaptainsCard({ league, onAct }: { league: LeagueState; onAct: (a: Actio
     const p = league.players[id]!;
     return __i18n_t("ui.myClub.text.13e52963", { name: p.name, age: ageIn(p, league.year), pers: p.personality });
   };
+  const next = useUi() === 'new';
   return (
     <div class="captains-card">
+      {next ? (
+        <p class="small captains-line">
+          {now.captain ? (
+            <>
+              <span class="badge captain" title={__i18n_t("ui.myClub.text.a6ef8381")}>C</span> <strong>{now.captain.name}</strong>
+              {now.vice.length > 0 && (
+                <>
+                  {' '}
+                  <span class="badge captain">VC</span> {now.vice.map((p) => p.name).join(' · ')}
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <strong>{__i18n_t("ui.myClub.text.a6940a86")}</strong> <span class="muted">{__i18n_t("ui.myClub.text.e24b0801")}</span>
+            </>
+          )}{' '}
+          <button type="button" class="small" aria-expanded={open} onClick={() => setOpen(!open)}>
+            {open ? __i18n_t("ui.myClub.text.0d2c2495") : __i18n_t("ui.myClub.text.6b31156a")}
+          </button>
+        </p>
+      ) : (
       <p class="small">
         <strong>{__i18n_t("ui.myClub.text.a6940a86")}</strong>{' · '}
         {now.captain ? __i18n_t("ui.myClub.text.0a2cb492", { name: now.captain.name, vice: now.vice.length ? __i18n_t("ui.myClub.text.d03ae0e4", { names: now.vice.map((p) => p.name).join(', ') }) : '' }) : __i18n_t("ui.myClub.text.e24b0801")}{' '}
@@ -849,6 +878,7 @@ function CaptainsCard({ league, onAct }: { league: LeagueState; onAct: (a: Actio
           {open ? __i18n_t("ui.myClub.text.0d2c2495") : __i18n_t("ui.myClub.text.be42a39b")}
         </button>
       </p>
+      )}
       {open && (
         <div class="card-editor">
           <p class="muted small">{__i18n_t("ui.myClub.text.00856882")}</p>

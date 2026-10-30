@@ -1802,3 +1802,227 @@
 :root[data-ui='new'][data-grade-tables] .grade-num {
   color: var(--ink);
 }
+
+/* ── The squad (2.0.63): squad, view, page and captains on one bar; two flat sheets under it ── */
+:root[data-ui='new'] .entry-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+:root[data-ui='new'] .next-squad .squad-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin: 0 0 12px;
+}
+:root[data-ui='new'] .next-squad .squad-bar .segmented {
+  margin: 0;
+}
+:root[data-ui='new'] .next-squad .squad-bar .count {
+  margin-left: 2px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+:root[data-ui='new'] .squad-aside {
+  margin-left: auto;
+  position: relative;
+}
+:root[data-ui='new'] .squad-aside .captains-card {
+  margin: 0;
+  padding: 5px 10px;
+  background: var(--card);
+}
+:root[data-ui='new'] .squad-aside .captains-card .card-editor {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 5;
+  width: min(420px, 90vw);
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--ink);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
+}
+:root[data-ui='new'] .captains-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+:root[data-ui='new'] .captains-line button {
+  margin-left: 6px;
+  padding: 1px 8px;
+  font-size: 12px;
+}
+:root[data-ui='new'] .badge.captain {
+  display: inline-block;
+  padding: 0 5px;
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-radius: 2px;
+}
+:root[data-ui='new'] .tag.hurt {
+  border-color: var(--bad);
+  color: var(--bad);
+}
+:root[data-ui='new'] .squad-sheet {
+  width: 100%;
+  margin: 0 0 18px;
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+}
+:root[data-ui='new'] .squad-sheet > table {
+  width: 100%;
+}
+:root[data-ui='new'] .squad-sheet .name-cell {
+  white-space: nowrap;
+}
+:root[data-ui='new'] .squad-sheet .name-cell .uniform {
+  display: inline-block;
+  min-width: 1.6em;
+  margin-right: 4px;
+  color: var(--ink-2);
+  font-size: 12px;
+  text-align: right;
+}
+:root[data-ui='new'] .squad-sheet .name-cell .link {
+  font-weight: 700;
+}
+:root[data-ui='new'] .squad-sheet .name-cell .tag {
+  margin-left: 4px;
+}
+@media (max-width: 900px) {
+  :root[data-ui='new'] .squad-aside {
+    margin-left: 0;
+  }
+}
+:root[data-ui='new'] .squad-sheet th,
+:root[data-ui='new'] .squad-sheet td {
+  padding: 6px 6px;
+  font-size: 13.5px;
+}
+:root[data-ui='new'] .squad-sheet thead th {
+  font-size: 12px;
+}
+:root[data-ui='new'] .squad-sheet td select {
+  font-size: 12.5px;
+  padding: 2px 4px;
+}
+
+/* ── The lineup (2.0.63): the field beside the order, fixed or left to the manager at the row's end ── */
+:root[data-ui='new'] .lineup-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 0 0 12px;
+}
+:root[data-ui='new'] .lineup-bar .segmented {
+  margin: 0;
+}
+:root[data-ui='new'] .lineup-two {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 16px;
+}
+:root[data-ui='new'] .diamond-box {
+  border: 2px solid var(--ink);
+  padding: 8px 12px;
+}
+:root[data-ui='new'] .diamond-box .diamond {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+:root[data-ui='new'] .diamond .spot rect {
+  fill: var(--card);
+  stroke: var(--ink);
+  stroke-width: 1.2;
+}
+:root[data-ui='new'] .diamond .spot.fixed rect {
+  stroke: var(--stamp);
+  stroke-width: 2;
+}
+:root[data-ui='new'] .diamond-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--rule);
+}
+:root[data-ui='new'] .bat-sheet {
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+}
+:root[data-ui='new'] .bat-sheet > table {
+  width: 100%;
+}
+:root[data-ui='new'] .bat-sheet th,
+:root[data-ui='new'] .bat-sheet td {
+  padding: 6px 6px;
+}
+:root[data-ui='new'] .bat-sheet .name-cell {
+  white-space: nowrap;
+}
+:root[data-ui='new'] .bat-sheet .name-cell .uniform {
+  display: inline-block;
+  min-width: 1.6em;
+  margin-right: 4px;
+  color: var(--ink-2);
+  font-size: 12px;
+  text-align: right;
+}
+:root[data-ui='new'] .bat-sheet .name-cell .link {
+  font-weight: 700;
+}
+:root[data-ui='new'] .fix-toggle {
+  padding: 1px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--ink-2);
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+}
+:root[data-ui='new'] .fix-toggle.on {
+  color: var(--stamp);
+  background: var(--card);
+  border: 1.5px solid var(--stamp);
+  font-weight: 700;
+}
+@media (max-width: 1000px) {
+  :root[data-ui='new'] .lineup-two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :root[data-ui='new'] .diamond-box {
+    max-width: 420px;
+  }
+}
+:root[data-ui='new'] .next-lineup .staff-table {
+  width: 100%;
+  border-radius: 0;
+}
+:root[data-ui='new'] .next-lineup .staff-table > table {
+  width: 100%;
+}
+@media (max-width: 600px) {
+  :root[data-ui='new'] .squad-sheet .name-cell,
+  :root[data-ui='new'] .bat-sheet .name-cell {
+    white-space: normal;
+  }
+}
+@media (max-width: 600px) {
+  :root[data-ui='new'] .bat-sheet .name-cell {
+    min-width: 7rem;
+  }
+}
