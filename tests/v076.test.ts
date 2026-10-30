@@ -144,10 +144,13 @@ describe('display settings', () => {
     const root = { style: { setProperty: (k: string, v: string) => props.set(k, v), removeProperty: (k: string) => props.delete(k) }, dataset: {} as Record<string, string> };
     applyDisplay({ ...DEFAULT_PREFS, bars: 'scale', tables: true }, root as unknown as HTMLElement);
     expect(props.get('--grade-4')).toBe(PRESETS.scale.colors![4]);
-    expect(root.dataset).toEqual({ gradeColors: 'scale', gradeTables: 'on', density: 'compact' });
+    // 2.0.62: the screens' design (새 UI by default) rides along.
+    expect(root.dataset).toEqual({ gradeColors: 'scale', gradeTables: 'on', density: 'compact', ui: 'new' });
     applyDisplay(DEFAULT_PREFS, root as unknown as HTMLElement);
     expect(props.size).toBe(0);
-    expect(root.dataset).toEqual({ density: 'compact' });
+    expect(root.dataset).toEqual({ density: 'compact', ui: 'new' });
+    applyDisplay({ ...DEFAULT_PREFS, ui: 'legacy' }, root as unknown as HTMLElement);
+    expect(root.dataset.ui).toBe('legacy');
     expect(tierColors({ ...DEFAULT_PREFS, bars: 'custom' })).toEqual(DEFAULT_PREFS.custom);
   });
 });
