@@ -10,9 +10,9 @@ import { PARENT_COMPANY_TYPES } from '../club/types';
 import type { Action } from '../league/actions';
 import { canMove, canRegister } from '../league/entry';
 import { projectedPayroll } from '../league/expansion';
-import { firstTeamSize, PEN_ROLE_LABELS, PEN_ROLES } from '../league/manager';
+import { firstTeamSize, foreignSlots, PEN_ROLE_LABELS, PEN_ROLES } from '../league/manager';
 import type { BullpenRole } from '../league/engine/types';
-import { rosterLimit } from '../league/offseason';
+import { foreignOn, rosterLimit } from '../league/offseason';
 import { ageIn, isPitcher } from '../league/players';
 import { captainsOf, captainsProblem } from '../league/captains';
 import { faOutlook } from '../league/faclock';
@@ -711,6 +711,7 @@ function TeamLeaders({ league, onPlayer }: { league: LeagueState; onPlayer: (id:
 
 function Management({ league, onPlayer, onAct, setMsg }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void; setMsg: (m: string) => void }) {
   const u = league.user!;
+  const ui = useUi();
   const manual = u.entry === 'manual';
   const inSeason = league.phase === 'regular';
   const move = (id: string, to: SquadName) => {
@@ -786,6 +787,41 @@ function Management({ league, onPlayer, onAct, setMsg }: { league: LeagueState; 
       <button type="button" aria-pressed={manual} onClick={() => onAct({ kind: 'entryMode', mode: 'manual' })}>{__i18n_t("ui.myClub.management.toolbar.2273e06d")}</button>
     </div>
   );
+  if (ui === 'new') {
+    // 2.0.62 (새 UI): the squad's limits as gauges, who runs the entry beside them — no notes over the table.
+    const me = u.teamId;
+    const slots = foreignSlots(league, me);
+    const quotas: [string, number, number][] = [
+      [__i18n_t("ui.myClub.text.8a344893"), registeredIds(league, me).length, rosterLimit(league.year)],
+      [__i18n_t("ui.myClub.text.18f79964"), league.rosters[me]!.active.length, firstTeamSize(league, me)],
+      [__i18n_t("ui.myClub.text.cf7b6b60"), developmentIds(league, me).length, OFFSEASON.development.cap],
+      [__i18n_t("ui.myClub.text.5bd804b7"), foreignOn(league, me).length, slots.regular + slots.asia],
+    ];
+    return (
+      <>
+        <div class="roster-bar">
+          <div class="quotas">
+            {quotas.map(([label, n, of]) => (
+              <div class="quota" key={label}>
+                <div class="quota-top">
+                  <span>{label}</span>
+                  <b class={n > of ? 'minus' : undefined}>
+                    {n} / {of}
+                  </b>
+                </div>
+                <span class={`qbar${n > of ? ' over' : ''}`} aria-hidden="true">
+                  <i style={{ width: `${Math.min(100, Math.round((n / Math.max(1, of)) * 100))}%` }} />
+                </span>
+              </div>
+            ))}
+          </div>
+          {toolbar}
+        </div>
+        <CaptainsCard league={league} onAct={onAct} />
+        <Squad league={league} teamId={u.teamId} onPlayer={onPlayer} actions={buttons} posControl={roleControl} />
+      </>
+    );
+  }
   return (
     <>
       <p class="muted">

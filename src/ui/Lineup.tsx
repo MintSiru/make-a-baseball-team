@@ -15,6 +15,7 @@ import { gradeTier } from './display';
 import { gradeClass } from './grades';
 import { Help } from './Help';
 import { ArmMeter } from './ArmMeter';
+import { useUi } from './useDisplay';
 
 const SPOTS: Record<string, [number, number]> = {
   CF: [200, 40],
@@ -45,6 +46,7 @@ const f3 = (x: number | null) => (x == null ? '-' : rates.fmt3(x));
 
 export function Lineup({ league, teamId, onPlayer, onAct }: { league: LeagueState; teamId: string; onPlayer: (id: string) => void; onAct?: (a: Action) => void }) {
   const [vs, setVs] = useState<'R' | 'L'>('R');
+  const ui = useUi();
   const v = lineupView(league, teamId, vs);
   if (!v || v.lineup.length < 9) return <p class="muted">{__i18n_t("ui.lineup.lineup.a99fd3fe")}</p>;
   const next = v.starters.find((x) => x.next) ?? v.starters[0];
@@ -136,6 +138,9 @@ export function Lineup({ league, teamId, onPlayer, onAct }: { league: LeagueStat
           {__i18n_display(dh && <p class="muted small">{__i18n_t("ui.lineup.lineup.8a47b77e", { name: dh.name })}</p>)}
         </div>
       </div>
+      {ui === 'new' ? (
+        <NextStaff v={v} onPlayer={onPlayer} />
+      ) : (
       <div class="lineup-grid">
         <div>
           <h3>{__i18n_t("ui.lineup.lineup.cad4826e")}</h3>
@@ -176,7 +181,143 @@ export function Lineup({ league, teamId, onPlayer, onAct }: { league: LeagueStat
           <p>{__i18n_display(v.bench.length ? v.bench.map((b) => __i18n_k("ui.lineup.lineup.262159bf", { name: b.name, pos: b.pos, grade: b.grade, value: b.injured ? __i18n_k("ui.lineup.lineup.cc5713ba") : '' })).join(', ') : '-')}</p>
         </div>
       </div>
+      )}
     </div>
+  );
+}
+
+type View = NonNullable<ReturnType<typeof lineupView>>;
+
+/** 2.0.62 (새 UI): the rotation, the bullpen and the bench as tables — each pitcher's grades, his arm for the next
+    game, his line; the next starter and the general manager's fixed order marked in place. */
+function NextStaff({ v, onPlayer }: { v: View; onPlayer: (id: string) => void }) {
+  const Name = ({ id, name }: { id: string; name: string }) => (
+    <button type="button" class="link" onClick={() => onPlayer(id)}>
+      {name}
+    </button>
+  );
+  const era = (x: number | null) => (x == null ? '-' : x.toFixed(2));
+  return (
+    <>
+      <div class="table-wrap staff-table">
+        <table class="record-table">
+          <thead>
+            <tr>
+              <th>{__i18n_t("ui.lineup.text.7f7af771")}</th>
+              <th>{__i18n_t("ui.lineup.lineup.cad4826e")}</th>
+              <th>{__i18n_t("ui.lineup.text.b9b0fb00")}</th>
+              <th class="num">{__i18n_t("ui.lineup.text.f7c86d76")}</th>
+              <th class="num">{__i18n_t("ui.lineup.text.6ff2c5c1")}</th>
+              <th class="num">{__i18n_t("ui.lineup.text.c82827a2")}</th>
+              <th class="num">{__i18n_t("ui.lineup.text.5ba0495f")}</th>
+              <th class="num">{__i18n_t("ui.lineup.text.a45ea58e")}</th>
+              <th class="num">{__i18n_t("ui.lineup.text.b8c2e079")}</th>
+              <th>{__i18n_t("ui.lineup.text.e5c8eb0c")}</th>
+              <th class="num">{__i18n_t("ui.lineup.text.9660dd73")}</th>
+              <th class="num">ERA</th>
+            </tr>
+          </thead>
+          <tbody>
+            {v.starters.map((p, i) => (
+              <tr key={p.id} class={p.next ? 'next-row' : undefined}>
+                <th scope="row">{__i18n_t("ui.lineup.text.7c0d9f1c", { n: i + 1 })}</th>
+                <td>
+                  <Name id={p.id} name={p.name} />
+                  {p.next && <span class="stamp info">{__i18n_t("ui.lineup.lineup.ae82f6eb")}</span>}
+                  {p.mine && <span class="tag cap">{__i18n_t("ui.lineup.lineup.678af713")}</span>}
+                </td>
+                <td>{p.throws}</td>
+                <td class={`num strong ${gradeClass(p.grade)}`}>{p.grade}</td>
+                <Grade g={p.tools.stuff} />
+                <Grade g={p.tools.command} />
+                <Grade g={p.tools.breaking} />
+                <Grade g={p.tools.stamina} />
+                <td class="num">{p.velocity ? `${p.velocity}km` : '-'}</td>
+                <td>
+                  <ArmMeter arm={p.arm} />
+                </td>
+                <td class="num">
+                  {p.w}-{p.l}
+                </td>
+                <td class="num strong">{era(p.era)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div class="staff-grid">
+        <div class="table-wrap staff-table">
+          <table class="record-table">
+            <thead>
+              <tr>
+                <th>{__i18n_t("ui.lineup.text.d2fcd57f")}</th>
+                <th>{__i18n_t("ui.lineup.lineup.5b8607a3")}</th>
+                <th>{__i18n_t("ui.lineup.text.b9b0fb00")}</th>
+                <th class="num">{__i18n_t("ui.lineup.text.f7c86d76")}</th>
+                <th class="num">{__i18n_t("ui.lineup.text.b8c2e079")}</th>
+                <th>{__i18n_t("ui.lineup.text.e5c8eb0c")}</th>
+                <th class="num">{__i18n_t("ui.lineup.text.df8372bc")}</th>
+                <th class="num">ERA</th>
+              </tr>
+            </thead>
+            <tbody>
+              {v.bullpen.map((p) => (
+                <tr key={p.id}>
+                  <td>
+                    <span class="tag">{p.role}</span>
+                  </td>
+                  <td>
+                    <Name id={p.id} name={p.name} />
+                  </td>
+                  <td>{p.throws}</td>
+                  <td class={`num strong ${gradeClass(p.grade)}`}>{p.grade}</td>
+                  <td class="num">{p.velocity ? `${p.velocity}km` : '-'}</td>
+                  <td>
+                    <ArmMeter arm={p.arm} />
+                  </td>
+                  <td class="num">
+                    {p.sv}/{p.hld}
+                  </td>
+                  <td class="num strong">{era(p.era)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div class="table-wrap staff-table">
+          <table class="record-table">
+            <thead>
+              <tr>
+                <th>{__i18n_t("ui.lineup.lineup.63ae8ec7")}</th>
+                <th>{__i18n_t("ui.lineup.text.81922a91")}</th>
+                <th>{__i18n_t("ui.lineup.text.0a3d002c")}</th>
+                <th class="num">{__i18n_t("ui.lineup.text.f7c86d76")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {v.bench.map((b) => (
+                <tr key={b.id}>
+                  <td>
+                    <Name id={b.id} name={b.name} />
+                    {b.injured && <span class="tag warn">{__i18n_t("ui.lineup.text.501fb802")}</span>}
+                  </td>
+                  <td>{b.pos}</td>
+                  <td>{b.bats}</td>
+                  <td class={`num strong ${gradeClass(b.grade)}`}>{b.grade}</td>
+                </tr>
+              ))}
+              {!v.bench.length && (
+                <tr>
+                  <td colSpan={4} class="muted">
+                    -
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
   );
 }
 

@@ -667,3 +667,131 @@
     gap: 14px;
   }
 }
+
+/* ── ⓘ: a rule folded into a mark, opened over the page (Help.tsx) ── */
+:root[data-ui='new'] .help-info {
+  display: inline-block;
+  position: relative;
+  margin: 2px 0;
+  vertical-align: middle;
+}
+:root[data-ui='new'] .help-info > summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  font-size: 13px;
+  color: var(--ink-2);
+  background: var(--card);
+}
+:root[data-ui='new'] .help-info > summary::-webkit-details-marker {
+  display: none;
+}
+:root[data-ui='new'] .help-info[open] > summary {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+:root[data-ui='new'] .help-info .help-pop {
+  position: absolute;
+  z-index: 30;
+  top: 28px;
+  left: 0;
+  width: min(380px, 80vw);
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--rule);
+  font-size: 13px;
+  line-height: 1.5;
+}
+:root[data-ui='new'] .help-info .help-pop > strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* ── The squad: its limits as gauges, who runs the entry beside them ── */
+:root[data-ui='new'] .roster-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  background: var(--card);
+  border: 1px solid var(--ink);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+:root[data-ui='new'] .quotas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+:root[data-ui='new'] .quota {
+  display: grid;
+  gap: 3px;
+  min-width: 105px;
+}
+:root[data-ui='new'] .quota-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .quota-top b {
+  color: var(--ink);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+:root[data-ui='new'] .qbar {
+  display: block;
+  height: 5px;
+  background: var(--paper-2);
+  position: relative;
+}
+:root[data-ui='new'] .qbar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--accent);
+}
+:root[data-ui='new'] .qbar.over i {
+  background: var(--bad);
+}
+:root[data-ui='new'] .captains-card {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 3px 10px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  font-size: 12.5px;
+}
+:root[data-ui='new'] .captains-card p {
+  margin: 0;
+}
+
+/* ── The lineup's staff: rotation, bullpen and bench as tables ── */
+:root[data-ui='new'] .staff-table {
+  margin-top: 16px;
+}
+:root[data-ui='new'] .staff-table th[scope='row'] {
+  font-weight: 700;
+  white-space: nowrap;
+}
+:root[data-ui='new'] .staff-table tr.next-row td,
+:root[data-ui='new'] .staff-table tr.next-row th {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+:root[data-ui='new'] .staff-table .stamp,
+:root[data-ui='new'] .staff-table .tag {
+  margin-left: 6px;
+}
+:root[data-ui='new'] .staff-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 0 16px;
+}

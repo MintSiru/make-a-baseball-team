@@ -90895,5 +90895,129 @@
     "line": 81,
     "params": {},
     "locations": []
+  },
+  "ui.lineup.text.7f7af771": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 206,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.b9b0fb00": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 208,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.f7c86d76": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 209,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.6ff2c5c1": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 210,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.c82827a2": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 211,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.5ba0495f": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 212,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.a45ea58e": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 213,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.b8c2e079": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 214,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.e5c8eb0c": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 215,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.9660dd73": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 216,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.7c0d9f1c": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 223,
+    "params": {
+      "n": {
+        "expression": "i + 1"
+      }
+    },
+    "locations": []
+  },
+  "ui.lineup.text.d2fcd57f": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 253,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.df8372bc": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 259,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.81922a91": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 292,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.0a3d002c": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 293,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.501fb802": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 302,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.8a344893": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 795,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.18f79964": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 796,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.cf7b6b60": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 797,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.5bd804b7": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 798,
+    "params": {},
+    "locations": []
   }
 }
