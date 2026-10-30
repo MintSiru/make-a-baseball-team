@@ -879,7 +879,8 @@ try {
     await pp.waitFor();
     check((await pp.locator('.pp-summary .pp-grade').count()) >= 2, `new ${width}: a player's page opens with his grades boxed`);
     for (const name of ['리포트', '기록', '이력', '몸 상태']) {
-      await pp.getByRole('tab', { name, exact: true }).click();
+      // A part's name may carry a count (몸 상태 2).
+      await pp.getByRole('tab', { name: new RegExp(`^${name}`) }).click();
       await noOverflow(page, `new ${width} player ${name}`);
       await axeCheck(page, `new ${width} player ${name}`);
     }
