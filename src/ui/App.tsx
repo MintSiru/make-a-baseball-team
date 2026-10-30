@@ -465,7 +465,7 @@ export function App() {
   if (!league)
     return (
       <>
-        <header class="masthead">
+        <header class="masthead start-head">
           <div>
             <h1>{__i18n_t("ui.app.app.7fd36273")}</h1>
             <p class="muted">{__i18n_t("ui.app.app.ec12bca1", { rELEASE: RELEASE })}</p>

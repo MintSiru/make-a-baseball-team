@@ -91019,5 +91019,351 @@
     "line": 798,
     "params": {},
     "locations": []
+  },
+  "ui.next.newGame.text.a52b898e": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 79,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.1d4597df": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.098a6d9a": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 85,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.4ca5847f": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 90,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.ee149165": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 92,
+    "params": {
+      "n": {
+        "expression": "goals.length"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.newGame.text.9705e8f9": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 93,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.db98581b": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 97,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.1a9d93ef": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 99,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.4b8b4a20": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 107,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.29397734": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 110,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.2fbea43b": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 142,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.58756112": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 158,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.3417788b": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 161,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.7d2842b0": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 165,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.d12a906a": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 172,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.e9211ac8": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 179,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.7f999d65": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 183,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.2d71cd31": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 186,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.5781354d": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 196,
+    "params": {
+      "n": {
+        "expression": "Math.round(c.population / 10000)"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.newGame.text.a566fa28": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 198,
+    "params": {
+      "n": {
+        "expression": "(c.stadium.seats / 1000).toFixed(1)"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.newGame.text.ee33dfee": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 199,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.cf76b767": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 207,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.94b7652e": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 213,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.cbf383ec": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 217,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.3397eb88": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 221,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.48bea069": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 234,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.15d3e44b": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 238,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.51439b09": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 241,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.f3290301": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 244,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.51f97e03": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 249,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.e8ee93fa": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 259,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.5715c57d": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 269,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.40cf6b1c": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 272,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.27d292e8": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 276,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.4fcb5176": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 281,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.c7c703d5": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 297,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.5836da78": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 300,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.03f83ca5": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 304,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.94277611": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 307,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.c8ed7f00": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 314,
+    "params": {
+      "year": {
+        "expression": "y0"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.newGame.text.6c263851": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 320,
+    "params": {
+      "n": {
+        "expression": "city.stadium.seats.toLocaleString('ko-KR')"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.newGame.text.8ba1ac8b": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 331,
+    "params": {
+      "year": {
+        "expression": "y0 + 2"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.newGame.text.d27597e6": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 331,
+    "params": {
+      "year": {
+        "expression": "y0 + 1"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.newGame.text.dcac98c1": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 344,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.d657270f": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 345,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.d58fa73a": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 345,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.79595746": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 350,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.7b2c5aa8": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 354,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.63088f52": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 358,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.c6c82fe6": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 362,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.bf23ebc0": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 366,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.ed2c09d1": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 371,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.307b2df9": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 379,
+    "params": {},
+    "locations": []
   }
 }

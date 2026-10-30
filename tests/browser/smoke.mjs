@@ -904,6 +904,22 @@ try {
   check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
   await context.close();
 
+  // 7c. 2.0.62: the new founding sheet founds a club as it opens — the names left empty take the ones shown.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    const p = await ctx.newPage();
+    p.on('pageerror', (e) => (errors.push(e.message), console.log('page error:', e.message)));
+    await p.goto(url);
+    await p.getByRole('heading', { name: '2026년, KBO 11번째 구단 창단' }).waitFor();
+    const shown = (await p.locator('#ng-receipt-name').textContent()) ?? '';
+    await noOverflow(p, '1440 new founding sheet');
+    await axeCheck(p, 'new founding sheet');
+    await p.locator('.ng-receipt').getByRole('button', { name: '창단 신청' }).click();
+    await p.locator('.next-sidebar .club-brand h1').waitFor({ timeout: 180_000 });
+    check(((await p.locator('.next-sidebar .club-brand h1').textContent()) ?? '') === shown, `the new sheet founds the club it shows (${shown})`);
+    await ctx.close();
+  }
+
   // 8. Phone: the founding form fits, and the spectator path works.
   const phone = await browser.newContext({ viewport: { width: 320, height: 740 } });
   const p2 = await phone.newPage();
@@ -911,7 +927,8 @@ try {
   await p2.getByRole('heading', { name: '2026년, KBO 11번째 구단 창단' }).waitFor();
   await noOverflow(p2, '320 new game');
   await p2.screenshot({ path: join(shots, 'new-game-320.png'), fullPage: true });
-  await p2.getByRole('button', { name: '구단 없이 리그만 관전' }).click();
+  // 2.0.62: the new founding sheet (the page's default) — the league alone from its 관전 card.
+  await p2.getByRole('button', { name: /^관전/ }).click();
   await waitSeason(p2, 2026);
   check((await p2.locator('.standings tbody tr').count()) === 10, 'spectator league has ten clubs');
   await phone.close();
