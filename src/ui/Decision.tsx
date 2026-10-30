@@ -47,6 +47,8 @@ import { pathwayLabel } from '../league/amateur';
 import { cityById } from '../club/cities';
 import { DEV_FOREIGN } from '../league/devforeign';
 import { persuadeAbroadChance } from '../league/abroad';
+import { useUi } from './useDisplay';
+import { Gauges } from './next/Gauges';
 
 interface Props {
   league: LeagueState;
@@ -456,6 +458,8 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
   const d = league.pending!;
   const u = league.user!;
   const next = league.offseason ? league.offseason.year + 1 : league.year + 1;
+  // 2.0.62 (새 UI): the title with its ⓘ, the actions in a bar over the body, no notes on how the table works.
+  const newUi = useUi() === 'new';
   const [selected, setSelected] = useState<Set<PlayerId>>(new Set());
   const [special, setSpecial] = useState<Record<TeamId, PlayerId>>({});
   const [choices, setChoices] = useState<Record<PlayerId, string>>({});
@@ -677,7 +681,11 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
   const byValue = (ids: PlayerId[]) => ids.map((id) => league.players[id]!).sort((a, b) => keepValue(b, next) - keepValue(a, next));
   const budgetLine = (
     <>
-      <p class="muted">{__i18n_t("ui.decision.decision.budgetLine.e9273c2f", { money: money(u.fund), next: next, money2: money(projectedPayroll(league, u.teamId, next)), money3: money(u.payrollBudget) })}</p>
+      {newUi ? (
+        <Gauges items={[{ label: __i18n_t("ui.office.office.26719725", { payYear: next }), value: `${money(projectedPayroll(league, u.teamId, next))} / ${money(u.payrollBudget)}`, n: projectedPayroll(league, u.teamId, next), of: u.payrollBudget }]} />
+      ) : (
+        <p class="muted">{__i18n_t("ui.decision.decision.budgetLine.e9273c2f", { money: money(u.fund), next: next, money2: money(projectedPayroll(league, u.teamId, next)), money3: money(u.payrollBudget) })}</p>
+      )}
       {/* 2.0.34: more budget from the owner, for the foreign players and the rest. */}
       <BudgetAsk league={league} onAct={onAct} />
     </>
@@ -707,13 +715,13 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       body = (
         <>
           <p>{__i18n_rich("ui.decision.decision.0a4eef4a", { value: draft.year + 1, label: d.label, overall: d.overall, length: draft.pool.length, length2: mine.length, value2: ' ', value3: <span class="muted">{__i18n_display(mine.map((p) => p.name).join(', ') || __i18n_k("ui.decision.decision.d58fa73a"))}</span> })}</p>
-          {d.eligible ? <p class="notice">{__i18n_t("ui.decision.text.262e41d5", { n: d.eligible.length })}</p> : <p class="muted">{__i18n_t("ui.decision.decision.bd4cd855")}</p>}
+          {d.eligible ? <p class="notice">{__i18n_t("ui.decision.text.262e41d5", { n: d.eligible.length })}</p> : !newUi && <p class="muted">{__i18n_t("ui.decision.decision.bd4cd855")}</p>}
           <DraftPriority prefer={draftPrefer} setPrefer={setDraftPrefer} />
-          <p class="muted small">
+          {!newUi && <p class="muted small">
             {draftPrefer.role || draftPrefer.path
               ? __i18n_t("ui.decision.text.8dcbba5b", { what: preferText(draftPrefer) })
               : __i18n_t("ui.decision.text.f69f49bc")}
-          </p>
+          </p>}
           <DraftTable league={league} onPlayer={onPlayer} onPick={(id) => onSubmit({ kind: 'draftPick', id, prefer: draftPrefer })} only={d.eligible} prefer={draftPrefer} />
         </>
       );
@@ -1842,46 +1850,57 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
     }
   }
 
-  return (
-    <section class="decision" aria-labelledby="decision-title">
-      <h2 id="decision-title">{__i18n_display(TITLES[d.kind])}</h2>
-      {__i18n_display(decisionTip(d.kind) && (
-        <Help title={__i18n_t("ui.decision.decision.dcde1318")}>
-          {__i18n_display(decisionTip(d.kind)!.body.map((line) => (
-            <p key={line}>{__i18n_display(line)}</p>
-          )))}
-        </Help>
-      ))}
-      {__i18n_display(body)}
-      <div class="actions">
-        {__i18n_display(d.kind === 'draftPick' ? (
-          <button type="button" onClick={() => onSubmit({ kind: 'draftPick', id: null, prefer: draftPrefer })}>
-            {__i18n_t("ui.decision.decision.ef320e15")}
-            {draftPrefer.role || draftPrefer.path ? ` (${preferText(draftPrefer)})` : ''}
+  const actions = (
+    <div class={newUi ? 'actions action-bar' : 'actions'}>
+      {newUi && (
+        <span class="action-fund">
+          {__i18n_t("ui.office.office.4f7776dd")} <b>{u.fund < 0 ? `−${money(-u.fund)}` : money(u.fund)}</b>
+        </span>
+      )}
+      {__i18n_display(d.kind === 'draftPick' ? (
+        <button type="button" onClick={() => onSubmit({ kind: 'draftPick', id: null, prefer: draftPrefer })}>
+          {__i18n_t("ui.decision.decision.ef320e15")}
+          {draftPrefer.role || draftPrefer.path ? ` (${preferText(draftPrefer)})` : ''}
+        </button>
+      ) : d.kind === 'fantasyPick' ? (
+        <>
+          <button type="button" onClick={() => onSubmit({ kind: 'fantasyPick', id: null })}>{__i18n_t("ui.decision.decision.34a2fe1f")}</button>
+          {__i18n_display(d.round < 10 && (
+            <button type="button" onClick={() => onSubmit({ kind: 'fantasyPick', id: null, autoUntil: 10 })}>{__i18n_t("ui.decision.decision.4f929425")}</button>
+          ))}
+          <button type="button" onClick={() => onSubmit({ kind: 'fantasyPick', id: null, autoUntil: d.rounds })}>{__i18n_t("ui.decision.decision.5d21ee8a")}</button>
+        </>
+      ) : d.kind === 'secondPick' ? (
+        <>
+          <button type="button" onClick={() => onSubmit({ kind: 'secondPick', id: null })}>{__i18n_t("ui.decision.decision.2f99d7ad")}</button>
+          <button type="button" onClick={() => onSubmit(autoDecision(league) as DecisionInput)}>{__i18n_t("ui.decision.decision.ef320e15")}</button>
+        </>
+      ) : (
+        <>
+          <button type="button" class="primary" disabled={!!problem} onClick={() => input && confirmOmission(d, input) && onSubmit(input)}>{__i18n_t("ui.decision.decision.55536106")}</button>
+          <button type="button" onClick={recommend}>
+            {__i18n_display(d.kind === 'camp' ? __i18n_k("ui.decision.decision.3d05078a") : __i18n_k("ui.decision.decision.abd43abb"))}
           </button>
-        ) : d.kind === 'fantasyPick' ? (
-          <>
-            <button type="button" onClick={() => onSubmit({ kind: 'fantasyPick', id: null })}>{__i18n_t("ui.decision.decision.34a2fe1f")}</button>
-            {__i18n_display(d.round < 10 && (
-              <button type="button" onClick={() => onSubmit({ kind: 'fantasyPick', id: null, autoUntil: 10 })}>{__i18n_t("ui.decision.decision.4f929425")}</button>
-            ))}
-            <button type="button" onClick={() => onSubmit({ kind: 'fantasyPick', id: null, autoUntil: d.rounds })}>{__i18n_t("ui.decision.decision.5d21ee8a")}</button>
-          </>
-        ) : d.kind === 'secondPick' ? (
-          <>
-            <button type="button" onClick={() => onSubmit({ kind: 'secondPick', id: null })}>{__i18n_t("ui.decision.decision.2f99d7ad")}</button>
-            <button type="button" onClick={() => onSubmit(autoDecision(league) as DecisionInput)}>{__i18n_t("ui.decision.decision.ef320e15")}</button>
-          </>
-        ) : (
-          <>
-            <button type="button" class="primary" disabled={!!problem} onClick={() => input && confirmOmission(d, input) && onSubmit(input)}>{__i18n_t("ui.decision.decision.55536106")}</button>
-            <button type="button" onClick={recommend}>
-              {__i18n_display(d.kind === 'camp' ? __i18n_k("ui.decision.decision.3d05078a") : __i18n_k("ui.decision.decision.abd43abb"))}
-            </button>
-          </>
+        </>
+      ))}
+      {__i18n_display(problem && <span class="notice inline">{__i18n_display(problem)}</span>)}
+    </div>
+  );
+  return (
+    <section class={newUi ? 'decision next-decision' : 'decision'} aria-labelledby="decision-title">
+      <div class={newUi ? 'decision-head' : undefined}>
+        <h2 id="decision-title">{__i18n_display(TITLES[d.kind])}</h2>
+        {__i18n_display(decisionTip(d.kind) && (
+          <Help title={__i18n_t("ui.decision.decision.dcde1318")}>
+            {__i18n_display(decisionTip(d.kind)!.body.map((line) => (
+              <p key={line}>{__i18n_display(line)}</p>
+            )))}
+          </Help>
         ))}
-        {__i18n_display(problem && <span class="notice inline">{__i18n_display(problem)}</span>)}
       </div>
+      {newUi && actions}
+      {__i18n_display(body)}
+      {!newUi && actions}
       {__i18n_display(advice && (
         <section class="advice" aria-label={__i18n_t("ui.decision.decision.b129d572")}>
           <h3>{__i18n_display(d.kind === 'camp' ? __i18n_k("ui.decision.decision.a36f47df") : __i18n_k("ui.decision.decision.e2e5d4ea"))}</h3>

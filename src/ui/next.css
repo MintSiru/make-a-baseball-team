@@ -1605,3 +1605,49 @@
   opacity: 1;
   color: var(--ink-2);
 }
+
+/* ── A decision: its title with the rule's ⓘ, the actions in a bar over the body ── */
+:root[data-ui='new'] .decision-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid var(--ink);
+}
+:root[data-ui='new'] .decision-head h2 {
+  margin: 0;
+}
+:root[data-ui='new'] .next-decision .action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+}
+:root[data-ui='new'] .action-fund {
+  margin-right: 6px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .action-fund b {
+  color: var(--ink);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Standings: the postseason line a dashed rule in the accent, no note under the table ── */
+:root[data-ui='new'] .page-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+:root[data-ui='new'] .page-title-row h2 {
+  margin-bottom: 8px;
+}
+:root[data-ui='new'] .standings .cutline td {
+  border-bottom: 2px dashed var(--accent);
+}
