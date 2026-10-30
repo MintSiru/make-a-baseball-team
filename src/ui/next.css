@@ -1797,3 +1797,8 @@
   font-size: 13px;
   color: var(--ink-2);
 }
+/* A tinted grade cell keeps its ink: the red and green of .minus/.plus would sit on their own tint. */
+:root[data-ui='new'][data-grade-colors] .grade-cell,
+:root[data-ui='new'][data-grade-tables] .grade-num {
+  color: var(--ink);
+}
