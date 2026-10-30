@@ -34,6 +34,7 @@ import { favoritesView } from '../league/favorites';
 import type { NewsItem } from '../league/news';
 import { briefing, type BriefGo } from '../league/briefing';
 import { Briefing } from './Briefing';
+import { Gauges } from './next/Gauges';
 
 export type View = 'overview' | 'squad' | 'payroll' | 'contracts' | 'lineup' | 'training' | 'story' | 'records' | 'office';
 
@@ -799,24 +800,7 @@ function Management({ league, onPlayer, onAct, setMsg }: { league: LeagueState; 
     ];
     return (
       <>
-        <div class="roster-bar">
-          <div class="quotas">
-            {quotas.map(([label, n, of]) => (
-              <div class="quota" key={label}>
-                <div class="quota-top">
-                  <span>{label}</span>
-                  <b class={n > of ? 'minus' : undefined}>
-                    {n} / {of}
-                  </b>
-                </div>
-                <span class={`qbar${n > of ? ' over' : ''}`} aria-hidden="true">
-                  <i style={{ width: `${Math.min(100, Math.round((n / Math.max(1, of)) * 100))}%` }} />
-                </span>
-              </div>
-            ))}
-          </div>
-          {toolbar}
-        </div>
+        <Gauges items={quotas.map(([label, n, of]) => ({ label, value: `${n} / ${of}`, n, of }))}>{toolbar}</Gauges>
         <CaptainsCard league={league} onAct={onAct} />
         <Squad league={league} teamId={u.teamId} onPlayer={onPlayer} actions={buttons} posControl={roleControl} />
       </>

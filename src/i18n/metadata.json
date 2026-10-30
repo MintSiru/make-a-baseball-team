@@ -91365,5 +91365,95 @@
     "line": 379,
     "params": {},
     "locations": []
+  },
+  "ui.playerPanel.text.f114fb01": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 513,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.47c5b6b5": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 513,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.0dae761e": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 513,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.f3aab784": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 648,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.ca15ef0b": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 729,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.0f9ec16b": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1054,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.a7aed900": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1058,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.eba85a19": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 837,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.05a8e0a7": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 852,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.fd9c7315": {
+    "source": "src/ui/Office.tsx",
+    "line": 228,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.ec72246f": {
+    "source": "src/ui/Office.tsx",
+    "line": 249,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.d5b652b5": {
+    "source": "src/ui/Office.tsx",
+    "line": 249,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.9f33b587": {
+    "source": "src/ui/Training.tsx",
+    "line": 97,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.bc373d86": {
+    "source": "src/ui/Training.tsx",
+    "line": 98,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.9b51eb45": {
+    "source": "src/ui/Market.tsx",
+    "line": 100,
+    "params": {},
+    "locations": []
   }
 }

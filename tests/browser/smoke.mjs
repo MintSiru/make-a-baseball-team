@@ -872,6 +872,18 @@ try {
     check((await page.getByRole('heading', { name: '단장 브리핑' }).count()) === 1, `new ${width}: the overview opens with the briefing`);
     check((await page.locator('.dash-3 .sheet-box').count()) >= 3, `new ${width}: the overview's three boards`);
     await page.screenshot({ path: join(shots, `new-${width}.png`) });
+    // A player's page: the grades in boxed numbers, the staff's read beside the grades under 리포트, each part fits.
+    await views.getByRole('button', { name: '선수단' }).first().click();
+    await page.locator('.squad-table .link').first().click();
+    const pp = page.getByRole('dialog');
+    await pp.waitFor();
+    check((await pp.locator('.pp-summary .pp-grade').count()) >= 2, `new ${width}: a player's page opens with his grades boxed`);
+    for (const name of ['리포트', '기록', '이력', '몸 상태']) {
+      await pp.getByRole('tab', { name, exact: true }).click();
+      await noOverflow(page, `new ${width} player ${name}`);
+      await axeCheck(page, `new ${width} player ${name}`);
+    }
+    await page.keyboard.press('Escape');
   }
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.locator('.sidebar-foot').getByRole('button', { name: '설정', exact: true }).click();

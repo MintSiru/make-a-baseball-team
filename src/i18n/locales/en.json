@@ -10117,5 +10117,20 @@
   "ui.next.newGame.text.c6c82fe6": "Left after fees",
   "ui.next.newGame.text.bf23ebc0": "Payroll budget",
   "ui.next.newGame.text.ed2c09d1": "Felt difficulty",
-  "ui.next.newGame.text.307b2df9": "Rookie bonuses and special-draft fees extra"
+  "ui.next.newGame.text.307b2df9": "Rookie bonuses and special-draft fees extra",
+  "ui.playerPanel.text.f114fb01": "Report",
+  "ui.playerPanel.text.47c5b6b5": "Background",
+  "ui.playerPanel.text.0dae761e": "Health",
+  "ui.playerPanel.text.f3aab784": "Grades",
+  "ui.playerPanel.text.ca15ef0b": "How records are kept",
+  "ui.playerPanel.text.0f9ec16b": "Now",
+  "ui.playerPanel.text.a7aed900": "Future",
+  "ui.playerPanel.text.eba85a19": "Club actions",
+  "ui.playerPanel.text.05a8e0a7": "Personal details",
+  "ui.office.text.fd9c7315": "Income statement",
+  "ui.office.text.ec72246f": "Owner's support this year",
+  "ui.office.text.d5b652b5": "Support limit",
+  "ui.training.text.9f33b587": "Off-season trips",
+  "ui.training.text.bc373d86": "In-season trips",
+  "ui.market.text.9b51eb45": "Released players' remaining pay"
 }

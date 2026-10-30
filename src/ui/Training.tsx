@@ -16,6 +16,9 @@ import { positionLabel } from '../league/views';
 import { money } from './format';
 import { CAMP_IDS, CAMP_SITES, campClosed, checkCamp, checkDev, DEV, devCandidates, devYear, type CampSite } from '../league/development';
 import { positionKey, useSort } from './sort';
+import { Gauges } from './next/Gauges';
+import { Help } from './Help';
+import { useUi } from './useDisplay';
 
 const focusText = (keys: ToolKey[] | undefined) => (keys ?? []).map((k) => TOOL_LABELS[k] ?? k).join('·');
 
@@ -60,6 +63,9 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
   // 2.0.31: the record lists what was not cleared (tripRecord); who is away reads every trip.
   const trips = tripRecord(league);
   const away = (u.trips ?? []).filter((t) => !t.result);
+  const winterSent = when ? (u.trips ?? []).filter((t) => t.season === when.season && !t.inSeason).length : 0;
+  // 2.0.62 (새 UI): the limits as gauges, how a trip works behind an ⓘ, what each site does on its card's hover.
+  const next = useUi() === 'new';
   const [view, setViewState] = useState<View>(lastView);
   const setView = (v: View) => setViewState((lastView = v));
   const views: [View, string][] = [
@@ -84,12 +90,28 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
       {view === 'pitch' && <LearnPitch league={league} onAct={onAct} onPlayer={onPlayer} />}
       {view === 'trip' && (
         <>
-          <p>{__i18n_t("ui.training.training.101d8cf2", { lastStartText: lastStartText, seasonMax: TRAINING.seasonMax, winterMax: TRAINING.winterMax })}</p>
+          {next ? (
+            <Gauges
+              items={[
+                when && !when.inSeason
+                  ? { label: __i18n_t("ui.training.text.9f33b587"), value: `${winterSent} / ${TRAINING.winterMax}`, n: winterSent, of: TRAINING.winterMax }
+                  : { label: __i18n_t("ui.training.text.bc373d86"), value: `${Object.keys(league.abroad ?? {}).length} / ${TRAINING.seasonMax}`, n: Object.keys(league.abroad ?? {}).length, of: TRAINING.seasonMax },
+                { label: __i18n_t("ui.office.office.4f7776dd"), value: money(u.fund) },
+              ]}
+            >
+              <span class="small">
+                {away.length > 0 && __i18n_t("ui.training.training.bb74e8bf", { value: away.map((t) => league.players[t.id]?.name).join(', ') })}{' '}
+                <Help title={__i18n_t("ui.training.text.b4927759")}>{__i18n_t("ui.training.training.101d8cf2", { lastStartText: lastStartText, seasonMax: TRAINING.seasonMax, winterMax: TRAINING.winterMax })}</Help>
+              </span>
+            </Gauges>
+          ) : (
+            <p>{__i18n_t("ui.training.training.101d8cf2", { lastStartText: lastStartText, seasonMax: TRAINING.seasonMax, winterMax: TRAINING.winterMax })}</p>
+          )}
           <div class="choice-grid trip-sites">
             {__i18n_display(SITE_IDS.map((id) => {
               const x = SITES[id];
               return (
-                <button key={id} type="button" class="choice" aria-pressed={site === id} onClick={() => setSite(id)}>
+                <button key={id} type="button" class="choice" aria-pressed={site === id} title={next ? __i18n_displayText(x.note) : undefined} onClick={() => setSite(id)}>
                   <strong>
                     {__i18n_display(x.name)} <span class="muted small">{__i18n_display(x.place)}</span>
                   </strong>
@@ -99,7 +121,7 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
                     {__i18n_display(x.focus.pitcher && x.focus.hitter ? ' / ' : '')}
                     {__i18n_display(x.focus.hitter ? __i18n_k("ui.training.training.31e548aa", { focusText: focusText(x.focus.hitter) }) : '')}
                   </span>
-                  <span class="muted small">{__i18n_display(x.note)}</span>
+                  {!next && <span class="muted small">{__i18n_display(x.note)}</span>}
                 </button>
               );
             }))}
@@ -107,7 +129,7 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
           {/* 2.0.10 (the user's request): the players to send in a sortable table, one click each, instead of a list box. */}
           <p class="inline-form trip-form">
             {__i18n_display(dates && <span class="muted small">{__i18n_display(dates.from)} ~ {__i18n_display(dates.until)}</span>)}
-            <span class="muted small">{__i18n_t("ui.training.training.c2eefb9f", { money: money(u.fund) })}</span>
+            {!next && <span class="muted small">{__i18n_t("ui.training.training.c2eefb9f", { money: money(u.fund) })}</span>}
           </p>
           <div class="segmented" role="group" aria-label={__i18n_t("ui.training.text.5d24a2fc")}>
             {(['all', 'active', 'futures', 'third'] as const).map((k) => (
@@ -207,7 +229,7 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
           ) : (
             <p class="muted">{(u.tripsCleared ?? 0) > 0 ? __i18n_t("ui.training.text.bb50e4ae") : __i18n_t("ui.training.training.7ba8c700")}</p>
           ))}
-          {__i18n_display(away.length > 0 && <p class="muted small">{__i18n_t("ui.training.training.bb74e8bf", { value: away.map((t) => league.players[t.id]?.name).join(', ') })}</p>)}
+          {__i18n_display(!next && away.length > 0 && <p class="muted small">{__i18n_t("ui.training.training.bb74e8bf", { value: away.map((t) => league.players[t.id]?.name).join(', ') })}</p>)}
         </>
       )}
     </div>

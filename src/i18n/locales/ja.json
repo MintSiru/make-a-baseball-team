@@ -10117,5 +10117,20 @@
   "ui.next.newGame.text.c6c82fe6": "納付後残高",
   "ui.next.newGame.text.bf23ebc0": "年俸予算",
   "ui.next.newGame.text.ed2c09d1": "体感難易度",
-  "ui.next.newGame.text.307b2df9": "新人契約金・特別指名補償金は別途"
+  "ui.next.newGame.text.307b2df9": "新人契約金・特別指名補償金は別途",
+  "ui.playerPanel.text.f114fb01": "レポート",
+  "ui.playerPanel.text.47c5b6b5": "経歴",
+  "ui.playerPanel.text.0dae761e": "コンディション",
+  "ui.playerPanel.text.f3aab784": "能力評価",
+  "ui.playerPanel.text.ca15ef0b": "記録の基準",
+  "ui.playerPanel.text.0f9ec16b": "現在評価",
+  "ui.playerPanel.text.a7aed900": "将来評価",
+  "ui.playerPanel.text.eba85a19": "球団の措置",
+  "ui.playerPanel.text.05a8e0a7": "プロフィール",
+  "ui.office.text.fd9c7315": "損益計算書",
+  "ui.office.text.ec72246f": "今季の親会社支援",
+  "ui.office.text.d5b652b5": "支援上限",
+  "ui.training.text.9f33b587": "オフシーズン派遣",
+  "ui.training.text.bc373d86": "シーズン中派遣",
+  "ui.market.text.9b51eb45": "放出選手の残り年俸"
 }

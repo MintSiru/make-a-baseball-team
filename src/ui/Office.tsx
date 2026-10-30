@@ -27,6 +27,8 @@ import { money } from './format';
 import { eulreul } from '../league/josa';
 import { Help } from './Help';
 import { BudgetAsk } from './BudgetAsk';
+import { Gauges, type Gauge } from './next/Gauges';
+import { useUi } from './useDisplay';
 import { RivalryBox, TwelveSettingField } from './Twelve';
 import { favourites } from '../league/life';
 import { checkSponsor, regionSchools, schoolRegion, SCHOOLS } from '../league/schools';
@@ -160,6 +162,7 @@ function ReportTable({ reports }: { reports: { title: string; r: ClubReport }[] 
 
 export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueState; onAct: (a: Action) => void; setMsg: (m: string) => void; onPlayer?: (id: string) => void }) {
   const [section, setSection] = useState<Section>('summary');
+  const next = useUi() === 'new';
   const u = league.user!;
   const team = league.teams.find((t) => t.id === u.teamId)!;
   const club = league.clubs?.[u.teamId];
@@ -191,6 +194,16 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
   const budget = u.seasonSupport?.year === league.year && inSeason ? u.seasonSupport : null;
   const tickets = club?.seasonTickets?.year === league.year ? club.seasonTickets : null;
   const expectedFund = u.fund + (current?.operating ?? 0) - (tickets?.paid ?? 0);
+  const won = (n: number) => (n < 0 ? `−${money(-n)}` : money(n));
+  // 2.0.62 (새 UI): the money against its limits in one bar, the owner's trust as a stamp.
+  const foreignBooks = firstTeamIds(league).includes(u.teamId) && league.phase === 'regular' && foreignCapOn(league.year) ? booksOf(league, u.teamId) : null;
+  const gauges: Gauge[] = [
+    { label: __i18n_t("ui.office.office.4f7776dd"), value: u.fund < 0 ? `−${eok(-u.fund)}` : eok(u.fund) },
+    { label: __i18n_t("ui.office.office.26719725", { payYear }), value: `${eok(projectedPayroll(league, u.teamId, payYear))} / ${eok(u.payrollBudget)}`, n: projectedPayroll(league, u.teamId, payYear), of: u.payrollBudget },
+    ...(salaryCapOn(league.year) ? [{ label: __i18n_t("ui.office.office.b2f10443", { year: league.year }), value: `${eok(capTotal(league, u.teamId, league.year))} / ${eok(salaryCapFor(league.year))}`, n: capTotal(league, u.teamId, league.year), of: salaryCapFor(league.year) }] : []),
+    ...(foreignBooks ? [{ label: __i18n_t("ui.office.office.2f4e295b"), value: `${usd(foreignBooks.spent)} / ${usd(foreignBooks.cap)}`, n: foreignBooks.spent, of: foreignBooks.cap }] : []),
+  ];
+  const trust = Math.round(u.trust ?? 60);
 
   return (
     <>
@@ -202,7 +215,64 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
         )))}
       </div>
 
-      {__i18n_display(section === 'summary' && (
+      {next && section === 'summary' && (
+        <>
+          <Gauges items={gauges} class="money-bar">
+            <span class={`stamp${trust < 40 ? '' : trust >= 70 ? ' good' : ' accent'}`} title={ev ? __i18n_t("ui.office.office.35024d86", { year: ev.year, value: ev.change >= 0 ? '+' : '', value2: Math.round(ev.change * 100) }) : undefined}>
+              {__i18n_t("ui.office.office.e4762814")} · {trust}
+            </span>
+          </Gauges>
+          <div class="money-dash">
+            <section class="sheet-box">
+              <h3>
+                {__i18n_t("ui.office.text.fd9c7315")}
+                <Help title={__i18n_t("ui.office.office.43aae799")}>{__i18n_t("ui.office.office.d22c946b")}</Help>
+              </h3>
+              {current || reports.length ? (
+                <ReportTable
+                  reports={[
+                    ...reports
+                      .slice(current ? -2 : -3)
+                      .map((r) => ({ title: String(r.year), r })),
+                    ...(current ? [{ title: __i18n_k("ui.office.office.title.21d87f74", { year: league.year }), r: current }] : []),
+                  ]}
+                />
+              ) : (
+                <p class="muted">{__i18n_t("ui.office.office.4bf4deac")}</p>
+              )}
+            </section>
+            <div class="money-side">
+              <section class="sheet-box">
+                <h3>{__i18n_display(PARENT_COMPANY_TYPES[u.settings.parentType].label)} · {__i18n_display(team.parent.name)}</h3>
+                <dl class="figures">
+                  <div>
+                    <dt>{budget ? __i18n_t("ui.office.text.ec72246f") : __i18n_t("ui.office.text.d5b652b5")}</dt>
+                    <dd>{money(budget ? budget.amount : (u.support ?? 0))}</dd>
+                  </div>
+                  {budget && current && (
+                    <div>
+                      <dt>{__i18n_t("ui.office.office.a549279b", { year: league.year })}</dt>
+                      <dd class={expectedFund < 0 ? 'minus' : undefined}>{won(expectedFund)}</dd>
+                    </div>
+                  )}
+                  <div>
+                    <dt>{__i18n_display(inSeason ? __i18n_k("ui.office.office.c7828ad8", { year: league.year }) : __i18n_k("ui.office.office.c7921155"))}</dt>
+                    <dd class={(current ?? last) && (current ?? last)!.operating < 0 ? 'minus' : 'plus'}>{current ? signed(current.operating) : last ? signed(last.operating) : '-'}</dd>
+                  </div>
+                  <div>
+                    <dt>{__i18n_display(inSeason ? __i18n_k("ui.office.office.d6202a74", { year: league.year }) : __i18n_k("ui.office.office.ddb533ae"))}</dt>
+                    <dd title={__i18n_t("ui.office.office.49d5c582", { value: team.stadium.capacity.toLocaleString('ko-KR'), value2: gate?.sellouts ? __i18n_k("ui.office.office.4df2ece0", { sellouts: gate.sellouts }) : '' })}>
+                      {avgNow ? people(avgNow) : last?.homeGames ? people(last.fans / last.homeGames) : '-'}
+                    </dd>
+                  </div>
+                </dl>
+                <BudgetAsk league={league} onAct={onAct} why />
+              </section>
+            </div>
+          </div>
+        </>
+      )}
+      {__i18n_display(!next && section === 'summary' && (
         <div class="cards">
           <div class="card">
             <p class="card-label">{__i18n_t("ui.office.office.4f7776dd")}</p>

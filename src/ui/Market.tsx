@@ -42,6 +42,8 @@ import { clubStrategy, MODE_LABEL, SPOT_LABEL } from '../league/strategy';
 import { gradeClass, shownFuture } from './grades';
 import { positionKey, useSort } from './sort';
 import { Help } from './Help';
+import { Gauges } from './next/Gauges';
+import { useUi } from './useDisplay';
 import { PlayerSearch, type PosFilter } from './PlayerSearch';
 import { TRADES } from '../league/tuning';
 import { BLOCK, liveOffers, notForSale, tradeBlock, type TradeOffer } from '../league/offers';
@@ -65,12 +67,15 @@ export function Market({
   // A player picked in the search goes straight into a trade proposal with his club (0.10.1).
   const [target, setTarget] = useState<{ teamId: TeamId; id: PlayerId } | null>(null);
   const u = league.user!;
+  // 2.0.62 (새 UI): the money as gauges under the title instead of a line of figures.
+  const next = useUi() === 'new';
+  const payroll = projectedPayroll(league, u.teamId, league.year);
   return (
     <section aria-labelledby="market-title">
       <div class="page-head">
         <div>
           <h2 id="market-title">{__i18n_t("ui.market.market.e11828a8")}</h2>
-          <p class="muted">{__i18n_t("ui.market.market.b480efe3", { year: league.year, money: money(projectedPayroll(league, u.teamId, league.year)), money2: money(u.payrollBudget), money3: money(deadMoney(league, league.year)), value: ' ', money4: money(u.fund) })}</p>
+          {!next && <p class="muted">{__i18n_t("ui.market.market.b480efe3", { year: league.year, money: money(projectedPayroll(league, u.teamId, league.year)), money2: money(u.payrollBudget), money3: money(deadMoney(league, league.year)), value: ' ', money4: money(u.fund) })}</p>}
         </div>
         <div class="segmented" role="group" aria-label={__i18n_t("ui.market.market.1015a89f")}>
           {__i18n_display((
@@ -88,6 +93,15 @@ export function Market({
           )))}
         </div>
       </div>
+      {next && (
+        <Gauges
+          items={[
+            { label: __i18n_t("ui.office.office.26719725", { payYear: league.year }), value: `${money(payroll)} / ${money(u.payrollBudget)}`, n: payroll, of: u.payrollBudget },
+            { label: __i18n_t("ui.market.text.9b51eb45"), value: money(deadMoney(league, league.year)) },
+            { label: __i18n_t("ui.office.office.4f7776dd"), value: money(u.fund) },
+          ]}
+        />
+      )}
       {__i18n_display(view === 'trade' && <Trade key={target ? `${target.teamId}-${target.id}` : 'trade'} league={league} onPlayer={onPlayer} onAct={onAct} initial={target} />)}
       {__i18n_display(view === 'search' && (
         <PlayerSearch
@@ -194,6 +208,7 @@ const CASH_OUT_STEPS = [...CASH_STEPS, 300_000, 500_000, 700_000, 1_000_000];
 
 function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void; initial?: { teamId: TeamId; id: PlayerId } | null }) {
   const u = league.user!;
+  const next = useUi() === 'new';
   const clubs = league.teams.filter((t) => t.id !== u.teamId && league.rosters[t.id]);
   const [teamId, setTeamId] = useState<TeamId>(initial?.teamId ?? clubs[0]?.id ?? '');
   const [give, setGive] = useState<Set<PlayerId>>(new Set());
@@ -252,7 +267,10 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
       <Offers league={league} onPlayer={onPlayer} onAct={(a) => (setSent((u.log ?? []).length), onAct(a))} onTweak={tweak} />
       <TradeBlock league={league} onPlayer={onPlayer} onAct={onAct} closed={!!closed} />
       <NotForSale league={league} onPlayer={onPlayer} onAct={onAct} />
-      <Help title={__i18n_t("ui.market.trade.a8916b94")}>{__i18n_t("ui.market.trade.39de664b", { money: money(TRADES.cash.max) })}</Help>
+      <Help title={__i18n_t("ui.market.trade.a8916b94")}>
+        {__i18n_t("ui.market.trade.39de664b", { money: money(TRADES.cash.max) })}
+        {next && ` ${__i18n_t("ui.market.text.bf73bbd7")}`}
+      </Help>
       {__i18n_display(closed && <p class="notice">{__i18n_display(closed)}</p>)}
       <div class="team-chips" role="group" aria-label={__i18n_t("ui.market.trade.d1837717")}>
         {__i18n_display(clubs.map((t) => (
@@ -291,7 +309,7 @@ function Trade({ league, onPlayer, onAct, initial }: { league: LeagueState; onPl
             )))}
           </select>
         </label>
-        <span class="muted small">{__i18n_t("ui.market.text.bf73bbd7")}</span>
+        {!next && <span class="muted small">{__i18n_t("ui.market.text.bf73bbd7")}</span>}
         <div class="pick-chips" role="group" aria-label={__i18n_t("ui.market.trade.cd679f4e")}>
           <span class="muted small">{__i18n_t("ui.market.trade.3de0ba9d", { draft: draft })}</span>
           {__i18n_display(ownPicks.length ? (
@@ -416,7 +434,8 @@ function Offers({ league, onPlayer, onAct, onTweak }: { league: LeagueState; onP
 /** 2.0.45: ours marked not for sale (NFS), which the AI clubs do not ask for. */
 function NotForSale({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void }) {
   const ids = notForSale(league);
-  if (!ids.length) return <p class="muted small">{__i18n_t("ui.market.text.b4b3baf3")}</p>;
+  const next = useUi() === 'new';
+  if (!ids.length) return next ? null : <p class="muted small">{__i18n_t("ui.market.text.b4b3baf3")}</p>;
   return (
     <p class="small nfs-list">
       <span class="tag nfs">NFS</span> {__i18n_t("ui.market.text.5ae2062f")}:{' '}
@@ -431,7 +450,7 @@ function NotForSale({ league, onPlayer, onAct }: { league: LeagueState; onPlayer
           </button>
         </span>
       ))}
-      <span class="muted"> · {__i18n_t("ui.market.text.84a11a94")}</span>
+      {!next && <span class="muted"> · {__i18n_t("ui.market.text.84a11a94")}</span>}
     </p>
   );
 }
@@ -439,7 +458,8 @@ function NotForSale({ league, onPlayer, onAct }: { league: LeagueState; onPlayer
 /** 2.0.59 (the user's request): ours on the trade block, for which up to three clubs make their offers (offers.ts). */
 function TradeBlock({ league, onPlayer, onAct, closed }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void; closed: boolean }) {
   const ids = tradeBlock(league);
-  if (!ids.length) return <p class="muted small">{__i18n_t("ui.market.text.04c26492", { n: BLOCK.clubs })}</p>;
+  const next = useUi() === 'new';
+  if (!ids.length) return next ? null : <p class="muted small">{__i18n_t("ui.market.text.04c26492", { n: BLOCK.clubs })}</p>;
   return (
     <p class="small nfs-list">
       <span class="tag block">{__i18n_t("ui.market.text.6213f395")}</span> {__i18n_t("ui.market.text.6a939700")}:{' '}

@@ -10118,5 +10118,20 @@ export const koSource = {
   "ui.next.newGame.text.c6c82fe6": "납부 후 잔액",
   "ui.next.newGame.text.bf23ebc0": "연봉 예산",
   "ui.next.newGame.text.ed2c09d1": "체감 난이도",
-  "ui.next.newGame.text.307b2df9": "신인 계약금·특별지명 보상금은 별도"
+  "ui.next.newGame.text.307b2df9": "신인 계약금·특별지명 보상금은 별도",
+  "ui.playerPanel.text.f114fb01": "리포트",
+  "ui.playerPanel.text.47c5b6b5": "이력",
+  "ui.playerPanel.text.0dae761e": "몸 상태",
+  "ui.playerPanel.text.f3aab784": "능력 평가",
+  "ui.playerPanel.text.ca15ef0b": "기록 기준",
+  "ui.playerPanel.text.0f9ec16b": "현재 평가",
+  "ui.playerPanel.text.a7aed900": "미래 평가",
+  "ui.playerPanel.text.eba85a19": "구단 조치",
+  "ui.playerPanel.text.05a8e0a7": "인적 사항",
+  "ui.office.text.fd9c7315": "손익계산서",
+  "ui.office.text.ec72246f": "올해 모기업 지원",
+  "ui.office.text.d5b652b5": "지원 한도",
+  "ui.training.text.9f33b587": "비시즌 파견",
+  "ui.training.text.bc373d86": "시즌 중 파견",
+  "ui.market.text.9b51eb45": "방출 선수 잔여 연봉"
 } as const;
