@@ -47,6 +47,17 @@ export function DisplayOptions() {
     <>
       <p class="muted">{__i18n_t("ui.displaySettings.displayOptions.ea265ed0")}</p>
 
+      {/* 2.0.62 (the user's request): the redesigned screens, or the ones before them. */}
+      <h3>{__i18n_t("ui.displaySettings.text.ad7fb123")}</h3>
+      <div class="segmented" role="group" aria-label={__i18n_t("ui.displaySettings.text.ad7fb123")}>
+        <button type="button" aria-pressed={p.ui === 'new'} onClick={() => set({ ...p, ui: 'new' })}>
+          {__i18n_t("ui.displaySettings.text.9f2e2d00")}
+        </button>
+        <button type="button" aria-pressed={p.ui === 'legacy'} onClick={() => set({ ...p, ui: 'legacy' })}>
+          {__i18n_t("ui.displaySettings.text.6533ce37")}
+        </button>
+      </div>
+
       <h3>{LANGUAGE_LABEL}</h3>
       <LanguagePicker />
 

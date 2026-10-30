@@ -4,6 +4,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
    background and injuries. Everything shown is public: grades are scouting reports, velocity is the radar gun. */
 import { moveHistory } from '../league/moves';
 import type { FieldTotals } from '../league/fielding';
+import type { ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { isFavorite } from '../league/favorites';
 import { isNotForSale, tradeBlock } from '../league/offers';
@@ -44,7 +45,9 @@ import { fanAffinity, hometownOf, isMarried } from '../league/life';
 import { SITES } from '../league/training';
 import { usd } from '../league/foreign';
 import { handedness, militaryLabel, money, toolKeysFor } from './format';
-import { GradeBar, shownFuture, showsFutureDetail } from './grades';
+import { GradeBar, gradeClass, shownFuture, showsFutureDetail } from './grades';
+import { Help } from './Help';
+import { useUi } from './useDisplay';
 import { GradeChart } from './GradeChart';
 import { MlbTable } from './Mlb';
 import { serviceNote } from '../league/military';
@@ -73,6 +76,41 @@ export function TraitReportBox({ report }: { report: TraitReport }) {
     const bad = r.key === 'controversy' || r.key === 'temper' || r.key === 'injury';
     return r.level >= 4 ? (bad ? 'minus' : 'plus') : r.level <= 2 ? (bad ? 'plus' : 'minus') : '';
   };
+  const ui = useUi();
+  const caveat = report.by === 'coach' ? __i18n_k("ui.playerPanel.traitReportBox.bc614e88") : __i18n_k("ui.playerPanel.traitReportBox.4cfba58a");
+  // 2.0.62 (새 UI): who signs it on the right, his character in a box, the reads in cells, how sure as an ⓘ.
+  if (ui === 'new')
+    return (
+      <section class="sheet-box trait-report pp-traits">
+        <div class="pp-box-head">
+          <h3>{__i18n_display(report.by === 'coach' ? __i18n_k("ui.playerPanel.traitReportBox.299d0a35") : __i18n_k("ui.playerPanel.traitReportBox.33ee644c"))}</h3>
+          <span class="muted small">{__i18n_display(report.staff)}</span>
+          <Help title={__i18n_displayText(report.by === 'coach' ? __i18n_k("ui.playerPanel.traitReportBox.299d0a35") : __i18n_k("ui.playerPanel.traitReportBox.33ee644c"))}>{__i18n_display(caveat)}</Help>
+        </div>
+        <p class="pp-character">
+          <strong>{__i18n_display(report.character)}</strong>
+        </p>
+        <dl class="pp-reads">
+          {report.reads.map((r) => (
+            <div key={r.key}>
+              <dt>{__i18n_display(r.label)}</dt>
+              <dd>
+                <strong class={tone(r)}>{__i18n_display(r.text ?? __i18n_k("ui.playerPanel.traitReportBox.da8abd91"))}</strong>
+                <span class="muted small">({__i18n_display(r.sure)})</span>
+              </dd>
+            </div>
+          ))}
+        </dl>
+        {report.growthNote && <p class="muted small">{__i18n_display(report.growthNote)}</p>}
+        {report.notes.length > 0 && (
+          <ul class="pp-notes">
+            {report.notes.map((n) => (
+              <li key={n}>{__i18n_display(n)}</li>
+            ))}
+          </ul>
+        )}
+      </section>
+    );
   return (
     <section class="pitch-box trait-report">
       <h3>{__i18n_display(report.by === 'coach' ? __i18n_k("ui.playerPanel.traitReportBox.299d0a35") : __i18n_k("ui.playerPanel.traitReportBox.33ee644c"))}</h3>
@@ -445,6 +483,7 @@ export function PlayerPanel({
   const heading = useRef<HTMLHeadingElement>(null);
   const box = useRef<HTMLDivElement>(null);
   useFocusTrap(box, onClose);
+  const next = useUi() === 'new';
   const [part, setPartState] = useState<Part>(lastPart);
   const [records, setRecordsState] = useState<RecordView>(lastRecords);
   const setPart = (x: Part) => setPartState((lastPart = x));
@@ -469,54 +508,94 @@ export function PlayerPanel({
   const trips = (league.user?.trips ?? []).filter((t) => t.id === p.id);
   const post = postRows(league, league.players[id]!);
   const postSum = postTotals(post);
-  const shown = part === 'report' && !card.report ? 'ability' : part;
+  // 2.0.62 (새 UI): the staff's read sits beside the grades, one part — 리포트.
+  const shown = part === 'report' && (!card.report || next) ? 'ability' : part;
+  const partLabel = (x: { key: Part; label: string }) =>
+    next && x.key === 'ability' ? __i18n_t("ui.playerPanel.text.f114fb01") : next && x.key === 'profile' ? __i18n_t("ui.playerPanel.text.47c5b6b5") : next && x.key === 'injuries' ? __i18n_t("ui.playerPanel.text.0dae761e") : x.key === 'report' && card.report ? (card.report.by === 'coach' ? __i18n_k("ui.playerPanel.playerPanel.299d0a35") : __i18n_k("ui.playerPanel.playerPanel.33ee644c")) : x.label;
+  const recordNote =
+    records === 'seasons' || (records === 'mlb' && !p.mlb)
+      ? __i18n_t("ui.playerPanel.playerPanel.7e2cbab5")
+      : records === 'post'
+        ? __i18n_t("ui.playerPanel.playerPanel.fcf42cd6")
+        : records === 'splits' && (card.splits.season || card.splits.career)
+          ? `${splitGroup !== 'hand' ? `${__i18n_t("ui.playerPanel.text.495f1461")} ` : ''}${__i18n_t("ui.playerPanel.playerPanel.3fbaa6d0")}`
+          : null;
+  const toggles = onAct && league.user && (
+    <>
+      {/* 2.0.34 (the user's request): star him to keep him on the club's favourites list. */}
+      {onAct && league.user && (
+        <button type="button" class={`fav-star${isFavorite(league, p.id) ? ' on' : ''}`} aria-pressed={isFavorite(league, p.id)} title={isFavorite(league, p.id) ? __i18n_t("ui.playerPanel.text.40e258b4") : __i18n_t("ui.playerPanel.text.d57680be")} aria-label={isFavorite(league, p.id) ? __i18n_t("ui.playerPanel.text.40e258b4") : __i18n_t("ui.playerPanel.text.d57680be")} onClick={() => onAct({ kind: 'favorite', id: p.id, on: !isFavorite(league, p.id) })}>
+          {isFavorite(league, p.id) ? '★' : '☆'}
+        </button>
+      )}
+      {/* 2.0.45 (the user's request): one of ours not for sale — the AI clubs stop asking for him (offers.ts). */}
+      {onAct && league.user && p.teamId === league.user.teamId && (
+        <button
+          type="button"
+          class={`nfs-toggle${isNotForSale(league, p.id) ? ' on' : ''}`}
+          aria-pressed={isNotForSale(league, p.id)}
+          title={isNotForSale(league, p.id) ? __i18n_t("ui.playerPanel.text.3804d242") : __i18n_t("ui.playerPanel.text.13fca61e")}
+          onClick={() => onAct({ kind: 'notForSale', id: p.id, on: !isNotForSale(league, p.id) })}
+        >
+          NFS
+        </button>
+      )}
+      {/* 2.0.59 (the user's request): one of ours on the trade block — up to three clubs make an offer (offers.ts). */}
+      {onAct && league.user && p.teamId === league.user.teamId && (
+        <button
+          type="button"
+          class={`nfs-toggle block-toggle${tradeBlock(league).includes(p.id) ? ' on' : ''}`}
+          aria-pressed={tradeBlock(league).includes(p.id)}
+          title={tradeBlock(league).includes(p.id) ? __i18n_t("ui.playerPanel.text.8171d94b") : __i18n_t("ui.playerPanel.text.9445466f")}
+          onClick={() => onAct({ kind: 'tradeBlock', id: p.id, on: !tradeBlock(league).includes(p.id) })}
+        >
+          {__i18n_t("ui.playerPanel.text.6213f395")}
+        </button>
+      )}
+    </>
+  );
+  // 2.0.62 (새 UI): a part of the page as a card under its name; the legacy page keeps it bare.
+  const cardBox = (cls: string, title: string, on: boolean, children: ComponentChildren) =>
+    !on ? null : next ? (
+      <section class={`sheet-box ${cls}`}>
+        <h3>{title}</h3>
+        {children}
+      </section>
+    ) : (
+      children
+    );
+  const closeButton = (
+    <button type="button" class="close" onClick={onClose} aria-label={__i18n_t("ui.playerPanel.playerPanel.94b7dba1")}>
+      {__i18n_t("ui.playerPanel.playerPanel.94b7dba1")}
+    </button>
+  );
+  const subLine = (
+    <p class={next ? 'muted pp-sub' : 'muted'}>
+      {__i18n_display(card.team)} · {__i18n_display(positionLabel(p))} · {__i18n_display(handedness(p))}
+      {next && ` · ${__i18n_t("ui.playerPanel.summaryStrip.1001e7e6", { age: card.age })}`}
+      {__i18n_display(foreign ? __i18n_k("ui.playerPanel.playerPanel.151173f4", { value: p.origin.asiaQuota ? __i18n_k("ui.playerPanel.playerPanel.c66942ff") : p.origin.devForeign && p.contract?.kind === 'development' ? __i18n_t("ui.playerPanel.text.618bfd0a") : __i18n_k("ui.playerPanel.playerPanel.5bd804b7"), nationality: p.origin.nationality, archetype: p.archetype, value2: league.foreignVeteran && kboSeasons(p, league.year) >= league.foreignVeteran ? __i18n_k("ui.playerPanel.playerPanel.1cb18f2a") : '' }) : '')}
+    </p>
+  );
   return (
     <div class="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div class="dialog profile" role="dialog" aria-modal="true" aria-labelledby="player-name" ref={box}>
-        <button type="button" class="close" onClick={onClose} aria-label={__i18n_t("ui.playerPanel.playerPanel.94b7dba1")}>{__i18n_t("ui.playerPanel.playerPanel.94b7dba1")}</button>
-        <div class="profile-head">
+      <div class={next ? 'dialog profile next-profile' : 'dialog profile'} role="dialog" aria-modal="true" aria-labelledby="player-name" ref={box}>
+        {!next && closeButton}
+        <div class={next ? 'profile-head pp-head' : 'profile-head'}>
           {/* 2.0.24 (the user's request): his uniform, the back with his name and number in the club's colour. */}
           {wearing != null && <Jersey name={__i18n_displayText(p.name)} foreign={foreign} number={wearing} color={league.teams.find((t) => t.id === p.teamId)?.color ?? '#555'} />}
-          <div>
-            <p class="muted">
-              {__i18n_display(card.team)} · {__i18n_display(positionLabel(p))} · {__i18n_display(handedness(p))}
-              {__i18n_display(foreign ? __i18n_k("ui.playerPanel.playerPanel.151173f4", { value: p.origin.asiaQuota ? __i18n_k("ui.playerPanel.playerPanel.c66942ff") : p.origin.devForeign && p.contract?.kind === 'development' ? __i18n_t("ui.playerPanel.text.618bfd0a") : __i18n_k("ui.playerPanel.playerPanel.5bd804b7"), nationality: p.origin.nationality, archetype: p.archetype, value2: league.foreignVeteran && kboSeasons(p, league.year) >= league.foreignVeteran ? __i18n_k("ui.playerPanel.playerPanel.1cb18f2a") : '' }) : '')}
-            </p>
+          <div class={next ? 'pp-id' : undefined}>
+            {!next && subLine}
             <h2 id="player-name" tabIndex={-1} ref={heading}>
               {__i18n_display(p.name)}
+              {next && nickname && (
+                <span class="pp-nick" title={__i18n_displayText(nicknameWhy(p) ?? '')}>
+                  “{__i18n_display(nickname)}”
+                </span>
+              )}
               {__i18n_display(p.contract?.kind === 'development' && <span class="tag">{__i18n_t("ui.playerPanel.playerPanel.818f3b79")}</span>)}
               {/* 2.0.14: a two-way player, plain to see. */}
               {p.twoWay && <span class="tag two-way">{__i18n_t("ui.playerPanel.text.62cb0192")}</span>}
-              {/* 2.0.34 (the user's request): star him to keep him on the club's favourites list. */}
-              {onAct && league.user && (
-                <button type="button" class={`fav-star${isFavorite(league, p.id) ? ' on' : ''}`} aria-pressed={isFavorite(league, p.id)} title={isFavorite(league, p.id) ? __i18n_t("ui.playerPanel.text.40e258b4") : __i18n_t("ui.playerPanel.text.d57680be")} aria-label={isFavorite(league, p.id) ? __i18n_t("ui.playerPanel.text.40e258b4") : __i18n_t("ui.playerPanel.text.d57680be")} onClick={() => onAct({ kind: 'favorite', id: p.id, on: !isFavorite(league, p.id) })}>
-                  {isFavorite(league, p.id) ? '★' : '☆'}
-                </button>
-              )}
-              {/* 2.0.45 (the user's request): one of ours not for sale — the AI clubs stop asking for him (offers.ts). */}
-              {onAct && league.user && p.teamId === league.user.teamId && (
-                <button
-                  type="button"
-                  class={`nfs-toggle${isNotForSale(league, p.id) ? ' on' : ''}`}
-                  aria-pressed={isNotForSale(league, p.id)}
-                  title={isNotForSale(league, p.id) ? __i18n_t("ui.playerPanel.text.3804d242") : __i18n_t("ui.playerPanel.text.13fca61e")}
-                  onClick={() => onAct({ kind: 'notForSale', id: p.id, on: !isNotForSale(league, p.id) })}
-                >
-                  NFS
-                </button>
-              )}
-              {/* 2.0.59 (the user's request): one of ours on the trade block — up to three clubs make an offer (offers.ts). */}
-              {onAct && league.user && p.teamId === league.user.teamId && (
-                <button
-                  type="button"
-                  class={`nfs-toggle block-toggle${tradeBlock(league).includes(p.id) ? ' on' : ''}`}
-                  aria-pressed={tradeBlock(league).includes(p.id)}
-                  title={tradeBlock(league).includes(p.id) ? __i18n_t("ui.playerPanel.text.8171d94b") : __i18n_t("ui.playerPanel.text.9445466f")}
-                  onClick={() => onAct({ kind: 'tradeBlock', id: p.id, on: !tradeBlock(league).includes(p.id) })}
-                >
-                  {__i18n_t("ui.playerPanel.text.6213f395")}
-                </button>
-              )}
+              {!next && toggles}
               {/* 2.0.46: an AI club's own not-for-sale players (nfs.ts). */}
               {p.teamId && p.teamId !== league.user?.teamId && aiNotForSale(league, p.teamId).includes(p.id) && (
                 <span class="tag nfs" title={__i18n_t("ui.playerPanel.text.e57e866c")}>
@@ -524,20 +603,32 @@ export function PlayerPanel({
                 </span>
               )}
             </h2>
+            {next && subLine}
             {/* 2.0.34: a pitcher on a club — how ready his arm is. */}
             {pitcher && p.teamId && p.status === 'active' && (league.phase === 'regular' || league.phase === 'postseason') && (
               <p class="small">
                 <ArmMeter arm={armReady(league, p, league.schedule[league.next]?.date ?? `${league.year}-10-01`, p.role === 'SP')} />
               </p>
             )}
-            {__i18n_display(nickname && <p class="profile-nickname" title={__i18n_displayText(nicknameWhy(p) ?? '')}>“{__i18n_display(nickname)}”</p>)}
+            {__i18n_display(!next && nickname && <p class="profile-nickname" title={__i18n_displayText(nicknameWhy(p) ?? '')}>“{__i18n_display(nickname)}”</p>)}
             {/* 2.0.36: sent down for a set time, his rivals, a knuckleballer. */}
             <StatusLines league={league} id={p.id} onAct={onAct} onPlayer={onPlayer} />
             {/* 2.0.24: a foreign player registered under a shorter name. */}
             {p.fullName && <p class="muted small">{__i18n_t("ui.playerPanel.text.f5dc3a10", { full: __i18n_displayText(p.fullName) })}</p>}
           </div>
+          {next && (
+            <div class="pp-tools">
+              {toggles}
+              {onInterview && ours && (
+                <button type="button" title={__i18n_t("ui.playerPanel.playerPanel.a1086678")} onClick={() => onInterview(p.id)}>
+                  {__i18n_t("ui.playerPanel.playerPanel.7290c766")}
+                </button>
+              )}
+              {closeButton}
+            </div>
+          )}
         </div>
-        <SummaryStrip card={card} pitcher={pitcher} titles={postSum.titles} />
+        {next ? <NextSummary card={card} pitcher={pitcher} titles={postSum.titles} /> : <SummaryStrip card={card} pitcher={pitcher} titles={postSum.titles} />}
         {__i18n_display(card.status && <p class="notice">{__i18n_display(card.status)}</p>)}
         {__i18n_display(league.suspended?.[p.id] && (
           <p class="notice warn">
@@ -546,55 +637,61 @@ export function PlayerPanel({
             {__i18n_display(league.suspended[p.id]!.until ? __i18n_k("ui.playerPanel.playerPanel.165116da", { value: league.suspended[p.id]!.games ? ' · ' : '', until: league.suspended[p.id]!.until }) : '')}
           </p>
         ))}
-        {__i18n_display(onInterview && ours && (
+        {__i18n_display(!next && onInterview && ours && (
           <p>
             <button type="button" onClick={() => onInterview(p.id)}>{__i18n_t("ui.playerPanel.playerPanel.7290c766")}</button>{__i18n_display(' ')}
             <span class="muted small">{__i18n_t("ui.playerPanel.playerPanel.a1086678")}</span>
           </p>
         ))}
 
-        <div class="segmented profile-tabs profile-parts" role="tablist" aria-label={__i18n_t("ui.playerPanel.playerPanel.243cf4c2")}>
-          {__i18n_display(PARTS.filter((x) => x.key !== 'report' || card.report).map((x) => (
-            <button key={x.key} type="button" role="tab" aria-selected={shown === x.key} aria-pressed={shown === x.key} onClick={() => setPart(x.key)}>
-              {__i18n_display(x.key === 'report' && card.report ? (card.report.by === 'coach' ? __i18n_k("ui.playerPanel.playerPanel.299d0a35") : __i18n_k("ui.playerPanel.playerPanel.33ee644c")) : x.label)}
+        <div class={next ? 'pp-tabs profile-parts' : 'segmented profile-tabs profile-parts'} role="tablist" aria-label={__i18n_t("ui.playerPanel.playerPanel.243cf4c2")}>
+          {__i18n_display(PARTS.filter((x) => x.key !== 'report' || (card.report && !next)).map((x) => (
+            <button key={x.key} type="button" role="tab" aria-selected={shown === x.key} aria-pressed={next ? undefined : shown === x.key} onClick={() => setPart(x.key)}>
+              {__i18n_display(partLabel(x))}
               {__i18n_display(x.key === 'injuries' && card.injuries.length > 0 && <span class="count">{__i18n_display(card.injuries.length)}</span>)}
             </button>
           )))}
         </div>
 
         {__i18n_display(shown === 'ability' && (
-          <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.9e9117d0")}>
-            <section>
-              <h3>{__i18n_t("ui.playerPanel.playerPanel.7b001924")}</h3>
+          <div class={next ? 'profile-part pp-report' : 'profile-part'} role="tabpanel" aria-label={next ? __i18n_t("ui.playerPanel.text.f114fb01") : __i18n_t("ui.playerPanel.playerPanel.9e9117d0")}>
+            <section class={next ? 'sheet-box pp-ability' : undefined}>
+              <h3>{next ? __i18n_t("ui.playerPanel.text.f3aab784") : __i18n_t("ui.playerPanel.playerPanel.7b001924")}</h3>
               <div class="gradebars">
                 {__i18n_display(toolKeysFor(p.role).map((k) => (
                   <GradeBar key={k} label={__i18n_displayText(TOOL_LABELS[k])} now={s.tools[k]} future={showsFutureDetail(p) ? s.futureTools[k] : undefined} />
                 )))}
                 <GradeBar label={__i18n_t("ui.playerPanel.playerPanel.f7c86d76")} now={s.current} future={shownFuture(p) ?? undefined} />
               </div>
-              <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.40f3273a")}</p>
-              {card.batted.profile && <p class="small">{__i18n_t("ui.playerPanel.text.b07fe0a1", { pull: PULL_LABEL()[card.batted.profile.pull + 2]!, lift: LIFT_LABEL()[card.batted.profile.lift + 2]! })}</p>}
-              {__i18n_display(s.moved && showsFutureDetail(p) && (
+              {!next && <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.40f3273a")}</p>}
+              {card.batted.profile && <p class={next ? 'small pp-chip' : 'small'}>{__i18n_t("ui.playerPanel.text.b07fe0a1", { pull: PULL_LABEL()[card.batted.profile.pull + 2]!, lift: LIFT_LABEL()[card.batted.profile.lift + 2]! })}</p>}
+              {__i18n_display(!next && s.moved && showsFutureDetail(p) && (
                 <p class={`small ${s.moved.to > s.moved.from ? 'plus' : 'minus'}`}>{__i18n_t("ui.playerPanel.playerPanel.e3838a42", { value: s.moved.to > s.moved.from ? '▲' : '▼', from: s.moved.from, to: s.moved.to, value2: s.moved.date.slice(5).replace('-', '/') })}</p>
               ))}
             </section>
-            <section>
-              <h3>{__i18n_t("ui.playerPanel.text.89a8bfe6")}</h3>
-              <GradeChart log={p.gradeLog ?? []} role={p.role} proFrom={league.historical ? LEGACY_START : undefined} />
-            </section>
+            {next && card.report && <TraitReportBox report={card.report} />}
+            {(!next || (p.gradeLog?.length ?? 0) >= 2) && (
+              <section class={next ? 'sheet-box pp-wide' : undefined}>
+                <h3>{__i18n_t("ui.playerPanel.text.89a8bfe6")}</h3>
+                <GradeChart log={p.gradeLog ?? []} role={p.role} proFrom={league.historical ? LEGACY_START : undefined} />
+              </section>
+            )}
             {__i18n_display(!pitcher && card.positions.length > 0 && (
-              <section class="pitch-box">
-                <h3>{__i18n_t("ui.playerPanel.playerPanel.e44b2ec6")}</h3>
+              <section class={next ? 'sheet-box' : 'pitch-box'}>
+                <div class="pp-box-head">
+                  <h3>{__i18n_t("ui.playerPanel.playerPanel.e44b2ec6")}</h3>
+                  {next && <Help title={__i18n_t("ui.playerPanel.playerPanel.e44b2ec6")}>{__i18n_t("ui.playerPanel.playerPanel.92af1732")}</Help>}
+                </div>
                 <div class="gradebars">
                   {__i18n_display(card.positions.map((x) => (
                     <GradeBar key={x.pos} label={__i18n_displayText(__i18n_k("ui.playerPanel.playerPanel.b5f18a27", { value: POSITION_NAMES[x.pos], value2: x.main ? __i18n_k("ui.playerPanel.playerPanel.cc99d74f") : x.listed ? __i18n_k("ui.playerPanel.playerPanel.f2215ed8") : '' }))} now={x.grade} note={x.games ? __i18n_k("ui.playerPanel.playerPanel.42050c40", { games: x.games }) : undefined} />
                   )))}
                 </div>
-                <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.92af1732")}</p>
+                {!next && <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.92af1732")}</p>}
               </section>
             ))}
             {card.fielding && (
-              <section class="pitch-box">
+              <section class={next ? 'sheet-box' : 'pitch-box'}>
                 <h3>{__i18n_t("ui.playerPanel.text.8d1966c8")}</h3>
                 <div class="gradebars">
                   <GradeBar label={__i18n_t("ui.playerPanel.text.88c280f6")} now={card.fielding.parts.range} note={__i18n_t("ui.playerPanel.text.cb6177aa")} />
@@ -611,8 +708,11 @@ export function PlayerPanel({
               </section>
             )}
             {__i18n_display(pitcher && (
-              <section class="pitch-box">
-                <h3>{__i18n_t("ui.playerPanel.playerPanel.79ffa7f7")}</h3>
+              <section class={next ? 'sheet-box pp-pitches' : 'pitch-box'}>
+                <div class="pp-box-head">
+                  <h3>{__i18n_t("ui.playerPanel.playerPanel.79ffa7f7")}</h3>
+                  {next && card.pitchLast && <Help title={__i18n_t("ui.playerPanel.playerPanel.79ffa7f7")}>{__i18n_t("ui.playerPanel.text.da7d248d", { season: card.pitchLast.season })}</Help>}
+                </div>
                 {__i18n_display(card.velocity && (
                   <p class="velocity">
                     <span>{__i18n_rich("ui.playerPanel.playerPanel.dfeb642b", { value: <strong>{__i18n_display(card.velocity.top)}</strong> })}</span>
@@ -625,7 +725,7 @@ export function PlayerPanel({
                     <GradeBar key={x.type} label={`${x.type} ${__i18n_displayText(x.label)}`} now={x.grade} future={showsFutureDetail(p) ? card.pitchesFuture[x.type] : undefined} note={`${__i18n_displayText(__i18n_k("ui.playerPanel.playerPanel.4c8baf31", { value: Math.round(x.usage * 100) }))}${changeMark(x.grade, card.pitchLast?.grades[x.type])}${learnedNote(league.players[p.id]!, x.type) ? ` · ${__i18n_displayText(learnedNote(league.players[p.id]!, x.type)!)}` : ''}`} />
                   )))}
                 </div>
-                {card.pitchLast && <p class="muted small">{__i18n_t("ui.playerPanel.text.da7d248d", { season: card.pitchLast.season })}</p>}
+                {!next && card.pitchLast && <p class="muted small">{__i18n_t("ui.playerPanel.text.da7d248d", { season: card.pitchLast.season })}</p>}
                 {card.pitchingLift !== null && <p class="small">{__i18n_t("ui.playerPanel.text.41757042", { kind: PITCH_LIFT_LABEL()[card.pitchingLift + 2]! })}</p>}
                 {card.tracking && <TrackingTable t={card.tracking} lefty={p.throws === '좌'} />}
               </section>
@@ -637,6 +737,7 @@ export function PlayerPanel({
 
         {__i18n_display(shown === 'records' && (
           <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.d84b6f4b")}>
+            {next && recordNote && <Help title={__i18n_t("ui.playerPanel.text.ca15ef0b")}>{recordNote}</Help>}
             <div class="segmented record-views" role="group" aria-label={__i18n_t("ui.playerPanel.playerPanel.493c08af")}>
               {__i18n_display(RECORD_VIEWS.filter((x) => (x.key !== 'mlb' || p.mlb) && (x.key !== 'national' || nationalLinesOf(league, p.id).length > 0) && (x.key !== 'amateur' || !!p.education.history?.length || !!p.devLog?.length)).map((x) => (
                 <button key={x.key} type="button" aria-pressed={records === x.key} onClick={() => setRecords(x.key)}>
@@ -656,13 +757,13 @@ export function PlayerPanel({
                     <SeasonTable league={league} card={{ ...card, career: card.career.filter((r) => (pitcher ? (r.bat?.pa ?? 0) > 0 : (r.pit?.outs ?? 0) > 0)) }} pitcher={!pitcher} />
                   </>
                 )}
-                <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.7e2cbab5")}</p>
+                {!next && <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.7e2cbab5")}</p>}
               </>
             ))}
             {__i18n_display(records === 'post' && (
               <>
                 <PostTable rows={post} totals={postSum} pitcher={pitcher} />
-                <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.fcf42cd6")}</p>
+                {!next && <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.fcf42cd6")}</p>}
               </>
             ))}
             {__i18n_display(records === 'highs' &&
@@ -716,8 +817,8 @@ export function PlayerPanel({
                   </div>
                   <SplitTable title={__i18n_displayText(__i18n_k("ui.playerPanel.playerPanel.de766445", { year: league.year }))} splits={card.splits.season} pitcher={pitcher} group={splitGroup} />
                   <SplitTable title={__i18n_t("ui.playerPanel.playerPanel.7f3e9e67")} splits={card.splits.career} pitcher={pitcher} group={splitGroup} />
-                  {splitGroup !== 'hand' && <p class="muted small">{__i18n_t("ui.playerPanel.text.495f1461")}</p>}
-                  <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.3fbaa6d0")}</p>
+                  {!next && splitGroup !== 'hand' && <p class="muted small">{__i18n_t("ui.playerPanel.text.495f1461")}</p>}
+                  {!next && <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.3fbaa6d0")}</p>}
                 </>
               ) : (
                 <p class="muted">{__i18n_t("ui.playerPanel.playerPanel.f5cd3591")}</p>
@@ -732,7 +833,8 @@ export function PlayerPanel({
         ))}
 
         {__i18n_display(shown === 'profile' && (
-          <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.032e3f1f")}>
+          <div class={next ? 'profile-part pp-report pp-profile' : 'profile-part'} role="tabpanel" aria-label={next ? __i18n_t("ui.playerPanel.text.47c5b6b5") : __i18n_t("ui.playerPanel.playerPanel.032e3f1f")}>
+            {cardBox('pp-actions', __i18n_t("ui.playerPanel.text.eba85a19"), !!(onAct && ours), <>
             {__i18n_display(onAct && ours && <NumberField key={`${p.id}-${wearing ?? ''}`} league={league} id={p.id} current={wearing} onAct={onAct} />)}
             {__i18n_display(nickname && !(onAct && ours) && (
               <p class="small">{__i18n_display(__i18n_t("ui.playerPanel.text.b144acf5", { nickname }))}{__i18n_display(nicknameWhy(p) ? __i18n_t("ui.playerPanel.text.06bea072", { why: nicknameWhy(p)!, year: p.nickname!.year }) : '')}</p>
@@ -742,10 +844,12 @@ export function PlayerPanel({
             {__i18n_display(onAct && ours && (p.life?.suspicion?.signs ?? 0) > 0 && (
               <p class="inline-form">
                 <span class="small">{__i18n_t("ui.playerPanel.playerPanel.35b81cd9")}</span>
-                <button type="button" disabled={!!checkInspect(league, p.id)} title={__i18n_displayText(checkInspect(league, p.id) ?? '')} onClick={() => onAct({ kind: 'inspect', id: p.id })}>{__i18n_t("ui.playerPanel.playerPanel.c7b1ead1", { inspectCost: SCANDAL.doping.inspectCost })}</button>
-                <span class="muted small">{__i18n_t("ui.playerPanel.playerPanel.02a8cc00")}</span>
+                <button type="button" disabled={!!checkInspect(league, p.id)} title={__i18n_displayText(checkInspect(league, p.id) ?? (next ? __i18n_t("ui.playerPanel.playerPanel.02a8cc00") : ''))} onClick={() => onAct({ kind: 'inspect', id: p.id })}>{__i18n_t("ui.playerPanel.playerPanel.c7b1ead1", { inspectCost: SCANDAL.doping.inspectCost })}</button>
+                {!next && <span class="muted small">{__i18n_t("ui.playerPanel.playerPanel.02a8cc00")}</span>}
               </p>
             ))}
+            </>)}
+            {cardBox(onAct && ours ? 'pp-facts' : 'pp-facts pp-wide', __i18n_t("ui.playerPanel.text.05a8e0a7"), true, <>
             <dl class="facts profile-facts">
               <div>
                 <dt>{__i18n_t("ui.playerPanel.playerPanel.6c620e5c")}</dt>
@@ -867,6 +971,7 @@ export function PlayerPanel({
               ))}
             </dl>
             <p class="muted small">{__i18n_display(p.education.pathText)}</p>
+            </>)}
             <MoveTable league={league} p={p} />
             {__i18n_display(!!p.honors?.length && (
               <>
@@ -942,6 +1047,54 @@ export function PlayerPanel({
         ))}
       </div>
     </div>
+  );
+}
+
+/** 2.0.62 (새 UI): the strip in boxed cells — the grade now and to come in big numbers (the scouts' latest revision
+    beside the future one), his latest season, his career. His age is in the line under his name. */
+function NextSummary({ card, pitcher, titles }: { card: PlayerCard; pitcher: boolean; titles: number }) {
+  const p = card.player,
+    s = p.scouting;
+  const future = shownFuture(p);
+  const moved = s.moved && showsFutureDetail(p) ? s.moved : null;
+  const last = [...card.career].reverse().find((r) => !r.futures && (pitcher ? r.pit?.g : r.bat?.g));
+  const line = !last
+    ? __i18n_k("ui.playerPanel.summaryStrip.line.12ca5e35")
+    : pitcher
+      ? __i18n_k("ui.playerPanel.summaryStrip.line.4a6df1ba", { year: last.year, g: last.pit!.g, w: last.pit!.w, l: last.pit!.l, value: last.pit!.sv ? __i18n_k("ui.playerPanel.summaryStrip.line.3abfd8a4", { sv: last.pit!.sv }) : '', value2: last.pit!.hld ? __i18n_k("ui.playerPanel.summaryStrip.line.714b2700", { hld: last.pit!.hld }) : '', value3: last.pit!.outs ? rates.era(last.pit!).toFixed(2) : '-', value4: rates.ip(last.pit!.outs) })
+      : __i18n_k("ui.playerPanel.summaryStrip.line.99ee272d", { year: last.year, g: last.bat!.g, value: last.bat!.ab ? rates.fmt3(rates.avg(last.bat!)) : '-', hr: last.bat!.hr, value2: last.bat!.pa ? rates.fmt3(rates.ops(last.bat!)) : '-' });
+  return (
+    <dl class="pp-summary">
+      <div class="pp-grade">
+        <dt>{__i18n_t("ui.playerPanel.text.0f9ec16b")}</dt>
+        <dd class={gradeClass(s.current)}>{s.current}</dd>
+      </div>
+      <div class="pp-grade">
+        <dt>{__i18n_t("ui.playerPanel.text.a7aed900")}</dt>
+        <dd class={gradeClass(future)}>
+          {future ?? '-'}
+          {moved && (
+            <span
+              class={`pp-moved ${moved.to > moved.from ? 'plus' : 'minus'}`}
+              title={__i18n_t("ui.playerPanel.playerPanel.e3838a42", { value: moved.to > moved.from ? '▲' : '▼', from: moved.from, to: moved.to, value2: moved.date.slice(5).replace('-', '/') })}
+            >
+              {moved.to > moved.from ? '▲' : '▼'}
+              {moved.from}→{moved.to} ({moved.date.slice(5).replace('-', '/')})
+            </span>
+          )}
+        </dd>
+      </div>
+      <div class="pp-line">
+        <dt>{__i18n_display(last?.current ? __i18n_k("ui.playerPanel.summaryStrip.3ab6c6f3") : __i18n_k("ui.playerPanel.summaryStrip.3cb1090e"))}</dt>
+        <dd>{__i18n_display(line)}</dd>
+      </div>
+      {card.totals.seasons > 0 && (
+        <div class="pp-line">
+          <dt>{__i18n_t("ui.playerPanel.summaryStrip.7f3e9e67")}</dt>
+          <dd>{__i18n_t("ui.playerPanel.summaryStrip.a14624b0", { seasons: card.totals.seasons, value: card.totals.war.toFixed(1), value2: titles ? __i18n_k("ui.playerPanel.summaryStrip.77ae974d", { titles: titles }) : '' })}</dd>
+        </div>
+      )}
+    </dl>
   );
 }
 
@@ -1133,6 +1286,7 @@ function NumberField({ league, id, current, onAct }: { league: LeagueState; id: 
 function NicknameField({ league, id, onAct }: { league: LeagueState; id: string; onAct: (a: Action) => void }) {
   const p = league.players[id]!;
   const [text, setText] = useState(p.nicknameOwn ?? '');
+  const next = useUi() === 'new';
   const problem = checkNickname(league, id, text);
   const fans = p.nickname ? nicknameOf(league, { ...p, nicknameOwn: undefined }) : null;
   return (
@@ -1144,7 +1298,7 @@ function NicknameField({ league, id, onAct }: { league: LeagueState; id: string;
       <button type="button" disabled={!!problem || text.trim() === (p.nicknameOwn ?? '')} onClick={() => onAct({ kind: 'nickname', id, text })}>
         {text.trim() ? __i18n_t("ui.playerPanel.text.4a49fb33") : __i18n_t("ui.playerPanel.text.13627b09")}
       </button>
-      <span class="muted small">{__i18n_display(problem ?? (fans ? __i18n_t("ui.playerPanel.text.b88d4106", { fans, why: nicknameWhy({ ...p, nicknameOwn: undefined }) ?? '', year: p.nickname!.year }) : __i18n_t("ui.playerPanel.text.f6fc8202")))}</span>
+      {(!next || problem || fans) && <span class="muted small">{__i18n_display(problem ?? (fans ? __i18n_t("ui.playerPanel.text.b88d4106", { fans, why: nicknameWhy({ ...p, nicknameOwn: undefined }) ?? '', year: p.nickname!.year }) : __i18n_t("ui.playerPanel.text.f6fc8202")))}</span>}
     </p>
   );
 }
@@ -1276,6 +1430,7 @@ function PlayerEditor({ league, id, onAct }: { league: LeagueState; id: string; 
 function StatusLines({ league, id, onAct, onPlayer }: { league: LeagueState; id: string; onAct?: (a: Action) => void; onPlayer?: (id: string) => void }) {
   const p = league.players[id];
   const [days, setDays] = useState<number>(DISCIPLINE.days.gm[0]);
+  const next = useUi() === 'new';
   if (!p) return null;
   const down = league.discipline?.[id];
   const rivals = rivalsOf(league, id);
@@ -1336,18 +1491,18 @@ function StatusLines({ league, id, onAct, onPlayer }: { league: LeagueState; id:
               </option>
             ))}
           </select>
-          <button type="button" disabled={!!can} onClick={() => onAct({ kind: 'discipline', id, days })}>
+          <button type="button" disabled={!!can} title={next ? __i18n_t("ui.playerPanel.text.9f627e49", { pct: Math.round(pushbackChance(p) * 100) }) : undefined} onClick={() => onAct({ kind: 'discipline', id, days })}>
             {__i18n_t("ui.playerPanel.text.61b8a853")}
           </button>
-          <span class="muted">{__i18n_t("ui.playerPanel.text.9f627e49", { pct: Math.round(pushbackChance(p) * 100) })}</span>
+          {!next && <span class="muted">{__i18n_t("ui.playerPanel.text.9f627e49", { pct: Math.round(pushbackChance(p) * 100) })}</span>}
         </p>
       )}
       {ours && onAct && !canHold && (
         <p class="inline-form">
-          <button type="button" onClick={() => window.confirm(__i18n_t("ui.playerPanel.text.d1662462", { name: eulreul(p.name) })) && onAct({ kind: 'voluntary', id })}>
+          <button type="button" title={next ? __i18n_t("ui.playerPanel.text.9b500592") : undefined} onClick={() => window.confirm(__i18n_t("ui.playerPanel.text.d1662462", { name: eulreul(p.name) })) && onAct({ kind: 'voluntary', id })}>
             {__i18n_t("ui.playerPanel.text.88338b66")}
           </button>
-          <span class="muted">{__i18n_t("ui.playerPanel.text.9b500592")}</span>
+          {!next && <span class="muted">{__i18n_t("ui.playerPanel.text.9b500592")}</span>}
         </p>
       )}
     </div>
@@ -1553,6 +1708,7 @@ function AbilityEditor({ league, id, onAct }: { league: LeagueState; id: string;
 /** 2.0.12 (twoway.ts): a two-way player's other side (public), and for ours the scouts' read of it with the choices:
     turn him around in the winter, or start or stop two-way play. */
 function TwoWaySection({ league, id, onAct }: { league: LeagueState; id: string; onAct?: (a: Action) => void }) {
+  const next = useUi() === 'new';
   const p = league.players[id];
   if (!p || p.status === 'retired') return null;
   const ours = !!league.user && p.teamId === league.user.teamId;
@@ -1585,7 +1741,7 @@ function TwoWaySection({ league, id, onAct }: { league: LeagueState; id: string;
           <button type="button" disabled={!!start} onClick={() => onAct({ kind: 'switchSide', id, what: p.twoWay ? 'twoWayOff' : 'twoWayOn' })}>
             {p.twoWay ? __i18n_t("ui.playerPanel.text.fc2f4b16") : __i18n_t("ui.playerPanel.text.f6d88d41")}
           </button>
-          <span class="muted small">{__i18n_display(convert ?? start ?? __i18n_t("ui.playerPanel.text.8ffc8419"))}</span>
+          {(!next || convert || start) && <span class="muted small">{__i18n_display(convert ?? start ?? __i18n_t("ui.playerPanel.text.8ffc8419"))}</span>}
         </div>
       )}
     </section>
@@ -1596,6 +1752,7 @@ function TwoWaySection({ league, id, onAct }: { league: LeagueState; id: string;
 function ExtensionOffer({ league, id, onAct }: { league: LeagueState; id: string; onAct: (a: Action) => void }) {
   const problem = extensionProblem(league, id);
   const [years, setYears] = useState(4);
+  const next = useUi() === 'new';
   // Only a recent no is worth telling; otherwise he is not someone to offer one to.
   if (problem && problem !== extensionCooldown(league, id)) return null;
   const options = problem ? [] : extensionOptions(league, id);
@@ -1616,10 +1773,10 @@ function ExtensionOffer({ league, id, onAct }: { league: LeagueState; id: string
               </option>
             ))}
           </select>
-          <button type="button" disabled={!pick} onClick={() => pick && onAct({ kind: 'extend', id, years: pick.years })}>
+          <button type="button" disabled={!pick} title={next ? __i18n_t("ui.playerPanel.text.9d415c3d") : undefined} onClick={() => pick && onAct({ kind: 'extend', id, years: pick.years })}>
             {__i18n_t("ui.playerPanel.text.6ef251ee")}
           </button>
-          <span class="muted small">{__i18n_t("ui.playerPanel.text.9d415c3d")}</span>
+          {!next && <span class="muted small">{__i18n_t("ui.playerPanel.text.9d415c3d")}</span>}
         </>
       )}
     </div>
@@ -1654,7 +1811,7 @@ function FieldingTable({ fielding }: { fielding: NonNullable<PlayerCard['fieldin
   return (
     <div class="tracking">
       {fielding.seasons.length ? (
-        <div class="table-wrap">
+        <div class="table-wrap" tabIndex={0}>
           <table class="record-table small">
             <thead>
               <tr>
@@ -1717,7 +1874,7 @@ function BattedTable({ batted, pitcher }: { batted: PlayerCard['batted']; pitche
     <div class="tracking">
       {batted.profile && <p class="small">{__i18n_t("ui.playerPanel.text.b07fe0a1", { pull: PULL_LABEL()[batted.profile.pull + 2]!, lift: LIFT_LABEL()[batted.profile.lift + 2]! })}</p>}
       {batted.seasons.length ? (
-        <div class="table-wrap">
+        <div class="table-wrap" tabIndex={0}>
           <table class="record-table small">
             <thead>
               <tr>
@@ -1842,7 +1999,7 @@ function TrackingTable({ t, lefty }: { t: Tracking; lefty: boolean }) {
       <p class="small">
         {__i18n_t("ui.playerPanel.text.c2d86648", { slot: SLOT_LABEL[t.slot], angle: t.angle, release: t.release.toFixed(2), extension: t.extension.toFixed(2) })}
       </p>
-      <div class="table-wrap">
+      <div class="table-wrap" tabIndex={0}>
         <table class="record-table small">
           <thead>
             <tr>

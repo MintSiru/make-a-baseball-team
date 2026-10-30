@@ -1,0 +1,1607 @@
+/* 2.0.62 (the user's mockups, 새 UI): the scorebook redrawn — paper cards under a heavy ink rule, stamps for what
+   needs a decision, bars for numbers against their limits, the club colour as the one accent. Every rule here is
+   for the new screens only (data-ui='new' on the root, display.ts); the legacy screens keep styles.css alone. */
+
+:root[data-ui='new'] {
+  --card: #fffdf8;
+  --stamp: #b3261e;
+  --good: #17714f;
+  --warn: #9a4d18;
+  --bad: #b3261e;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-ui='new']:not([data-theme='light']) {
+    --card: #1c1e21;
+    --stamp: #e0675e;
+    --good: #4caf82;
+    --warn: #e09b5e;
+    --bad: #e0675e;
+  }
+}
+:root[data-ui='new'][data-theme='dark'] {
+  --card: #1c1e21;
+  --stamp: #e0675e;
+  --good: #4caf82;
+  --warn: #e09b5e;
+  --bad: #e0675e;
+}
+:root[data-ui='new'] body {
+  font-size: 14.5px;
+  line-height: 1.45;
+}
+
+/* ── Buttons and switches: square, ink-ruled; the pressed one in ink, the main action in the accent ── */
+:root[data-ui='new'] button,
+:root[data-ui='new'] select {
+  border-radius: 2px;
+}
+:root[data-ui='new'] .segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+}
+:root[data-ui='new'] .segmented button,
+:root[data-ui='new'] .segmented button:first-child,
+:root[data-ui='new'] .segmented button:last-child {
+  border: 0;
+  border-right: 1px solid var(--ink);
+  border-radius: 0;
+  margin: 0;
+  background: var(--paper);
+  padding: 5px 13px;
+}
+:root[data-ui='new'] .segmented button:last-child {
+  border-right: 0;
+}
+:root[data-ui='new'] .segmented button[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  font-weight: 700;
+}
+:root[data-ui='new'] .sub-seg {
+  margin: 0 0 14px;
+}
+
+/* ── Stamps and tags ── */
+:root[data-ui='new'] .stamp {
+  display: inline-block;
+  transform: rotate(-3deg);
+  border: 1.5px solid var(--stamp);
+  color: var(--stamp);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 5px;
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+  line-height: 1.45;
+  white-space: nowrap;
+}
+:root[data-ui='new'] .stamp.info,
+:root[data-ui='new'] .stamp.accent {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+:root[data-ui='new'] .stamp.good {
+  border-color: var(--good);
+  color: var(--good);
+}
+:root[data-ui='new'] .tag {
+  font-size: 11px;
+  padding: 0 5px;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .tag.warn {
+  border-color: var(--bad);
+  color: var(--bad);
+  font-weight: 600;
+}
+:root[data-ui='new'] .tag.cap {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+:root[data-ui='new'] .minus {
+  color: var(--bad);
+}
+
+/* ── Tables: a heavy rule on top, the head on paper-2 ── */
+:root[data-ui='new'] .table-wrap {
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  background: var(--card);
+}
+:root[data-ui='new'] thead th {
+  background: var(--paper-2);
+  font-size: 12px;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--rule);
+}
+:root[data-ui='new'] .card,
+:root[data-ui='new'] .panel {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-top: 2px solid var(--ink);
+  border-radius: 0;
+  box-shadow: none;
+}
+:root[data-ui='new'] .notice {
+  border-left: 4px solid var(--accent);
+  background: var(--paper-2);
+  border-radius: 0;
+}
+
+/* ── Sidebar: the club's brand, its numbers, the menu in groups, the files at the foot ── */
+:root[data-ui='new'] .next-sidebar .club-brand {
+  border-left: 4px solid var(--accent);
+  padding-left: 10px;
+}
+:root[data-ui='new'] .next-sidebar .club-brand h1 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+:root[data-ui='new'] .next-sidebar .club-brand .sub {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .next-sidebar .club-brand .row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+:root[data-ui='new'] .next-sidebar .club-brand .row-actions:empty {
+  display: none;
+}
+:root[data-ui='new'] .hud-card {
+  background: var(--card);
+  border: 1px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--rule);
+  padding: 10px 12px;
+  font-size: 13px;
+}
+:root[data-ui='new'] .hud-card dl {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+:root[data-ui='new'] .hud-card dl > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  border-bottom: 1px dotted var(--rule);
+  padding-bottom: 4px;
+}
+:root[data-ui='new'] .hud-card dl > div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+:root[data-ui='new'] .hud-card dt {
+  color: var(--ink-2);
+  font-size: 12px;
+  white-space: nowrap;
+}
+:root[data-ui='new'] .hud-card dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: right;
+}
+:root[data-ui='new'] .hud-card .link {
+  font-size: 13px;
+  font-weight: 600;
+}
+:root[data-ui='new'] .hud-bar {
+  display: block;
+  height: 3px;
+  background: var(--paper-2);
+  margin-top: 3px;
+  position: relative;
+}
+:root[data-ui='new'] .hud-bar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--accent);
+}
+:root[data-ui='new'] .hud-bar.over i {
+  background: var(--bad);
+}
+:root[data-ui='new'] .next-sidebar > .tabs {
+  display: grid;
+  gap: 12px;
+  border: 0;
+  padding: 0;
+}
+:root[data-ui='new'] .nav-group {
+  display: grid;
+  gap: 1px;
+}
+:root[data-ui='new'] .nav-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+  padding: 4px 8px 2px;
+}
+:root[data-ui='new'] .next-sidebar .nav-btn {
+  text-align: left;
+  background: none;
+  border: 0;
+  border-left: 3px solid transparent;
+  border-radius: 0;
+  padding: 6px 10px;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 0;
+}
+:root[data-ui='new'] .next-sidebar .nav-btn:hover {
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+:root[data-ui='new'] .next-sidebar .nav-btn[aria-current='page'] {
+  border-left-color: var(--accent);
+  background: var(--card);
+  font-weight: 700;
+}
+:root[data-ui='new'] .next-sidebar .nav-btn.tab-waiting {
+  border-left-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--card));
+  font-weight: 700;
+}
+:root[data-ui='new'] .next-sidebar .nav-btn.tab-waiting::before {
+  content: none;
+}
+:root[data-ui='new'] .nav-badge {
+  font-size: 11px;
+  padding: 0 5px;
+  border-radius: 2px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+:root[data-ui='new'] .sidebar-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 12px;
+  color: var(--ink-2);
+  border-top: 1px solid var(--rule);
+  padding-top: 10px;
+}
+:root[data-ui='new'] .sidebar-foot .link,
+:root[data-ui='new'] .sidebar-foot .file-button {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-2);
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  padding: 0;
+  min-height: 0;
+  cursor: pointer;
+}
+:root[data-ui='new'] .sidebar-foot .link[aria-current='page'] {
+  color: var(--ink);
+  font-weight: 700;
+}
+:root[data-ui='new'] .sidebar-foot .disclaimer {
+  flex-basis: 100%;
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* ── The bar over the page: the day and today's game; the day's buttons ── */
+:root[data-ui='new'] .next-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  background: var(--card);
+  border-bottom: 2px solid var(--ink);
+}
+:root[data-ui='new'] .next-top .cal-status {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+:root[data-ui='new'] .next-top .cal-date {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+:root[data-ui='new'] .next-top .status {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .next-top .cal-match {
+  padding: 2px 8px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--paper));
+  border: 1px solid var(--accent);
+  color: var(--ink);
+  font-weight: 600;
+}
+:root[data-ui='new'] .next-top .controls {
+  margin: 0;
+  gap: 6px;
+}
+:root[data-ui='new'] .next-top .controls button {
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  padding: 5px 12px;
+  font-size: 13.5px;
+  min-height: 0;
+}
+:root[data-ui='new'] .next-top .controls button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+:root[data-ui='new'] .next-top .controls button.primary + button,
+:root[data-ui='new'] .next-top .controls > button:first-child:not(.primary) {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+  font-weight: 700;
+}
+
+/* ── Our club: the name over a heavy rule, the views in one switch ── */
+:root[data-ui='new'] .club-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 10px;
+  margin-bottom: 18px;
+}
+:root[data-ui='new'] .club-head h2 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+:root[data-ui='new'] .scenario-card {
+  margin: 0 0 14px;
+  padding: 8px 14px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+  border-radius: 0;
+  font-size: 13px;
+}
+:root[data-ui='new'] .scenario-card h3 {
+  margin: 0 0 4px;
+  font-size: 13.5px;
+}
+:root[data-ui='new'] .scenario-card p,
+:root[data-ui='new'] .scenario-card ul {
+  margin: 2px 0;
+}
+
+/* The briefing: tickets with a coloured edge and a stamp; each button carries what it costs. */
+:root[data-ui='new'] .brief-section {
+  margin-bottom: 18px;
+}
+:root[data-ui='new'] .sec-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+:root[data-ui='new'] .sec-head h3 {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .brief-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 10px;
+}
+:root[data-ui='new'] .brief-ticket {
+  background: var(--card);
+  border: 1px solid var(--ink);
+  border-left-width: 5px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  box-shadow: 3px 3px 0 var(--paper-2);
+}
+:root[data-ui='new'] .brief-ticket.warn {
+  border-left-color: var(--bad);
+}
+:root[data-ui='new'] .brief-ticket.info {
+  border-left-color: var(--accent);
+}
+:root[data-ui='new'] .brief-ticket.good {
+  border-left-color: var(--good);
+}
+:root[data-ui='new'] .brief-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+:root[data-ui='new'] .brief-top strong {
+  font-size: 15px;
+}
+:root[data-ui='new'] .brief-facts {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--ink-2);
+  display: grid;
+  gap: 2px;
+}
+:root[data-ui='new'] .brief-facts li::before {
+  content: '· ';
+  font-weight: 700;
+}
+:root[data-ui='new'] .brief-foot {
+  border-top: 1px dotted var(--rule);
+  padding-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+:root[data-ui='new'] .brief-act {
+  white-space: normal;
+  text-align: left;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  padding: 3px 9px;
+  font-size: 12.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 0;
+}
+:root[data-ui='new'] .brief-act:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+:root[data-ui='new'] .brief-act em {
+  font-style: normal;
+  color: var(--ink-2);
+  font-size: 11.5px;
+}
+:root[data-ui='new'] .brief-act:hover em {
+  color: var(--paper-2);
+}
+
+/* Three boards: the form and the days ahead, the table, the club's best and missing. */
+:root[data-ui='new'] .dash-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+:root[data-ui='new'] .sheet-box {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-top: 2px solid var(--ink);
+  padding: 10px 14px;
+  min-width: 0;
+}
+:root[data-ui='new'] .sheet-box h3 {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+:root[data-ui='new'] .sheet-box h3 .num {
+  color: var(--ink);
+}
+:root[data-ui='new'] .mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+:root[data-ui='new'] .mini-table th,
+:root[data-ui='new'] .mini-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--paper-2);
+  text-align: left;
+}
+:root[data-ui='new'] .mini-table th {
+  font-size: 11.5px;
+  color: var(--ink-2);
+  background: none;
+  border-bottom: 1px solid var(--rule);
+}
+:root[data-ui='new'] .mini-table td.num,
+:root[data-ui='new'] .mini-table th.num {
+  text-align: right;
+}
+:root[data-ui='new'] .mini-table tr.mine td {
+  font-weight: 700;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+:root[data-ui='new'] .form-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  gap: 4px;
+  margin-bottom: 8px;
+}
+:root[data-ui='new'] .wl-chip {
+  flex: 1;
+  text-align: center;
+  padding: 3px 2px;
+  font-size: 11.5px;
+  border: 1px solid var(--rule);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+:root[data-ui='new'] .wl-chip.W {
+  background: color-mix(in srgb, var(--accent) 15%, var(--card));
+  border-color: var(--accent);
+  font-weight: 700;
+}
+:root[data-ui='new'] .wl-chip.L,
+:root[data-ui='new'] .wl-chip.T {
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .leaders-mini {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+:root[data-ui='new'] .leaders-mini > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--paper-2);
+  font-size: 13px;
+}
+:root[data-ui='new'] .leaders-mini dt {
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .leaders-mini dd {
+  margin: 0;
+  text-align: right;
+}
+:root[data-ui='new'] .leaders-mini .link {
+  font-size: 13px;
+}
+:root[data-ui='new'] .out-list {
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px dotted var(--rule);
+  display: grid;
+  gap: 3px;
+  font-size: 13px;
+}
+:root[data-ui='new'] .out-list .tag {
+  margin: 0 4px 0 0;
+}
+:root[data-ui='new'] .out-list .link {
+  font-size: 13px;
+}
+:root[data-ui='new'] .club-log-box summary {
+  cursor: pointer;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+:root[data-ui='new'] .club-log-box[open] summary {
+  margin-bottom: 8px;
+}
+
+/* ── Narrow screens: one column, the sidebar's parts in the page's flow ── */
+@media (max-width: 1099px) {
+  :root[data-ui='new'] .next-sidebar > .club-brand {
+    order: 1;
+    margin: 12px var(--gutter) 0;
+  }
+  :root[data-ui='new'] .next-sidebar > .hud-card {
+    order: 2;
+    margin: 8px var(--gutter);
+  }
+  :root[data-ui='new'] .next-sidebar > .tabs {
+    order: 4;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    padding: 6px var(--gutter);
+    border-bottom: 1px solid var(--rule);
+  }
+  :root[data-ui='new'] .nav-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px;
+  }
+  :root[data-ui='new'] .nav-label {
+    display: none;
+  }
+  :root[data-ui='new'] .next-sidebar .nav-btn {
+    border-left: 0;
+    border-bottom: 2px solid transparent;
+    padding: 4px 8px;
+  }
+  :root[data-ui='new'] .next-sidebar .nav-btn[aria-current='page'] {
+    border-bottom-color: var(--accent);
+  }
+  :root[data-ui='new'] .next-sidebar > .sidebar-foot {
+    order: 6;
+    padding: 10px var(--gutter) 16px;
+  }
+  :root[data-ui='new'] .next-top {
+    padding: 8px var(--gutter);
+  }
+}
+@media (min-width: 1100px) {
+  :root[data-ui='new'] .next-top {
+    padding: 10px 24px;
+  }
+  :root[data-ui='new'] .next-sidebar {
+    gap: 14px;
+  }
+}
+
+/* ── ⓘ: a rule folded into a mark, opened over the page (Help.tsx) ── */
+:root[data-ui='new'] .help-info {
+  display: inline-block;
+  position: relative;
+  margin: 2px 0;
+  vertical-align: middle;
+}
+:root[data-ui='new'] .help-info > summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  font-size: 13px;
+  color: var(--ink-2);
+  background: var(--card);
+}
+:root[data-ui='new'] .help-info > summary::-webkit-details-marker {
+  display: none;
+}
+:root[data-ui='new'] .help-info[open] > summary {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+:root[data-ui='new'] .help-info .help-pop {
+  position: absolute;
+  z-index: 30;
+  top: 28px;
+  left: 0;
+  width: min(380px, 80vw);
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--rule);
+  font-size: 13px;
+  line-height: 1.5;
+}
+:root[data-ui='new'] .help-info .help-pop > strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* ── The squad: its limits as gauges, who runs the entry beside them ── */
+:root[data-ui='new'] .roster-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  background: var(--card);
+  border: 1px solid var(--ink);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+:root[data-ui='new'] .quotas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+:root[data-ui='new'] .quota {
+  display: grid;
+  gap: 3px;
+  min-width: 105px;
+}
+:root[data-ui='new'] .quota-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .quota-top b {
+  color: var(--ink);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+:root[data-ui='new'] .qbar {
+  display: block;
+  height: 5px;
+  background: var(--paper-2);
+  position: relative;
+}
+:root[data-ui='new'] .qbar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--accent);
+}
+:root[data-ui='new'] .qbar.over i {
+  background: var(--bad);
+}
+:root[data-ui='new'] .captains-card {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 3px 10px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  font-size: 12.5px;
+}
+:root[data-ui='new'] .captains-card p {
+  margin: 0;
+}
+
+/* ── The lineup's staff: rotation, bullpen and bench as tables ── */
+:root[data-ui='new'] .staff-table {
+  margin-top: 16px;
+}
+:root[data-ui='new'] .staff-table th[scope='row'] {
+  font-weight: 700;
+  white-space: nowrap;
+}
+:root[data-ui='new'] .staff-table tr.next-row td,
+:root[data-ui='new'] .staff-table tr.next-row th {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+:root[data-ui='new'] .staff-table .stamp,
+:root[data-ui='new'] .staff-table .tag {
+  margin-left: 6px;
+}
+:root[data-ui='new'] .staff-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 0 16px;
+}
+
+/* ── The start page: a plain header line, then the founding sheet ── */
+:root[data-ui='new'] .start-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  border-bottom: 2px solid var(--ink);
+  background: var(--paper);
+}
+:root[data-ui='new'] .start-head h1 {
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+:root[data-ui='new'] .start-head .muted {
+  margin: 0;
+  font-size: 12px;
+}
+:root[data-ui='new'] .start-head .row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  align-items: center;
+}
+:root[data-ui='new'] .start-head .row-actions > button,
+:root[data-ui='new'] .start-head .row-actions > .file-button {
+  border: 0;
+  background: none;
+  padding: 0;
+  min-height: 0;
+  font-size: 13px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+:root[data-ui='new'] .start-head .row-actions > button[aria-pressed='true'] {
+  color: var(--ink);
+  font-weight: 700;
+}
+:root[data-ui='new'] .page.new-game.next-new {
+  display: block;
+  max-width: 1160px;
+}
+:root[data-ui='new'] .ng-title {
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  margin: 8px 0 18px;
+}
+:root[data-ui='new'] .mode-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--ink);
+  margin-bottom: 22px;
+}
+:root[data-ui='new'] .mode-card {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  text-align: left;
+  padding: 14px 16px;
+  background: var(--card);
+  border: 0;
+  border-right: 1px solid var(--ink);
+  border-radius: 0;
+  min-height: 0;
+}
+:root[data-ui='new'] .mode-card:last-child {
+  border-right: 0;
+}
+:root[data-ui='new'] .mode-card strong {
+  font-size: 16px;
+}
+:root[data-ui='new'] .mode-card[aria-checked='true'] {
+  background: var(--ink);
+  color: var(--paper);
+}
+:root[data-ui='new'] .mode-card .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+:root[data-ui='new'] .mode-card .chips span {
+  font-size: 11.5px;
+  padding: 0 5px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  opacity: 0.85;
+}
+:root[data-ui='new'] .ng-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 24px;
+  align-items: start;
+}
+:root[data-ui='new'] .ng-row {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px 0;
+  border-top: 1px solid var(--rule);
+}
+:root[data-ui='new'] .ng-label {
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+:root[data-ui='new'] .ng-field {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+:root[data-ui='new'] .chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+:root[data-ui='new'] .chip-btn {
+  border: 1px solid var(--rule);
+  background: var(--card);
+  padding: 5px 10px;
+  font-weight: 600;
+  min-height: 0;
+}
+:root[data-ui='new'] .chip-btn[aria-checked='true'],
+:root[data-ui='new'] .pick-card[aria-pressed='true'],
+:root[data-ui='new'] .pick-card[aria-checked='true'],
+:root[data-ui='new'] .timeline[aria-checked='true'] {
+  border: 2px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--card));
+}
+:root[data-ui='new'] .pick-card {
+  display: grid;
+  gap: 5px;
+  align-content: start;
+  text-align: left;
+  padding: 9px 11px;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  min-height: 0;
+  min-width: 0;
+}
+:root[data-ui='new'] .pick-card strong {
+  font-size: 15px;
+}
+:root[data-ui='new'] .pick-card:disabled {
+  opacity: 0.45;
+}
+:root[data-ui='new'] .scen-grid,
+:root[data-ui='new'] .parent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+:root[data-ui='new'] .city-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  gap: 8px;
+}
+:root[data-ui='new'] .ng-bar {
+  display: block;
+  height: 4px;
+  background: var(--paper-2);
+  position: relative;
+}
+:root[data-ui='new'] .ng-bar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--ink-2);
+}
+:root[data-ui='new'] .pick-card[aria-pressed='true'] .ng-bar i {
+  background: var(--accent);
+}
+:root[data-ui='new'] .city-facts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  white-space: nowrap;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+:root[data-ui='new'] .city-facts em {
+  font-style: normal;
+  font-weight: 600;
+}
+:root[data-ui='new'] .parent .meter {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .stars {
+  color: var(--accent);
+  letter-spacing: 1px;
+}
+:root[data-ui='new'] .stars .off {
+  color: var(--rule);
+}
+:root[data-ui='new'] .ng-names {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 20px;
+}
+:root[data-ui='new'] .ng-names label,
+:root[data-ui='new'] .ng-underline {
+  display: grid;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .ng-names input,
+:root[data-ui='new'] .ng-underline input,
+:root[data-ui='new'] .ng-seed {
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  border-radius: 0;
+  background: transparent;
+  padding: 4px 8px;
+  font-size: 16px;
+  width: 210px;
+  max-width: 100%;
+}
+:root[data-ui='new'] .ng-names .short input {
+  width: 80px;
+}
+:root[data-ui='new'] .dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+:root[data-ui='new'] .dot {
+  width: 22px;
+  height: 22px;
+  min-height: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--card);
+  box-shadow: 0 0 0 1px var(--rule);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+:root[data-ui='new'] .dot[aria-checked='true'] {
+  box-shadow: 0 0 0 2px var(--ink);
+}
+:root[data-ui='new'] .dot.custom {
+  background: conic-gradient(#c33, #cc3, #3c3, #3cc, #33c, #c3c, #c33);
+}
+:root[data-ui='new'] .dot.custom input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+:root[data-ui='new'] .quiet-tabs {
+  display: flex;
+  gap: 14px;
+  font-size: 13px;
+}
+:root[data-ui='new'] .quiet-tabs button {
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 2px 0;
+  min-height: 0;
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .quiet-tabs button[aria-selected='true'] {
+  border-bottom-color: var(--ink);
+  color: var(--ink);
+  font-weight: 700;
+}
+:root[data-ui='new'] .timeline-pick {
+  display: grid;
+  gap: 8px;
+}
+:root[data-ui='new'] .timeline {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 0;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  min-height: 0;
+}
+:root[data-ui='new'] .timeline > span {
+  display: grid;
+  padding: 8px 10px;
+  border-right: 1px dashed var(--rule);
+  font-size: 12px;
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .timeline > span:last-child {
+  border-right: 0;
+}
+:root[data-ui='new'] .timeline b {
+  font-size: 14px;
+  color: var(--ink);
+}
+:root[data-ui='new'] .timeline .debut b {
+  color: var(--accent);
+}
+:root[data-ui='new'] .timeline .none {
+  color: var(--rule);
+}
+:root[data-ui='new'] .switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+:root[data-ui='new'] .switch input {
+  appearance: none;
+  width: 32px;
+  height: 18px;
+  min-height: 0;
+  border-radius: 9px;
+  background: var(--rule);
+  position: relative;
+  cursor: pointer;
+  margin: 0;
+  flex: none;
+}
+:root[data-ui='new'] .switch input::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--card);
+  transition: left 0.15s;
+}
+:root[data-ui='new'] .switch input:checked {
+  background: var(--accent);
+}
+:root[data-ui='new'] .switch input:checked::after {
+  left: 16px;
+}
+:root[data-ui='new'] .switch input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+:root[data-ui='new'] .ng-more {
+  border-top: 1px solid var(--rule);
+  padding: 14px 0;
+}
+:root[data-ui='new'] .ng-more > summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .scenario-brief {
+  background: var(--paper-2);
+  border-left: 4px solid var(--accent);
+  padding: 8px 12px;
+  font-size: 13.5px;
+}
+:root[data-ui='new'] .scenario-brief p {
+  margin: 4px 0;
+}
+:root[data-ui='new'] .ng-receipt {
+  position: sticky;
+  top: 16px;
+  background: var(--card);
+  border: 1px solid var(--ink);
+  border-top: 6px solid var(--accent);
+  padding: 16px 18px 18px;
+  box-shadow: 3px 3px 0 var(--paper-2);
+}
+:root[data-ui='new'] .receipt-kicker {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .ng-receipt h3 {
+  margin: 4px 0 12px;
+  padding-bottom: 12px;
+  font-size: 24px;
+  border-bottom: 2px solid var(--ink);
+  overflow-wrap: anywhere;
+}
+:root[data-ui='new'] .receipt-facts,
+:root[data-ui='new'] .receipt-money {
+  margin: 0;
+  display: grid;
+}
+:root[data-ui='new'] .receipt-facts > div,
+:root[data-ui='new'] .receipt-money > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--paper-2);
+  font-size: 13.5px;
+}
+:root[data-ui='new'] .receipt-facts dt,
+:root[data-ui='new'] .receipt-money dt {
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+:root[data-ui='new'] .receipt-facts dd,
+:root[data-ui='new'] .receipt-money dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+:root[data-ui='new'] .receipt-money {
+  margin-top: 12px;
+}
+:root[data-ui='new'] .receipt-money .total {
+  border-top: 1px solid var(--ink);
+  font-weight: 700;
+}
+:root[data-ui='new'] .receipt-money .total dt {
+  color: var(--ink);
+}
+:root[data-ui='new'] .receipt-money .help-info {
+  margin: 0 0 0 4px;
+}
+:root[data-ui='new'] .receipt-money .help-pop {
+  left: auto;
+  right: -120px;
+}
+:root[data-ui='new'] .receipt-note {
+  font-size: 12px;
+  color: var(--ink-2);
+  margin: 12px 0;
+}
+:root[data-ui='new'] .ng-receipt .apply {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
+}
+:root[data-ui='new'] .ng-receipt .apply:disabled {
+  opacity: 0.4;
+}
+:root[data-ui='new'] .ng-receipt .status {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+@media (max-width: 900px) {
+  :root[data-ui='new'] .ng-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :root[data-ui='new'] .ng-receipt {
+    position: static;
+  }
+  :root[data-ui='new'] .ng-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  :root[data-ui='new'] .mode-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :root[data-ui='new'] .mode-card {
+    border-right: 0;
+    border-bottom: 1px solid var(--ink);
+  }
+  :root[data-ui='new'] .mode-card:last-child {
+    border-bottom: 0;
+  }
+}
+
+:root[data-ui='new'] .ng-field > .segmented {
+  justify-self: start;
+}
+
+/* ── Player page: who he is on the left, what to do with him on the right; the grades in big boxed numbers;
+   the grades and the staff's read side by side as cards; tabs as index tabs over an ink rule ── */
+:root[data-ui='new'] .dialog.next-profile {
+  width: min(980px, 100%);
+  border: 2px solid var(--ink);
+  padding: 18px 20px 20px;
+}
+:root[data-ui='new'] .next-profile .pp-head {
+  align-items: flex-start;
+  padding: 0 0 12px;
+  border-bottom: 2px solid var(--ink);
+}
+:root[data-ui='new'] .next-profile .pp-id {
+  flex: 1;
+  min-width: 0;
+}
+:root[data-ui='new'] .next-profile .pp-id h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 2px 0 2px;
+}
+:root[data-ui='new'] .next-profile .pp-id h2 .tag {
+  margin: 0;
+  font-size: 12px;
+  align-self: center;
+}
+:root[data-ui='new'] .next-profile .pp-nick {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+}
+:root[data-ui='new'] .next-profile .pp-sub {
+  font-size: 13.5px;
+}
+:root[data-ui='new'] .next-profile .pp-id .status-lines {
+  margin-top: 4px;
+}
+:root[data-ui='new'] .next-profile .pp-tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  max-width: 45%;
+}
+:root[data-ui='new'] .next-profile .pp-tools .close {
+  position: static;
+}
+:root[data-ui='new'] .next-profile .pp-tools .fav-star {
+  font-size: 16px;
+  line-height: 1;
+  padding: 5px 8px;
+}
+:root[data-ui='new'] .next-profile .pp-tools .fav-star.on {
+  background: var(--warn);
+  border-color: var(--warn);
+  color: #fff;
+}
+
+/* The numbers that matter: now and to come in big boxed figures, then his season and career. */
+:root[data-ui='new'] .pp-summary {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 2fr) minmax(0, 1.4fr);
+  margin: 14px 0 4px;
+  border: 1px solid var(--ink);
+  background: var(--card);
+}
+:root[data-ui='new'] .pp-summary > div {
+  padding: 8px 12px;
+  border-right: 1px solid var(--rule);
+  min-width: 0;
+}
+:root[data-ui='new'] .pp-summary > div:last-child {
+  border-right: 0;
+}
+:root[data-ui='new'] .pp-summary dt {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .pp-summary dd {
+  margin: 2px 0 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+:root[data-ui='new'] .pp-summary .pp-grade dd {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+:root[data-ui='new'] .pp-moved {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Index tabs: the open one a card standing on the rule. */
+:root[data-ui='new'] .pp-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin: 16px 0 12px;
+  border-bottom: 2px solid var(--ink);
+}
+:root[data-ui='new'] .pp-tabs button {
+  border: 1px solid transparent;
+  border-bottom: 0;
+  background: none;
+  padding: 7px 14px;
+  margin-bottom: -2px;
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .pp-tabs button[aria-selected='true'] {
+  border-color: var(--ink);
+  border-bottom: 2px solid var(--paper);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 700;
+}
+:root[data-ui='new'] .pp-tabs .count {
+  margin-left: 6px;
+}
+
+/* 리포트: cards two by two — the grades beside the staff's read, then fielding or pitches. */
+:root[data-ui='new'] .pp-report {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+:root[data-ui='new'] .pp-report > section {
+  margin: 0;
+}
+:root[data-ui='new'] .pp-report > .pp-wide {
+  grid-column: 1 / -1;
+}
+:root[data-ui='new'] .pp-report > .two-way-side {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-top: 2px solid var(--ink);
+  padding: 10px 14px;
+  min-width: 0;
+}
+:root[data-ui='new'] .pp-report > .two-way-side > h3 {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule);
+}
+/* A pitch's usage and its change on its own row's right, as on a scouting sheet. */
+:root[data-ui='new'] .pp-pitches .gradebar {
+  grid-template-columns: 7.5em minmax(50px, 1fr) 4.2em minmax(0, auto);
+}
+:root[data-ui='new'] .pp-pitches .gradebar-note {
+  grid-column: auto;
+  margin: 0;
+  white-space: nowrap;
+}
+:root[data-ui='new'] .pp-report h3,
+:root[data-ui='new'] .pp-report .profile-part > section:first-child h3 {
+  margin: 0 0 8px;
+}
+:root[data-ui='new'] .pp-box-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule);
+}
+:root[data-ui='new'] .pp-box-head h3 {
+  margin: 0;
+  flex: 1;
+}
+:root[data-ui='new'] .pp-report .sheet-box > h3 {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule);
+}
+:root[data-ui='new'] .pp-chip {
+  display: inline-block;
+  margin: 10px 6px 0 0;
+  padding: 3px 8px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+}
+:root[data-ui='new'] .pp-character {
+  margin: 0 0 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+}
+:root[data-ui='new'] .pp-reads {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0 0 8px;
+}
+:root[data-ui='new'] .pp-reads > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  padding: 4px 8px;
+  border: 1px solid var(--rule);
+  font-size: 13px;
+}
+:root[data-ui='new'] .pp-reads dt {
+  color: var(--ink-2);
+}
+:root[data-ui='new'] .pp-reads dd {
+  margin: 0 0 0 auto;
+  display: flex;
+  gap: 4px;
+  align-items: baseline;
+}
+:root[data-ui='new'] .pp-notes {
+  margin: 8px 0 0;
+  padding: 6px 10px 6px 26px;
+  border-left: 3px solid var(--accent);
+  background: var(--paper);
+  font-size: 13px;
+}
+:root[data-ui='new'] .next-profile .record-views {
+  display: inline-flex;
+}
+:root[data-ui='new'] .next-profile .profile-part > .help-info {
+  float: right;
+}
+@media (max-width: 640px) {
+  :root[data-ui='new'] .next-profile .pp-head {
+    flex-wrap: wrap;
+  }
+  :root[data-ui='new'] .next-profile .pp-tools {
+    max-width: none;
+    width: 100%;
+    justify-content: flex-start;
+  }
+  :root[data-ui='new'] .pp-summary {
+    grid-template-columns: auto auto;
+  }
+  :root[data-ui='new'] .pp-summary > .pp-line {
+    grid-column: 1 / -1;
+    border-right: 0;
+    border-top: 1px solid var(--rule);
+  }
+  :root[data-ui='new'] .pp-report {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :root[data-ui='new'] .pp-reads {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+:root[data-ui='new'] .pp-profile > :not(.sheet-box) {
+  grid-column: 1 / -1;
+}
+:root[data-ui='new'] .pp-profile > h3 {
+  margin: 4px 0 -6px;
+}
+:root[data-ui='new'] .pp-profile .pp-actions .inline-form {
+  margin: 0 0 8px;
+}
+:root[data-ui='new'] .pp-profile .profile-facts {
+  margin: 0 0 6px;
+}
+
+/* ── The front office's money: the limits in one bar, the books beside the owner's side ── */
+:root[data-ui='new'] .money-dash {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+:root[data-ui='new'] .money-side {
+  display: grid;
+  gap: 14px;
+}
+:root[data-ui='new'] .money-dash .report-table {
+  width: 100%;
+}
+:root[data-ui='new'] .figures {
+  margin: 0 0 8px;
+}
+:root[data-ui='new'] .figures > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px dotted var(--rule);
+}
+:root[data-ui='new'] .figures dt {
+  color: var(--ink-2);
+  font-size: 13px;
+}
+:root[data-ui='new'] .figures dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+:root[data-ui='new'] .budget-ask .inline-form {
+  margin: 8px 0 0;
+}
+@media (max-width: 900px) {
+  :root[data-ui='new'] .money-dash {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+:root[data-ui='new'] .money-bar .quotas {
+  flex: 1;
+}
+:root[data-ui='new'] .money-dash .table-wrap {
+  width: 100%;
+  border: 0;
+  box-shadow: none;
+}
+:root[data-ui='new'] .money-dash .table-wrap {
+  border-radius: 0;
+  margin: 0;
+}
+:root[data-ui='new'] .money-dash .table-wrap > table {
+  width: 100%;
+}
+/* The off toggles (NFS, the block) in full ink-2, not faded: readable when off. */
+:root[data-ui='new'] .nfs-toggle {
+  opacity: 1;
+  color: var(--ink-2);
+}

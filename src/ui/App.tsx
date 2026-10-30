@@ -23,7 +23,6 @@ import { DisplaySettings } from './DisplaySettings';
 import { LanguagePicker } from './LanguagePicker';
 import { registerKept, registerNames } from '../i18n/runtime';
 import { readableAccent } from './display';
-import { useDark } from './useDisplay';
 import { lastExport, noteExport, Settings } from './Settings';
 import { Manual } from './Manual';
 import { DISCLAIMER } from '../core/about';
@@ -62,6 +61,8 @@ import { Standings } from './Standings';
 import { TeamRoster } from './TeamRoster';
 import { UpdateDialog } from './Updates';
 import { markSeen, unseenNotes } from './updates';
+import { useDark, useUi } from './useDisplay';
+import { NextSidebar, NextTopBar, todayMatch, type NavItem } from './next/Shell';
 
 const newSeed = () => `kbo-${Math.floor(Math.random() * 36 ** 6).toString(36)}`;
 
@@ -92,6 +93,14 @@ const seconds = (sec: number) => (sec < 60 ? __i18n_k("ui.app.seconds.c4a2109c",
 
 const PHASE: Record<LeagueState['phase'], CalendarPhase> = { regular: 'regularSeason', postseason: 'postseason', offseason: 'offseason' };
 const snapshotSave = (s: LeagueState) => makeSave(s.seed, [], { at: { year: s.year, phase: PHASE[s.phase] }, state: s });
+
+/** 2.0.62 (새 UI): the status beside the day in the top bar — the season in a word on a day of games (the day
+    itself shows beside it), else the full line. */
+function dayStatus(s: LeagueState): string | null {
+  if (s.pending || s.phase !== 'regular' || regularOver(s)) return null;
+  if (exhibitionDate(s)) return __i18n_t("ui.app.text.5d250044", { year: s.year });
+  return __i18n_t("ui.app.text.c80e0ef9", { year: s.year });
+}
 
 function statusLine(s: LeagueState) {
   if (s.pending) return __i18n_k("ui.app.statusLine.93c4cfd1", { value: s.offseason ? __i18n_k("ui.app.statusLine.dfc7fe9a", { year: s.offseason.year }) : `${s.year}` });
@@ -161,6 +170,10 @@ export function App() {
   const [kindsOff] = useAlertKindsOff();
   const [alertsOpen, setAlertsOpen] = useState(false);
   const dark = useDark();
+  // 2.0.62: the redesigned screens or the legacy ones (display settings).
+  const ui = useUi();
+  // 2.0.62: a view of our club the sidebar opens (its story and its records sit in the menu in the new screens).
+  const [clubGo, setClubGo] = useState<{ view: string; n: number }>({ view: 'overview', n: 0 });
   const autoTried = useRef(new Set<string>());
   const autoTries = useRef(new Map<string, number>());
   // Automatic mode waits until this time (ms); the tick wakes it up.
@@ -452,7 +465,7 @@ export function App() {
   if (!league)
     return (
       <>
-        <header class="masthead">
+        <header class="masthead start-head">
           <div>
             <h1>{__i18n_t("ui.app.app.7fd36273")}</h1>
             <p class="muted">{__i18n_t("ui.app.app.ec12bca1", { rELEASE: RELEASE })}</p>
@@ -621,12 +634,81 @@ export function App() {
   const accent = userTeam ? readableAccent(userTeam.color, dark) : null;
   const unseenAll = league.user ? unseenAlerts(league) : [];
   const unseen = poppingAlerts(unseenAll, articles, kindsOff);
+  // 2.0.62 (새 UI): the menu in two groups — the club's own work, and the league with its records (our club's story
+  // and all-time records among them).
+  const item = (id: Tab, label: string, extra: Partial<NavItem> = {}): NavItem => ({ id, label, current: tab === id, onClick: () => setTab(id), ...extra });
+  const clubItem = (view: string, label: string): NavItem => ({
+    id: `club-${view}`,
+    label,
+    current: tab === 'club' && clubView === view,
+    onClick: () => {
+      setTab('club');
+      setClubGo((g) => ({ view, n: g.n + 1 }));
+    },
+  });
+  const navGroups: { label: string; items: NavItem[] }[] = [
+    ...(league.user
+      ? [
+          {
+            label: __i18n_t("ui.app.text.6bc69497"),
+            items: [
+              ...(league.pending ? [item('decision', __i18n_k("ui.app.tABS.label.2d179fd7"), { waiting: true })] : []),
+              item('club', __i18n_k("ui.app.tABS.label.8cc09c32"), { current: tab === 'club' && clubView !== 'story' && clubView !== 'records' }),
+              item('market', __i18n_k("ui.app.tABS.label.e11828a8")),
+              item('draft', __i18n_k("ui.app.tABS.label.0db7daf2")),
+            ],
+          },
+        ]
+      : []),
+    {
+      label: __i18n_t("ui.app.text.bb75fb91"),
+      items: [
+        ...(!league.user && league.pending ? [item('decision', __i18n_k("ui.app.tABS.label.2d179fd7"), { waiting: true })] : []),
+        item('games', __i18n_t("ui.app.text.e8212e6f")),
+        item('standings', __i18n_t("ui.app.text.097918dc")),
+        item('leaders', __i18n_t("ui.app.text.0481a899")),
+        ...(league.user ? [clubItem('records', __i18n_t("ui.app.text.74ed244c")), clubItem('story', __i18n_t("ui.app.text.16634b25"))] : []),
+        item('team', __i18n_t("ui.app.text.5ac2755f")),
+        item('history', __i18n_t("ui.app.text.253af1e8")),
+        ...(!league.user ? [item('draft', __i18n_k("ui.app.tABS.label.0db7daf2"))] : []),
+      ],
+    },
+  ];
 
   return (
     <div class="app" style={accent ? ({ '--accent': accent.accent, '--accent-ink': accent.ink } as Record<string, string>) : undefined}>
       <a class="skip-link" href="#main">{__i18n_t("ui.app.app.f509a430")}</a>
       {/* V0.7.7: on a wide screen the club, the screens and the saves stay in a sidebar and only the page
           scrolls; on a phone everything flows top to bottom as before. */}
+      {ui === 'new' ? (
+        <NextSidebar
+          league={shown}
+          onClub={() => setTab('club')}
+          groups={navGroups}
+          extra={
+            <>
+              {tutorialPaused(league) && (
+                <button type="button" onClick={() => act({ kind: 'tutorial', on: true }, __i18n_k("ui.app.app.aca4b433"), false)}>{__i18n_t("ui.app.app.f626ade9")}</button>
+              )}
+              {unseen.length > 0 && !popups && (
+                <button type="button" onClick={() => setAlertsOpen(true)}>{__i18n_t("ui.app.app.8b7e42a7", { length: unseen.length })}</button>
+              )}
+            </>
+          }
+          foot={
+            <>
+              <button type="button" class="link" onClick={exportSave} disabled={!!busy}>{__i18n_t("ui.app.app.2ba578d5")}</button>
+              <label class="file-button link">
+                불러오기
+                <input type="file" accept="application/json,.json,.gz" onChange={(e) => importSave((e.currentTarget as HTMLInputElement).files?.[0])} />
+              </label>
+              <button type="button" class="link" aria-current={tab === 'settings' ? 'page' : undefined} onClick={() => setTab('settings')}>{__i18n_t("ui.app.app.c14a567e")}</button>
+              <button type="button" class="link" aria-current={tab === 'help' ? 'page' : undefined} onClick={() => setTab('help')}>{__i18n_k("ui.app.tABS.label.e2654ac5")}</button>
+              <p class="muted small disclaimer">{DISCLAIMER}</p>
+            </>
+          }
+        />
+      ) : (
       <aside class="sidebar">
         <header class="masthead">
           <div>
@@ -663,6 +745,7 @@ export function App() {
           <p class="muted small">{__i18n_display(DISCLAIMER)}</p>
         </footer>
       </aside>
+      )}
       {newGameAsk && (
         <NewGameDialog
           onClose={() => setNewGameAsk(false)}
@@ -701,6 +784,18 @@ export function App() {
           }}
         />
       ))}
+      {ui === 'new' ? (
+        <NextTopBar
+          date={busy ? null : nextDate(shown)}
+          status={busy ?? (dayStatus(shown) || statusLine(shown))}
+          match={busy ? null : todayMatch(shown)}
+          controls={
+            <fieldset class="controls" disabled={!!busy || !!shield}>
+              {shield ? <p class="muted small">{__i18n_t("ui.app.text.3b74579c")}</p> : controls}
+            </fieldset>
+          }
+        />
+      ) : (
       <div class="progress-bar">
         <p class="status" aria-live="polite">
           {__i18n_display(busy ?? statusLine(shown))}
@@ -709,6 +804,7 @@ export function App() {
           {__i18n_display(shield ? <p class="muted small">{__i18n_t("ui.app.text.3b74579c")}</p> : controls)}
         </fieldset>
       </div>
+      )}
       <main class="page" id="main" tabIndex={-1} data-version={version}>
         {__i18n_display(notice && (
           <p class="notice" role="status">
@@ -732,6 +828,7 @@ export function App() {
             onPlayer={setPlayerId}
             onAct={(a) => act(a, __i18n_k("ui.app.app.bd04d7e4"), false)}
             onView={setClubView}
+            go={clubGo}
             onGo={(g) => {
               if (g.tab !== 'market') return;
               setMarketIntent((m) => ({ view: g.view, ...(g.spot ? { spot: g.spot } : {}), n: m.n + 1 }));

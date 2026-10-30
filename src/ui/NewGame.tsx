@@ -1,7 +1,8 @@
 import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 import { useState } from 'preact/hooks';
 import { accentStyle } from './display';
-import { useDark } from './useDisplay';
+import { useDark, useUi } from './useDisplay';
+import { NextNewGame } from './next/NewGame';
 import { CITIES, cityById, REAL_CLUB_CITIES } from '../club/cities';
 import { NORTH_CITIES } from '../league/north';
 import { medalConditions, SCENARIOS, scenarioDef, withScenario, type ScenarioId } from '../league/scenarios';
@@ -16,9 +17,9 @@ import { money } from './format';
 import { TwelveSettingField } from './Twelve';
 import { DIFFICULTY_LABEL, DIFFICULTY_NOTE } from './Settings';
 
-const COLORS = ['#0f6e8c', '#1b7f5a', '#6b3fa0', '#c2572b', '#2f4858', '#b3261e', '#0b5394', '#8a6d1d'];
+export const COLORS = ['#0f6e8c', '#1b7f5a', '#6b3fa0', '#c2572b', '#2f4858', '#b3261e', '#0b5394', '#8a6d1d'];
 /** The existing clubs' short names, as a new league has them (renamed later in the settings, if at all). */
-const TAKEN = existingTeams().map((t) => t.short);
+export const TAKEN = existingTeams().map((t) => t.short);
 
 type Stadium = ExpansionSettings['stadium'];
 
@@ -32,8 +33,8 @@ interface Props {
 const LOCK_LABEL: Record<string, string> = { cityId: __i18n_k("ui.newGame.lOCK_LABEL.cityId.e9211ac8"), parentType: __i18n_k("ui.newGame.lOCK_LABEL.parentType.8611634e"), parentName: __i18n_k("ui.newGame.lOCK_LABEL.parentName.0cfd0aa8"), name: __i18n_k("ui.newGame.lOCK_LABEL.name.3417788b"), short: __i18n_k("ui.newGame.lOCK_LABEL.short.7d2842b0"), difficulty: __i18n_k("ui.newGame.lOCK_LABEL.difficulty.e8ee93fa"), firing: __i18n_k("ui.newGame.lOCK_LABEL.firing.511fefbd"), promotion: __i18n_k("ui.newGame.lOCK_LABEL.promotion.c2eea1df"), stadium: __i18n_k("ui.newGame.lOCK_LABEL.stadium.5b164a3b"), tutorial: __i18n_k("ui.newGame.lOCK_LABEL.tutorial.aae32f40"), autoPrep: __i18n_k("ui.newGame.lOCK_LABEL.autoPrep.b506f73a"), color: __i18n_t("ui.newGame.text.4b828e65") };
 
 /** The recommended first game (1.5.0): a big parent, the existing ballpark, a futures year with the guide. */
-const NICKNAMES = [__i18n_k("ui.newGame.nICKNAMES.9a844dcf"), __i18n_k("ui.newGame.nICKNAMES.54445580"), __i18n_k("ui.newGame.nICKNAMES.ebdf4f1b"), __i18n_k("ui.newGame.nICKNAMES.2ac748b1")];
-function recommended(cityId: string, cityName: string, color: string, name: string, short: string, parentName: string): ExpansionSettings {
+export const NICKNAMES = [__i18n_k("ui.newGame.nICKNAMES.9a844dcf"), __i18n_k("ui.newGame.nICKNAMES.54445580"), __i18n_k("ui.newGame.nICKNAMES.ebdf4f1b"), __i18n_k("ui.newGame.nICKNAMES.2ac748b1")];
+export function recommended(cityId: string, cityName: string, color: string, name: string, short: string, parentName: string): ExpansionSettings {
   const nick = NICKNAMES[Math.abs([...cityName].reduce((a, c) => a + c.charCodeAt(0), 0)) % NICKNAMES.length]!;
   return {
     name: name.trim() || `${cityName} ${nick}`,
@@ -50,7 +51,8 @@ function recommended(cityId: string, cityName: string, color: string, name: stri
   };
 }
 
-export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props) {
+/** 2.0.62: the founding form's state and what follows from it, for the legacy page and the new one alike. */
+export function useFoundingForm(initialSeed: string) {
   const dark = useDark();
   // 2.0.42: the scenarios this browser has cleared (clears.ts).
   const [clears] = useState(readClears);
@@ -148,6 +150,17 @@ export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props)
     TAKEN.includes(short.trim()) && __i18n_k("ui.newGame.newGame.problems.45ec712a"),
     !parentName.trim() && __i18n_k("ui.newGame.newGame.problems.628ec02e"),
   ].filter(Boolean) as string[];
+
+  return { dark, clears, name, setName, short, setShort, color, setColor, cityId, setCityId, parentType, setParentType, parentName, setParentName, stadium, setStadium, promotion, setPromotion, guide, setGuide, autoPrep, setAutoPrep, difficulty, setDifficulty, firing, setFiring, board, setBoard, seed, setSeed, twelve, setTwelve, scenario, def, locked, pickScenario, city, cities, shared, y0, twelveFrom, twelveSetting, settings, b, stars, problems };
+}
+
+export type FoundingForm = ReturnType<typeof useFoundingForm>;
+
+export function NewGame({ seed: initialSeed, busy, onFound, onSpectate }: Props) {
+  const ui = useUi();
+  const form = useFoundingForm(initialSeed);
+  if (ui === 'new') return <NextNewGame f={form} initialSeed={initialSeed} busy={busy} onFound={onFound} onSpectate={onSpectate} />;
+  const { dark, clears, name, setName, short, setShort, color, setColor, cityId, setCityId, parentType, setParentType, parentName, setParentName, stadium, setStadium, promotion, setPromotion, guide, setGuide, autoPrep, setAutoPrep, difficulty, setDifficulty, firing, setFiring, board, setBoard, seed, setSeed, twelve, setTwelve, scenario, def, locked, pickScenario, city, cities, shared, y0, twelveFrom, twelveSetting, settings, b, stars, problems } = form;
 
   return (
     <main class="page new-game" style={accentStyle(color, dark)}>

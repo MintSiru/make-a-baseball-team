@@ -320,11 +320,19 @@ thead th {
   gap: 8px 12px;
   align-items: center;
 }
+.file-button {
+  position: relative;
+}
+/* 2.0.62: kept inside its button and out of the pointer's way (it sat over the next link in a narrow foot — the
+   label opens it all the same). */
 .file-button input {
   position: absolute;
+  left: 0;
+  top: 0;
   width: 1px;
   height: 1px;
   opacity: 0;
+  pointer-events: none;
 }
 .file-button:focus-within {
   outline: 2px solid var(--accent);

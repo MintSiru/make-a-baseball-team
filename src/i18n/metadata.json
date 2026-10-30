@@ -90424,5 +90424,1036 @@
     "line": 587,
     "params": {},
     "locations": []
+  },
+  "ui.next.shell.text.dfc7fe9a": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 36,
+    "params": {
+      "year": {
+        "expression": "s.offseason?.year ?? s.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.shell.text.c2bc62c6": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 37,
+    "params": {
+      "year": {
+        "expression": "s.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.shell.text.c80e0ef9": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 38,
+    "params": {
+      "year": {
+        "expression": "s.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.shell.text.ce112162": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 57,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.shell.text.1c6906ad": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 60,
+    "params": {
+      "year": {
+        "expression": "league.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.shell.text.48bea069": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 60,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.shell.text.b372d067": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 64,
+    "params": {
+      "rank": {
+        "expression": "row.rank"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.shell.text.a0f7a345": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 73,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.shell.text.3b6ea03a": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.shell.text.75badfb0": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 88,
+    "params": {
+      "year": {
+        "expression": "payYear"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.shell.text.4f7776dd": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 97,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.shell.text.7d657386": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 101,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.shell.text.3389bc8a": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 104,
+    "params": {
+      "hurt": {
+        "expression": "hurt"
+      },
+      "knocks": {
+        "expression": "knocks"
+      },
+      "soldiers": {
+        "expression": "soldiers"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.shell.text.6d3582f1": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 132,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.shell.text.076925c5": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 137,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.shell.text.0a11a9df": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 163,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.shell.text.ae4ffb4c": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 166,
+    "params": {
+      "opp": {
+        "expression": "opp?.name ?? ''"
+      },
+      "park": {
+        "expression": "park"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.shell.text.6e6a8b88": {
+    "source": "src/ui/next/Shell.tsx",
+    "line": 166,
+    "params": {
+      "opp": {
+        "expression": "opp?.name ?? ''"
+      },
+      "park": {
+        "expression": "park"
+      }
+    },
+    "locations": []
+  },
+  "ui.app.text.5d250044": {
+    "source": "src/ui/App.tsx",
+    "line": 101,
+    "params": {
+      "year": {
+        "expression": "s.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.app.text.c80e0ef9": {
+    "source": "src/ui/App.tsx",
+    "line": 102,
+    "params": {
+      "year": {
+        "expression": "s.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.app.text.6bc69497": {
+    "source": "src/ui/App.tsx",
+    "line": 653,
+    "params": {},
+    "locations": []
+  },
+  "ui.app.text.bb75fb91": {
+    "source": "src/ui/App.tsx",
+    "line": 664,
+    "params": {},
+    "locations": []
+  },
+  "ui.app.text.e8212e6f": {
+    "source": "src/ui/App.tsx",
+    "line": 667,
+    "params": {},
+    "locations": []
+  },
+  "ui.app.text.097918dc": {
+    "source": "src/ui/App.tsx",
+    "line": 668,
+    "params": {},
+    "locations": []
+  },
+  "ui.app.text.0481a899": {
+    "source": "src/ui/App.tsx",
+    "line": 669,
+    "params": {},
+    "locations": []
+  },
+  "ui.app.text.74ed244c": {
+    "source": "src/ui/App.tsx",
+    "line": 670,
+    "params": {},
+    "locations": []
+  },
+  "ui.app.text.16634b25": {
+    "source": "src/ui/App.tsx",
+    "line": 670,
+    "params": {},
+    "locations": []
+  },
+  "ui.app.text.5ac2755f": {
+    "source": "src/ui/App.tsx",
+    "line": 671,
+    "params": {},
+    "locations": []
+  },
+  "ui.app.text.253af1e8": {
+    "source": "src/ui/App.tsx",
+    "line": 672,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.3783711a": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 84,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.1df9a9dd": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 85,
+    "params": {
+      "n": {
+        "expression": "registeredIds(league, u.teamId).length"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.7a8ab6cf": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 86,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.52382940": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 88,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.768dcd09": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 389,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.f2cc8c58": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 390,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.ad440047": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 391,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.a8158de3": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 392,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.91da4fc7": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 393,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.9069542f": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 394,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.2364e55b": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 395,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.c6fa9dc9": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 396,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.e9f1dfc7": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 397,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.48881d1f": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 407,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.caf016a4": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 492,
+    "params": {
+      "n": {
+        "expression": "last.length"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.2945a8dc": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 492,
+    "params": {
+      "n": {
+        "expression": "last.length"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.44b431c7": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 493,
+    "params": {
+      "w": {
+        "expression": "wins"
+      },
+      "l": {
+        "expression": "losses"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.5caa75a8": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 511,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.0e33b0bd": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 512,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.c2998c5f": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 513,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.d15876f1": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 533,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.1c6906ad": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 533,
+    "params": {
+      "year": {
+        "expression": "league.year"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.ee19b92b": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 534,
+    "params": {
+      "n": {
+        "expression": "row.w + row.l + row.t"
+      }
+    },
+    "locations": []
+  },
+  "ui.myClub.text.58756112": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 541,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.d8b25888": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 542,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.82cc030f": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 543,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.fa5c3a53": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 544,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.ec80856c": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 567,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.285374d7": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 579,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.7bf9b4ee": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 584,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.e66d4eb1": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 584,
+    "params": {
+      "year": {
+        "expression": "fa.year!"
+      }
+    },
+    "locations": []
+  },
+  "ui.displaySettings.text.ad7fb123": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.9f2e2d00": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "ui.displaySettings.text.6533ce37": {
+    "source": "src/ui/DisplaySettings.tsx",
+    "line": 57,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.74ed244c": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.7f7af771": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 206,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.b9b0fb00": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 208,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.f7c86d76": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 209,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.6ff2c5c1": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 210,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.c82827a2": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 211,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.5ba0495f": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 212,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.a45ea58e": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 213,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.b8c2e079": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 214,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.e5c8eb0c": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 215,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.9660dd73": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 216,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.7c0d9f1c": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 223,
+    "params": {
+      "n": {
+        "expression": "i + 1"
+      }
+    },
+    "locations": []
+  },
+  "ui.lineup.text.d2fcd57f": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 253,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.df8372bc": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 259,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.81922a91": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 292,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.0a3d002c": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 293,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.501fb802": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 302,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.8a344893": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 795,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.18f79964": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 796,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.cf7b6b60": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 797,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.5bd804b7": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 798,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.a52b898e": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 79,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.1d4597df": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.098a6d9a": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 85,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.4ca5847f": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 90,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.ee149165": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 92,
+    "params": {
+      "n": {
+        "expression": "goals.length"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.newGame.text.9705e8f9": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 93,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.db98581b": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 97,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.1a9d93ef": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 99,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.4b8b4a20": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 107,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.29397734": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 110,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.2fbea43b": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 142,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.58756112": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 158,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.3417788b": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 161,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.7d2842b0": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 165,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.d12a906a": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 172,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.e9211ac8": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 179,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.7f999d65": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 183,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.2d71cd31": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 186,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.5781354d": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 196,
+    "params": {
+      "n": {
+        "expression": "Math.round(c.population / 10000)"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.newGame.text.a566fa28": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 198,
+    "params": {
+      "n": {
+        "expression": "(c.stadium.seats / 1000).toFixed(1)"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.newGame.text.ee33dfee": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 199,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.cf76b767": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 207,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.94b7652e": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 213,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.cbf383ec": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 217,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.3397eb88": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 221,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.48bea069": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 234,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.15d3e44b": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 238,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.51439b09": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 241,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.f3290301": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 244,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.51f97e03": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 249,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.e8ee93fa": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 259,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.5715c57d": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 269,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.40cf6b1c": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 272,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.27d292e8": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 276,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.4fcb5176": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 281,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.c7c703d5": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 297,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.5836da78": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 300,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.03f83ca5": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 304,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.94277611": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 307,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.c8ed7f00": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 314,
+    "params": {
+      "year": {
+        "expression": "y0"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.newGame.text.6c263851": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 320,
+    "params": {
+      "n": {
+        "expression": "city.stadium.seats.toLocaleString('ko-KR')"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.newGame.text.8ba1ac8b": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 331,
+    "params": {
+      "year": {
+        "expression": "y0 + 2"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.newGame.text.d27597e6": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 331,
+    "params": {
+      "year": {
+        "expression": "y0 + 1"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.newGame.text.dcac98c1": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 344,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.d657270f": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 345,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.d58fa73a": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 345,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.79595746": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 350,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.7b2c5aa8": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 354,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.63088f52": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 358,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.c6c82fe6": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 362,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.bf23ebc0": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 366,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.ed2c09d1": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 371,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.newGame.text.307b2df9": {
+    "source": "src/ui/next/NewGame.tsx",
+    "line": 379,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.f114fb01": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 513,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.47c5b6b5": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 513,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.0dae761e": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 513,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.f3aab784": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 648,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.ca15ef0b": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 729,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.0f9ec16b": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1054,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.a7aed900": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1058,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.eba85a19": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 837,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.05a8e0a7": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 852,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.fd9c7315": {
+    "source": "src/ui/Office.tsx",
+    "line": 228,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.ec72246f": {
+    "source": "src/ui/Office.tsx",
+    "line": 249,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.d5b652b5": {
+    "source": "src/ui/Office.tsx",
+    "line": 249,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.9f33b587": {
+    "source": "src/ui/Training.tsx",
+    "line": 97,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.bc373d86": {
+    "source": "src/ui/Training.tsx",
+    "line": 98,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.9b51eb45": {
+    "source": "src/ui/Market.tsx",
+    "line": 100,
+    "params": {},
+    "locations": []
   }
 }

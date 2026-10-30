@@ -6,6 +6,7 @@ import { App } from './ui/App';
 import { applyDisplay, loadDisplay } from './ui/display';
 import { Guard } from './ui/Recovery';
 import './ui/styles.css';
+import './ui/next.css';
 
 applyDisplay(loadDisplay());
 applyLocale(storedLocale(), false);

@@ -7,11 +7,14 @@ import { payrollSeason } from '../league/payroll';
 import type { LeagueState } from '../league/state';
 import { PARENT } from '../league/tuning';
 import { money } from './format';
+import { useUi } from './useDisplay';
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 
 export function BudgetAsk({ league, onAct, why = false }: { league: LeagueState; onAct?: (a: Action) => void; why?: boolean }) {
   const u = league.user;
+  // 2.0.62 (새 UI): the ask's terms on the buttons' hover, not in a line beside them.
+  const next = useUi() === 'new';
   if (!u) return null;
   const season = payrollSeason(league);
   const asked = u.budgetAsks?.find((a) => a.season === season);
@@ -29,11 +32,11 @@ export function BudgetAsk({ league, onAct, why = false }: { league: LeagueState;
         <p class="inline-form small">
           <span>{__i18n_t("ui.budgetAsk.text.542db609", { season })}</span>
           {BUDGET_ASK.shares.map((share) => (
-            <button key={share} type="button" onClick={() => onAct({ kind: 'askBudget', share })}>
+            <button key={share} type="button" title={next ? __i18n_t("ui.budgetAsk.text.364eb5ce") : undefined} onClick={() => onAct({ kind: 'askBudget', share })}>
               {__i18n_t("ui.budgetAsk.text.88f4ab2c", { amount: money(askedAmount(league, share)), pct: pct(askBudgetChance(league, share)) })}
             </button>
           ))}
-          <span class="muted">{__i18n_t("ui.budgetAsk.text.364eb5ce")}</span>
+          {!next && <span class="muted">{__i18n_t("ui.budgetAsk.text.364eb5ce")}</span>}
         </p>
       ) : null}
       {why && w && (
