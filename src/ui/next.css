@@ -1701,3 +1701,99 @@
 :root[data-ui='new'] .savant-grid .sheet-box svg {
   max-width: 100%;
 }
+
+/* ── Settings: each setting a card — its name and ⓘ on the left, its switch on the right; two by two ── */
+:root[data-ui='new'] .opt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 12px;
+  align-items: start;
+  margin: 10px 0 14px;
+}
+:root[data-ui='new'] .opt-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  padding: 12px 14px;
+  min-width: 0;
+}
+:root[data-ui='new'] .opt-card.opt-wide {
+  grid-column: 1 / -1;
+  display: block;
+}
+:root[data-ui='new'] .opt-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+:root[data-ui='new'] .opt-head h3 {
+  margin: 0;
+  font-size: 14.5px;
+}
+:root[data-ui='new'] .opt-card.opt-wide .opt-head {
+  margin-bottom: 8px;
+}
+:root[data-ui='new'] .opt-body {
+  min-width: 0;
+}
+:root[data-ui='new'] .opt-body > .segmented {
+  margin: 0;
+}
+
+/* ── The FA market: the list across the page, a talk as a window over it ── */
+:root[data-ui='new'] .fa-grid.fa-wide {
+  grid-template-columns: minmax(0, 1fr);
+}
+:root[data-ui='new'] .fa-dialog {
+  width: min(820px, 100%);
+  border: 2px solid var(--ink);
+}
+:root[data-ui='new'] .fa-dialog .fa-talk {
+  position: static;
+  max-height: none;
+  border: 0;
+  padding: 0;
+}
+:root[data-ui='new'] .fa-dialog .fa-talk > h3 {
+  padding-right: 64px;
+}
+
+/* ── Help: a part from the bar or a word looked up, the entries as cards ── */
+:root[data-ui='new'] .next-manual .page-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--ink);
+}
+:root[data-ui='new'] .manual-search {
+  display: block;
+  width: min(420px, 100%);
+  margin: 12px 0;
+}
+:root[data-ui='new'] .manual-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+:root[data-ui='new'] .manual-card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  padding: 10px 14px;
+  min-width: 0;
+}
+:root[data-ui='new'] .manual-card h3 {
+  margin: 0 0 4px;
+  font-size: 14.5px;
+}
+:root[data-ui='new'] .manual-card p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-2);
+}

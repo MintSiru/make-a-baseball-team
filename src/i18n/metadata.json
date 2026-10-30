@@ -91455,5 +91455,23 @@
     "line": 100,
     "params": {},
     "locations": []
+  },
+  "ui.manual.text.934dd25e": {
+    "source": "src/ui/Manual.tsx",
+    "line": 222,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.de5e483c": {
+    "source": "src/ui/Manual.tsx",
+    "line": 231,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.060a2d18": {
+    "source": "src/ui/Manual.tsx",
+    "line": 242,
+    "params": {},
+    "locations": []
   }
 }

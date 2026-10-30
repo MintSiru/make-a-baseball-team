@@ -2,7 +2,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 /* The free-agent market (V0.8): the winter's free agents, what each wants, and talks with one at a time. The
    club makes or changes offers (bonus, salary, incentives, a period option, promises), then lets the days run:
    to the next round, until one of its talks has news, or to the end of the market. */
-import { useEffect, useMemo, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { Action } from '../league/actions';
 import { askOwnerChance, askOwnerProblem } from '../league/ownerask';
 import { BudgetAsk } from './BudgetAsk';
@@ -41,6 +41,9 @@ import { salaryCapOn } from '../league/features';
 import { money, moneyShort, parseEok, shownLevel } from './format';
 import { gradeClass, shownFuture } from './grades';
 import { positionKey, useSort } from './sort';
+import type { ComponentChildren } from 'preact';
+import { useFocusTrap } from './modal';
+import { useUi } from './useDisplay';
 
 interface Props {
   league: LeagueState;
@@ -113,11 +116,13 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
   const talks = m.order.map((id) => m.talks[id]!);
   const [drafts, setDrafts] = useState<Record<PlayerId, FaOffer | null>>({});
   const firstOpen = talks.find((t) => t.from === me && !t.signed && !t.gone) ?? talks.find((t) => !t.signed && !t.gone) ?? talks[0];
-  const [sel, setSelected] = useState<PlayerId | null>(firstOpen?.id ?? null);
+  // 2.0.62 (새 UI): the list across the page, a talk opened over it as a window when a player is picked.
+  const newUi = useUi() === 'new';
+  const [sel, setSelected] = useState<PlayerId | null>(newUi ? null : (firstOpen?.id ?? null));
   // On a narrow screen the talks sit under the list: bring them into view.
   const setSel = (id: PlayerId) => {
     setSelected(id);
-    if (typeof window !== 'undefined' && window.innerWidth < 1100) setTimeout(() => document.querySelector('.fa-talk')?.scrollIntoView({ block: 'start' }), 0);
+    if (!newUi && typeof window !== 'undefined' && window.innerWidth < 1100) setTimeout(() => document.querySelector('.fa-talk')?.scrollIntoView({ block: 'start' }), 0);
   };
   const [filter, setFilter] = useState<'all' | 'open' | 'mine'>('all');
 
@@ -160,6 +165,22 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
   });
   const selected = sel ? m.talks[sel] : undefined;
 
+  const talk = selected && (
+    <TalkPanel
+      key={selected.id}
+      league={league}
+      m={m}
+      t={selected}
+      next={next}
+      offer={current(selected.id)}
+      offers={mine}
+      check={(o) => checkDecision(league, { kind: 'faRound', offers: { ...drafts, [selected.id]: o }, run: 'round' })}
+      setOffer={(o) => setDrafts((prev) => ({ ...prev, [selected.id]: o }))}
+      onPlayer={onPlayer}
+      onAct={onAct}
+      changed={selected.id in drafts}
+    />
+  );
   return (
     <section class="decision fa-market" aria-labelledby="decision-title">
       <h2 id="decision-title">{__i18n_rich("ui.faMarket.faMarket.96e4e087", { number: Number(d.date.slice(5, 7)), number2: Number(d.date.slice(8)), value: <span class="muted small">{__i18n_t("ui.faMarket.faMarket.8832706d", { value: m.round + 1, length: FA.rounds.length })}</span> })}</h2>
@@ -198,7 +219,7 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
         </>
       ))}
 
-      <div class="fa-grid">
+      <div class={newUi ? 'fa-grid fa-wide' : 'fa-grid'}>
         <div class="fa-list">
           <div class="segmented" role="group" aria-label={__i18n_t("ui.faMarket.faMarket.0b782028")}>
             {__i18n_display((
@@ -283,22 +304,7 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
             </table>
           </div>
         </div>
-        {__i18n_display(selected && (
-          <TalkPanel
-            key={selected.id}
-            league={league}
-            m={m}
-            t={selected}
-            next={next}
-            offer={current(selected.id)}
-            offers={mine}
-            check={(o) => checkDecision(league, { kind: 'faRound', offers: { ...drafts, [selected.id]: o }, run: 'round' })}
-            setOffer={(o) => setDrafts((prev) => ({ ...prev, [selected.id]: o }))}
-            onPlayer={onPlayer}
-            onAct={onAct}
-            changed={selected.id in drafts}
-          />
-        ))}
+        {selected && (newUi ? <TalkWindow name={league.players[selected.id]!.name} onClose={() => setSelected(null)}>{talk}</TalkWindow> : talk)}
       </div>
 
       <h3>{__i18n_t("ui.faMarket.faMarket.9365d125")}</h3>
@@ -593,5 +599,21 @@ function TalkPanel({
       ))}
       {__i18n_display(open && t.from === me && !offer && <p class="small muted">{__i18n_t("ui.faMarket.talkPanel.28dd6ea6")}</p>)}
     </aside>
+  );
+}
+
+/** 2.0.62 (새 UI): a talk as a window over the market list (the user's mockups) — the list keeps the page. */
+function TalkWindow({ name, onClose, children }: { name: string; onClose: () => void; children: ComponentChildren }) {
+  const box = useRef<HTMLDivElement>(null);
+  useFocusTrap(box, onClose);
+  return (
+    <div class="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div class="dialog fa-dialog" role="dialog" aria-modal="true" aria-label={name} ref={box}>
+        <button type="button" class="close" onClick={onClose} aria-label={__i18n_t("ui.playerPanel.playerPanel.94b7dba1")}>
+          {__i18n_t("ui.playerPanel.playerPanel.94b7dba1")}
+        </button>
+        {children}
+      </div>
+    </div>
   );
 }

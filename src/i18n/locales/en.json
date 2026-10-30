@@ -10132,5 +10132,8 @@
   "ui.office.text.d5b652b5": "Support limit",
   "ui.training.text.9f33b587": "Off-season trips",
   "ui.training.text.bc373d86": "In-season trips",
-  "ui.market.text.9b51eb45": "Released players' remaining pay"
+  "ui.market.text.9b51eb45": "Released players' remaining pay",
+  "ui.manual.text.934dd25e": "All",
+  "ui.manual.text.de5e483c": "Find a term or rule",
+  "ui.manual.text.060a2d18": "Nothing matches."
 }

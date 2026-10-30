@@ -1,4 +1,4 @@
-import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
+import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 /* The help tab (V0.15): the game's manual — how a year goes, the screens, the words and rules a general
    manager meets, what each decision is about, and common questions. Rule numbers come from the rule book
    in code (rules/kbo2026.ts), so the help cannot drift from what the game does. */
@@ -10,6 +10,9 @@ import { GROWTH_LABELS, GROWTH_NOTES, GROWTH_ORDER } from '../league/traits';
 import { ALL_STAR, COMBINE, POSTSEASON_GATE } from '../league/tuning';
 import { SWEEP } from '../league/sweep';
 import { ENTRY } from '../league/postentry';
+import { useState } from 'preact/hooks';
+import { Help } from './Help';
+import { useUi } from './useDisplay';
 
 const K = KBO_2026;
 const eok = (manwon: number) => __i18n_k("ui.manual.eok.db0fc332", { value: Math.round(manwon / 1000) / 10 });
@@ -108,6 +111,7 @@ const FAQ: [string, string][] = [
 ];
 
 export function Manual() {
+  if (useUi() === 'new') return <NextManual />;
   return (
     <section class="settings-page manual" aria-labelledby="manual-title">
       <div class="page-head">
@@ -175,6 +179,68 @@ export function Manual() {
           </details>
         )))}
       </section>
+    </section>
+  );
+}
+
+type Part = 'year' | 'screens' | 'words' | 'decisions' | 'faq';
+
+/** 2.0.62 (새 UI, the user's mockups): the manual as cards — a part picked from the bar, or a word looked up across
+    all of it; no headings to scroll past. */
+function NextManual() {
+  const [part, setPart] = useState<Part | 'all'>('all');
+  const [query, setQuery] = useState('');
+  const parts: [Part, string][] = [
+    ['year', __i18n_t("ui.manual.manual.a1ec70e8")],
+    ['screens', __i18n_t("ui.manual.manual.43c786f1")],
+    ['words', __i18n_t("ui.manual.manual.e17dd9c5")],
+    ['decisions', __i18n_t("ui.manual.manual.63caaf3a")],
+    ['faq', __i18n_t("ui.manual.manual.ae2ce921")],
+  ];
+  const text = (x: unknown) => __i18n_displayText(x as string);
+  const entries: { part: Part; title: string; body: string }[] = [
+    ...YEAR.map(([k, v]) => ({ part: 'year' as const, title: text(k), body: text(v) })),
+    ...SCREENS.map(([k, v]) => ({ part: 'screens' as const, title: text(k), body: text(v) })),
+    ...GLOSSARY.map(([k, v]) => ({ part: 'words' as const, title: text(k), body: text(v) })),
+    ...decisionTips().map(([, tip]) => ({ part: 'decisions' as const, title: text(tip.title), body: tip.body.map(text).join(' ') })),
+    ...FAQ.map(([q, a]) => ({ part: 'faq' as const, title: text(q), body: text(a) })),
+  ];
+  const q = query.trim().toLowerCase();
+  const shown = entries.filter((e) => (part === 'all' || e.part === part) && (!q || `${e.title} ${e.body}`.toLowerCase().includes(q)));
+  return (
+    <section class="settings-page manual next-manual" aria-labelledby="manual-title">
+      <div class="page-head">
+        <div class="page-title-row">
+          <h2 id="manual-title">{__i18n_t("ui.manual.manual.e2654ac5")}</h2>
+          <Help>
+            <p>{__i18n_t("ui.manual.manual.b2c95d12")}</p>
+            <p>{__i18n_t("ui.manual.manual.7888bd43")}</p>
+          </Help>
+        </div>
+        <div class="segmented" role="group" aria-label={__i18n_t("ui.manual.manual.e2654ac5")}>
+          <button type="button" aria-pressed={part === 'all'} onClick={() => setPart('all')}>
+            {__i18n_t("ui.manual.text.934dd25e")}
+          </button>
+          {parts.map(([k, label]) => (
+            <button key={k} type="button" aria-pressed={part === k} onClick={() => setPart(k)}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <input type="search" class="manual-search" value={query} placeholder={__i18n_t("ui.manual.text.de5e483c")} aria-label={__i18n_t("ui.manual.text.de5e483c")} onInput={(e) => setQuery((e.currentTarget as HTMLInputElement).value)} />
+      {shown.length ? (
+        <div class="manual-cards">
+          {shown.map((e) => (
+            <article key={`${e.part}-${e.title}`} class="manual-card">
+              <h3>{e.title}</h3>
+              <p>{e.body}</p>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p class="muted">{__i18n_t("ui.manual.text.060a2d18")}</p>
+      )}
     </section>
   );
 }

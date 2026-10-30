@@ -861,7 +861,16 @@ try {
     for (const name of ['설정', '도움말']) {
       await page.locator('.sidebar-foot').getByRole('button', { name, exact: true }).click();
       await noOverflow(page, `new ${width} ${name}`);
+      await axeCheck(page, `new ${width} ${name}`);
     }
+    // The help as cards: a word looked up narrows them; the settings as cards too.
+    const allCards = await page.locator('.manual-card').count();
+    await page.getByRole('searchbox', { name: '용어·규칙 찾기' }).fill('샐러리캡');
+    const found = await page.locator('.manual-card').count();
+    check(found > 0 && found < allCards, `new ${width}: the help finds a word (${found} of ${allCards})`);
+    await page.getByRole('searchbox', { name: '용어·규칙 찾기' }).fill('');
+    await page.locator('.sidebar-foot').getByRole('button', { name: '설정', exact: true }).click();
+    check((await page.locator('.opt-card').count()) >= 8, `new ${width}: the display settings as cards`);
     await page.locator('nav.tabs').getByRole('button', { name: '우리 구단', exact: true }).click();
     const views = page.getByRole('group', { name: '우리 구단 보기' });
     for (const name of ['선수단', '라인업 · 로테이션', '훈련', '프런트 · 재정', '개요 · 브리핑']) {
