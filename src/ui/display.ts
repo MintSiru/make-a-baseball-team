@@ -34,7 +34,11 @@ export interface DisplayPrefs {
       inflation after 2026 (percent). */
   money: 'real' | 'nominal';
   inflation: number;
+  /** 2.0.62 (the user's request): the redesigned screens, or the ones before them (레거시 UI). */
+  ui: UiMode;
 }
+
+export type UiMode = 'new' | 'legacy';
 
 export type Theme = 'system' | 'light' | 'dark';
 export type Scale = 'small' | 'normal' | 'large';
@@ -51,7 +55,7 @@ export const PRESETS: Record<Exclude<BarPreset, 'custom'>, { label: string; note
   mono: { label: __i18n_k("ui.display.mono.label.d1e6f293"), note: __i18n_k("ui.display.mono.note.c6e34ea1"), colors: ['var(--rule)', 'var(--ink-2)', 'var(--ink-2)', 'var(--ink)', 'var(--ink)'] },
 };
 
-export const DEFAULT_PREFS: DisplayPrefs = { bars: 'club', custom: [...PRESETS.scale.colors!] as Colors, tables: false, density: 'compact', theme: 'system', scale: 'normal', hideScores: false, futureView: 'season', currency: 'krw', money: 'real', inflation: 2.5 };
+export const DEFAULT_PREFS: DisplayPrefs = { bars: 'club', custom: [...PRESETS.scale.colors!] as Colors, tables: false, density: 'compact', theme: 'system', scale: 'normal', hideScores: false, futureView: 'season', currency: 'krw', money: 'real', inflation: 2.5, ui: 'new' };
 
 const HEX = /^#[0-9a-f]{6}$/i;
 
@@ -67,7 +71,7 @@ export function parseDisplay(raw: string | null): DisplayPrefs {
   const custom = DEFAULT_PREFS.custom.map((d, i) => (Array.isArray(v.custom) && typeof v.custom[i] === 'string' && HEX.test(v.custom[i]) ? v.custom[i] : d)) as Colors;
   const theme: Theme = v.theme === 'light' || v.theme === 'dark' ? v.theme : 'system';
   const scale: Scale = v.scale === 'small' || v.scale === 'large' ? v.scale : 'normal';
-  return { bars, custom, tables: v.tables === true, density: v.density === 'comfortable' ? 'comfortable' : 'compact', theme, scale, hideScores: v.hideScores === true, futureView: v.futureView === 'draft' ? 'draft' : 'season', currency: v.currency === 'usd' || v.currency === 'jpy' ? v.currency : 'krw', money: v.money === 'nominal' ? 'nominal' : 'real', inflation: typeof v.inflation === 'number' && (INFLATION_RATES as readonly number[]).includes(v.inflation) ? v.inflation : DEFAULT_PREFS.inflation };
+  return { bars, custom, tables: v.tables === true, density: v.density === 'comfortable' ? 'comfortable' : 'compact', theme, scale, hideScores: v.hideScores === true, futureView: v.futureView === 'draft' ? 'draft' : 'season', currency: v.currency === 'usd' || v.currency === 'jpy' ? v.currency : 'krw', money: v.money === 'nominal' ? 'nominal' : 'real', inflation: typeof v.inflation === 'number' && (INFLATION_RATES as readonly number[]).includes(v.inflation) ? v.inflation : DEFAULT_PREFS.inflation, ui: v.ui === 'legacy' ? 'legacy' : 'new' };
 }
 
 /** The five tier colours to set, or null for the stylesheet's own. */
@@ -106,6 +110,7 @@ export function applyDisplay(p: DisplayPrefs, root: HTMLElement = document.docum
   else root.dataset.theme = p.theme;
   if (p.scale === 'normal') delete root.dataset.scale;
   else root.dataset.scale = p.scale;
+  root.dataset.ui = p.ui;
 }
 
 /** Whether the page shows dark now: the player's pick, else the system's. */

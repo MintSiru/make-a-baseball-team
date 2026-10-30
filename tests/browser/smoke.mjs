@@ -205,10 +205,22 @@ async function playSeason(page, log = []) {
 }
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_BIN || undefined });
+/** 2.0.62: the run walks the legacy screens (its checks were written for them) unless the page was switched; the new
+    screens get their own section on the same league (7b). */
+const LEGACY_FIRST = () => {
+  try {
+    const key = 'kbo-expansion-display';
+    const v = JSON.parse(localStorage.getItem(key) || '{}');
+    if (!v.ui) localStorage.setItem(key, JSON.stringify({ ...v, ui: 'legacy' }));
+  } catch {
+    // No storage: the page's own default.
+  }
+};
 /** 2.0.59: the main page, for what it showed when a step failed (the run's random league is gone with it). */
 let main = null;
 try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  await context.addInitScript(LEGACY_FIRST);
   const page = await context.newPage();
   main = page;
   const errors = [];
@@ -219,6 +231,7 @@ try {
   // the page on "불러오는 중"), and a seed changed while the default league is being built is the one that opens.
   {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    await ctx.addInitScript(LEGACY_FIRST);
     const p = await ctx.newPage();
     p.on('pageerror', (e) => (errors.push(e.message), console.log('page error:', e.message)));
     await p.goto(url);
@@ -827,6 +840,45 @@ try {
     await page.screenshot({ path: join(shots, `${width}x${height}.png`) });
     console.log(`ok ${width}x${height}`);
   }
+  // 7b. 2.0.62: the new screens (새 UI) on the same league — every menu entry and our club's views fit and pass the
+  // accessibility checks, and the legacy screens come back from the settings.
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.locator('nav.tabs').getByRole('button', { name: '설정', exact: true }).click();
+  await page.getByRole('group', { name: '화면 디자인' }).getByRole('button', { name: '새 UI', exact: true }).click();
+  check((await page.evaluate(() => document.documentElement.dataset.ui)) === 'new', 'the settings switch to the new screens');
+  check(((await page.locator('.hud-card').textContent()) ?? '').includes('부상'), 'the new sidebar sums up the club');
+  const NEW_MENU = ['우리 구단', '이적시장', '드래프트 후보', '경기 · 일정', '순위표', '리그 기록실', '통산 기록', '구단 이야기', '타 구단 보기', '역대 기록'];
+  for (const [width, height] of [
+    [1440, 1000],
+    [390, 844],
+  ]) {
+    await page.setViewportSize({ width, height });
+    for (const name of NEW_MENU) {
+      await page.locator('nav.tabs').getByRole('button', { name, exact: true }).click();
+      await noOverflow(page, `new ${width} ${name}`);
+      await axeCheck(page, `new ${width} ${name}`);
+    }
+    for (const name of ['설정', '도움말']) {
+      await page.locator('.sidebar-foot').getByRole('button', { name, exact: true }).click();
+      await noOverflow(page, `new ${width} ${name}`);
+    }
+    await page.locator('nav.tabs').getByRole('button', { name: '우리 구단', exact: true }).click();
+    const views = page.getByRole('group', { name: '우리 구단 보기' });
+    for (const name of ['선수단', '라인업 · 로테이션', '훈련', '프런트 · 재정', '개요 · 브리핑']) {
+      await views.getByRole('button', { name }).first().click();
+      await noOverflow(page, `new ${width} club ${name}`);
+      if (name === '프런트 · 재정') for (const sub of ['연봉표', '계약']) await page.getByRole('group', { name: '프런트 · 재정' }).getByRole('button', { name: sub, exact: true }).click();
+    }
+    check((await page.getByRole('heading', { name: '단장 브리핑' }).count()) === 1, `new ${width}: the overview opens with the briefing`);
+    check((await page.locator('.dash-3 .sheet-box').count()) >= 3, `new ${width}: the overview's three boards`);
+    await page.screenshot({ path: join(shots, `new-${width}.png`) });
+  }
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.locator('.sidebar-foot').getByRole('button', { name: '설정', exact: true }).click();
+  await page.getByRole('group', { name: '화면 디자인' }).getByRole('button', { name: '레거시 UI', exact: true }).click();
+  check((await page.locator('.club-summary').count()) === 1, 'the legacy screens come back from the settings');
+  console.log('ok new screens');
+
   // 0.15: the dark page (the system's, then the player's own pick in the settings) passes the same checks.
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ colorScheme: 'dark' });

@@ -4,7 +4,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 import { ClubRecords } from './ClubRecords';
 import { useEffect, useState } from 'preact/hooks';
 import { accentStyle } from './display';
-import { useDark } from './useDisplay';
+import { useDark, useUi } from './useDisplay';
 import { cityById } from '../club/cities';
 import { PARENT_COMPANY_TYPES } from '../club/types';
 import type { Action } from '../league/actions';
@@ -30,8 +30,9 @@ import { Training } from './Training';
 import { Payroll } from './Payroll';
 import { Contracts } from './Contracts';
 import { Favorites } from './Favorites';
+import { favoritesView } from '../league/favorites';
 import type { NewsItem } from '../league/news';
-import type { BriefGo } from '../league/briefing';
+import { briefing, type BriefGo } from '../league/briefing';
 import { Briefing } from './Briefing';
 
 export type View = 'overview' | 'squad' | 'payroll' | 'contracts' | 'lineup' | 'training' | 'story' | 'records' | 'office';
@@ -48,6 +49,7 @@ export function MyClub({
   onAct,
   onView,
   onGo,
+  go,
   story = {},
 }: {
   league: LeagueState;
@@ -57,15 +59,93 @@ export function MyClub({
   onGo?: (g: BriefGo) => void;
   /** Tells the page which view is open (the tutorial has a lesson for some, V0.16). */
   onView?: (view: View) => void;
+  /** 2.0.62: a view the sidebar asks for (our club's story and its records sit in the menu in the new screens). */
+  go?: { view: string; n: number };
   story?: StoryHooks;
 }) {
   const dark = useDark();
-  const [view, setView] = useState<View>('overview');
+  const ui = useUi();
+  const [view, setView] = useState<View>((go?.n ? go.view : 'overview') as View);
   useEffect(() => onView?.(view), [view]);
+  useEffect(() => {
+    if (go?.n) setView(go.view as View);
+  }, [go?.n]);
   const [msg, setMsg] = useState('');
   const u = league.user!;
   const team = league.teams.find((t) => t.id === u.teamId)!;
   const city = cityById(u.settings.cityId)!;
+  if (ui === 'new')
+    return (
+      <section aria-labelledby="myclub-title" style={accentStyle(team.color, dark)}>
+        <div class="club-head">
+          <h2 id="myclub-title">{view === 'story' ? __i18n_k("ui.myClub.myClub.d77486d9") : view === 'records' ? __i18n_t("ui.myClub.text.74ed244c") : team.name}</h2>
+          <div class="segmented" role="group" aria-label={__i18n_t("ui.myClub.myClub.8cd1adbf")}>
+            {(
+              [
+                ['overview', __i18n_t("ui.myClub.text.3783711a")],
+                ['squad', __i18n_t("ui.myClub.text.1df9a9dd", { n: registeredIds(league, u.teamId).length })],
+                ['lineup', __i18n_t("ui.myClub.text.7a8ab6cf")],
+                ['training', __i18n_k("ui.myClub.myClub.b4927759")],
+                ['office', __i18n_t("ui.myClub.text.52382940")],
+              ] as [View, string][]
+            ).map(([id, label]) => (
+              <button key={id} type="button" aria-pressed={view === id || (id === 'office' && (view === 'payroll' || view === 'contracts'))} onClick={() => setView(id)}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        {u.fired && <p class="notice warn">{__i18n_t("ui.myClub.myClub.667abded", { fired: u.fired })}</p>}
+        {view === 'overview' && (
+          <>
+            <ScenarioCard league={league} />
+            <NextBriefing
+              league={league}
+              onGo={(g) => {
+                if (g.tab === 'club') setView(g.view);
+                else if (g.tab === 'player') onPlayer(g.id);
+                else onGo?.(g);
+              }}
+            />
+            <NextOverview league={league} onPlayer={onPlayer} />
+            {favoritesView(league).length > 0 && <Favorites league={league} onPlayer={onPlayer} onAct={onAct} />}
+          </>
+        )}
+        {view === 'squad' && <Management league={league} onPlayer={onPlayer} onAct={onAct} setMsg={setMsg} />}
+        {(view === 'office' || view === 'payroll' || view === 'contracts') && (
+          <>
+            <div class="segmented sub-seg" role="group" aria-label={__i18n_t("ui.myClub.text.52382940")}>
+              {(
+                [
+                  ['office', __i18n_k("ui.myClub.myClub.6bc69497")],
+                  ['payroll', __i18n_t("ui.myClub.text.5d364b3d")],
+                  ['contracts', __i18n_t("ui.myClub.text.b4116369")],
+                ] as [View, string][]
+              ).map(([id, label]) => (
+                <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            {view === 'office' && <Office league={league} onAct={onAct} setMsg={setMsg} onPlayer={onPlayer} />}
+            {view === 'payroll' && <Payroll league={league} onPlayer={onPlayer} />}
+            {view === 'contracts' && <Contracts league={league} onPlayer={onPlayer} />}
+          </>
+        )}
+        {view === 'lineup' && <Lineup league={league} teamId={u.teamId} onPlayer={onPlayer} onAct={onAct} />}
+        {view === 'training' && <Training league={league} onAct={onAct} onPlayer={onPlayer} />}
+        {view === 'story' && <Story league={league} {...story} />}
+        {view === 'records' && <ClubRecords league={league} teamId={u.teamId} onPlayer={onPlayer} />}
+        {msg && (
+          <p class="toast" role="status">
+            {msg}
+            <button type="button" class="link" onClick={() => setMsg('')} aria-label={__i18n_t("ui.myClub.myClub.94b7dba1")}>
+              ✕
+            </button>
+          </p>
+        )}
+      </section>
+    );
   return (
     <section aria-labelledby="myclub-title" style={accentStyle(team.color, dark)}>
       <div class="page-head">
@@ -299,6 +379,231 @@ function Overview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: st
           ))}
         </section>
       </div>
+    </>
+  );
+}
+
+// ── Overview, new screens (2.0.62, the user's mockups) ─────────────────────────────────────────────
+
+/** A briefing's kind on its stamp. */
+function stampOf(id: string): string {
+  if (id.startsWith('injury-')) return __i18n_t("ui.myClub.text.768dcd09");
+  if (id.startsWith('weak-')) return __i18n_t("ui.myClub.text.f2cc8c58");
+  if (id === 'foreign-open') return __i18n_t("ui.myClub.text.ad440047");
+  if (id === 'payroll-over') return __i18n_t("ui.myClub.text.a8158de3");
+  if (id === 'fund-negative') return __i18n_t("ui.myClub.text.91da4fc7");
+  if (id === 'goal-rank') return __i18n_t("ui.myClub.text.9069542f");
+  if (id === 'deadline') return __i18n_t("ui.myClub.text.2364e55b");
+  if (id.startsWith('ready-')) return __i18n_t("ui.myClub.text.c6fa9dc9");
+  return __i18n_t("ui.myClub.text.e9f1dfc7");
+}
+
+/** The briefing as tickets: what was seen, and the buttons that act on it (what each costs beside it). */
+function NextBriefing({ league, onGo }: { league: LeagueState; onGo: (g: BriefGo) => void }) {
+  const items = briefing(league);
+  return (
+    <section class="brief-section" aria-labelledby="briefing-title">
+      <div class="sec-head">
+        <h3 id="briefing-title">
+          {__i18n_t("ui.myClub.text.48881d1f")} <span class="num">{items.length}</span>
+        </h3>
+      </div>
+      {items.length > 0 && (
+        <div class="brief-grid">
+          {items.map((x) => (
+            <article key={x.id} class={`brief-ticket ${x.tone}`}>
+              <div class="brief-top">
+                <strong>{x.title}</strong>
+                <span class={`stamp ${x.tone}`}>{stampOf(x.id)}</span>
+              </div>
+              <ul class="brief-facts">
+                {x.facts.map((f) => (
+                  <li key={f}>{f}</li>
+                ))}
+              </ul>
+              <div class="brief-foot">
+                {x.options.map((o) => (
+                  <button key={o.label} type="button" class="brief-act" onClick={() => onGo(o.go)}>
+                    {o.label}
+                    {o.note && <em>{o.note}</em>}
+                  </button>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/** The season so far and what comes next, the table, and the club's best and missing — three boards side by side. */
+function NextOverview({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
+  const u = league.user!;
+  const me = u.teamId;
+  const inFirstTeam = league.year >= u.firstTeamYear;
+  const { row, league: side, table } = clubStanding(league, me);
+  const games = (inFirstTeam ? league.scores : (league.futures?.scores ?? [])).filter((g) => g.home === me || g.away === me);
+  const last = games.slice(-8);
+  const result = (g: (typeof games)[number]) => {
+    const [mine, theirs] = g.home === me ? [g.hs, g.as] : [g.as, g.hs];
+    return { mine, theirs, res: mine > theirs ? 'W' : mine < theirs ? 'L' : 'T' };
+  };
+  const wins = last.filter((g) => result(g).res === 'W').length,
+    losses = last.filter((g) => result(g).res === 'L').length;
+  const upcoming = league.phase === 'regular' ? league.schedule.slice(league.next).filter((g) => g.home === me || g.away === me).slice(0, 4) : [];
+  const steps = [
+    { year: startYear(), label: __i18n_k("ui.myClub.steps.label.bc754946") },
+    { year: startYear(), label: __i18n_k("ui.myClub.steps.label.f4703124") },
+    ...(u.firstTeamYear === startYear() + 2 ? [{ year: startYear() + 1, label: __i18n_k("ui.myClub.steps.label.51439b09") }] : []),
+    { year: u.firstTeamYear - 1, label: __i18n_k("ui.myClub.steps.label.0b486138") },
+    { year: u.firstTeamYear, label: __i18n_k("ui.myClub.steps.label.48bea069") },
+  ];
+  const now = league.offseason ? league.offseason.year : league.year;
+  const faSoon = orgIds(league, me)
+    .map((id) => league.players[id]!)
+    .map((p) => ({ p, fa: faOutlook(league, p) }))
+    .filter((x) => x.fa.year !== null && x.fa.year <= now + 1)
+    .sort((a, b) => a.fa.year! - b.fa.year! || b.p.scouting.current - a.p.scouting.current)
+    .slice(0, 4);
+  const out = Object.entries(league.injuries)
+    .filter(([id]) => league.players[id]?.teamId === me)
+    .sort((a, b) => Number(!!a[1].dtd) - Number(!!b[1].dtd) || a[1].until.localeCompare(b[1].until));
+  const soldiers = Object.values(league.players).filter((p) => p.teamId === me && p.status === 'military');
+  const Name = ({ id }: { id: string }) => (
+    <button type="button" class="link" onClick={() => onPlayer(id)}>
+      {league.players[id]?.name}
+    </button>
+  );
+  return (
+    <>
+      {league.year <= u.firstTeamYear && (
+        <ol class="stepper" aria-label={__i18n_t("ui.myClub.overview.f0c2eeda")}>
+          {steps.map((st) => (
+            <li key={st.label} class={league.year > st.year || (league.year === st.year && inFirstTeam) ? 'done' : ''}>
+              <span class="num">{st.year}</span>
+              {st.label}
+            </li>
+          ))}
+        </ol>
+      )}
+      <div class="dash-3">
+        <section class="sheet-box" aria-labelledby="form-title">
+          <h3 id="form-title">
+            <span>{inFirstTeam ? __i18n_t("ui.myClub.text.caf016a4", { n: last.length }) : __i18n_t("ui.myClub.text.2945a8dc", { n: last.length })}</span>
+            {last.length > 0 && <span class="num">{__i18n_t("ui.myClub.text.44b431c7", { w: wins, l: losses })}</span>}
+          </h3>
+          {last.length > 0 && (
+            <div class="form-strip">
+              {last.map((g) => {
+                const r = result(g);
+                return (
+                  <span key={g.id} class={`wl-chip ${r.res}`} title={`${g.date.slice(5).replace('-', '/')} ${g.home === me ? 'vs' : '@'} ${shortName(league, g.home === me ? g.away : g.home)}`}>
+                    {r.res === 'W' ? '승' : r.res === 'L' ? '패' : __i18n_k("ui.myClub.overview.56c5af5b")} {r.mine}:{r.theirs}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+          {upcoming.length > 0 && (
+            <table class="mini-table">
+              <thead>
+                <tr>
+                  <th>{__i18n_t("ui.myClub.text.5caa75a8")}</th>
+                  <th>{__i18n_t("ui.myClub.text.0e33b0bd")}</th>
+                  <th>{__i18n_t("ui.myClub.text.c2998c5f")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {upcoming.map((g, i) => (
+                  <tr key={g.id} class={i === 0 ? 'mine' : undefined}>
+                    <td class="num">{g.date.slice(5).replace('-', '/')}</td>
+                    <td>
+                      {g.home === me ? 'vs' : '@'} {shortName(league, g.home === me ? g.away : g.home)}
+                    </td>
+                    <td>{league.teams.find((t) => t.id === g.home)?.stadium.name}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {!last.length && !upcoming.length && <p class="empty">—</p>}
+        </section>
+        <section class="sheet-box" aria-labelledby="table-title">
+          <h3 id="table-title">
+            <span>{side ? `${side} ${__i18n_t("ui.myClub.text.d15876f1")}` : __i18n_t("ui.myClub.text.1c6906ad", { year: league.year })}</span>
+            {row && <span class="num">{__i18n_t("ui.myClub.text.ee19b92b", { n: row.w + row.l + row.t })}</span>}
+          </h3>
+          {inFirstTeam && table.length ? (
+            <table class="mini-table">
+              <thead>
+                <tr>
+                  <th class="num">#</th>
+                  <th>{__i18n_t("ui.myClub.text.58756112")}</th>
+                  <th class="num">{__i18n_t("ui.myClub.text.d8b25888")}</th>
+                  <th class="num">{__i18n_t("ui.myClub.text.82cc030f")}</th>
+                  <th class="num">{__i18n_t("ui.myClub.text.fa5c3a53")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {table.map((r) => (
+                  <tr key={r.teamId} class={r.teamId === me ? 'mine' : ''}>
+                    <td class="num">{r.rank}</td>
+                    <td>{shortName(league, r.teamId)}</td>
+                    <td class="num">
+                      {r.w}-{r.l}-{r.t}
+                    </td>
+                    <td class="num">{rates.fmt3(r.pct)}</td>
+                    <td class="num">{r.gb ? r.gb.toFixed(1) : '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p class="empty">{u.firstTeamYear}</p>
+          )}
+        </section>
+        <section class="sheet-box" aria-labelledby="leaders-title">
+          <h3 id="leaders-title">
+            <span>{__i18n_t("ui.myClub.text.ec80856c")}</span>
+          </h3>
+          <TeamLeaders league={league} onPlayer={onPlayer} />
+          {(out.length > 0 || soldiers.length > 0 || faSoon.length > 0) && (
+            <ul class="plain out-list">
+              {out.map(([id, i]) => (
+                <li key={id}>
+                  <span class={`tag${i.dtd ? '' : ' warn'}`}>{i.dtd ? __i18n_k("ui.myClub.absences.7d657386") : i.onList ? __i18n_k("ui.myClub.absences.12d2111d") : __i18n_k("ui.myClub.absences.3a5f44c3")}</span> <Name id={id} /> <span class="muted small">{injuryNote(i)}</span>
+                </li>
+              ))}
+              {soldiers.length > 0 && (
+                <li>
+                  <span class="tag">{__i18n_t("ui.myClub.text.285374d7")}</span> {soldiers.map((p) => p.name).join(', ')}
+                </li>
+              )}
+              {faSoon.map(({ p, fa }) => (
+                <li key={p.id}>
+                  <span class={`tag${fa.year === now ? ' cap' : ''}`}>{fa.year === now ? __i18n_t("ui.myClub.text.7bf9b4ee") : __i18n_t("ui.myClub.text.e66d4eb1", { year: fa.year! })}</span> <Name id={p.id} /> <span class="muted small">{p.scouting.current}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+      {u.log && u.log.length > 0 && (
+        <details class="sheet-box club-log-box">
+          <summary>{__i18n_t("ui.myClub.overview.433c886b")}</summary>
+          <ul class="club-log">
+            {[...u.log]
+              .reverse()
+              .slice(0, 30)
+              .map((l, i) => (
+                <li key={i}>
+                  <span class="num muted">{l.year}</span> {l.text}
+                </li>
+              ))}
+          </ul>
+        </details>
+      )}
     </>
   );
 }
