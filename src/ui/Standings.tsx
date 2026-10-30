@@ -10,6 +10,14 @@ import { PostseasonBracket } from './Bracket';
 import { HeadToHeadTable } from './Savant';
 import { headToHead, headToHeadAll } from '../league/matchups';
 import { useState } from 'preact/hooks';
+import type { ComponentChildren } from 'preact';
+import { Help } from './Help';
+import { useUi } from './useDisplay';
+
+/** 2.0.62 (새 UI): a note on how the table is kept, behind an ⓘ; the legacy page keeps it in a line under it. */
+function Note({ children, cls = 'muted small' }: { children: ComponentChildren; cls?: string }) {
+  return useUi() === 'new' ? <Help>{children}</Help> : <p class={cls}>{children}</p>;
+}
 
 type Row = ReturnType<typeof standingsView>[number];
 
@@ -36,9 +44,21 @@ export function Standings({ league, onTeam, onBox, onAct }: { league: LeagueStat
   const series = seasonSeries(league);
   // 2.0.43: our former club when we took the twelfth club over (twelve.ts rivalId).
   const rival = league.twelve && twelveClubs(league) ? (league.teams.find((t) => t.id === rivalId(league)) ?? null) : null;
+  const next = useUi() === 'new';
   return (
     <section aria-labelledby="standings-title">
-      <h2 id="standings-title">{__i18n_t("ui.standings.standings.89ee1808", { year: league.year })}</h2>
+      <div class="page-title-row">
+        <h2 id="standings-title">{__i18n_t("ui.standings.standings.89ee1808", { year: league.year })}</h2>
+        {next && (
+          <Help>
+            {two
+              ? playoffsOf(league) === 'npb'
+                ? __i18n_t("ui.standings.text.1c606c76")
+                : __i18n_t("ui.standings.text.940e69f5")
+              : __i18n_display(note ?? __i18n_k("ui.standings.standings.83a72e8d"))}
+          </Help>
+        )}
+      </div>
       {/* 1.4.0: the postseason bracket on top while it is on and after it. */}
       <PostseasonBracket league={league} onBox={onBox} onTeam={onTeam} />
       <div class="split">
@@ -46,13 +66,15 @@ export function Standings({ league, onTeam, onBox, onAct }: { league: LeagueStat
           {__i18n_display(groups.map((grp) => (
             <StandingsTable key={grp.title ?? 'all'} title={__i18n_displayText(grp.title)} rows={grp.rows} cut={grp.cut} onTeam={onTeam} />
           )))}
-          <p class="muted">
-            {__i18n_display(two
-              ? playoffsOf(league) === 'npb'
-                ? __i18n_t("ui.standings.text.1c606c76")
-                : __i18n_t("ui.standings.text.940e69f5")
-              : (note ?? __i18n_k("ui.standings.standings.83a72e8d")))}
-          </p>
+          {!next && (
+            <p class="muted">
+              {__i18n_display(two
+                ? playoffsOf(league) === 'npb'
+                  ? __i18n_t("ui.standings.text.1c606c76")
+                  : __i18n_t("ui.standings.text.940e69f5")
+                : (note ?? __i18n_k("ui.standings.standings.83a72e8d")))}
+            </p>
+          )}
           <HeadToHead league={league} order={rows.map((r) => r.teamId)} />
           <ExhibitionPart league={league} onTeam={onTeam} />
           {__i18n_display(rival && league.user && series.w + series.l + series.t > 0 && (
@@ -96,7 +118,7 @@ function HeadToHead({ league, order }: { league: LeagueState; order: string[] })
         </button>
       </div>
       <HeadToHeadTable league={league} h2h={all ? headToHeadAll(league) : headToHead(league.scores)} order={order} />
-      <p class="muted small">{__i18n_t("ui.standings.text.b1793760")}</p>
+      <Note>{__i18n_t("ui.standings.text.b1793760")}</Note>
     </details>
   );
 }
@@ -128,7 +150,7 @@ function ExhibitionPart({ league, onTeam }: { league: LeagueState; onTeam: (id: 
           </li>
         )}
       </ul>
-      <p class="muted small">{__i18n_t("ui.standings.text.f34dc9fe")}</p>
+      <Note>{__i18n_t("ui.standings.text.f34dc9fe")}</Note>
     </details>
   );
 }
@@ -158,7 +180,7 @@ function PostPlan({ league, onAct }: { league: LeagueState; onAct?: (a: Action) 
       <label class="check">
         <input type="checkbox" checked={!!v.plan.allOut} onChange={(e) => onAct({ kind: 'postPlan', allOut: (e.currentTarget as HTMLInputElement).checked })} /> 총력전
       </label>
-      <p class="muted small">{__i18n_t("ui.standings.postPlan.cf2d7dea")}</p>
+      <Note>{__i18n_t("ui.standings.postPlan.cf2d7dea")}</Note>
     </section>
   );
 }

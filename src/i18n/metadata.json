@@ -91455,5 +91455,231 @@
     "line": 100,
     "params": {},
     "locations": []
+  },
+  "ui.manual.text.934dd25e": {
+    "source": "src/ui/Manual.tsx",
+    "line": 222,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.de5e483c": {
+    "source": "src/ui/Manual.tsx",
+    "line": 231,
+    "params": {},
+    "locations": []
+  },
+  "ui.manual.text.060a2d18": {
+    "source": "src/ui/Manual.tsx",
+    "line": 242,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.7eec6190": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 68,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.080d34dc": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 91,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.cc902740": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 173,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.e401a056": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 175,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.b68b86a7": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 176,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.bf21ab80": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 177,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.21e0537f": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 178,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.c1c76b37": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 179,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.65ccc960": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 180,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.5390f3ce": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 181,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.0a3d002c": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 200,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.6e593a9b": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 220,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.1822db88": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 221,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.bc4313cd": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 222,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.4df9a1d0": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 223,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.4b4a98b9": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 224,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.a379af4c": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 227,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.bb6ef1b2": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 228,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.7e66b88d": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 229,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.15edb98e": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 241,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.c876675f": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 304,
+    "params": {
+      "n": {
+        "expression": "n"
+      }
+    },
+    "locations": []
+  },
+  "ui.next.squad.text.fe953583": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 304,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.b3000412": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 325,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.bb446431": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 326,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.7f604fc2": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 336,
+    "params": {},
+    "locations": []
+  },
+  "ui.myClub.text.6b31156a": {
+    "source": "src/ui/MyClub.tsx",
+    "line": 870,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.4a1cf696": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 245,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.b626b893": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 245,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.410c6445": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 262,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.0432a63e": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 301,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.23c83cc9": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 301,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.6f1a9874": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 301,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.ad7d7a1c": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 323,
+    "params": {},
+    "locations": []
+  },
+  "ui.lineup.text.b035ed5a": {
+    "source": "src/ui/Lineup.tsx",
+    "line": 399,
+    "params": {},
+    "locations": []
   }
 }

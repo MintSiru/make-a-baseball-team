@@ -3,6 +3,9 @@
    velocity by season — and his head-to-head records against the other side's men (savant.ts, matchups.ts). */
 import { displayText as __i18n_displayText, t as __i18n_t } from '../i18n/index';
 import { useState } from 'preact/hooks';
+import type { ComponentChildren } from 'preact';
+import { Help } from './Help';
+import { useUi } from './useDisplay';
 import { layoutOf, angleOf, type ParkLayout } from '../league/layout';
 import { meetingRates, meetingsOf, type HeadToHead } from '../league/matchups';
 import { FASTBALL_LABELS, PITCH_LABELS, pitchLabel, type PitchType } from '../league/pitches';
@@ -329,9 +332,33 @@ function HotZones({ league, id, pitcher }: { league: LeagueState; id: string; pi
 }
 
 export function SavantView({ league, id, pitcher }: { league: LeagueState; id: string; pitcher: boolean }) {
+  const next = useUi() === 'new';
   const pc = percentilesOf(league, id);
   const rows = pitcher ? pc.pitching : pc.batting;
   const values = valuesOf(league, id);
+  // 2.0.62 (새 UI): each chart a card, two by two; how it is measured behind the card's ⓘ.
+  if (next) {
+    const card = (title: string, body: ComponentChildren, note?: string, wide = false) => (
+      <section class={wide ? 'sheet-box savant-wide' : 'sheet-box'}>
+        <div class="pp-box-head">
+          <h3>{title}</h3>
+          {note && <Help title={title}>{note}</Help>}
+        </div>
+        {body}
+      </section>
+    );
+    return (
+      <div class="savant savant-grid">
+        {card(__i18n_t("ui.savant.text.483f877c", { year: league.year }), rows ? <Bars rows={rows} pitcher={pitcher} /> : <p class="muted small">{__i18n_t("ui.savant.text.8a2110bc")}</p>, pitcher ? __i18n_t("ui.savant.text.503d5b84") : __i18n_t("ui.savant.text.6985c142"))}
+        {values && card(__i18n_t("ui.savant.text.354dec5d", { year: league.year }), <Values rows={values.rows} />, pitcher ? __i18n_t("ui.savant.text.a2e6548f") : __i18n_t("ui.savant.text.fa5d5502"))}
+        {card(__i18n_t("ui.savant.text.af746949"), <HotZones league={league} id={id} pitcher={pitcher} />)}
+        {!pitcher && card(__i18n_t("ui.savant.text.eeb111e4"), <Spray league={league} id={id} />)}
+        {pitcher && values?.pitches && values.usage && card(__i18n_t("ui.savant.text.11bd01bb", { year: league.year }), <Usage league={league} id={id} pitches={values.pitches} usage={values.usage} />)}
+        {pitcher && card(__i18n_t("ui.savant.text.80252fe7"), <Movement league={league} id={id} />)}
+        {pitcher && card(__i18n_t("ui.savant.text.1ab9d4af"), <Mix league={league} id={id} />, undefined, true)}
+      </div>
+    );
+  }
   return (
     <div class="savant">
       {values && (

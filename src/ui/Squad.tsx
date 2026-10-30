@@ -11,6 +11,8 @@ import { money, toolKeysFor } from './format';
 import { gradeClass, rowFuture, showsFutureDetail } from './grades';
 import { TOOL_LABELS } from '../draftroom';
 import { positionKey, useSort } from './sort';
+import { useUi } from './useDisplay';
+import { NextSquad } from './next/Squad';
 
 export type Row = ReturnType<typeof rosterView>['active'][number];
 export type SquadKey = 'active' | 'futures' | 'third' | 'military';
@@ -291,7 +293,14 @@ function RatingsTable({ league, rows, pitchers, onPlayer, actions }: { league: L
 /** The table view the screen was left on (records or ratings). */
 let lastView: 'stats' | 'ratings' = 'stats';
 
-export function Squad({
+type SquadProps = Parameters<typeof LegacySquad>[0];
+
+/** 2.0.63: the redesigned squad in the new UI (next/Squad.tsx), this one in the legacy UI. */
+export function Squad(props: SquadProps) {
+  return useUi() === 'new' ? <NextSquad {...props} /> : <LegacySquad {...props} />;
+}
+
+function LegacySquad({
   league,
   teamId,
   onPlayer,

@@ -2,6 +2,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 /* The club at a glance (V0.7): who plays where on the field today, the batting order against a
    right- or left-handed starter, the rotation (next starter marked) and the bullpen by role. For the
    user's club (V0.8) the general manager's lineup card: spots and positions he fixes, the rotation order. */
+import type { ComponentChildren } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { rotationSize } from '../league/manager';
 import type { Action } from '../league/actions';
@@ -47,6 +48,7 @@ const f3 = (x: number | null) => (x == null ? '-' : rates.fmt3(x));
 export function Lineup({ league, teamId, onPlayer, onAct }: { league: LeagueState; teamId: string; onPlayer: (id: string) => void; onAct?: (a: Action) => void }) {
   const [vs, setVs] = useState<'R' | 'L'>('R');
   const ui = useUi();
+  if (ui === 'new') return <NextLineup league={league} teamId={teamId} onPlayer={onPlayer} onAct={onAct} vs={vs} setVs={setVs} />;
   const v = lineupView(league, teamId, vs);
   if (!v || v.lineup.length < 9) return <p class="muted">{__i18n_t("ui.lineup.lineup.a99fd3fe")}</p>;
   const next = v.starters.find((x) => x.next) ?? v.starters[0];
@@ -138,9 +140,6 @@ export function Lineup({ league, teamId, onPlayer, onAct }: { league: LeagueStat
           {__i18n_display(dh && <p class="muted small">{__i18n_t("ui.lineup.lineup.8a47b77e", { name: dh.name })}</p>)}
         </div>
       </div>
-      {ui === 'new' ? (
-        <NextStaff v={v} onPlayer={onPlayer} />
-      ) : (
       <div class="lineup-grid">
         <div>
           <h3>{__i18n_t("ui.lineup.lineup.cad4826e")}</h3>
@@ -181,16 +180,198 @@ export function Lineup({ league, teamId, onPlayer, onAct }: { league: LeagueStat
           <p>{__i18n_display(v.bench.length ? v.bench.map((b) => __i18n_k("ui.lineup.lineup.262159bf", { name: b.name, pos: b.pos, grade: b.grade, value: b.injured ? __i18n_k("ui.lineup.lineup.cc5713ba") : '' })).join(', ') : '-')}</p>
         </div>
       </div>
-      )}
     </div>
   );
 }
 
 type View = NonNullable<ReturnType<typeof lineupView>>;
 
+/** Players who have left the club since drop out of a saved card (they would not play anyway). */
+function cleanCard(league: LeagueState, c: LineupCard | undefined): LineupCard {
+  const u = league.user!;
+  const ours = (id: string) => league.players[id]?.teamId === u.teamId;
+  return c
+    ? tidy({
+        R: c.R.map((x) => (x && ours(x.id) ? { ...x } : null)),
+        L: c.L.map((x) => (x && ours(x.id) ? { ...x } : null)),
+        ...(c.places ? { places: { R: c.places.R.filter((x) => ours(x.id)), L: c.places.L.filter((x) => ours(x.id)) } } : {}),
+        rotation: c.rotation.filter(ours),
+        rest: c.rest,
+      })
+    : emptyCard();
+}
+
+/** 2.0.63 (the user's mockups, 새 UI): the field and the batting order side by side, the rotation under them, the
+    bullpen and the bench side by side. Beside each spot in the order and each place in the rotation, whether the
+    general manager fixed it (단장 고정) or left it to the manager (감독 일임): one click changes it, saved on the
+    lineup card the card editor keeps. */
+function NextLineup({ league, teamId, onPlayer, onAct, vs, setVs }: { league: LeagueState; teamId: string; onPlayer: (id: string) => void; onAct?: (a: Action) => void; vs: 'R' | 'L'; setVs: (x: 'R' | 'L') => void }) {
+  const [problem, setProblem] = useState<string | null>(null);
+  const v = lineupView(league, teamId, vs);
+  if (!v || v.lineup.length < 9) return <p class="muted">{__i18n_t("ui.lineup.lineup.a99fd3fe")}</p>;
+  const mine = !!onAct && teamId === league.user?.teamId;
+  const card = mine ? league.user!.lineup : undefined;
+  const save = (f: (c: LineupCard) => void) => {
+    const c = cleanCard(league, card);
+    f(c);
+    const t = tidy(c);
+    const why = checkLineupCard(league, t);
+    setProblem(why ? __i18n_displayText(why) : null);
+    if (!why) onAct!({ kind: 'lineupCard', card: t });
+  };
+  const toggleBat = (i: number, b: View['lineup'][number]) =>
+    save((c) => {
+      if (b.fixed) {
+        if (c[vs][i]?.id === b.id) c[vs][i] = null;
+        if (c.places) c.places[vs] = c.places[vs].filter((x) => x.id !== b.id);
+      } else c[vs][i] = { id: b.id, pos: b.pos as FieldPos };
+    });
+  const setPos = (i: number, b: View['lineup'][number], pos: FieldPos) => save((c) => void (c[vs][i] = { id: b.id, pos }));
+  // The rotation is fixed from the top: fixing a place fixes the ones before it, freeing one frees the rest.
+  const toggleRot = (i: number, p: View['starters'][number]) =>
+    save((c) => {
+      c.rotation = p.mine ? c.rotation.slice(0, Math.max(0, c.rotation.indexOf(p.id))) : v.starters.slice(0, i + 1).map((x) => x.id);
+    });
+  const nextArm = v.starters.find((x) => x.next) ?? v.starters[0];
+  const fixedIds = new Set(v.lineup.filter((b) => b.fixed).map((b) => b.id));
+  const field = [
+    ...v.lineup.filter((b) => b.pos !== 'DH').map((b) => ({ pos: b.pos as string, id: b.id, name: b.name, number: b.number, grade: b.grade })),
+    ...(nextArm ? [{ pos: 'P', id: nextArm.id, name: nextArm.name, number: undefined, grade: nextArm.grade }] : []),
+  ];
+  const dh = v.lineup.find((b) => b.pos === 'DH');
+  const style = v.style && v.style !== 'balanced' ? MANAGER_STYLES[v.style] : null;
+  const fixButton = (on: boolean, onClick: () => void) => (
+    <button type="button" class={on ? 'fix-toggle on' : 'fix-toggle'} aria-pressed={on} onClick={onClick}>
+      {on ? __i18n_t("ui.lineup.text.4a1cf696") : __i18n_t("ui.lineup.text.b626b893")}
+    </button>
+  );
+  return (
+    <div class="lineup next-lineup">
+      <div class="lineup-bar">
+        <div class="segmented" role="group" aria-label={__i18n_t("ui.lineup.lineup.673abc38")}>
+          <button type="button" aria-pressed={vs === 'R'} onClick={() => setVs('R')}>
+            {__i18n_t("ui.lineup.lineup.ada149f8")}
+          </button>
+          <button type="button" aria-pressed={vs === 'L'} onClick={() => setVs('L')}>
+            {__i18n_t("ui.lineup.lineup.b044607c")}
+          </button>
+        </div>
+        {style && <span class="small">{__i18n_rich("ui.lineup.lineup.9cb053aa", { value: <strong>{__i18n_display(style.label)}</strong>, value2: <span class="muted">({__i18n_display(style.note)})</span> })}</span>}
+        <Help title={__i18n_t("ui.lineup.lineup.a17455c9")}>
+          <p>{__i18n_t("ui.lineup.lineup.3e29b7e7")}</p>
+          {mine && <p>{__i18n_t("ui.lineup.text.410c6445")}</p>}
+        </Help>
+      </div>
+      {v.resting.length > 0 && <p class="notice">{__i18n_t("ui.lineup.lineup.66d9ed37", { value: v.resting[0]!.date.slice(5).replace('-', '/'), value2: v.resting.map((r) => `${r.name}(${r.pos})`).join(', ') })}</p>}
+      {problem && <p class="notice warn">{problem}</p>}
+      <div class="lineup-two">
+        <section class="sheet-box diamond-box">
+          <svg viewBox="0 0 400 320" class="diamond" role="img" aria-label={__i18n_t("ui.lineup.lineup.7a9dc5f1")}>
+            <path d="M200 300 L40 140 A230 230 0 0 1 360 140 Z" class="grass" />
+            <path d="M200 290 L290 200 L200 115 L110 200 Z" class="infield" />
+            {field.map((f) => {
+              const [x, y] = SPOTS[f.pos] ?? [0, 0];
+              return (
+                <g key={f.pos} class={fixedIds.has(f.id) ? 'spot fixed' : 'spot'} onClick={() => onPlayer(f.id)}>
+                  <rect x={x - 50} y={y - 16} width={100} height={32} rx={2} />
+                  <text x={x} y={y - 2} text-anchor="middle" class="spot-pos">
+                    {f.pos === 'P' ? __i18n_t("ui.lineup.lineup.a88271df") : f.pos}
+                    {f.number != null ? ` #${f.number}` : ''} · {f.grade}
+                  </text>
+                  <text x={x} y={y + 12} text-anchor="middle" class="spot-name">
+                    {onField(f.name)}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+          <div class="diamond-foot small">
+            {dh && (
+              <span>
+                {__i18n_t("ui.lineup.lineup.8a47b77e", { name: '' })}
+                <strong>
+                  {dh.number != null ? `#${dh.number} ` : ''}
+                  {dh.name}
+                </strong>{' '}
+                ({dh.grade})
+              </span>
+            )}
+            {mine && (
+              <span title={__i18n_t("ui.lineup.text.19052110")}>
+                {__i18n_t("ui.lineup.text.0432a63e")}: <strong>{(card?.rest ?? true) ? __i18n_t("ui.lineup.text.23c83cc9") : __i18n_t("ui.lineup.text.6f1a9874")}</strong>
+              </span>
+            )}
+          </div>
+        </section>
+        <div class="table-wrap bat-sheet" tabIndex={0}>
+          <table class="record-table">
+            <thead>
+              <tr>
+                <th class="num">#</th>
+                <th>{__i18n_t("ui.lineup.lineup.5db174c6")}</th>
+                <th>{__i18n_t("ui.lineup.lineup.3d9d982d")}</th>
+                <th>{__i18n_t("ui.lineup.lineup.8198fd54")}</th>
+                <th class="num">{__i18n_t("ui.lineup.lineup.001e4be2")}</th>
+                <th class="num" title={__i18n_t("ui.lineup.lineup.5edb7838")}>{__i18n_t("ui.lineup.lineup.22b8c755")}</th>
+                <th class="num" title={__i18n_t("ui.lineup.lineup.99517041")}>{__i18n_t("ui.lineup.lineup.4c537d13")}</th>
+                <th class="num" title={__i18n_t("ui.lineup.lineup.ac886d4a")}>{__i18n_t("ui.lineup.lineup.22dc8896")}</th>
+                <th class="num" title={__i18n_t("ui.lineup.lineup.4038619b")}>{__i18n_t("ui.lineup.lineup.752244cf")}</th>
+                <th class="num" title={__i18n_t("ui.lineup.lineup.ed9be858")}>{__i18n_t("ui.lineup.lineup.c04eb2ef")}</th>
+                <th class="num">{__i18n_t("ui.lineup.lineup.1eb19e0a")}</th>
+                <th class="num">OPS</th>
+                <th class="num">{__i18n_t("ui.lineup.lineup.9162d3a3")}</th>
+                {mine && <th>{__i18n_t("ui.lineup.text.ad7d7a1c")}</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {v.lineup.map((b, i) => (
+                <tr key={b.id} class={b.fixed ? 'fixed-row' : undefined}>
+                  <td class="num strong">{b.order}</td>
+                  <td class="name-cell">
+                    <span class="uniform">{b.number ?? ''}</span>
+                    <button type="button" class="link" onClick={() => onPlayer(b.id)}>
+                      {b.name}
+                    </button>
+                  </td>
+                  <td>
+                    {mine && b.fixed && card?.[vs][i]?.id === b.id ? (
+                      <select value={b.pos} aria-label={__i18n_displayText(__i18n_k("ui.lineup.cardEditor.202ba2ba", { value: i + 1 }))} onChange={(e) => setPos(i, b, (e.currentTarget as HTMLSelectElement).value as FieldPos)}>
+                        {FIELD.map((pos) => (
+                          <option key={pos} value={pos}>
+                            {pos}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      b.pos
+                    )}
+                  </td>
+                  <td>{b.bats}</td>
+                  <td class={`num strong ${gradeClass(b.grade)}`}>{b.grade}</td>
+                  <Grade g={b.tools.contact} />
+                  <Grade g={b.tools.power} />
+                  <Grade g={b.tools.eye} />
+                  <Grade g={b.tools.speed} />
+                  <Grade g={b.tools.defense} />
+                  <td class="num">{f3(b.avg)}</td>
+                  <td class="num strong">{f3(b.ops)}</td>
+                  <td class="num">{b.hr}</td>
+                  {mine && <td>{fixButton(b.fixed, () => toggleBat(i, b))}</td>}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <NextStaff v={v} onPlayer={onPlayer} fix={mine ? (i, p) => fixButton(p.mine, () => toggleRot(i, p)) : undefined} />
+      {mine && <CardEditor league={league} vs={vs} lineup={v.lineup} starters={v.starters} onAct={onAct!} />}
+    </div>
+  );
+}
+
 /** 2.0.62 (새 UI): the rotation, the bullpen and the bench as tables — each pitcher's grades, his arm for the next
     game, his line; the next starter and the general manager's fixed order marked in place. */
-function NextStaff({ v, onPlayer }: { v: View; onPlayer: (id: string) => void }) {
+function NextStaff({ v, onPlayer, fix }: { v: View; onPlayer: (id: string) => void; fix?: (i: number, p: View['starters'][number]) => ComponentChildren }) {
   const Name = ({ id, name }: { id: string; name: string }) => (
     <button type="button" class="link" onClick={() => onPlayer(id)}>
       {name}
@@ -215,6 +396,7 @@ function NextStaff({ v, onPlayer }: { v: View; onPlayer: (id: string) => void })
               <th>{__i18n_t("ui.lineup.text.e5c8eb0c")}</th>
               <th class="num">{__i18n_t("ui.lineup.text.9660dd73")}</th>
               <th class="num">ERA</th>
+              {fix && <th>{__i18n_t("ui.lineup.text.b035ed5a")}</th>}
             </tr>
           </thead>
           <tbody>
@@ -240,6 +422,7 @@ function NextStaff({ v, onPlayer }: { v: View; onPlayer: (id: string) => void })
                   {p.w}-{p.l}
                 </td>
                 <td class="num strong">{era(p.era)}</td>
+                {fix && <td>{fix(i, p)}</td>}
               </tr>
             ))}
           </tbody>
