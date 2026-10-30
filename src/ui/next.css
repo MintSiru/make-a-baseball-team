@@ -5,8 +5,8 @@
 :root[data-ui='new'] {
   --card: #fffdf8;
   --stamp: #b3261e;
-  --good: #1b7f5a;
-  --warn: #b35c1e;
+  --good: #17714f;
+  --warn: #9a4d18;
   --bad: #b3261e;
 }
 @media (prefers-color-scheme: dark) {
