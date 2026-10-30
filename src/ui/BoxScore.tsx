@@ -11,6 +11,7 @@ import { NewsCard } from './Story';
 import type { StoryHooks } from './MyClub';
 import { markWatched, spoilerHidden } from './display';
 import { pitchFeed, type PitchFrame, type PitchLoc } from '../league/pitchfeed';
+import { useUi } from './useDisplay';
 
 type Tab = 'box' | 'pbp' | 'story';
 const SPEEDS: [string, number][] = [
@@ -38,6 +39,8 @@ export function BoxScore({
   live?: boolean;
 }) {
   const v = useMemo(() => boxView(league, id), [league, id]);
+  // 2.0.62 (새 UI): the two clubs' sheets side by side, the parts as index tabs.
+  const next = useUi() === 'new';
   const ours = !!league.user && !!v && (v.home.teamId === league.user.teamId || v.away.teamId === league.user.teamId);
   // 1.6.0: with the score hidden, our unseen game opens as a relay from the first pitch.
   const [hidden] = useState(() => (watching && !!v?.plays) || spoilerHidden(id, ours, !!v?.plays));
@@ -129,12 +132,12 @@ export function BoxScore({
           </table>
         </div>
 
-        <div class="segmented profile-tabs" role="tablist" aria-label={__i18n_t("ui.boxScore.boxScore.e0cee61a")}>
-          <button type="button" role="tab" aria-selected={tab === 'box'} aria-pressed={tab === 'box'} disabled={!!live && hidden} onClick={() => setTab('box')}>{__i18n_t("ui.boxScore.boxScore.8fcc8f9a")}</button>
-          <button type="button" role="tab" aria-selected={tab === 'pbp'} aria-pressed={tab === 'pbp'} disabled={!v.plays} onClick={() => setTab('pbp')}>{__i18n_t("ui.boxScore.boxScore.a1298173")}</button>
+        <div class={next ? 'pp-tabs' : 'segmented profile-tabs'} role="tablist" aria-label={__i18n_t("ui.boxScore.boxScore.e0cee61a")}>
+          <button type="button" role="tab" aria-selected={tab === 'box'} aria-pressed={next ? undefined : tab === 'box'} disabled={!!live && hidden} onClick={() => setTab('box')}>{__i18n_t("ui.boxScore.boxScore.8fcc8f9a")}</button>
+          <button type="button" role="tab" aria-selected={tab === 'pbp'} aria-pressed={next ? undefined : tab === 'pbp'} disabled={!v.plays} onClick={() => setTab('pbp')}>{__i18n_t("ui.boxScore.boxScore.a1298173")}</button>
           {/* 2.0.31: a spring game (시범경기) gets no article. */}
           {__i18n_display(mine && !id.includes('-ex-') && (
-            <button type="button" role="tab" aria-selected={tab === 'story'} aria-pressed={tab === 'story'} disabled={!!live && hidden} onClick={() => setTab('story')}>{__i18n_t("ui.boxScore.boxScore.9df02808")}</button>
+            <button type="button" role="tab" aria-selected={tab === 'story'} aria-pressed={next ? undefined : tab === 'story'} disabled={!!live && hidden} onClick={() => setTab('story')}>{__i18n_t("ui.boxScore.boxScore.9df02808")}</button>
           ))}
         </div>
 
@@ -145,8 +148,9 @@ export function BoxScore({
             <p>{__i18n_rich("ui.boxScore.boxScore.adfc2dbd", { value: ' ', value2: <button type="button" onClick={() => onAct?.({ kind: 'gameStory', id })}>{__i18n_t("ui.boxScore.boxScore.3a97e58f")}</button>, value3: ' ', value4: <span class="muted small">{__i18n_t("ui.boxScore.boxScore.963925fa")}</span> })}</p>
           )))}
 
-        {__i18n_display(tab === 'box' &&
-          [v.away, v.home].map((t) => (
+        {__i18n_display(tab === 'box' && (
+          <div class={next ? 'box-sides' : undefined}>
+          {[v.away, v.home].map((t) => (
             <section key={t.teamId}>
               <h3>{__i18n_display(t.name)}</h3>
               <div class="table-wrap" tabIndex={0}>
@@ -224,7 +228,9 @@ export function BoxScore({
                 </table>
               </div>
             </section>
-          )))}
+          ))}
+          </div>
+        ))}
 
         {tab === 'pbp' && v.plays && (
           <div class="segmented" role="group" aria-label={__i18n_t("ui.boxScore.text.093867f4")}>

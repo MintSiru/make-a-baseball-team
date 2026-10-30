@@ -1651,3 +1651,53 @@
 :root[data-ui='new'] .standings .cutline td {
   border-bottom: 2px dashed var(--accent);
 }
+
+/* ── The box score: the line score across, the two clubs' sheets side by side ── */
+:root[data-ui='new'] .box-dialog {
+  width: min(1180px, 100%);
+  border: 2px solid var(--ink);
+}
+:root[data-ui='new'] .box-dialog .linescore {
+  width: 100%;
+}
+:root[data-ui='new'] .box-dialog .table-wrap {
+  width: 100%;
+  border-radius: 0;
+}
+:root[data-ui='new'] .box-dialog .table-wrap > table {
+  width: 100%;
+}
+:root[data-ui='new'] .box-sides {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 20px;
+  align-items: start;
+}
+@media (max-width: 1000px) {
+  :root[data-ui='new'] .box-sides {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+:root[data-ui='new'] .box-sides .record-table th,
+:root[data-ui='new'] .box-sides .record-table td {
+  padding: 4px 5px;
+  font-size: 13px;
+}
+:root[data-ui='new'] .box-sides .record-table thead th {
+  font-size: 11.5px;
+}
+
+/* ── Savant: each chart a card, two by two ── */
+:root[data-ui='new'] .savant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+:root[data-ui='new'] .savant-grid > .savant-wide {
+  grid-column: 1 / -1;
+}
+:root[data-ui='new'] .savant-grid .sheet-box > svg,
+:root[data-ui='new'] .savant-grid .sheet-box svg {
+  max-width: 100%;
+}
