@@ -10220,5 +10220,17 @@
   "ui.clubRecords.text.6f8a54e0": "#{number} 永久欠番",
   "league.ownerask.text.8c0ad1e5": "独立球団には支援を求める親会社がありません。",
   "league.budgetask.text.8c0ad1e5": "独立球団には支援を求める親会社がありません。",
-  "ui.office.text.1b6840d6": "独立球団"
+  "ui.office.text.1b6840d6": "独立球団",
+  "league.international.text.fdd4fcd9": "世界野球選手権大会",
+  "league.international.text.0aeb4f61": "ロサンゼルス五輪(公開競技)",
+  "league.international.text.3011196d": "ソウル五輪(公開競技)",
+  "league.international.text.5d906394": "広島アジア大会",
+  "league.international.text.7237d3c2": "アトランタ五輪",
+  "league.international.text.de5d5524": "バンコク・アジア大会",
+  "league.international.text.2ff1ef06": "シドニー五輪",
+  "league.international.text.d5c2f12e": "釜山アジア大会",
+  "league.international.text.d71cf5a6": "北京五輪",
+  "league.international.text.c0e6d3ed": "広州アジア大会",
+  "league.legacy.text.1e4e34b6": "アマチュア代表",
+  "league.legacy.text.fb800eb3": "結果のみ記録"
 }

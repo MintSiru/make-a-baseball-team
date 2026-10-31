@@ -27,7 +27,7 @@ export const NATIONAL_GAMES = {
   games: { first: 3, second: 5, fourth: 7, third: 7, runnerUp: 8, champion: 8 } as Record<Finish, number>,
   short: { first: 2, second: 3, fourth: 3, third: 4, runnerUp: 4, champion: 4 } as Record<Finish, number>,
   /** Opponents' strength (20–80) in the first game and the last, by event; each player varies around it. */
-  strength: { wbc: [58, 72], premier12: [55, 68], olympics: [56, 69], asianGames: [48, 62], apbc: [50, 60] } as Record<EventKind, [number, number]>,
+  strength: { wbc: [58, 72], premier12: [55, 68], olympics: [56, 69], asianGames: [48, 62], apbc: [50, 60], worldCup: [50, 64] } as Record<EventKind, [number, number]>,
   spread: 7,
   starterLimit: 80,
   relieverLimit: 30,
@@ -107,6 +107,10 @@ const FIELD: Record<EventKind, [string, NamePool][]> = {
     [__i18n_k("league.nationalgames.text.6be27bc7"), 'taiwan'],
     [__i18n_k("league.nationalgames.text.d7a6e266"), 'japan'],
   ],
+  // 2.0.65: the amateurs' world championship (1982) has no games played; its field for the type's sake.
+  get worldCup() {
+    return FIELD.olympics;
+  },
 };
 
 export type NationalLine = { bat: ReturnType<typeof emptyBat> | null; pit: ReturnType<typeof emptyPit> | null };

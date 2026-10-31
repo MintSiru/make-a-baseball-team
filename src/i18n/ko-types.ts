@@ -10221,5 +10221,17 @@ export const koSource = {
   "ui.clubRecords.text.6f8a54e0": "#{number} 영구결번",
   "league.ownerask.text.8c0ad1e5": "독립 구단에는 지원을 요청할 모기업이 없습니다.",
   "league.budgetask.text.8c0ad1e5": "독립 구단에는 지원을 요청할 모기업이 없습니다.",
-  "ui.office.text.1b6840d6": "독립 구단"
+  "ui.office.text.1b6840d6": "독립 구단",
+  "league.international.text.fdd4fcd9": "세계야구선수권대회",
+  "league.international.text.0aeb4f61": "LA 올림픽(시범 종목)",
+  "league.international.text.3011196d": "서울 올림픽(시범 종목)",
+  "league.international.text.5d906394": "히로시마 아시안게임",
+  "league.international.text.7237d3c2": "애틀랜타 올림픽",
+  "league.international.text.de5d5524": "방콕 아시안게임",
+  "league.international.text.2ff1ef06": "시드니 올림픽",
+  "league.international.text.d5c2f12e": "부산 아시안게임",
+  "league.international.text.d71cf5a6": "베이징 올림픽",
+  "league.international.text.c0e6d3ed": "광저우 아시안게임",
+  "league.legacy.text.1e4e34b6": "아마추어 대표팀",
+  "league.legacy.text.fb800eb3": "결과만 기록"
 } as const;

@@ -15,12 +15,11 @@ import { k as __i18n_k } from '../i18n/index';
    (before, only the KBO's players were ever named). The Asian Games, the Premier12 and the APBC take the KBO's
    players only, as their clubs abroad do not release them. */
 import { MLB } from './mlb';
-import { startYear } from './era';
 import { rng } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
 import { addAlert } from './alerts';
 import { clubState } from './fans';
-import { CROWD_EFFECT, INTERNATIONAL, announceDate, eventById, eventsIn, exempts, finishText, ODDS, timing, type EventKind, type Finish, type InternationalEvent } from './international';
+import { CROWD_EFFECT, announceDate, eventById, eventsIn, exempts, finishText, ODDS, realFinish, timing, type EventKind, type Finish, type InternationalEvent } from './international';
 import { iga } from './josa';
 import { playNationalGames } from './nationalgames';
 import { fullTimeManager } from './board';
@@ -88,6 +87,12 @@ function fill(squad: Player[], pool: Player[], n: number, perClub: number | unde
 export function selectNationalTeam(s: LeagueState, e: InternationalEvent): NationalEntry {
   const existing = s.international.find((x) => x.id === e.id);
   if (existing) return existing;
+  // 2.0.65: the amateurs' national team (before 1998): on record, no league player named.
+  if (e.amateur) {
+    const entry: NationalEntry = { id: e.id, year: e.year, name: e.name, kind: e.kind, medal: false, squad: [], amateur: true };
+    s.international.push(entry);
+    return entry;
+  }
   const squad: Player[] = [];
   const L = e.limit;
   fill(squad, eligible(s, e, true), e.squad - (L?.wildcards ?? 0), e.perClub, new Set(), e.squad);
@@ -113,6 +118,13 @@ function replace(s: LeagueState, e: InternationalEvent, entry: NationalEntry, id
 export function finishEvent(s: LeagueState, e: InternationalEvent) {
   const entry = selectNationalTeam(s, e);
   if (entry.finish) return entry;
+  // 2.0.65 (the user's request): the amateurs' event — only its result, and what it did to the crowds.
+  if (e.amateur) {
+    entry.finish = realFinish(e) ?? e.finish ?? 'fourth';
+    crowdNews(s, e, entry.finish);
+    resultAlert(s, e, entry, []);
+    return entry;
+  }
   const r = rng(`${s.seed}|international|${e.id}`);
   let x = r();
   // 2.0.17 (board.ts): a club's manager leading the team as well (겸임) has less time to prepare it than a full-time
@@ -124,7 +136,8 @@ export function finishEvent(s: LeagueState, e: InternationalEvent) {
     entry.coach = { teamId: champ, ...(name ? { name } : {}) };
   } else entry.coach = { teamId: null };
   // The real result only for events before the game starts (1.6.0: a game from 2016 plays the 2017 WBC itself).
-  const finish: Finish = (e.year < startYear() ? e.finish : null) ?? ODDS[e.kind].find(([, w]) => (x -= w) < 0)?.[0] ?? ODDS[e.kind].at(-1)![0];
+  // 2.0.65: the 1982 legacy start keeps the real results through 2015 as well (international.ts realFinish).
+  const finish: Finish = realFinish(e) ?? ODDS[e.kind].find(([, w]) => (x -= w) < 0)?.[0] ?? ODDS[e.kind].at(-1)![0];
   entry.finish = finish;
   entry.medal = exempts(e, finish);
   // 2.0.11: the event's games, for each player's line (their own random stream).
@@ -157,18 +170,21 @@ export function finishEvent(s: LeagueState, e: InternationalEvent) {
       hurt.push(p);
     }
   if (finish === 'champion' && s.user) clubState(s, s.user.teamId).interest += N.titleBuzz;
-  // 2.0.24: the country's mood after it — the league's crowds for the year to come (international.ts).
-  const crowd = CROWD_EFFECT[e.kind][finish] ?? 0;
-  if (Math.abs(crowd) >= 0.03) {
-    const pct = Math.round(Math.abs(crowd) * 100);
-    const title = crowd > 0 ? __i18n_k("league.national.text.f142bc40", { name: e.name }) : __i18n_k("league.national.text.058c04f2", { name: e.name });
-    const body = crowd > 0 ? __i18n_k("league.national.text.14293bdf", { name: e.name, pct }) : __i18n_k("league.national.text.e6ea7a3b", { name: e.name, pct });
-    addNews(s, { id: `crowd-${e.id}`, date: e.dates.to, kind: 'season', title, body, quotes: [], facts: { event: e.name, crowd: `${crowd > 0 ? '+' : '−'}${pct}%` }, players: [], mine: false });
-  }
+  crowdNews(s, e, finish);
   resultAlert(s, e, entry, hurt);
   // 2.0.42: the 'national' stop — the game asks whether to watch its games (takeNationalWatch).
   if (s.user && entry.watch?.games.length && stopsOf(s).includes('national')) s.nationalWatchDue = e.id;
   return entry;
+}
+
+/** 2.0.24: the country's mood after it — the league's crowds for the year to come (international.ts). */
+function crowdNews(s: LeagueState, e: InternationalEvent, finish: Finish) {
+  const crowd = CROWD_EFFECT[e.kind][finish] ?? 0;
+  if (Math.abs(crowd) < 0.03) return;
+  const pct = Math.round(Math.abs(crowd) * 100);
+  const title = crowd > 0 ? __i18n_k("league.national.text.f142bc40", { name: e.name }) : __i18n_k("league.national.text.058c04f2", { name: e.name });
+  const body = crowd > 0 ? __i18n_k("league.national.text.14293bdf", { name: e.name, pct }) : __i18n_k("league.national.text.e6ea7a3b", { name: e.name, pct });
+  addNews(s, { id: `crowd-${e.id}`, date: e.dates.to, kind: 'season', title, body, quotes: [], facts: { event: e.name, crowd: `${crowd > 0 ? '+' : '−'}${pct}%` }, players: [], mine: false });
 }
 
 /** 2.0.42: a tournament just over and the 'national' stop on: the decision to watch its deciding game or go on.
@@ -257,7 +273,7 @@ export function nationalDecision(s: LeagueState, e: InternationalEvent): Decisio
   return {
     kind: 'national',
     event: e.id,
-    rows: ours.map((p) => ({ id: p.id, injured: !!s.injuries[p.id] && !s.injuries[p.id]!.dtd, exemption: pending(p) && (e.kind === 'asianGames' || e.kind === 'olympics') })),
+    rows: ours.map((p) => ({ id: p.id, injured: !!s.injuries[p.id] && !s.injuries[p.id]!.dtd, exemption: pending(p) && (e.kind === 'asianGames' || e.kind === 'olympics' || !!e.exempt) })),
   };
 }
 
@@ -340,7 +356,7 @@ function resultAlert(s: LeagueState, e: InternationalEvent, entry: NationalEntry
   const u = s.user;
   if (!u) return;
   const ours = entry.squad.map((id) => s.players[id]).filter((p): p is Player => !!p && p.teamId === u.teamId);
-  const exempt = entry.medal ? ours.filter((p) => p.service.military === 'exempt' && (e.kind === 'asianGames' || e.kind === 'olympics')) : [];
+  const exempt = entry.medal ? ours.filter((p) => p.service.military === 'exempt' && (e.kind === 'asianGames' || e.kind === 'olympics' || !!e.exempt)) : [];
   const text = finishText(e, entry.finish!);
   const ourHurt = hurt.filter((p) => p.teamId === u.teamId);
   addAlert(s, {
@@ -360,4 +376,4 @@ function resultAlert(s: LeagueState, e: InternationalEvent, entry: NationalEntry
 }
 
 /** Asian Games coming this season or next (clubs hold back their likely picks from the army). */
-export const asianGamesSoon = (next: number) => INTERNATIONAL.find((e) => (e.year === next || e.year === next + 1) && e.kind === 'asianGames');
+export const asianGamesSoon = (next: number) => [...eventsIn(next), ...eventsIn(next + 1)].find((e) => e.kind === 'asianGames' && !e.amateur);
