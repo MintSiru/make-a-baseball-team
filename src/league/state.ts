@@ -442,6 +442,10 @@ export interface NationalEntry {
   /** 2.0.11 (nationalgames.ts): each player's line for the event and the games played (absent before 2.0.11). */
   lines?: Record<PlayerId, import('./nationalgames').NationalLine>;
   games?: number;
+  /** 2.0.65: the amateurs' national team (before 1998): no league player in it. */
+  amateur?: true;
+  /** 2.0.65: an event of the KBO's past a 1982 legacy save had already gone by when it came in: its result alone. */
+  recordOnly?: true;
   /** 2.0.17: who managed the team: a full-time manager (no club), or a club's manager as well (겸임). */
   coach?: { teamId: TeamId | null; name?: string };
   /** 2.0.16: the games to watch (absent before 2.0.16). */

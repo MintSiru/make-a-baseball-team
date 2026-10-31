@@ -108,6 +108,8 @@ export interface NationalRow {
   stars: { id: PlayerId; name: string; text: string }[];
   /** 2.0.17: who managed it ('' before 2.0.17). */
   coach: string;
+  /** 2.0.65: no squad of the league's: the amateurs' team, or a past event a save took in with its result alone. */
+  note?: string;
 }
 
 /** 2.0.11: an event's best hitter (OPS, eight plate appearances or more) and pitcher (ERA, three innings or more). */
@@ -145,6 +147,7 @@ export function nationalView(s: LeagueState) {
         ours: ours.map((id) => ({ id, name: s.players[id]!.name })),
         stars: nationalStars(s, e),
         // 2.0.17: a full-time manager or a club's (겸임).
+        ...(e.amateur ? { note: __i18n_k("league.legacy.text.1e4e34b6") } : e.recordOnly ? { note: __i18n_k("league.legacy.text.fb800eb3") } : {}),
         coach: !e.coach ? '' : e.coach.teamId ? __i18n_k("league.legacy.text.bbd1335b", { club: shortName(s, e.coach.teamId), name: e.coach.name ? ` (${e.coach.name})` : '' }) : __i18n_k("league.legacy.text.b62dac0f"),
       };
     })

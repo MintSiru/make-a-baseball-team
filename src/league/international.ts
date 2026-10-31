@@ -1,4 +1,5 @@
 import { k as __i18n_k } from '../i18n/index';
+import { playsHistory, startYear } from './era';
 /* National-team events (V0.7, reworked in V0.12). The Asian Games and the Olympics decide military exemptions
    (예술체육요원: Asian Games gold, an Olympic medal); the World Baseball Classic (March, before the season), the
    WBSC Premier12 and the Asia Professional Baseball Championship (APBC, under-24s; both in November) are for
@@ -8,7 +9,8 @@ import { k as __i18n_k } from '../i18n/index';
    years, plus three wildcards aged 29 or under). Events held during the season take the squad away from its
    clubs between the dates (the league keeps playing); the squad is named some weeks before (RULES.md §11). */
 
-export type EventKind = 'asianGames' | 'olympics' | 'wbc' | 'premier12' | 'apbc';
+/** 2.0.65: 'worldCup' — the 1982 Seoul world championship, in the 1982 legacy start's records only. */
+export type EventKind = 'asianGames' | 'olympics' | 'wbc' | 'premier12' | 'apbc' | 'worldCup';
 /** How far the team went: champion, runner-up, third (an Olympic or Asian Games bronze; a WBC semifinal), fourth,
     out in the second round, out in the first. */
 export type Finish = 'champion' | 'runnerUp' | 'third' | 'fourth' | 'second' | 'first';
@@ -27,11 +29,23 @@ export interface InternationalEvent {
   /** The real result, or null to draw it from `odds`. */
   finish: Finish | null;
   dates: { from: string; to: string };
+  /** 2.0.65 (the user's request): before the professionals went (1998): the amateurs' national team — the result is
+      on record, but no league player is named, plays or earns anything from it. */
+  amateur?: boolean;
+  /** 2.0.65: an event of the KBO's own past (before 2014), in the 1982 legacy start alone — every other game's past
+      before its start stays fictional. */
+  legacyOnly?: boolean;
+  /** 2.0.65: the real result exempted the squad although the rule would not (the 2006 WBC semifinal). */
+  exempt?: boolean;
 }
+
+/** 2.0.65 (the user's request): the 1982 legacy start keeps the real results through 2015, the years of the KBO's
+    own rules; later events are the game's own, as in every other game after its start. */
+export const LEGACY_REAL_THROUGH = 2015;
 
 const HANGZHOU_RULE = { maxAge: 25, maxProYears: 4, wildcards: 3, wildcardMaxAge: 29 };
 const APBC_RULE = { maxAge: 24, maxProYears: 3, wildcards: 3, wildcardMaxAge: 29 };
-const SQUAD: Record<EventKind, number> = { asianGames: 24, olympics: 24, wbc: 30, premier12: 28, apbc: 26 };
+const SQUAD: Record<EventKind, number> = { asianGames: 24, olympics: 24, wbc: 30, premier12: 28, apbc: 26, worldCup: 24 };
 
 /** Chances of each finish for an event without a real result (game assumption from Korea's recent record). */
 export const ODDS: Record<EventKind, [Finish, number][]> = {
@@ -70,6 +84,14 @@ export const ODDS: Record<EventKind, [Finish, number][]> = {
     ['third', 0.25],
     ['fourth', 0.1],
   ],
+  // Never drawn (the one world championship on record has its real result).
+  worldCup: [
+    ['champion', 0.2],
+    ['runnerUp', 0.2],
+    ['third', 0.2],
+    ['fourth', 0.2],
+    ['first', 0.2],
+  ],
 };
 
 const ev = (year: number, kind: EventKind, name: string, finish: Finish | null, from: string, to: string, extra: Partial<InternationalEvent> = {}): InternationalEvent => ({
@@ -85,7 +107,30 @@ const ev = (year: number, kind: EventKind, name: string, finish: Finish | null, 
 });
 const ag = { limit: HANGZHOU_RULE, perClub: 3 };
 
+/** 2.0.65 (the user's request): the KBO's own past for the 1982 legacy start, 1982–2013 — the amateurs' events until
+    the professionals went to the 1998 Bangkok Games, then theirs. Events Korea did not reach (the 1992 and 2004
+    Olympics) are not on it. */
+const am = { amateur: true, legacyOnly: true };
+const past = { legacyOnly: true };
+const PAST: InternationalEvent[] = [
+  ev(1982, 'worldCup', __i18n_k("league.international.text.fdd4fcd9"), 'champion', '1982-09-04', '1982-09-14', am),
+  ev(1984, 'olympics', __i18n_k("league.international.text.0aeb4f61"), 'fourth', '1984-07-31', '1984-08-07', am),
+  ev(1988, 'olympics', __i18n_k("league.international.text.3011196d"), 'fourth', '1988-09-19', '1988-09-28', am),
+  ev(1994, 'asianGames', __i18n_k("league.international.text.5d906394"), 'runnerUp', '1994-10-03', '1994-10-10', am),
+  ev(1996, 'olympics', __i18n_k("league.international.text.7237d3c2"), 'first', '1996-07-20', '1996-08-02', am),
+  ev(1998, 'asianGames', __i18n_k("league.international.text.de5d5524"), 'champion', '1998-12-07', '1998-12-16', past),
+  ev(2000, 'olympics', __i18n_k("league.international.text.2ff1ef06"), 'third', '2000-09-17', '2000-09-27', past),
+  ev(2002, 'asianGames', __i18n_k("league.international.text.d5c2f12e"), 'champion', '2002-10-02', '2002-10-09', past),
+  ev(2006, 'wbc', __i18n_k("league.international.rEAL.ff9f9db9"), 'third', '2006-03-03', '2006-03-18', { ...past, exempt: true }),
+  ev(2006, 'asianGames', __i18n_k("league.international.rEAL.e4a5c0c5"), 'third', '2006-11-30', '2006-12-07', past),
+  ev(2008, 'olympics', __i18n_k("league.international.text.d71cf5a6"), 'champion', '2008-08-13', '2008-08-23', past),
+  ev(2009, 'wbc', __i18n_k("league.international.rEAL.ff9f9db9"), 'runnerUp', '2009-03-05', '2009-03-23', past),
+  ev(2010, 'asianGames', __i18n_k("league.international.text.c0e6d3ed"), 'champion', '2010-11-13', '2010-11-19', past),
+  ev(2013, 'wbc', __i18n_k("league.international.rEAL.ff9f9db9"), 'first', '2013-03-02', '2013-03-05', past),
+];
+
 const REAL: InternationalEvent[] = [
+  ...PAST,
   // The 2014 Incheon Games and the 2030s Games in the Gulf are held in the autumn break or after the season.
   ev(2014, 'asianGames', __i18n_k("league.international.rEAL.7eb8c564"), 'champion', '2014-09-22', '2014-09-28', { limit: null }),
   ev(2015, 'premier12', __i18n_k("league.international.rEAL.6a739d86"), 'champion', '2015-11-08', '2015-11-21'),
@@ -135,6 +180,7 @@ export const CROWD_EFFECT: Record<EventKind, Partial<Record<Finish, number>>> = 
   premier12: { champion: 0.05, runnerUp: 0.02, third: 0.01, second: -0.02, first: -0.04 },
   asianGames: { champion: 0.01, runnerUp: -0.03, third: -0.04, fourth: -0.05 },
   apbc: { champion: 0.02, runnerUp: 0.01, third: 0, fourth: -0.01 },
+  worldCup: { champion: 0.05, runnerUp: 0.02 },
 };
 
 /** The league's crowds × this on `date`, from the national team's finishes in the year before (fading over it). */
@@ -150,7 +196,11 @@ export function internationalCrowd(entries: { id: string; finish?: Finish }[], d
   }
   return k;
 }
-export const eventsIn = (year: number) => INTERNATIONAL.filter((e) => e.year === year);
+export const eventsIn = (year: number) => INTERNATIONAL.filter((e) => e.year === year && (!e.legacyOnly || playsHistory()));
+
+/** The result an event ends with when it is on record (an event before the game's start; 2.0.65: in the 1982 legacy
+    start, every event through 2015), or null for the game to decide it. */
+export const realFinish = (e: InternationalEvent): Finish | null => (e.year < startYear() || (playsHistory() && e.year <= LEGACY_REAL_THROUGH) ? e.finish : null);
 
 /** When the event falls: before the season (March), in it (the squad leaves its clubs), or after it. */
 export const timing = (e: InternationalEvent): 'spring' | 'season' | 'winter' => (e.dates.from.slice(5) < '03-25' ? 'spring' : e.dates.from.slice(5) < '10-15' ? 'season' : 'winter');
@@ -159,8 +209,8 @@ export const timing = (e: InternationalEvent): 'spring' | 'season' | 'winter' =>
 export const announceDate = (e: InternationalEvent) => new Date(Date.parse(e.dates.from) - 60 * 86400000).toISOString().slice(0, 10);
 
 /** Whether the result exempts the squad from military service (Asian Games gold, an Olympic medal). */
-export const exempts = (e: Pick<InternationalEvent, 'kind'>, finish: Finish) =>
-  e.kind === 'asianGames' ? finish === 'champion' : e.kind === 'olympics' ? ['champion', 'runnerUp', 'third'].includes(finish) : false;
+export const exempts = (e: Pick<InternationalEvent, 'kind' | 'exempt' | 'finish'>, finish: Finish) =>
+  e.exempt && finish === e.finish ? true : e.kind === 'asianGames' ? finish === 'champion' : e.kind === 'olympics' ? ['champion', 'runnerUp', 'third'].includes(finish) : false;
 
 /** The result in words, the way the papers put it. */
 export function finishText(e: Pick<InternationalEvent, 'kind'>, f: Finish): string {

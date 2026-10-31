@@ -92033,5 +92033,77 @@
     "line": 222,
     "params": {},
     "locations": []
+  },
+  "league.international.text.fdd4fcd9": {
+    "source": "src/league/international.ts",
+    "line": 116,
+    "params": {},
+    "locations": []
+  },
+  "league.international.text.0aeb4f61": {
+    "source": "src/league/international.ts",
+    "line": 117,
+    "params": {},
+    "locations": []
+  },
+  "league.international.text.3011196d": {
+    "source": "src/league/international.ts",
+    "line": 118,
+    "params": {},
+    "locations": []
+  },
+  "league.international.text.5d906394": {
+    "source": "src/league/international.ts",
+    "line": 119,
+    "params": {},
+    "locations": []
+  },
+  "league.international.text.7237d3c2": {
+    "source": "src/league/international.ts",
+    "line": 120,
+    "params": {},
+    "locations": []
+  },
+  "league.international.text.de5d5524": {
+    "source": "src/league/international.ts",
+    "line": 121,
+    "params": {},
+    "locations": []
+  },
+  "league.international.text.2ff1ef06": {
+    "source": "src/league/international.ts",
+    "line": 122,
+    "params": {},
+    "locations": []
+  },
+  "league.international.text.d5c2f12e": {
+    "source": "src/league/international.ts",
+    "line": 123,
+    "params": {},
+    "locations": []
+  },
+  "league.international.text.d71cf5a6": {
+    "source": "src/league/international.ts",
+    "line": 126,
+    "params": {},
+    "locations": []
+  },
+  "league.international.text.c0e6d3ed": {
+    "source": "src/league/international.ts",
+    "line": 128,
+    "params": {},
+    "locations": []
+  },
+  "league.legacy.text.1e4e34b6": {
+    "source": "src/league/legacy.ts",
+    "line": 150,
+    "params": {},
+    "locations": []
+  },
+  "league.legacy.text.fb800eb3": {
+    "source": "src/league/legacy.ts",
+    "line": 150,
+    "params": {},
+    "locations": []
   }
 }

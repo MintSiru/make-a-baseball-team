@@ -5,7 +5,8 @@
 import { independentBudget } from '../league/spending';
 import { SIM_VERSION } from '../core/version';
 import type { LeagueState, NationalEntry } from '../league/state';
-import { INTERNATIONAL } from '../league/international';
+import { eventById, exempts, INTERNATIONAL, LEGACY_REAL_THROUGH, timing } from '../league/international';
+import { today } from '../league/entry';
 import { batsFor } from '../model/player';
 import { altPositions } from '../model/position';
 import { migrateAlt } from '../league/positions';
@@ -27,7 +28,7 @@ import { isNorthern } from '../league/north';
 import { northernPast } from '../league/northevents';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0', '1.2.0', '1.3.0', '1.4.0', '1.6.0', '1.7.0', '1.7.1', '1.8.0', '1.8.1', '1.8.2', '1.8.4', '1.9.0', '1.9.3', '1.9.5', '1.9.8', '1.9.9', '2.0.0', '2.0.1', '2.0.2', '2.0.3', '2.0.4', '2.0.5', '2.0.6', '2.0.7', '2.0.8', '2.0.11', '2.0.12', '2.0.15', '2.0.16', '2.0.17', '2.0.18', '2.0.21', '2.0.22', '2.0.24', '2.0.25', '2.0.26', '2.0.27', '2.0.28', '2.0.29', '2.0.30', '2.0.34', '2.0.36', '2.0.37', '2.0.38', '2.0.39', '2.0.41', '2.0.42', '2.0.46', '2.0.47', '2.0.50', '2.0.51', '2.0.54', '2.0.55', '2.0.56', '2.0.57', '2.0.58', '2.0.59'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0', '1.2.0', '1.3.0', '1.4.0', '1.6.0', '1.7.0', '1.7.1', '1.8.0', '1.8.1', '1.8.2', '1.8.4', '1.9.0', '1.9.3', '1.9.5', '1.9.8', '1.9.9', '2.0.0', '2.0.1', '2.0.2', '2.0.3', '2.0.4', '2.0.5', '2.0.6', '2.0.7', '2.0.8', '2.0.11', '2.0.12', '2.0.15', '2.0.16', '2.0.17', '2.0.18', '2.0.21', '2.0.22', '2.0.24', '2.0.25', '2.0.26', '2.0.27', '2.0.28', '2.0.29', '2.0.30', '2.0.34', '2.0.36', '2.0.37', '2.0.38', '2.0.39', '2.0.41', '2.0.42', '2.0.46', '2.0.47', '2.0.50', '2.0.51', '2.0.54', '2.0.55', '2.0.56', '2.0.57', '2.0.58', '2.0.59', '2.0.64'];
 
 type Loose = Record<string, unknown>;
 
@@ -95,7 +96,7 @@ export function migrateState(raw: unknown, from: string): LeagueState {
   // 0.12: several national-team events a year, each with an id, a result and the club's requests.
   for (const e of s.international as (NationalEntry & Loose)[]) {
     if (e.id) continue;
-    const ev = INTERNATIONAL.find((x) => x.year === e.year && (x.kind === 'asianGames' || x.kind === 'olympics'));
+    const ev = INTERNATIONAL.find((x) => !x.legacyOnly && x.year === e.year && (x.kind === 'asianGames' || x.kind === 'olympics'));
     e.id = ev?.id ?? `${e.year}-asianGames`;
     e.kind = ev?.kind ?? 'asianGames';
     e.finish = ev?.finish ?? (e.medal ? (e.kind === 'olympics' ? 'third' : 'champion') : 'fourth');
@@ -181,5 +182,23 @@ export function repairState(raw: unknown) {
   if (u?.independent && u.budgetWhy) {
     delete u.goals;
     independentBudget(s, s.phase === 'offseason' && s.offseason ? s.offseason.year + 1 : s.year);
+  }
+  // 2.0.65 (the user's request): a 1982 legacy game gone past the KBO's real events before they were in the game —
+  // their results on record (no squad: the players of the time are not known any more).
+  if (s.historical && s.international) {
+    let added = false;
+    const date = s.phase === 'regular' || s.phase === 'postseason' ? today(s) : null;
+    for (const e of INTERNATIONAL) {
+      if (!e.legacyOnly || !e.finish || e.year > LEGACY_REAL_THROUGH || s.international.some((x) => x.id === e.id)) continue;
+      // Gone by: a year before this one, or this season's event over before today (one in the winter is still ahead).
+      const over = s.phase === 'offseason' || (!!date && e.dates.to < date);
+      if (e.year > s.year || (e.year === s.year && !(over && timing(e) !== 'winter'))) continue;
+      s.international.push({ id: e.id, year: e.year, name: e.name, kind: e.kind, medal: !e.amateur && exempts(e, e.finish), finish: e.finish, squad: [], ...(e.amateur ? { amateur: true as const } : { recordOnly: true as const }) });
+      added = true;
+    }
+    if (added) {
+      const at = (id: string) => eventById(id)?.dates.from ?? '';
+      s.international.sort((a, b) => a.year - b.year || at(a.id).localeCompare(at(b.id)));
+    }
   }
 }

@@ -10220,5 +10220,17 @@
   "ui.clubRecords.text.6f8a54e0": "Retire his number ({number})",
   "league.ownerask.text.8c0ad1e5": "An independent club has no parent company to ask.",
   "league.budgetask.text.8c0ad1e5": "An independent club has no parent company to ask.",
-  "ui.office.text.1b6840d6": "Independent club"
+  "ui.office.text.1b6840d6": "Independent club",
+  "league.international.text.fdd4fcd9": "Baseball World Championship",
+  "league.international.text.0aeb4f61": "Los Angeles Olympics (demonstration)",
+  "league.international.text.3011196d": "Seoul Olympics (demonstration)",
+  "league.international.text.5d906394": "Hiroshima Asian Games",
+  "league.international.text.7237d3c2": "Atlanta Olympics",
+  "league.international.text.de5d5524": "Bangkok Asian Games",
+  "league.international.text.2ff1ef06": "Sydney Olympics",
+  "league.international.text.d5c2f12e": "Busan Asian Games",
+  "league.international.text.d71cf5a6": "Beijing Olympics",
+  "league.international.text.c0e6d3ed": "Guangzhou Asian Games",
+  "league.legacy.text.1e4e34b6": "Amateur national team",
+  "league.legacy.text.fb800eb3": "Result only on record"
 }

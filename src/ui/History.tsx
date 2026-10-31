@@ -378,8 +378,8 @@ function National({ league, onPlayer, onBox }: { league: LeagueState; onPlayer: 
                   {__i18n_display(r.result)}
                   {__i18n_display(r.medal && <span class="tag">{__i18n_t("ui.history.national.de7fcbc3")}</span>)}
                 </td>
-                <td class="num">{__i18n_display(r.squad)}</td>
-                <td class="small">{__i18n_display(r.clubs.map((c) => `${c.team} ${c.n}`).join(' · '))}</td>
+                <td class="num">{__i18n_display(r.note ? '-' : r.squad)}</td>
+                <td class="small">{r.note ? <span class="muted">{__i18n_display(r.note)}</span> : __i18n_display(r.clubs.map((c) => `${c.team} ${c.n}`).join(' · '))}</td>
                 <td class="small">
                   {__i18n_display(r.ours.length
                     ? r.ours.map((x, i) => (
