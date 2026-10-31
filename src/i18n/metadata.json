@@ -92015,5 +92015,23 @@
       }
     },
     "locations": []
+  },
+  "league.ownerask.text.8c0ad1e5": {
+    "source": "src/league/ownerask.ts",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "league.budgetask.text.8c0ad1e5": {
+    "source": "src/league/budgetask.ts",
+    "line": 42,
+    "params": {},
+    "locations": []
+  },
+  "ui.office.text.1b6840d6": {
+    "source": "src/ui/Office.tsx",
+    "line": 222,
+    "params": {},
+    "locations": []
   }
 }

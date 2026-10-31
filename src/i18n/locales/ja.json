@@ -10217,5 +10217,8 @@
   "ui.clubRecords.text.08025cfb": "球団の欠番基準の{pct}%（WAR 70%・シーズン 30%）",
   "ui.clubRecords.text.243cf4c2": "選手情報",
   "ui.clubRecords.text.a5727dbf": "{name}の{number}番を永久欠番にするとファンの雰囲気が下がります。それでも指定しますか？",
-  "ui.clubRecords.text.6f8a54e0": "#{number} 永久欠番"
+  "ui.clubRecords.text.6f8a54e0": "#{number} 永久欠番",
+  "league.ownerask.text.8c0ad1e5": "独立球団には支援を求める親会社がありません。",
+  "league.budgetask.text.8c0ad1e5": "独立球団には支援を求める親会社がありません。",
+  "ui.office.text.1b6840d6": "独立球団"
 }

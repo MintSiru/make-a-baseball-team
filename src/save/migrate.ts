@@ -2,6 +2,7 @@
    state, so an older game can go on under the current rules: fields added since are filled in, and
    everything simulated from here follows the new rules (the history already played stays as it was).
    Versions without a league snapshot (0.1) cannot be carried over. */
+import { independentBudget } from '../league/spending';
 import { SIM_VERSION } from '../core/version';
 import type { LeagueState, NationalEntry } from '../league/state';
 import { INTERNATIONAL } from '../league/international';
@@ -174,4 +175,11 @@ export function migrateState(raw: unknown, from: string): LeagueState {
 export function repairState(raw: unknown) {
   const s = raw as LeagueState;
   for (const p of Object.values(s.players ?? {})) if (p.teamId && p.status === 'freeAgent' && p.contract?.teamId === p.teamId) p.status = 'active';
+  // 2.0.64 (user report): a club that became independent before the fix still had the owner's budget and goals — its
+  // own budget now, once (independentBudget clears the owner's breakdown, so a reload does not refill it).
+  const u = s.user;
+  if (u?.independent && u.budgetWhy) {
+    delete u.goals;
+    independentBudget(s, s.phase === 'offseason' && s.offseason ? s.offseason.year + 1 : s.year);
+  }
 }

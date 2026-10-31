@@ -35,6 +35,11 @@ export const baseSupport = (type: ParentCompanyType) => PARENT.support[type];
 export function setGoals(s: LeagueState, year: number): SeasonGoals | null {
   const u = s.user;
   if (!u || !firstTeamIds(s, year).includes(u.teamId)) return null;
+  // 2.0.64 (the user's report): an independent club has no owner to set goals (spending.ts).
+  if (u.independent) {
+    delete u.goals;
+    return null;
+  }
   const type = u.settings.parentType;
   const seasonsIn = year - u.firstTeamYear;
   const clubs = firstTeamIds(s, year).length;
@@ -56,6 +61,8 @@ export function setGoals(s: LeagueState, year: number): SeasonGoals | null {
  */
 export function evaluate(s: LeagueState, year: number): Evaluation | null {
   const u = s.user;
+  // 2.0.64 (the user's report): nor to judge the season.
+  if (u?.independent) return null;
   const g = u?.goals;
   if (!u || !g || g.year !== year) return null;
   const table = s.history.find((h) => h.year === year)?.table ?? [];
@@ -95,7 +102,7 @@ const note = (s: LeagueState, year: number, text: string) => (s.user!.log ??= []
 /** This winter's owner events. Returns a one-off factor for next year's support (1 = none). */
 export function ownerEvents(s: LeagueState, year: number): number {
   const u = s.user;
-  if (!u) return 1;
+  if (!u || u.independent) return 1;
   const r = rng(`${s.seed}|owner|${year}`);
   const type = u.settings.parentType;
   const report = clubState(s, u.teamId).reports.find((x) => x.year === year);

@@ -178,7 +178,8 @@ export function movePlayer(s: LeagueState, p: Player, to: TeamId) {
  */
 export function parentGiftFor(s: LeagueState, next: number, fas: Player[], grades: Record<PlayerId, FaGrade>): { id: PlayerId; premium: number } | null {
   const u = s.user;
-  if (!u || next <= u.firstTeamYear) return null;
+  // 2.0.64 (the user's report): no owner, no free agent on the owner's money.
+  if (!u || next <= u.firstTeamYear || u.independent) return null;
   const G = PARENT.faGift;
   if (rng(`${s.seed}|fa-gift|${next}`)() >= G[u.settings.parentType]) return null;
   const pick = fas

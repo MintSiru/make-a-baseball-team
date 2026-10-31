@@ -218,9 +218,13 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
       {next && section === 'summary' && (
         <>
           <Gauges items={gauges} class="money-bar">
-            <span class={`stamp${trust < 40 ? '' : trust >= 70 ? ' good' : ' accent'}`} title={ev ? __i18n_t("ui.office.office.35024d86", { year: ev.year, value: ev.change >= 0 ? '+' : '', value2: Math.round(ev.change * 100) }) : undefined}>
-              {__i18n_t("ui.office.office.e4762814")} · {trust}
-            </span>
+            {u.independent ? (
+              <span class="stamp good">{__i18n_t("ui.office.text.1b6840d6")}</span>
+            ) : (
+              <span class={`stamp${trust < 40 ? '' : trust >= 70 ? ' good' : ' accent'}`} title={ev ? __i18n_t("ui.office.office.35024d86", { year: ev.year, value: ev.change >= 0 ? '+' : '', value2: Math.round(ev.change * 100) }) : undefined}>
+                {__i18n_t("ui.office.office.e4762814")} · {trust}
+              </span>
+            )}
           </Gauges>
           <div class="money-dash">
             <section class="sheet-box">
@@ -245,10 +249,12 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
               <section class="sheet-box">
                 <h3>{__i18n_display(PARENT_COMPANY_TYPES[u.settings.parentType].label)} · {__i18n_display(team.parent.name)}</h3>
                 <dl class="figures">
-                  <div>
-                    <dt>{budget ? __i18n_t("ui.office.text.ec72246f") : __i18n_t("ui.office.text.d5b652b5")}</dt>
-                    <dd>{money(budget ? budget.amount : (u.support ?? 0))}</dd>
-                  </div>
+                  {!u.independent && (
+                    <div>
+                      <dt>{budget ? __i18n_t("ui.office.text.ec72246f") : __i18n_t("ui.office.text.d5b652b5")}</dt>
+                      <dd>{money(budget ? budget.amount : (u.support ?? 0))}</dd>
+                    </div>
+                  )}
                   {budget && current && (
                     <div>
                       <dt>{__i18n_t("ui.office.office.a549279b", { year: league.year })}</dt>

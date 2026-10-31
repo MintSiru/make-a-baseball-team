@@ -12,6 +12,10 @@ import { apply } from '../src/league/actions';
 import { isPitcher } from '../src/league/players';
 import { loadSave, playDays } from './helpers';
 import { retireCandidates } from '../src/league/numbers';
+import { evaluate, ownerEvents, setGoals } from '../src/league/parent';
+import { askBudgetProblem } from '../src/league/budgetask';
+import { repairState } from '../src/save/migrate';
+import { projectedPayroll } from '../src/league/expansion';
 
 let s: LeagueState;
 let moved: string;
@@ -143,5 +147,30 @@ describe('a number retired by the general manager (2.0.64)', () => {
     expect(wearer!.number).not.toBe(n);
     // Not twice, and not one of another club's.
     expect(() => apply(u, { kind: 'retireNumber', id: great!.id })).toThrow();
+  });
+});
+
+describe('an independent club (2.0.64, user report)', () => {
+  it('has no owner’s goals, verdict, events or asks, and a budget of its own', () => {
+    const u = loadSave('2.0.58');
+    const me = u.user!;
+    me.independent = u.year - 1;
+    me.budgetWhy = { season: u.year, base: 1, scale: 1, dynamic: 1, floor: 1, gifts: 0 };
+    me.goals = { year: u.year, rank: 5, fans: 10000, result: 0 };
+    expect(setGoals(u, u.year + 1)).toBeNull();
+    expect(me.goals).toBeUndefined();
+    expect(evaluate(u, u.year)).toBeNull();
+    expect(ownerEvents(u, u.year)).toBe(1);
+    expect(askBudgetProblem(u)).not.toBeNull();
+    // A save from before the fix: its own budget at load, once.
+    me.goals = { year: u.year, rank: 5, fans: 10000, result: 0 };
+    repairState(u);
+    expect(me.budgetWhy).toBeUndefined();
+    expect(me.goals).toBeUndefined();
+    const own = projectedPayroll(u, me.teamId, u.year) + Math.max(0, me.fund);
+    expect(Math.abs(me.payrollBudget - own)).toBeLessThanOrEqual(1000);
+    me.fund += 500_000;
+    repairState(u);
+    expect(Math.abs(me.payrollBudget - own)).toBeLessThanOrEqual(1000);
   });
 });

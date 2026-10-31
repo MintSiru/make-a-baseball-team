@@ -10218,5 +10218,8 @@ export const koSource = {
   "ui.clubRecords.text.08025cfb": "구단 결번 기준의 {pct}% (WAR 70% · 시즌 30%)",
   "ui.clubRecords.text.243cf4c2": "선수 정보",
   "ui.clubRecords.text.a5727dbf": "{name}의 {number}번을 영구결번하면 팬 분위기가 떨어집니다. 그래도 지정할까요?",
-  "ui.clubRecords.text.6f8a54e0": "#{number} 영구결번"
+  "ui.clubRecords.text.6f8a54e0": "#{number} 영구결번",
+  "league.ownerask.text.8c0ad1e5": "독립 구단에는 지원을 요청할 모기업이 없습니다.",
+  "league.budgetask.text.8c0ad1e5": "독립 구단에는 지원을 요청할 모기업이 없습니다.",
+  "ui.office.text.1b6840d6": "독립 구단"
 } as const;

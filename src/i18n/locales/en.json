@@ -10217,5 +10217,8 @@
   "ui.clubRecords.text.08025cfb": "{pct}% of the club's bar (WAR 70% · seasons 30%)",
   "ui.clubRecords.text.243cf4c2": "Player",
   "ui.clubRecords.text.a5727dbf": "Making {name}’s No. {number} a retired number will sour the fans. Do it anyway?",
-  "ui.clubRecords.text.6f8a54e0": "Retire his number ({number})"
+  "ui.clubRecords.text.6f8a54e0": "Retire his number ({number})",
+  "league.ownerask.text.8c0ad1e5": "An independent club has no parent company to ask.",
+  "league.budgetask.text.8c0ad1e5": "An independent club has no parent company to ask.",
+  "ui.office.text.1b6840d6": "Independent club"
 }

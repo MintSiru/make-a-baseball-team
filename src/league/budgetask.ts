@@ -39,6 +39,7 @@ export interface BudgetAsk {
 export function askBudgetProblem(s: LeagueState): string | null {
   const u = s.user;
   if (!u) return __i18n_k("league.budgetask.text.272add95");
+  if (u.independent) return __i18n_k("league.budgetask.text.8c0ad1e5");
   if (s.phase !== 'regular' && s.phase !== 'offseason') return __i18n_k("league.budgetask.text.1bf0a8c9");
   const season = payrollSeason(s);
   if (u.budgetAsks?.some((a) => a.season === season)) return __i18n_k("league.budgetask.text.af4a5ddb", { season });
