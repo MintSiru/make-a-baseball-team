@@ -46,6 +46,11 @@ export interface SeasonLine {
   pit: PitTotals | null;
   /** 2.0.15 (venues.ts): home and road, and each ballpark (first-team regular season). */
   venues?: import('./venues').Venues;
+  /** 2.0.64 (gamelog.ts): his last ten games and the season by month ('03'…'10'), this season's only. */
+  last?: import('./gamelog').GameRow[];
+  months?: Record<string, { bat?: BatTotals; pit?: PitTotals }>;
+  /** 2.0.64 (gamelog.ts): moved between clubs in the season — his line at each, in order (the totals stay whole). */
+  parts?: import('./gamelog').SeasonPart[];
 }
 
 // ── Front office (V0.6) ───────────────────────────────────────────────────────────────────────────
@@ -584,6 +589,8 @@ export interface UserClub {
   notForSale?: PlayerId[];
   /** 2.0.59 (offers.ts): ours put on the trade block, for the clubs' offers. */
   tradeBlock?: PlayerId[];
+  /** 2.0.64 (the user's request, manager.ts): ours kept in the futures (2군 전용) — the manager does not call them up. */
+  futuresOnly?: PlayerId[];
   /** 2.0.43 (clubmove.ts): the clubs the general manager ran before this one — id, name, first and last winter. */
   former?: { teamId: TeamId; name: string; from: number; to: number }[];
 }

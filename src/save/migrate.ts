@@ -2,6 +2,7 @@
    state, so an older game can go on under the current rules: fields added since are filled in, and
    everything simulated from here follows the new rules (the history already played stays as it was).
    Versions without a league snapshot (0.1) cannot be carried over. */
+import { independentBudget } from '../league/spending';
 import { SIM_VERSION } from '../core/version';
 import type { LeagueState, NationalEntry } from '../league/state';
 import { INTERNATIONAL } from '../league/international';
@@ -26,7 +27,7 @@ import { isNorthern } from '../league/north';
 import { northernPast } from '../league/northevents';
 
 /** Simulation versions whose snapshots this build can carry forward. */
-export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0', '1.2.0', '1.3.0', '1.4.0', '1.6.0', '1.7.0', '1.7.1', '1.8.0', '1.8.1', '1.8.2', '1.8.4', '1.9.0', '1.9.3', '1.9.5', '1.9.8', '1.9.9', '2.0.0', '2.0.1', '2.0.2', '2.0.3', '2.0.4', '2.0.5', '2.0.6', '2.0.7', '2.0.8', '2.0.11', '2.0.12', '2.0.15', '2.0.16', '2.0.17', '2.0.18', '2.0.21', '2.0.22', '2.0.24', '2.0.25', '2.0.26', '2.0.27', '2.0.28', '2.0.29', '2.0.30', '2.0.34', '2.0.36', '2.0.37', '2.0.38', '2.0.39', '2.0.41', '2.0.42', '2.0.46', '2.0.47', '2.0.50', '2.0.51', '2.0.54', '2.0.55', '2.0.56', '2.0.57', '2.0.58'];
+export const MIGRATABLE = ['0.2', '0.3', '0.4', '0.4.1', '0.5', '0.5.1', '0.6', '0.7', '0.7.6', '0.7.7', '0.7.8', '0.8.0', '0.11.0', '0.12.0', '0.16.0', '1.0.0', '1.1.0', '1.2.0', '1.3.0', '1.4.0', '1.6.0', '1.7.0', '1.7.1', '1.8.0', '1.8.1', '1.8.2', '1.8.4', '1.9.0', '1.9.3', '1.9.5', '1.9.8', '1.9.9', '2.0.0', '2.0.1', '2.0.2', '2.0.3', '2.0.4', '2.0.5', '2.0.6', '2.0.7', '2.0.8', '2.0.11', '2.0.12', '2.0.15', '2.0.16', '2.0.17', '2.0.18', '2.0.21', '2.0.22', '2.0.24', '2.0.25', '2.0.26', '2.0.27', '2.0.28', '2.0.29', '2.0.30', '2.0.34', '2.0.36', '2.0.37', '2.0.38', '2.0.39', '2.0.41', '2.0.42', '2.0.46', '2.0.47', '2.0.50', '2.0.51', '2.0.54', '2.0.55', '2.0.56', '2.0.57', '2.0.58', '2.0.59'];
 
 type Loose = Record<string, unknown>;
 
@@ -174,4 +175,11 @@ export function migrateState(raw: unknown, from: string): LeagueState {
 export function repairState(raw: unknown) {
   const s = raw as LeagueState;
   for (const p of Object.values(s.players ?? {})) if (p.teamId && p.status === 'freeAgent' && p.contract?.teamId === p.teamId) p.status = 'active';
+  // 2.0.64 (user report): a club that became independent before the fix still had the owner's budget and goals — its
+  // own budget now, once (independentBudget clears the owner's breakdown, so a reload does not refill it).
+  const u = s.user;
+  if (u?.independent && u.budgetWhy) {
+    delete u.goals;
+    independentBudget(s, s.phase === 'offseason' && s.offseason ? s.offseason.year + 1 : s.year);
+  }
 }

@@ -70,6 +70,7 @@ import { canRelease, releasePlayer } from './trade';
 import { placeVoluntary } from './voluntary';
 import { postingPersuasion } from './abroad';
 import { schoolsWinter } from './schools';
+import { independentBudget } from './spending';
 
 /** Difficulty scales the owner's money. */
 const DIFFICULTY_MONEY = DIFFICULTY.money;
@@ -246,6 +247,9 @@ export function yearlyGrant(s: LeagueState) {
     floor,
     gifts: giftPayroll(u, next),
   };
+  // 2.0.64 (the user's report): an independent club's budget is its own — the payroll it carries into next season and
+  // the fund it has to add to it, no owner's cap (spending.ts independentBudget).
+  if (u.independent) independentBudget(s, next);
   // 2.0.56: next season's support in advance, for the winter's signing bonuses (finance.ts).
   advanceSupport(s, year);
 }

@@ -23,6 +23,7 @@ import { addNews } from './news';
 import { eunneun } from './josa';
 import { PARENT } from './tuning';
 import type { LeagueState } from './state';
+import { projectedPayroll } from './market';
 
 export type SpendKind = 'bonus' | 'charter' | 'fanDay' | 'gift' | 'city' | 'independence';
 
@@ -146,6 +147,9 @@ export function spend(s: LeagueState, kind: SpendKind, tier = 0) {
     }
     case 'independence': {
       u.independent = s.year;
+      delete u.goals;
+      // Its budget from now on is its own (the fund after the price, paid above).
+      independentBudget(s, s.phase === 'offseason' && s.offseason ? s.offseason.year + 1 : s.year);
       u.ledger.push({ year: s.year, label: __i18n_k("league.spending.text.4b6e83eb"), amount: -cost, capital: true });
       const team = s.teams.find((x) => x.id === u.teamId)!;
       const text = __i18n_k("league.spending.text.bb7e52cf", { club: team.name, owner: u.settings.parentName });
@@ -165,3 +169,13 @@ export function spend(s: LeagueState, kind: SpendKind, tier = 0) {
 
 /** A season of charters halves the road's toll on the club (travel.ts). */
 export const charterShare = (s: LeagueState, teamId: TeamId) => (s.user?.teamId === teamId && s.user.spending?.charter === s.year ? SPEND.charter.share : 0);
+
+/** 2.0.64 (the user's report): an independent club's payroll budget for `season` — what it already pays then and the
+    fund it has (no owner's budget, no floor, no owner's free agents on top). Set when it becomes independent and each
+    winter; new contracts use it up as they would an owner's. */
+export function independentBudget(s: LeagueState, season: number) {
+  const u = s.user;
+  if (!u?.independent) return;
+  u.payrollBudget = Math.round((projectedPayroll(s, u.teamId, season) + Math.max(0, u.fund)) / 1000) * 1000;
+  delete u.budgetWhy;
+}

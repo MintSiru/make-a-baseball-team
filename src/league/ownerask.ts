@@ -36,6 +36,7 @@ export function askOwnerProblem(s: LeagueState, id: PlayerId): string | null {
   const u = s.user;
   const m = s.offseason?.fa;
   if (!u || !m || m.closed) return __i18n_k("league.ownerask.text.e8621a4d");
+  if (u.independent) return __i18n_k("league.ownerask.text.8c0ad1e5");
   if (m.gift) return __i18n_k("league.ownerask.text.2d20c512");
   if (m.asked) return __i18n_k("league.ownerask.text.19d60d1c");
   const t = m.talks[id];

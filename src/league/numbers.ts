@@ -9,6 +9,8 @@ import { isForeign, isPitcher, isReliever } from './players';
 import { isDevelopment, orgPlayers, type LeagueState } from './state';
 import { milestone, unlock } from './milestones';
 import { bullpenTitles } from './awards';
+import { clubState } from './fans';
+import { FANS } from './tuning';
 
 /** A number is retired for 12 first-team seasons at the club and WAR 60 there; 1.9.9: a reliever's WAR 35, 250
     saves and holds there or three save or hold titles (the user's request: a closer's WAR is small), and each number the club has already retired
@@ -123,4 +125,77 @@ export function maybeRetireNumber(s: LeagueState, p: Player, teamId: TeamId, yea
     unlock(s, 'retiredNumber', year, __i18n_k("league.numbers.maybeRetireNumber.05c2328c", { number: p.number, name: p.name }));
     milestone(s, year, __i18n_k("league.numbers.maybeRetireNumber.8985f06c", { name: p.name, number: p.number }));
   }
+}
+
+/** 2.0.64 (the user's request): the general manager retires a number himself — a retired player of ours, the number he
+    wore here. Measured against the bar a club retires one by (its WAR and seasons here, a reliever's saves and titles,
+    the bar rising with each number retired): one who clears it most of the way is welcomed; one far below it angers
+    the fans, the further below the more (so numbers are not handed out by the dozen). */
+export const RETIRE_GM = { worthy: 0.8, debatable: 0.5, cheer: 0.03, anger: 0.6 };
+
+export type RetireVerdict = 'worthy' | 'debatable' | 'unworthy';
+export interface RetireCandidate {
+  id: string;
+  name: string;
+  number: number;
+  war: number;
+  seasons: number;
+  /** 0 to 1: how much of the bar he clears (WAR 70%, seasons 30%). */
+  merit: number;
+  verdict: RetireVerdict;
+  /** The change to the fans' mood. */
+  mood: number;
+}
+
+function retireMerit(s: LeagueState, p: Player, teamId: TeamId) {
+  const here = p.career.filter((c) => c.teamId === teamId && !c.level);
+  const war = here.reduce((a, c) => a + c.war, 0);
+  const team = s.teams.find((t) => t.id === teamId);
+  const bar = s.retiredBarRise === false ? 1 : 1 + RETIRE.perRetired * (team?.retiredNumbers?.length ?? 0);
+  const saves = here.reduce((a, c) => a + (c.pit?.sv ?? 0) + (c.pit?.hld ?? 0), 0);
+  const warPart = isReliever(p) ? Math.max(war / (RETIRE.relieverWar * bar), saves / (RETIRE.relieverSaves * bar), bullpenTitles(s, p.id) / Math.ceil(RETIRE.relieverTitles * bar)) : war / (RETIRE.war * bar);
+  const seasons = here.length;
+  const merit = Math.max(0, Math.min(1, warPart) * 0.7 + Math.min(1, seasons / RETIRE.seasons) * 0.3);
+  return { war: Math.round(war * 10) / 10, seasons, merit: Math.round(merit * 100) / 100 };
+}
+
+const verdictOf = (merit: number): RetireVerdict => (merit >= RETIRE_GM.worthy ? 'worthy' : merit >= RETIRE_GM.debatable ? 'debatable' : 'unworthy');
+const moodOf = (merit: number) => (merit >= RETIRE_GM.worthy ? RETIRE_GM.cheer : merit >= RETIRE_GM.debatable ? 0 : -Math.round((RETIRE_GM.debatable - merit) * RETIRE_GM.anger * 100) / 100);
+
+/** Our retired players who wore a number here not yet retired, the most deserving first. */
+export function retireCandidates(s: LeagueState): RetireCandidate[] {
+  const u = s.user;
+  if (!u) return [];
+  const team = s.teams.find((t) => t.id === u.teamId);
+  const taken = new Set((team?.retiredNumbers ?? []).map((x) => x.number));
+  const honoured = new Set((team?.retiredNumbers ?? []).map((x) => x.playerId));
+  return Object.values(s.players)
+    .filter((p) => p.status === 'retired' && p.numberTeam === u.teamId && p.number != null && p.number <= 99 && !taken.has(p.number) && !honoured.has(p.id) && p.career.some((c) => c.teamId === u.teamId && !c.level))
+    .map((p) => {
+      const m = retireMerit(s, p, u.teamId);
+      return { id: p.id, name: p.name, number: p.number!, ...m, verdict: verdictOf(m.merit), mood: moodOf(m.merit) };
+    })
+    .sort((a, b) => b.merit - a.merit || b.war - a.war);
+}
+
+export function checkRetireNumber(s: LeagueState, id: string): string | null {
+  return retireCandidates(s).some((c) => c.id === id) ? null : __i18n_k("league.numbers.text.cbaaafdb");
+}
+
+/** Retires his number at our club: one of ours wearing it now takes another; the fans' mood follows the verdict. */
+export function retireNumberByGm(s: LeagueState, id: string) {
+  const problem = checkRetireNumber(s, id);
+  if (problem) throw new Error(problem);
+  const u = s.user!;
+  const c = retireCandidates(s).find((x) => x.id === id)!;
+  const team = s.teams.find((t) => t.id === u.teamId)!;
+  (team.retiredNumbers ??= []).push({ number: c.number, playerId: c.id, name: c.name, year: s.year });
+  const wearer = numberHolder(s, u.teamId, c.number, c.id);
+  if (wearer) {
+    delete wearer.number;
+    teamNumbers(s, u.teamId);
+  }
+  const club = clubState(s, u.teamId);
+  club.interest = Math.max(FANS.interestMin, Math.min(FANS.interestMax, club.interest + c.mood));
+  milestone(s, s.year, c.verdict === 'unworthy' ? __i18n_k("league.numbers.text.7b0dcbb4", { name: c.name, number: c.number }) : __i18n_k("league.numbers.text.cbab1a9b", { name: c.name, number: c.number }));
 }

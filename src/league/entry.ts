@@ -9,7 +9,7 @@ import type { FieldPos } from './engine/types';
 import { isForeign, isPitcher } from './players';
 import { eunneun, iga } from './josa';
 import { KBO_2026 } from '../rules/kbo2026';
-import { firstTeamSize, rotationSize } from './manager';
+import { firstTeamSize, pinnedIds, rotationSize } from './manager';
 import { offRoster } from './injuries';
 import { rosterLimit } from './offseason';
 import { isDevelopment, moveTo, registeredIds, squadOf, type LeagueState, type LineupCard, type Squad } from './state';
@@ -172,5 +172,11 @@ export function setLineupCard(s: LeagueState, card: LineupCard | null) {
   if (problem) throw new Error(problem);
   const places = card.places && (card.places.R.length || card.places.L.length) ? { R: card.places.R.map((x) => ({ id: x.id, pos: x.pos })), L: card.places.L.map((x) => ({ id: x.id, pos: x.pos })) } : undefined;
   u.lineup = { R: card.R.map((x) => (x ? { id: x.id, pos: x.pos ?? null } : null)), L: card.L.map((x) => (x ? { id: x.id, pos: x.pos ?? null } : null)), ...(places ? { places } : {}), rotation: [...card.rotation], rest: card.rest !== false };
+  // 2.0.64: a player fixed on the card is no longer kept in the futures.
+  if (u.futuresOnly) {
+    const pinned = new Set(pinnedIds(s));
+    u.futuresOnly = u.futuresOnly.filter((id) => !pinned.has(id));
+    if (!u.futuresOnly.length) delete u.futuresOnly;
+  }
 }
 

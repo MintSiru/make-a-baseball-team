@@ -5,6 +5,8 @@ import { useState } from 'preact/hooks';
 import { clubRecords } from '../league/clubrecords';
 import { ClubSquad } from './ClubSquad';
 import type { LeagueState } from '../league/state';
+import type { Action } from '../league/actions';
+import { retireCandidates } from '../league/numbers';
 
 type Part = 'years' | 'squad' | 'career' | 'season' | 'honours';
 
@@ -37,7 +39,7 @@ function Boards({ boards, onPlayer, years }: { boards: Board[]; onPlayer: (id: s
   );
 }
 
-export function ClubRecords({ league, teamId, onPlayer }: { league: LeagueState; teamId: string; onPlayer: (id: string) => void }) {
+export function ClubRecords({ league, teamId, onPlayer, onAct }: { league: LeagueState; teamId: string; onPlayer: (id: string) => void; onAct?: (a: Action) => void }) {
   const [part, setPart] = useState<Part>('years');
   const r = clubRecords(league, teamId);
   const t = r.totals;
@@ -151,6 +153,7 @@ export function ClubRecords({ league, teamId, onPlayer }: { league: LeagueState;
           ) : (
             <p class="muted small">{__i18n_t("ui.clubRecords.text.be69e307")}</p>
           )}
+          {onAct && teamId === league.user?.teamId && <RetireNumber league={league} onAct={onAct} onPlayer={onPlayer} />}
           <h4>{__i18n_t("ui.clubRecords.text.6999864f")}</h4>
           {r.hall.length ? (
             <ul class="plain">
@@ -168,6 +171,43 @@ export function ClubRecords({ league, teamId, onPlayer }: { league: LeagueState;
           )}
         </>
       )}
+    </div>
+  );
+}
+
+/** 2.0.64 (the user's request): the general manager retires a number — a retired player of ours, how far he clears the
+    bar a club retires one by, and what the fans will make of it. */
+function RetireNumber({ league, onAct, onPlayer }: { league: LeagueState; onAct: (a: Action) => void; onPlayer: (id: string) => void }) {
+  const list = retireCandidates(league);
+  const [id, setId] = useState('');
+  if (!list.length) return null;
+  const c = list.find((x) => x.id === id) ?? list[0]!;
+  const verdict = c.verdict === 'worthy' ? __i18n_t("ui.clubRecords.text.98ea214c") : c.verdict === 'debatable' ? __i18n_t("ui.clubRecords.text.75bae11c") : __i18n_t("ui.clubRecords.text.eaece91e");
+  return (
+    <div class="retire-number">
+      <label>
+        {__i18n_t("ui.clubRecords.text.ec4dcfba")}{' '}
+        <select value={c.id} onChange={(e) => setId((e.currentTarget as HTMLSelectElement).value)}>
+          {list.map((x) => (
+            <option key={x.id} value={x.id}>
+              #{x.number} {x.name} · WAR {x.war.toFixed(1)} · {__i18n_t("ui.clubRecords.text.dbf4c3d2", { n: x.seasons })}
+            </option>
+          ))}
+        </select>
+      </label>{' '}
+      <span class={`stamp${c.verdict === 'worthy' ? ' good' : c.verdict === 'debatable' ? ' accent' : ''}`} title={__i18n_t("ui.clubRecords.text.08025cfb", { pct: Math.round(c.merit * 100) })}>
+        {verdict}
+        {c.mood < 0 ? ` ${Math.round(c.mood * 100)}` : ''}
+      </span>{' '}
+      <button type="button" class="link small" onClick={() => onPlayer(c.id)}>
+        {__i18n_t("ui.clubRecords.text.243cf4c2")}
+      </button>{' '}
+      <button
+        type="button"
+        onClick={() => (c.verdict !== 'unworthy' || window.confirm(__i18n_t("ui.clubRecords.text.a5727dbf", { name: c.name, number: c.number }))) && onAct({ kind: 'retireNumber', id: c.id })}
+      >
+        {__i18n_t("ui.clubRecords.text.6f8a54e0", { number: c.number })}
+      </button>
     </div>
   );
 }
