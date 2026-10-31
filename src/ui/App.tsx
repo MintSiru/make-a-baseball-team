@@ -646,6 +646,11 @@ export function App() {
       setClubGo((g) => ({ view, n: g.n + 1 }));
     },
   });
+  // 2.0.66 (the user's report): 우리 구단 opens on its overview, not on 통산 기록 or 구단 이야기 last opened from the menu.
+  const toClub = () => {
+    setTab('club');
+    if (clubView === 'story' || clubView === 'records') setClubGo((g) => ({ view: 'overview', n: g.n + 1 }));
+  };
   const navGroups: { label: string; items: NavItem[] }[] = [
     ...(league.user
       ? [
@@ -653,7 +658,10 @@ export function App() {
             label: __i18n_t("ui.app.text.6bc69497"),
             items: [
               ...(league.pending ? [item('decision', __i18n_k("ui.app.tABS.label.2d179fd7"), { waiting: true })] : []),
-              item('club', __i18n_k("ui.app.tABS.label.8cc09c32"), { current: tab === 'club' && clubView !== 'story' && clubView !== 'records' }),
+              item('club', __i18n_k("ui.app.tABS.label.8cc09c32"), {
+                current: tab === 'club' && clubView !== 'story' && clubView !== 'records',
+                onClick: toClub,
+              }),
               item('market', __i18n_k("ui.app.tABS.label.e11828a8")),
               item('draft', __i18n_k("ui.app.tABS.label.0db7daf2")),
             ],
@@ -683,7 +691,7 @@ export function App() {
       {ui === 'new' ? (
         <NextSidebar
           league={shown}
-          onClub={() => setTab('club')}
+          onClub={toClub}
           groups={navGroups}
           extra={
             <>

@@ -71,6 +71,8 @@ import { placeVoluntary } from './voluntary';
 import { postingPersuasion } from './abroad';
 import { schoolsWinter } from './schools';
 import { independentBudget } from './spending';
+import { INTENSITIES, programsFor, type Intensity } from './drills';
+import { CAMP_GROUPS, springCamp, suggestCampGroups, type CampGroup } from './development';
 
 /** Difficulty scales the owner's money. */
 const DIFFICULTY_MONEY = DIFFICULTY.money;
@@ -84,6 +86,9 @@ const POSITION_ROLE: Record<Position, Role> = { C: 'C', '1B': 'IF', '2B': 'IF', 
 export type MilitaryOrder = 'sangmu' | 'army' | 'social';
 export interface CampPlan {
   focus?: string;
+  /** 2.0.66 (drills.ts, development.ts): how hard he trains, and his camp group. */
+  intensity?: Intensity;
+  group?: CampGroup;
   role?: 'SP' | 'RP';
   position?: Position;
 }
@@ -365,7 +370,8 @@ export function campDecision(s: LeagueState): Decision | null {
 
 // ── Checking and applying ───────────────────────────────────────────────────────────────────────
 
-const focusOptions = (p: Player) => ['balanced', ...FOCUS_KEYS[isPitcher(p) ? 'pitcher' : 'hitter']];
+// 2.0.66: the training programmes (drills.ts), the single abilities among them.
+const focusOptions = (p: Player) => programsFor(isPitcher(p));
 
 export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): string | null {
   const u = s.user!;
@@ -525,6 +531,8 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
         if (plan.focus && !focusOptions(p).includes(plan.focus)) return __i18n_k("league.userclub.checkAnnual.d8807b55", { name: p.name });
         if (plan.role && (!isPitcher(p) || !['SP', 'RP'].includes(plan.role))) return __i18n_k("league.userclub.checkAnnual.60a85eae", { name: p.name });
         if (plan.position && (isPitcher(p) || !POSITION_ROLE[plan.position])) return __i18n_k("league.userclub.checkAnnual.de99ed3b", { name: p.name });
+        if (plan.intensity && !INTENSITIES.includes(plan.intensity)) return __i18n_k("league.userclub.text.44602388", { name: p.name });
+        if (plan.group && !CAMP_GROUPS.includes(plan.group)) return __i18n_k("league.userclub.text.330cbc1b", { name: p.name });
       }
       return null;
     }
@@ -838,9 +846,14 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
       return null;
     }
     case 'camp': {
+      // 2.0.66: the camp's groups (the coaches' for anyone not placed) and what each group does now (development.ts).
+      const dd = d as Extract<Decision, { kind: 'camp' }>;
+      const groups = suggestCampGroups(s, dd.players, next);
+      for (const [id, plan] of Object.entries(input.plans)) if (plan.group) groups[id] = plan.group;
       for (const [id, plan] of Object.entries(input.plans)) {
         const p = s.players[id]!;
         if (plan.focus) p.plan = { ...p.plan, focus: plan.focus };
+        if (plan.intensity) p.plan = { focus: p.plan?.focus ?? 'balanced', ...p.plan, intensity: plan.intensity };
         if (plan.role && plan.role !== p.role) {
           p.role = plan.role;
           note(u, next, __i18n_k("league.userclub.resolveAnnual.c04ce522", { name: p.name, value: plan.role === 'SP' ? __i18n_k("league.userclub.resolveAnnual.a88271df") : __i18n_k("league.userclub.resolveAnnual.5b8607a3") }));
@@ -851,9 +864,10 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           note(u, next, __i18n_k("league.userclub.resolveAnnual.4801645e", { name: p.name, value: p.position ?? '', position: plan.position, value2: known ? '' : __i18n_k("league.userclub.resolveAnnual.7dfcc605") }));
           changePosition(p, plan.position);
           p.role = POSITION_ROLE[plan.position];
-          p.plan = { focus: p.plan?.focus ?? 'balanced', ...(known ? {} : { adaptingIn: next }) };
+          p.plan = { focus: p.plan?.focus ?? 'balanced', ...(p.plan?.intensity ? { intensity: p.plan.intensity } : {}), ...(known ? {} : { adaptingIn: next }) };
         }
       }
+      springCamp(s, groups, next);
       return null;
     }
   }
@@ -896,9 +910,11 @@ export function autoAnnual(s: LeagueState, d: Decision): AnnualInput | null {
     case 'camp': {
       // The coaches' advice (V0.12): a player who no longer fits his spot moves down the spectrum.
       const plans: Record<PlayerId, CampPlan> = {};
+      // 2.0.66: and the coaches' camp groups.
+      const groups = suggestCampGroups(s, d.players, next);
       for (const id of d.players) {
         const to = positionMove(s.players[id]!);
-        if (to) plans[id] = { position: to };
+        plans[id] = { ...(to ? { position: to } : {}), ...(groups[id] ? { group: groups[id] } : {}) };
       }
       return { kind: 'camp', plans };
     }

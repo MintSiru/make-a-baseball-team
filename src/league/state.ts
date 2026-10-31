@@ -595,6 +595,10 @@ export interface UserClub {
   tradeBlock?: PlayerId[];
   /** 2.0.64 (the user's request, manager.ts): ours kept in the futures (2군 전용) — the manager does not call them up. */
   futuresOnly?: PlayerId[];
+  /** 2.0.66 (farmreport.ts): the coaches' monthly reports on our futures and reserve players this season. */
+  farm?: import('./farmreport').FarmState;
+  /** 2.0.66 (development.ts): the spring camp's groups for `season`. */
+  campGroups?: { season: number; groups: Record<PlayerId, import('./development').CampGroup> };
   /** 2.0.43 (clubmove.ts): the clubs the general manager ran before this one — id, name, first and last winter. */
   former?: { teamId: TeamId; name: string; from: number; to: number }[];
 }

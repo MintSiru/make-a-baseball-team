@@ -92105,5 +92105,758 @@
     "line": 150,
     "params": {},
     "locations": []
+  },
+  "league.drills.text.45c89bab": {
+    "source": "src/league/drills.ts",
+    "line": 81,
+    "params": {},
+    "locations": []
+  },
+  "league.drills.text.dbdc584d": {
+    "source": "src/league/drills.ts",
+    "line": 83,
+    "params": {},
+    "locations": []
+  },
+  "league.drills.text.33e737de": {
+    "source": "src/league/drills.ts",
+    "line": 85,
+    "params": {},
+    "locations": []
+  },
+  "league.drills.text.a7fe8e43": {
+    "source": "src/league/drills.ts",
+    "line": 87,
+    "params": {},
+    "locations": []
+  },
+  "league.drills.text.50dc118c": {
+    "source": "src/league/drills.ts",
+    "line": 89,
+    "params": {},
+    "locations": []
+  },
+  "league.drills.text.4060c232": {
+    "source": "src/league/drills.ts",
+    "line": 91,
+    "params": {},
+    "locations": []
+  },
+  "league.drills.text.02031094": {
+    "source": "src/league/drills.ts",
+    "line": 93,
+    "params": {},
+    "locations": []
+  },
+  "league.drills.text.692d09fc": {
+    "source": "src/league/drills.ts",
+    "line": 100,
+    "params": {},
+    "locations": []
+  },
+  "league.drills.text.60b8c916": {
+    "source": "src/league/drills.ts",
+    "line": 100,
+    "params": {},
+    "locations": []
+  },
+  "league.drills.text.2179da2c": {
+    "source": "src/league/drills.ts",
+    "line": 100,
+    "params": {},
+    "locations": []
+  },
+  "league.drills.text.174a326e": {
+    "source": "src/league/drills.ts",
+    "line": 106,
+    "params": {},
+    "locations": []
+  },
+  "league.drills.text.daf9b17d": {
+    "source": "src/league/drills.ts",
+    "line": 107,
+    "params": {},
+    "locations": []
+  },
+  "league.drills.text.04ba7011": {
+    "source": "src/league/drills.ts",
+    "line": 108,
+    "params": {},
+    "locations": []
+  },
+  "league.farmreport.text.f085c67c": {
+    "source": "src/league/farmreport.ts",
+    "line": 173,
+    "params": {},
+    "locations": []
+  },
+  "league.farmreport.text.228bf02d": {
+    "source": "src/league/farmreport.ts",
+    "line": 173,
+    "params": {},
+    "locations": []
+  },
+  "league.farmreport.text.3782e056": {
+    "source": "src/league/farmreport.ts",
+    "line": 208,
+    "params": {
+      "n": {
+        "expression": "n"
+      }
+    },
+    "locations": []
+  },
+  "league.farmreport.text.5e97d28f": {
+    "source": "src/league/farmreport.ts",
+    "line": 209,
+    "params": {
+      "n": {
+        "expression": "rows.length"
+      },
+      "names": {
+        "expression": "best.join(', ')"
+      }
+    },
+    "locations": []
+  },
+  "league.farmreport.text.74156b44": {
+    "source": "src/league/farmreport.ts",
+    "line": 209,
+    "params": {
+      "names": {
+        "expression": "top.join(', ')"
+      }
+    },
+    "locations": []
+  },
+  "league.farmreport.text.56db7f32": {
+    "source": "src/league/farmreport.ts",
+    "line": 209,
+    "params": {},
+    "locations": []
+  },
+  "league.development.text.14e2ed07": {
+    "source": "src/league/development.ts",
+    "line": 240,
+    "params": {
+      "n": {
+        "expression": "rested"
+      }
+    },
+    "locations": []
+  },
+  "league.development.text.5bbf2313": {
+    "source": "src/league/development.ts",
+    "line": 300,
+    "params": {},
+    "locations": []
+  },
+  "league.development.text.6ae850ed": {
+    "source": "src/league/development.ts",
+    "line": 300,
+    "params": {},
+    "locations": []
+  },
+  "league.development.text.0dce8d6b": {
+    "source": "src/league/development.ts",
+    "line": 300,
+    "params": {},
+    "locations": []
+  },
+  "league.development.text.2ecee7b3": {
+    "source": "src/league/development.ts",
+    "line": 361,
+    "params": {
+      "season": {
+        "expression": "season"
+      },
+      "a": {
+        "expression": "count('first')"
+      },
+      "b": {
+        "expression": "count('second')"
+      },
+      "c": {
+        "expression": "count('rest')"
+      }
+    },
+    "locations": []
+  },
+  "league.development.text.fffa06b8": {
+    "source": "src/league/development.ts",
+    "line": 363,
+    "params": {},
+    "locations": []
+  },
+  "league.development.text.31edf032": {
+    "source": "src/league/development.ts",
+    "line": 364,
+    "params": {
+      "n": {
+        "expression": "grew"
+      }
+    },
+    "locations": []
+  },
+  "league.development.text.99c29928": {
+    "source": "src/league/development.ts",
+    "line": 365,
+    "params": {
+      "n": {
+        "expression": "healed"
+      }
+    },
+    "locations": []
+  },
+  "league.development.text.3d7faf3f": {
+    "source": "src/league/development.ts",
+    "line": 366,
+    "params": {
+      "n": {
+        "expression": "fresh"
+      }
+    },
+    "locations": []
+  },
+  "league.userclub.text.44602388": {
+    "source": "src/league/userclub.ts",
+    "line": 534,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.userclub.text.330cbc1b": {
+    "source": "src/league/userclub.ts",
+    "line": 535,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.farmReport.text.11cfb1c3": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 19,
+    "params": {
+      "v": {
+        "expression": "rates.fmt3((n.v ?? 0) / 1000)"
+      }
+    },
+    "locations": []
+  },
+  "ui.farmReport.text.efa10d9d": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 21,
+    "params": {
+      "v": {
+        "expression": "n.v ?? 0"
+      }
+    },
+    "locations": []
+  },
+  "ui.farmReport.text.3cf37b2d": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 23,
+    "params": {
+      "v": {
+        "expression": "((n.v ?? 0) / 100).toFixed(2)"
+      }
+    },
+    "locations": []
+  },
+  "ui.farmReport.text.0bd81dc2": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 25,
+    "params": {
+      "v": {
+        "expression": "((n.v ?? 0) / 10).toFixed(1)"
+      }
+    },
+    "locations": []
+  },
+  "ui.farmReport.text.7dfa953f": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 27,
+    "params": {
+      "tool": {
+        "expression": "tool(n)"
+      }
+    },
+    "locations": []
+  },
+  "ui.farmReport.text.c421ec36": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 27,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.d3df3a44": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 29,
+    "params": {
+      "v": {
+        "expression": "n.v ?? 0"
+      }
+    },
+    "locations": []
+  },
+  "ui.farmReport.text.1c40d1e2": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 31,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.7eabc19f": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 33,
+    "params": {
+      "tool": {
+        "expression": "tool(n)"
+      }
+    },
+    "locations": []
+  },
+  "ui.farmReport.text.4b63eba3": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 35,
+    "params": {
+      "v": {
+        "expression": "((n.v ?? 0) / 10).toFixed(1)"
+      }
+    },
+    "locations": []
+  },
+  "ui.farmReport.text.3e60a121": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 37,
+    "params": {
+      "v": {
+        "expression": "n.v ?? 0"
+      }
+    },
+    "locations": []
+  },
+  "ui.farmReport.text.5d275756": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 39,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.dd9d7abf": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 41,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.ec5769be": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 43,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.ae65cf02": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.806cdb05": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.0d56f005": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 54,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.05d3ee71": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.ea65f0bb": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 58,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.6407785c": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 62,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.5cd0d95b": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 62,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.2179da2c": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 62,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.454facad": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 62,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.c89bafa8": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 62,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.d1f7fe19": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 67,
+    "params": {
+      "g": {
+        "expression": "l.g"
+      },
+      "pa": {
+        "expression": "l.bat[0]"
+      },
+      "h": {
+        "expression": "l.bat[1]"
+      },
+      "hr": {
+        "expression": "l.bat[2]"
+      },
+      "ops": {
+        "expression": "rates.fmt3(l.bat[3] / 1000)"
+      }
+    },
+    "locations": []
+  },
+  "ui.farmReport.text.e371fe76": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 68,
+    "params": {
+      "g": {
+        "expression": "l.g"
+      },
+      "ip": {
+        "expression": "rates.ip(l.pit[0])"
+      },
+      "era": {
+        "expression": "l.pit[0] ? ((27 * l.pit[1]) / l.pit[0]).toFixed(2) : '-'"
+      },
+      "k": {
+        "expression": "l.pit[2]"
+      },
+      "bb": {
+        "expression": "l.pit[3]"
+      }
+    },
+    "locations": []
+  },
+  "ui.farmReport.text.06d8c1d8": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 78,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.f743af38": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 84,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.49f9f294": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 87,
+    "params": {
+      "n": {
+        "expression": "Number(m.month.slice(5, 7))"
+      }
+    },
+    "locations": []
+  },
+  "ui.farmReport.text.5d24a2fc": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 91,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.934dd25e": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 94,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.1345128f": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 94,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.0dce8d6b": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 94,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.f91dd337": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 99,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.3782e056": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 102,
+    "params": {
+      "n": {
+        "expression": "Number(month.month.slice(5, 7))"
+      }
+    },
+    "locations": []
+  },
+  "ui.farmReport.text.c37450d6": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 105,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.7262eacd": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 107,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.71d8e2f2": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 108,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.a61ad788": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 109,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.d3a4a038": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 110,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.d2c8fb18": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 111,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.74fa69bb": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 112,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.2c72faf4": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 133,
+    "params": {
+      "n": {
+        "expression": "r.hurt"
+      }
+    },
+    "locations": []
+  },
+  "ui.farmReport.text.6c9264ab": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 155,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.14bf7f79": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 158,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.6d471e8d": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 168,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.dc77649a": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 178,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.e9fbf278": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 181,
+    "params": {
+      "n": {
+        "expression": "Number(last.month.slice(5, 7))"
+      },
+      "g": {
+        "expression": "farmGrade(row.score)"
+      },
+      "a": {
+        "expression": "attitudeText(row.attitude)"
+      },
+      "advice": {
+        "expression": "farmAdviceText(row.advice)"
+      }
+    },
+    "locations": []
+  },
+  "ui.training.text.671db5f5": {
+    "source": "src/ui/Training.tsx",
+    "line": 75,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.ab09962d": {
+    "source": "src/ui/Training.tsx",
+    "line": 76,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.1345128f": {
+    "source": "src/ui/Training.tsx",
+    "line": 476,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.bb407ae7": {
+    "source": "src/ui/Training.tsx",
+    "line": 480,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.3007107e": {
+    "source": "src/ui/Training.tsx",
+    "line": 487,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.c37450d6": {
+    "source": "src/ui/Training.tsx",
+    "line": 493,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.14bf7f79": {
+    "source": "src/ui/Training.tsx",
+    "line": 496,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.6d471e8d": {
+    "source": "src/ui/Training.tsx",
+    "line": 497,
+    "params": {},
+    "locations": []
+  },
+  "ui.training.text.9743c8af": {
+    "source": "src/ui/Training.tsx",
+    "line": 512,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.training.text.5f0249f6": {
+    "source": "src/ui/Training.tsx",
+    "line": 521,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.f03e70ed": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1797,
+    "params": {
+      "a": {
+        "expression": "groupCount('first')"
+      },
+      "b": {
+        "expression": "groupCount('second')"
+      },
+      "c": {
+        "expression": "groupCount('rest')"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.4b74355f": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1798,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.9aabf285": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1829,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.5f0249f6": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1843,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.9bc8f452": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 487,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.ef2caeba": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 489,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.e6607847": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 492,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.5440e364": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 496,
+    "params": {},
+    "locations": []
+  },
+  "ui.farmReport.text.447a2411": {
+    "source": "src/ui/FarmReport.tsx",
+    "line": 46,
+    "params": {},
+    "locations": []
   }
 }

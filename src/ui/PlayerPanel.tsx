@@ -38,7 +38,7 @@ import { checkNumber, numberHolder } from '../league/numbers';
 import { checkNickname, NICKNAME_MAX, nicknameOf, nicknameWhy } from '../league/nicknames';
 import { checkInspect } from '../league/scandals';
 import { SCANDAL } from '../league/tuning';
-import type { LeagueState } from '../league/state';
+import type { LeagueState, SeasonLine } from '../league/state';
 import { playerCard, positionLabel, rateContextFor, rates, shortName, type PlayerCard } from '../league/views';
 import { usdTotal } from '../league/contracts';
 import { fanAffinity, hometownOf, isMarried } from '../league/life';
@@ -62,6 +62,7 @@ import { pathwayLabel } from '../league/amateur';
 import { CareerStages, DevTable } from './CareerStages';
 import { backFrom, canReinstate, canVoluntary } from '../league/voluntary';
 import { checkFuturesOnly } from '../league/season';
+import { PlayerTraining } from './FarmReport';
 
 const POSITION_NAMES: Record<string, string> = { C: __i18n_k("ui.playerPanel.pOSITION_NAMES.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("ui.playerPanel.pOSITION_NAMES.sS.3e24c7f1"), LF: __i18n_k("ui.playerPanel.pOSITION_NAMES.lF.73836db2"), CF: __i18n_k("ui.playerPanel.pOSITION_NAMES.cF.56780b2a"), RF: __i18n_k("ui.playerPanel.pOSITION_NAMES.rF.a28a0ef8") };
 
@@ -471,9 +472,36 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
   );
 }
 
+/** 2.0.66 (the user's request): the last games and the months on the first team or in the futures league, a toggle when
+    he has both. */
+function LevelGames({ league, id, pitcher, months }: { league: LeagueState; id: string; pitcher: boolean; months: boolean }) {
+  const first = league.lines[id];
+  const futures = league.futures?.lines[id];
+  const has = (l: SeasonLine | undefined) => (months ? !!l?.months : !!l?.last?.length);
+  const [level, setLevel] = useState<'first' | 'futures'>(has(first) ? 'first' : 'futures');
+  const at = level === 'futures' && has(futures) ? 'futures' : has(first) ? 'first' : 'futures';
+  const line = at === 'futures' ? futures : first;
+  return (
+    <>
+      {has(first) && has(futures) && (
+        <div class="segmented" role="group" aria-label={__i18n_t("ui.playerPanel.text.9bc8f452")}>
+          <button type="button" aria-pressed={at === 'first'} onClick={() => setLevel('first')}>
+            {__i18n_t("ui.playerPanel.text.ef2caeba")}
+          </button>
+          <button type="button" aria-pressed={at === 'futures'} onClick={() => setLevel('futures')}>
+            {__i18n_t("ui.playerPanel.text.e6607847")}
+          </button>
+        </div>
+      )}
+      {!has(first) && has(futures) && <p class="muted small">{__i18n_t("ui.playerPanel.text.5440e364")}</p>}
+      {months ? <MonthTable line={line} pitcher={pitcher} /> : <RecentGames league={league} line={line} pitcher={pitcher} />}
+    </>
+  );
+}
+
 /** 2.0.64 (gamelog.ts, the user's request): his last ten first-team games, the newest first, and their sum. */
-function RecentGames({ league, id, pitcher }: { league: LeagueState; id: string; pitcher: boolean }) {
-  const games = [...(league.lines[id]?.last ?? [])].reverse();
+function RecentGames({ league, line, pitcher }: { league: LeagueState; line: SeasonLine | undefined; pitcher: boolean }) {
+  const games = [...(line?.last ?? [])].reverse();
   if (!games.length) return <p class="muted">{__i18n_t("ui.playerPanel.seasonTable.626ced4e")}</p>;
   const day = (d: string) => d.slice(5).replace('-', '/');
   const opp = (g: (typeof games)[number]) => `${g.home ? 'vs' : '@'} ${shortName(league, g.opp)}`;
@@ -595,8 +623,8 @@ function RecentGames({ league, id, pitcher }: { league: LeagueState; id: string;
 }
 
 /** 2.0.64 (gamelog.ts, the user's request): this season's first-team line month by month. */
-function MonthTable({ league, id, pitcher }: { league: LeagueState; id: string; pitcher: boolean }) {
-  const months = Object.entries(league.lines[id]?.months ?? {}).sort(([a], [b]) => a.localeCompare(b));
+function MonthTable({ line, pitcher }: { line: SeasonLine | undefined; pitcher: boolean }) {
+  const months = Object.entries(line?.months ?? {}).sort(([a], [b]) => a.localeCompare(b));
   const label = (m: string) => __i18n_t("ui.playerPanel.text.49f9f294", { n: Number(m) });
   if (pitcher) {
     const rows = months.filter(([, x]) => x.pit);
@@ -915,6 +943,8 @@ export function PlayerPanel({
               ))}
             </section>
             {next && card.report && <TraitReportBox report={card.report} />}
+            {/* 2.0.66 (the user's request): his training — programme, intensity, the coaches' latest word. */}
+            {onAct && league.user && p.teamId === league.user.teamId && p.status === 'active' && <PlayerTraining league={league} p={league.players[p.id]!} onAct={onAct} />}
             {(!next || (p.gradeLog?.length ?? 0) >= 2) && (
               <section class={next ? 'sheet-box pp-wide' : undefined}>
                 <h3>{__i18n_t("ui.playerPanel.text.89a8bfe6")}</h3>
@@ -984,7 +1014,7 @@ export function PlayerPanel({
           <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.d84b6f4b")}>
             {next && recordNote && <Help title={__i18n_t("ui.playerPanel.text.ca15ef0b")}>{recordNote}</Help>}
             <div class="segmented record-views" role="group" aria-label={__i18n_t("ui.playerPanel.playerPanel.493c08af")}>
-              {__i18n_display(RECORD_VIEWS.filter((x) => (x.key !== 'recent' || !!league.lines[p.id]?.last?.length) && (x.key !== 'months' || !!league.lines[p.id]?.months) && (x.key !== 'mlb' || p.mlb) && (x.key !== 'national' || nationalLinesOf(league, p.id).length > 0) && (x.key !== 'amateur' || !!p.education.history?.length || !!p.devLog?.length)).map((x) => (
+              {__i18n_display(RECORD_VIEWS.filter((x) => (x.key !== 'recent' || !!league.lines[p.id]?.last?.length || !!league.futures?.lines[p.id]?.last?.length) && (x.key !== 'months' || !!league.lines[p.id]?.months || !!league.futures?.lines[p.id]?.months) && (x.key !== 'mlb' || p.mlb) && (x.key !== 'national' || nationalLinesOf(league, p.id).length > 0) && (x.key !== 'amateur' || !!p.education.history?.length || !!p.devLog?.length)).map((x) => (
                 <button key={x.key} type="button" aria-pressed={records === x.key} onClick={() => setRecords(x.key)}>
                   {__i18n_display(x.label)}
                   {__i18n_display(x.key === 'post' && post.length > 0 && <span class="count">{__i18n_display(post.length)}</span>)}
@@ -1005,8 +1035,7 @@ export function PlayerPanel({
                 {!next && <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.7e2cbab5")}</p>}
               </>
             ))}
-            {records === 'recent' && <RecentGames league={league} id={p.id} pitcher={pitcher} />}
-            {records === 'months' && <MonthTable league={league} id={p.id} pitcher={pitcher} />}
+            {(records === 'recent' || records === 'months') && <LevelGames league={league} id={p.id} pitcher={pitcher} months={records === 'months'} />}
             {__i18n_display(records === 'post' && (
               <>
                 <PostTable rows={post} totals={postSum} pitcher={pitcher} />

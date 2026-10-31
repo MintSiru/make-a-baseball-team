@@ -1,4 +1,6 @@
 import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, rich as __i18n_rich, t as __i18n_t } from '../i18n/index';
+import { INTENSITIES, intensityLabel, intensityOf, programLabel, type Intensity } from '../league/drills';
+import { CAMP_GROUPS, campGroupLabel, suggestCampGroups, type CampGroup } from '../league/development';
 import { adviceFor, type Advice } from '../league/advice';
 import { AlumnusTag } from './Alumni';
 import { isLegend } from '../league/alumni';
@@ -115,7 +117,6 @@ const SALARY_CHOICES: [SalaryChoice, string][] = [
 const lastWar = (p: Player) => p.career.filter((c) => !c.level).at(-1)?.war;
 const POSITIONS: Position[] = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
 const POSITION_NAMES: Record<Position, string> = { C: __i18n_k("ui.decision.pOSITION_NAMES.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("ui.decision.pOSITION_NAMES.sS.3e24c7f1"), LF: __i18n_k("ui.decision.pOSITION_NAMES.lF.73836db2"), CF: __i18n_k("ui.decision.pOSITION_NAMES.cF.56780b2a"), RF: __i18n_k("ui.decision.pOSITION_NAMES.rF.a28a0ef8") };
-const toolLabel = (k: string) => (k === 'balanced' ? __i18n_k("ui.decision.toolLabel.cdd2ca7b") : ((TOOL_LABELS as Record<string, string>)[k] ?? k));
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 
 type Extra = { title: string; value: (p: Player) => string; sort?: (p: Player) => number };
@@ -1784,11 +1785,18 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
     }
     case 'camp': {
       const players = d.players.map((id) => league.players[id]!).sort((a, b) => ageIn(a, next) - ageIn(b, next));
-      const plan = (p: Player) => ({ focus: p.plan?.focus ?? 'balanced', role: p.role, position: p.position, ...plans[p.id] });
+      // 2.0.66: the camp groups (the coaches' unless changed) and how hard each trains.
+      const coachGroups = suggestCampGroups(league, d.players, next);
+      const plan = (p: Player) => ({ focus: p.plan?.focus ?? 'balanced', role: p.role, position: p.position, intensity: intensityOf(p), group: coachGroups[p.id] ?? 'second', ...plans[p.id] });
+      const groupCount = (g: CampGroup) => players.filter((p) => plan(p).group === g).length;
       const setPlan = (p: Player, change: CampPlan) => setPlans((prev) => ({ ...prev, [p.id]: { ...prev[p.id], ...change } }));
       body = (
         <>
           <p>{__i18n_t("ui.decision.decision.4b466648", { next: next })}</p>
+          <p class="small">
+            {__i18n_t("ui.decision.text.f03e70ed", { a: groupCount('first'), b: groupCount('second'), c: groupCount('rest') })}{' '}
+            <span class="muted">{__i18n_t("ui.decision.text.4b74355f")}</span>
+          </p>
           <BulkBar
             label={__i18n_t("ui.decision.decision.6cd016ed")}
             options={[
@@ -1801,7 +1809,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
                 const out = { ...prev };
                 for (const p of players) {
                   // The public grade of each trainable tool: the lowest for 약점 보완, the highest for 강점 강화.
-                  const tools = focusOptions(p).filter((k) => k !== 'balanced');
+                  const tools = focusOptions(p).filter((k) => k !== 'balanced' && k in (p.scouting.tools as Record<string, number>));
                   const grade = (k: string) => (p.scouting.tools as Record<string, number>)[k] ?? 50;
                   const focus = v === 'balanced' ? 'balanced' : [...tools].sort((a, b) => (v === 'weak' ? grade(a) - grade(b) : grade(b) - grade(a)))[0]!;
                   out[p.id] = { ...out[p.id], focus };
@@ -1818,12 +1826,26 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
               const cur = plan(p);
               return (
                 <span class="row-actions">
+                  <select value={cur.group} onChange={(e) => setPlan(p, { group: (e.currentTarget as HTMLSelectElement).value as CampGroup })} aria-label={__i18n_t("ui.decision.text.9aabf285", { name: p.name })}>
+                    {CAMP_GROUPS.map((g) => (
+                      <option key={g} value={g}>
+                        {campGroupLabel(g)}
+                      </option>
+                    ))}
+                  </select>
                   <select value={cur.focus} onChange={(e) => setPlan(p, { focus: (e.currentTarget as HTMLSelectElement).value })} aria-label={__i18n_displayText(__i18n_k("ui.decision.decision.a9963324", { name: p.name }))}>
                     {__i18n_display(focusOptions(p).map((k) => (
                       <option key={k} value={k}>
-                        {__i18n_display(toolLabel(k))}
+                        {__i18n_display(programLabel(k))}
                       </option>
                     )))}
+                  </select>
+                  <select value={cur.intensity} onChange={(e) => setPlan(p, { intensity: (e.currentTarget as HTMLSelectElement).value as Intensity })} aria-label={__i18n_t("ui.decision.text.5f0249f6", { name: p.name })}>
+                    {INTENSITIES.map((k) => (
+                      <option key={k} value={k}>
+                        {intensityLabel(k)}
+                      </option>
+                    ))}
                   </select>
                   {__i18n_display(isPitcher(p) ? (
                     <select value={cur.role} onChange={(e) => setPlan(p, { role: (e.currentTarget as HTMLSelectElement).value as 'SP' | 'RP' })} aria-label={__i18n_displayText(__i18n_k("ui.decision.decision.5f3c1e51", { name: p.name }))}>

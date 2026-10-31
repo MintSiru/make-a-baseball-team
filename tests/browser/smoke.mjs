@@ -541,6 +541,13 @@ try {
     await page.getByRole('group', { name: '훈련·연수 보기' }).getByRole('button', { name: v, exact: true }).click();
     check((await page.locator('.training .dev-programs h3', { hasText: v }).count()) === 1, `the training view shows ${v} on its tab`);
   }
+  // 2.0.66: every player's programme and intensity, and the farm coaches' reports.
+  await page.getByRole('group', { name: '훈련·연수 보기' }).getByRole('button', { name: '훈련 계획', exact: true }).click();
+  check((await page.locator('.training select[aria-label$="훈련 강도"]').count()) > 10, 'the training plans list every player with an intensity');
+  await axeCheck(page, 'training plans');
+  await page.getByRole('group', { name: '훈련·연수 보기' }).getByRole('button', { name: '2군 리포트', exact: true }).click();
+  check((await page.locator('.training .farm-report, .training p.muted').count()) > 0, 'the farm reports show (or say there are none yet)');
+  await axeCheck(page, 'farm reports');
   await page.getByRole('group', { name: '훈련·연수 보기' }).getByRole('button', { name: '해외 연수', exact: true }).click();
   await page.getByRole('button', { name: /^도쿄 모션 베이스 일본/ }).click();
   // 2.0.10: the players in a sortable table, one button each.
@@ -858,6 +865,16 @@ try {
       await noOverflow(page, `new ${width} ${name}`);
       await axeCheck(page, `new ${width} ${name}`);
     }
+    // 2.0.66 (the user's report): 우리 구단 after 통산 기록 (the same screen's other view) opens on its overview.
+    await page.locator('nav.tabs').getByRole('button', { name: '통산 기록', exact: true }).click();
+    await page.locator('nav.tabs').getByRole('button', { name: '우리 구단', exact: true }).click();
+    const clubCurrent = await page
+      .locator('nav.tabs button[aria-current="page"]', { hasText: /^우리 구단$/ })
+      .waitFor({ timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
+    check(clubCurrent, `new ${width}: 우리 구단 is the page after 통산 기록`);
+    check((await page.getByRole('group', { name: '우리 구단 보기' }).getByRole('button', { name: /^개요/ }).getAttribute('aria-pressed')) === 'true', `new ${width}: 우리 구단 opens on its overview after 통산 기록`);
     for (const name of ['설정', '도움말']) {
       await page.locator('.sidebar-foot').getByRole('button', { name, exact: true }).click();
       await noOverflow(page, `new ${width} ${name}`);

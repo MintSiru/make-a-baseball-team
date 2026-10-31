@@ -2,6 +2,7 @@ import { k as __i18n_k } from '../i18n/index';
 /* The regular season, one game day at a time: registered days, games, injuries and roster moves. */
 import { recordVenues } from './venues';
 import { logGame, notePart, partFor } from './gamelog';
+import { farmMonth } from './farmreport';
 import { addBatted, emptyBatted } from './battedball';
 import { addField, emptyField } from './fielding';
 import { layoutOf } from './layout';
@@ -163,6 +164,8 @@ function playFuturesDay(s: LeagueState, date: string) {
     const r = rng(`${s.seed}|injury|${g.id}`);
     for (const box of [out.home, out.away]) {
       record(s, box, g.date, f.lines);
+      // 2.0.66 (the user's request): the futures player's last ten games and months, as the first team's (gamelog.ts).
+      logGame(f.lines, box, g.date, box === out.home ? g.away : g.home, box === out.home);
       rollInjuries(s, box, g.date, r, (id, teamId) => lineOf(s, id, teamId), 'futures');
     }
   }
@@ -434,6 +437,8 @@ export function playDay(s: LeagueState): boolean {
   // The first game day of a month: last month's story.
   if (day > 0 && s.schedule[day - 1]!.date.slice(5, 7) !== date.slice(5, 7)) {
     monthNews(s, date);
+    // 2.0.66 (the user's request): the coaches' month on our futures and reserve players (farmreport.ts).
+    farmMonth(s, s.schedule[day - 1]!.date.slice(0, 7), date);
   }
   while (s.next < s.schedule.length && s.schedule[s.next]!.date === date) {
     const g = s.schedule[s.next]!;

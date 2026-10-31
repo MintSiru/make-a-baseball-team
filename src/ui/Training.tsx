@@ -19,13 +19,15 @@ import { positionKey, useSort } from './sort';
 import { Gauges } from './next/Gauges';
 import { Help } from './Help';
 import { useUi } from './useDisplay';
+import { FarmReportView } from './FarmReport';
+import { INTENSITIES, intensityLabel, intensityOf, programLabel, programOf, programsFor, type Intensity } from '../league/drills';
 
 const focusText = (keys: ToolKey[] | undefined) => (keys ?? []).map((k) => TOOL_LABELS[k] ?? k).join('·');
 
 type Squad = 'active' | 'futures' | 'third' | 'all';
 
 /** 2.0.31: the programmes, one at a time (the last one opened is kept). */
-type View = 'trip' | 'fall' | 'abl' | 'camp' | 'pitch';
+type View = 'plans' | 'farm' | 'trip' | 'fall' | 'abl' | 'camp' | 'pitch';
 let lastView: View = 'trip';
 
 export function Training({ league, onAct, onPlayer }: { league: LeagueState; onAct: (a: Action) => void; onPlayer: (id: string) => void }) {
@@ -69,6 +71,9 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
   const [view, setViewState] = useState<View>(lastView);
   const setView = (v: View) => setViewState((lastView = v));
   const views: [View, string][] = [
+    // 2.0.66 (the user's request): every player's programme and intensity, and the farm coaches' monthly reports.
+    ['plans', __i18n_t("ui.training.text.671db5f5")],
+    ['farm', __i18n_t("ui.training.text.ab09962d")],
     ['trip', __i18n_t("ui.training.text.b4927759")],
     ['fall', __i18n_t("ui.training.text.f285e071")],
     ['abl', __i18n_t("ui.training.text.37d4233b")],
@@ -88,6 +93,8 @@ export function Training({ league, onAct, onPlayer }: { league: LeagueState; onA
       {view === 'abl' && <DevSection league={league} kind="abl" onAct={onAct} onPlayer={onPlayer} />}
       {view === 'camp' && <WrapCamp league={league} onAct={onAct} />}
       {view === 'pitch' && <LearnPitch league={league} onAct={onAct} onPlayer={onPlayer} />}
+      {view === 'plans' && <TrainingPlans league={league} onAct={onAct} onPlayer={onPlayer} />}
+      {view === 'farm' && <FarmReportView league={league} onPlayer={onPlayer} />}
       {view === 'trip' && (
         <>
           {next ? (
@@ -444,5 +451,86 @@ function WrapCamp({ league, onAct }: { league: LeagueState; onAct: (a: Action) =
       )}
       <p class="muted small">{__i18n_t("ui.training.text.dce8ab82")}</p>
     </section>
+  );
+}
+
+/** 2.0.66 (the user's request: 훈련 세분화): every player's programme and intensity, by squad, with a change for all. */
+function TrainingPlans({ league, onAct, onPlayer }: { league: LeagueState; onAct: (a: Action) => void; onPlayer: (id: string) => void }) {
+  const u = league.user!;
+  const r = league.rosters[u.teamId];
+  const [squad, setSquad] = useState<Squad>('all');
+  const of = (id: string): Squad => (r?.active.includes(id) ? 'active' : r?.futures.includes(id) ? 'futures' : r?.third.includes(id) ? 'third' : 'all');
+  const players = orgPlayers(league, u.teamId)
+    .filter((p) => p.status === 'active' && (squad === 'all' || of(p.id) === squad))
+    .sort((a, b) => Number(isPitcher(b)) - Number(isPitcher(a)) || ageIn(a, league.year) - ageIn(b, league.year));
+  const all = (intensity: Intensity) => {
+    const ids = players.filter((p) => intensityOf(p) !== intensity).map((p) => p.id);
+    if (ids.length) onAct({ kind: 'trainingIntensity', ids, intensity });
+  };
+  return (
+    <>
+      <div class="row-actions">
+        <div class="segmented" role="group" aria-label={__i18n_t("ui.training.text.5d24a2fc")}>
+          {(['all', 'active', 'futures', 'third'] as const).map((k) => (
+            <button key={k} type="button" aria-pressed={squad === k} onClick={() => setSquad(k)}>
+              {k === 'all' ? __i18n_t("ui.training.text.934dd25e") : k === 'active' ? __i18n_t("ui.training.text.ef2caeba") : k === 'futures' ? __i18n_t("ui.training.text.1345128f") : __i18n_t("ui.training.text.0dce8d6b")}
+            </button>
+          ))}
+        </div>
+        <span class="muted small">{__i18n_t("ui.training.text.bb407ae7")}</span>
+        {INTENSITIES.map((k) => (
+          <button key={k} type="button" onClick={() => all(k)}>
+            {intensityLabel(k)}
+          </button>
+        ))}
+      </div>
+      <p class="muted small">{__i18n_t("ui.training.text.3007107e")}</p>
+      <div class="table-wrap" tabIndex={0}>
+        <table class="record-table">
+          <caption class="sr-only">{__i18n_t("ui.training.text.671db5f5")}</caption>
+          <thead>
+            <tr>
+              <th scope="col">{__i18n_t("ui.training.text.c37450d6")}</th>
+              <th scope="col">{__i18n_t("ui.training.text.5d24a2fc")}</th>
+              <th scope="col" class="num">{__i18n_t("ui.training.text.6c620e5c")}</th>
+              <th scope="col">{__i18n_t("ui.training.text.14bf7f79")}</th>
+              <th scope="col">{__i18n_t("ui.training.text.6d471e8d")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {players.map((p) => (
+              <tr key={p.id}>
+                <td>
+                  <button type="button" class="link" onClick={() => onPlayer(p.id)}>
+                    {p.name}
+                  </button>{' '}
+                  <span class="muted small">{positionLabel(p)}</span>
+                </td>
+                <td>{of(p.id) === 'active' ? __i18n_t("ui.training.text.ef2caeba") : of(p.id) === 'futures' ? __i18n_t("ui.training.text.1345128f") : of(p.id) === 'third' ? __i18n_t("ui.training.text.0dce8d6b") : '-'}</td>
+                <td class="num">{ageIn(p, league.year)}</td>
+                <td>
+                  <select value={programOf(p)} aria-label={__i18n_t("ui.training.text.9743c8af", { name: p.name })} onChange={(e) => onAct({ kind: 'trainingPlan', id: p.id, focus: (e.currentTarget as HTMLSelectElement).value })}>
+                    {programsFor(isPitcher(p)).map((k) => (
+                      <option key={k} value={k}>
+                        {programLabel(k)}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <select value={intensityOf(p)} aria-label={__i18n_t("ui.training.text.5f0249f6", { name: p.name })} onChange={(e) => onAct({ kind: 'trainingPlan', id: p.id, intensity: (e.currentTarget as HTMLSelectElement).value as Intensity })}>
+                    {INTENSITIES.map((k) => (
+                      <option key={k} value={k}>
+                        {intensityLabel(k)}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
