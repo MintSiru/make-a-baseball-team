@@ -250,6 +250,8 @@ export interface SeasonRecord {
   /** 2.0.4: a pitcher's mix that season (each pitch and the share thrown, percent) and his average velocity. */
   mix?: [string, number][];
   velo?: number;
+  /** 2.0.64 (gamelog.ts): a season between clubs — each club's line and WAR, in order (the totals above stay whole). */
+  parts?: { teamId: TeamId; days: number; bat: BatTotals | null; pit: PitTotals | null; war: number }[];
 }
 
 /** A postseason's line (1.4.0). */

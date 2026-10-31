@@ -12,13 +12,13 @@ import { setEra, startYear } from './era';
 import { STOP_KINDS, watchStops, type StopKind } from './stops';
 import { closeSeason, advanceOffseason, beginOffseason } from './offseason';
 import { playPostseason, postseasonDay, postseasonRound, startPostseason } from './postseason';
-import { playDay, startSeason } from './season';
+import { keepPinnedUp, playDay, setFuturesOnly, startSeason } from './season';
 import type { PlayerId, TeamId } from '../model/types';
 import { makeDevelopment, makeTrade, releasePlayer, replaceForeign, signFromPool } from './trade';
 import { setTempKeep, signTemp } from './tempforeign';
 import { movePlayer, registerPlayer, setLineupCard, setRole, today } from './entry';
 import type { BullpenRole } from './engine/types';
-import { ensureNumbers, setNumber } from './numbers';
+import { ensureNumbers, retireNumberByGm, setNumber } from './numbers';
 import { setNickname } from './nicknames';
 import { addTie, editPlayer, removeTie, type PlayerEdit, type Relation } from './editor';
 import { editAbility, type AbilityEdit } from './abilityedit';
@@ -175,6 +175,10 @@ export type Action =
   | { kind: 'notForSale'; id: PlayerId; on: boolean }
   /** 2.0.59: one of ours on the trade block (offers.ts). */
   | { kind: 'tradeBlock'; id: PlayerId; on: boolean }
+  /** 2.0.64: one of ours kept in the futures (2군 전용, season.ts), or free to be called up. */
+  | { kind: 'futuresOnly'; id: PlayerId; on: boolean }
+  /** 2.0.64: the general manager retires a retired player's number (numbers.ts). */
+  | { kind: 'retireNumber'; id: PlayerId }
   | { kind: 'postingMax'; max: number | null }
   | { kind: 'capForfeit'; on: boolean }
   | { kind: 'dynamicDifficulty'; on: boolean }
@@ -203,7 +207,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'devForeign', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'askBudget', 'twoLeaguePlayoffs', 'sixMan', 'favorite', 'notForSale', 'tradeBlock', 'toDevelopment', 'abilityEditor', 'editAbility', 'discipline', 'sponsorSchool', 'spend', 'asiaSeries'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'devForeign', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'askBudget', 'twoLeaguePlayoffs', 'sixMan', 'favorite', 'notForSale', 'tradeBlock', 'futuresOnly', 'retireNumber', 'toDevelopment', 'abilityEditor', 'editAbility', 'discipline', 'sponsorSchool', 'spend', 'asiaSeries'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -294,6 +298,7 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'lineupCard':
       setLineupCard(s, action.card);
+      keepPinnedUp(s);
       break;
     case 'renameStadium':
       renameStadium(s, action.name, action.which);
@@ -482,6 +487,12 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'tradeBlock':
       setTradeBlock(s, action.id, action.on);
+      break;
+    case 'futuresOnly':
+      setFuturesOnly(s, action.id, action.on);
+      break;
+    case 'retireNumber':
+      retireNumberByGm(s, action.id);
       break;
     case 'discipline':
       gmDiscipline(s, action.id, action.days, today(s));

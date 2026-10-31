@@ -136,7 +136,7 @@ export function MyClub({
         {view === 'lineup' && <Lineup league={league} teamId={u.teamId} onPlayer={onPlayer} onAct={onAct} />}
         {view === 'training' && <Training league={league} onAct={onAct} onPlayer={onPlayer} />}
         {view === 'story' && <Story league={league} {...story} />}
-        {view === 'records' && <ClubRecords league={league} teamId={u.teamId} onPlayer={onPlayer} />}
+        {view === 'records' && <ClubRecords league={league} teamId={u.teamId} onPlayer={onPlayer} onAct={onAct} />}
         {msg && (
           <p class="toast" role="status">
             {msg}
@@ -201,7 +201,7 @@ export function MyClub({
       {__i18n_display(view === 'lineup' && <Lineup league={league} teamId={u.teamId} onPlayer={onPlayer} onAct={onAct} />)}
       {__i18n_display(view === 'training' && <Training league={league} onAct={onAct} onPlayer={onPlayer} />)}
       {__i18n_display(view === 'story' && <Story league={league} {...story} />)}
-      {view === 'records' && <ClubRecords league={league} teamId={u.teamId} onPlayer={onPlayer} />}
+      {view === 'records' && <ClubRecords league={league} teamId={u.teamId} onPlayer={onPlayer} onAct={onAct} />}
       {__i18n_display(view === 'office' && <Office league={league} onAct={onAct} setMsg={setMsg} onPlayer={onPlayer} />)}
       {__i18n_display(msg && (
         <p class="toast" role="status">

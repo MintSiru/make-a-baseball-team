@@ -56,6 +56,13 @@ function Name({ r, onPlayer }: { r: Row; onPlayer: (id: string) => void }) {
         <span class="tag" title={__i18n_displayText(r.injury)}>{__i18n_t("ui.squad.name.7d657386")}</span>
       ))}
       {__i18n_display(r.away && <span class="tag">{__i18n_t("ui.squad.name.a567cc15")}</span>)}
+      {/* 2.0.64: fixed on the lineup card, or kept in the futures. */}
+      {r.pinned && (
+        <span class="tag" title={__i18n_t("ui.squad.text.72433386")}>
+          {__i18n_t("ui.squad.text.4f48c004")}
+        </span>
+      )}
+      {r.futuresOnly && <span class="tag">{__i18n_t("ui.squad.text.a561f40f")}</span>}
     </td>
   );
 }

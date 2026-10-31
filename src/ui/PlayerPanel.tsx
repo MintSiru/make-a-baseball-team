@@ -61,6 +61,7 @@ import type { ArmSlot, Tracking } from '../league/tracking';
 import { pathwayLabel } from '../league/amateur';
 import { CareerStages, DevTable } from './CareerStages';
 import { backFrom, canReinstate, canVoluntary } from '../league/voluntary';
+import { checkFuturesOnly } from '../league/season';
 
 const POSITION_NAMES: Record<string, string> = { C: __i18n_k("ui.playerPanel.pOSITION_NAMES.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("ui.playerPanel.pOSITION_NAMES.sS.3e24c7f1"), LF: __i18n_k("ui.playerPanel.pOSITION_NAMES.lF.73836db2"), CF: __i18n_k("ui.playerPanel.pOSITION_NAMES.cF.56780b2a"), RF: __i18n_k("ui.playerPanel.pOSITION_NAMES.rF.a28a0ef8") };
 
@@ -147,7 +148,7 @@ export function TraitReportBox({ report }: { report: TraitReport }) {
    with the records split again into the regular season, the postseason, career highs and left/right. The part
    last opened stays open for the next player. */
 type Part = 'ability' | 'records' | 'report' | 'profile' | 'injuries';
-type RecordView = 'seasons' | 'post' | 'highs' | 'splits' | 'venues' | 'batted' | 'fielding' | 'savant' | 'meetings' | 'national' | 'mlb' | 'amateur';
+type RecordView = 'seasons' | 'recent' | 'months' | 'post' | 'highs' | 'splits' | 'venues' | 'batted' | 'fielding' | 'savant' | 'meetings' | 'national' | 'mlb' | 'amateur';
 const PARTS: { key: Part; label: string }[] = [
   { key: 'ability', label: __i18n_k("ui.playerPanel.pARTS.label.9e9117d0") },
   { key: 'records', label: __i18n_k("ui.playerPanel.pARTS.label.d84b6f4b") },
@@ -157,6 +158,9 @@ const PARTS: { key: Part; label: string }[] = [
 ];
 const RECORD_VIEWS: { key: RecordView; label: string }[] = [
   { key: 'seasons', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.b4070ed2") },
+  // 2.0.64 (the user's request): his last ten games and the season by month.
+  { key: 'recent', label: __i18n_k("ui.playerPanel.text.16a1e66d") },
+  { key: 'months', label: __i18n_k("ui.playerPanel.text.12966a35") },
   { key: 'post', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.a0f7a345") },
   { key: 'highs', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.dc5975f8") },
   { key: 'splits', label: __i18n_k("ui.playerPanel.rECORD_VIEWS.label.1df210e9") },
@@ -302,7 +306,12 @@ function SplitTable({ title, splits, pitcher, group = 'hand' }: { title: string;
 }
 
 function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: PlayerCard; pitcher: boolean }) {
-  const rows = card.career;
+  // 2.0.64 (the user's request): a season between clubs shows each club's line under the season's.
+  const rows = card.career.flatMap((r) =>
+    r.parts && r.parts.length > 1
+      ? [{ ...r, team: r.parts.map((x) => x.team).join('·') }, ...r.parts.map((x, i) => ({ ...r, ...x, team: `└ ${x.team}`, part: i + 1 }))]
+      : [r],
+  );
   if (!rows.length) return <p class="muted">{__i18n_t("ui.playerPanel.seasonTable.626ced4e")}</p>;
   const t = card.totals;
   if (pitcher)
@@ -337,7 +346,7 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
             {__i18n_display(rows.map((r) => {
               const rc = rateContextFor(league, r.year);
               return (
-                <tr key={r.year + r.team + r.futures} class={r.futures ? 'futures-row' : undefined}>
+                <tr key={`${r.year}${r.team}${r.futures}${'part' in r ? r.part : ''}`} class={'part' in r ? 'part-row' : r.futures ? 'futures-row' : undefined}>
                   <td class="num">{__i18n_display(r.year)}</td>
                   <td>
                     {__i18n_display(r.team)}
@@ -416,7 +425,7 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
           {__i18n_display(rows.map((r) => {
             const rc = rateContextFor(league, r.year);
             return (
-              <tr key={r.year + r.team + r.futures} class={r.futures ? 'futures-row' : undefined}>
+              <tr key={`${r.year}${r.team}${r.futures}${'part' in r ? r.part : ''}`} class={'part' in r ? 'part-row' : r.futures ? 'futures-row' : undefined}>
                 <td class="num">{__i18n_display(r.year)}</td>
                 <td>
                   {__i18n_display(r.team)}
@@ -457,6 +466,229 @@ function SeasonTable({ league, card, pitcher }: { league: LeagueState; card: Pla
             </tr>
           </tfoot>
         ))}
+      </table>
+    </div>
+  );
+}
+
+/** 2.0.64 (gamelog.ts, the user's request): his last ten first-team games, the newest first, and their sum. */
+function RecentGames({ league, id, pitcher }: { league: LeagueState; id: string; pitcher: boolean }) {
+  const games = [...(league.lines[id]?.last ?? [])].reverse();
+  if (!games.length) return <p class="muted">{__i18n_t("ui.playerPanel.seasonTable.626ced4e")}</p>;
+  const day = (d: string) => d.slice(5).replace('-', '/');
+  const opp = (g: (typeof games)[number]) => `${g.home ? 'vs' : '@'} ${shortName(league, g.opp)}`;
+  const sum = (i: number, side: 'bat' | 'pit') => games.reduce((a, g) => a + (g[side]?.[i] ?? 0), 0);
+  if (pitcher) {
+    const outs = sum(0, 'pit'),
+      er = sum(3, 'pit');
+    const result = (x: NonNullable<(typeof games)[number]['pit']>) => (x[8] ? __i18n_t("ui.playerPanel.text.3b1908b7") : x[9] ? __i18n_t("ui.playerPanel.text.36260e2c") : x[10] ? __i18n_t("ui.playerPanel.text.c5e4d00d") : x[11] ? __i18n_t("ui.playerPanel.text.10a4423a") : '');
+    return (
+      <div class="table-wrap" tabIndex={0}>
+        <table class="record-table recent-games">
+          <thead>
+            <tr>
+              <th>{__i18n_t("ui.playerPanel.text.5caa75a8")}</th>
+              <th>{__i18n_t("ui.playerPanel.text.0e33b0bd")}</th>
+              <th>{__i18n_t("ui.playerPanel.text.71d855ac")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.639a1f2f")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.text.b68b86a7")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.text.de9718e1")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.text.b768863e")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.text.21e0537f")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.3f349ed1")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.text.bf21ab80")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.text.5390f3ce")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {games.map((g, i) => {
+              const x = g.pit;
+              return (
+                <tr key={i}>
+                  <td>{day(g.date)}</td>
+                  <td>{opp(g)}</td>
+                  <td>{x ? `${result(x)}${x[12] ? ` ${__i18n_t("ui.playerPanel.text.a88271df")}` : ''}` : '-'}</td>
+                  <td class="num">{x ? rates.ip(x[0]) : '-'}</td>
+                  <td class="num">{x?.[1] ?? '-'}</td>
+                  <td class="num">{x?.[2] ?? '-'}</td>
+                  <td class="num">{x?.[3] ?? '-'}</td>
+                  <td class="num">{x?.[4] ?? '-'}</td>
+                  <td class="num">{x?.[5] ?? '-'}</td>
+                  <td class="num">{x?.[6] ?? '-'}</td>
+                  <td class="num">{x?.[7] ?? '-'}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colSpan={2}>{__i18n_t("ui.playerPanel.text.ee19b92b", { n: games.length })}</th>
+              <td>ERA {outs ? ((27 * er) / outs).toFixed(2) : '-'}</td>
+              <td class="num">{rates.ip(outs)}</td>
+              {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                <td key={i} class="num">
+                  {sum(i, 'pit')}
+                </td>
+              ))}
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    );
+  }
+  const ab = sum(1, 'bat'),
+    h = sum(2, 'bat');
+  return (
+    <div class="table-wrap" tabIndex={0}>
+      <table class="record-table recent-games">
+        <thead>
+          <tr>
+            <th>{__i18n_t("ui.playerPanel.text.5caa75a8")}</th>
+            <th>{__i18n_t("ui.playerPanel.text.0e33b0bd")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.text.0a3d002c")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.text.6e593a9b")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.text.1822db88")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.text.bc4313cd")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.text.4df9a1d0")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.9162d3a3")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.fed1c588")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.text.4b4a98b9")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.text.21e0537f")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.text.3f349ed1")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.91e54831")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {games.map((g, i) => (
+            <tr key={i}>
+              <td>{day(g.date)}</td>
+              <td>{opp(g)}</td>
+              {g.bat ? (
+                g.bat.map((n, k) => (
+                  <td key={k} class={k === 2 && n >= 2 ? 'num strong' : 'num'}>
+                    {n}
+                  </td>
+                ))
+              ) : (
+                <td colSpan={11} class="muted small">
+                  {__i18n_t("ui.playerPanel.text.a2205a93")}
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th colSpan={2}>
+              {__i18n_t("ui.playerPanel.text.ee19b92b", { n: games.length })} · {__i18n_t("ui.playerPanel.text.1eb19e0a")} {ab ? rates.fmt3(h / ab) : '-'}
+            </th>
+            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+              <td key={i} class="num">
+                {sum(i, 'bat')}
+              </td>
+            ))}
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+}
+
+/** 2.0.64 (gamelog.ts, the user's request): this season's first-team line month by month. */
+function MonthTable({ league, id, pitcher }: { league: LeagueState; id: string; pitcher: boolean }) {
+  const months = Object.entries(league.lines[id]?.months ?? {}).sort(([a], [b]) => a.localeCompare(b));
+  const label = (m: string) => __i18n_t("ui.playerPanel.text.49f9f294", { n: Number(m) });
+  if (pitcher) {
+    const rows = months.filter(([, x]) => x.pit);
+    if (!rows.length) return <p class="muted">{__i18n_t("ui.playerPanel.seasonTable.626ced4e")}</p>;
+    return (
+      <div class="table-wrap" tabIndex={0}>
+        <table class="record-table">
+          <thead>
+            <tr>
+              <th>{__i18n_t("ui.playerPanel.text.75448692")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.e0cee61a")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.3b1908b7")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.36260e2c")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.c5e4d00d")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.10a4423a")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.639a1f2f")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.text.b68b86a7")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.21e0537f")}</th>
+              <th class="num">{__i18n_t("ui.playerPanel.seasonTable.3f349ed1")}</th>
+              <th class="num">ERA</th>
+              <th class="num">WHIP</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(([m, x]) => {
+              const q = x.pit!;
+              return (
+                <tr key={m}>
+                  <td>{label(m)}</td>
+                  <td class="num">{q.g}</td>
+                  <td class="num">{q.w}</td>
+                  <td class="num">{q.l}</td>
+                  <td class="num">{q.sv}</td>
+                  <td class="num">{q.hld}</td>
+                  <td class="num">{rates.ip(q.outs)}</td>
+                  <td class="num">{q.h}</td>
+                  <td class="num">{q.bb}</td>
+                  <td class="num">{q.k}</td>
+                  <td class="num strong">{q.outs ? rates.era(q).toFixed(2) : '-'}</td>
+                  <td class="num">{q.outs ? rates.whip(q).toFixed(2) : '-'}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+  const rows = months.filter(([, x]) => x.bat);
+  if (!rows.length) return <p class="muted">{__i18n_t("ui.playerPanel.seasonTable.626ced4e")}</p>;
+  return (
+    <div class="table-wrap" tabIndex={0}>
+      <table class="record-table">
+        <thead>
+          <tr>
+            <th>{__i18n_t("ui.playerPanel.text.75448692")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.e0cee61a")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.0a3d002c")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.1822db88")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.9162d3a3")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.fed1c588")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.text.21e0537f")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.text.3f349ed1")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.91e54831")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.1eb19e0a")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.bb6ef1b2")}</th>
+            <th class="num">{__i18n_t("ui.playerPanel.seasonTable.7e66b88d")}</th>
+            <th class="num">OPS</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(([m, x]) => {
+            const b = x.bat!;
+            return (
+              <tr key={m}>
+                <td>{label(m)}</td>
+                <td class="num">{b.g}</td>
+                <td class="num">{b.pa}</td>
+                <td class="num">{b.h}</td>
+                <td class="num">{b.hr}</td>
+                <td class="num">{b.rbi}</td>
+                <td class="num">{b.bb}</td>
+                <td class="num">{b.k}</td>
+                <td class="num">{b.sb}</td>
+                <td class="num">{b.ab ? rates.fmt3(rates.avg(b)) : '-'}</td>
+                <td class="num">{b.pa ? rates.fmt3(rates.obp(b)) : '-'}</td>
+                <td class="num">{b.ab ? rates.fmt3(rates.slg(b)) : '-'}</td>
+                <td class="num strong">{b.pa ? rates.fmt3(rates.ops(b)) : '-'}</td>
+              </tr>
+            );
+          })}
+        </tbody>
       </table>
     </div>
   );
@@ -538,6 +770,19 @@ export function PlayerPanel({
           onClick={() => onAct({ kind: 'notForSale', id: p.id, on: !isNotForSale(league, p.id) })}
         >
           NFS
+        </button>
+      )}
+      {/* 2.0.64 (the user's request): one of ours kept in the futures — the manager does not call him up (season.ts). */}
+      {onAct && league.user && p.teamId === league.user.teamId && (
+        <button
+          type="button"
+          class={`nfs-toggle futures-toggle${league.user.futuresOnly?.includes(p.id) ? ' on' : ''}`}
+          aria-pressed={!!league.user.futuresOnly?.includes(p.id)}
+          disabled={!!checkFuturesOnly(league, p.id, !league.user.futuresOnly?.includes(p.id))}
+          title={__i18n_displayText(checkFuturesOnly(league, p.id, !league.user.futuresOnly?.includes(p.id)) ?? __i18n_t("ui.playerPanel.text.95e77188"))}
+          onClick={() => onAct({ kind: 'futuresOnly', id: p.id, on: !league.user!.futuresOnly?.includes(p.id) })}
+        >
+          {__i18n_t("ui.playerPanel.text.a561f40f")}
         </button>
       )}
       {/* 2.0.59 (the user's request): one of ours on the trade block — up to three clubs make an offer (offers.ts). */}
@@ -739,7 +984,7 @@ export function PlayerPanel({
           <div class="profile-part" role="tabpanel" aria-label={__i18n_t("ui.playerPanel.playerPanel.d84b6f4b")}>
             {next && recordNote && <Help title={__i18n_t("ui.playerPanel.text.ca15ef0b")}>{recordNote}</Help>}
             <div class="segmented record-views" role="group" aria-label={__i18n_t("ui.playerPanel.playerPanel.493c08af")}>
-              {__i18n_display(RECORD_VIEWS.filter((x) => (x.key !== 'mlb' || p.mlb) && (x.key !== 'national' || nationalLinesOf(league, p.id).length > 0) && (x.key !== 'amateur' || !!p.education.history?.length || !!p.devLog?.length)).map((x) => (
+              {__i18n_display(RECORD_VIEWS.filter((x) => (x.key !== 'recent' || !!league.lines[p.id]?.last?.length) && (x.key !== 'months' || !!league.lines[p.id]?.months) && (x.key !== 'mlb' || p.mlb) && (x.key !== 'national' || nationalLinesOf(league, p.id).length > 0) && (x.key !== 'amateur' || !!p.education.history?.length || !!p.devLog?.length)).map((x) => (
                 <button key={x.key} type="button" aria-pressed={records === x.key} onClick={() => setRecords(x.key)}>
                   {__i18n_display(x.label)}
                   {__i18n_display(x.key === 'post' && post.length > 0 && <span class="count">{__i18n_display(post.length)}</span>)}
@@ -760,6 +1005,8 @@ export function PlayerPanel({
                 {!next && <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.7e2cbab5")}</p>}
               </>
             ))}
+            {records === 'recent' && <RecentGames league={league} id={p.id} pitcher={pitcher} />}
+            {records === 'months' && <MonthTable league={league} id={p.id} pitcher={pitcher} />}
             {__i18n_display(records === 'post' && (
               <>
                 <PostTable rows={post} totals={postSum} pitcher={pitcher} />

@@ -111,7 +111,9 @@ export function closeSeason(s: LeagueState) {
       addSituations(((p.situ ??= {})[side] ??= {}), x);
       delete l.split!.X;
     }
-    const rec: SeasonRecord = { year: s.year, teamId: line.teamId, age: ageIn(p, s.year), days: line.days, bat: line.bat ? (batKept as typeof line.bat) : null, pit: line.pit, war: Math.round(war * 10) / 10, ...(line.pit ? seasonMix(p, s.year) : {}) };
+    // 2.0.64 (gamelog.ts): a season between clubs keeps each club's line, with its WAR.
+    const parts = line.parts?.map((x) => ({ ...x, war: Math.round(((x.bat ? batterWar(x.bat, p.position ?? 'DH', lg) : 0) + (x.pit ? pitcherWar(x.pit, lg) : 0)) * 10) / 10 }));
+    const rec: SeasonRecord = { year: s.year, teamId: line.teamId, age: ageIn(p, s.year), days: line.days, bat: line.bat ? (batKept as typeof line.bat) : null, pit: line.pit, war: Math.round(war * 10) / 10, ...(line.pit ? seasonMix(p, s.year) : {}), ...(parts ? { parts } : {}) };
     if (line.bat || line.pit || line.days) p.career.push(rec);
     // 2.0.15: the season's venues join his career's.
     if (line.venues) addVenues((p.venues ??= emptyVenues()), line.venues);

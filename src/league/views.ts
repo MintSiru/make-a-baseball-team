@@ -23,7 +23,7 @@ import { halfTables } from './historic';
 import type { StandingRow } from './standings';
 import { SANGMU } from './futures';
 import { clubNameIn } from './clubnames';
-import { cardFor, lineupFor, managerLean, penRoles, PEN_ROLE_LABELS, rotationFor, armReady } from './manager';
+import { cardFor, lineupFor, managerLean, penRoles, PEN_ROLE_LABELS, rotationFor, armReady, pinnedIds } from './manager';
 import { isDevelopment, type LeagueState } from './state';
 import { captaincyLift } from './captains';
 import { avg, babip, babipAllowed, batterWar, defensiveWar, era, eraMinus, fip, fipMinus, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
@@ -166,6 +166,7 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
   const rotation = new Set(rotationList.map((p) => p.id));
   const pen = penRoles(s, teamId, r.active.map((id) => s.players[id]!).filter((p) => isPitcher(p) && !rotation.has(p.id)));
   const u = s.user?.teamId === teamId ? s.user : null;
+  const pinned = new Set(u ? pinnedIds(s) : []);
   const row = (id: PlayerId, group: RosterGroup) => {
     const p = s.players[id]!;
     const line = s.lines[id];
@@ -191,6 +192,9 @@ export function rosterView(s: LeagueState, teamId: TeamId) {
       /** First-team relievers: the role in the bullpen, and whether the general manager set it. */
       penRole,
       penRoleSet: !!u?.penRoles?.[id],
+      /** 2.0.64: ours kept in the futures (2군 전용), or fixed on the lineup card (the manager keeps him up). */
+      futuresOnly: !!u?.futuresOnly?.includes(id),
+      pinned: !!u && pinned.has(id),
       platoon: u?.platoon?.[id] ?? null,
       role: p.role,
       age: ageIn(p, s.year),
@@ -238,6 +242,8 @@ export interface CareerRow {
   pit: PitTotals | null;
   war: number;
   current: boolean;
+  /** 2.0.64 (gamelog.ts): a season between clubs — each club's line in order (the row above is the whole season). */
+  parts?: { team: string; teamId: TeamId; days: number; bat: BatTotals | null; pit: PitTotals | null; war: number }[];
 }
 
 /** 2.0.3: his fielding by first-team season (from 2.0.3 on), with its runs and defensive WAR at his main position. */
@@ -274,12 +280,13 @@ export function careerView(s: LeagueState, p: Player): CareerRow[] {
   const played = (c: { bat: BatTotals | null; pit: PitTotals | null }) => (c.bat?.g ?? 0) + (c.pit?.g ?? 0) > 0;
   const rows: CareerRow[] = p.career
     .filter(played)
-    .map((c: SeasonRecord) => ({ year: c.year, team: shortName(s, c.teamId, c.year), teamId: c.teamId, futures: c.level === 'futures', age: c.age, days: c.days, bat: c.bat, pit: c.pit, war: c.war, current: false }));
+    .map((c: SeasonRecord) => ({ year: c.year, team: shortName(s, c.teamId, c.year), teamId: c.teamId, futures: c.level === 'futures', age: c.age, days: c.days, bat: c.bat, pit: c.pit, war: c.war, current: false, ...(c.parts ? { parts: c.parts.map((x) => ({ ...x, team: shortName(s, x.teamId, c.year) })) } : {}) }));
   // 2.0.10: once the season is closed its record is in the career while its lines stay until the next season
   // starts; the season showed twice (and counted twice in the totals).
   const closed = (futures: boolean) => p.career.some((c) => c.year === s.year && (c.level === 'futures') === futures);
   const line = s.lines[p.id];
-  if (line && played(line) && !closed(false)) rows.push({ year: s.year, team: shortName(s, line.teamId), teamId: line.teamId, futures: false, age: ageIn(p, s.year), days: line.days, bat: line.bat, pit: line.pit, war: NaN, current: true });
+  if (line && played(line) && !closed(false))
+    rows.push({ year: s.year, team: shortName(s, line.teamId), teamId: line.teamId, futures: false, age: ageIn(p, s.year), days: line.days, bat: line.bat, pit: line.pit, war: NaN, current: true, ...(line.parts ? { parts: line.parts.map((x) => ({ ...x, team: shortName(s, x.teamId), war: NaN })) } : {}) });
   const fline = s.futures?.lines[p.id];
   if (fline && played(fline) && !closed(true)) rows.push({ year: s.year, team: shortName(s, fline.teamId), teamId: fline.teamId, futures: true, age: ageIn(p, s.year), days: 0, bat: fline.bat, pit: fline.pit, war: NaN, current: true });
   return rows;

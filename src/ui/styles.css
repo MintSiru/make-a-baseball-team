@@ -3832,3 +3832,9 @@ button.danger {
   display: block;
   white-space: nowrap;
 }
+
+/* 2.0.64: a season between clubs — each club's line under the season's, quieter. */
+.career .part-row td {
+  color: var(--ink-2);
+  font-size: 12.5px;
+}

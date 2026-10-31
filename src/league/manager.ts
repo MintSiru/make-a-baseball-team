@@ -74,21 +74,40 @@ export function chooseActive(s: LeagueState, teamId: TeamId, opts?: { size?: num
           .slice(limit)
           .map((p) => p.id),
   );
+  // 2.0.64 (the user's request): our club's players kept in the futures stay there; the ones the general manager
+  // fixed on the lineup card (a spot, a position, a place in the rotation) are on the first team while they can play.
+  const ours = s.user?.teamId === teamId ? s.user : null;
+  const below = new Set(ours ? futuresOnlyIds(s) : []);
+  const pinned = new Set(ours ? pinnedIds(s) : []);
   const pool = (opts?.from ?? registeredIds(s, teamId))
     .map((id) => s.players[id]!)
     // 2.0.47: a postseason entry's `from` is vetted already (one back by the first game may be out today).
-    .filter((p) => (opts?.vetted || !offRoster(s, p.id)) && p.status === 'active' && !kyopo.has(p.id));
+    .filter((p) => (opts?.vetted || !offRoster(s, p.id)) && p.status === 'active' && !kyopo.has(p.id) && !below.has(p.id));
   const pitchers = pool.filter(isPitcher).sort((a, b) => val(b) - val(a));
   const hitters = pool.filter((p) => !isPitcher(p)).sort((a, b) => val(b) - val(a));
-  const chosen: Player[] = [];
+  const arms: Player[] = pitchers.filter((p) => pinned.has(p.id));
+  const bats: Player[] = hitters.filter((p) => pinned.has(p.id));
   const starters = [...pitchers].sort((a, b) => rotationScore(b, none) - rotationScore(a, none)).slice(0, Math.max(5, rotationSize(s)));
-  chosen.push(...starters);
-  for (const p of pitchers) if (chosen.length < pitchersWanted && !chosen.includes(p)) chosen.push(p);
-  const catchers = hitters.filter((p) => p.position === 'C').slice(0, 2);
-  chosen.push(...catchers);
-  for (const p of hitters) if (chosen.length < size && !chosen.includes(p)) chosen.push(p);
-  return chosen.map((p) => p.id);
+  for (const p of starters) if (!arms.includes(p)) arms.push(p);
+  for (const p of pitchers) if (arms.length < pitchersWanted && !arms.includes(p)) arms.push(p);
+  for (const p of hitters.filter((x) => x.position === 'C').slice(0, 2)) if (!bats.includes(p)) bats.push(p);
+  for (const p of hitters) if (arms.length + bats.length < size && !bats.includes(p)) bats.push(p);
+  return [...arms, ...bats].map((p) => p.id);
 }
+
+/** 2.0.64: the players the general manager fixed on the lineup card — a spot against either hand, a position, a place
+    in the rotation — still ours. */
+export function pinnedIds(s: LeagueState): PlayerId[] {
+  const u = s.user;
+  const c = u?.lineup;
+  if (!u || !c) return [];
+  const ids = [...c.R, ...c.L].filter((x): x is LineupSlot => !!x).map((x) => x.id);
+  ids.push(...(c.places?.R ?? []).map((x) => x.id), ...(c.places?.L ?? []).map((x) => x.id), ...c.rotation);
+  return [...new Set(ids)].filter((id) => s.players[id]?.teamId === u.teamId);
+}
+
+/** 2.0.64: ours the general manager keeps in the futures (2군 전용), still ours. */
+export const futuresOnlyIds = (s: LeagueState): PlayerId[] => (s.user?.futuresOnly ?? []).filter((id) => s.players[id]?.teamId === s.user!.teamId);
 
 /** Early-season results nudge the manager: a hot or cold start moves a player up or down the depth chart. */
 function performanceNudge(s: LeagueState, p: Player): number {

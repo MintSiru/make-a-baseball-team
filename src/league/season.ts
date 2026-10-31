@@ -1,6 +1,7 @@
 import { k as __i18n_k } from '../i18n/index';
 /* The regular season, one game day at a time: registered days, games, injuries and roster moves. */
 import { recordVenues } from './venues';
+import { logGame, notePart, partFor } from './gamelog';
 import { addBatted, emptyBatted } from './battedball';
 import { addField, emptyField } from './fielding';
 import { layoutOf } from './layout';
@@ -17,7 +18,8 @@ import { gameMoments, milestone } from './milestones';
 import { gameNews, milestoneNews, monthNews } from './news';
 import { parkFactor } from './clubs';
 import { assignSquads, futuresPreference, futuresSquad, makeFuturesLeague } from './futures';
-import { chooseActive, firstTeamSize, matchInputs } from './manager';
+import { chooseActive, firstTeamSize, matchInputs, pinnedIds } from './manager';
+import { eunneun } from './josa';
 import { noteEligibility } from './postentry';
 import { assignUnifiedLeagues } from './unified';
 import { manualReplacements, MIN_FIRST_TEAM } from './entry';
@@ -167,6 +169,41 @@ function playFuturesDay(s: LeagueState, date: string) {
 }
 
 /** Registers `active` as the first team; players who drop off go to the futures squad. */
+/** 2.0.64 (the user's request): why one of ours cannot be kept in the futures (2군 전용), or null. */
+export function checkFuturesOnly(s: LeagueState, id: PlayerId, on: boolean): string | null {
+  const u = s.user;
+  const p = s.players[id];
+  if (!u || !p || p.teamId !== u.teamId) return __i18n_k("league.season.text.184c07ee");
+  if (on && pinnedIds(s).includes(id)) return __i18n_k("league.season.text.abb03c36", { name: eunneun(p.name) });
+  return null;
+}
+
+/** Keeps one of ours in the futures, or lets the manager call him up again. One on the first team goes down now; the
+    manager fills his place (on a roster the general manager runs, it is his to fill). */
+export function setFuturesOnly(s: LeagueState, id: PlayerId, on: boolean) {
+  const problem = checkFuturesOnly(s, id, on);
+  if (problem) throw new Error(problem);
+  const u = s.user!;
+  const list = (u.futuresOnly ?? []).filter((x) => x !== id && s.players[x]?.teamId === u.teamId);
+  if (on) list.push(id);
+  if (list.length) u.futuresOnly = list;
+  else delete u.futuresOnly;
+  const r = s.rosters[u.teamId];
+  if (!on || !r?.active.includes(id)) return;
+  if (u.entry === 'manual') setActive(s, u.teamId, r.active.filter((x) => x !== id));
+  else setActive(s, u.teamId, chooseActive(s, u.teamId));
+}
+
+/** 2.0.64: a player just fixed on the lineup card comes up at once when the manager runs the roster (a fixed player
+    who cannot play — hurt, away — waits until he can). */
+export function keepPinnedUp(s: LeagueState) {
+  const u = s.user;
+  const r = u && s.rosters[u.teamId];
+  if (!u || !r || u.entry === 'manual' || !firstTeamIds(s).includes(u.teamId)) return;
+  const ideal = chooseActive(s, u.teamId);
+  if (pinnedIds(s).some((id) => ideal.includes(id) && !r.active.includes(id))) setActive(s, u.teamId, ideal);
+}
+
 function setActive(s: LeagueState, teamId: TeamId, active: PlayerId[]) {
   const r = s.rosters[teamId]!;
   const leaving = r.active.filter((id) => !active.includes(id));
@@ -212,9 +249,17 @@ function countDays(s: LeagueState, date: string) {
   const from = s.countedThrough ?? addDays(date, -1);
   const days = daysBetween(from, date);
   if (days <= 0) return;
-  for (const teamId of firstTeamIds(s)) for (const id of s.rosters[teamId]!.active) lineOf(s, id, teamId).days += days;
-  for (const [id, inj] of Object.entries(s.injuries)) if (inj.onList && s.players[id]?.teamId) lineOf(s, id, s.players[id]!.teamId!).days += days;
-  for (const id of Object.keys(s.away)) if (s.players[id]?.teamId) lineOf(s, id, s.players[id]!.teamId!).days += days;
+  // 2.0.64 (gamelog.ts): the days go to his club's part too once he has played for two.
+  const add = (id: PlayerId, teamId: TeamId) => {
+    const line = lineOf(s, id, teamId);
+    // The earlier club's part is his line so far: begun before today's days are added.
+    const part = partFor(line, teamId);
+    line.days += days;
+    if (part) part.days += days;
+  };
+  for (const teamId of firstTeamIds(s)) for (const id of s.rosters[teamId]!.active) add(id, teamId);
+  for (const [id, inj] of Object.entries(s.injuries)) if (inj.onList && s.players[id]?.teamId) add(id, s.players[id]!.teamId!);
+  for (const id of Object.keys(s.away)) if (s.players[id]?.teamId) add(id, s.players[id]!.teamId!);
   if (s.futures) for (const t of s.teams) for (const id of s.rosters[t.id]?.third ?? []) s.futures.training[id] = (s.futures.training[id] ?? 0) + days;
   s.countedThrough = date;
 }
@@ -417,8 +462,13 @@ export function playDay(s: LeagueState): boolean {
     s.next++;
     if (!out) continue;
     if (out.called) calledGameNote(s, out, g, date);
+    // 2.0.64 (gamelog.ts): a player new at a club starts his part there; then the game row and the month.
+    notePart(s.lines, out.home);
+    notePart(s.lines, out.away);
     record(s, out.home, date);
     record(s, out.away, date);
+    logGame(s.lines, out.home, date, g.away, true);
+    logGame(s.lines, out.away, date, g.home, false);
     // 2.0.15: home and road, and the ballpark.
     recordVenues(s.lines, out.home, true, g.home);
     recordVenues(s.lines, out.away, false, g.home);

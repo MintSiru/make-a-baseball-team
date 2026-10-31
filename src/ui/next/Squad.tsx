@@ -73,6 +73,12 @@ function NameCell({ r, onPlayer }: { r: Row; onPlayer: (id: string) => void }) {
       {r.injured && <span class="tag hurt">{r.injury}</span>}
       {r.knock && <span class="tag hurt">{r.injury}</span>}
       {r.away && <span class="tag">{__i18n_t("ui.squad.name.a567cc15")}</span>}
+      {r.pinned && (
+        <span class="tag fixed" title={__i18n_t("ui.next.squad.text.72433386")}>
+          {__i18n_t("ui.next.squad.text.4f48c004")}
+        </span>
+      )}
+      {r.futuresOnly && <span class="tag">{__i18n_t("ui.next.squad.text.a561f40f")}</span>}
     </td>
   );
 }
