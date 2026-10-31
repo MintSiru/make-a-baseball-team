@@ -1,4 +1,5 @@
 import { rulesFor } from '../rules/history';
+import { campLean } from './development';
 import { asOther } from './twoway';
 import { fieldingOf } from './fielding';
 import { battingProfile } from './battedball';
@@ -61,7 +62,8 @@ export function chooseActive(s: LeagueState, teamId: TeamId, opts?: { size?: num
   // Development players cannot be registered until they are converted (RULES.md §6). 1.9.0: a postseason entry
   // chooses from the players eligible for it (`from`, postentry.ts).
   const perf = (p: Player) => performanceNudge(s, p);
-  const val = (p: Player) => currentValue(p) * 0.8 + keepValue(p, s.year) * 0.2 + perf(p) + (isForeign(p) ? 30 : 0);
+  // 2.0.66: into April, the spring camp's groups for our club (development.ts campLean).
+  const val = (p: Player) => currentValue(p) * 0.8 + keepValue(p, s.year) * 0.2 + perf(p) + (isForeign(p) ? 30 : 0) + campLean(s, p);
   // 1.9.6: at most so many overseas Korean players on the first team (kyopo.ts), the best of them.
   const limit = kyopoLimit(s.year);
   const kyopo = new Set(

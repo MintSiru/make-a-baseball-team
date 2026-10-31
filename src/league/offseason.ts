@@ -81,6 +81,7 @@ import { playAsiaSeries } from './asiaseries';
 import { takeNationalWatch } from './national';
 import { naturalizeWinter } from './naturalize';
 import { staffAgeWinter } from './staffage';
+import { farmMonth, trainingGrowth } from './farmreport';
 
 const normal = (r: () => number) => (r() + r() + r() - 1.5) / 1.5;
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
@@ -129,6 +130,9 @@ export function closeSeason(s: LeagueState) {
     if (p && (line.bat || line.pit)) (p.post ??= []).push({ year: s.year, teamId: line.teamId, bat: line.bat, pit: line.pit });
   }
   delete s.postLines;
+  // 2.0.66: the last month's report on our futures and reserve players (farmreport.ts).
+  const lastDay = s.schedule.at(-1)?.date;
+  if (lastDay) farmMonth(s, lastDay.slice(0, 7), lastDay);
   let userFutures: SeasonSummary['userFutures'];
   let futuresTable: SeasonSummary['futures'];
   const f = s.futures;
@@ -1006,7 +1010,7 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
           driftPotential(p, year, rng(`${s.seed}|potential|${year}|${p.id}`));
           // 2.0.39: a settled or pressured season costs a step first (contractmood.ts).
           moodWinter(s, p, year);
-          developPlayer(p, year, s.lines[p.id]?.lost ?? 0, rng(`${s.seed}|develop|${year}|${p.id}`), growthScale(p, year, futuresLeague), coachingFor(s, p, year), facilityAging(s, p));
+          developPlayer(p, year, s.lines[p.id]?.lost ?? 0, rng(`${s.seed}|develop|${year}|${p.id}`), growthScale(p, year, futuresLeague) * trainingGrowth(s, p, year), coachingFor(s, p, year), facilityAging(s, p));
           // A season of regular play at a new position adds it to his list (V0.11).
           learnPositions(p, s.lines[p.id]?.bat?.posG);
           // Other clubs move a player who has lost the glove or legs for his spot (V0.12); ours is the user's call (camp).

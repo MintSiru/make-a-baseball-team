@@ -3838,3 +3838,10 @@ button.danger {
   color: var(--ink-2);
   font-size: 12.5px;
 }
+
+/* 2.0.66: the farm reports' notes wrap in their cells (the table fits a laptop screen without scrolling sideways). */
+.record-table.farm-report td.small {
+  white-space: normal;
+  min-width: 8rem;
+  max-width: 16rem;
+}

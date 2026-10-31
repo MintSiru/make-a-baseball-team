@@ -21,6 +21,7 @@ import { k as __i18n_k } from '../i18n/index';
 import { DRAFT_GROWTH, PERSONALITIES, rng, type ToolKey, type Tools } from '../draftroom';
 import type { GrowthType, Player, Traits } from '../model/types';
 import { GROWTH } from './tuning';
+import { programFactor } from './drills';
 
 export const GROWTH_ORDER: GrowthType[] = ['veryEarly', 'early', 'normal', 'late', 'veryLate'];
 export const GROWTH_LABELS: Record<GrowthType, string> = { veryEarly: __i18n_k("league.traits.gROWTH_LABELS.veryEarly.763af209"), early: __i18n_k("league.traits.gROWTH_LABELS.early.2c3cfb4c"), normal: '보통', late: __i18n_k("league.traits.gROWTH_LABELS.late.0b68401c"), veryLate: __i18n_k("league.traits.gROWTH_LABELS.veryLate.3e7da27a") };
@@ -112,7 +113,8 @@ export const growthOf = (p: Pick<Player, 'id' | 'personality' | 'hidden'>) => GR
 // ── Growth ───────────────────────────────────────────────────────────────────────────────────────
 
 const D = DRAFT_GROWTH;
-const focusFactor = (focus: string, key: string) => (!focus || focus === 'balanced' ? 1 : key === focus ? D.focus.chosen : D.focus.others);
+// 2.0.66 (drills.ts): a programme of one ability grows as the focus did; a combined one by its shares.
+const focusFactor = programFactor;
 
 /**
  * One year of growth toward his ceiling, less aging, by his growth type. Draft Room's growth with the type's ages in

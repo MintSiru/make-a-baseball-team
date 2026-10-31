@@ -21,6 +21,7 @@ import type { LeagueState, SeasonLine } from './state';
 import { INJURY, STAFF, TRAINING } from './tuning';
 import { facilityInjury, facilityRehab } from './facilities';
 import { inWard, WARD } from './ward';
+import { INTENSITY, intensityOf } from './drills';
 
 export interface InjuryType {
   part: string;
@@ -197,7 +198,8 @@ export function rollInjuries(s: LeagueState, box: TeamBox, date: string, r: () =
     const age = Math.max(0, ageIn(p, s.year) - INJURY.ageFrom);
     const medical = staffEdge(staffRating(s, p.teamId, 'medical'));
     // The user's grass and gym, and a conditioning programme abroad this season (V0.10; 1 for everyone else).
-    const care = (1 - facilityInjury(s, p.teamId)) * (p.life?.conditioned === s.year ? TRAINING.conditioned : 1);
+    // 2.0.66: how hard he trains (drills.ts; 보통 for every other club's).
+    const care = (1 - facilityInjury(s, p.teamId)) * (p.life?.conditioned === s.year ? TRAINING.conditioned : 1) * INTENSITY[intensityOf(p)].injury;
     // 1.8.0, scenario 부상병동: our club alone, twice as often and longer out.
     const ward = inWard(s, p.teamId);
     const scale = (p.hidden.injuryRisk / INJURY.riskScale) * (1 + age * INJURY.perYearOver) * (1 - STAFF.injury * medical) * (level === 'futures' ? INJURY.futures : 1) * care * (ward ? WARD.injury : 1);

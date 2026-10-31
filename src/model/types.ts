@@ -457,6 +457,8 @@ export interface PlayerPlan {
   focus: string;
   /** Season of a position change: his fielding suffers while he adapts. */
   adaptingIn?: number;
+  /** 2.0.66 (drills.ts): how hard he trains (absent: 보통). */
+  intensity?: 'light' | 'normal' | 'hard';
 }
 
 export interface Stadium {
