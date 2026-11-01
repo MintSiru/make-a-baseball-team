@@ -83,7 +83,7 @@ import { historicForeignCap } from '../rules/history';
 import { autoBoard, boardDecision, LEGACY_BOARD_FROM, resolveBoard, type BoardVote } from './board';
 import { autoDevForeign, devForeignDecision, resolveDevForeign } from './devforeign';
 import { japanPersuasion, persuadeAbroadChance, staysHome } from './abroad';
-import { japanDeal } from './fa';
+import { abroadDeal } from './fa';
 import { freeAgentsFor } from './offseason';
 
 export const EXPANSION_ID = 'new';
@@ -452,9 +452,9 @@ function abroadDecision(s: LeagueState, next: number): Decision | null {
   const u = user(s);
   const rows = freeAgentsFor(s, next)
     .filter((p) => p.teamId === u.teamId && !staysHome(s, p.id, next))
-    .map((p) => ({ p, deal: japanDeal(s, p, next) }))
+    .map((p) => ({ p, deal: abroadDeal(s, p, next) }))
     .filter((x) => x.deal)
-    .map(({ p, deal }) => ({ id: p.id, years: deal!.years, total: deal!.total, chance: persuadeAbroadChance(s, p, next) }));
+    .map(({ p, deal }) => ({ id: p.id, years: deal!.years, total: deal!.total, chance: persuadeAbroadChance(s, p, next), ...(deal!.league === 'mlb' ? { league: 'mlb' as const } : {}) }));
   return rows.length ? { kind: 'abroad', rows } : null;
 }
 

@@ -10329,5 +10329,13 @@
   "ui.playerPanel.text.ef2caeba": "1군",
   "ui.playerPanel.text.e6607847": "퓨처스",
   "ui.playerPanel.text.5440e364": "퓨처스리그 기록입니다.",
-  "ui.farmReport.text.447a2411": "꾸준히 훈련함"
+  "ui.farmReport.text.447a2411": "꾸준히 훈련함",
+  "league.fa.text.5931ea63": "{name}, FA로 메이저리그 진출",
+  "league.fa.text.9e784750": "{club}에서 FA 자격을 얻은 {name} 메이저리그 {mlb}와 {years}년 {usd}에 계약했다.",
+  "league.abroad.text.3b56e509": "{name}, 해외 진출 대신 KBO 잔류 선언",
+  "league.abroad.text.78f4d76b": "해외 구단의 제안을 받았던 {name} 단장의 설득 끝에 국내에 남기로 했다. FA 시장에서 원소속 구단과 협상을 이어 간다.",
+  "ui.decision.text.8bb1b971": "해외 구단(메이저리그·일본)이 우리 FA 선수에게 계약을 제안했습니다. 설득에 성공하면 국내 FA 시장에 남아 우리 구단과 협상할 수 있고, 실패하거나 설득하지 않으면 해외로 떠납니다.",
+  "ui.decision.text.38d16e94": "해외 제안",
+  "ui.decision.text.2d1fb3e2": "메이저리그",
+  "ui.decision.text.d7a6e266": "일본"
 }

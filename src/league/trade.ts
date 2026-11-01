@@ -356,7 +356,8 @@ export function canRelease(s: LeagueState, id: PlayerId): string | null {
   const u = s.user;
   const p = s.players[id];
   if (!u || !p || p.teamId !== u.teamId || p.status !== 'active') return __i18n_k("league.trade.canRelease.60e00321");
-  if (s.pending || s.phase === 'offseason') return __i18n_k("league.trade.canRelease.d220cb44");
+  // 2.0.67 (the user's request): a development player (육성선수) may be let go in the winter too.
+  if (s.pending || (s.phase === 'offseason' && p.contract?.kind !== 'development')) return __i18n_k("league.trade.canRelease.d220cb44");
   if (s.phase === 'regular' && s.rosters[u.teamId]!.active.includes(id) && s.rosters[u.teamId]!.active.length <= 26) return __i18n_k("league.trade.canRelease.ca05e46e");
   return null;
 }

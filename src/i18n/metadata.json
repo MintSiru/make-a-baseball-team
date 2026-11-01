@@ -92858,5 +92858,83 @@
     "line": 46,
     "params": {},
     "locations": []
+  },
+  "league.fa.text.5931ea63": {
+    "source": "src/league/fa.ts",
+    "line": 597,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.fa.text.9e784750": {
+    "source": "src/league/fa.ts",
+    "line": 600,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      },
+      "mlb": {
+        "expression": "p.mlb!.club"
+      },
+      "years": {
+        "expression": "deal.years"
+      },
+      "usd": {
+        "expression": "usd(deal.total)"
+      }
+    },
+    "locations": []
+  },
+  "league.abroad.text.3b56e509": {
+    "source": "src/league/abroad.ts",
+    "line": 58,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.abroad.text.78f4d76b": {
+    "source": "src/league/abroad.ts",
+    "line": 59,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.8bb1b971": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1384,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.38d16e94": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1390,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.2d1fb3e2": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1406,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.d7a6e266": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1406,
+    "params": {},
+    "locations": []
   }
 }

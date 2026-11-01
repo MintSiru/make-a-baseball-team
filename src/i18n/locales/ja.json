@@ -10329,5 +10329,13 @@
   "ui.playerPanel.text.ef2caeba": "1軍",
   "ui.playerPanel.text.e6607847": "ファーム",
   "ui.playerPanel.text.5440e364": "フューチャーズリーグの記録です。",
-  "ui.farmReport.text.447a2411": "地道に練習"
+  "ui.farmReport.text.447a2411": "地道に練習",
+  "league.fa.text.5931ea63": "{name}、FAでメジャーリーグへ",
+  "league.fa.text.9e784750": "{club}でFA権を得た{name}がメジャーリーグの{mlb}と{years}年{usd}で契約した。",
+  "league.abroad.text.3b56e509": "{name}、海外移籍せずKBO残留を宣言",
+  "league.abroad.text.78f4d76b": "海外球団から提示を受けていた{name}が、GMの説得で国内残留を決めた。FA市場で所属球団との交渉を続ける。",
+  "ui.decision.text.8bb1b971": "海外の球団(メジャーリーグ・日本)が自球団のFA選手に契約を提示しました。説得に成功すれば国内FA市場に残り自球団と交渉でき、失敗するか説得しなければ海外へ移ります。",
+  "ui.decision.text.38d16e94": "海外からの提示",
+  "ui.decision.text.2d1fb3e2": "メジャーリーグ",
+  "ui.decision.text.d7a6e266": "日本"
 }

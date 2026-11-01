@@ -494,7 +494,7 @@ export function faSeasonsFor(p: Player, season: number): number {
   return p.origin.entryCategory === 'college' ? KBO_2026.freeAgency.seasonsCollege : KBO_2026.freeAgency.seasonsHighSchool;
 }
 
-function isFreeAgent(p: Player, next: number) {
+export function isFreeAgent(p: Player, next: number) {
   if (isForeign(p) || p.status !== 'active' || !p.teamId) return false;
   if (p.contract && p.contract.salaries.some((x) => x.season >= next)) return false;
   const s = p.service;

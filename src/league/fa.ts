@@ -23,13 +23,14 @@ import { clubState } from './fans';
 import { aiCompensation, compensationCash, externalLimit, faGrades, moneyFor, parentGiftFor, projectedPayroll, protectedBy, type FaGrade, type FaQueueItem } from './market';
 import { moveNews } from './movenews';
 import { freeAgentsFor, leaveLeague, removeFromRoster } from './offseason';
-import { joinNpb } from './mlb';
-import { npbMarket } from './posting';
+import { joinMlb, joinNpb } from './mlb';
+import { mlbMarket, npbMarket } from './posting';
 import { usd } from './foreign';
 import { addNews } from './news';
 import { ageIn, currentValue, isForeign, isPitcher, keepValue } from './players';
 import { firstTeamIds, orgPlayers, registeredIds, type LeagueState, aiFoundingClubs } from './state';
-import { FA, MARKET, DIFFICULTY, NPB_MOVE } from './tuning';
+import { FA, MARKET, DIFFICULTY, NPB_MOVE, POSTING } from './tuning';
+import { rulesFor } from '../rules/history';
 import { gmAppetite, gmOf } from './twelve';
 import { crossing } from './rivalry';
 import { farewell } from './life';
@@ -564,21 +565,40 @@ export function japanDeal(s: LeagueState, p: Player, next: number) {
   return npbMarket(p, next, r, NPB_MOVE.faMinGrade, 1);
 }
 
+/** 2.0.67 (the user's request): a free agent who dreams of the majors (the same as the one who would ask to be posted)
+    tries there first — a free agent needs no posting; good enough and young enough, a major league club may sign him
+    (his own draw). Otherwise Japan's offer, as before. Null: he stays on the KBO market. */
+export function abroadDeal(s: LeagueState, p: Player, next: number): { league: 'mlb' | 'npb'; years: number; total: number } | null {
+  if (isForeign(p)) return null;
+  if (rulesFor(next - 1).posting && hashUnit(`${p.id}-mlb-dream`) < POSTING.wants && p.scouting.current >= POSTING.minGrade && ageIn(p, next) <= POSTING.maxAge) {
+    const m = mlbMarket(p, next, rng(`${s.seed}|fa-mlb|${next - 1}|${p.id}`));
+    if (m) return { league: 'mlb', ...m };
+  }
+  const j = japanDeal(s, p, next);
+  return j ? { league: 'npb', ...j } : null;
+}
+
 /** 1.9.3: free agents good enough and not too old may sign in Japan before the KBO market opens (no compensation:
-    he leaves the league). The chance is his own, drawn from his id and the year. */
+    he leaves the league). The chance is his own, drawn from his id and the year. 2.0.67: or in the majors. */
 export function toJapan(s: LeagueState, next: number) {
   const year = next - 1;
   for (const p of freeAgentsFor(s, next)) {
     // 2.0.37: talked into staying (abroad.ts).
     if (staysHome(s, p.id, next)) continue;
-    const deal = japanDeal(s, p, next);
+    const deal = abroadDeal(s, p, next);
     if (!deal) continue;
     const from = p.teamId!;
     const club = s.teams.find((t) => t.id === from)?.short ?? from;
     leaveLeague(s, p, 'overseas');
-    joinNpb(p, year, deal, 'fa');
-    const title = __i18n_k("league.fa.text.ac84d726", { name: p.name });
-    const body = __i18n_k("league.fa.text.5b7f8326", { club, name: iga(p.name), npb: p.mlb!.club, years: deal.years, usd: usd(deal.total) });
+    if (deal.league === 'mlb') {
+      joinMlb(p, year, deal);
+      p.mlb!.via = 'fa';
+    } else joinNpb(p, year, deal, 'fa');
+    const title = deal.league === 'mlb' ? __i18n_k("league.fa.text.5931ea63", { name: p.name }) : __i18n_k("league.fa.text.ac84d726", { name: p.name });
+    const body =
+      deal.league === 'mlb'
+        ? __i18n_k("league.fa.text.9e784750", { club, name: iga(p.name), mlb: p.mlb!.club, years: deal.years, usd: usd(deal.total) })
+        : __i18n_k("league.fa.text.5b7f8326", { club, name: iga(p.name), npb: p.mlb!.club, years: deal.years, usd: usd(deal.total) });
     if (s.user) addNews(s, { id: `fa-npb-${year}-${p.id}`, date: `${year}-11-12`, kind: 'move', title, body, quotes: [], facts: { club, years: deal.years }, players: [p.id], mine: from === s.user?.teamId });
     if (from === s.user?.teamId) addAlert(s, { id: `fa-npb-${p.id}`, date: `${year}-11-12`, kind: 'fa', title, lines: [body], tone: 'bad', players: [p.id] });
   }

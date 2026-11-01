@@ -528,7 +528,8 @@ function Release({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
         extra={{ title: __i18n_k("ui.market.release.title.cbf383ec"), value: (p) => money(p.contract?.salaries.find((x) => x.season === league.year)?.amount ?? 0), sort: (p) => p.contract?.salaries.find((x) => x.season === league.year)?.amount ?? 0 }}
         action={(p) =>
           // 2.0.48 (the user's request): in the winter, a move to a development contract (육성선수) any time.
-          league.phase === 'offseason' ? (
+          // 2.0.67: a development player is let go instead (방출).
+          league.phase === 'offseason' && p.contract?.kind !== 'development' ? (
             <button
               type="button"
               disabled={!!canMakeDevelopment(league, p.id)}

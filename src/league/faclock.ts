@@ -7,6 +7,7 @@ import { k as __i18n_k } from '../i18n/index';
 import type { Player } from '../model/types';
 import { KBO_2026 } from '../rules/kbo2026';
 import { isForeign } from './players';
+import { faSeasonsFor, faSeasonsNeeded } from './offseason';
 import type { LeagueState } from './state';
 
 const F = KBO_2026.freeAgency;
@@ -27,7 +28,12 @@ export interface FaOutlook {
 
 /** The season being played, or the one just finished in the winter. */
 const seasonNow = (s: LeagueState) => (s.offseason ? s.offseason.year : s.year);
-const neededSeasons = (p: Player) => (p.origin.entryCategory === 'college' ? F.seasonsCollege : F.seasonsHighSchool);
+/** 2.0.67 (the user's report): the seasons the free agency of the coming winter asks, as offseason.ts counts them —
+    the board's rule when it changed it (1.9.9), and the year's rule in a league that plays history. */
+const neededSeasons = (p: Player, now: number) => {
+  const n = faSeasonsNeeded(p, now + 1);
+  return Number.isFinite(n) ? n : faSeasonsFor(p, now);
+};
 
 export function faOutlook(s: LeagueState, p: Player): FaOutlook {
   const now = seasonNow(s);
@@ -39,7 +45,7 @@ export function faOutlook(s: LeagueState, p: Player): FaOutlook {
   if (p.status !== 'active' && p.status !== 'military') return none(__i18n_k("league.faclock.text.d72e5822"));
   const sv = p.service;
   const again = sv.lastFreeAgencyAt !== undefined;
-  const need = again ? sv.lastFreeAgencyAt! + F.seasonsToRequalify : neededSeasons(p);
+  const need = again ? sv.lastFreeAgencyAt! + F.seasonsToRequalify : neededSeasons(p, now);
   // This season's days count toward this season while it is played.
   const inSeason = !s.offseason && (s.phase === 'regular' || s.phase === 'postseason');
   const have = sv.creditedSeasons;
