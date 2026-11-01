@@ -168,6 +168,9 @@ export interface PlayerOrigin {
   kyopo?: boolean;
   /** 2.0.41 (abroadvets.ts): a Korean veteran home from a career abroad, never in the KBO before. */
   abroadVet?: boolean;
+  /** 2.0.67 (returnees.ts): straight abroad out of high school (no KBO draft then), back through the draft after the
+      two-year wait — the winter he left, and how he spent the wait. No signing bonus. */
+  overseasDirect?: { left: number; wait: 'military' | 'independent' };
   /** 2.0.42 (naturalize.ts): a foreign player who took Korean nationality — the winter, and his country before. */
   naturalized?: { year: number; from: string };
   /** Foreign players: where he played before and what he asked for when he came (US dollars). */

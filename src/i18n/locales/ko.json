@@ -10337,5 +10337,14 @@
   "ui.decision.text.8bb1b971": "해외 구단(메이저리그·일본)이 우리 FA 선수에게 계약을 제안했습니다. 설득에 성공하면 국내 FA 시장에 남아 우리 구단과 협상할 수 있고, 실패하거나 설득하지 않으면 해외로 떠납니다.",
   "ui.decision.text.38d16e94": "해외 제안",
   "ui.decision.text.2d1fb3e2": "메이저리그",
-  "ui.decision.text.d7a6e266": "일본"
+  "ui.decision.text.d7a6e266": "일본",
+  "league.returnees.text.bf09ce39": "해외에서 FA로 뛰던 {n}명이 국내 복귀",
+  "league.returnees.text.2f1177fc": "{n}년",
+  "league.returnees.text.20c811b6": "보류권이 없어 어느 구단이든 계약할 수 있습니다(이적시장 › 방출·자유계약).",
+  "league.returnees.text.eba102e3": "{pathText} → {left}년 미국 마이너리그 직행 → {back}년 귀국 → {wait}",
+  "league.returnees.text.95eae9b0": "2년 유예 동안 현역 복무(병역 해결)",
+  "league.returnees.text.6faa64e5": "2년 유예 동안 독립야구단",
+  "ui.draftBoard.text.87004846": "병역 해결 · 계약금 없음",
+  "ui.draftBoard.text.b668513b": "독립야구단 · 계약금 없음",
+  "ui.draftBoard.text.cf47bdcf": "해외 유턴"
 }

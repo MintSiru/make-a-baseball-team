@@ -70,7 +70,8 @@ describe('a season of records', () => {
     // early in a season let in a hitter below the ranking's own field).
     const games = percentilesOf(s, Object.keys(s.lines)[0]!).games;
     const regs = Object.entries(s.lines)
-      .filter(([id, l]) => l.bat && !isPitcher(s.players[id]!) && l.bat.pa >= Math.max(80, games * 2))
+      // 2.0.68: exactly the ranking's field (a floor of 80 left out its 60–79 plate-appearance regulars early on).
+      .filter(([id, l]) => l.bat && !isPitcher(s.players[id]!) && l.bat.pa >= games * 2)
       .map(([id, l]) => ({ id, x: xwobaOf(l.bat!)! }))
       .sort((a, b) => a.x - b.x);
     const low = percentilesOf(s, regs[0]!.id).batting!,

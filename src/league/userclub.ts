@@ -294,7 +294,8 @@ export function rookieBonusDecision(s: LeagueState, d: DraftState): Decision | n
   const u = s.user!;
   const clubs = new Set(d.slots.map((x) => x.teamId)).size;
   const picks = orgPlayers(s, u.teamId)
-    .filter((p) => p.origin.draftYear === d.year && p.origin.overallPick && p.contract?.kind === 'rookie')
+    // 2.0.67: one back from abroad takes no bonus (returnees.ts).
+    .filter((p) => p.origin.draftYear === d.year && p.origin.overallPick && p.contract?.kind === 'rookie' && !p.origin.overseasDirect)
     .sort((a, b) => a.origin.overallPick! - b.origin.overallPick!)
     .map((p) => ({ id: p.id, slot: slotBonus(p.origin.overallPick!, clubs), ask: bonusAsk(p) }));
   return picks.length ? { kind: 'rookieBonus', picks, final: false } : null;

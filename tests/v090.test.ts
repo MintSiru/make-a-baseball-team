@@ -132,7 +132,10 @@ describe('the special draft and the free-agent exception', () => {
     expect(faWinter).not.toBeNull();
     const m = faWinter!.offseason!.fa!;
     expect(m.newClub).toBe(RIVAL_ID);
-    const signed = Object.values(s.players).filter((p) => p.teamId === RIVAL_ID && p.contract?.kind === 'freeAgent' && p.contract.signedIn === 2028);
+    // The outside ones: not its own free agents re-signed (2.0.68: nor a returnee from abroad, on a free-agent style deal).
+    const signed = Object.values(s.players).filter(
+      (p) => p.teamId === RIVAL_ID && p.contract?.kind === 'freeAgent' && p.contract.signedIn === 2028 && p.mlb?.back === undefined && !p.career.some((c) => c.year === 2028 && c.teamId === RIVAL_ID),
+    );
     expect(signed.length).toBeLessThanOrEqual(3);
   });
 

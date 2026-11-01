@@ -62,7 +62,7 @@ import { runAiPosting } from './posting';
 import { mlbWinter } from './mlb';
 import { FUTURES, GROWTH, OFFSEASON as O, STAFF } from './tuning';
 import { aiTakesKnown, expireForeignPool, foreignPoolAsk, leavePool, poolChoice, toForeignPool } from './foreignpool';
-import { draftReturnees } from './returnees';
+import { draftReturnees, overseasDirects } from './returnees';
 import { awardAlert, retirementAlert, seasonAlert } from './alerts';
 import { applyInternational, asianGamesSoon, marchEvents, novemberEvents, winterSquads } from './national';
 import { staffEdge, staffRating } from './staff';
@@ -555,6 +555,8 @@ export function openDraft(s: LeagueState, draftYear: number, slots: DraftSlot[])
   for (const p of pool) s.players[p.id] = p;
   // Draftees who went abroad and are back after the two-year wait (V0.7.3), ranked among this class.
   const back = draftReturnees(s, draftYear);
+  // 2.0.67: and now and then one who went abroad straight out of high school (returnees.ts).
+  if (rulesFor(draftYear + 1).posting) back.push(...overseasDirects(s, draftYear, (y) => draftClass(s.seed, y, s.unified)));
   for (const p of back) p.amateur.draftRank = 1 + pool.filter((q) => futureValue(q) > futureValue(p)).length;
   return { year: draftYear, slots: [...territorialSlots(s, draftYear, slots), ...slots], next: 0, pool: [...pool, ...back].map((p) => p.id), developmentDone: false };
 }
@@ -595,7 +597,7 @@ export interface DraftPrefer {
 export const DRAFT_ROLES: import('../draftroom').Role[] = ['SP', 'RP', 'C', 'IF', 'OF'];
 export const DRAFT_PATHS: DraftPathway[] = ['hs', 'college', 'other'];
 /** High school, college (four-year, early entry, two-year) or the rest (independent clubs, back from abroad). */
-export const draftPathOf = (p: Player): DraftPathway => (p.origin.pathway === '고졸' ? 'hs' : /대|2년제/.test(p.origin.pathway) ? 'college' : 'other');
+export const draftPathOf = (p: Player): DraftPathway => (p.origin.overseasDirect || p.abroad ? 'other' : p.origin.pathway === '고졸' ? 'hs' : /대|2년제/.test(p.origin.pathway) ? 'college' : 'other');
 export const fitsPrefer = (p: Player, pr: DraftPrefer | undefined) => !pr || ((!pr.role || p.role === pr.role) && (!pr.path || draftPathOf(p) === pr.path));
 
 /** The scouts' pick for us under the general manager's priority; their own pick when no one fits it. */
@@ -645,7 +647,8 @@ export function makePick(s: LeagueState, d: DraftState, p: Player) {
   d.pool = d.pool.filter((id) => id !== p.id);
   const clubs = new Set(d.slots.map((x) => x.teamId)).size;
   // AI clubs pay the slot value; the user's club negotiates each bonus after the draft (rookieBonus).
-  sign(s, p, slot.teamId, rookieContract(slot.teamId, d.year + 1, slotBonus(overall, clubs)));
+  // 2.0.67: one back from a club abroad takes no signing bonus (returnees.ts).
+  sign(s, p, slot.teamId, rookieContract(slot.teamId, d.year + 1, p.origin.overseasDirect ? 0 : slotBonus(overall, clubs)));
   d.next++;
 }
 

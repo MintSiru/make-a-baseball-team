@@ -41,7 +41,12 @@ export function addAlert(s: LeagueState, a: Omit<Alert, 'seen'>) {
     return;
   }
   list.push(a);
-  if (list.length > KEEP) list.splice(0, list.length - KEEP);
+  // 2.0.68: over the limit, the oldest article-style alerts (minor) go first, then the oldest of the rest — a result,
+  // an award or a signing outlasts a game story.
+  while (list.length > KEEP) {
+    const i = list.findIndex((x) => x.minor);
+    list.splice(i >= 0 ? i : 0, 1);
+  }
 }
 
 /** Our club's articles that also pop up (V0.11), by the article's kind. Season reviews and awards have alerts of

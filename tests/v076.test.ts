@@ -1,4 +1,6 @@
 /* V0.7.6: the manager's lineup (optimal positions, batting order, days off) and the display settings. */
+import { isPitcher } from '../src/league/players';
+import { peekOther } from '../src/league/twoway';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { bootstrap } from '../src/league/history';
 import { assign, lineupFor } from '../src/league/manager';
@@ -65,7 +67,11 @@ describe('the manager’s lineup', () => {
   });
 
   it('does not lead off with a catcher; of the best three, the one with more power bats fourth', () => {
-    const tool = (id: string, k: 'power' | 'contact') => s.players[id]!.scouting.tools[k] ?? 30;
+    // 2.0.68: a two-way pitcher in the lineup bats with his other side's tools (twoway.ts).
+    const tool = (id: string, k: 'power' | 'contact') => {
+      const p = s.players[id]!;
+      return (isPitcher(p) && p.twoWay ? peekOther(p).tools : p.scouting.tools)[k] ?? 30;
+    };
     const power = (id: string) => tool(id, 'power') * 0.65 + tool(id, 'contact') * 0.35;
     for (const t of s.teams) {
       for (const style of ['balanced', 'smallBall']) {

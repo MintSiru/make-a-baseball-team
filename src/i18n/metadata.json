@@ -92936,5 +92936,80 @@
     "line": 1406,
     "params": {},
     "locations": []
+  },
+  "league.returnees.text.bf09ce39": {
+    "source": "src/league/returnees.ts",
+    "line": 199,
+    "params": {
+      "n": {
+        "expression": "free.length"
+      }
+    },
+    "locations": []
+  },
+  "league.returnees.text.2f1177fc": {
+    "source": "src/league/returnees.ts",
+    "line": 200,
+    "params": {
+      "n": {
+        "expression": "year - p.mlb!.posted"
+      }
+    },
+    "locations": []
+  },
+  "league.returnees.text.20c811b6": {
+    "source": "src/league/returnees.ts",
+    "line": 200,
+    "params": {},
+    "locations": []
+  },
+  "league.returnees.text.eba102e3": {
+    "source": "src/league/returnees.ts",
+    "line": 298,
+    "params": {
+      "pathText": {
+        "expression": "p.education.pathText"
+      },
+      "left": {
+        "expression": "left + 1"
+      },
+      "back": {
+        "expression": "draftYear - R.wait"
+      },
+      "wait": {
+        "expression": "army ? L('2년 유예 동안 현역 복무(병역 해결)') : L('2년 유예 동안 독립야구단')"
+      }
+    },
+    "locations": []
+  },
+  "league.returnees.text.95eae9b0": {
+    "source": "src/league/returnees.ts",
+    "line": 302,
+    "params": {},
+    "locations": []
+  },
+  "league.returnees.text.6faa64e5": {
+    "source": "src/league/returnees.ts",
+    "line": 302,
+    "params": {},
+    "locations": []
+  },
+  "ui.draftBoard.text.87004846": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 141,
+    "params": {},
+    "locations": []
+  },
+  "ui.draftBoard.text.b668513b": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 141,
+    "params": {},
+    "locations": []
+  },
+  "ui.draftBoard.text.cf47bdcf": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 142,
+    "params": {},
+    "locations": []
   }
 }

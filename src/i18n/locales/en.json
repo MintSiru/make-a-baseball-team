@@ -10337,5 +10337,14 @@
   "ui.decision.text.8bb1b971": "Clubs abroad (the majors or Japan) have offered our free agents contracts. Talked round, a player stays on the KBO market and can negotiate with us; otherwise he leaves.",
   "ui.decision.text.38d16e94": "Offer abroad",
   "ui.decision.text.2d1fb3e2": "MLB",
-  "ui.decision.text.d7a6e266": "Japan"
+  "ui.decision.text.d7a6e266": "Japan",
+  "league.returnees.text.bf09ce39": "{n, plural, one {# free agent} other {# free agents}} back from abroad",
+  "league.returnees.text.2f1177fc": "{n, plural, one {# year} other {# years}}",
+  "league.returnees.text.20c811b6": "No club holds his rights: any club may sign him (Market › Releases and free agents).",
+  "league.returnees.text.eba102e3": "{pathText} → straight to the US minors in {left} → home in {back} → {wait}",
+  "league.returnees.text.95eae9b0": "military service over the two-year wait (done)",
+  "league.returnees.text.6faa64e5": "an independent club over the two-year wait",
+  "ui.draftBoard.text.87004846": "Military service done · no signing bonus",
+  "ui.draftBoard.text.b668513b": "Independent club · no signing bonus",
+  "ui.draftBoard.text.cf47bdcf": "Back from abroad"
 }

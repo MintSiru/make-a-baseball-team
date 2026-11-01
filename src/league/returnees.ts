@@ -6,6 +6,11 @@ import { noteMove } from './moves';
      (more likely as he gets older); a few come back early. His years abroad age him as they would
      have at home. The club offers a free-agent style multi-year deal from his record and age; an AI
      club brings back anyone still useful, and if the user's club passes, another club may sign him.
+   - 2.0.67 (the user's request): free agents who signed abroad (fa.ts) come home the same way after their deal, but
+     nobody holds their rights: an AI club may sign one at once, else he is an unattached free agent any club may sign
+     (시장 → 방출·자유계약), asking a free agent's money.
+   - 2.0.67 (the user's request): a returnee signing a KBO deal starts his free agency over — four registered seasons to
+     the next one, as after a free-agent deal.
    - Draftees who refused to sign and went abroad: most come back within a few years, and after the
      KBO's two-year wait (해외파 2년 유예) they enter the rookie draft like anyone else.
    How long players stay abroad and who comes back are game assumptions, drawn from the player's id
@@ -18,6 +23,7 @@ import { developPlayer, leaveLeague, removeFromRoster, rosterLimit, sign } from 
 import { ageIn, currentValue, isForeign, keepValue } from './players';
 import { registeredIds, type LeagueState } from './state';
 import { moveNews } from './movenews';
+import { addAlert } from './alerts';
 import { leaveMlb, mlbWinter } from './mlb';
 
 const R = {
@@ -34,6 +40,8 @@ const R = {
   aiKeep: 40,
   /** A club other than his own signs a returnee whose rights were released, this often. */
   otherClub: 0.6,
+  /** 2.0.67: an AI club signs a free agent home from abroad at once this often (if he is worth a place). */
+  faAi: 0.5,
   /** Draftees abroad: chance they ever come back, and years abroad before they do (then two years' wait). */
   amateurReturn: 0.75,
   amateurYears: [2, 5] as const,
@@ -88,9 +96,10 @@ function offerFor(p: Player, next: number, before: number): { years: number; ann
   return { years: base.years, annual: Math.round((base.annual * k) / 1000) * 1000 };
 }
 
-/** Signs a returnee with a club: a multi-year deal, and an article. */
+/** Signs a returnee with a club: a multi-year deal, and an article. 2.0.67: his free agency starts over (four seasons). */
 export function signReturnee(s: LeagueState, p: Player, teamId: TeamId, o: ReturnOffer, next: number) {
   sign(s, p, teamId, { teamId, kind: 'freeAgent', signedIn: next - 1, signingBonus: 0, salaries: Array.from({ length: o.years }, (_, i) => ({ season: next + i, amount: o.annual })) });
+  restartFreeAgency(p);
   moveNews(s, { type: 'returnee', teamId, id: p.id, years: o.years, annual: o.annual, abroad: o.abroad, own: teamId === postingClub(p) }, `${next - 1}-11-05`);
 }
 
@@ -132,7 +141,66 @@ export function homecomings(s: LeagueState, next: number): ReturnOffer[] {
     else if (club && s.rosters[club] && keepValue(p, next) >= R.aiKeep) signReturnee(s, p, club, o, next);
     else releaseReturnee(s, p, o, next);
   }
+  // 2.0.67: and the free agents abroad (no club holds their rights).
+  freeAgentHomecomings(s, next);
   return mine;
+}
+
+/** 2.0.67 (the user's request): back from abroad and signed in the KBO, his free agency starts over — four registered
+    seasons to the next (offseason.ts isFreeAgent), as after a free-agent deal. */
+export function restartFreeAgency(p: Player) {
+  if (p.mlb?.back !== undefined && p.career.some((c) => !c.level)) p.service.lastFreeAgencyAt = p.service.creditedSeasons;
+}
+
+/** 2.0.67: free agents who signed abroad (fa.ts) and are still there: KBO seasons, no posting, gone as a free agent. */
+export function freeAgentsAbroad(s: LeagueState): Player[] {
+  return Object.values(s.players).filter((p) => p.status === 'overseas' && p.mlb?.via === 'fa' && p.mlb.back === undefined && p.mlb.ended === undefined && !isForeign(p) && p.career.some((c) => !c.level));
+}
+
+/** 2.0.67: whether a free agent abroad comes home this winter: as a posted player, his own deal's years. */
+function faComesHome(s: LeagueState, p: Player, year: number): boolean {
+  const m = p.mlb!;
+  const abroad = year - m.posted;
+  if (abroad < 1) return false;
+  const older = ageIn(p, year + 1) >= 33 ? R.older : 0;
+  let chance = abroad >= m.years ? R.afterDeal + R.perYear * (abroad - m.years) + older : R.early;
+  if (p.scouting.current >= 68) chance *= R.starStays;
+  return hashUnit(`${s.seed}-fa-home-${p.id}-${year}`) < chance;
+}
+
+/** 2.0.67: the free agents abroad who come home this winter — an AI club signs one now and then, the rest are
+    unattached free agents in the pool. Returns those who are free (for the alert). */
+export function freeAgentHomecomings(s: LeagueState, next: number): Player[] {
+  const year = next - 1;
+  const free: Player[] = [];
+  for (const p of freeAgentsAbroad(s)) {
+    if (ageIn(p, next) > R.maxAge) continue;
+    if (!faComesHome(s, p, year)) continue;
+    leaveMlb(p, year, 'back');
+    const before = currentValue(p);
+    ageAbroad(s, p, p.mlb!.posted + 1, year);
+    const o = { id: p.id, ...offerFor(p, next, before), abroad: year - p.mlb!.posted };
+    p.status = 'freeAgent';
+    p.teamId = null;
+    p.contract = null;
+    const clubs = s.teams.filter((t) => t.id !== s.user?.teamId && s.rosters[t.id] && t.firstTeamFrom !== null && t.firstTeamFrom <= next && registeredIds(s, t.id).length < rosterLimit(next));
+    if (clubs.length && keepValue(p, next) >= R.aiKeep && hashUnit(`${s.seed}-fa-home-ai-${p.id}-${next}`) < R.faAi) {
+      signReturnee(s, p, clubs[Math.floor(hashUnit(`${s.seed}-fa-home-club-${p.id}-${next}`) * clubs.length)]!.id, o, next);
+    } else {
+      (s.pool ??= []).push(p.id);
+      free.push(p);
+    }
+  }
+  if (s.user && free.length)
+    addAlert(s, {
+      id: `fa-home-${next}`,
+      date: `${year}-11-05`,
+      kind: 'move',
+      title: __i18n_k("league.returnees.text.bf09ce39", { n: free.length }),
+      lines: [...free.map((p) => `${p.name} · ${p.mlb!.club} · ${__i18n_k("league.returnees.text.2f1177fc", { n: year - p.mlb!.posted })}`), __i18n_k("league.returnees.text.20c811b6")],
+      players: free.map((p) => p.id),
+    });
+  return free;
 }
 
 // ── Draftees who went abroad ─────────────────────────────────────────────────────────────────────
@@ -170,3 +238,72 @@ export function draftReturnees(s: LeagueState, draftYear: number): Player[] {
 
 /** For tests and the tuning note: the draft year a draftee abroad comes back through. */
 export const draftBackIn = (p: Player) => p.abroad?.draft ?? null;
+
+// ── 2.0.67: straight abroad out of high school, then the draft ─────────────────────────────────────
+
+/* 2.0.67 (the user's request: 최지만 같은 해외 직행 유턴파): now and then a draft has a player who went abroad straight out of
+   high school without a KBO draft — a minor-league contract in America — played there for years, and comes back to
+   the KBO through the rookie draft after the two-year wait (해외파 2년 유예). He is older (mid- to late twenties) and
+   readier than the class, with a high ceiling once; he takes no signing bonus (a returnee from a club abroad). Over
+   the wait he either did his military service (현역) or played for a domestic independent club (독립야구단; military
+   still ahead). He is a high-school prospect of his own class who was not drafted then (his draft is on record now). */
+export const DIRECT = {
+  /** One in a draft this often, two more rarely. */
+  chance: 0.35,
+  second: 0.12,
+  /** Seasons abroad before the wait. */
+  years: [4, 7] as const,
+  /** Picked among this many of his class's best high-school prospects. */
+  top: 15,
+  /** Share who served in the army over the wait (the rest at an independent club). */
+  military: 0.5,
+  /** Growth over the wait: in the army, at an independent club. */
+  waitGrowth: { military: 0.3, independent: 0.7 },
+};
+
+export const isOverseasDirect = (p: Pick<Player, 'origin'>) => !!p.origin.overseasDirect;
+
+/** This draft's players straight from abroad (none most years). */
+export function overseasDirects(s: LeagueState, draftYear: number, classOf: (year: number) => Player[]): Player[] {
+  const key = `${s.seed}|direct|${draftYear}`;
+  const u = hashUnit(key);
+  const count = u < DIRECT.chance * DIRECT.second ? 2 : u < DIRECT.chance ? 1 : 0;
+  const out: Player[] = [];
+  const names = new Set(Object.values(s.players).map((p) => p.name));
+  for (let i = 0; i < count; i++) {
+    const [lo, hi] = DIRECT.years;
+    const years = lo + Math.floor(hashUnit(`${key}|${i}|years`) * (hi - lo + 1));
+    const left = draftYear - R.wait - years;
+    const cls = classOf(left)
+      .filter((p) => p.origin.entryCategory === 'high-school' && !s.players[p.id] && !names.has(p.name))
+      .sort((a, b) => b.scouting.futureValue - a.scouting.futureValue)
+      .slice(0, DIRECT.top);
+    const base = cls[Math.floor(hashUnit(`${key}|${i}|pick`) * cls.length)];
+    if (!base) continue;
+    const p = JSON.parse(JSON.stringify(base)) as Player;
+    p.id = `${base.id}-od${draftYear}`;
+    if (s.players[p.id]) continue;
+    const army = hashUnit(`${key}|${i}|wait`) < DIRECT.military;
+    // His seasons in the minors, then the wait.
+    ageAbroad(s, p, left + 1, draftYear - R.wait);
+    ageAbroad(s, p, draftYear - R.wait + 1, draftYear, army ? DIRECT.waitGrowth.military : DIRECT.waitGrowth.independent);
+    if (army) p.service.military = 'served';
+    delete p.amateur.intent;
+    p.status = 'amateur';
+    p.teamId = null;
+    p.contract = null;
+    p.proSince = draftYear + 1;
+    p.origin = { ...p.origin, draftYear, entryCategory: 'overseasDirect', overseasDirect: { left, wait: army ? 'military' : 'independent' } };
+    delete p.origin.overallPick;
+    p.education.pathText = __i18n_k("league.returnees.text.eba102e3", {
+      pathText: p.education.pathText,
+      left: left + 1,
+      back: draftYear - R.wait,
+      wait: army ? __i18n_k("league.returnees.text.95eae9b0") : __i18n_k("league.returnees.text.6faa64e5"),
+    });
+    names.add(p.name);
+    s.players[p.id] = p;
+    out.push(p);
+  }
+  return out;
+}
