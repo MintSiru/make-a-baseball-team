@@ -1381,13 +1381,13 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       // 2.0.37: our free agents a Japanese club is about to sign (abroad.ts).
       body = (
         <>
-          <p>{__i18n_t("ui.decision.text.3c2ff3cc")}</p>
+          <p>{__i18n_t("ui.decision.text.8bb1b971")}</p>
           <table class="table">
             <thead>
               <tr>
                 <th>{__i18n_t("ui.decision.text.2e177398")}</th>
                 <th>{__i18n_t("ui.decision.text.9aa18e50")}</th>
-                <th>{__i18n_t("ui.decision.text.627f7e91")}</th>
+                <th>{__i18n_t("ui.decision.text.38d16e94")}</th>
                 <th class="num">{__i18n_t("ui.decision.text.9c2f4414")}</th>
               </tr>
             </thead>
@@ -1402,7 +1402,9 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
                       {league.players[r.id]?.name ?? '?'}
                     </button>
                   </td>
-                  <td>{__i18n_t("ui.decision.text.26246615", { years: r.years, total: usdWon(r.total) })}</td>
+                  <td>
+                    {r.league === 'mlb' ? __i18n_t("ui.decision.text.2d1fb3e2") : __i18n_t("ui.decision.text.d7a6e266")} · {__i18n_t("ui.decision.text.26246615", { years: r.years, total: usdWon(r.total) })}
+                  </td>
                   <td class="num">{Math.round(r.chance * 100)}%</td>
                 </tr>
               ))}

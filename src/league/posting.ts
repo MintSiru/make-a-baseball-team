@@ -13,7 +13,7 @@ import { KBO_2026, postingSeasons } from '../rules/kbo2026';
 import { MANWON_PER_USD } from './contracts';
 import { usd } from './foreign';
 import { eulreul, iga } from './josa';
-import { leaveLeague } from './offseason';
+import { isFreeAgent, leaveLeague } from './offseason';
 import { ageIn, isForeign } from './players';
 import { orgPlayers, type LeagueState } from './state';
 import { logTransaction } from './trade';
@@ -66,7 +66,10 @@ export function postingCandidates(s: LeagueState, teamId: TeamId, next: number):
         ageIn(p, next) <= POSTING.maxAge &&
         // Not everyone dreams of the majors; and one talked round lately does not ask (2.0.37, abroad.ts).
         hashUnit(`${p.id}-mlb-dream`) < POSTING.wants &&
-        !staysHome(s, p.id, next),
+        !staysHome(s, p.id, next) &&
+        // 2.0.67 (the user's request): a free agent this winter does not ask to be posted — he goes abroad as a free
+        // agent if he wants to (fa.ts abroadDeal).
+        !isFreeAgent(p, next),
     )
     .sort((a, b) => b.scouting.current - a.scouting.current);
 }

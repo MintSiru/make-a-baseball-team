@@ -5,6 +5,7 @@ import { k as __i18n_k } from '../i18n/index';
 
    AI clubs judge every move by public grades only: a player is worth his keep value above a
    replacement level, more the longer he is under club control, less the more he is paid. */
+import { restartFreeAgency } from './returnees';
 import { iga, ro } from './josa';
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
@@ -356,7 +357,8 @@ export function canRelease(s: LeagueState, id: PlayerId): string | null {
   const u = s.user;
   const p = s.players[id];
   if (!u || !p || p.teamId !== u.teamId || p.status !== 'active') return __i18n_k("league.trade.canRelease.60e00321");
-  if (s.pending || s.phase === 'offseason') return __i18n_k("league.trade.canRelease.d220cb44");
+  // 2.0.67 (the user's request): a development player (육성선수) may be let go in the winter too.
+  if (s.pending || (s.phase === 'offseason' && p.contract?.kind !== 'development')) return __i18n_k("league.trade.canRelease.d220cb44");
   if (s.phase === 'regular' && s.rosters[u.teamId]!.active.includes(id) && s.rosters[u.teamId]!.active.length <= 26) return __i18n_k("league.trade.canRelease.ca05e46e");
   return null;
 }
@@ -468,7 +470,8 @@ export function poolAsk(s: LeagueState, p: Player) {
   // 2.0.27: an unsigned free agent asks what he did in the market (×0.7), not a renewal salary.
   const full = Math.max(minimumSalaryFor(season), renewSalary(p, season), p.life?.unsigned != null && season <= p.life.unsigned + 1 ? (p.life.unsignedAsk ?? 0) : 0);
   // 2.0.41: a veteran home from abroad asks for a free agent's money (abroadvets.ts).
-  const vet = p.origin.abroadVet && !p.career.some((c) => !c.level) ? abroadVetAsk(p, season) : 0;
+  // 2.0.67: and a free agent home from abroad, the winter he is back (returnees.ts).
+  const vet = (p.origin.abroadVet && !p.career.some((c) => !c.level)) || (p.mlb?.via === 'fa' && p.mlb.back !== undefined && season <= p.mlb.back + 1) ? abroadVetAsk(p, season) : 0;
   const ask = Math.max(full, vet);
   return s.phase === 'regular' ? Math.max(minimumSalaryFor(season), Math.round((ask * Math.max(0.3, seasonShareLeft(s))) / 100) * 100) : ask;
 }
@@ -479,7 +482,9 @@ export function canSignFromPool(s: LeagueState, id: PlayerId): string | null {
   if (!u || !p || !(s.pool ?? []).includes(id)) return __i18n_k("league.trade.canSignFromPool.f2ba97ec");
   // 1.6.0: the free agents nobody signed (FA 미아) can be signed in the winter too, once the market is over.
   const winter = s.phase === 'offseason';
-  if (winter && !s.offseason?.faDone) return __i18n_k("league.trade.canSignFromPool.e14818cd");
+  // 2.0.67: a free agent home from abroad (no club holds his rights) may be signed at once (returnees.ts).
+  const homeFree = p.mlb?.via === 'fa' && p.mlb.back !== undefined;
+  if (winter && !s.offseason?.faDone && !homeFree) return __i18n_k("league.trade.canSignFromPool.e14818cd");
   // 2.0.27: a free agent nobody signed waits for the season to open (no signing him right after the market).
   if (winter && p.life?.unsigned != null && p.life.unsigned === s.offseason?.year) return __i18n_k("league.trade.text.0e5d0da3");
   if ((s.pending && !winter) || s.pending?.kind === 'roster' || s.phase === 'postseason') return __i18n_k("league.trade.canSignFromPool.f547701d");
@@ -498,6 +503,8 @@ export function signFromPool(s: LeagueState, id: PlayerId) {
   p.status = 'active';
   p.teamId = u.teamId;
   p.contract = { teamId: u.teamId, kind: 'standard', signedIn: s.year, signingBonus: 0, salaries: [{ season, amount: poolAsk(s, p) }] };
+  // 2.0.67: one home from abroad starts his free agency over (returnees.ts).
+  restartFreeAgency(p);
   s.rosters[u.teamId]!.futures.push(id);
   s.pool = (s.pool ?? []).filter((x) => x !== id);
   (u.log ??= []).push({ year: s.year, text: __i18n_k("league.trade.signFromPool.text.663461c2", { name: p.name }) });

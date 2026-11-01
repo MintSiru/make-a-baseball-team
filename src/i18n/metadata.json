@@ -92858,5 +92858,158 @@
     "line": 46,
     "params": {},
     "locations": []
+  },
+  "league.fa.text.5931ea63": {
+    "source": "src/league/fa.ts",
+    "line": 597,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.fa.text.9e784750": {
+    "source": "src/league/fa.ts",
+    "line": 600,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      },
+      "mlb": {
+        "expression": "p.mlb!.club"
+      },
+      "years": {
+        "expression": "deal.years"
+      },
+      "usd": {
+        "expression": "usd(deal.total)"
+      }
+    },
+    "locations": []
+  },
+  "league.abroad.text.3b56e509": {
+    "source": "src/league/abroad.ts",
+    "line": 58,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.abroad.text.78f4d76b": {
+    "source": "src/league/abroad.ts",
+    "line": 59,
+    "params": {
+      "name": {
+        "expression": "iga(p.name)",
+        "particle": "이/가"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.8bb1b971": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1384,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.38d16e94": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1390,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.2d1fb3e2": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1406,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.d7a6e266": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1406,
+    "params": {},
+    "locations": []
+  },
+  "league.returnees.text.bf09ce39": {
+    "source": "src/league/returnees.ts",
+    "line": 199,
+    "params": {
+      "n": {
+        "expression": "free.length"
+      }
+    },
+    "locations": []
+  },
+  "league.returnees.text.2f1177fc": {
+    "source": "src/league/returnees.ts",
+    "line": 200,
+    "params": {
+      "n": {
+        "expression": "year - p.mlb!.posted"
+      }
+    },
+    "locations": []
+  },
+  "league.returnees.text.20c811b6": {
+    "source": "src/league/returnees.ts",
+    "line": 200,
+    "params": {},
+    "locations": []
+  },
+  "league.returnees.text.eba102e3": {
+    "source": "src/league/returnees.ts",
+    "line": 298,
+    "params": {
+      "pathText": {
+        "expression": "p.education.pathText"
+      },
+      "left": {
+        "expression": "left + 1"
+      },
+      "back": {
+        "expression": "draftYear - R.wait"
+      },
+      "wait": {
+        "expression": "army ? L('2년 유예 동안 현역 복무(병역 해결)') : L('2년 유예 동안 독립야구단')"
+      }
+    },
+    "locations": []
+  },
+  "league.returnees.text.95eae9b0": {
+    "source": "src/league/returnees.ts",
+    "line": 302,
+    "params": {},
+    "locations": []
+  },
+  "league.returnees.text.6faa64e5": {
+    "source": "src/league/returnees.ts",
+    "line": 302,
+    "params": {},
+    "locations": []
+  },
+  "ui.draftBoard.text.87004846": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 141,
+    "params": {},
+    "locations": []
+  },
+  "ui.draftBoard.text.b668513b": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 141,
+    "params": {},
+    "locations": []
+  },
+  "ui.draftBoard.text.cf47bdcf": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 142,
+    "params": {},
+    "locations": []
   }
 }

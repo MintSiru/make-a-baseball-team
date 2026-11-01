@@ -236,7 +236,8 @@ export type Decision =
   /** 2.0.42 (naturalize.ts): our foreign player asks to naturalize — his KBO seasons and the domestic deal. */
   | { kind: 'naturalize'; id: PlayerId; seasons: number; years: number; annual: number }
   /** 2.0.37: our free agents Japan is about to sign, to talk round or let go (abroad.ts). */
-  | { kind: 'abroad'; rows: { id: PlayerId; years: number; total: number; chance: number }[] }
+  /** 2.0.67: `league` 'mlb' for a major league offer (Japan's otherwise). */
+  | { kind: 'abroad'; rows: { id: PlayerId; years: number; total: number; chance: number; league?: 'mlb' }[] }
   | { kind: 'camp'; players: PlayerId[] }
   /** 2.0.32 (development.ts): the fall instructional league and a winter in Australia as stages of the winter; the
       wrap-up camp's place. */

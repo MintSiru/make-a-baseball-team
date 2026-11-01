@@ -136,6 +136,12 @@ export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect, ou
                       {__i18n_display(p.name)}
                     </button>
                     {__i18n_display(p.twoWay && <span class="tag">{__i18n_t("ui.draftBoard.draftBoard.62cb0192")}</span>)}
+                    {/* 2.0.67: straight abroad out of high school, back through the draft (no signing bonus). */}
+                    {p.origin.overseasDirect && (
+                      <span class="tag" title={p.origin.overseasDirect.wait === 'military' ? __i18n_t("ui.draftBoard.text.87004846") : __i18n_t("ui.draftBoard.text.b668513b")}>
+                        {__i18n_t("ui.draftBoard.text.cf47bdcf")}
+                      </span>
+                    )}
                     <span class="muted small draft-school">{__i18n_display(p.education.school)}</span>
                   </td>
                   <td>{__i18n_display(roleLabel(p.role))}</td>

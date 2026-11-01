@@ -65,11 +65,12 @@ describe('foreign players other clubs let go', () => {
 
 describe('posted players coming home', () => {
   it('come back to the club that posted them; the user decides, and a pass frees his rights', () => {
-    // Four of our players went to the majors ten years ago (their deals are long over).
+    // Up to four of our players went to the majors ten years ago (their deals are long over). 2.0.67: some of the
+    // club's free agents may have signed abroad by now, so as many as are left.
     const gone = orgPlayers(s, EXPANSION_ID)
       .filter((p) => !isForeign(p) && p.status === 'active' && p.career.at(-1)?.teamId === EXPANSION_ID && !p.career.at(-1)?.level)
       .slice(0, 4);
-    expect(gone.length).toBe(4);
+    expect(gone.length).toBeGreaterThanOrEqual(2);
     for (const p of gone) {
       removeFromRoster(s, p);
       p.teamId = null;

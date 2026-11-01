@@ -10329,5 +10329,22 @@
   "ui.playerPanel.text.ef2caeba": "1軍",
   "ui.playerPanel.text.e6607847": "ファーム",
   "ui.playerPanel.text.5440e364": "フューチャーズリーグの記録です。",
-  "ui.farmReport.text.447a2411": "地道に練習"
+  "ui.farmReport.text.447a2411": "地道に練習",
+  "league.fa.text.5931ea63": "{name}、FAでメジャーリーグへ",
+  "league.fa.text.9e784750": "{club}でFA権を得た{name}がメジャーリーグの{mlb}と{years}年{usd}で契約した。",
+  "league.abroad.text.3b56e509": "{name}、海外移籍せずKBO残留を宣言",
+  "league.abroad.text.78f4d76b": "海外球団から提示を受けていた{name}が、GMの説得で国内残留を決めた。FA市場で所属球団との交渉を続ける。",
+  "ui.decision.text.8bb1b971": "海外の球団(メジャーリーグ・日本)が自球団のFA選手に契約を提示しました。説得に成功すれば国内FA市場に残り自球団と交渉でき、失敗するか説得しなければ海外へ移ります。",
+  "ui.decision.text.38d16e94": "海外からの提示",
+  "ui.decision.text.2d1fb3e2": "メジャーリーグ",
+  "ui.decision.text.d7a6e266": "日本",
+  "league.returnees.text.bf09ce39": "海外でFAとしてプレーしていた{n}人が国内復帰",
+  "league.returnees.text.2f1177fc": "{n}年",
+  "league.returnees.text.20c811b6": "保留権がなく、どの球団とも契約できます(移籍市場 › 放出・自由契約)。",
+  "league.returnees.text.eba102e3": "{pathText} → {left}年 米マイナー直行 → {back}年 帰国 → {wait}",
+  "league.returnees.text.95eae9b0": "2年の猶予期間に現役服務(兵役完了)",
+  "league.returnees.text.6faa64e5": "2年の猶予期間に独立リーグ球団",
+  "ui.draftBoard.text.87004846": "兵役完了・契約金なし",
+  "ui.draftBoard.text.b668513b": "独立リーグ球団・契約金なし",
+  "ui.draftBoard.text.cf47bdcf": "海外Uターン"
 }

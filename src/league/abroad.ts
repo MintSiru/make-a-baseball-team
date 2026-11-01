@@ -55,8 +55,8 @@ const opening = (next: number) => `${next}-04-01`;
 function kept(s: LeagueState, p: Player, next: number, why: 'posting' | 'japan') {
   (s.abroadStay ??= {})[p.id] = next - 1;
   setForm(p, ABROAD.form.kept, opening(next), ABROAD.form.days, __i18n_k("league.abroad.text.8e78b5ac"));
-  const title = why === 'posting' ? __i18n_k("league.abroad.text.709f0dc5", { name: p.name }) : __i18n_k("league.abroad.text.7b05cec0", { name: p.name });
-  const body = why === 'posting' ? __i18n_k("league.abroad.text.f0d35e8f", { name: iga(p.name) }) : __i18n_k("league.abroad.text.83630d92", { name: iga(p.name) });
+  const title = why === 'posting' ? __i18n_k("league.abroad.text.709f0dc5", { name: p.name }) : __i18n_k("league.abroad.text.3b56e509", { name: p.name });
+  const body = why === 'posting' ? __i18n_k("league.abroad.text.f0d35e8f", { name: iga(p.name) }) : __i18n_k("league.abroad.text.78f4d76b", { name: iga(p.name) });
   const date = `${next - 1}-11-${why === 'posting' ? '08' : '11'}`;
   note(p, date, title, 'good');
   addNews(s, { id: `abroad-kept-${next - 1}-${p.id}`, date, kind: 'move', title, body, quotes: [], facts: { player: p.name }, players: [p.id], mine: true });
