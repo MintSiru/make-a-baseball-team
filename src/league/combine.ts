@@ -12,6 +12,7 @@ import { k as __i18n_k } from '../i18n/index';
    Measurements and who comes are drawn on streams of the prospect's own, so the board and the draft see the same combine. */
 import { overall, rng, toGrade, type Tools } from '../draftroom';
 import type { Player, PlayerId } from '../model/types';
+import { addAlert } from './alerts';
 import { addNews } from './news';
 import { iga } from './josa';
 import { isPitcher } from './players';
@@ -123,6 +124,17 @@ export function combineDay(s: LeagueState, date: string, players: () => Player[]
     quotes: [],
     facts: { year: s.year, attended: came.length },
     players: [],
+  });
+  // 2.0.71 (the user's request: 「드래프트 컴바인 날 결정할 일 알림」): our workouts are open from today until the draft.
+  addAlert(s, {
+    id: `combine-${s.year}`,
+    date,
+    kind: 'season',
+    title: __i18n_k("league.combine.text.4adb3ffb"),
+    lines: [
+      __i18n_k("league.combine.text.0de1db05", { n: came.length, w: C.workouts }),
+      __i18n_k("league.combine.text.be7faa8b"),
+    ],
   });
 }
 

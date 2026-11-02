@@ -36,8 +36,9 @@ import { aiNotForSale } from './nfs';
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
 const shortOf = (s: LeagueState, id: TeamId | null) => s.teams.find((t) => t.id === id)?.short ?? '-';
 
-export function logTransaction(s: LeagueState, text: string) {
-  (s.transactions ??= []).push({ date: s.phase === 'regular' ? today(s) : `${s.year}-11-01`, text });
+/** 2.0.71: with the players it names, for their links on the screen. */
+export function logTransaction(s: LeagueState, text: string, ids: PlayerId[] = []) {
+  (s.transactions ??= []).push({ date: s.phase === 'regular' ? today(s) : `${s.year}-11-01`, text, ...(ids.length ? { ids } : {}) });
   if (s.transactions.length > TRADES.logSize) s.transactions.splice(0, s.transactions.length - TRADES.logSize);
 }
 
@@ -218,7 +219,7 @@ export function makeTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get:
   const side = (ids: PlayerId[], money: number, picks: number[]) => [ids.map((id) => s.players[id]!.name).join('·'), extrasText(s, money, picks)].filter(Boolean).join(' + ');
   const text = __i18n_k("league.trade.makeTrade.text.9842018b", { shortOf: shortOf(s, u.teamId), side: side(give, Math.max(0, cash), extras.picksOut ?? []), shortOf2: shortOf(s, teamId), side2: side(get, Math.max(0, -cash), extras.picksIn ?? []) });
   (u.log ??= []).push({ year: s.year, text });
-  logTransaction(s, text);
+  logTransaction(s, text, [...give, ...get]);
   moveNews(s, { type: 'trade', a: u.teamId, b: teamId, fromA: give, fromB: get, cash, picksA: extras.picksOut ?? [], picksB: extras.picksIn ?? [] });
   // A trade with the twelfth club stirs both fan bases (V0.9).
   for (const id of give) crossing(s, s.players[id]!, u.teamId, teamId, __i18n_k("league.trade.makeTrade.428749ee"));
@@ -278,7 +279,7 @@ export function aiDeadlineDeals(s: LeagueState, r: () => number) {
     if (!young || planGuard(s, target.b, seller, [target.p], [young.p]) || planGuard(s, a, plan, [young.p], [target.p])) continue;
     movePlayer(s, young.p, target.b);
     movePlayer(s, target.p, a);
-    logTransaction(s, __i18n_k("league.trade.aiDeadlineDeals.90e644f3", { shortOf: shortOf(s, a), name: young.p.name, shortOf2: shortOf(s, target.b), name2: target.p.name }));
+    logTransaction(s, __i18n_k("league.trade.aiDeadlineDeals.90e644f3", { shortOf: shortOf(s, a), name: young.p.name, shortOf2: shortOf(s, target.b), name2: target.p.name }), [young.p.id, target.p.id]);
     moveNews(s, { type: 'trade', a, b: target.b, fromA: [young.p.id], fromB: [target.p.id], cash: 0, picksA: [], picksB: [] });
     made++;
   }
@@ -334,7 +335,7 @@ export function aiTrades(s: LeagueState, r: () => number) {
     movePlayer(s, fromB.p, a);
     settleExtras(s, a, b, cash, picksA, picksB);
     const side = (name: string, money: number, picks: number[]) => [name, extrasText(s, money, picks)].filter(Boolean).join(' + ');
-    logTransaction(s, __i18n_k("league.trade.aiTrades.9842018b", { shortOf: shortOf(s, a), side: side(fromA.name, Math.max(0, cash), picksA), shortOf2: shortOf(s, b), side2: side(fromB.p.name, Math.max(0, -cash), picksB) }));
+    logTransaction(s, __i18n_k("league.trade.aiTrades.9842018b", { shortOf: shortOf(s, a), side: side(fromA.name, Math.max(0, cash), picksA), shortOf2: shortOf(s, b), side2: side(fromB.p.name, Math.max(0, -cash), picksB) }), [fromA.id, fromB.p.id]);
     moveNews(s, { type: 'trade', a, b, fromA: [fromA.id], fromB: [fromB.p.id], cash, picksA, picksB });
   }
 }
@@ -413,7 +414,7 @@ export function releasePlayer(s: LeagueState, id: PlayerId) {
   if (s.phase === 'regular') {
     (s.waivers ??= []).push({ id, from: u.teamId, until: addDays(today(s), KBO_2026.waiver.days) });
     (u.log ??= []).push({ year: s.year, text: __i18n_k("league.trade.releasePlayer.text.3ced2e91", { name: p.name, addDays: addDays(today(s), KBO_2026.waiver.days) }) });
-    logTransaction(s, __i18n_k("league.trade.releasePlayer.aa556b10", { shortOf: shortOf(s, u.teamId), name: p.name }));
+    logTransaction(s, __i18n_k("league.trade.releasePlayer.aa556b10", { shortOf: shortOf(s, u.teamId), name: p.name }), [p.id]);
   } else {
     p.contract = null;
     (s.pool ??= []).push(id);
@@ -454,7 +455,7 @@ export function processWaivers(s: LeagueState, date: string) {
       // The claiming club takes the contract: the releasing club no longer owes it (his own lines only — another
       // released player can share his name; saves before V0.16 have no id on the line).
       if (s.user && w.from === s.user.teamId) s.user.deadMoney = (s.user.deadMoney ?? []).filter((x) => (x.id ? x.id !== p.id : x.label !== __i18n_k("league.trade.processWaivers.9f76e5f8", { name: p.name })));
-      logTransaction(s, __i18n_k("league.trade.processWaivers.9638f882", { shortOf: shortOf(s, claimer), name: p.name, shortOf2: shortOf(s, w.from) }));
+      logTransaction(s, __i18n_k("league.trade.processWaivers.9638f882", { shortOf: shortOf(s, claimer), name: p.name, shortOf2: shortOf(s, w.from) }), [p.id]);
       moveNews(s, { type: 'claim', teamId: claimer, from: w.from, id: p.id }, date);
       if (w.from === s.user?.teamId) (s.user.log ??= []).push({ year: s.year, text: __i18n_k("league.trade.processWaivers.text.c28e2c38", { name: p.name, shortOf: ro(shortOf(s, claimer)) }) });
     } else {
@@ -508,7 +509,7 @@ export function signFromPool(s: LeagueState, id: PlayerId) {
   s.rosters[u.teamId]!.futures.push(id);
   s.pool = (s.pool ?? []).filter((x) => x !== id);
   (u.log ??= []).push({ year: s.year, text: __i18n_k("league.trade.signFromPool.text.663461c2", { name: p.name }) });
-  logTransaction(s, __i18n_k("league.trade.signFromPool.31de607d", { shortOf: shortOf(s, u.teamId), name: p.name }));
+  logTransaction(s, __i18n_k("league.trade.signFromPool.31de607d", { shortOf: shortOf(s, u.teamId), name: p.name }), [p.id]);
   moveNews(s, { type: 'pool', teamId: u.teamId, id, salary: p.contract.salaries[0]!.amount });
 }
 
@@ -642,7 +643,7 @@ export function replaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, in
   const text = old
     ? __i18n_k("league.trade.replaceForeign.text.979c0f32", { shortOf: shortOf(s, teamId), name: old.name, name2: p.name, text: p.origin.background!.text })
     : __i18n_k("league.trade.text.c476cd4b", { shortOf: shortOf(s, teamId), name: p.name, text: p.origin.background!.text });
-  logTransaction(s, text);
+  logTransaction(s, text, [...(old ? [old.id] : []), p.id]);
   moveNews(s, { type: 'foreign', teamId, out: old, in: p.id, price });
   if (s.user?.teamId === teamId) (s.user.log ??= []).push({ year: s.year, text });
 }

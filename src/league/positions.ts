@@ -164,3 +164,37 @@ export function balanceDepth(players: Player[]) {
     changePosition(best.p, best.to);
   }
 }
+
+// ── 2.0.71: our hitter's position, any time ───────────────────────────────────────────────────────
+
+const ROLE_AT: Record<Position, 'C' | 'IF' | 'OF'> = { C: 'C', '1B': 'IF', '2B': 'IF', '3B': 'IF', SS: 'IF', LF: 'OF', CF: 'OF', RF: 'OF' };
+
+/** The season a move made now plays in (the winter's goes to next season). */
+const moveSeason = (s: LeagueState) => (s.offseason ? s.offseason.year + 1 : s.year);
+
+/** 2.0.71 (the user's request: 「시즌 중에 포지션 설정」): why our hitter cannot move to `to` now, or null. */
+export function checkPositionMove(s: LeagueState, id: string, to: Position): string | null {
+  const p = s.players[id];
+  const u = s.user;
+  if (!u || !p || p.teamId !== u.teamId || p.status === 'retired') return __i18n_k("league.positions.text.2125a531");
+  if (!p.position || (p.role !== 'C' && p.role !== 'IF' && p.role !== 'OF')) return __i18n_k("league.positions.text.49515d1d");
+  if (!POSITIONS.includes(to)) return __i18n_k("league.positions.text.66be3062");
+  if (to === p.position) return __i18n_k("league.positions.text.c2c0543b");
+  return null;
+}
+
+/** Moves our hitter to `to` now: his old spot stays one he can play; a spot he does not list takes the rest of the
+    season to settle into (as a spring-camp move takes one). */
+export function movePosition(s: LeagueState, id: string, to: Position) {
+  if (checkPositionMove(s, id, to)) return;
+  const p = s.players[id]!;
+  const season = moveSeason(s);
+  const known = (p.alt ?? []).includes(to);
+  const from = p.position;
+  changePosition(p, to);
+  p.role = ROLE_AT[to];
+  if (!known) p.plan = { focus: p.plan?.focus ?? 'balanced', ...p.plan, adaptingIn: season };
+  (s.user!.log ??= []).push({ year: s.year, text: __i18n_k("league.positions.text.e4997e7e", { name: p.name, from: from ?? '', to, adapt: known ? '' : __i18n_k("league.positions.text.7dfcc605") }) });
+}
+
+

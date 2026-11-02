@@ -93185,5 +93185,189 @@
       }
     },
     "locations": []
+  },
+  "league.positions.text.2125a531": {
+    "source": "src/league/positions.ts",
+    "line": 179,
+    "params": {},
+    "locations": []
+  },
+  "league.positions.text.49515d1d": {
+    "source": "src/league/positions.ts",
+    "line": 180,
+    "params": {},
+    "locations": []
+  },
+  "league.positions.text.66be3062": {
+    "source": "src/league/positions.ts",
+    "line": 181,
+    "params": {},
+    "locations": []
+  },
+  "league.positions.text.c2c0543b": {
+    "source": "src/league/positions.ts",
+    "line": 182,
+    "params": {},
+    "locations": []
+  },
+  "league.positions.text.e4997e7e": {
+    "source": "src/league/positions.ts",
+    "line": 197,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "from": {
+        "expression": "from ?? ''"
+      },
+      "to": {
+        "expression": "to"
+      },
+      "adapt": {
+        "expression": "known ? '' : L(' (한 시즌 적응)')"
+      }
+    },
+    "locations": []
+  },
+  "league.positions.text.7dfcc605": {
+    "source": "src/league/positions.ts",
+    "line": 197,
+    "params": {},
+    "locations": []
+  },
+  "league.combine.text.4adb3ffb": {
+    "source": "src/league/combine.ts",
+    "line": 133,
+    "params": {},
+    "locations": []
+  },
+  "league.combine.text.0de1db05": {
+    "source": "src/league/combine.ts",
+    "line": 135,
+    "params": {
+      "n": {
+        "expression": "came.length"
+      },
+      "w": {
+        "expression": "C.workouts"
+      }
+    },
+    "locations": []
+  },
+  "league.combine.text.be7faa8b": {
+    "source": "src/league/combine.ts",
+    "line": 136,
+    "params": {},
+    "locations": []
+  },
+  "league.stops.text.9f3b1f8f": {
+    "source": "src/league/stops.ts",
+    "line": 29,
+    "params": {},
+    "locations": []
+  },
+  "league.honorcount.text.9ecfbb08": {
+    "source": "src/league/honorcount.ts",
+    "line": 50,
+    "params": {},
+    "locations": []
+  },
+  "league.honorcount.text.f2b151c4": {
+    "source": "src/league/honorcount.ts",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "league.honorcount.text.a36fb8da": {
+    "source": "src/league/honorcount.ts",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.f04ddaed": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 893,
+    "params": {
+      "label": {
+        "expression": "__i18n_displayText(h.label)"
+      },
+      "count": {
+        "expression": "h.count"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.b7211e3d": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 988,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.13cc7b65": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 999,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.c546a26c": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 999,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.e5cb3e84": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 999,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.4220647f": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1004,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.814af7ff": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1312,
+    "params": {},
+    "locations": []
+  },
+  "ui.draftBoard.text.097cc394": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 58,
+    "params": {},
+    "locations": []
+  },
+  "ui.draftBoard.text.a7cce0e4": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 58,
+    "params": {},
+    "locations": []
+  },
+  "ui.draftBoard.text.9cbb9e67": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 121,
+    "params": {},
+    "locations": []
+  },
+  "ui.draftBoard.text.8ff0fba2": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 121,
+    "params": {},
+    "locations": []
+  },
+  "ui.draftBoard.text.da997f05": {
+    "source": "src/ui/DraftBoard.tsx",
+    "line": 124,
+    "params": {
+      "label": {
+        "expression": "regionTag"
+      },
+      "n": {
+        "expression": "locals"
+      }
+    },
+    "locations": []
   }
 }

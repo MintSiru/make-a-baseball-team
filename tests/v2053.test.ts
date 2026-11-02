@@ -56,7 +56,8 @@ describe('a trade offer stops the run (2.0.53)', () => {
     // An older save with its own stops: the offer's on.
     delete u.settings.offerStop;
     u.settings.stops = ['injury'];
-    expect(stopsOf(s)).toEqual(['injury', 'offer']);
+    // 2.0.71: and the combine's, the same way.
+    expect(stopsOf(s)).toEqual(['injury', 'offer', 'combine']);
   });
 });
 
