@@ -3009,6 +3009,10 @@ button.tag.link {
   color: var(--accent);
   font-weight: 600;
 }
+/* 2.0.72: a foreign head */
+.tag.foreign-staff {
+  border-style: dashed;
+}
 
 /* 1.4.1: getting a game back */
 .recovery {

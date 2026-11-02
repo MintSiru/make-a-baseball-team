@@ -80,6 +80,8 @@ export interface StaffMember {
   playerId?: PlayerId;
   club?: TeamId;
   fame?: number;
+  /** 2.0.72 (foreignstaff.ts): a foreign coach — his nationality. A former KBO foreign player also has `playerId`. */
+  foreign?: string;
 }
 
 /** One season's accounts (만 원). */

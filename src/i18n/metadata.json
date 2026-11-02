@@ -93369,5 +93369,129 @@
       }
     },
     "locations": []
+  },
+  "league.foreignstaff.text.712738e9": {
+    "source": "src/league/foreignstaff.ts",
+    "line": 42,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "m.name"
+      }
+    },
+    "locations": []
+  },
+  "league.foreignstaff.text.7cbd5b6f": {
+    "source": "src/league/foreignstaff.ts",
+    "line": 44,
+    "params": {
+      "name": {
+        "expression": "m.name"
+      },
+      "club": {
+        "expression": "club"
+      },
+      "word": {
+        "expression": "ro(opts.word)",
+        "particle": "으로/로"
+      }
+    },
+    "locations": []
+  },
+  "league.foreignstaff.text.a557266d": {
+    "source": "src/league/foreignstaff.ts",
+    "line": 45,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "word": {
+        "expression": "opts.word"
+      },
+      "name": {
+        "expression": "m.name"
+      }
+    },
+    "locations": []
+  },
+  "league.foreignstaff.text.ca905e37": {
+    "source": "src/league/foreignstaff.ts",
+    "line": 47,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      },
+      "name": {
+        "expression": "eulreul(m.name)",
+        "particle": "을/를"
+      },
+      "word": {
+        "expression": "ro(opts.word)",
+        "particle": "으로/로"
+      },
+      "line": {
+        "expression": "opts.line"
+      }
+    },
+    "locations": []
+  },
+  "league.foreignstaff.text.5260cf28": {
+    "source": "src/league/foreignstaff.ts",
+    "line": 48,
+    "params": {
+      "club": {
+        "expression": "iga(club)",
+        "particle": "이/가"
+      },
+      "nation": {
+        "expression": "m.foreign"
+      },
+      "name": {
+        "expression": "eulreul(m.name)",
+        "particle": "을/를"
+      },
+      "word": {
+        "expression": "ro(opts.word)",
+        "particle": "으로/로"
+      }
+    },
+    "locations": []
+  },
+  "league.foreignstaff.text.3c7d8520": {
+    "source": "src/league/foreignstaff.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "league.foreignstaff.text.6bad5455": {
+    "source": "src/league/foreignstaff.ts",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "ui.alumni.text.388c5757": {
+    "source": "src/ui/Alumni.tsx",
+    "line": 11,
+    "params": {},
+    "locations": []
+  },
+  "ui.alumni.text.d8cf0529": {
+    "source": "src/ui/Alumni.tsx",
+    "line": 12,
+    "params": {
+      "nation": {
+        "expression": "__i18n_displayText(m.foreign)"
+      }
+    },
+    "locations": []
+  },
+  "ui.office.text.4fd9a450": {
+    "source": "src/ui/Office.tsx",
+    "line": 525,
+    "params": {},
+    "locations": []
   }
 }

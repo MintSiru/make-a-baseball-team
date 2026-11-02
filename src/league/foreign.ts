@@ -146,6 +146,16 @@ export function background(asiaQuota: boolean, r: () => number): Background {
   return { level, nationality, pool, shift, spread, premium };
 }
 
+/** 2.0.72 (staff.ts): where a foreign coach with no KBO past comes from — mostly America, then Japan (the KBO's long
+    line of Japanese coaches), now and then Latin America. */
+export function staffNation(r: () => number): { nationality: string; pool: Pool } {
+  const x = r();
+  if (x < 0.55) return { nationality: REGULAR_NATIONS[0]![0], pool: 'west' };
+  if (x < 0.85) return { nationality: ASIA_LEVELS[0]![5], pool: 'japan' };
+  const [nationality, , pool] = weighted(REGULAR_NATIONS.filter((n) => n[2] === 'latin'), r);
+  return { nationality, pool };
+}
+
 const fmt3 = (x: number) => x.toFixed(3).replace(/^0/, '');
 
 /** A line about where he played, e.g. "MLB 3시즌 142경기 타율 .231 12홈런 · 트리플A 5시즌". */

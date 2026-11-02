@@ -10392,5 +10392,15 @@
   "ui.draftBoard.text.a7cce0e4": "연고 고교",
   "ui.draftBoard.text.9cbb9e67": "우리 연고 지역 고등학교 선수: 1차 지명으로 먼저 뽑을 수 있습니다.",
   "ui.draftBoard.text.8ff0fba2": "우리 연고 지역 고등학교 선수 (지금은 1차 지명 제도가 없어 다른 선수와 같이 뽑습니다).",
-  "ui.draftBoard.text.da997f05": "{label} {n}명"
+  "ui.draftBoard.text.da997f05": "{label} {n}명",
+  "league.foreignstaff.text.712738e9": "{club}, 외국인 감독 {name} 선임",
+  "league.foreignstaff.text.7cbd5b6f": "{name}, {club} {word} 돌아온다",
+  "league.foreignstaff.text.a557266d": "{club}, 외국인 {word} {name} 영입",
+  "league.foreignstaff.text.ca905e37": "{club} 외국인 선수 시절 뛰었던 {name} {word} 데려왔다. {line}",
+  "league.foreignstaff.text.5260cf28": "{club} {nation} 출신의 {name} {word} 선임했다. 통역이 더그아웃을 함께 지킨다.",
+  "league.foreignstaff.text.3c7d8520": "다시 이 유니폼을 입게 되어 영광입니다. 선수들에게 제가 배운 한국 야구를 전하겠습니다.",
+  "league.foreignstaff.text.6bad5455": "한국 야구를 존중합니다. 선수들과 많이 이야기하겠습니다.",
+  "ui.alumni.text.388c5757": "외국인 스태프: 외국인 선수의 첫 시즌 적응을 돕습니다 (감독은 모두, 투수·타격코치는 맡은 쪽)",
+  "ui.alumni.text.d8cf0529": "외국인 · {nation}",
+  "ui.office.text.4fd9a450": "KBO에서 뛴 외국인 선수나 외국인 지도자를 감독·코치로 쓰기도 하며, 외국인 스태프는 외국인 선수의 첫 시즌 적응을 돕습니다."
 }

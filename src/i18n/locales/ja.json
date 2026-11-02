@@ -10392,5 +10392,15 @@
   "ui.draftBoard.text.a7cce0e4": "地元高校",
   "ui.draftBoard.text.9cbb9e67": "本拠地域の高校の選手: 1次指名で先に指名できます。",
   "ui.draftBoard.text.8ff0fba2": "本拠地域の高校の選手(今は1次指名制度がないため、他の選手と同じく指名します)。",
-  "ui.draftBoard.text.da997f05": "{label} {n}人"
+  "ui.draftBoard.text.da997f05": "{label} {n}人",
+  "league.foreignstaff.text.712738e9": "{club}、外国人監督に{name}を選任",
+  "league.foreignstaff.text.7cbd5b6f": "{name}、{club}の{word}として復帰",
+  "league.foreignstaff.text.a557266d": "{club}、外国人{word}{name}を招聘",
+  "league.foreignstaff.text.ca905e37": "{club}は外国人選手時代にプレーした{name}を{word}として迎えた。{line}",
+  "league.foreignstaff.text.5260cf28": "{club}は{nation}出身の{name}を{word}に選任した。通訳がベンチで寄り添う。",
+  "league.foreignstaff.text.3c7d8520": "再びこのユニフォームを着られて光栄です。ここで学んだ韓国野球を選手たちに伝えます。",
+  "league.foreignstaff.text.6bad5455": "韓国野球を尊重しています。選手たちとたくさん話をします。",
+  "ui.alumni.text.388c5757": "外国人スタッフ：外国人選手の1年目の適応を助けます（監督は全員、投手・打撃コーチは担当側）",
+  "ui.alumni.text.d8cf0529": "外国人 · {nation}",
+  "ui.office.text.4fd9a450": "KBOでプレーした外国人選手や外国人指導者を監督・コーチに起用することもあり、外国人スタッフは外国人選手の1年目の適応を助けます。"
 }

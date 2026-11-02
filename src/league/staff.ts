@@ -22,6 +22,7 @@ import { clubState } from './fans';
 import { ALUMNI, COMBINE, STAFF, DIFFICULTY } from './tuning';
 import { playsHistory } from './era';
 import { eraName } from './eranames';
+import { foreignName, staffNation } from './foreign';
 
 const names = DraftNames as unknown as { makeName: (r: () => number, used: Set<string>) => { name: string } };
 
@@ -85,6 +86,17 @@ export function makeStaff(s: LeagueState, role: StaffRole, key: string, year: nu
     until: year + 1 + Math.floor(r() * (role === 'manager' ? 3 : 2)),
     ...(role === 'manager' ? { style: styles[Math.floor(r() * styles.length)]! } : {}),
   };
+  // 2.0.72: now and then a foreign coach (on a stream of its own: the rest of him is drawn as before).
+  const share = ALUMNI.foreign.stranger[role];
+  if (share && !(playsHistory() && year < ALUMNI.foreign.from)) {
+    const f = rng(`${s.seed}|staff-foreign|${key}`);
+    if (f() < share) {
+      const nation = staffNation(f);
+      m.name = foreignName(nation.pool, f);
+      m.foreign = nation.nationality;
+      m.salary = Math.round((m.salary * (1 + ALUMNI.foreign.premium)) / 1000) * 1000;
+    }
+  }
   // 1.8.0: the deal on paper (no further draws: the league's history is unchanged).
   return withTerms(m, year);
 }
