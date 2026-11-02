@@ -564,10 +564,14 @@ export function openDraft(s: LeagueState, draftYear: number, slots: DraftSlot[])
 /** 1.9.5: a league that plays history picks its territorial (1차) players first, up to the year's number each (no limit
     in the early 1980s: three, a game assumption), from the high schools of its region (RULES.md §14). */
 export const TERRITORIAL_CAP = 3;
-function territorialSlots(s: LeagueState, draftYear: number, slots: DraftSlot[]): DraftSlot[] {
+/** The territorial (1차) picks each club has in the draft of `draftYear` (0 when there are none). */
+export function territorialPicks(s: LeagueState, draftYear: number): number {
   // 1.9.9: outside a history game, only when the board brought them back (board.ts).
-  if (!s.historical && boardValue('territorial', draftYear + 1) === undefined) return [];
-  const n = Math.min(rulesFor(draftYear + 1).territorialPicks, TERRITORIAL_CAP);
+  if (!s.historical && boardValue('territorial', draftYear + 1) === undefined) return 0;
+  return Math.max(0, Math.min(rulesFor(draftYear + 1).territorialPicks, TERRITORIAL_CAP));
+}
+function territorialSlots(s: LeagueState, draftYear: number, slots: DraftSlot[]): DraftSlot[] {
+  const n = territorialPicks(s, draftYear);
   if (n <= 0) return [];
   const clubs = [...new Set(slots.map((x) => x.teamId))];
   return Array.from({ length: n }, () => clubs.map((teamId) => ({ teamId, label: __i18n_k("league.offseason.text.f1f3e66a"), territorial: true }))).flat();

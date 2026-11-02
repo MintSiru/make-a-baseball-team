@@ -44,6 +44,7 @@ import { Leaders } from './Leaders';
 import { lastOurGame, ourNextGame, postseasonStatus, postseasonTicket, roundName } from '../league/postseason';
 import { stopsOf } from '../league/stops';
 import { applyCombine, attends, checkWorkout, combineHeld, combineLines, workoutsOf } from '../league/combine';
+import { territorialEligible, territorialPicks } from '../league/offseason';
 import { traitReport } from '../league/reports';
 import { COMBINE } from '../league/tuning';
 import { gameShares } from '../league/finance';
@@ -868,7 +869,7 @@ export function App() {
         {__i18n_display(tab === 'help' && <Manual />)}
         {__i18n_display(tab === 'draft' && (
           <div class="draft-page">
-            <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} ourView={shown?.user ? (p) => scoutView(shown!, p) : undefined} />
+            <DraftBoard draftYear={draftYear} players={draftPool} ageOf={prospectAge} selectedId={prospect?.id ?? null} onSelect={selectProspect} ourView={shown?.user ? (p) => scoutView(shown!, p) : undefined} ourRegion={shown?.user ? (p) => territorialEligible(shown!, shown!.user!.teamId, p) : undefined} territorial={!!shown && territorialPicks(shown, draftYear) > 0} />
             {__i18n_display(prospect && (
               <PlayerProfile
                 player={publicView(prospect)}

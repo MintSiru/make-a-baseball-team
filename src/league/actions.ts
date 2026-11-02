@@ -10,7 +10,9 @@ import { k as __i18n_k } from '../i18n/index';
 /* What the player can do, as state transitions. The UI and the worker both call these. */
 import { runRogue } from './rogue';
 import { setEra, startYear } from './era';
-import { STOP_KINDS, watchStops, type StopKind } from './stops';
+import { movePosition } from './positions';
+import type { Position } from '../model/position';
+import { LATER_STOPS, STOP_KINDS, watchStops, type StopKind } from './stops';
 import { closeSeason, advanceOffseason, beginOffseason } from './offseason';
 import { playPostseason, postseasonDay, postseasonRound, startPostseason } from './postseason';
 import { keepPinnedUp, playDay, setFuturesOnly, startSeason } from './season';
@@ -150,6 +152,8 @@ export type Action =
   | { kind: 'familyTie'; id: PlayerId; other: PlayerId; rel: Relation | null }
   /** 2.0.12 (twoway.ts): turn one of our players around (pitcher ↔ hitter, the winter only), or start or stop two-way play. */
   | { kind: 'switchSide'; id: PlayerId; what: 'convert' | 'twoWayOn' | 'twoWayOff' }
+  /** 2.0.71: our hitter's position, in the season too. */
+  | { kind: 'position'; id: PlayerId; position: Position }
   /** 2.0.13 (board.ts): with the board off, a league rule set by hand from the coming season. */
   | { kind: 'leagueRule'; item: BoardItem; value: number }
   /** The club's own doping test on one of our players (V0.12). */
@@ -211,7 +215,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'devForeign', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'askBudget', 'twoLeaguePlayoffs', 'sixMan', 'favorite', 'notForSale', 'tradeBlock', 'futuresOnly', 'trainingPlan', 'trainingIntensity', 'retireNumber', 'toDevelopment', 'abilityEditor', 'editAbility', 'discipline', 'sponsorSchool', 'spend', 'asiaSeries'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'position', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'devForeign', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'askBudget', 'twoLeaguePlayoffs', 'sixMan', 'favorite', 'notForSale', 'tradeBlock', 'futuresOnly', 'trainingPlan', 'trainingIntensity', 'retireNumber', 'toDevelopment', 'abilityEditor', 'editAbility', 'discipline', 'sponsorSchool', 'spend', 'asiaSeries'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -355,8 +359,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
     case 'stops': {
       const u = s.user;
       if (!u) break;
-      u.settings.stops = STOP_KINDS.filter((k) => k !== 'offer' && action.kinds.includes(k));
+      u.settings.stops = STOP_KINDS.filter((k) => !LATER_STOPS.includes(k) && action.kinds.includes(k));
       u.settings.offerStop = action.kinds.includes('offer');
+      u.settings.combineStop = action.kinds.includes('combine');
       break;
     }
     case 'autoPrep': {
@@ -442,6 +447,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'switchSide':
       switchPlayer(s, action.id, action.what);
+      break;
+    case 'position':
+      movePosition(s, action.id, action.position);
       break;
     case 'leagueRule':
       setRule(s, action.item, action.value);

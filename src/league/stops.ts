@@ -10,8 +10,8 @@ import { firstTeamIds, type LeagueState } from './state';
 import { standings } from './standings';
 import { twoLeagues } from './twelve';
 
-export type StopKind = 'injury' | 'deadline' | 'debut' | 'race' | 'bigGame' | 'postEntry' | 'national' | 'offer';
-export const STOP_KINDS: StopKind[] = ['injury', 'deadline', 'debut', 'race', 'offer', 'bigGame', 'postEntry', 'national'];
+export type StopKind = 'injury' | 'deadline' | 'debut' | 'race' | 'bigGame' | 'postEntry' | 'national' | 'offer' | 'combine';
+export const STOP_KINDS: StopKind[] = ['injury', 'deadline', 'debut', 'race', 'offer', 'combine', 'bigGame', 'postEntry', 'national'];
 export const STOP_LABEL: Record<StopKind, string> = {
   injury: __i18n_k("league.stops.sTOP_LABEL.injury.8609c770"),
   deadline: __i18n_k("league.stops.sTOP_LABEL.deadline.9b2951ae"),
@@ -25,6 +25,8 @@ export const STOP_LABEL: Record<StopKind, string> = {
   national: __i18n_k("league.stops.text.21b1d89b"),
   // 2.0.53 (the user's request): another club's trade offer (offers.ts), to answer it before it runs out.
   offer: __i18n_k("league.stops.text.56d2d14d"),
+  // 2.0.71 (the user's request: 「너무 자주 놓침」): the day of the draft combine, to pick the private workouts.
+  combine: __i18n_k("league.stops.text.9f3b1f8f"),
 };
 /** Out this long or more stops the run. */
 const LONG = 21;
@@ -32,11 +34,12 @@ const LONG = 21;
 const SPOTS = 5;
 
 /** 2.0.53: the trade offers' stop is its own setting (on unless turned off), so a club that chose its stops before
-    has it too. */
+    has it too; 2.0.71: the combine's the same. */
+export const LATER_STOPS: StopKind[] = ['offer', 'combine'];
 export const stopsOf = (s: LeagueState): StopKind[] => {
   const u = s.user;
-  if (!u?.settings.stops) return u?.settings.offerStop === false ? STOP_KINDS.filter((k) => k !== 'offer') : STOP_KINDS;
-  return STOP_KINDS.filter((k) => (k === 'offer' ? u.settings.offerStop !== false : u.settings.stops!.includes(k)));
+  const later = (k: StopKind) => (k === 'offer' ? u?.settings.offerStop !== false : u?.settings.combineStop !== false);
+  return STOP_KINDS.filter((k) => (LATER_STOPS.includes(k) ? later(k) : !u?.settings.stops || u.settings.stops.includes(k)));
 };
 
 const deadlineWeek = (year: number) => {
@@ -84,6 +87,8 @@ export function watchStops(s: LeagueState): () => boolean {
   const played = () => s.scores.filter((g) => g.home === u.teamId || g.away === u.teamId).length;
   const debutDue = on.has('debut') && first && s.year === u.firstTeamYear && played() === 0;
   const offered = new Set((u.tradeOffers ?? []).map((o) => o.id));
+  const combineKey = `${s.year}-combine`;
+  let combined = !!s.marketDone?.includes(combineKey);
   return () => {
     const last = s.schedule[s.next - 1]?.date ?? '';
     const coming = s.schedule[s.next]?.date;
@@ -107,6 +112,11 @@ export function watchStops(s: LeagueState): () => boolean {
     // 2.0.53: a new trade offer (its alert is the offer's own, offers.ts).
     if (on.has('offer') && (u.tradeOffers ?? []).some((o) => !offered.has(o.id))) {
       for (const o of u.tradeOffers ?? []) offered.add(o.id);
+      return true;
+    }
+    // 2.0.71: the combine was held today (its alert is the combine's own, combine.ts).
+    if (on.has('combine') && !combined && s.marketDone?.includes(combineKey)) {
+      combined = true;
       return true;
     }
     if (debutDue && played() > 0) {

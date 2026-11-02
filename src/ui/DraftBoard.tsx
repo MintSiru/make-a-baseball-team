@@ -45,11 +45,18 @@ interface Props {
   onSelect: (id: PlayerId) => void;
   /** The user's own scouts' future grade (V0.6), when there is a club. */
   ourView?: (p: Player) => number | null;
+  /** 2.0.71 (the user's request): a high-school player from our region — the ones our territorial (1차) pick may take,
+      when the league has one (`territorial`). */
+  ourRegion?: (p: Player) => boolean;
+  territorial?: boolean;
 }
 
-export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect, ourView }: Props) {
+export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect, ourView, ourRegion, territorial }: Props) {
   const [role, setRole] = useState<RoleFilter>('all');
   const [path, setPath] = useState<PathFilter>('all');
+  const [local, setLocal] = useState(false);
+  const regionTag = territorial ? __i18n_t("ui.draftBoard.text.097cc394") : __i18n_t("ui.draftBoard.text.a7cce0e4");
+  const locals = useMemo(() => (ourRegion ? players.filter(ourRegion).length : 0), [players, ourRegion]);
   const PATH_FILTERS: { id: PathFilter; label: string }[] = [
     { id: 'all', label: __i18n_k("ui.draftBoard.rOLE_FILTERS.label.934dd25e") },
     { id: 'hs', label: __i18n_t("ui.draftBoard.text.24d8cd41") },
@@ -57,8 +64,8 @@ export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect, ou
     { id: 'other', label: __i18n_t("ui.draftBoard.text.ba687438") },
   ];
   const filtered = useMemo(
-    () => players.filter((p) => (role === 'all' || p.role === role) && (path === 'all' || pathOf(p) === path)).sort((a, b) => a.amateur.draftRank - b.amateur.draftRank),
-    [players, role, path],
+    () => players.filter((p) => (role === 'all' || p.role === role) && (path === 'all' || pathOf(p) === path) && (!local || !!ourRegion?.(p))).sort((a, b) => a.amateur.draftRank - b.amateur.draftRank),
+    [players, role, path, local, ourRegion],
   );
   // The class at a glance: pitchers and position players, and the top of it.
   const glance = useMemo(() => {
@@ -106,6 +113,18 @@ export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect, ou
             </button>
           )))}
         </div>
+        {ourRegion && (
+          <div class="segmented" role="group">
+          <button
+            type="button"
+            aria-pressed={local}
+            title={territorial ? __i18n_t("ui.draftBoard.text.9cbb9e67") : __i18n_t("ui.draftBoard.text.8ff0fba2")}
+            onClick={() => setLocal(!local)}
+          >
+            {__i18n_t("ui.draftBoard.text.da997f05", { label: regionTag, n: locals })}
+          </button>
+          </div>
+        )}
         <span class="muted small">{__i18n_t("ui.draftBoard.draftBoard.2a2a21d8", { length: rows.length, value: ourView ? __i18n_k("ui.draftBoard.draftBoard.371d7382") : '' })}</span>
       </div>
       <div class="table-wrap" tabIndex={0} aria-label={__i18n_t("ui.draftBoard.draftBoard.c628b5f2")}>
@@ -136,6 +155,8 @@ export function DraftBoard({ draftYear, players, ageOf, selectedId, onSelect, ou
                       {__i18n_display(p.name)}
                     </button>
                     {__i18n_display(p.twoWay && <span class="tag">{__i18n_t("ui.draftBoard.draftBoard.62cb0192")}</span>)}
+                    {/* 2.0.71: one of our region's high-school players. */}
+                    {ourRegion?.(p) && <span class="tag region-tag">{regionTag}</span>}
                     {/* 2.0.67: straight abroad out of high school, back through the draft (no signing bonus). */}
                     {p.origin.overseasDirect && (
                       <span class="tag" title={p.origin.overseasDirect.wait === 'military' ? __i18n_t("ui.draftBoard.text.87004846") : __i18n_t("ui.draftBoard.text.b668513b")}>

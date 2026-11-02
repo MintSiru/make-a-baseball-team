@@ -48,6 +48,7 @@ import { PlayerSearch, type PosFilter } from './PlayerSearch';
 import { TRADES } from '../league/tuning';
 import { BLOCK, liveOffers, notForSale, tradeBlock, type TradeOffer } from '../league/offers';
 import { aiNotForSale, clubNotForSale } from '../league/nfs';
+import { NameLinks } from './NameLinks';
 
 type View = 'trade' | 'search' | 'release' | 'foreign' | 'news';
 
@@ -117,7 +118,7 @@ export function Market({
       ))}
       {__i18n_display(view === 'release' && <Release league={league} onPlayer={onPlayer} onAct={onAct} />)}
       {__i18n_display(view === 'foreign' && <Foreign league={league} onPlayer={onPlayer} onAct={onAct} />)}
-      {__i18n_display(view === 'news' && <News league={league} />)}
+      {__i18n_display(view === 'news' && <News league={league} onPlayer={onPlayer} />)}
     </section>
   );
 }
@@ -686,14 +687,15 @@ function TempForeign({ league, onPlayer, onAct }: { league: LeagueState; onPlaye
   );
 }
 
-function News({ league }: { league: LeagueState }) {
+function News({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
   const items = [...(league.transactions ?? [])].reverse().slice(0, 80);
   if (!items.length) return <p class="empty">{__i18n_t("ui.market.news.35419fb9")}</p>;
   return (
     <ul class="club-log">
       {__i18n_display(items.map((t, i) => (
         <li key={i}>
-          <span class="num muted">{__i18n_display(t.date)}</span> {__i18n_display(t.text)}
+          {/* 2.0.71: the players it names, as links. */}
+          <span class="num muted">{__i18n_display(t.date)}</span> <NameLinks league={league} text={t.text} ids={t.ids} onPlayer={onPlayer} />
         </li>
       )))}
     </ul>

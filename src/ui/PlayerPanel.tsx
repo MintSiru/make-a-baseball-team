@@ -2,7 +2,11 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 /* A league player's page (V0.5.1 layout; in parts since 1.4.0): who he is and his latest season at a glance on top,
    then one part at a time — scouting grades as bars with positions or pitches, records, the staff's read, his
    background and injuries. Everything shown is public: grades are scouting reports, velocity is the radar gun. */
-import { moveHistory } from '../league/moves';
+import { moveHistory, type MoveKind } from '../league/moves';
+import { NameLinks } from './NameLinks';
+import { headlineHonors, honorCounts } from '../league/honorcount';
+import { checkPositionMove, POSITIONS } from '../league/positions';
+import type { Position } from '../model/position';
 import type { FieldTotals } from '../league/fielding';
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
@@ -196,8 +200,11 @@ const splitRates = (x: Split) => ({
   slg: x.ab ? x.tb / x.ab : 0,
 });
 
+/** 2.0.71: the moves whose note names players (an older save's notes have no ids: their names are looked up). */
+const LINKED = new Set<MoveKind>(['trade', 'foreign', 'temp']);
+
 /** 2.0.28 (moves.ts): how he came into the league and every move since. */
-function MoveTable({ league, p }: { league: LeagueState; p: Parameters<typeof moveHistory>[1] }) {
+function MoveTable({ league, p, onPlayer }: { league: LeagueState; p: Parameters<typeof moveHistory>[1]; onPlayer?: (id: string) => void }) {
   const rows = moveHistory(league, p);
   if (!rows.length) return null;
   return (
@@ -219,7 +226,8 @@ function MoveTable({ league, p }: { league: LeagueState; p: Parameters<typeof mo
                 <td class="num">{r.date.length > 4 ? r.date.slice(0, 7).replace('-', '.') : r.date}</td>
                 <td>{__i18n_display(r.label)}</td>
                 <td>{__i18n_display(r.from && r.to ? `${r.from} → ${r.to}` : r.to ? `→ ${r.to}` : r.from ? `${r.from} →` : '-')}</td>
-                <td class="muted small">{__i18n_display(r.note || '')}</td>
+                {/* 2.0.71 (the user's request): the other side of a trade (and the like) as links to their panels. */}
+                <td class="muted small">{r.ids || LINKED.has(r.kind) ? <NameLinks league={league} text={r.note || ''} ids={r.ids} onPlayer={onPlayer} /> : __i18n_display(r.note || '')}</td>
               </tr>
             ))}
           </tbody>
@@ -877,6 +885,16 @@ export function PlayerPanel({
               )}
             </h2>
             {next && subLine}
+            {/* 2.0.71 (the user's request): MVP, 골든글러브 and the All-Star games at a glance. */}
+            {headlineHonors(p.honors).length > 0 && (
+              <p class="honor-line small">
+                {headlineHonors(p.honors).map((h) => (
+                  <span key={h.key} class="tag honor-count">
+                    {__i18n_t("ui.playerPanel.text.f04ddaed", { label: __i18n_displayText(h.label), count: h.count })}
+                  </span>
+                ))}
+              </p>
+            )}
             {/* 2.0.34: a pitcher on a club — how ready his arm is. */}
             {pitcher && p.teamId && p.status === 'active' && (league.phase === 'regular' || league.phase === 'postseason') && (
               <p class="small">
@@ -963,6 +981,29 @@ export function PlayerPanel({
                   )))}
                 </div>
                 {!next && <p class="muted small">{__i18n_t("ui.playerPanel.playerPanel.92af1732")}</p>}
+                {/* 2.0.71 (the user's request): our hitter's position, in the season too. */}
+                {onAct && p.position && !checkPositionMove(league, p.id, p.position === '1B' ? 'LF' : '1B') && (
+                  <p class="small position-move">
+                    <label>
+                      {__i18n_t("ui.playerPanel.text.b7211e3d")}{' '}
+                      <select
+                        value={p.position}
+                        onChange={(e) => {
+                          const to = (e.currentTarget as HTMLSelectElement).value as Position;
+                          if (to !== p.position) onAct({ kind: 'position', id: p.id, position: to });
+                        }}
+                      >
+                        {POSITIONS.map((pos) => (
+                          <option key={pos} value={pos}>
+                            {__i18n_displayText(POSITION_NAMES[pos]!)}
+                            {pos === p.position ? ` ${__i18n_t("ui.playerPanel.text.13cc7b65")}` : (p.alt ?? []).includes(pos) ? ` ${__i18n_t("ui.playerPanel.text.c546a26c")}` : ` ${__i18n_t("ui.playerPanel.text.e5cb3e84")}`}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <span class="muted"> {__i18n_t("ui.playerPanel.text.4220647f")}</span>
+                  </p>
+                )}
               </section>
             ))}
             {card.fielding && (
@@ -1253,17 +1294,30 @@ export function PlayerPanel({
             </dl>
             <p class="muted small">{__i18n_display(p.education.pathText)}</p>
             </>)}
-            <MoveTable league={league} p={p} />
+            <MoveTable league={league} p={p} onPlayer={onPlayer} />
             {__i18n_display(!!p.honors?.length && (
               <>
                 <h3>{__i18n_t("ui.playerPanel.playerPanel.34f8ad9e")}</h3>
+                {/* 2.0.71 (the user's request: 「MVP 몇 회 골글 몇 회」): each award once with its count and seasons; the
+                    season by season list under it. */}
                 <div class="honors">
-                  {__i18n_display([...p.honors].reverse().map((h) => (
-                    <span key={h} class="tag">
-                      {__i18n_display(h)}
+                  {honorCounts(p.honors).map((c) => (
+                    <span key={c.key} class="tag" title={c.times.map((x) => [x.year ?? '', x.detail && `(${__i18n_displayText(x.detail)})`].filter(Boolean).join(' ')).join(', ')}>
+                      {c.count > 1 ? __i18n_t("ui.playerPanel.text.f04ddaed", { label: __i18n_displayText(c.key), count: c.count }) : __i18n_displayText(c.key)}
+                      <span class="muted"> {c.times.map((x) => (x.year != null ? String(x.year).slice(2) : '')).filter(Boolean).map((y) => `'${y}`).join(' ')}</span>
                     </span>
-                  )))}
+                  ))}
                 </div>
+                <details class="honors-all">
+                  <summary class="small muted">{__i18n_t("ui.playerPanel.text.814af7ff")}</summary>
+                  <div class="honors">
+                    {__i18n_display([...p.honors].reverse().map((h, i) => (
+                      <span key={`${h}-${i}`} class="tag">
+                        {__i18n_display(h)}
+                      </span>
+                    )))}
+                  </div>
+                </details>
               </>
             ))}
             {__i18n_display((trips.length > 0 || (p.life?.events?.length ?? 0) > 0) && (

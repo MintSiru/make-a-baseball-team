@@ -642,6 +642,8 @@ export interface ExpansionSettings {
   stops?: import('./stops').StopKind[];
   /** 2.0.53: stop a run of days for a trade offer (stops.ts); on unless false. */
   offerStop?: boolean;
+  /** 2.0.71: stop a run of days on the draft combine (on unless turned off). */
+  combineStop?: boolean;
   /** The owner may fire the general manager after bad evaluations (V0.6; off in the sandbox). */
   firing?: boolean;
   /** Tutorial mode (V0.7.5): a guide from the founding through the futures year (promotion after futures). */
@@ -705,7 +707,8 @@ export interface LeagueState {
   /** 2.0.24: the Asia quota players replaced this season, on their own count (trade.ts). */
   asiaChanges?: Record<TeamId, number>;
   /** League moves for the news feed: trades, waiver claims, foreign changes. */
-  transactions?: { date: string; text: string }[];
+  /** 2.0.71: `ids`, the players it names (for their links on the screen). */
+  transactions?: { date: string; text: string; ids?: PlayerId[] }[];
   /** 1.7.0 (draftlog.ts): every rookie draft pick, kept after the player leaves the league. */
   draftLog?: import('./draftlog').DraftPick[];
   /** One-off market events already run this season ("2027-trades-06"). */

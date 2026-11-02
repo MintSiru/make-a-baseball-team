@@ -234,6 +234,14 @@ thead th {
 .link:hover {
   text-decoration: underline;
 }
+/* 2.0.71: a player's name inside a line of text, at the text's own size. */
+.link.name-link {
+  font-size: inherit;
+  margin: 0;
+  color: inherit;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
 
 .tag {
   display: inline-block;
@@ -1629,6 +1637,19 @@ ul.plain li {
   flex-wrap: wrap;
   gap: 4px 6px;
   margin: 6px 0;
+}
+/* 2.0.71: the honours counted, at the head of the panel and in its history. */
+.honor-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0;
+}
+.tag.honor-count {
+  font-weight: 600;
+}
+.honors-all summary {
+  cursor: pointer;
 }
 .achievements {
   display: grid;

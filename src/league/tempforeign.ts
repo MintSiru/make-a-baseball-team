@@ -109,14 +109,14 @@ export function signTemp(s: LeagueState, teamId: TeamId, forId: PlayerId, inId: 
   const price = tempPrice(s, p, forId);
   p.status = 'active';
   p.teamId = teamId;
-  noteMove(s, p, 'temp', null, teamId, __i18n_k("league.tempforeign.text.fefa1654", { name: injured.name }));
+  noteMove(s, p, 'temp', null, teamId, __i18n_k("league.tempforeign.text.fefa1654", { name: injured.name }), undefined, [injured.id]);
   p.contract = { ...foreignContract(teamId, s.year, { bonus: 0, salary: price, options: 0 }, !!p.origin.asiaQuota, price), temp: forId };
   s.players[p.id] = p;
   const r = s.rosters[teamId]!;
   r[r.active.length < firstTeamSize(s, teamId) ? 'active' : 'futures'].push(p.id);
   (s.tempForeign ??= []).push({ teamId, id: p.id, for: forId, from: today(s) });
   const text = __i18n_k("league.tempforeign.text.868c4b32", { club: short(s, teamId), injured: injured.name, name: p.name, usd: price.toLocaleString('en-US') });
-  logTransaction(s, text);
+  logTransaction(s, text, [injured.id, p.id]);
   if (s.user?.teamId === teamId) (s.user.log ??= []).push({ year: s.year, text });
 }
 
@@ -145,7 +145,7 @@ function settle(s: LeagueState, t: TempForeign, keepTemp: boolean, seasonOver = 
     leaveForeign(s, temp);
     text = !seasonOver && injured && injured.teamId === t.teamId ? __i18n_k("league.tempforeign.text.921b34ac", { club: short(s, t.teamId), injured: injured.name, name: temp.name }) : __i18n_k("league.tempforeign.text.a23fff60", { club: short(s, t.teamId), name: temp.name });
   }
-  logTransaction(s, text);
+  logTransaction(s, text, [temp.id, ...(injured ? [injured.id] : [])]);
   if (s.user?.teamId === t.teamId) {
     (s.user.log ??= []).push({ year: s.year, text });
     addAlert(s, { id: `temp-${t.id}`, date: s.phase === 'regular' ? today(s) : `${s.year}-10-01`, kind: 'move', title: text, lines: [text], players: [t.id, t.for].filter((id) => s.players[id]) });

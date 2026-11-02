@@ -371,7 +371,7 @@ try {
   check(true, 'difficulty switches back and forth');
   // 1.6.0: the moments a run of days stops for, all on to begin with (1.7.1: and before our postseason games; 1.9.0: and for our postseason entry; 2.0.42: and the national team's games; 2.0.53: and a trade offer).
   const stopsBox = page.getByRole('group', { name: '진행 중 멈출 순간' });
-  check((await stopsBox.getByRole('checkbox').count()) === 8 && (await stopsBox.getByRole('checkbox').first().isChecked()), 'the stops are listed and on');
+  check((await stopsBox.getByRole('checkbox').count()) === 9 && (await stopsBox.getByRole('checkbox').first().isChecked()), 'the stops are listed and on');
   await page.getByRole('button', { name: /결정할 일/ }).click();
   const log = [];
   await decideAll(page, log);

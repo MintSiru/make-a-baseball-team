@@ -102,7 +102,7 @@ export function makeSecondPick(s: LeagueState, sd: SecondDraftState, id: PlayerI
     u.ledger.push({ year: sd.year, label: __i18n_k("league.seconddraft.makeSecondPick.label.545b0033", { name: p.name }), amount: fee });
     (u.log ??= []).push({ year: sd.year, text: __i18n_k("league.seconddraft.makeSecondPick.text.019f27ea", { name: iga(p.name), short: ro(short(slot.teamId)) }) });
   }
-  logTransaction(s, __i18n_k("league.seconddraft.makeSecondPick.bf720a3a", { round: slot.round, short: short(slot.teamId), name: p.name, short2: short(from) }));
+  logTransaction(s, __i18n_k("league.seconddraft.makeSecondPick.bf720a3a", { round: slot.round, short: short(slot.teamId), name: p.name, short2: short(from) }), [p.id]);
   moveNews(s, { type: 'secondDraft', teamId: slot.teamId, from, id, round: slot.round }, `${sd.year}-11-20`);
 }
 

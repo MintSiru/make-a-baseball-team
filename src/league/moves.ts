@@ -46,6 +46,8 @@ export interface MoveEntry {
   to: TeamId | null;
   /** What came with it: the other side of a trade, a deal's terms, the free agent a pick replaced. */
   note?: string;
+  /** 2.0.71: the players the note names (the other side of a trade, the foreign player he replaced), for their links. */
+  ids?: PlayerId[];
 }
 
 export const MOVE_LABELS: Record<MoveKind, string> = {
@@ -83,10 +85,10 @@ const short = (s: LeagueState, id: TeamId | null, year?: number) =>
   id === SANGMU ? __i18n_k("league.views.shortName.d2a2ca0f") : id ? ((year != null ? clubNameIn(s, id, year)?.short : undefined) ?? s.teams.find((t) => t.id === id)?.short ?? id) : '';
 
 /** Notes a move on the player. */
-export function noteMove(s: LeagueState, p: Player | undefined, kind: MoveKind, from: TeamId | null, to: TeamId | null, note?: string, date = dateOf(s)) {
+export function noteMove(s: LeagueState, p: Player | undefined, kind: MoveKind, from: TeamId | null, to: TeamId | null, note?: string, date = dateOf(s), ids: PlayerId[] = []) {
   if (!p) return;
   const list = (p.moves ??= []);
-  list.push({ date, kind, from, to, ...(note ? { note } : {}) });
+  list.push({ date, kind, from, to, ...(note ? { note } : {}), ...(ids.length ? { ids } : {}) });
   if (list.length > KEEP) list.splice(0, list.length - KEEP);
 }
 
@@ -105,8 +107,8 @@ export function noteNewsMove(s: LeagueState, m: Move, date: string) {
     case 'trade': {
       const back = (ids: PlayerId[], picks: number[] | undefined, cash: number) =>
         [names(ids), picks?.length ? __i18n_k("league.moves.text.dacef53e", { rounds: picks.map((r) => `${r}R`).join('·') }) : '', cash > 0 ? __i18n_k("league.moves.text.6102409b") : ''].filter(Boolean).join(' + ');
-      for (const id of m.fromA) noteMove(s, p(id), 'trade', m.a, m.b, __i18n_k("league.moves.text.3f2a4ab2", { what: back(m.fromB, m.picksB, -(m.cash ?? 0)) }), date);
-      for (const id of m.fromB) noteMove(s, p(id), 'trade', m.b, m.a, __i18n_k("league.moves.text.3f2a4ab2", { what: back(m.fromA, m.picksA, m.cash ?? 0) }), date);
+      for (const id of m.fromA) noteMove(s, p(id), 'trade', m.a, m.b, __i18n_k("league.moves.text.3f2a4ab2", { what: back(m.fromB, m.picksB, -(m.cash ?? 0)) }), date, m.fromB);
+      for (const id of m.fromB) noteMove(s, p(id), 'trade', m.b, m.a, __i18n_k("league.moves.text.3f2a4ab2", { what: back(m.fromA, m.picksA, m.cash ?? 0) }), date, m.fromA);
       break;
     }
     case 'release':
@@ -119,7 +121,7 @@ export function noteNewsMove(s: LeagueState, m: Move, date: string) {
       noteMove(s, p(m.id), 'pool', null, m.teamId, undefined, date);
       break;
     case 'foreign':
-      noteMove(s, p(m.in), 'foreign', null, m.teamId, m.out ? __i18n_k("league.moves.text.ad27e2a4", { name: m.out.name }) : undefined, date);
+      noteMove(s, p(m.in), 'foreign', null, m.teamId, m.out ? __i18n_k("league.moves.text.ad27e2a4", { name: m.out.name }) : undefined, date, m.out ? [m.out.id] : []);
       break;
     case 'posting':
       if (m.deal) noteMove(s, p(m.id), 'posting', m.teamId, null, m.npb ? __i18n_k("league.moves.text.d2a1e644") : __i18n_k("league.moves.text.d4983f92"), date);
@@ -146,6 +148,8 @@ export interface MoveRow {
   from: string;
   to: string;
   note: string;
+  /** 2.0.71: the players the note names. */
+  ids?: PlayerId[];
 }
 
 /** His moves, first to last: how he came in (his draft pick, or his first club), then each one noted, and for a
@@ -197,6 +201,9 @@ export function moveHistory(s: LeagueState, p: Pick<Player, 'id' | 'career' | 'o
     if (!serving) row(discharged, 'discharge', SANGMU, back);
     i = j + 1;
   }
-  for (const m of noted) row(m.date, m.kind, m.from, m.to, m.note ?? '');
+  for (const m of noted) {
+    row(m.date, m.kind, m.from, m.to, m.note ?? '');
+    if (m.ids) rows.at(-1)!.ids = m.ids;
+  }
   return rows.sort((a, b) => a.date.localeCompare(b.date));
 }

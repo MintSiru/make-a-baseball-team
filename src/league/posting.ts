@@ -107,7 +107,7 @@ export function post(s: LeagueState, id: PlayerId, next: number): PostingResult 
   const npb = !market ? npbMarket(p, next, rng(`${s.seed}|posting-npb|${next}|${id}`), NPB_MOVE.postMinGrade, NPB_MOVE.postChance) : null;
   if (!market && npb) {
     const fee = Math.round(npb.total * NPB_MOVE.fee);
-    logTransaction(s, __i18n_k("league.posting.text.3f703f1c", { short, name: p.name, years: npb.years, usd: usd(npb.total), usd2: usd(fee) }));
+    logTransaction(s, __i18n_k("league.posting.text.3f703f1c", { short, name: p.name, years: npb.years, usd: usd(npb.total), usd2: usd(fee) }), [p.id]);
     moveNews(s, { type: 'posting', teamId, id, deal: { ...npb, fee }, npb: true }, `${next - 1}-11-10`);
     postingAlert(s, p, teamId, next - 1, { years: npb.years, total: usd(npb.total), fee: usd(fee) }, true);
     const u = s.user;
@@ -122,13 +122,13 @@ export function post(s: LeagueState, id: PlayerId, next: number): PostingResult 
     return { id, teamId, deal: { ...npb, fee } };
   }
   if (!market) {
-    logTransaction(s, __i18n_k("league.posting.post.f6795404", { short: short, name: iga(p.name) }));
+    logTransaction(s, __i18n_k("league.posting.post.f6795404", { short: short, name: iga(p.name) }), [p.id]);
     moveNews(s, { type: 'posting', teamId, id, deal: null }, `${next - 1}-11-10`);
     postingAlert(s, p, teamId, next - 1, null);
     return { id, teamId, deal: null };
   }
   const fee = postingFee(market.total);
-  logTransaction(s, __i18n_k("league.posting.post.c30adfd5", { short: short, name: p.name, years: market.years, usd: usd(market.total), usd2: usd(fee) }));
+  logTransaction(s, __i18n_k("league.posting.post.c30adfd5", { short: short, name: p.name, years: market.years, usd: usd(market.total), usd2: usd(fee) }), [p.id]);
   moveNews(s, { type: 'posting', teamId, id, deal: { ...market, fee } }, `${next - 1}-11-10`);
   postingAlert(s, p, teamId, next - 1, { years: market.years, total: usd(market.total), fee: usd(fee) });
   const u = s.user;
