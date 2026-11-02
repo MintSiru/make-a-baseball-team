@@ -743,6 +743,8 @@ export interface LeagueState {
   voluntary?: Record<PlayerId, { teamId: TeamId; since: string; why: 'club' | 'scandal'; salary: number }>;
   /** 2.0.37 (abroad.ts): our players talked out of going abroad, and the winter they agreed. */
   abroadStay?: Record<PlayerId, number>;
+  /** 2.0.70 (ball.ts): the official ball's coefficient of restitution, season by season. */
+  ball?: import('./ball').BallSeason[];
   /** 2.0.59 (weather.ts): this season's games called off for the weather and the day each went to. */
   calledOff?: { id: string; date: string; home: TeamId; away: TeamId; why: import('./weather').Weather; to: string; dh?: true; noGame?: true }[];
   /** 2.0.59 (weather.ts): suspended games waiting to be finished, by their schedule id (`-s`). */

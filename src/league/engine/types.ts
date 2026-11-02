@@ -112,6 +112,8 @@ export interface GameIn {
   /** 2.0.17 (board.ts ABS): how much a catcher's framing counts — 1 with the umpires calling, 0.5 with challenges,
       absent or 0 with the full ABS. */
   framing?: number;
+  /** 2.0.70 (ball.ts): the official ball's liveliness, as logit shifts on home runs and balls in play falling in. */
+  ball?: { hr: number; babip: number };
   /** 2.0.59 (weather.ts): the game is called after this half-inning (its top, or the whole inning) — rain. */
   stopAfter?: { inning: number; top: boolean };
 }

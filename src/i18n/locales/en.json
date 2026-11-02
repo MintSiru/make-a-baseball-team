@@ -10353,5 +10353,19 @@
   "ui.faMarket.text.989fd56c": "Larry Bird rule: re-signing him may take us over the salary cap, and only half of his pay counts against it",
   "ui.faMarket.text.250bedf2": "Bird rights",
   "ui.playerPanel.text.8962f80e": "Re-signed by his own club as a free agent: while the Larry Bird rule stands, only half of his pay counts against the salary cap",
-  "ui.playerPanel.text.4ff2c0cb": "Larry Bird rule"
+  "ui.playerPanel.text.4ff2c0cb": "Larry Bird rule",
+  "league.ball.text.b1c62601": "The {year} official ball is livelier — a \"juiced ball\" row",
+  "league.ball.text.bb31dc46": "The {year} official ball is deader — a \"low-bounce ball\"",
+  "league.ball.text.40fdb9bb": "The {year} official ball brought back within the standard",
+  "league.ball.text.519fa8a5": "The KBO official ball's coefficient of restitution went from {was} to {now}.",
+  "league.ball.text.efdedb99": "The ball carries farther: more home runs and extra-base hits, and a hard year for the pitchers.",
+  "league.ball.text.463b3a3e": "The ball carries less: fewer home runs, and the pitchers gain.",
+  "league.ball.text.fd4dc809": "The KBO has corrected last season's ball, which was outside the standard.",
+  "league.ball.text.30fa4a1d": "{year} official ball spot test: passed",
+  "league.ball.text.05c39648": "{year} official ball spot test: failed — the maker sanctioned",
+  "league.ball.text.e79d5eb2": "Measured coefficient {cor} (allowed {lo}–{hi})",
+  "league.ball.text.f170065b": "The ball was livelier than allowed. The KBO fined the maker and uses a deader ball from the second half.",
+  "league.ball.text.0dc2b47b": "The ball was deader than allowed. The KBO fined the maker and uses a livelier ball from the second half.",
+  "ui.leaders.text.e0d1f617": "This season's official ball: coefficient {cor} (standard {base})",
+  "ui.leaders.text.0b69706a": "June spot test {cor}"
 }

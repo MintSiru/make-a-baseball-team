@@ -10353,5 +10353,19 @@
   "ui.faMarket.text.989fd56c": "ラリー・バード・ルール：再契約ならサラリーキャップを超えてもよく、年俸は半額のみキャップに算入されます",
   "ui.faMarket.text.250bedf2": "バード権",
   "ui.playerPanel.text.8962f80e": "自球団FAとの再契約：ラリー・バード・ルールがある間は年俸の半額のみサラリーキャップに算入されます",
-  "ui.playerPanel.text.4ff2c0cb": "ラリー・バード・ルール"
+  "ui.playerPanel.text.4ff2c0cb": "ラリー・バード・ルール",
+  "league.ball.text.b1c62601": "{year}シーズン公認球の反発係数が上昇 — 「飛ぶボール」論争",
+  "league.ball.text.bb31dc46": "{year}シーズン公認球の反発係数が低下 — 「低反発球」",
+  "league.ball.text.40fdb9bb": "{year}シーズン公認球の反発係数を基準範囲内に調整",
+  "league.ball.text.519fa8a5": "KBO公認球の反発係数が{was}から{now}に変わりました。",
+  "league.ball.text.efdedb99": "打球がよく飛び、本塁打と長打が増えて投手は苦しむ見込みです。",
+  "league.ball.text.463b3a3e": "打球が飛ばなくなり、本塁打が減って投手が有利になる見込みです。",
+  "league.ball.text.fd4dc809": "昨シーズン基準を外れた公認球をKBOが是正しました。",
+  "league.ball.text.30fa4a1d": "{year} 公認球の抜き打ち検査に合格",
+  "league.ball.text.05c39648": "{year} 公認球の抜き打ち検査で不合格 — メーカーに制裁",
+  "league.ball.text.e79d5eb2": "測定反発係数 {cor}（許容範囲 {lo}〜{hi}）",
+  "league.ball.text.f170065b": "基準より飛ぶボールでした。KBOはメーカーに制裁金を科し、後半戦から反発力を抑えたボールを使います。",
+  "league.ball.text.0dc2b47b": "基準より飛ばないボールでした。KBOはメーカーに制裁金を科し、後半戦から反発力を高めたボールを使います。",
+  "ui.leaders.text.e0d1f617": "今季の公認球の反発係数 {cor}（基準 {base}）",
+  "ui.leaders.text.0b69706a": "6月の抜き打ち検査 {cor}"
 }

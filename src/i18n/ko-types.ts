@@ -10354,5 +10354,19 @@ export const koSource = {
   "ui.faMarket.text.989fd56c": "래리 버드 룰: 재계약하면 샐러리캡을 넘겨도 되고, 연봉은 절반만 샐러리캡에 반영됩니다",
   "ui.faMarket.text.250bedf2": "버드 권리",
   "ui.playerPanel.text.8962f80e": "자기 구단 FA 재계약: 래리 버드 룰이 있는 동안 연봉의 절반만 샐러리캡에 반영됩니다",
-  "ui.playerPanel.text.4ff2c0cb": "래리 버드 룰"
+  "ui.playerPanel.text.4ff2c0cb": "래리 버드 룰",
+  "league.ball.text.b1c62601": "{year} 시즌 공인구 반발계수 상승 — 「탱탱볼」 논란",
+  "league.ball.text.bb31dc46": "{year} 시즌 공인구 반발계수 하락 — 「저반발 공인구」",
+  "league.ball.text.40fdb9bb": "{year} 시즌 공인구 반발계수 기준 범위로 조정",
+  "league.ball.text.519fa8a5": "KBO 공인구 반발계수가 {was}에서 {now}(으)로 바뀌었습니다.",
+  "league.ball.text.efdedb99": "공이 멀리 날아가 홈런과 장타가 늘고 투수들은 고전할 것으로 보입니다.",
+  "league.ball.text.463b3a3e": "공이 덜 날아가 홈런이 줄고 투수들이 힘을 얻을 것으로 보입니다.",
+  "league.ball.text.fd4dc809": "지난 시즌 기준을 벗어난 공인구를 KBO가 바로잡았습니다.",
+  "league.ball.text.30fa4a1d": "{year} 공인구 수시검사 합격",
+  "league.ball.text.05c39648": "{year} 공인구 수시검사 불합격 — 제조사 제재",
+  "league.ball.text.e79d5eb2": "측정 반발계수 {cor} (허용 범위 {lo}~{hi})",
+  "league.ball.text.f170065b": "기준보다 잘 튀는 공이었습니다. KBO는 제조사에 제재금을 물리고 후반기부터 반발력을 낮춘 공을 씁니다.",
+  "league.ball.text.0dc2b47b": "기준보다 덜 튀는 공이었습니다. KBO는 제조사에 제재금을 물리고 후반기부터 반발력을 높인 공을 씁니다.",
+  "ui.leaders.text.e0d1f617": "올 시즌 공인구 반발계수 {cor} (기준 {base})",
+  "ui.leaders.text.0b69706a": "6월 수시검사 {cor}"
 } as const;
