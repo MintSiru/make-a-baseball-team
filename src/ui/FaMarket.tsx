@@ -37,6 +37,7 @@ import { FA } from '../league/tuning';
 import { positionLabel, shortName, statLine } from '../league/views';
 import type { FaPromise, Player, PlayerId } from '../model/types';
 import { salaryCapFor } from '../rules/kbo2026';
+import { BIRD, birdResign } from '../league/bird';
 import { salaryCapOn } from '../league/features';
 import { money, moneyShort, parseEok, shownLevel } from './format';
 import { gradeClass, shownFuture } from './grades';
@@ -145,7 +146,8 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
   const reserve = foreignReserve(league, me, next);
   const cap = salaryCapFor(next);
   const capNow = cap - capRoomFor(league, me, next, new Set(talks.filter((t) => !t.signed && !t.gone).map((t) => t.id)));
-  const capAdd = Object.values(mine).reduce((a, o) => a + capHit(o), 0);
+  // 2.0.69: our own free agent kept under the Larry Bird rule counts half (bird.ts).
+  const capAdd = Object.entries(mine).reduce((a, [id, o]) => a + capHit(o) * (birdResign(league.players[id]!, m.talks[id]!.from, me, next) ? BIRD.share : 1), 0);
   const outside = Object.keys(mine).filter((id) => m.talks[id]!.from !== me).length;
   const room = m.userLimit - (m.signedOut[me] ?? 0);
   const nextDay = FA.rounds[m.round + 1];
@@ -272,6 +274,11 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
                           {__i18n_display(p.name)}
                         </button>
                         {__i18n_display(t.from === me && <span class="tag">{__i18n_t("ui.faMarket.faMarket.466570d3")}</span>)}
+                        {birdResign(p, t.from, me, next) && (
+                          <span class="tag" title={__i18n_t("ui.faMarket.text.989fd56c")}>
+                            {__i18n_t("ui.faMarket.text.250bedf2")}
+                          </span>
+                        )}
                         {/* 2.0.48 (the user's requests): our own free agent's standing with our fans, and anyone still owing his service. */}
                         {t.from === me && (
                           <span class="muted small" title={__i18n_t("ui.faMarket.text.b372f393")}>

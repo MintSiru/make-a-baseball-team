@@ -93011,5 +93011,179 @@
     "line": 142,
     "params": {},
     "locations": []
+  },
+  "league.board.text.38fc6866": {
+    "source": "src/league/board.ts",
+    "line": 554,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.de40c341": {
+    "source": "src/league/board.ts",
+    "line": 554,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.4ff2c0cb": {
+    "source": "src/league/board.ts",
+    "line": 695,
+    "params": {},
+    "locations": []
+  },
+  "ui.faMarket.text.989fd56c": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 278,
+    "params": {},
+    "locations": []
+  },
+  "ui.faMarket.text.250bedf2": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 279,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.8962f80e": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1186,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.4ff2c0cb": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1187,
+    "params": {},
+    "locations": []
+  },
+  "league.ball.text.b1c62601": {
+    "source": "src/league/ball.ts",
+    "line": 90,
+    "params": {
+      "year": {
+        "expression": "s.year"
+      }
+    },
+    "locations": []
+  },
+  "league.ball.text.bb31dc46": {
+    "source": "src/league/ball.ts",
+    "line": 92,
+    "params": {
+      "year": {
+        "expression": "s.year"
+      }
+    },
+    "locations": []
+  },
+  "league.ball.text.40fdb9bb": {
+    "source": "src/league/ball.ts",
+    "line": 93,
+    "params": {
+      "year": {
+        "expression": "s.year"
+      }
+    },
+    "locations": []
+  },
+  "league.ball.text.519fa8a5": {
+    "source": "src/league/ball.ts",
+    "line": 95,
+    "params": {
+      "was": {
+        "expression": "corText(was)"
+      },
+      "now": {
+        "expression": "corText(b.cor)"
+      }
+    },
+    "locations": []
+  },
+  "league.ball.text.efdedb99": {
+    "source": "src/league/ball.ts",
+    "line": 96,
+    "params": {},
+    "locations": []
+  },
+  "league.ball.text.463b3a3e": {
+    "source": "src/league/ball.ts",
+    "line": 96,
+    "params": {},
+    "locations": []
+  },
+  "league.ball.text.fd4dc809": {
+    "source": "src/league/ball.ts",
+    "line": 96,
+    "params": {},
+    "locations": []
+  },
+  "league.ball.text.30fa4a1d": {
+    "source": "src/league/ball.ts",
+    "line": 112,
+    "params": {
+      "year": {
+        "expression": "s.year"
+      }
+    },
+    "locations": []
+  },
+  "league.ball.text.05c39648": {
+    "source": "src/league/ball.ts",
+    "line": 112,
+    "params": {
+      "year": {
+        "expression": "s.year"
+      }
+    },
+    "locations": []
+  },
+  "league.ball.text.e79d5eb2": {
+    "source": "src/league/ball.ts",
+    "line": 114,
+    "params": {
+      "cor": {
+        "expression": "corText(measured)"
+      },
+      "lo": {
+        "expression": "corText(BALL.base - BALL.range)"
+      },
+      "hi": {
+        "expression": "corText(BALL.base + BALL.range)"
+      }
+    },
+    "locations": []
+  },
+  "league.ball.text.f170065b": {
+    "source": "src/league/ball.ts",
+    "line": 115,
+    "params": {},
+    "locations": []
+  },
+  "league.ball.text.0dc2b47b": {
+    "source": "src/league/ball.ts",
+    "line": 115,
+    "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.e0d1f617": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 49,
+    "params": {
+      "cor": {
+        "expression": "corText(corOn(league, today(league)))"
+      },
+      "base": {
+        "expression": "corText(BALL.base)"
+      }
+    },
+    "locations": []
+  },
+  "ui.leaders.text.0b69706a": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 50,
+    "params": {
+      "cor": {
+        "expression": "corText(ball.test.cor)"
+      }
+    },
+    "locations": []
   }
 }

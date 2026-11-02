@@ -11,6 +11,7 @@ import { k as __i18n_k } from '../i18n/index';
    sandbox) never meets, and every rule stays as it was. */
 import { rng } from '../draftroom';
 import type { TeamId } from '../model/types';
+import { birdRuleOn } from './bird';
 import { boardValue, playsHistory, setEraBoard } from './era';
 import { addAlert } from './alerts';
 import { leagueEvent } from './leagueevents';
@@ -48,7 +49,9 @@ export type BoardItem =
   // umpires call it and a catcher's framing counts), and a full-time national-team manager (1) or a club's (0).
   | 'lottery'
   | 'abs'
-  | 'nationalManager';
+  | 'nationalManager'
+  // 2.0.69 (the user's request): the Larry Bird rule (bird.ts), in force unless taken away.
+  | 'birdRule';
 export type BoardVote = 'yes' | 'no' | 'abstain';
 
 /** A rule change in force from season `from` (cap: the cap in percent of today's; postseason: the clubs in it). */
@@ -118,6 +121,7 @@ export const BOARD_ITEMS: Record<BoardItem, { min: number; max: number; step: nu
   lottery: { min: 0, max: 1, step: 1 },
   abs: { min: 0, max: 2, step: 1 },
   nationalManager: { min: 0, max: 1, step: 1 },
+  birdRule: { min: 0, max: 1, step: 1 },
 };
 
 /** The legacy start's board meets from the winter of today's game (before, the KBO's own history). */
@@ -170,6 +174,8 @@ export function currentValue(s: LeagueState, item: BoardItem, season: number): n
       return absLevel(season);
     case 'nationalManager':
       return fullTimeManager(season) ? 1 : 0;
+    case 'birdRule':
+      return birdRuleOn(season) ? 1 : 0;
   }
 }
 
@@ -277,6 +283,9 @@ function stance(item: BoardItem, up: boolean, c: { strength: number; rich: numbe
     case 'nationalManager':
       // A full-time manager: no club's manager is taken away; the strong clubs, whose manager it would be, most.
       return d * (0.1 + 0.3 * c.strength);
+    case 'birdRule':
+      // Keeping one's own stars over the cap: most clubs like it, the rich ones (with the stars to keep) most.
+      return d * (0.1 + 0.4 * (c.rich - 0.5));
   }
 }
 
@@ -311,7 +320,8 @@ export function playersView(item: BoardItem, up: boolean): number {
     case 'postseason':
       return 0.3 * d;
     case 'ghostRunner':
-      return 0.3 * d;
+    case 'birdRule':
+      return 0.3 * d; // birdRule: more money to stay at home
     case 'extras':
       return -0.3 * d;
     default:
@@ -382,6 +392,7 @@ export function committeeMotions(s: LeagueState, year: number): BoardMotion[] {
     { item: 'lottery', up: currentValue(s, 'lottery', next) === 0, weight: 0.4, push: 0.1 },
     { item: 'abs', up: currentValue(s, 'abs', next) < 2 && r() < 0.7, weight: 0.4, push: 0.05 },
     { item: 'nationalManager', up: currentValue(s, 'nationalManager', next) === 0, weight: 0.3, push: 0.1 },
+    { item: 'birdRule', up: currentValue(s, 'birdRule', next) === 0, weight: 0.3, push: 0.05 },
   ];
   const open = items(s, next);
   const out: BoardMotion[] = [];
@@ -539,6 +550,8 @@ export function motionText(m: Pick<BoardMotion, 'item' | 'value' | 'now'>): stri
       return __i18n_k("league.board.text.2877ed40", { now: absText(now), value: absText(value) });
     case 'nationalManager':
       return value ? __i18n_k("league.board.text.86c35ec6") : __i18n_k("league.board.text.5a49352e");
+    case 'birdRule':
+      return value ? __i18n_k("league.board.text.38fc6866") : __i18n_k("league.board.text.de40c341");
   }
 }
 
@@ -678,6 +691,8 @@ export function ruleLabel(item: BoardItem): string {
       return __i18n_k("league.board.text.4391b573");
     case 'nationalManager':
       return __i18n_k("league.board.text.cb0d5e9f");
+    case 'birdRule':
+      return __i18n_k("league.board.text.4ff2c0cb");
   }
 }
 

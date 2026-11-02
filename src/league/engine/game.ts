@@ -208,8 +208,9 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
   const home = makeSide(game.home),
     away = makeSide(game.away);
   const shape = game.layout ? layoutEffects(game.layout) : null;
-  const parkHr = shape ? shape.hr : Math.log(game.park) * 1.4,
-    parkBabip = shape ? shape.babip : Math.log(game.park) * 0.6;
+  // 2.0.70: the official ball's liveliness rides on the park's (ball.ts).
+  const parkHr = (shape ? shape.hr : Math.log(game.park) * 1.4) + (game.ball?.hr ?? 0),
+    parkBabip = (shape ? shape.babip : Math.log(game.park) * 0.6) + (game.ball?.babip ?? 0);
   // The last lead change: pitcher of record for the team that went ahead, and the pitcher charged with the go-ahead run.
   const state: { goAhead: { winnerApp: number; loserApp: number } | null } = { goAhead: null };
   let inning = 0;

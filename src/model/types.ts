@@ -137,6 +137,8 @@ export interface FaTerms {
   promises?: FaPromise[];
   spot?: FaSpot;
   kept?: Partial<Record<FaPromise, boolean>>;
+  /** 2.0.69 (bird.ts): re-signed by his own club under the Larry Bird rule; counts half against the salary cap. */
+  bird?: true;
 }
 
 export interface PlayerOrigin {

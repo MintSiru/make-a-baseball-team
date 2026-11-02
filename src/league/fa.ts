@@ -16,6 +16,7 @@ import type { FaPromise, FaSpot, FaTerms, IncentiveKind, Player, PlayerId, TeamI
 import { EXPANSION_DEFAULTS, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
 import { addAlert } from './alerts';
 import { bonusShare, renewSalary, salaryIn } from './contracts';
+import { BIRD, birdResign } from './bird';
 import { capTotal } from './cap';
 import { salaryCapOn } from './features';
 import { eulreul, iga, ro, wagwa } from './josa';
@@ -737,9 +738,11 @@ export function playRound(s: LeagueState, m: FaMarket, next: number): boolean {
   let touched = false;
   // AI clubs, each within its room under the cap less what it has on the table elsewhere.
   const tabled: Record<TeamId, number> = {};
+  // 2.0.69: his own club keeping him under the Larry Bird rule counts half of it and may go over the cap (bird.ts).
+  const hitOf = (t: FaTalk, c: TeamId, o: FaOffer) => capHit(o) * (birdResign(s.players[t.id]!, t.from, c, next) ? BIRD.share : 1);
   for (const id of m.order) {
     const t = m.talks[id]!;
-    if (isOpen(t)) for (const [c, o] of Object.entries(t.offers)) if (c !== me) tabled[c] = (tabled[c] ?? 0) + capHit(o);
+    if (isOpen(t)) for (const [c, o] of Object.entries(t.offers)) if (c !== me) tabled[c] = (tabled[c] ?? 0) + hitOf(t, c, o);
   }
   const onMarket = new Set(m.order.filter((id) => isOpen(m.talks[id]!)));
   const rooms: Record<TeamId, number> = {};
@@ -755,9 +758,9 @@ export function playRound(s: LeagueState, m: FaMarket, next: number): boolean {
       const bid = t.offers[c];
       // AI clubs stay under the salary cap: no offer (or a raise) that would take them over with what they
       // have on the table, and an offer made before other signings used the room is pulled.
-      const room = roomOf(c) - (tabled[c] ?? 0) + (bid ? capHit(bid) : 0);
-      if (full || (bid && capHit(bid) > room)) {
-        if (bid) tabled[c] = (tabled[c] ?? 0) - capHit(bid);
+      const room = birdResign(p, t.from, c, next) ? Infinity : roomOf(c) - (tabled[c] ?? 0) + (bid ? hitOf(t, c, bid) : 0);
+      if (full || (bid && hitOf(t, c, bid) > room)) {
+        if (bid) tabled[c] = (tabled[c] ?? 0) - hitOf(t, c, bid);
         delete t.offers[c];
         continue;
       }
@@ -770,13 +773,13 @@ export function playRound(s: LeagueState, m: FaMarket, next: number): boolean {
         }
         // Its first offer; when that does not fit under the cap, what he would take today, if that does.
         let o = aiOffer(t, p, it.open, r, next);
-        if (capHit(o) > room) {
+        if (hitOf(t, c, o) > room) {
           const k = it.open * (t.floor / Math.max(1, utility(s, t, c, o, next))) * 1.01;
           if (k < it.open) o = aiOffer(t, p, k, r, next);
         }
-        if (capHit(o) <= room) {
+        if (hitOf(t, c, o) <= room) {
           t.offers[c] = { ...o, day };
-          tabled[c] = (tabled[c] ?? 0) + capHit(o);
+          tabled[c] = (tabled[c] ?? 0) + hitOf(t, c, o);
         }
         continue;
       }
@@ -791,8 +794,8 @@ export function playRound(s: LeagueState, m: FaMarket, next: number): boolean {
             : 0;
       if (k) {
         const o = k <= it.most ? aiOffer(t, p, Math.min(k, it.most), r, next) : now < it.most ? aiOffer(t, p, it.most, r, next) : null;
-        if (o && capHit(o) <= room) {
-          tabled[c] = (tabled[c] ?? 0) - capHit(bid) + capHit(o);
+        if (o && hitOf(t, c, o) <= room) {
+          tabled[c] = (tabled[c] ?? 0) - hitOf(t, c, bid) + hitOf(t, c, o);
           t.offers[c] = { ...o, day };
         }
       }
@@ -810,7 +813,7 @@ export function playRound(s: LeagueState, m: FaMarket, next: number): boolean {
       // A club at its limit of outside signings cannot register him, and an AI club whose room under the cap
       // went to other signings pulls out: the next best.
       const cannot = (c: TeamId) =>
-        (outside(m, t, c) && (m.signedOut[c] ?? 0) >= limitOf(s, m, c)) || (c !== me && capHit(t.offers[c]!) > capRoomFor(s, c, next, onMarket) + FA.ai.capSlack);
+        (outside(m, t, c) && (m.signedOut[c] ?? 0) >= limitOf(s, m, c)) || (c !== me && !birdResign(p, t.from, c, next) && capHit(t.offers[c]!) > capRoomFor(s, c, next, onMarket) + FA.ai.capSlack);
       while (best && cannot(best.teamId)) {
         delete t.offers[best.teamId];
         best = leader(s, t, next);
@@ -950,6 +953,8 @@ export function signTalk(s: LeagueState, m: FaMarket, t: FaTalk, teamId: TeamId,
   p.teamId = teamId;
   s.rosters[teamId]!.futures.push(p.id);
   p.contract = faContract(teamId, next, o, p, reinforce?.kind === 'reinforce' ? reinforce.spot : undefined);
+  // 2.0.69: his own club keeping him under the Larry Bird rule (bird.ts).
+  if (birdResign(p, from, teamId, next)) p.contract!.fa!.bird = true;
   p.service.lastFreeAgencyAt = p.service.creditedSeasons;
   delete p.service.optionFree;
   t.signed = { teamId, day, offer: { ...o } };

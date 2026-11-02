@@ -69,6 +69,7 @@ import { alumniDay } from './alumni';
 import { familyDay, familyGame, pruneFamilies } from './family';
 import { featsGame } from './feats';
 import { boardValue } from './era';
+import { ballSeason, ballShift, ballTest } from './ball';
 import { boardLeagues, framingWeight } from './board';
 import { seasonMoods } from './contractmood';
 
@@ -97,6 +98,8 @@ export function startSeason(s: LeagueState) {
   // 1.9.5: a league that plays history plays its year's number of games (80 in 1982 … 144 from 2015).
   const games = s.historical || boardValue('games', s.year) !== undefined ? rulesFor(s.year).gamesPerClub : undefined;
   s.schedule = makeSchedule(teams, s.year, s.seed, twelve, games, !twelve && sides ? teams.map((id) => (sides[id] === 'dream' ? 0 : 1)) : undefined);
+  // 2.0.70 (the user's request): the season's official ball, livelier or deader now and then (ball.ts).
+  ballSeason(s, s.schedule[0]?.date ?? `${s.year}-03-28`);
   s.next = 0;
   s.scores = [];
   s.lines = {};
@@ -368,7 +371,9 @@ export function playGame(s: LeagueState, homeId: TeamId, awayId: TeamId, id: str
   const layout = host ? layoutOf(host) : undefined;
   // 2.0.17: the umpires (no ABS or challenges) let a catcher's framing count.
   const framing = framingWeight(s.year);
-  const input: GameIn = { gameId: id, home, away, maxInnings, park, balls, ...(layout ? { layout } : {}), ...(ghost ? { ghostFrom: 10 } : {}), ...(three ? { threeBatter: true } : {}), ...(framing ? { framing } : {}) };
+  // 2.0.70: the official ball (ball.ts).
+  const ball = ballShift(s, date);
+  const input: GameIn = { gameId: id, home, away, maxInnings, park, balls, ...(layout ? { layout } : {}), ...(ghost ? { ghostFrom: 10 } : {}), ...(three ? { threeBatter: true } : {}), ...(framing ? { framing } : {}), ...(ball ? { ball } : {}) };
   if (!rain) return simulateGame(input, gameRng(s, id), log);
   // 2.0.59: rain during the game (weather.ts). The game is drawn whole, then what the rain makes of it; a game called
   // with its score standing is drawn again to that point (the same draws, so the same game up to there).
@@ -439,6 +444,8 @@ export function playDay(s: LeagueState): boolean {
     monthNews(s, date);
     // 2.0.66 (the user's request): the coaches' month on our futures and reserve players (farmreport.ts).
     farmMonth(s, s.schedule[day - 1]!.date.slice(0, 7), date);
+    // 2.0.70 (the user's request): the KBO's June test of the official ball (ball.ts).
+    ballTest(s, date);
   }
   while (s.next < s.schedule.length && s.schedule[s.next]!.date === date) {
     const g = s.schedule[s.next]!;
