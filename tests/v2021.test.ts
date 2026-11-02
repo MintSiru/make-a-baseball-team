@@ -1,6 +1,7 @@
 /* 2.0.21: the salary cap leaves foreign players out (as the KBO does), and the FA market's cap line reads the same
    top-40 total as the season's settlement. */
 import { beforeAll, describe, expect, it } from 'vitest';
+import { birdShare } from '../src/league/bird';
 import { capTotal } from '../src/league/cap';
 import { capPay } from '../src/league/contracts';
 import { capRoomFor } from '../src/league/fa';
@@ -21,7 +22,8 @@ describe('the salary cap total', () => {
     const soldiers = Object.values(s.players).filter((p) => p.teamId === id && p.status === 'military');
     const domestic = [...orgPlayers(s, id), ...soldiers]
       .filter((p) => !isForeign(p))
-      .map((p) => capPay(p, y))
+      // 2.0.69: a Larry Bird re-signing counts half.
+      .map((p) => Math.round(capPay(p, y) * birdShare(p, y)))
       .sort((a, b) => b - a)
       .slice(0, 40)
       .reduce((a, b) => a + b, 0);

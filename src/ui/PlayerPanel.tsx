@@ -1182,6 +1182,11 @@ export function PlayerPanel({
                   {__i18n_display(p.contract?.usd
                     ? __i18n_k("ui.playerPanel.playerPanel.de99127a", { usd: usd(usdTotal(p.contract)), usd2: usd(p.contract.usd.bonus), usd3: usd(p.contract.usd.salary), usd4: usd(p.contract.usd.options) })
                     : money(card.salary))}
+                  {p.contract?.fa?.bird && (
+                    <span class="tag" title={__i18n_t("ui.playerPanel.text.8962f80e")}>
+                      {__i18n_t("ui.playerPanel.text.4ff2c0cb")}
+                    </span>
+                  )}
                 </dd>
               </div>
               <div>

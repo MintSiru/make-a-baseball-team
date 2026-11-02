@@ -10347,5 +10347,12 @@ export const koSource = {
   "league.returnees.text.6faa64e5": "2년 유예 동안 독립야구단",
   "ui.draftBoard.text.87004846": "병역 해결 · 계약금 없음",
   "ui.draftBoard.text.b668513b": "독립야구단 · 계약금 없음",
-  "ui.draftBoard.text.cf47bdcf": "해외 유턴"
+  "ui.draftBoard.text.cf47bdcf": "해외 유턴",
+  "league.board.text.38fc6866": "래리 버드 룰 도입 (자기 구단 FA 재계약은 샐러리캡 초과 허용·절반만 반영)",
+  "league.board.text.de40c341": "래리 버드 룰 폐지",
+  "league.board.text.4ff2c0cb": "래리 버드 룰",
+  "ui.faMarket.text.989fd56c": "래리 버드 룰: 재계약하면 샐러리캡을 넘겨도 되고, 연봉은 절반만 샐러리캡에 반영됩니다",
+  "ui.faMarket.text.250bedf2": "버드 권리",
+  "ui.playerPanel.text.8962f80e": "자기 구단 FA 재계약: 래리 버드 룰이 있는 동안 연봉의 절반만 샐러리캡에 반영됩니다",
+  "ui.playerPanel.text.4ff2c0cb": "래리 버드 룰"
 } as const;

@@ -8,6 +8,7 @@ import type { PlayerId, TeamId } from '../model/types';
 import { KBO_2026, salaryCapFor } from '../rules/kbo2026';
 import { addAlert } from './alerts';
 import { bonusShare, capPay, renewSalary } from './contracts';
+import { birdShare } from './bird';
 import { isForeign } from './players';
 import { firstTeamIds, orgPlayers, type LeagueState } from './state';
 
@@ -28,7 +29,11 @@ export function capTotal(s: LeagueState, teamId: TeamId, year: number, opts: { e
   const soldiers = Object.values(s.players).filter((p) => p.teamId === teamId && p.status === 'military');
   const pay = [...orgPlayers(s, teamId), ...soldiers]
     .filter((p) => !isForeign(p) && !opts.without?.has(p.id))
-    .map((p) => capPay(p, year) || (opts.estimate ? renewSalary(p, year) + bonusShare(p, year) : 0))
+    .map((p) => {
+      // 2.0.69: a deal under the Larry Bird rule counts half (bird.ts).
+      const pay = capPay(p, year);
+      return pay ? Math.round(pay * birdShare(p, year)) : opts.estimate ? renewSalary(p, year) + bonusShare(p, year) : 0;
+    })
     .sort((a, b) => b - a);
   return pay.slice(0, C.topPlayers).reduce((a, b) => a + b, 0);
 }

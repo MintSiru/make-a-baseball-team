@@ -10346,5 +10346,12 @@
   "league.returnees.text.6faa64e5": "an independent club over the two-year wait",
   "ui.draftBoard.text.87004846": "Military service done · no signing bonus",
   "ui.draftBoard.text.b668513b": "Independent club · no signing bonus",
-  "ui.draftBoard.text.cf47bdcf": "Back from abroad"
+  "ui.draftBoard.text.cf47bdcf": "Back from abroad",
+  "league.board.text.38fc6866": "the Larry Bird rule brought in (a club re-signing its own free agent may exceed the salary cap; half of it counts)",
+  "league.board.text.de40c341": "the Larry Bird rule abolished",
+  "league.board.text.4ff2c0cb": "Larry Bird rule",
+  "ui.faMarket.text.989fd56c": "Larry Bird rule: re-signing him may take us over the salary cap, and only half of his pay counts against it",
+  "ui.faMarket.text.250bedf2": "Bird rights",
+  "ui.playerPanel.text.8962f80e": "Re-signed by his own club as a free agent: while the Larry Bird rule stands, only half of his pay counts against the salary cap",
+  "ui.playerPanel.text.4ff2c0cb": "Larry Bird rule"
 }

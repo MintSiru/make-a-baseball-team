@@ -93011,5 +93011,47 @@
     "line": 142,
     "params": {},
     "locations": []
+  },
+  "league.board.text.38fc6866": {
+    "source": "src/league/board.ts",
+    "line": 554,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.de40c341": {
+    "source": "src/league/board.ts",
+    "line": 554,
+    "params": {},
+    "locations": []
+  },
+  "league.board.text.4ff2c0cb": {
+    "source": "src/league/board.ts",
+    "line": 695,
+    "params": {},
+    "locations": []
+  },
+  "ui.faMarket.text.989fd56c": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 278,
+    "params": {},
+    "locations": []
+  },
+  "ui.faMarket.text.250bedf2": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 279,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.8962f80e": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1186,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.4ff2c0cb": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1187,
+    "params": {},
+    "locations": []
   }
 }
