@@ -1042,4 +1042,20 @@ export const ALUMNI = {
   lesson: { delta: 3, days: 14 },
   reunion: { delta: 2, days: 10 },
   protest: { controversy: 65, chance: 0.02, fine: 200 },
+  /** 2.0.72 (the user's request): foreign staff — a former KBO foreign player (at least `seasons` first-team seasons,
+      `rest` winters since his last) or a foreign coach with no KBO past (`stranger`: the share of hires, from 1998 when
+      the league plays history). They ask `premium` more (the move, the interpreter), and each foreign head over a
+      foreign player's side (the manager, his coach) adds `adapt` to his adaptability, `kbo` more for one who played
+      here, up to `adaptMax`. Game assumptions. */
+  foreign: {
+    weight: 0.35,
+    seasons: 2,
+    rest: 1,
+    premium: 0.25,
+    stranger: { manager: 0.05, hitting: 0.06, pitching: 0.08, fielding: 0.06, analytics: 0.1 } as Partial<Record<string, number>>,
+    from: 1998,
+    adapt: 6,
+    kbo: 3,
+    adaptMax: 14,
+  },
 };

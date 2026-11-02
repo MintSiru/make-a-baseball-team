@@ -14,6 +14,7 @@ import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { addAlert } from './alerts';
 import { clubState } from './fans';
+import { foreignHired } from './foreignstaff';
 import { eunneun, eulreul, iga, ro, wagwa } from './josa';
 import { note, setForm } from './life';
 import { addNews } from './news';
@@ -75,12 +76,17 @@ export function alumniFor(s: LeagueState, role: StaffRole, year: number, exclude
   const [lo, hi] = ages(role);
   const busy = employedAlumni(s);
   const out: Alumnus[] = [];
+  const foreignOk = A.foreign.stranger[role] !== undefined;
   for (const p of Object.values(s.players)) {
-    if (p.status !== 'retired' || isForeign(p) || busy.has(p.id) || exclude.has(p.id) || rightsHeld(s, p.id)) continue;
+    // 2.0.72: a foreign player who went home after two or more KBO seasons may come back on the bench.
+    const foreign = isForeign(p);
+    if (foreign ? !foreignOk || (p.status !== 'overseas' && p.status !== 'retired') : p.status !== 'retired') continue;
+    if (busy.has(p.id) || exclude.has(p.id) || rightsHeld(s, p.id)) continue;
     if ((p.life?.offenses?.fixing ?? 0) > 0) continue;
     if (want !== 'any' && (want === 'pitcher') !== isPitcher(p)) continue;
     const age = ageIn(p, year);
     if (age < lo || age > hi || !firstTeam(p).length) continue;
+    if (foreign && (firstTeam(p).length < A.foreign.seasons || firstTeam(p).at(-1)!.year > year - A.foreign.rest)) continue;
     out.push({ p, fame: fameOf(s, p), club: mainClub(p) });
   }
   return out;
@@ -89,7 +95,7 @@ export function alumniFor(s: LeagueState, role: StaffRole, year: number, exclude
 const weightOf = (a: Alumnus, role: StaffRole, club: TeamId | null) => {
   const W = A.weight;
   const offenses = Object.values(a.p.life?.offenses ?? {}).some((n) => (n ?? 0) > 0);
-  return (W.base + (a.fame / 100) ** 2 * W.fame * (front(role) ? W.front : 1)) * (club && a.club === club ? W.ownClub : 1) * (offenses ? W.offense : 1);
+  return (W.base + (a.fame / 100) ** 2 * W.fame * (front(role) ? W.front : 1)) * (club && a.club === club ? W.ownClub : 1) * (offenses ? W.offense : 1) * (isForeign(a.p) ? A.foreign.weight : 1);
 };
 
 /** A former player for a hire, or null (a stranger is hired, as before 1.4.0). */
@@ -140,12 +146,13 @@ export function alumnusStaff(s: LeagueState, a: Alumnus, role: StaffRole, key: s
     role,
     rating,
     age: ageIn(a.p, year),
-    salary: Math.round((salaryOf(role, rating) * (1 + (a.fame / 100) * A.famePremium)) / 1000) * 1000,
+    salary: Math.round((salaryOf(role, rating) * (1 + (a.fame / 100) * A.famePremium) * (isForeign(a.p) ? 1 + A.foreign.premium : 1)) / 1000) * 1000,
     until: year + 1 + Math.floor(r() * (role === 'manager' ? 3 : 2)),
     ...(role === 'manager' ? { style: styleOf(a.p, r) } : {}),
     playerId: a.p.id,
     ...(a.club ? { club: a.club } : {}),
     fame: a.fame,
+    ...(isForeign(a.p) ? { foreign: a.p.origin.nationality ?? a.p.birthplace ?? '' } : {}),
   };
 }
 
@@ -178,6 +185,8 @@ const ROLE_WORD: Partial<Record<StaffRole, string>> = { manager: __i18n_k("leagu
 
 /** A club hired a former player: the article (a manager, or a legend in any post), and the fans when it is ours. */
 export function alumnusHired(s: LeagueState, teamId: TeamId, m: StaffMember, date: string) {
+  // 2.0.72: a foreign head's own article, when this one does not tell it.
+  if (m.foreign) foreignHired(s, teamId, m, date, { told: !!m.playerId && (m.role === 'manager' || isLegend(m)), word: ROLE_WORD[m.role] ?? __i18n_k("league.alumni.alumnusHired.word.c6e93014"), line: alumnusLine(s, m) });
   if (!m.playerId || !s.user) return;
   const ours = teamId === s.user.teamId;
   const legend = isLegend(m);

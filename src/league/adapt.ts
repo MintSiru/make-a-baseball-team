@@ -10,6 +10,7 @@ import { k as __i18n_k } from '../i18n/index';
 import { hashUnit, rng } from '../draftroom';
 import type { Player } from '../model/types';
 import { kboSeasons } from './foreigncap';
+import { foreignStaffHelp } from './foreignstaff';
 import { iga } from './josa';
 import { addNews } from './news';
 import { isForeign, isPitcher } from './players';
@@ -66,7 +67,8 @@ export function adaptDay(s: LeagueState, date: string) {
     for (const p of orgPlayers(s, teamId)) {
       if (!isForeign(p) || p.adaptFail || kboSeasons(p, s.year) > 0) continue;
       const r = rng(`${s.seed}|adapt|${p.id}|${date}`);
-      if (r() >= failChance(adaptabilityOf(p))) continue;
+      // 2.0.72: the club's foreign manager and coach help him settle.
+      if (r() >= failChance(adaptabilityOf(p) + foreignStaffHelp(s, teamId, isPitcher(p)))) continue;
       const delta = ADAPT.drop[0] + Math.floor(r() * (ADAPT.drop[1] - ADAPT.drop[0] + 1));
       p.adaptFail = { year: s.year, date, delta };
       const mine = teamId === s.user?.teamId;

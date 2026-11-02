@@ -10392,5 +10392,15 @@
   "ui.draftBoard.text.a7cce0e4": "Local high school",
   "ui.draftBoard.text.9cbb9e67": "High-school players from our region: our territorial pick may take them first.",
   "ui.draftBoard.text.8ff0fba2": "High-school players from our region (there is no territorial pick now, so they are drafted like anyone else).",
-  "ui.draftBoard.text.da997f05": "{label}: {n}"
+  "ui.draftBoard.text.da997f05": "{label}: {n}",
+  "league.foreignstaff.text.712738e9": "{club} names foreign manager {name}",
+  "league.foreignstaff.text.7cbd5b6f": "{name} returns to {club} as {word}",
+  "league.foreignstaff.text.a557266d": "{club} hires foreign {word} {name}",
+  "league.foreignstaff.text.ca905e37": "{club} brought back {name}, who played here as a foreign player, as {word}. {line}",
+  "league.foreignstaff.text.5260cf28": "{club} appointed {name} from {nation} as {word}. An interpreter will be beside him in the dugout.",
+  "league.foreignstaff.text.3c7d8520": "It is an honour to wear this uniform again. I will pass on the Korean baseball I learned here.",
+  "league.foreignstaff.text.6bad5455": "I respect Korean baseball. I will talk with the players a lot.",
+  "ui.alumni.text.388c5757": "Foreign staff: helps foreign players settle in their first season (the manager all of them, the pitching and hitting coaches their own side)",
+  "ui.alumni.text.d8cf0529": "Foreign · {nation}",
+  "ui.office.text.4fd9a450": "Clubs also hire former KBO foreign players or foreign coaches as managers and coaches; foreign staff help foreign players settle in their first season."
 }

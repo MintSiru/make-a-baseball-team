@@ -522,7 +522,7 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
 
       {__i18n_display(section === 'staff' && club && (
         <>
-          <p class="muted">{__i18n_t("ui.office.office.719f91f5")}</p>
+          <p class="muted">{__i18n_t("ui.office.office.719f91f5")} {__i18n_t("ui.office.text.4fd9a450")}</p>
           <div class="table-wrap" tabIndex={0}>
             <table class="record-table">
               <thead>
