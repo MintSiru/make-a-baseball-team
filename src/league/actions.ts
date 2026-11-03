@@ -22,6 +22,7 @@ import { setTempKeep, signTemp } from './tempforeign';
 import { movePlayer, registerPlayer, setLineupCard, setRole, today } from './entry';
 import type { BullpenRole } from './engine/types';
 import { ensureNumbers, retireNumberByGm, setNumber } from './numbers';
+import { setBirdPick } from './bird';
 import { setNickname } from './nicknames';
 import { addTie, editPlayer, removeTie, type PlayerEdit, type Relation } from './editor';
 import { editAbility, type AbilityEdit } from './abilityedit';
@@ -187,6 +188,8 @@ export type Action =
   | { kind: 'trainingIntensity'; ids: PlayerId[]; intensity: Intensity }
   /** 2.0.64: the general manager retires a retired player's number (numbers.ts). */
   | { kind: 'retireNumber'; id: PlayerId }
+  /** 2.0.73: our Larry Bird player for next season (bird.ts). */
+  | { kind: 'birdPick'; id: PlayerId }
   | { kind: 'postingMax'; max: number | null }
   | { kind: 'capForfeit'; on: boolean }
   | { kind: 'dynamicDifficulty'; on: boolean }
@@ -215,7 +218,7 @@ function finishOffseason(s: LeagueState) {
 
 /** What the player can still do while the game waits for a decision: the front office (tickets,
     marketing, ballpark), the news, reading alerts and the tutorial. Everything else waits. */
-const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'position', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'devForeign', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'askBudget', 'twoLeaguePlayoffs', 'sixMan', 'favorite', 'notForSale', 'tradeBlock', 'futuresOnly', 'trainingPlan', 'trainingIntensity', 'retireNumber', 'toDevelopment', 'abilityEditor', 'editAbility', 'discipline', 'sponsorSchool', 'spend', 'asiaSeries'];
+const WHILE_WAITING: Action['kind'][] = ['autoPrep', 'clearTrips', 'stops', 'signPool', 'devSend', 'wrapCamp', 'rogue', 'ticketPrice', 'marketing', 'stadiumProject', 'renameStadium', 'clubNames', 'difficulty', 'board', 'interview', 'gameStory', 'storyText', 'alertsSeen', 'tutorial', 'lineupCard', 'twelveSetting', 'trip', 'facility', 'number', 'nickname', 'editPlayer', 'familyTie', 'switchSide', 'position', 'leagueRule', 'inspect', 'seasonTickets', 'allStarCampaign', 'foreignVeteran', 'devForeign', 'retiredBar', 'travelFatigue', 'postingMax', 'capForfeit', 'dynamicDifficulty', 'addCondition', 'workout', 'extend', 'captains', 'staffExtend', 'askOwner', 'askBudget', 'twoLeaguePlayoffs', 'sixMan', 'favorite', 'notForSale', 'tradeBlock', 'futuresOnly', 'trainingPlan', 'trainingIntensity', 'retireNumber', 'birdPick', 'toDevelopment', 'abilityEditor', 'editAbility', 'discipline', 'sponsorSchool', 'spend', 'asiaSeries'];
 export const allowedWhileWaiting = (action: Action) => action.kind === 'decide' || WHILE_WAITING.includes(action.kind);
 
 export function apply(s: LeagueState, action: Action): LeagueState {
@@ -511,6 +514,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'retireNumber':
       retireNumberByGm(s, action.id);
+      break;
+    case 'birdPick':
+      setBirdPick(s, action.id);
       break;
     case 'discipline':
       gmDiscipline(s, action.id, action.days, today(s));

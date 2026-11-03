@@ -2,6 +2,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 /* A league player's page (V0.5.1 layout; in parts since 1.4.0): who he is and his latest season at a glance on top,
    then one part at a time — scouting grades as bars with positions or pitches, records, the staff's read, his
    background and injuries. Everything shown is public: grades are scouting reports, velocity is the radar gun. */
+import { birdSeason, isBirdPick } from '../league/bird';
 import { moveHistory, type MoveKind } from '../league/moves';
 import { NameLinks } from './NameLinks';
 import { headlineHonors, honorCounts } from '../league/honorcount';
@@ -1223,8 +1224,8 @@ export function PlayerPanel({
                   {__i18n_display(p.contract?.usd
                     ? __i18n_k("ui.playerPanel.playerPanel.de99127a", { usd: usd(usdTotal(p.contract)), usd2: usd(p.contract.usd.bonus), usd3: usd(p.contract.usd.salary), usd4: usd(p.contract.usd.options) })
                     : money(card.salary))}
-                  {p.contract?.fa?.bird && (
-                    <span class="tag" title={__i18n_t("ui.playerPanel.text.8962f80e")}>
+                  {isBirdPick(league, p) && (
+                    <span class="tag" title={__i18n_t("ui.playerPanel.text.9f06a735", { season: birdSeason(league) })}>
                       {__i18n_t("ui.playerPanel.text.4ff2c0cb")}
                     </span>
                   )}

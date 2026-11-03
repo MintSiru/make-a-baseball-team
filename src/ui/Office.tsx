@@ -27,6 +27,7 @@ import { money } from './format';
 import { eulreul } from '../league/josa';
 import { Help } from './Help';
 import { BudgetAsk } from './BudgetAsk';
+import { BirdPick } from './BirdPick';
 import { Gauges, type Gauge } from './next/Gauges';
 import { useUi } from './useDisplay';
 import { RivalryBox, TwelveSettingField } from './Twelve';
@@ -274,6 +275,8 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
                 </dl>
                 <BudgetAsk league={league} onAct={onAct} why />
               </section>
+              {/* 2.0.73: our Larry Bird player (bird.ts). */}
+              {firstTeamIds(league).includes(u.teamId) && <BirdPick league={league} onAct={onAct} box />}
             </div>
           </div>
         </>
@@ -325,6 +328,8 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
               <p class="card-sub">{__i18n_t("ui.office.office.a5785887", { money: money(salaryCapFor(league.year)), value: capFloorFor(league.year) ? __i18n_k("ui.office.office.75c3db8c", { money: money(capFloorFor(league.year)!) }) : '' })}</p>
             </div>
           ))}
+          {/* 2.0.73: our Larry Bird player (bird.ts). */}
+          {firstTeamIds(league).includes(u.teamId) && <BirdPick league={league} onAct={onAct} />}
           {__i18n_display(firstTeamIds(league).includes(u.teamId) && league.phase === 'regular' && foreignCapOn(league.year) && (
             <div class="card">
               <p class="card-label">{__i18n_t("ui.office.office.2f4e295b")}</p>

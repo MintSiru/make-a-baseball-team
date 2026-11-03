@@ -26,6 +26,17 @@ export function setEra(from: { era?: number; historical?: boolean; board?: { cha
   board = (typeof from === 'object' && from?.board?.changes) || [];
 }
 
+/** 2.0.73: `fn` under another league's calendar and board (a save being carried forward), the current ones kept. */
+export function withEra<T>(from: Parameters<typeof setEra>[0], fn: () => T): T {
+  const keep = { shift, historical, board };
+  setEra(from);
+  try {
+    return fn();
+  } finally {
+    ({ shift, historical, board } = keep);
+  }
+}
+
 /** 2.0.13 (board.ts setRule): the board's changes alone, for a moment, keeping the calendar. */
 export function setEraBoard(changes: readonly { from: number; item: string; value: number }[]) {
   board = changes;

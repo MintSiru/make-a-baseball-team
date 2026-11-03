@@ -93012,12 +93012,6 @@
     "params": {},
     "locations": []
   },
-  "league.board.text.38fc6866": {
-    "source": "src/league/board.ts",
-    "line": 554,
-    "params": {},
-    "locations": []
-  },
   "league.board.text.de40c341": {
     "source": "src/league/board.ts",
     "line": 554,
@@ -93027,24 +93021,6 @@
   "league.board.text.4ff2c0cb": {
     "source": "src/league/board.ts",
     "line": 695,
-    "params": {},
-    "locations": []
-  },
-  "ui.faMarket.text.989fd56c": {
-    "source": "src/ui/FaMarket.tsx",
-    "line": 278,
-    "params": {},
-    "locations": []
-  },
-  "ui.faMarket.text.250bedf2": {
-    "source": "src/ui/FaMarket.tsx",
-    "line": 279,
-    "params": {},
-    "locations": []
-  },
-  "ui.playerPanel.text.8962f80e": {
-    "source": "src/ui/PlayerPanel.tsx",
-    "line": 1186,
     "params": {},
     "locations": []
   },
@@ -93492,6 +93468,144 @@
     "source": "src/ui/Office.tsx",
     "line": 525,
     "params": {},
+    "locations": []
+  },
+  "league.bird.text.955b4cc0": {
+    "source": "src/league/bird.ts",
+    "line": 83,
+    "params": {
+      "season": {
+        "expression": "season"
+      }
+    },
+    "locations": []
+  },
+  "league.bird.text.921b37b5": {
+    "source": "src/league/bird.ts",
+    "line": 85,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "n": {
+        "expression": "seasonsWith(p, me, season - 1)"
+      },
+      "saving": {
+        "expression": "eok(birdSaving(p, season))"
+      }
+    },
+    "locations": []
+  },
+  "league.bird.text.4e7a393c": {
+    "source": "src/league/bird.ts",
+    "line": 85,
+    "params": {},
+    "locations": []
+  },
+  "league.bird.text.c81be5bd": {
+    "source": "src/league/bird.ts",
+    "line": 86,
+    "params": {
+      "seasons": {
+        "expression": "BIRD.seasons"
+      }
+    },
+    "locations": []
+  },
+  "league.board.text.c9fd292d": {
+    "source": "src/league/board.ts",
+    "line": 554,
+    "params": {},
+    "locations": []
+  },
+  "ui.birdPick.text.398a48b1": {
+    "source": "src/ui/BirdPick.tsx",
+    "line": 24,
+    "params": {
+      "season": {
+        "expression": "season"
+      }
+    },
+    "locations": []
+  },
+  "ui.birdPick.text.897e4f32": {
+    "source": "src/ui/BirdPick.tsx",
+    "line": 26,
+    "params": {
+      "n": {
+        "expression": "BIRD.seasons"
+      }
+    },
+    "locations": []
+  },
+  "ui.birdPick.text.bf9b137d": {
+    "source": "src/ui/BirdPick.tsx",
+    "line": 32,
+    "params": {
+      "n": {
+        "expression": "seasonsWith(p, me, season - 1)"
+      },
+      "pay": {
+        "expression": "money(capPay(p, season))"
+      },
+      "saving": {
+        "expression": "money(birdSaving(p, season))"
+      }
+    },
+    "locations": []
+  },
+  "ui.birdPick.text.9e07df19": {
+    "source": "src/ui/BirdPick.tsx",
+    "line": 33,
+    "params": {
+      "n": {
+        "expression": "BIRD.seasons"
+      }
+    },
+    "locations": []
+  },
+  "ui.birdPick.text.530b42c6": {
+    "source": "src/ui/BirdPick.tsx",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "ui.birdPick.text.08c74bfd": {
+    "source": "src/ui/BirdPick.tsx",
+    "line": 41,
+    "params": {
+      "name": {
+        "expression": "q.name"
+      },
+      "n": {
+        "expression": "seasonsWith(q, me, season - 1)"
+      },
+      "saving": {
+        "expression": "money(birdSaving(q, season))"
+      }
+    },
+    "locations": []
+  },
+  "ui.birdPick.text.4becf155": {
+    "source": "src/ui/BirdPick.tsx",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "ui.birdPick.text.f14b4a47": {
+    "source": "src/ui/BirdPick.tsx",
+    "line": 47,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.9f06a735": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1228,
+    "params": {
+      "season": {
+        "expression": "birdSeason(league)"
+      }
+    },
     "locations": []
   }
 }

@@ -36,6 +36,7 @@ import { medicalReview, socialOnly } from './military';
 import { ageIn, currentValue, draftClass, futureValue, isForeign, isPitcher, keepValue, makeForeign } from './players';
 import { currentStandings } from './season';
 import { queuedDecision } from './market';
+import { nameBirds, settleBirds } from './bird';
 import { closeMarket, judgeReinforcePromises, judgeStarterPromises, openMarket, payIncentives, playRound, roundDecision, settlePeriodOptions } from './fa';
 import { aiTrades, applyPickTrades, clearPool } from './trade';
 import { applyPickDrop, settleCap } from './cap';
@@ -1098,6 +1099,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
       }
       case 'renew':
         renewContracts(s, next);
+        // 2.0.73: the free agents signed and the salaries set, each club names its Larry Bird player (bird.ts).
+        nameBirds(s, next);
         break;
       case 'draft': {
         // 판타지 드래프트 (1.6.0): the whole league and this year's class, in place of the rookie draft.
@@ -1171,6 +1174,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         // The March tournament's squad is named before camp ends (V0.12).
         winterSquads(s, marchEvents(next));
         judgeReinforcePromises(s, o.fa, next);
+        // 2.0.73: the Larry Bird players stand for the season (bird.ts).
+        settleBirds(s, next);
         break;
     }
     o.step++;

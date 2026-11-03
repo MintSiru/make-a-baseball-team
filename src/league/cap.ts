@@ -30,9 +30,9 @@ export function capTotal(s: LeagueState, teamId: TeamId, year: number, opts: { e
   const pay = [...orgPlayers(s, teamId), ...soldiers]
     .filter((p) => !isForeign(p) && !opts.without?.has(p.id))
     .map((p) => {
-      // 2.0.69: a deal under the Larry Bird rule counts half (bird.ts).
+      // 2.0.73: the player the club named under the Larry Bird rule counts half (bird.ts).
       const pay = capPay(p, year);
-      return pay ? Math.round(pay * birdShare(p, year)) : opts.estimate ? renewSalary(p, year) + bonusShare(p, year) : 0;
+      return pay ? Math.round(pay * birdShare(s, p, year)) : opts.estimate ? renewSalary(p, year) + bonusShare(p, year) : 0;
     })
     .sort((a, b) => b - a);
   return pay.slice(0, C.topPlayers).reduce((a, b) => a + b, 0);

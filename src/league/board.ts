@@ -284,7 +284,7 @@ function stance(item: BoardItem, up: boolean, c: { strength: number; rich: numbe
       // A full-time manager: no club's manager is taken away; the strong clubs, whose manager it would be, most.
       return d * (0.1 + 0.3 * c.strength);
     case 'birdRule':
-      // Keeping one's own stars over the cap: most clubs like it, the rich ones (with the stars to keep) most.
+      // Half of one long-serving star's pay off the cap: most clubs like it, the rich ones (with the stars to keep) most.
       return d * (0.1 + 0.4 * (c.rich - 0.5));
   }
 }
@@ -551,7 +551,7 @@ export function motionText(m: Pick<BoardMotion, 'item' | 'value' | 'now'>): stri
     case 'nationalManager':
       return value ? __i18n_k("league.board.text.86c35ec6") : __i18n_k("league.board.text.5a49352e");
     case 'birdRule':
-      return value ? __i18n_k("league.board.text.38fc6866") : __i18n_k("league.board.text.de40c341");
+      return value ? __i18n_k("league.board.text.c9fd292d") : __i18n_k("league.board.text.de40c341");
   }
 }
 
