@@ -766,6 +766,10 @@ export interface LeagueState {
   postingMax?: number;
   /** 2.0.24 (cap.ts): a game option — clubs far or long over the salary cap lose their next first-round pick. */
   capForfeit?: boolean;
+  /** 2.0.74 (foreignfa.ts): a game option — long-serving foreign players may declare free agency. */
+  foreignFa?: boolean;
+  /** 2.0.74 (ball.ts): a game option — the official ball's coefficient set by hand (none: the winters' events). */
+  ballManual?: number;
   /** 2.0.25 (dynamic.ts): a game option — the difficulty moves with how our club is doing. */
   dynamicDifficulty?: boolean;
   /** 2.0.26 (dynasty.ts): the anti-dynasty alliance standing, and this winter's balance fund shares. */

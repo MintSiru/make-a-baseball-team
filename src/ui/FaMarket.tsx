@@ -146,7 +146,8 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
   const cap = salaryCapFor(next);
   const capNow = cap - capRoomFor(league, me, next, new Set(talks.filter((t) => !t.signed && !t.gone).map((t) => t.id)));
   const capAdd = Object.values(mine).reduce((a, o) => a + capHit(o), 0);
-  const outside = Object.keys(mine).filter((id) => m.talks[id]!.from !== me).length;
+  // 2.0.74: a foreign free agent is not one of the outside signings (foreignfa.ts).
+  const outside = Object.keys(mine).filter((id) => m.talks[id]!.from !== me && !m.talks[id]!.foreign).length;
   const room = m.userLimit - (m.signedOut[me] ?? 0);
   const nextDay = FA.rounds[m.round + 1];
 
@@ -272,6 +273,11 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
                           {__i18n_display(p.name)}
                         </button>
                         {__i18n_display(t.from === me && <span class="tag">{__i18n_t("ui.faMarket.faMarket.466570d3")}</span>)}
+                        {t.foreign && (
+                          <span class="tag" title={__i18n_t("ui.faMarket.text.f115581a")}>
+                            {__i18n_t("ui.faMarket.text.49afcbc8")}
+                          </span>
+                        )}
                         {/* 2.0.48 (the user's requests): our own free agent's standing with our fans, and anyone still owing his service. */}
                         {t.from === me && (
                           <span class="muted small" title={__i18n_t("ui.faMarket.text.b372f393")}>

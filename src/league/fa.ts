@@ -26,6 +26,8 @@ import { freeAgentsFor, leaveLeague, removeFromRoster } from './offseason';
 import { joinMlb, joinNpb } from './mlb';
 import { mlbMarket, npbMarket } from './posting';
 import { usd } from './foreign';
+import { asForeignDeal, foreignRoomAt } from './foreignfa';
+import { toForeignPool } from './foreignpool';
 import { addNews } from './news';
 import { ageIn, currentValue, isForeign, isPitcher, keepValue } from './players';
 import { firstTeamIds, orgPlayers, registeredIds, type LeagueState, aiFoundingClubs } from './state';
@@ -80,8 +82,10 @@ export interface FaTalk {
   id: PlayerId;
   from: TeamId;
   grade: FaGrade;
-  /** No compensation: his period option was declined or he opted out. */
+  /** No compensation: his period option was declined or he opted out (2.0.74: or a foreign player declared). */
   free?: boolean;
+  /** 2.0.74 (foreignfa.ts): a foreign player who declared, under the game option. */
+  foreign?: true;
   /** What the market would call a fair deal for him. */
   price: FaOffer;
   /** What he asks (in value, see offerValue), and what he takes today. */
@@ -543,6 +547,8 @@ function appetite(s: LeagueState, teamId: TeamId, t: FaTalk, p: Player, next: nu
   if (!own && ageIn(p, next) >= 34) chance *= 0.6;
   // 2.0.24: a superteam does not chase a player who would never come.
   if (!own && t.demands.some((d) => d.kind === 'noSuperteam') && superteams(s, next).includes(teamId)) chance = 0;
+  // 2.0.74: a foreign free agent only where a foreign place is open (foreignfa.ts).
+  if (!own && t.foreign && foreignRoomAt(s, teamId, next) <= 0) chance = 0;
   // The twelfth club's front office (V0.9) goes after free agents in its own way; in its founding winter it
   // owes no compensation.
   const style = gmAppetite(gmOf(s, teamId), ageIn(p, next));
@@ -611,9 +617,11 @@ export function openMarket(s: LeagueState, next: number): FaMarket {
   // 1.9.3: a few of the best leave for Japan before the market opens.
   toJapan(s, next);
   const fas = freeAgentsFor(s, next);
-  const grades = faGrades(s, next, fas);
+  // 2.0.74: foreign players who declared (foreignfa.ts) take no part in the grades or the clubs' outside limit.
+  const home = fas.filter((p) => !isForeign(p));
+  const grades = faGrades(s, next, home);
   const entering = !!u && next === u.firstTeamYear;
-  const limit = externalLimit(fas.length);
+  const limit = externalLimit(home.length);
   const m: FaMarket = {
     year,
     round: 0,
@@ -635,12 +643,14 @@ export function openMarket(s: LeagueState, next: number): FaMarket {
     const war = recentWar(p);
     const greed = lerp(FA.greed, r()) + (war >= 4 ? 0.04 : 0);
     const ask = offerValue(price) * greed;
-    const free = p.service.optionFree === year;
+    const foreign = isForeign(p);
+    const free = p.service.optionFree === year || foreign;
     const t: FaTalk = {
       id: p.id,
       from: p.teamId!,
       grade: free ? 'C' : (grades[p.id] ?? 'C'),
       ...(free ? { free: true } : {}),
+      ...(foreign ? { foreign: true as const } : {}),
       price,
       ask,
       floor: ask * FA.floorStart,
@@ -723,7 +733,7 @@ const isOpen = (t: FaTalk) => !t.signed && !t.gone;
     since they were drafted drops out, instead of blocking the next round. */
 export const openDrafts = <T>(m: FaMarket, drafts: Record<PlayerId, T>): Record<PlayerId, T> =>
   Object.fromEntries(Object.entries(drafts).filter(([id]) => !!m.talks[id] && isOpen(m.talks[id]!)));
-const outside = (m: FaMarket, t: FaTalk, teamId: TeamId) => teamId !== t.from;
+const outside = (m: FaMarket, t: FaTalk, teamId: TeamId) => teamId !== t.from && !t.foreign;
 const limitOf = (s: LeagueState, m: FaMarket, teamId: TeamId) => (teamId === s.user?.teamId ? m.userLimit : teamId === m.newClub || m.northClubs?.includes(teamId) ? EXPANSION_DEFAULTS.freeAgentSigns : m.limit);
 
 /** Plays the next round: AI clubs bid, raise or pull out, then every player decides. Returns whether anything
@@ -810,7 +820,9 @@ export function playRound(s: LeagueState, m: FaMarket, next: number): boolean {
       // A club at its limit of outside signings cannot register him, and an AI club whose room under the cap
       // went to other signings pulls out: the next best.
       const cannot = (c: TeamId) =>
-        (outside(m, t, c) && (m.signedOut[c] ?? 0) >= limitOf(s, m, c)) || (c !== me && capHit(t.offers[c]!) > capRoomFor(s, c, next, onMarket) + FA.ai.capSlack);
+        (outside(m, t, c) && (m.signedOut[c] ?? 0) >= limitOf(s, m, c)) ||
+        (c !== me && capHit(t.offers[c]!) > capRoomFor(s, c, next, onMarket) + FA.ai.capSlack) ||
+        (!!t.foreign && c !== t.from && foreignRoomAt(s, c, next) <= 0);
       while (best && cannot(best.teamId)) {
         delete t.offers[best.teamId];
         best = leader(s, t, next);
@@ -950,12 +962,14 @@ export function signTalk(s: LeagueState, m: FaMarket, t: FaTalk, teamId: TeamId,
   p.teamId = teamId;
   s.rosters[teamId]!.futures.push(p.id);
   p.contract = faContract(teamId, next, o, p, reinforce?.kind === 'reinforce' ? reinforce.spot : undefined);
+  // 2.0.74: a foreign player's deal counts in dollars against the foreign salary cap too (foreignfa.ts).
+  if (t.foreign) p.contract = asForeignDeal(p.contract!, o);
   p.service.lastFreeAgencyAt = p.service.creditedSeasons;
   delete p.service.optionFree;
   t.signed = { teamId, day, offer: { ...o } };
   delete t.decideOn;
   t.offers = {};
-  if (teamId !== from) m.signedOut[teamId] = (m.signedOut[teamId] ?? 0) + 1;
+  if (outside(m, t, teamId)) m.signedOut[teamId] = (m.signedOut[teamId] ?? 0) + 1;
   const year = m.year;
   const gift = m.gift?.id === p.id && teamId === me;
   if (u && teamId === me) {
@@ -1010,7 +1024,7 @@ export function signTalk(s: LeagueState, m: FaMarket, t: FaTalk, teamId: TeamId,
 function closeUnsigned(s: LeagueState, m: FaMarket, t: FaTalk, day: number, next: number) {
   const p = s.players[t.id]!;
   const me = s.user?.teamId;
-  if (t.from !== me && keepValue(p, next) >= 40) {
+  if (t.from !== me && keepValue(p, next) >= 40 && !t.foreign) {
     const o = splitOffer((guaranteed(t.price) / t.price.years) * 0.7, 1, 0, 0, next);
     signTalk(s, m, t, t.from, o, day, next);
     return;
@@ -1018,6 +1032,11 @@ function closeUnsigned(s: LeagueState, m: FaMarket, t: FaTalk, day: number, next
   t.gone = true;
   if (me && t.from === me) (s.user!.log ??= []).push({ year: m.year, text: __i18n_k("league.fa.closeUnsigned.text.0971c548", { name: p.name }) });
   m.news.push({ day, text: __i18n_k("league.fa.closeUnsigned.text.83bc90ee", { name: p.name }), ...(t.from === me ? { mine: true } : {}) });
+  // 2.0.74: a foreign free agent nobody signed joins the market of KBO-experienced foreigners, or goes home.
+  if (t.foreign) {
+    if (!toForeignPool(s, p, m.year)) leaveLeague(s, p, 'overseas');
+    return;
+  }
   noteMove(s, p, 'unsigned', t.from, null);
   removeFromRoster(s, p);
   p.teamId = null;
@@ -1176,9 +1195,12 @@ export function checkRound(s: LeagueState, m: FaMarket, input: RoundInput, next:
   }
   const offers = offersAfter(s, m, input);
   const me = u.teamId;
-  const outsideOffers = Object.keys(offers).filter((id) => m.talks[id]!.from !== me).length;
+  const outsideOffers = Object.keys(offers).filter((id) => m.talks[id]!.from !== me && !m.talks[id]!.foreign).length;
   const room = m.userLimit - (m.signedOut[me] ?? 0);
   if (outsideOffers > room) return __i18n_k("league.fa.checkRound.db8686c6", { userLimit: m.userLimit, value: Math.max(0, room) });
+  // 2.0.74: foreign free agents of other clubs only into our open foreign places (foreignfa.ts).
+  const foreignOffers = Object.keys(offers).filter((id) => m.talks[id]!.foreign && m.talks[id]!.from !== me).length;
+  if (foreignOffers > 0 && foreignOffers > foreignRoomAt(s, me, next)) return __i18n_k("league.fa.text.76b4b593", { n: Math.max(0, foreignRoomAt(s, me, next)) });
   const c = openCommitments(s, m, offers);
   if (c.budget > 0 && payrollBeforeOffers(s, m, next) + c.budget > u.payrollBudget)
     return __i18n_k("league.fa.checkRound.c11b3b7a", { next: next, eok: eok(payrollBeforeOffers(s, m, next) + c.budget - u.payrollBudget) });

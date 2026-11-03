@@ -37,6 +37,7 @@ import { ageIn, currentValue, draftClass, futureValue, isForeign, isPitcher, kee
 import { currentStandings } from './season';
 import { queuedDecision } from './market';
 import { nameBirds, settleBirds } from './bird';
+import { isForeignFreeAgent } from './foreignfa';
 import { closeMarket, judgeReinforcePromises, judgeStarterPromises, openMarket, payIncentives, playRound, roundDecision, settlePeriodOptions } from './fa';
 import { aiTrades, applyPickTrades, clearPool } from './trade';
 import { applyPickDrop, settleCap } from './cap';
@@ -513,7 +514,8 @@ export function payroll(s: LeagueState, teamId: TeamId, season: number) {
 /** Players who reach free agency this winter and have a market (the rest re-sign as usual). */
 export function freeAgentsFor(s: LeagueState, next: number): Player[] {
   return Object.values(s.players)
-    .filter((p) => isFreeAgent(p, next))
+    // 2.0.74: and, under the game option, long-serving foreign players (foreignfa.ts).
+    .filter((p) => isFreeAgent(p, next) || isForeignFreeAgent(s, p, next))
     .filter((p) => p.scouting.current >= O.freeAgency.minGrade || (lastRecord(p, next - 1)?.war ?? 0) >= 1 || p.service.optionFree === next - 1)
     .sort((a, b) => b.scouting.current - a.scouting.current);
 }
@@ -843,7 +845,8 @@ export function foreignLeaves(s: LeagueState, p: Player, next: number) {
 }
 
 export function renewForeigners(s: LeagueState, teamId: TeamId, next: number, r: () => number) {
-  const current = orgPlayers(s, teamId).filter((p) => isForeign(p) && !isDevForeign(p));
+  // 2.0.74: one signed for next season already (a foreign free agent, foreignfa.ts) stays as he is.
+  const current = orgPlayers(s, teamId).filter((p) => isForeign(p) && !isDevForeign(p) && !p.contract?.salaries.some((x) => x.season >= next));
   const wanted = new Set(
     current
       .filter((p) => {

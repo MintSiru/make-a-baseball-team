@@ -10412,5 +10412,18 @@
   "ui.birdPick.text.08c74bfd": "{name}・{n}シーズン・{saving}節約",
   "ui.birdPick.text.4becf155": "春季キャンプが終わるまで変更できます",
   "ui.birdPick.text.f14b4a47": "春季キャンプが終わり、今シーズンの指定が確定しました",
-  "ui.playerPanel.text.9f06a735": "球団が指定したラリー・バード・ルール選手：{season}年の年俸の半分だけがサラリーキャップに算入されます"
+  "ui.playerPanel.text.9f06a735": "球団が指定したラリー・バード・ルール選手：{season}年の年俸の半分だけがサラリーキャップに算入されます",
+  "league.fa.text.76b4b593": "外国人枠が足りません：来季の残り枠 {n}",
+  "ui.leaders.text.472b2232": "設定で直接調整",
+  "ui.settings.text.25029f0e": "公認球の反発力",
+  "ui.settings.text.2999438e": "直接調整",
+  "ui.settings.text.3eb0934f": "自動（毎年のイベント）",
+  "ui.settings.text.8bb9c63a": "反発係数",
+  "ui.settings.text.fdb50bcf": "本塁打 約×{x}（基準 {base}）",
+  "ui.settings.text.682cd67b": "基準に戻す",
+  "ui.settings.text.2cf92923": "自動では冬に時々公認球が変わり、6月に抜き打ち検査があります。直接調整ではイベントなしで設定値がすぐ適用されます。反発係数が高いほど本塁打と安打が増えます（KBO許容範囲 {lo}〜{hi}）。",
+  "ui.settings.text.973e97df": "長期在籍外国人のFA",
+  "ui.settings.text.3fe022e7": "オンにすると、国内高卒選手と同じだけ在籍した外国人選手（アジア枠・育成外国人を除く）も契約が切れる冬にFA宣言します。外国人枠が空いている球団だけが獲得でき、補償はなく、外部FA獲得数にも数えません。行き先がなければKBO経験外国人市場に出ます。",
+  "ui.faMarket.text.f115581a": "長期在籍外国人FA：補償なし、外国人枠が空いていれば獲得可能",
+  "ui.faMarket.text.49afcbc8": "外国人FA"
 }

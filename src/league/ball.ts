@@ -29,6 +29,10 @@ export const BALL = {
   babip: 6,
 };
 
+/** 2.0.74 (the user's request): the ball set by hand in the settings — a game option, from a deader ball to a much
+    livelier one than the KBO allows; no winter's change and no June test while it is set. */
+export const BALL_MANUAL = { min: 0.3934, max: 0.4334, step: 0.001 };
+
 export type BallChange = 'up' | 'down' | 'fix';
 
 export interface BallSeason {
@@ -39,6 +43,8 @@ export interface BallSeason {
   /** The June test (수시검사): the date, what it measured, and the coefficient from then (a ball out of the range
       brought halfway back). */
   test?: { date: string; cor: number; after?: number };
+  /** 2.0.74: set by hand in the settings at opening day. */
+  manual?: true;
 }
 
 const round4 = (x: number) => Math.round(x * 10000) / 10000;
@@ -50,6 +56,7 @@ export const ballOf = (s: LeagueState, year = s.year) => s.ball?.find((b) => b.y
 
 /** The coefficient in play on `date` (the middle of the range when none was drawn). */
 export function corOn(s: LeagueState, date: string): number {
+  if (s.ballManual !== undefined) return s.ballManual;
   const b = ballOf(s, Number(date.slice(0, 4)));
   if (!b) return BALL.base;
   return b.test?.after !== undefined && date >= b.test.date ? b.test.after : b.cor;
@@ -65,6 +72,12 @@ export function ballShift(s: LeagueState, date: string): { hr: number; babip: nu
 export function ballSeason(s: LeagueState, date: string) {
   if (ballOf(s)) return;
   const list = (s.ball ??= []);
+  // 2.0.74: the ball set by hand: the season's record, no news.
+  if (s.ballManual !== undefined) {
+    list.push({ year: s.year, cor: s.ballManual, manual: true });
+    if (list.length > 30) list.splice(0, list.length - 30);
+    return;
+  }
   const prev = list.filter((b) => b.year < s.year).at(-1);
   const was = prev ? (prev.test?.after ?? prev.cor) : BALL.base;
   const r = rng(`${s.seed}|ball|${s.year}`);
@@ -107,7 +120,7 @@ export function ballSeason(s: LeagueState, date: string) {
 /** The first game day of June: the KBO's test of the balls. */
 export function ballTest(s: LeagueState, date: string) {
   const b = ballOf(s);
-  if (!b || b.test || date.slice(5, 7) !== '06') return;
+  if (!b || b.test || date.slice(5, 7) !== '06' || s.ballManual !== undefined) return;
   const r = rng(`${s.seed}|ball-test|${s.year}`);
   const measured = round4(b.cor + (r() - 0.5) * 0.002);
   b.test = { date, cor: measured };
@@ -122,4 +135,23 @@ export function ballTest(s: LeagueState, date: string) {
   // A passing test is an article; a failing one a full alert.
   addAlert(s, { id: `ball-test-${s.year}`, date, kind: 'season', title, lines, ...(ok ? { minor: true } : { tone: 'bad' as const }) });
   if (!ok) leagueEvent(s, s.year, title);
+}
+
+/** 2.0.74: sets the ball by hand (within BALL_MANUAL), or gives it back to the winters' events (null). */
+export function setBallManual(s: LeagueState, cor: number | null) {
+  if (cor === null || !Number.isFinite(cor)) {
+    delete s.ballManual;
+    return;
+  }
+  s.ballManual = round4(Math.min(BALL_MANUAL.max, Math.max(BALL_MANUAL.min, cor)));
+}
+
+/** About how many home runs a ball brings against the usual one (×). */
+export const ballHrFactor = (cor: number) => Math.exp((cor - BALL.base) * BALL.hr);
+
+/** The ball now: the one set by hand, or the latest season's (after its June test). */
+export function currentCor(s: LeagueState): number {
+  if (s.ballManual !== undefined) return s.ballManual;
+  const b = s.ball?.at(-1);
+  return b ? (b.test?.after ?? b.cor) : BALL.base;
 }

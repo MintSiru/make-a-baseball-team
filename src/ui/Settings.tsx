@@ -2,6 +2,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 /* The settings tab (V0.13): everything the player sets in one place — display, the game, the clubs' names,
    saves, AI articles and what the game is. Display and AI settings stay in this browser; the game and the
    clubs' names travel with the save. */
+import { BALL, BALL_MANUAL, ballHrFactor, corText, currentCor } from '../league/ball';
 import { STOP_KINDS, STOP_LABEL, stopsOf } from '../league/stops';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { DISCLAIMER, ISSUES_URL, OPEN_SOURCE, RULES_URL } from '../core/about';
@@ -305,6 +306,53 @@ function GameOptions({ league, busy, onAct, onNewGame }: { league: LeagueState; 
             ))}
           </div>
           <p class="muted small">{__i18n_t("ui.settings.text.98696377")}</p>
+          {/* 2.0.74 (ball.ts, the user's request): the official ball set by hand, or left to the winters' events. */}
+          <h3>{__i18n_t("ui.settings.text.25029f0e")}</h3>
+          <div class="segmented" role="group" aria-label={__i18n_t("ui.settings.text.25029f0e")}>
+            {([false, true] as const).map((manual) => (
+              <button
+                key={String(manual)}
+                type="button"
+                aria-pressed={(league.ballManual !== undefined) === manual}
+                disabled={busy}
+                onClick={() => (league.ballManual !== undefined) !== manual && onAct({ kind: 'ballManual', cor: manual ? currentCor(league) : null })}
+              >
+                {manual ? __i18n_t("ui.settings.text.2999438e") : __i18n_t("ui.settings.text.3eb0934f")}
+              </button>
+            ))}
+          </div>
+          {league.ballManual !== undefined && (
+            <p class="inline-form small ball-dial">
+              <input
+                type="range"
+                min={BALL_MANUAL.min}
+                max={BALL_MANUAL.max}
+                step={BALL_MANUAL.step}
+                value={league.ballManual}
+                disabled={busy}
+                aria-label={__i18n_t("ui.settings.text.8bb9c63a")}
+                onChange={(e) => onAct({ kind: 'ballManual', cor: Number((e.currentTarget as HTMLInputElement).value) })}
+              />
+              <strong>{corText(league.ballManual)}</strong>
+              <span class="muted">{__i18n_t("ui.settings.text.fdb50bcf", { x: ballHrFactor(league.ballManual).toFixed(2), base: corText(BALL.base) })}</span>
+              {Math.abs(league.ballManual - BALL.base) > 1e-6 && (
+                <button type="button" disabled={busy} onClick={() => onAct({ kind: 'ballManual', cor: BALL.base })}>
+                  {__i18n_t("ui.settings.text.682cd67b")}
+                </button>
+              )}
+            </p>
+          )}
+          <p class="muted small">{__i18n_t("ui.settings.text.2cf92923", { lo: corText(BALL.base - BALL.range), hi: corText(BALL.base + BALL.range) })}</p>
+          {/* 2.0.74 (foreignfa.ts, the user's request): long-serving foreign players' free agency. */}
+          <h3>{__i18n_t("ui.settings.text.973e97df")}</h3>
+          <div class="segmented" role="group" aria-label={__i18n_t("ui.settings.text.973e97df")}>
+            {([true, false] as const).map((on) => (
+              <button key={String(on)} type="button" aria-pressed={!!league.foreignFa === on} disabled={busy} onClick={() => !!league.foreignFa !== on && onAct({ kind: 'foreignFa', on })}>
+                {on ? __i18n_t("ui.settings.text.8f13d839") : __i18n_t("ui.settings.text.66770937")}
+              </button>
+            ))}
+          </div>
+          <p class="muted small">{__i18n_t("ui.settings.text.3fe022e7")}</p>
           {/* 2.0.23 (conditions.ts): another scenario's conditions added to the game under way. */}
           <h3>{__i18n_t("ui.settings.text.e6dc2e38")}</h3>
           <p class="muted small">{__i18n_t("ui.settings.text.a25ffd42")}</p>
