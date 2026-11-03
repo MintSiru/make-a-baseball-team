@@ -96,7 +96,8 @@ export interface BoardState {
   log: BoardRecord[];
 }
 
-/** Each item's range and step (0/1: off/on; the money rules in percent of today's; extras: innings). */
+/** Each item's range and step (0/1: off/on; the money rules in percent of today's; extras: innings). 2.0.74: the
+    roster limit in threes from 62, so the rule book's 65 (before 2026) and 68 (2026) are on the steps. */
 export const BOARD_ITEMS: Record<BoardItem, { min: number; max: number; step: number }> = {
   foreign: { min: 2, max: 4, step: 1 },
   asiaQuota: { min: 0, max: 1, step: 1 },
@@ -104,7 +105,7 @@ export const BOARD_ITEMS: Record<BoardItem, { min: number; max: number; step: nu
   foreignTotal: { min: 70, max: 150, step: 10 },
   foreignChanges: { min: 1, max: 4, step: 1 },
   firstTeam: { min: 27, max: 31, step: 1 },
-  rosterLimit: { min: 60, max: 70, step: 5 },
+  rosterLimit: { min: 62, max: 74, step: 3 },
   ghostRunner: { min: 0, max: 1, step: 1 },
   threeBatter: { min: 0, max: 1, step: 1 },
   minSalary: { min: 80, max: 150, step: 10 },
@@ -346,13 +347,21 @@ export const votesNeeded = (clubs: number) => Math.ceil((clubs * 2) / 3);
 
 // ── The motions ──────────────────────────────────────────────────────────────────────────────────
 
-const clamp = (item: BoardItem, v: number) => Math.max(BOARD_ITEMS[item].min, Math.min(BOARD_ITEMS[item].max, v));
+/** 2.0.74: the next value on `item`'s steps above (`up`) or below `now`, or null past the end of its range. A value off
+    the steps (the rule book's in a history game, a change from before the steps moved) goes to the nearest step that
+    way; one below the range goes up to its first step, never "down" to it. */
+export function stepFrom(item: BoardItem, now: number, up: boolean): number | null {
+  const { min, max, step } = BOARD_ITEMS[item];
+  const last = Math.floor((max - min) / step);
+  const k = up ? Math.max(0, Math.floor((now - min) / step) + 1) : Math.min(last, Math.ceil((now - min) / step) - 1);
+  return k < 0 || k > last ? null : min + k * step;
+}
 
 /** The motion that moves `item` one step `up` or down, or null at the end of its range. */
 function motion(s: LeagueState, next: number, item: BoardItem, up: boolean, by: TeamId | null, push: number): BoardMotion | null {
   const now = currentValue(s, item, next);
-  const value = clamp(item, now + (up ? 1 : -1) * BOARD_ITEMS[item].step);
-  return value === now ? null : { item, value, now, by, push };
+  const value = stepFrom(item, now, up);
+  return value === null || value === now ? null : { item, value, now, by, push };
 }
 
 /** Changed or voted down in the last two winters: not again yet. */
@@ -705,8 +714,34 @@ export function checkRule(s: LeagueState, item: BoardItem, value: number): strin
   if (s.board?.on) return __i18n_k("league.board.text.92aafcd6");
   const range = BOARD_ITEMS[item];
   if (!range || !items(s, ruleSeason(s)).includes(item)) return __i18n_k("league.board.text.a9648bbe");
-  if (value < range.min || value > range.max || (value - range.min) % range.step !== 0) return __i18n_k("league.board.text.130e5c83");
+  // 2.0.74: the value with no change from the coming season is always allowed (it takes the change back), on the
+  // steps or not (the rule book's in a history game).
+  if (!onSteps(item, value) && value !== unchangedValue(s, item)) return __i18n_k("league.board.text.130e5c83");
   return null;
+}
+
+const onSteps = (item: BoardItem, v: number) => {
+  const { min, max, step } = BOARD_ITEMS[item];
+  return v >= min && v <= max && (v - min) % step === 0;
+};
+
+/** 2.0.74: the values the settings offer for `item`: its steps, the value in force now and the one with no change from
+    the coming season (either may be off the steps: the rule book's 68 against the old steps of five, a history game's
+    45). */
+export function ruleOptions(s: LeagueState, item: BoardItem): number[] {
+  const { min, max, step } = BOARD_ITEMS[item];
+  const out = new Set<number>();
+  for (let v = min; v <= max; v += step) out.add(v);
+  out.add(currentValue(s, item, ruleSeason(s)));
+  out.add(unchangedValue(s, item));
+  return [...out].sort((a, b) => a - b);
+}
+
+/** What `item` is from the coming season without a change made from it on: the latest earlier change, or the rule book. */
+function unchangedValue(s: LeagueState, item: BoardItem): number {
+  const from = ruleSeason(s);
+  const earlier = [...(s.board?.changes ?? [])].reverse().find((c) => c.item === item && c.from < from);
+  return earlier?.value ?? baseValue(s, item, from);
 }
 
 /** Sets a rule from the coming season (the same value again cancels a change not yet in force). */
@@ -714,11 +749,8 @@ export function setRule(s: LeagueState, item: BoardItem, value: number) {
   if (checkRule(s, item, value)) return;
   const from = ruleSeason(s);
   const b = (s.board ??= { on: false, since: from - 1, changes: [], log: [] });
-  const before = b.changes.filter((c) => c.from < from || c.item !== item);
-  // What it is without a change from `from` on: the latest earlier change, or the rule book.
-  const earlier = [...before].reverse().find((c) => c.item === item && c.from <= from);
-  const now = earlier?.value ?? baseValue(s, item, from);
-  b.changes = before;
+  const now = unchangedValue(s, item);
+  b.changes = b.changes.filter((c) => c.from < from || c.item !== item);
   if (value !== now) b.changes.push({ from, item, value, manual: true });
   const what = motionText({ item, value, now });
   addNews(s, { id: `rule-${from}-${item}-${b.changes.length}`, date: `${from - 1}-12-01`, kind: 'season', title: __i18n_k("league.board.text.0786e319", { what }), body: __i18n_k("league.board.text.ec999e16", { season: from, what }), quotes: [], facts: { season: from }, players: [], mine: false });

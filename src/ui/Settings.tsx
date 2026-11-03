@@ -18,7 +18,7 @@ import { ro } from '../league/josa';
 import { DisplayOptions } from './DisplaySettings';
 import { StoryOptions } from './StorySettings';
 import { UpdateNotes } from './Updates';
-import { BOARD_ITEMS, boardLine, currentValue, items, motionText, ruleLabel, ruleSeason, ruleValueText, type BoardItem } from '../league/board';
+import { BOARD_ITEMS, boardLine, currentValue, items, motionText, ruleLabel, ruleOptions, ruleSeason, ruleValueText, type BoardItem } from '../league/board';
 import { scenarioDef } from '../league/scenarios';
 import { handicapText } from '../league/dynamic';
 import { CONDITIONS, checkCondition, conditionText, hasCondition } from '../league/conditions';
@@ -503,12 +503,6 @@ function SaveOptions({ league, store, busy, onExport, onImport }: { league: Leag
 function RuleEditor({ league, busy, onAct }: { league: LeagueState; busy: boolean; onAct: (a: Action) => void }) {
   const season = ruleSeason(league);
   const list = items(league, season);
-  const valuesOf = (item: BoardItem) => {
-    const r = BOARD_ITEMS[item];
-    const out: number[] = [];
-    for (let v = r.min; v <= r.max; v += r.step) out.push(v);
-    return out;
-  };
   const onOff = (item: BoardItem) => BOARD_ITEMS[item].min === 0 && BOARD_ITEMS[item].max === 1;
   return (
     <fieldset class="rule-editor">
@@ -521,7 +515,7 @@ function RuleEditor({ league, busy, onAct }: { league: LeagueState; busy: boolea
             <label key={item}>
               {__i18n_display(ruleLabel(item))}
               <select value={String(now)} disabled={busy} onChange={(e) => onAct({ kind: 'leagueRule', item, value: Number((e.currentTarget as HTMLSelectElement).value) })}>
-                {valuesOf(item).map((v) => (
+                {ruleOptions(league, item).map((v) => (
                   <option key={v} value={String(v)}>
                     {__i18n_display(ruleValueText(item, v) ?? (onOff(item) ? (v ? __i18n_t("ui.settings.text.8f13d839") : __i18n_t("ui.settings.text.66770937")) : String(v)))}
                   </option>
