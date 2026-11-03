@@ -19,6 +19,10 @@ export const BALL = {
   /** A winter's chance the ball changes (within the range), and the change. */
   chance: 0.15,
   step: [0.006, 0.014] as const,
+  /** 2.0.75: a ball away from the middle (a dead or a lively ball era) does not stay for years. The farther off (as a
+      share of the half range), the likelier a winter's change — up to `chance` more — and the likelier it goes back
+      toward the middle — up to `toward` more than even; a step back that would cross the middle stops near it. */
+  back: { chance: 0.5, toward: 0.4 },
   /** Out of the range: the KBO's correction the winter after (back near the middle). */
   fixChance: 0.8,
   /** The June test's mid-season correction (a share of the way back). */
@@ -90,11 +94,17 @@ export function ballSeason(s: LeagueState, date: string) {
         cor = BALL.base + (r() - 0.5) * 0.004;
         change = 'fix';
       }
-    } else if (r() < BALL.chance) {
-      const up = was < BALL.base - BALL.range / 2 ? r() < 0.75 : was > BALL.base + BALL.range / 2 ? r() < 0.25 : r() < 0.5;
-      const step = BALL.step[0] + r() * (BALL.step[1] - BALL.step[0]);
-      cor = was + (up ? step : -step);
-      change = up ? 'up' : 'down';
+    } else {
+      const d = was - BALL.base;
+      const pull = Math.min(1, Math.abs(d) / BALL.range);
+      if (r() < BALL.chance + BALL.back.chance * pull) {
+        const up = r() < 0.5 - Math.sign(d) * BALL.back.toward * pull;
+        const step = BALL.step[0] + r() * (BALL.step[1] - BALL.step[0]);
+        cor = was + (up ? step : -step);
+        // Back past the middle: it stops near it.
+        if (d !== 0 && Math.sign(cor - BALL.base) !== Math.sign(d)) cor = BALL.base + (r() - 0.5) * 0.004;
+        change = up ? 'up' : 'down';
+      }
     }
   }
   const b: BallSeason = { year: s.year, cor: round4(cor), ...(change ? { change } : {}) };
@@ -154,4 +164,12 @@ export function currentCor(s: LeagueState): number {
   if (s.ballManual !== undefined) return s.ballManual;
   const b = s.ball?.at(-1);
   return b ? (b.test?.after ?? b.cor) : BALL.base;
+}
+
+/** 2.0.75: the ball the season shown was played with, and whether it was set by hand. Over the winter, the season
+    played keeps its own (a value set by hand meanwhile is next season's); in season, the ball in play today. */
+export function seasonBall(s: LeagueState, date: string): { cor: number; manual: boolean } {
+  const b = ballOf(s);
+  if (s.offseason && b) return { cor: b.manual ? b.cor : (b.test?.after ?? b.cor), manual: !!b.manual };
+  return { cor: corOn(s, date), manual: s.ballManual !== undefined };
 }

@@ -1,5 +1,5 @@
 import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
-import { BALL, ballOf, corOn, corText } from '../league/ball';
+import { BALL, ballOf, corText, seasonBall } from '../league/ball';
 import { today } from '../league/entry';
 import { useState } from 'preact/hooks';
 import type { LeagueState } from '../league/state';
@@ -20,6 +20,8 @@ export function Leaders({ league, onPlayer, onBox, onAct }: { league: LeagueStat
   const [detail, setDetail] = useState(false);
   const data = leaders(league);
   const ball = ballOf(league);
+  // 2.0.75: over the winter the season played keeps its own ball (a value set by hand for next season is not it).
+  const { cor: seasonCor, manual } = seasonBall(league, today(league));
   const block = (title: string, rows: { id: string; name: string; team: string; value: string }[]) => (
     <div class="leader-block" key={title}>
       <h4>{__i18n_display(title)}</h4>
@@ -44,11 +46,11 @@ export function Leaders({ league, onPlayer, onBox, onAct }: { league: LeagueStat
     <section aria-labelledby="leaders-title">
       <h2 id="leaders-title">{__i18n_t("ui.leaders.leaders.880aa107", { year: league.year })}</h2>
       {/* 2.0.70 (ball.ts): the season's official ball, when it is not the usual one. */}
-      {ball && Math.abs(corOn(league, today(league)) - BALL.base) > 1e-6 && (
+      {ball && Math.abs(seasonCor - BALL.base) > 1e-6 && (
         <p class="muted small ball-line">
-          {__i18n_t("ui.leaders.text.e0d1f617", { cor: corText(corOn(league, today(league))), base: corText(BALL.base) })}
+          {__i18n_t("ui.leaders.text.e0d1f617", { cor: corText(seasonCor), base: corText(BALL.base) })}
           {ball.test && ` · ${__i18n_t("ui.leaders.text.0b69706a", { cor: corText(ball.test.cor) })}`}
-          {league.ballManual !== undefined && ` · ${__i18n_t("ui.leaders.text.472b2232")}`}
+          {manual && ` · ${__i18n_t("ui.leaders.text.472b2232")}`}
         </p>
       )}
       <div class="segmented" role="group" aria-label={__i18n_t("ui.leaders.leaders.58d6978a")}>
