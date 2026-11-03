@@ -245,17 +245,19 @@ export function foundClub(s: LeagueState, settings: ExpansionSettings) {
 /** 강철야구: how many it signs at the tryout, and the retired players it looks at (the best now, the famous first on a tie). */
 const STEEL = { tryout: 36, retired: 30, maxAge: 41, retiredSince: 8 } as const;
 
-/** Retired players who could come back: a first-team career, retired lately, not on any club's staff. */
+/** Retired players who could come back: a first-team career, retired lately, not on any club's staff. 2.0.73: not one
+    whose career an injury ended (he would only retire again). */
 function comebackPool(s: LeagueState): Player[] {
   const y0 = startYear();
   const staff = employedAlumni(s);
   return Object.values(s.players)
-    .filter((p) => p.status === 'retired' && !rightsHeld(s, p.id) && !isForeign(p) && p.career.some((c) => !c.level) && (p.career.at(-1)?.year ?? 0) >= y0 - STEEL.retiredSince && ageIn(p, y0 + 1) <= STEEL.maxAge && !staff.has(p.id))
+    .filter((p) => p.status === 'retired' && !p.life?.careerOver && !rightsHeld(s, p.id) && !isForeign(p) && p.career.some((c) => !c.level) && (p.career.at(-1)?.year ?? 0) >= y0 - STEEL.retiredSince && ageIn(p, y0 + 1) <= STEEL.maxAge && !staff.has(p.id))
     .sort((a, b) => currentValue(b) + fameOf(s, b) * 0.1 - (currentValue(a) + fameOf(s, a) * 0.1))
     .slice(0, STEEL.retired);
 }
 
-/** Independent-league players, overseas returnees and recently released pros for the founding tryout. */
+/** Independent-league players, overseas returnees and recently released pros for the founding tryout (2.0.73: not one
+    whose career an injury ended). */
 function tryoutPool(s: LeagueState): Player[] {
   const y0 = startYear();
   // The usual calendar keeps its seed (the same tryout as before 1.6.0).
@@ -276,7 +278,7 @@ function tryoutPool(s: LeagueState): Player[] {
     .slice(0, 25);
   for (const p of pool) s.players[p.id] = p;
   const released = Object.values(s.players)
-    .filter((p) => p.status === 'retired' && !rightsHeld(s, p.id) && p.career.length && (p.career.at(-1)?.year ?? 0) >= y0 - 1 && ageIn(p, y0 + 1) <= 33)
+    .filter((p) => p.status === 'retired' && !p.life?.careerOver && !rightsHeld(s, p.id) && p.career.length && (p.career.at(-1)?.year ?? 0) >= y0 - 1 && ageIn(p, y0 + 1) <= 33)
     .sort((a, b) => keepValue(b, y0 + 1) - keepValue(a, y0 + 1))
     .slice(0, 15);
   return [...released, ...pool];

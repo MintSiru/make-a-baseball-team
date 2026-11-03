@@ -771,6 +771,8 @@ export interface LeagueState {
   /** 2.0.26 (dynasty.ts): the anti-dynasty alliance standing, and this winter's balance fund shares. */
   alliance?: import('./dynasty').Alliance;
   balanceShare?: Record<TeamId, number>;
+  /** 2.0.73 (bird.ts): the player each club named under the Larry Bird rule, by season. */
+  birdPicks?: Record<number, Partial<Record<TeamId, PlayerId>>>;
   /** The first-round picks lost so, by draft year. */
   pickForfeit?: Record<number, TeamId[]>;
   /** 2.0.23 (conditions.ts): other scenarios' conditions added to the game under way, in the order added. */

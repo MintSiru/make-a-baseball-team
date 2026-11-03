@@ -22,8 +22,8 @@ describe('the salary cap total', () => {
     const soldiers = Object.values(s.players).filter((p) => p.teamId === id && p.status === 'military');
     const domestic = [...orgPlayers(s, id), ...soldiers]
       .filter((p) => !isForeign(p))
-      // 2.0.69: a Larry Bird re-signing counts half.
-      .map((p) => Math.round(capPay(p, y) * birdShare(p, y)))
+      // 2.0.73: the club's named Larry Bird player counts half.
+      .map((p) => Math.round(capPay(p, y) * birdShare(s, p, y)))
       .sort((a, b) => b - a)
       .slice(0, 40)
       .reduce((a, b) => a + b, 0);
