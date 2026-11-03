@@ -10412,5 +10412,18 @@
   "ui.birdPick.text.08c74bfd": "{name} · {n} seasons · {saving} saved",
   "ui.birdPick.text.4becf155": "You can change it until spring camp ends",
   "ui.birdPick.text.f14b4a47": "Spring camp is over: this season's pick is final",
-  "ui.playerPanel.text.9f06a735": "Named by his club under the Larry Bird rule: only half his {season} pay counts against the salary cap"
+  "ui.playerPanel.text.9f06a735": "Named by his club under the Larry Bird rule: only half his {season} pay counts against the salary cap",
+  "league.fa.text.76b4b593": "Not enough foreign places: {n} left for next season",
+  "ui.leaders.text.472b2232": "set by hand in the settings",
+  "ui.settings.text.25029f0e": "Official ball liveliness",
+  "ui.settings.text.2999438e": "Set by hand",
+  "ui.settings.text.3eb0934f": "Automatic (yearly events)",
+  "ui.settings.text.8bb9c63a": "Coefficient of restitution",
+  "ui.settings.text.fdb50bcf": "home runs about ×{x} (base {base})",
+  "ui.settings.text.682cd67b": "Back to base",
+  "ui.settings.text.2cf92923": "Automatic: now and then the ball changes over a winter, and the KBO tests it in June. Set by hand: your value applies at once, with no events. A higher coefficient means more home runs and hits (KBO range {lo}–{hi}).",
+  "ui.settings.text.973e97df": "Free agency for long-serving foreign players",
+  "ui.settings.text.3fe022e7": "On: a foreign player (not Asia quota or development) who has served as long as a home-grown high-school player declares free agency the winter his deal ends. Only clubs with an open foreign place may sign him; no compensation, and he does not count against outside signings. Unsigned, he joins the market of KBO-experienced foreigners.",
+  "ui.faMarket.text.f115581a": "Long-serving foreign free agent: no compensation; a club needs an open foreign place to sign him",
+  "ui.faMarket.text.49afcbc8": "Foreign FA"
 }

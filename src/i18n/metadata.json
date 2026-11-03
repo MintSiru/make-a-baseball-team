@@ -93607,5 +93607,101 @@
       }
     },
     "locations": []
+  },
+  "league.fa.text.76b4b593": {
+    "source": "src/league/fa.ts",
+    "line": 1203,
+    "params": {
+      "n": {
+        "expression": "Math.max(0, foreignRoomAt(s, me, next))"
+      }
+    },
+    "locations": []
+  },
+  "ui.leaders.text.472b2232": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 51,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.25029f0e": {
+    "source": "src/ui/Settings.tsx",
+    "line": 310,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.2999438e": {
+    "source": "src/ui/Settings.tsx",
+    "line": 320,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.3eb0934f": {
+    "source": "src/ui/Settings.tsx",
+    "line": 320,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.8bb9c63a": {
+    "source": "src/ui/Settings.tsx",
+    "line": 333,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.fdb50bcf": {
+    "source": "src/ui/Settings.tsx",
+    "line": 337,
+    "params": {
+      "x": {
+        "expression": "ballHrFactor(league.ballManual).toFixed(2)"
+      },
+      "base": {
+        "expression": "corText(BALL.base)"
+      }
+    },
+    "locations": []
+  },
+  "ui.settings.text.682cd67b": {
+    "source": "src/ui/Settings.tsx",
+    "line": 340,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.2cf92923": {
+    "source": "src/ui/Settings.tsx",
+    "line": 345,
+    "params": {
+      "lo": {
+        "expression": "corText(BALL.base - BALL.range)"
+      },
+      "hi": {
+        "expression": "corText(BALL.base + BALL.range)"
+      }
+    },
+    "locations": []
+  },
+  "ui.settings.text.973e97df": {
+    "source": "src/ui/Settings.tsx",
+    "line": 347,
+    "params": {},
+    "locations": []
+  },
+  "ui.settings.text.3fe022e7": {
+    "source": "src/ui/Settings.tsx",
+    "line": 355,
+    "params": {},
+    "locations": []
+  },
+  "ui.faMarket.text.f115581a": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 277,
+    "params": {},
+    "locations": []
+  },
+  "ui.faMarket.text.49afcbc8": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 278,
+    "params": {},
+    "locations": []
   }
 }

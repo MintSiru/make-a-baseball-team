@@ -48,6 +48,7 @@ export function Leaders({ league, onPlayer, onBox, onAct }: { league: LeagueStat
         <p class="muted small ball-line">
           {__i18n_t("ui.leaders.text.e0d1f617", { cor: corText(corOn(league, today(league))), base: corText(BALL.base) })}
           {ball.test && ` · ${__i18n_t("ui.leaders.text.0b69706a", { cor: corText(ball.test.cor) })}`}
+          {league.ballManual !== undefined && ` · ${__i18n_t("ui.leaders.text.472b2232")}`}
         </p>
       )}
       <div class="segmented" role="group" aria-label={__i18n_t("ui.leaders.leaders.58d6978a")}>
