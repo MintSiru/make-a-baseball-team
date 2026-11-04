@@ -52,7 +52,8 @@ import { balanceDepth, changePosition, learnPositions, positionMove } from './po
 import { driftPotential, futureBefore, winterReport } from './scouting';
 import { logPick } from './draftlog';
 import { applyDemotionCuts, settleFinances } from './finance';
-import { awardHonours, computeAwards, hallOfFameCheck } from './awards';
+import { awardHonours, computeAwards } from './awards';
+import { hallVote } from './hallvote';
 import { nicknameWinter } from './nicknames';
 import { seasonMoments } from './milestones';
 import { addNews, seasonNews } from './news';
@@ -366,7 +367,7 @@ function removeFromRoster(s: LeagueState, p: Player) {
 /** Retire or drop a player. Players who never reached the first team are forgotten to keep saves small. */
 export function leaveLeague(s: LeagueState, p: Player, status: 'retired' | 'overseas') {
   if (status === 'retired' && p.teamId) maybeRetireNumber(s, p, p.teamId, s.year);
-  if (status === 'retired') hallOfFameCheck(s, p, s.year);
+  // 2.0.76: the hall of fame is voted on, from the winter after (hallvote.ts).
   // 2.0.28 (moves.ts): retirement, or a foreign player going home.
   if (status === 'retired') noteMove(s, p, 'retire', p.teamId, null);
   else if (p.origin.kind === 'foreign' && p.teamId) noteForeignOut(s, p, p.teamId);
@@ -1032,6 +1033,8 @@ export function advanceOffseason(s: LeagueState): 'waiting' | 'done' {
         break;
       }
       case 'retire': {
+        // 2.0.76: the hall of fame's vote (those who retired in winters before).
+        hallVote(s, year);
         // Players the user's club talked round stay (V0.11); our retirements make a pop-up.
         const stay = new Set(o.stay ?? []);
         const gone = retiring(s, year)

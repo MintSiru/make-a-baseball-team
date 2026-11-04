@@ -3,7 +3,7 @@ import { k as __i18n_k } from '../i18n/index';
    his club wears; development players (육성선수) wear three-digit numbers, as in the league. A player
    who changes clubs, or becomes a registered player, gets a new one (his old number if it is free).
    A club retires the number of a great who spent his career there. */
-import { rng } from '../draftroom';
+import { hashUnit, rng } from '../draftroom';
 import type { Player, TeamId } from '../model/types';
 import { isForeign, isPitcher, isReliever } from './players';
 import { isDevelopment, orgPlayers, type LeagueState } from './state';
@@ -11,6 +11,9 @@ import { milestone, unlock } from './milestones';
 import { bullpenTitles } from './awards';
 import { clubState } from './fans';
 import { FANS } from './tuning';
+import { addAlert } from './alerts';
+import { CONDUCT, conductWeight } from './conduct';
+import { addNews } from './news';
 
 /** A number is retired for 12 first-team seasons at the club and WAR 60 there; 1.9.9: a reliever's WAR 35, 250
     saves and holds there or three save or hold titles (the user's request: a closer's WAR is small), and each number the club has already retired
@@ -120,11 +123,35 @@ export function maybeRetireNumber(s: LeagueState, p: Player, teamId: TeamId, yea
   const great = isReliever(p) ? war >= RETIRE.relieverWar * bar || saves >= RETIRE.relieverSaves * bar || bullpenTitles(s, p.id) >= Math.ceil(RETIRE.relieverTitles * bar) : war >= RETIRE.war * bar;
   if (!great || here.length < RETIRE.seasons) return;
   if (!team || team.retiredNumbers?.some((x) => x.number === p.number)) return;
-  (team.retiredNumbers ??= []).push({ number: p.number, playerId: p.id, name: p.name, year });
+  // 2.0.76 (the user's request: 「영결 자동 확정이 아니라 심의해서」): the club's board deliberates. Ours: the general
+  // manager decides (the club's records), with the board's opinion; another club holds the number of a player whose
+  // record of offenses weighs too much, and may for a lighter one.
+  const conduct = conductWeight(p);
+  const club = team.short;
   if (teamId === s.user?.teamId) {
-    unlock(s, 'retiredNumber', year, __i18n_k("league.numbers.maybeRetireNumber.05c2328c", { number: p.number, name: p.name }));
-    milestone(s, year, __i18n_k("league.numbers.maybeRetireNumber.8985f06c", { name: p.name, number: p.number }));
+    const against = conduct >= CONDUCT.board;
+    addAlert(s, {
+      id: `retire-number-${p.id}`,
+      date: `${year}-12-01`,
+      kind: 'hall',
+      title: __i18n_k("league.numbers.text.13cbf9d1", { name: p.name, number: p.number }),
+      lines: [
+        __i18n_k("league.numbers.text.647bb7c4", { n: here.length, war: war.toFixed(1) }),
+        against ? __i18n_k("league.numbers.text.11664fa7") : __i18n_k("league.numbers.text.da5dd232"),
+        __i18n_k("league.numbers.text.faee1ded"),
+      ],
+      ...(against ? {} : { tone: 'good' as const }),
+      players: [p.id],
+    });
+    return;
   }
+  const approve = conduct < CONDUCT.board && (conduct === 0 || hashUnit(`${s.seed}|retire-board|${p.id}`) >= conduct / CONDUCT.board);
+  if (!approve) {
+    addNews(s, { id: `retire-number-${p.id}`, date: `${year}-12-01`, kind: 'move', title: __i18n_k("league.numbers.text.578485c0", { club, name: p.name }), body: __i18n_k("league.numbers.text.147d1497", { club, name: p.name, number: p.number }), quotes: [], facts: { 구단: club, 등번호: p.number }, players: [p.id], mine: false });
+    return;
+  }
+  (team.retiredNumbers ??= []).push({ number: p.number, playerId: p.id, name: p.name, year });
+  addNews(s, { id: `retire-number-${p.id}`, date: `${year}-12-01`, kind: 'move', title: __i18n_k("league.numbers.text.f47bc6cd", { club, name: p.name, number: p.number }), body: __i18n_k("league.numbers.text.fd4397d9", { club, n: here.length, name: p.name, number: p.number }), quotes: [], facts: { 구단: club, 등번호: p.number }, players: [p.id], mine: false });
 }
 
 /** 2.0.64 (the user's request): the general manager retires a number himself — a retired player of ours, the number he
@@ -145,6 +172,9 @@ export interface RetireCandidate {
   verdict: RetireVerdict;
   /** The change to the fans' mood. */
   mood: number;
+  /** 2.0.76: what his record of offenses weighs (conduct.ts; Infinity: match fixing), and the board's opinion. */
+  conduct: number;
+  board: 'for' | 'against';
 }
 
 function retireMerit(s: LeagueState, p: Player, teamId: TeamId) {
@@ -173,7 +203,11 @@ export function retireCandidates(s: LeagueState): RetireCandidate[] {
     .filter((p) => p.status === 'retired' && p.numberTeam === u.teamId && p.number != null && p.number <= 99 && !taken.has(p.number) && !honoured.has(p.id) && p.career.some((c) => c.teamId === u.teamId && !c.level))
     .map((p) => {
       const m = retireMerit(s, p, u.teamId);
-      return { id: p.id, name: p.name, number: p.number!, ...m, verdict: verdictOf(m.merit), mood: moodOf(m.merit) };
+      // 2.0.76: his record of offenses counts against him, with the fans and with the board.
+      const conduct = conductWeight(p);
+      const merit = conduct === Infinity ? 0 : Math.max(0, Math.round((m.merit - conduct / 100) * 100) / 100);
+      const board: RetireCandidate['board'] = conduct < CONDUCT.board && merit >= RETIRE_GM.worthy ? 'for' : 'against';
+      return { id: p.id, name: p.name, number: p.number!, ...m, merit, verdict: verdictOf(merit), mood: moodOf(merit), conduct, board };
     })
     .sort((a, b) => b.merit - a.merit || b.war - a.war);
 }
@@ -197,5 +231,6 @@ export function retireNumberByGm(s: LeagueState, id: string) {
   }
   const club = clubState(s, u.teamId);
   club.interest = Math.max(FANS.interestMin, Math.min(FANS.interestMax, club.interest + c.mood));
+  if (c.verdict !== 'unworthy') unlock(s, 'retiredNumber', s.year, __i18n_k("league.numbers.maybeRetireNumber.05c2328c", { number: c.number, name: c.name }));
   milestone(s, s.year, c.verdict === 'unworthy' ? __i18n_k("league.numbers.text.7b0dcbb4", { name: c.name, number: c.number }) : __i18n_k("league.numbers.text.cbab1a9b", { name: c.name, number: c.number }));
 }

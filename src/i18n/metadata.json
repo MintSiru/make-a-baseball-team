@@ -93703,5 +93703,392 @@
     "line": 278,
     "params": {},
     "locations": []
+  },
+  "league.hallvote.text.74228fd3": {
+    "source": "src/league/hallvote.ts",
+    "line": 83,
+    "params": {
+      "year": {
+        "expression": "year"
+      },
+      "names": {
+        "expression": "inducted.map((r) => r.name).join(', ')"
+      }
+    },
+    "locations": []
+  },
+  "league.hallvote.text.ad77c219": {
+    "source": "src/league/hallvote.ts",
+    "line": 83,
+    "params": {
+      "year": {
+        "expression": "year"
+      }
+    },
+    "locations": []
+  },
+  "league.hallvote.text.b5f98ef3": {
+    "source": "src/league/hallvote.ts",
+    "line": 84,
+    "params": {
+      "name": {
+        "expression": "r.name"
+      },
+      "pct": {
+        "expression": "r.pct.toFixed(1)"
+      },
+      "on": {
+        "expression": "r.on"
+      }
+    },
+    "locations": []
+  },
+  "league.hallvote.text.4ccc3b71": {
+    "source": "src/league/hallvote.ts",
+    "line": 85,
+    "params": {
+      "n": {
+        "expression": "rows.length"
+      },
+      "need": {
+        "expression": "HALL_VOTE.in"
+      }
+    },
+    "locations": []
+  },
+  "league.hallvote.text.90a76354": {
+    "source": "src/league/hallvote.ts",
+    "line": 96,
+    "params": {},
+    "locations": []
+  },
+  "league.hallvote.text.82508a1b": {
+    "source": "src/league/hallvote.ts",
+    "line": 96,
+    "params": {},
+    "locations": []
+  },
+  "league.hallvote.text.88a22cbb": {
+    "source": "src/league/hallvote.ts",
+    "line": 96,
+    "params": {},
+    "locations": []
+  },
+  "league.numbers.text.13cbf9d1": {
+    "source": "src/league/numbers.ts",
+    "line": 137,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "number": {
+        "expression": "p.number"
+      }
+    },
+    "locations": []
+  },
+  "league.numbers.text.647bb7c4": {
+    "source": "src/league/numbers.ts",
+    "line": 139,
+    "params": {
+      "n": {
+        "expression": "here.length"
+      },
+      "war": {
+        "expression": "war.toFixed(1)"
+      }
+    },
+    "locations": []
+  },
+  "league.numbers.text.11664fa7": {
+    "source": "src/league/numbers.ts",
+    "line": 140,
+    "params": {},
+    "locations": []
+  },
+  "league.numbers.text.da5dd232": {
+    "source": "src/league/numbers.ts",
+    "line": 140,
+    "params": {},
+    "locations": []
+  },
+  "league.numbers.text.faee1ded": {
+    "source": "src/league/numbers.ts",
+    "line": 141,
+    "params": {},
+    "locations": []
+  },
+  "league.numbers.text.578485c0": {
+    "source": "src/league/numbers.ts",
+    "line": 150,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.numbers.text.147d1497": {
+    "source": "src/league/numbers.ts",
+    "line": 150,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "p.name"
+      },
+      "number": {
+        "expression": "p.number"
+      }
+    },
+    "locations": []
+  },
+  "league.numbers.text.f47bc6cd": {
+    "source": "src/league/numbers.ts",
+    "line": 154,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "name": {
+        "expression": "p.name"
+      },
+      "number": {
+        "expression": "p.number"
+      }
+    },
+    "locations": []
+  },
+  "league.numbers.text.fd4397d9": {
+    "source": "src/league/numbers.ts",
+    "line": 154,
+    "params": {
+      "club": {
+        "expression": "club"
+      },
+      "n": {
+        "expression": "here.length"
+      },
+      "name": {
+        "expression": "p.name"
+      },
+      "number": {
+        "expression": "p.number"
+      }
+    },
+    "locations": []
+  },
+  "league.scandals.text.f678166c": {
+    "source": "src/league/scandals.ts",
+    "line": 450,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.919bd783": {
+    "source": "src/ui/History.tsx",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.4e61efbb": {
+    "source": "src/ui/History.tsx",
+    "line": 175,
+    "params": {
+      "years": {
+        "expression": "HALL_VOTE.years"
+      },
+      "in": {
+        "expression": "HALL_VOTE.in"
+      },
+      "out": {
+        "expression": "HALL_VOTE.out"
+      }
+    },
+    "locations": []
+  },
+  "ui.history.text.c0c170ba": {
+    "source": "src/ui/History.tsx",
+    "line": 177,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.0827eb40": {
+    "source": "src/ui/History.tsx",
+    "line": 188,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.e32cece1": {
+    "source": "src/ui/History.tsx",
+    "line": 222,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.90a76354": {
+    "source": "src/ui/History.tsx",
+    "line": 224,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.82508a1b": {
+    "source": "src/ui/History.tsx",
+    "line": 224,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.88a22cbb": {
+    "source": "src/ui/History.tsx",
+    "line": 224,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.294f4dcf": {
+    "source": "src/ui/History.tsx",
+    "line": 228,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.8cf25eb7": {
+    "source": "src/ui/History.tsx",
+    "line": 230,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.2626a8b1": {
+    "source": "src/ui/History.tsx",
+    "line": 246,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.24585a22": {
+    "source": "src/ui/History.tsx",
+    "line": 248,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.55b24669": {
+    "source": "src/ui/History.tsx",
+    "line": 283,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.8cc09c32": {
+    "source": "src/ui/History.tsx",
+    "line": 287,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.20608a8a": {
+    "source": "src/ui/History.tsx",
+    "line": 287,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.5f9239c7": {
+    "source": "src/ui/History.tsx",
+    "line": 292,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.63c27906": {
+    "source": "src/ui/History.tsx",
+    "line": 311,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.9cccd052": {
+    "source": "src/ui/History.tsx",
+    "line": 312,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.de29eaee": {
+    "source": "src/ui/History.tsx",
+    "line": 313,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.8d1a0378": {
+    "source": "src/ui/History.tsx",
+    "line": 332,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.0eadc8c6": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1348,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.27862990": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1365,
+    "params": {
+      "year": {
+        "expression": "v.year"
+      },
+      "pct": {
+        "expression": "v.pct.toFixed(1)"
+      },
+      "on": {
+        "expression": "v.on"
+      },
+      "years": {
+        "expression": "HALL_VOTE.years"
+      }
+    },
+    "locations": []
+  },
+  "ui.playerPanel.text.82508a1b": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1365,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.88a22cbb": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1365,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubRecords.text.4468551e": {
+    "source": "src/ui/ClubRecords.tsx",
+    "line": 188,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubRecords.text.b7793632": {
+    "source": "src/ui/ClubRecords.tsx",
+    "line": 204,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubRecords.text.1658a8d7": {
+    "source": "src/ui/ClubRecords.tsx",
+    "line": 204,
+    "params": {},
+    "locations": []
+  },
+  "ui.clubRecords.text.a370093f": {
+    "source": "src/ui/ClubRecords.tsx",
+    "line": 204,
+    "params": {},
+    "locations": []
+  },
+  "ui.history.text.100b6fa6": {
+    "source": "src/ui/History.tsx",
+    "line": 433,
+    "params": {},
+    "locations": []
+  },
+  "league.scandals.text.7dcee789": {
+    "source": "src/league/scandals.ts",
+    "line": 454,
+    "params": {},
+    "locations": []
   }
 }

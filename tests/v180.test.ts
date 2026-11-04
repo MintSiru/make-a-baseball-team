@@ -2,12 +2,13 @@
    NPB-style postseason for two leagues, and the scenario 부상병동. */
 import { describe, expect, it } from 'vitest';
 import { faOutlook } from '../src/league/faclock';
-import { isForeign } from '../src/league/players';
+import { isForeign, isPitcher } from '../src/league/players';
 import { rosterView } from '../src/league/views';
 import { endRegular, loadSave, playDays } from './helpers';
 import { matchInputs } from '../src/league/manager';
 import { scenarioProgress, SCENARIOS, withScenario } from '../src/league/scenarios';
 import { WARD } from '../src/league/ward';
+import { rollInjuries } from '../src/league/injuries';
 import { createLeague } from '../src/league/history';
 import type { ExpansionSettings } from '../src/league/state';
 import { playPostseason, roundName } from '../src/league/postseason';
@@ -199,7 +200,22 @@ describe('scenario 부상병동', () => {
     // Twice the chance, but one season is some thirty injuries and an injured player cannot be hurt again while
     // out, so the count comes out well short of double (1.38–1.6 across versions): more than a quarter up is the test.
     expect(y.n).toBeGreaterThan(x.n * 1.25);
-    expect(y.days).toBeGreaterThan(x.days);
+    // Out longer: the same injury, the same day, takes 1.4 times as long. (2.0.76: a season's few dozen layoffs of
+    // either side are too few for their median to show it every time; the other clubs' suspensions moved the games
+    // enough that both came out 29 days.)
+    const layoff = (s: typeof usual) => {
+      const p = Object.values(s.players).find((q) => q.teamId === me && q.status === 'active' && !s.injuries[q.id] && !isPitcher(q))!;
+      const box = { batting: [{ id: p.id }], pitching: [] } as never;
+      rollInjuries(s, box, '2099-05-01', () => 0, () => ({ lost: 0 }) as never);
+      return { id: p.id, days: s.injuries[p.id]!.days };
+    };
+    const ua = layoff(loadSave());
+    const w2 = loadSave();
+    w2.user!.settings.scenario = 'ward';
+    const wa = layoff(w2);
+    expect(wa.id).toBe(ua.id);
+    expect(wa.days).toBeGreaterThan(ua.days);
+    expect(y.days).toBeGreaterThan(0);
     expect(scenarioProgress(ward)!.lines.join(' ')).toContain('부상자');
   }, 300_000);
 });

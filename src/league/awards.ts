@@ -10,7 +10,8 @@ import { k as __i18n_k } from '../i18n/index';
    - 골든글러브: at each position the best WAR with 60+ games there (pitchers: best pitching WAR;
      outfield three; designated hitter).
    Honours go on the players; the season summary keeps the list. Retired greats with enough career
-   WAR enter the hall of fame (명예의 전당, a game feature: the KBO has none yet). */
+   WAR enter the hall of fame (명예의 전당, a game feature: the KBO has none yet) — 2.0.76: by the committee's vote
+   (hallvote.ts). */
 import { fieldingRuns } from './fielding';
 import type { FieldPos } from './engine/types';
 import type { BatTotals, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
@@ -201,11 +202,13 @@ export interface HallEntry {
   seasons: number;
   teams: TeamId[];
   line: string;
+  /** 2.0.76: his share of the committee's vote (%). */
+  vote?: number;
 }
 
 /** 1.9.9 (the user's request): a reliever's WAR is small, so the bullpen's bar is lower: WAR 40, or WAR 25 with 300
     saves and holds, or WAR 25 with three save or hold titles. */
-const HALL = { war: 65, warWithHonours: 55, honours: 5, relieverWar: 40, relieverWarWithSaves: 25, relieverSaves: 300, relieverTitles: 3 };
+export const HALL = { war: 65, warWithHonours: 55, honours: 5, relieverWar: 40, relieverWarWithSaves: 25, relieverSaves: 300, relieverTitles: 3 };
 
 /** 1.9.9: how many times he led the league in saves or holds. */
 export const bullpenTitles = (s: Pick<LeagueState, 'history'>, id: PlayerId) => {
@@ -213,19 +216,31 @@ export const bullpenTitles = (s: Pick<LeagueState, 'history'>, id: PlayerId) => 
   return s.history.reduce((a, h) => a + (h.awards?.titles.filter((t) => t.id === id && labels.includes(t.label)).length ?? 0), 0);
 };
 
-/** A retiring player's career: enough WAR, or a strong career with major awards, enters the hall. */
-export function hallOfFameCheck(s: LeagueState, p: Player, year: number) {
+/** 2.0.76: how far his career clears the hall's bar (1: the bar the hall once took every player at, automatically):
+    the WAR, or the WAR with major awards, or a reliever's WAR with his saves and holds or titles. */
+export function hallScore(s: LeagueState, p: Player): number {
+  const major = p.career.filter((c) => !c.level);
+  const war = major.reduce((a, c) => a + c.war, 0);
+  const big = (p.honors ?? []).filter((h) => h.includes('MVP') || h.includes('골든글러브') || h.includes('신인왕')).length;
+  let score = war / HALL.war;
+  if (big >= HALL.honours) score = Math.max(score, war / HALL.warWithHonours);
+  if (isReliever(p)) {
+    const saves = major.reduce((a, c) => a + (c.pit?.sv ?? 0) + (c.pit?.hld ?? 0), 0);
+    score = Math.max(score, war / HALL.relieverWar);
+    if (saves >= HALL.relieverSaves || bullpenTitles(s, p.id) >= HALL.relieverTitles) score = Math.max(score, war / HALL.relieverWarWithSaves);
+  }
+  return Math.max(0, score);
+}
+
+/** He enters the hall (2.0.76: voted in, hallvote.ts). */
+export function induct(s: LeagueState, p: Player, year: number, vote?: number) {
+  if (s.hallOfFame?.some((h) => h.id === p.id)) return;
   const major = p.career.filter((c) => !c.level);
   const war = Math.round(major.reduce((a, c) => a + c.war, 0) * 10) / 10;
-  const big = (p.honors ?? []).filter((h) => h.includes('MVP') || h.includes('골든글러브') || h.includes('신인왕')).length;
-  const saves = major.reduce((a, c) => a + (c.pit?.sv ?? 0) + (c.pit?.hld ?? 0), 0);
-  const bullpen = isReliever(p) && (war >= HALL.relieverWar || (war >= HALL.relieverWarWithSaves && (saves >= HALL.relieverSaves || bullpenTitles(s, p.id) >= HALL.relieverTitles)));
-  if (war < HALL.war && !(war >= HALL.warWithHonours && big >= HALL.honours) && !bullpen) return;
-  if (s.hallOfFame?.some((h) => h.id === p.id)) return;
   const bat = major.reduce((a, c) => ({ h: a.h + (c.bat?.h ?? 0), hr: a.hr + (c.bat?.hr ?? 0) }), { h: 0, hr: 0 });
   const pit = major.reduce((a, c) => ({ w: a.w + (c.pit?.w ?? 0), sv: a.sv + (c.pit?.sv ?? 0), outs: a.outs + (c.pit?.outs ?? 0) }), { w: 0, sv: 0, outs: 0 });
   const line = isPitcher(p) ? __i18n_k("league.awards.hallOfFameCheck.line.06b1f0af", { w: pit.w, sv: pit.sv, ip: ip(pit.outs) }) : __i18n_k("league.awards.hallOfFameCheck.line.0d295302", { h: bat.h, hr: bat.hr });
-  const entry = { id: p.id, name: p.name, year, war, seasons: major.length, teams: [...new Set(major.map((c) => c.teamId))], line };
+  const entry: HallEntry = { id: p.id, name: p.name, year, war, seasons: major.length, teams: [...new Set(major.map((c) => c.teamId))], line, ...(vote !== undefined ? { vote } : {}) };
   (s.hallOfFame ??= []).push(entry);
   hallAlert(s, p, entry);
   if (s.user && major.filter((c) => c.teamId === s.user!.teamId).length >= 3) {

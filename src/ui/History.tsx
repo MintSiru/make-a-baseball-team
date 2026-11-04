@@ -1,5 +1,7 @@
 import { display as __i18n_display, displayText as __i18n_displayText, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 import { startYear } from '../league/era';
+import { HALL_VOTE, type HallVoteRow } from '../league/hallvote';
+import { offenseLabel, type Offense } from '../league/scandals';
 import { useState } from 'preact/hooks';
 import { nationalView, retiredNumbersView } from '../league/legacy';
 import { nationalGamesOf } from '../league/nationalgames';
@@ -16,7 +18,7 @@ import { draftView, draftYears } from '../league/draftlog';
 import { gradeClass } from './grades';
 import { MlbList } from './Mlb';
 
-type View = 'seasons' | 'awards' | 'records' | 'hall' | 'retired' | 'national' | 'draft' | 'mlb' | 'fa';
+type View = 'seasons' | 'awards' | 'records' | 'hall' | 'retired' | 'conduct' | 'national' | 'draft' | 'mlb' | 'fa';
 
 export function History({ league, onPlayer, onBox }: { league: LeagueState; onPlayer: (id: string) => void; onBox?: (id: string) => void }) {
   const [view, setView] = useState<View>('seasons');
@@ -31,6 +33,8 @@ export function History({ league, onPlayer, onBox }: { league: LeagueState; onPl
             ['records', __i18n_k("ui.history.history.24f4444a")],
             ['hall', __i18n_k("ui.history.history.6999864f")],
             ['retired', __i18n_k("ui.history.history.adad27c2")],
+            // 2.0.76 (the user's request): the league's record of offenses (conduct.ts).
+            ['conduct', __i18n_t("ui.history.text.919bd783")],
             ['national', __i18n_k("ui.history.history.3243618b")],
             ['draft', __i18n_t("ui.history.text.dddce47e")],
             ['mlb', __i18n_t("ui.history.text.c02cebf4")],
@@ -48,6 +52,7 @@ export function History({ league, onPlayer, onBox }: { league: LeagueState; onPl
       {__i18n_display(view === 'records' && <Records league={league} onPlayer={onPlayer} />)}
       {__i18n_display(view === 'hall' && <Hall league={league} onPlayer={onPlayer} />)}
       {__i18n_display(view === 'retired' && <Retired league={league} onPlayer={onPlayer} />)}
+      {view === 'conduct' && <Conduct league={league} onPlayer={onPlayer} />}
       {__i18n_display(view === 'national' && <National league={league} onPlayer={onPlayer} onBox={onBox} />)}
       {view === 'draft' && <Drafts league={league} onPlayer={onPlayer} />}
       {view === 'mlb' && <MlbList league={league} onPlayer={onPlayer} />}
@@ -167,7 +172,9 @@ function Hall({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string
   const hall = [...(league.hallOfFame ?? [])].reverse();
   return (
     <>
-      <p class="muted">{__i18n_t("ui.history.hall.7aeaf1ba")}</p>
+      <p class="muted">{__i18n_t("ui.history.text.4e61efbb", { years: HALL_VOTE.years, in: HALL_VOTE.in, out: HALL_VOTE.out })}</p>
+      <HallVotes league={league} onPlayer={onPlayer} />
+      <h3>{__i18n_t("ui.history.text.c0c170ba")}</h3>
       {__i18n_display(hall.length ? (
         <div class="table-wrap">
           <table class="record-table">
@@ -178,6 +185,7 @@ function Hall({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string
                 <th>{__i18n_t("ui.history.hall.58756112")}</th>
                 <th class="num">{__i18n_t("ui.history.hall.b3000412")}</th>
                 <th class="num">WAR</th>
+                <th class="num">{__i18n_t("ui.history.text.0827eb40")}</th>
                 <th>{__i18n_t("ui.history.hall.fc7fa3d0")}</th>
               </tr>
             </thead>
@@ -193,6 +201,7 @@ function Hall({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string
                   <td>{__i18n_display(league.players[h.id] ? careerClubs(league, league.players[h.id]!.career).join(' · ') : h.teams.map((t) => shortName(league, t)).join(' · '))}</td>
                   <td class="num">{__i18n_display(h.seasons)}</td>
                   <td class="num strong">{__i18n_display(h.war.toFixed(1))}</td>
+                  <td class="num">{h.vote !== undefined ? `${h.vote.toFixed(1)}%` : '-'}</td>
                   <td>{__i18n_display(h.line)}</td>
                 </tr>
               )))}
@@ -202,6 +211,132 @@ function Hall({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string
       ) : (
         <p class="muted">{__i18n_t("ui.history.hall.92967a7b")}</p>
       ))}
+    </>
+  );
+}
+
+/** 2.0.76: the hall of fame's votes, a winter at a time (the latest first). */
+function HallVotes({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
+  const votes = [...(league.hallVotes ?? [])].reverse();
+  const [year, setYear] = useState<number | null>(null);
+  if (!votes.length) return <p class="muted small">{__i18n_t("ui.history.text.e32cece1")}</p>;
+  const v = votes.find((x) => x.year === year) ?? votes[0]!;
+  const result = (r: HallVoteRow) => (r.result === 'in' ? __i18n_t("ui.history.text.90a76354") : r.result === 'out' ? __i18n_t("ui.history.text.82508a1b") : __i18n_t("ui.history.text.88a22cbb"));
+  return (
+    <>
+      <h3>
+        {__i18n_t("ui.history.text.294f4dcf")}{' '}
+        {votes.length > 1 && (
+          <select value={v.year} aria-label={__i18n_t("ui.history.text.8cf25eb7")} onChange={(e) => setYear(Number((e.currentTarget as HTMLSelectElement).value))}>
+            {votes.map((x) => (
+              <option key={x.year} value={x.year}>
+                {x.year}
+              </option>
+            ))}
+          </select>
+        )}
+        {votes.length === 1 && <span class="muted small"> {v.year}</span>}
+      </h3>
+      <div class="table-wrap">
+        <table class="record-table hall-vote">
+          <thead>
+            <tr>
+              <th>{__i18n_t("ui.history.hall.c37450d6")}</th>
+              <th class="num">{__i18n_t("ui.history.text.0827eb40")}</th>
+              <th class="num">{__i18n_t("ui.history.text.2626a8b1")}</th>
+              <th>{__i18n_t("ui.history.text.71d855ac")}</th>
+              <th class="num">{__i18n_t("ui.history.text.24585a22")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {v.rows.map((r) => (
+              <tr key={r.id} class={r.result === 'in' ? 'good' : r.result === 'out' ? 'muted' : ''}>
+                <td>
+                  <button type="button" class="link" onClick={() => onPlayer(r.id)}>
+                    {__i18n_display(r.name)}
+                  </button>
+                </td>
+                <td class={`num${r.result === 'in' ? ' strong' : ''}`}>{r.pct.toFixed(1)}%</td>
+                <td class="num">{`${r.on}/${HALL_VOTE.years}`}</td>
+                <td>{result(r)}</td>
+                <td class="num">{r.conduct ? `-${r.conduct}` : '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+/** 2.0.76 (the user's request: 「약물이나 음주운전 같은 짓 했을 때 확인하는 기록」): every offense the league has seen,
+    ours or another club's, with the KBO's penalty and the club's answer. */
+function Conduct({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
+  const [mine, setMine] = useState(false);
+  const me = league.user?.teamId;
+  const all = [...(league.offenseLog ?? [])].reverse();
+  const list = mine ? all.filter((e) => e.teamId === me) : all;
+  const counts = new Map<string, number>();
+  for (const e of list) counts.set(e.offense, (counts.get(e.offense) ?? 0) + 1);
+  return (
+    <>
+      <p class="muted">{__i18n_t("ui.history.text.55b24669")}</p>
+      <div class="segmented" role="group" aria-label={__i18n_t("ui.history.text.919bd783")}>
+        {([false, true] as const).map((x) => (
+          <button key={String(x)} type="button" aria-pressed={mine === x} onClick={() => setMine(x)}>
+            {x ? __i18n_t("ui.history.text.8cc09c32") : __i18n_t("ui.history.text.20608a8a")}
+          </button>
+        ))}
+      </div>
+      {list.length === 0 ? (
+        <p class="muted">{__i18n_t("ui.history.text.5f9239c7")}</p>
+      ) : (
+        <>
+          <p class="small conduct-counts">
+            {[...counts.entries()]
+              .sort((a, b) => b[1] - a[1])
+              .map(([o, n]) => (
+                <span key={o} class="tag">
+                  {__i18n_display(offenseLabel(o as Offense))} {n}
+                </span>
+              ))}
+          </p>
+          <div class="table-wrap">
+            <table class="record-table conduct-table">
+              <thead>
+                <tr>
+                  <th>{__i18n_t("ui.history.text.5caa75a8")}</th>
+                  <th>{__i18n_t("ui.history.hall.c37450d6")}</th>
+                  <th>{__i18n_t("ui.history.text.58756112")}</th>
+                  <th>{__i18n_t("ui.history.text.63c27906")}</th>
+                  <th>{__i18n_t("ui.history.text.9cccd052")}</th>
+                  <th>{__i18n_t("ui.history.text.de29eaee")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {list.map((e, i) => (
+                  <tr key={`${e.id}-${e.date}-${i}`} class={e.teamId === me ? 'mine' : ''}>
+                    <td class="num">{e.date}</td>
+                    <td>
+                      {league.players[e.id] ? (
+                        <button type="button" class="link" onClick={() => onPlayer(e.id)}>
+                          {__i18n_display(e.name)}
+                        </button>
+                      ) : (
+                        __i18n_display(e.name)
+                      )}
+                    </td>
+                    <td>{e.teamId ? __i18n_display(shortName(league, e.teamId)) : '-'}</td>
+                    <td>{__i18n_display(offenseLabel(e.offense))}</td>
+                    <td>{__i18n_display(e.penalty)}</td>
+                    <td>{e.answer ? __i18n_display(e.answer) : e.life ? __i18n_t("ui.history.text.8d1a0378") : '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </>
   );
 }
@@ -295,7 +430,7 @@ function FuturesTable({ league }: { league: LeagueState }) {
 /** Retired numbers (1.0.1): each club's, ours first, with the player's story and his numbers with the club. */
 function Retired({ league, onPlayer }: { league: LeagueState; onPlayer: (id: string) => void }) {
   const list = retiredNumbersView(league);
-  if (!list.length) return <p class="muted">{__i18n_t("ui.history.retired.b42d5d44")}</p>;
+  if (!list.length) return <p class="muted">{__i18n_t("ui.history.text.100b6fa6")}</p>;
   return (
     <div class="retired-grid">
       {__i18n_display(list.map((r) => (
