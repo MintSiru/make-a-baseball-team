@@ -185,6 +185,7 @@ function RetireNumber({ league, onAct, onPlayer }: { league: LeagueState; onAct:
   const verdict = c.verdict === 'worthy' ? __i18n_t("ui.clubRecords.text.98ea214c") : c.verdict === 'debatable' ? __i18n_t("ui.clubRecords.text.75bae11c") : __i18n_t("ui.clubRecords.text.eaece91e");
   return (
     <div class="retire-number">
+      <p class="muted small">{__i18n_t("ui.clubRecords.text.4468551e")}</p>
       <label>
         {__i18n_t("ui.clubRecords.text.ec4dcfba")}{' '}
         <select value={c.id} onChange={(e) => setId((e.currentTarget as HTMLSelectElement).value)}>
@@ -199,6 +200,8 @@ function RetireNumber({ league, onAct, onPlayer }: { league: LeagueState; onAct:
         {verdict}
         {c.mood < 0 ? ` ${Math.round(c.mood * 100)}` : ''}
       </span>{' '}
+      {/* 2.0.76 (the user's request): the board's opinion, his record of offenses weighed. */}
+      <span class={`stamp${c.board === 'for' ? ' good' : ''}`}>{c.board === 'for' ? __i18n_t("ui.clubRecords.text.b7793632") : c.conduct > 0 ? __i18n_t("ui.clubRecords.text.1658a8d7") : __i18n_t("ui.clubRecords.text.a370093f")}</span>{' '}
       <button type="button" class="link small" onClick={() => onPlayer(c.id)}>
         {__i18n_t("ui.clubRecords.text.243cf4c2")}
       </button>{' '}

@@ -3,6 +3,9 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
    then one part at a time — scouting grades as bars with positions or pitches, records, the staff's read, his
    background and injuries. Everything shown is public: grades are scouting reports, velocity is the radar gun. */
 import { birdSeason, isBirdPick } from '../league/bird';
+import { offensesOf } from '../league/conduct';
+import { HALL_VOTE, lastVote } from '../league/hallvote';
+import { offenseLabel } from '../league/scandals';
 import { moveHistory, type MoveKind } from '../league/moves';
 import { NameLinks } from './NameLinks';
 import { headlineHonors, honorCounts } from '../league/honorcount';
@@ -1339,6 +1342,30 @@ export function PlayerPanel({
                 </ul>
               </>
             ))}
+            {/* 2.0.76 (the user's request): his record of offenses, and his hall of fame votes. */}
+            {offensesOf(league, p.id).length > 0 && (
+              <>
+                <h3>{__i18n_t("ui.playerPanel.text.0eadc8c6")}</h3>
+                <ul class="plain small life-list conduct-list">
+                  {offensesOf(league, p.id).map((e, i) => (
+                    <li key={`${e.date}-${i}`} class="minus">
+                      {e.date} {__i18n_display(offenseLabel(e.offense))} · {__i18n_display(e.penalty)}
+                      {e.answer ? <span class="muted"> · {__i18n_display(e.answer)}</span> : null}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {(() => {
+              if (league.hallOfFame?.some((h) => h.id === p.id)) return null;
+              const v = lastVote(league, p.id);
+              if (!v) return null;
+              return (
+                <p class="small hall-status">
+                  {__i18n_t("ui.playerPanel.text.27862990", { year: v.year, pct: v.pct.toFixed(1), on: v.on, years: HALL_VOTE.years })} · {v.result === 'out' ? __i18n_t("ui.playerPanel.text.82508a1b") : __i18n_t("ui.playerPanel.text.88a22cbb")}
+                </p>
+              );
+            })()}
             {/* 2.0.9: the editor (no abilities). */}
             {onAct && <PlayerEditor league={league} id={p.id} onAct={onAct} />}
             {onAct && league.abilityEditor && <AbilityEditor league={league} id={p.id} onAct={onAct} />}

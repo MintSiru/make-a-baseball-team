@@ -20,12 +20,13 @@ import { eunneun, iga } from './josa';
 import { addNews } from './news';
 import { leaveLeague } from './offseason';
 import { ageIn, isForeign, isPitcher } from './players';
-import { orgPlayers, type Decision, type LeagueState } from './state';
+import { firstTeamIds, orgPlayers, type Decision, type LeagueState } from './state';
 import { GROWTH, SCANDAL as S } from './tuning';
 import { temperFactor, troubleFactor } from './traits';
 import { isMarried } from './life';
 import { maybeDiscipline } from './discipline';
 import { BROKER, brokerTested } from './broker';
+import { answerOffense, CONDUCT, recordOffense } from './conduct';
 
 export type Offense = 'dui' | 'doping' | 'assault' | 'fixing' | RareOffense;
 /** 2.0.28 (the user's request): 불륜, 낙태 종용, 불법 도박, 조직폭력배 연루, 학교 폭력, 병역 비리, 감독·코치에게 항명. */
@@ -50,7 +51,7 @@ export interface Suspension {
 }
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
-const short = (s: LeagueState) => s.teams.find((t) => t.id === s.user?.teamId)?.short ?? '';
+const short = (s: LeagueState, teamId = s.user?.teamId) => s.teams.find((t) => t.id === teamId)?.short ?? '';
 
 /** Whether he is serving a suspension on `date` (he cannot be registered or play). */
 export function suspended(s: LeagueState, id: PlayerId, date?: string): boolean {
@@ -77,11 +78,10 @@ function liftBans(s: LeagueState, date: string) {
 // ── A day of the season ──────────────────────────────────────────────────────────────────────────
 
 /** Who might do it: our domestic players at the club, a little likelier for some than others. */
-function candidate(s: LeagueState, offense: Offense | 'rumour', r: () => number): Player | null {
-  const u = s.user!;
+function candidate(s: LeagueState, offense: Offense | 'rumour', r: () => number, teamId = s.user!.teamId): Player | null {
   // 2.0.28: the foreign players' own trouble finds a foreign player.
   const foreign = offense !== 'rumour' && FOREIGN_ONLY.includes(offense);
-  const pool = orgPlayers(s, u.teamId).filter((p) => p.status === 'active' && isForeign(p) === foreign && !suspended(s, p.id) && !p.life?.suspicion);
+  const pool = orgPlayers(s, teamId).filter((p) => p.status === 'active' && isForeign(p) === foreign && !suspended(s, p.id) && !p.life?.suspicion);
   if (!pool.length) return null;
   const base = (p: Player) => {
     const age = ageIn(p, s.year);
@@ -122,6 +122,8 @@ export function scandalDay(s: LeagueState, date: string): boolean {
   const u = s.user;
   if (!u) return false;
   liftBans(s, date);
+  // 2.0.76: the other clubs' players too (the league's record of its offenses, conduct.ts).
+  otherClubsDay(s, date);
   const r = rng(`${s.seed}|scandal|${date}`);
   // A club of troublemakers has more trouble (1.1.0).
   const k = clubTrouble(s, u.teamId);
@@ -404,25 +406,31 @@ export function brokerIncident(s: LeagueState, p: Player, offense: 'doping' | 'd
 
 /** It happened (or came out): the penalty, the news, the fans; a decision for the club unless he is gone for good. */
 function incident(s: LeagueState, p: Player, offense: Offense, date: string, r: () => number, hid = false, respond = true): boolean {
-  const u = s.user!;
+  const teamId = p.teamId ?? s.user!.teamId;
+  // 2.0.76: another club's player: the news, his penalty and his club's answer, no alert or decision for us.
+  const mine = teamId === s.user?.teamId;
   const pen = penalty(p, offense, r, hid);
   const life = (p.life ??= {});
   (life.offenses ??= {})[offense] = (life.offenses[offense] ?? 0) + 1;
-  life.fans = Math.max(-30, (life.fans ?? 0) - (S.fans[offense] ?? 0));
-  (life.events ??= []).push({ date, text: `${LABEL[offense]} · ${pen.text}`, tone: 'bad' });
-  clubState(s, u.teamId).interest -= S.clubMood[offense] ?? 0;
+  // (A life off the field is kept for ours only, life.ts; another club's player keeps the count of his offenses.)
+  if (mine) {
+    life.fans = Math.max(-30, (life.fans ?? 0) - (S.fans[offense] ?? 0));
+    (life.events ??= []).push({ date, text: `${LABEL[offense]} · ${pen.text}`, tone: 'bad' });
+  }
+  clubState(s, teamId).interest -= S.clubMood[offense] ?? 0;
+  recordOffense(s, { date, id: p.id, name: p.name, teamId, offense, penalty: pen.text, ...(pen.life ? { life: true as const } : {}) });
   addNews(s, {
     id: `scandal-${p.id}-${date}`,
     date,
     kind: 'move',
-    title: `${short(s)} ${p.name}, ${LABEL[offense]}… ${pen.text}`,
-    body: __i18n_k("league.scandals.incident.body.49591e7c", { short: short(s), name: iga(p.name), value: LABEL[offense], value2: offense === 'dui' && hid ? __i18n_k("league.scandals.incident.body.c41bcb51") : __i18n_k("league.scandals.incident.body.8f337d30"), text: pen.text, value3: pen.life ? __i18n_k("league.scandals.incident.body.9ffde087") : '' }),
+    title: `${short(s, teamId)} ${p.name}, ${LABEL[offense]}… ${pen.text}`,
+    body: __i18n_k("league.scandals.incident.body.49591e7c", { short: short(s, teamId), name: iga(p.name), value: LABEL[offense], value2: offense === 'dui' && hid ? __i18n_k("league.scandals.incident.body.c41bcb51") : __i18n_k("league.scandals.incident.body.8f337d30"), text: pen.text, value3: pen.life ? __i18n_k("league.scandals.incident.body.9ffde087") : '' }),
     quotes: [{ who: __i18n_k("league.scandals.quotes.who.724cc77d"), role: 'fan', text: offense === 'fixing' ? __i18n_k("league.scandals.quotes.text.81459ace") : __i18n_k("league.scandals.quotes.text.48bd277f") }],
     facts: { 선수: p.name, 사유: LABEL[offense], 징계: pen.text },
     players: [p.id],
-    mine: true,
+    mine,
   });
-  addAlert(s, {
+  if (mine) addAlert(s, {
     id: `scandal-${p.id}-${date}`,
     date,
     kind: 'scandal',
@@ -438,6 +446,17 @@ function incident(s: LeagueState, p: Player, offense: Offense, date: string, r: 
   }
   // 2.0.28: an offense the KBO does not punish leaves him free to play (the club decides).
   if (pen.games || pen.years) (s.suspended ??= {})[p.id] = { reason: __i18n_k("league.scandals.incident.reason.df64fc10", { value: LABEL[offense] }), since: date, ...(pen.games ? { games: pen.games } : {}), ...(pen.years ? { until: addDays(date, 365 * pen.years) } : {}) };
+  // 2.0.76: another club answers with a penalty of its own — games for an offense the KBO suspends him for or a
+  // grave one, a fine for a light one (a word with a fan, insubordination, an affair).
+  if (!mine) {
+    if (pen.games || pen.years || (CONDUCT.weight[offense] ?? 0) >= 10) {
+      const x = (s.suspended ??= {})[p.id];
+      if (x) x.games = (x.games ?? 0) + S.extraGames;
+      else s.suspended[p.id] = { reason: __i18n_k("league.scandals.text.f678166c"), since: date, games: S.extraGames };
+      answerOffense(s, p.id, offense, __i18n_k("league.scandals.resolveScandal.text.8108135a", { extraGames: S.extraGames }));
+    } else answerOffense(s, p.id, offense, __i18n_k("league.scandals.text.7dcee789"));
+    return false;
+  }
   if (!respond) return false;
   s.pending = { kind: 'scandal', id: p.id, offense, penalty: pen.text };
   return true;
@@ -453,6 +472,7 @@ export function resolveScandal(s: LeagueState, d: Extract<Decision, { kind: 'sca
   const club = clubState(s, u.teamId);
   club.interest += S.answer[answer];
   const text = answer === 'voluntary' ? __i18n_k("league.scandals.text.88338b66") : answer === 'release' ? __i18n_k("league.scandals.resolveScandal.text.e16b5dd5") : answer === 'extra' ? __i18n_k("league.scandals.resolveScandal.text.8108135a", { extraGames: S.extraGames }) : __i18n_k("league.scandals.resolveScandal.text.a5cf5786");
+  answerOffense(s, d.id, d.offense as Offense, text);
   if (answer === 'extra') {
     const x = s.suspended?.[d.id];
     if (x) x.games = (x.games ?? 0) + S.extraGames;
@@ -473,3 +493,43 @@ export function resolveScandal(s: LeagueState, d: Extract<Decision, { kind: 'sca
 
 /** The scouts' answer: release him for a life-changing offense, a penalty of our own otherwise. */
 export const autoScandal = (d: Extract<Decision, { kind: 'scandal' }>): 'release' | 'extra' => (['dui', 'fixing', 'gambling', 'gangs', 'draftDodge', 'narcotics', 'drugs'].includes(d.offense) ? 'release' : 'extra');
+
+/** 2.0.76: an offense's name. */
+export const offenseLabel = (o: Offense) => LABEL[o];
+
+/** 2.0.76 (the user's request: a record of the league's offenses): another club's players drive drunk, are caught
+    doping, get into fights and the rest as ours do, at the same rates (a troublesome squad more), with the KBO's
+    penalties; the club answers with a penalty of its own. No warning signs or tests of its own: the KBO finds the
+    doping. */
+function otherClubsDay(s: LeagueState, date: string) {
+  const me = s.user?.teamId;
+  for (const teamId of firstTeamIds(s)) {
+    if (teamId === me || !s.rosters[teamId]) continue;
+    const r = rng(`${s.seed}|scandal-other|${teamId}|${date}`);
+    const k = clubTrouble(s, teamId);
+    for (const offense of ['dui', 'assault', 'fixing', 'doping', ...RARE] as Offense[]) {
+      const rate = offense === 'fanQuarrel' || offense === 'narcotics' ? FOREIGN_TROUBLE.rates[offense] : offense in S.rates ? S.rates[offense as keyof typeof S.rates] : S.rare[offense as keyof typeof S.rare];
+      if (r() >= (rate / S.gameDays) * k) continue;
+      const p = candidate(s, offense, r, teamId);
+      if (p) incident(s, p, offense, date, r, false, false);
+    }
+  }
+}
+
+/** 2.0.76: a save from before — the record built from his life's events (an offense, its penalty). */
+export function migrateOffenseLog(s: LeagueState) {
+  if (s.offenseLog) return;
+  const list: import('./conduct').OffenseEntry[] = [];
+  const labels = Object.entries(LABEL) as [Offense, string][];
+  for (const p of Object.values(s.players)) {
+    for (const e of p.life?.events ?? []) {
+      if (e.tone !== 'bad') continue;
+      const hit = labels.find(([, l]) => e.text.startsWith(`${l} · `));
+      if (!hit) continue;
+      const year = Number(e.date.slice(0, 4));
+      const teamId = p.career.find((c) => c.year === year && !c.level)?.teamId ?? p.career.find((c) => c.year === year)?.teamId ?? p.teamId;
+      list.push({ date: e.date, id: p.id, name: p.name, teamId: teamId ?? null, offense: hit[0], penalty: e.text.slice(hit[1].length + 3) });
+    }
+  }
+  s.offenseLog = list.sort((a, b) => a.date.localeCompare(b.date));
+}

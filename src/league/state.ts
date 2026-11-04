@@ -818,6 +818,11 @@ export interface LeagueState {
   alerts?: import('./alerts').Alert[];
   /** Retired greats (V0.7). */
   hallOfFame?: import('./awards').HallEntry[];
+  /** 2.0.76 (hallvote.ts): each winter's hall of fame vote, and the candidates dropped from the ballot. */
+  hallVotes?: import('./hallvote').HallVote[];
+  hallDropped?: PlayerId[];
+  /** 2.0.76 (conduct.ts): the league's record of its players' offenses. */
+  offenseLog?: import('./conduct').OffenseEntry[];
   /** Fans, prices, staff and accounts of every club (V0.6). */
   clubs?: Record<TeamId, ClubState>;
   /** This season's home gates, and the postseason ticket money. */
