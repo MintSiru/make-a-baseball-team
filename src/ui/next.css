@@ -1845,6 +1845,35 @@
   border: 1px solid var(--ink);
   box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
 }
+/* 2.0.78 (the user's report, a phone): the pickers fit the panel — a player's name, age and personality made a select
+   wider than the screen — and on a phone or a tablet the panel opens in the page's flow, the bar's full width (it
+   opened off the screen's left edge, over the table). */
+:root[data-ui='new'] .squad-aside .captains-card .card-editor label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 6px 0;
+}
+:root[data-ui='new'] .squad-aside .captains-card .card-editor select {
+  flex: 1 1 220px;
+  min-width: 0;
+  max-width: 100%;
+}
+@media (max-width: 900px) {
+  :root[data-ui='new'] .squad-aside,
+  :root[data-ui='new'] .squad-aside .captains-card {
+    display: block;
+    width: 100%;
+  }
+  :root[data-ui='new'] .squad-aside .captains-card .card-editor {
+    position: static;
+    width: auto;
+    margin: 6px -10px -5px;
+    box-shadow: none;
+    border-width: 1px 0 0;
+  }
+}
 :root[data-ui='new'] .captains-line {
   display: flex;
   flex-wrap: wrap;
