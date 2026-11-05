@@ -42,10 +42,15 @@ export function addAlert(s: LeagueState, a: Omit<Alert, 'seen'>) {
   }
   list.push(a);
   // 2.0.68: over the limit, the oldest article-style alerts (minor) go first, then the oldest of the rest — a result,
-  // an award or a signing outlasts a game story.
+  // an award or a signing outlasts a game story. 2.0.78 (the user's report: the winter's report of who went up and
+  // down stopped showing): ones already read go before unread ones, and never the one just added — a long game's list
+  // filled with results and awards, the only article in it was the new one, dropped before it could pop up.
   while (list.length > KEEP) {
-    const i = list.findIndex((x) => x.minor);
-    list.splice(i >= 0 ? i : 0, 1);
+    const at = (f: (x: Alert) => boolean) => list.findIndex((x, k) => k < list.length - 1 && f(x));
+    let i = at((x) => !!x.seen && !!x.minor);
+    if (i < 0) i = at((x) => !!x.seen);
+    if (i < 0) i = at((x) => !!x.minor);
+    list.splice(Math.max(0, i), 1);
   }
 }
 

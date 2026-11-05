@@ -124,3 +124,24 @@ function leaveMlbHome(s: LeagueState, p: Player) {
   p.mlb!.back = s.year;
   homeToMarket(p, s.year);
 }
+
+describe('2.0.78: an alert is not dropped before it is read', () => {
+  it('keeps the winter’s report in a long game’s full list of results and awards', async () => {
+    const { addAlert } = await import('../src/league/alerts');
+    const s = loadSave('2.0.76');
+    // Three hundred results, awards and signings, read long ago (minor ones went first, so none are left).
+    s.alerts = Array.from({ length: 300 }, (_, i) => ({ id: `old-${i}`, date: '2020-01-01', kind: 'award' as const, title: '', lines: [], seen: true }));
+    addAlert(s, { id: 'scout-winter-2027', date: '2027-12-01', kind: 'life', title: '2027 겨울 스카우트 보고', lines: [], minor: true });
+    expect(s.alerts.length).toBe(300);
+    const report = s.alerts.find((a) => a.id === 'scout-winter-2027');
+    expect(report).toBeDefined();
+    expect(report!.seen).toBeUndefined();
+    expect(s.alerts.some((a) => a.id === 'old-0')).toBe(false);
+    // Unread ones outlast read ones; among the unread, an article goes before a result — never the newest.
+    s.alerts = Array.from({ length: 300 }, (_, i) => ({ id: `new-${i}`, date: '2027-01-01', kind: i % 2 ? ('award' as const) : ('life' as const), title: '', lines: [], ...(i % 2 ? {} : { minor: true }) }));
+    addAlert(s, { id: 'last', date: '2027-12-02', kind: 'life', title: '', lines: [], minor: true });
+    expect(s.alerts.at(-1)!.id).toBe('last');
+    expect(s.alerts.some((a) => a.id === 'new-0')).toBe(false);
+    expect(s.alerts.some((a) => a.id === 'new-1')).toBe(true);
+  });
+});
