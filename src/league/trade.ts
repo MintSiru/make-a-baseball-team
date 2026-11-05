@@ -5,7 +5,7 @@ import { k as __i18n_k } from '../i18n/index';
 
    AI clubs judge every move by public grades only: a player is worth his keep value above a
    replacement level, more the longer he is under club control, less the more he is paid. */
-import { restartFreeAgency } from './returnees';
+import { homeToMarket, restartFreeAgency } from './returnees';
 import { iga, ro } from './josa';
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
@@ -513,11 +513,15 @@ export function signFromPool(s: LeagueState, id: PlayerId) {
   moveNews(s, { type: 'pool', teamId: u.teamId, id, salary: p.contract.salaries[0]!.amount });
 }
 
-/** At the end of the season unattached players who were not signed leave the league. */
+/** At the end of the season unattached players who were not signed leave the league. 2.0.77: but a free agent home
+    from abroad last winter who was never on a market (a save from before 2.0.77 put him straight in the pool) is on
+    this winter's. */
 export function clearPool(s: LeagueState) {
   for (const id of s.pool ?? []) {
     const p = s.players[id];
-    if (p && !p.teamId) leaveLeague(s, p, 'retired');
+    if (!p || p.teamId) continue;
+    if (p.mlb?.via === 'fa' && p.mlb.back === s.year - 1 && p.life?.unsigned !== s.year - 1 && p.status === 'freeAgent') homeToMarket(p, s.year);
+    else leaveLeague(s, p, 'retired');
   }
   s.pool = [];
   s.waivers = [];

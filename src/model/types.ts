@@ -91,6 +91,9 @@ export interface Service {
   /** The winter his free-agent deal's period option was declined or he opted out (V0.8): he is free that
       winter whatever his service, and the club that signs him owes no compensation. */
   optionFree?: number;
+  /** 2.0.77 (the user's request): the winter he came home from abroad a free agent (he signed there as one): that
+      winter's market has him, no compensation owed (returnees.ts, fa.ts). */
+  homeFree?: number;
   /** The latest military medical grade after an operation (V0.7.7, military.ts): 3 active duty, 4 social
       service only, 5 no peacetime service. `surgeries` counts the major operations it looked at. */
   exam?: { year: number; grade: number; reason: string; surgeries: number };

@@ -31,13 +31,18 @@ describe('a free agent abroad comes home (2.0.68)', () => {
     const free = freeAgentHomecomings(s, year + 1);
     const back = gone.filter((p) => p.mlb!.back === year);
     expect(back.length).toBeGreaterThan(5);
-    // Signed by an AI club (a returnee's deal) or waiting in the pool, unattached.
-    for (const p of back) expect(p.teamId ? p.teamId !== u.teamId : s.pool!.includes(p.id)).toBe(true);
-    for (const p of back.filter((x) => x.teamId)) expect(p.service.lastFreeAgencyAt).toBe(p.service.creditedSeasons);
+    // 2.0.77: unattached, for the winter's free-agent market (v2077.test.ts), not the pool.
+    for (const p of back) {
+      expect(p.teamId).toBeNull();
+      expect(p.service.homeFree).toBe(year);
+      expect(s.pool ?? []).not.toContain(p.id);
+    }
     expect(free.length).toBeGreaterThan(0);
     expect(s.alerts?.some((a) => a.id === `fa-home-${year + 1}`)).toBe(true);
-    // He asks a free agent's money, and signed by us his free agency starts over.
+    // He asks a free agent's money, and signed by us his free agency starts over (unsigned in the market, he waits
+    // in the pool).
     const p = free[0]!;
+    (s.pool ??= []).push(p.id);
     expect(poolAsk(s, p)).toBeGreaterThan(minimumSalaryFor(year + 1));
     expect(canSignFromPool(s, p.id)).toBeNull();
     signFromPool(s, p.id);

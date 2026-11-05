@@ -54,7 +54,8 @@ export function faGrades(s: LeagueState, next: number, fas: Player[]): Record<Pl
       out[p.id] = 'A';
       continue;
     }
-    if (ageIn(p, next) >= F.grade.cFromAge) {
+    // (2.0.77: one home from abroad has no club and owes none: returnees.ts.)
+    if (ageIn(p, next) >= F.grade.cFromAge || !p.teamId) {
       out[p.id] = 'C';
       continue;
     }

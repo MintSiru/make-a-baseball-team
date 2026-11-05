@@ -147,7 +147,7 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
   const capNow = cap - capRoomFor(league, me, next, new Set(talks.filter((t) => !t.signed && !t.gone).map((t) => t.id)));
   const capAdd = Object.values(mine).reduce((a, o) => a + capHit(o), 0);
   // 2.0.74: a foreign free agent is not one of the outside signings (foreignfa.ts).
-  const outside = Object.keys(mine).filter((id) => m.talks[id]!.from !== me && !m.talks[id]!.foreign).length;
+  const outside = Object.keys(mine).filter((id) => m.talks[id]!.from !== me && !m.talks[id]!.foreign && !m.talks[id]!.home).length;
   const room = m.userLimit - (m.signedOut[me] ?? 0);
   const nextDay = FA.rounds[m.round + 1];
 
@@ -272,7 +272,13 @@ export function FaMarket({ league, onSubmit, onPlayer, onAct }: Props) {
                         <button type="button" class="link" onClick={() => onPlayer(t.id)}>
                           {__i18n_display(p.name)}
                         </button>
-                        {__i18n_display(t.from === me && <span class="tag">{__i18n_t("ui.faMarket.faMarket.466570d3")}</span>)}
+                        {__i18n_display(t.from === me && !t.home && <span class="tag">{__i18n_t("ui.faMarket.faMarket.466570d3")}</span>)}
+                        {/* 2.0.77: home from abroad, where he went a free agent. */}
+                        {t.home && (
+                          <span class="tag" title={__i18n_t("ui.faMarket.text.eb68fc48")}>
+                            {__i18n_t("ui.faMarket.text.49a5efe3")}
+                          </span>
+                        )}
                         {t.foreign && (
                           <span class="tag" title={__i18n_t("ui.faMarket.text.f115581a")}>
                             {__i18n_t("ui.faMarket.text.49afcbc8")}
@@ -603,7 +609,8 @@ function TalkPanel({
           </ul>
         </>
       ))}
-      {__i18n_display(open && t.from === me && !offer && <p class="small muted">{__i18n_t("ui.faMarket.talkPanel.28dd6ea6")}</p>)}
+      {open && t.home && <p class="small muted">{__i18n_t("ui.faMarket.text.d30d18c1")}</p>}
+      {__i18n_display(open && t.from === me && !t.home && !offer && <p class="small muted">{__i18n_t("ui.faMarket.talkPanel.28dd6ea6")}</p>)}
     </aside>
   );
 }

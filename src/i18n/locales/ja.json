@@ -10472,5 +10472,10 @@
   "ui.clubRecords.text.1658a8d7": "審議委員会：保留（処分歴）",
   "ui.clubRecords.text.a370093f": "審議委員会：保留",
   "ui.history.text.100b6fa6": "まだ永久欠番はありません。一つの球団で長く（12シーズン以上）活躍した選手が引退すると、その球団の審議委員会が永久欠番を審議します。処分歴が重ければ保留となり、自球団ではGMが決めます。",
-  "league.scandals.text.7dcee789": "球団独自の処分（罰金）"
+  "league.scandals.text.7dcee789": "球団独自の処分（罰金）",
+  "ui.faMarket.text.eb68fc48": "海外でFAとしてプレーして戻った選手です。補償はなく、外部FA獲得の上限にも数えません。横の球団は古巣です。",
+  "ui.faMarket.text.49a5efe3": "海外復帰",
+  "ui.faMarket.text.d30d18c1": "海外でFAとしてプレーして戻った選手です。補償なしでどの球団とも契約でき、古巣が最も積極的です。市場が終わるまで契約できなければFA浪人として残ります。",
+  "league.fa.text.c8dc50f9": "海外復帰FA {name} → {short} · {termsText}",
+  "league.returnees.text.4a1476ce": "保留権のないFAとして、今冬のFA市場に補償なしで出ます(古巣が最も積極的)。"
 }
