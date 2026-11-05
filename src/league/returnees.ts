@@ -7,8 +7,9 @@ import { noteMove } from './moves';
      have at home. The club offers a free-agent style multi-year deal from his record and age; an AI
      club brings back anyone still useful, and if the user's club passes, another club may sign him.
    - 2.0.67 (the user's request): free agents who signed abroad (fa.ts) come home the same way after their deal, but
-     nobody holds their rights: an AI club may sign one at once, else he is an unattached free agent any club may sign
-     (시장 → 방출·자유계약), asking a free agent's money.
+     nobody holds their rights. 2.0.77 (the user's request: 자유계약이 아닌 FA 시장에): he is on the winter's free-agent
+     market with that winter's class, owing no compensation — his old club the keenest, any club may bid; nobody
+     signing him, he waits unattached like any free agent left out of the market (fa.ts closeUnsigned).
    - 2.0.67 (the user's request): a returnee signing a KBO deal starts his free agency over — four registered seasons to
      the next one, as after a free-agent deal.
    - Draftees who refused to sign and went abroad: most come back within a few years, and after the
@@ -19,7 +20,7 @@ import { noteMove } from './moves';
 import { hashUnit, rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
 import { marketValue } from './fa';
-import { developPlayer, leaveLeague, removeFromRoster, rosterLimit, sign } from './offseason';
+import { developPlayer, lastKboClub, leaveLeague, removeFromRoster, rosterLimit, sign } from './offseason';
 import { ageIn, currentValue, isForeign, keepValue } from './players';
 import { registeredIds, type LeagueState } from './state';
 import { moveNews } from './movenews';
@@ -40,8 +41,6 @@ const R = {
   aiKeep: 40,
   /** A club other than his own signs a returnee whose rights were released, this often. */
   otherClub: 0.6,
-  /** 2.0.67: an AI club signs a free agent home from abroad at once this often (if he is worth a place). */
-  faAi: 0.5,
   /** Draftees abroad: chance they ever come back, and years abroad before they do (then two years' wait). */
   amateurReturn: 0.75,
   amateurYears: [2, 5] as const,
@@ -146,6 +145,14 @@ export function homecomings(s: LeagueState, next: number): ReturnOffer[] {
   return mine;
 }
 
+/** 2.0.77: home from abroad a free agent, on this winter's market (`year`: the season just over). */
+export function homeToMarket(p: Player, year: number) {
+  p.status = 'freeAgent';
+  p.teamId = null;
+  p.contract = null;
+  p.service.homeFree = year;
+}
+
 /** 2.0.67 (the user's request): back from abroad and signed in the KBO, his free agency starts over — four registered
     seasons to the next (offseason.ts isFreeAgent), as after a free-agent deal. */
 export function restartFreeAgency(p: Player) {
@@ -168,8 +175,8 @@ function faComesHome(s: LeagueState, p: Player, year: number): boolean {
   return hashUnit(`${s.seed}-fa-home-${p.id}-${year}`) < chance;
 }
 
-/** 2.0.67: the free agents abroad who come home this winter — an AI club signs one now and then, the rest are
-    unattached free agents in the pool. Returns those who are free (for the alert). */
+/** 2.0.67: the free agents abroad who come home this winter. 2.0.77: onto this winter's free-agent market (fa.ts
+    openMarket), not the pool. Returns them (for the alert). */
 export function freeAgentHomecomings(s: LeagueState, next: number): Player[] {
   const year = next - 1;
   const free: Player[] = [];
@@ -177,19 +184,11 @@ export function freeAgentHomecomings(s: LeagueState, next: number): Player[] {
     if (ageIn(p, next) > R.maxAge) continue;
     if (!faComesHome(s, p, year)) continue;
     leaveMlb(p, year, 'back');
-    const before = currentValue(p);
     ageAbroad(s, p, p.mlb!.posted + 1, year);
-    const o = { id: p.id, ...offerFor(p, next, before), abroad: year - p.mlb!.posted };
-    p.status = 'freeAgent';
-    p.teamId = null;
-    p.contract = null;
-    const clubs = s.teams.filter((t) => t.id !== s.user?.teamId && s.rosters[t.id] && t.firstTeamFrom !== null && t.firstTeamFrom <= next && registeredIds(s, t.id).length < rosterLimit(next));
-    if (clubs.length && keepValue(p, next) >= R.aiKeep && hashUnit(`${s.seed}-fa-home-ai-${p.id}-${next}`) < R.faAi) {
-      signReturnee(s, p, clubs[Math.floor(hashUnit(`${s.seed}-fa-home-club-${p.id}-${next}`) * clubs.length)]!.id, o, next);
-    } else {
-      (s.pool ??= []).push(p.id);
-      free.push(p);
-    }
+    homeToMarket(p, year);
+    // (His old clubs all gone: unattached, as before 2.0.77.)
+    if (!lastKboClub(s, p)) (s.pool ??= []).push(p.id);
+    free.push(p);
   }
   if (s.user && free.length)
     addAlert(s, {
@@ -197,7 +196,7 @@ export function freeAgentHomecomings(s: LeagueState, next: number): Player[] {
       date: `${year}-11-05`,
       kind: 'move',
       title: __i18n_k("league.returnees.text.bf09ce39", { n: free.length }),
-      lines: [...free.map((p) => `${p.name} · ${p.mlb!.club} · ${__i18n_k("league.returnees.text.2f1177fc", { n: year - p.mlb!.posted })}`), __i18n_k("league.returnees.text.20c811b6")],
+      lines: [...free.map((p) => `${p.name} · ${p.mlb!.club} · ${__i18n_k("league.returnees.text.2f1177fc", { n: year - p.mlb!.posted })}`), __i18n_k("league.returnees.text.4a1476ce")],
       players: free.map((p) => p.id),
     });
   return free;

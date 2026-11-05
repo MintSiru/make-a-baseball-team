@@ -22,7 +22,7 @@ import { eulreul, iga, ro, wagwa } from './josa';
 import { clubState } from './fans';
 import { aiCompensation, compensationCash, externalLimit, faGrades, moneyFor, parentGiftFor, projectedPayroll, protectedBy, type FaGrade, type FaQueueItem } from './market';
 import { moveNews } from './movenews';
-import { freeAgentsFor, leaveLeague, removeFromRoster } from './offseason';
+import { freeAgentsFor, homeFreeAgent, lastKboClub, leaveLeague, removeFromRoster } from './offseason';
 import { joinMlb, joinNpb } from './mlb';
 import { mlbMarket, npbMarket } from './posting';
 import { usd } from './foreign';
@@ -86,6 +86,9 @@ export interface FaTalk {
   free?: boolean;
   /** 2.0.74 (foreignfa.ts): a foreign player who declared, under the game option. */
   foreign?: true;
+  /** 2.0.77 (returnees.ts): home from abroad, where he went a free agent — `from` is his old club (the keenest to
+      have him back), who holds no rights: no compensation, outside no club's limit. */
+  home?: true;
   /** What the market would call a fair deal for him. */
   price: FaOffer;
   /** What he asks (in value, see offerValue), and what he takes today. */
@@ -589,8 +592,8 @@ export function abroadDeal(s: LeagueState, p: Player, next: number): { league: '
 export function toJapan(s: LeagueState, next: number) {
   const year = next - 1;
   for (const p of freeAgentsFor(s, next)) {
-    // 2.0.37: talked into staying (abroad.ts).
-    if (staysHome(s, p.id, next)) continue;
+    // 2.0.37: talked into staying (abroad.ts). 2.0.77: one just home from abroad stays.
+    if (homeFreeAgent(p, next) || staysHome(s, p.id, next)) continue;
     const deal = abroadDeal(s, p, next);
     if (!deal) continue;
     const from = p.teamId!;
@@ -617,8 +620,9 @@ export function openMarket(s: LeagueState, next: number): FaMarket {
   // 1.9.3: a few of the best leave for Japan before the market opens.
   toJapan(s, next);
   const fas = freeAgentsFor(s, next);
-  // 2.0.74: foreign players who declared (foreignfa.ts) take no part in the grades or the clubs' outside limit.
-  const home = fas.filter((p) => !isForeign(p));
+  // 2.0.74: foreign players who declared (foreignfa.ts) take no part in the grades or the clubs' outside limit; 2.0.77:
+  // nor those home from abroad.
+  const home = fas.filter((p) => !isForeign(p) && !homeFreeAgent(p, next));
   const grades = faGrades(s, next, home);
   const entering = !!u && next === u.firstTeamYear;
   const limit = externalLimit(home.length);
@@ -644,13 +648,15 @@ export function openMarket(s: LeagueState, next: number): FaMarket {
     const greed = lerp(FA.greed, r()) + (war >= 4 ? 0.04 : 0);
     const ask = offerValue(price) * greed;
     const foreign = isForeign(p);
-    const free = p.service.optionFree === year || foreign;
+    const back = homeFreeAgent(p, next);
+    const free = p.service.optionFree === year || foreign || back;
     const t: FaTalk = {
       id: p.id,
-      from: p.teamId!,
+      from: p.teamId ?? lastKboClub(s, p)!,
       grade: free ? 'C' : (grades[p.id] ?? 'C'),
       ...(free ? { free: true } : {}),
       ...(foreign ? { foreign: true as const } : {}),
+      ...(back ? { home: true as const } : {}),
       price,
       ask,
       floor: ask * FA.floorStart,
@@ -733,7 +739,7 @@ const isOpen = (t: FaTalk) => !t.signed && !t.gone;
     since they were drafted drops out, instead of blocking the next round. */
 export const openDrafts = <T>(m: FaMarket, drafts: Record<PlayerId, T>): Record<PlayerId, T> =>
   Object.fromEntries(Object.entries(drafts).filter(([id]) => !!m.talks[id] && isOpen(m.talks[id]!)));
-const outside = (m: FaMarket, t: FaTalk, teamId: TeamId) => teamId !== t.from && !t.foreign;
+const outside = (m: FaMarket, t: FaTalk, teamId: TeamId) => teamId !== t.from && !t.foreign && !t.home;
 const limitOf = (s: LeagueState, m: FaMarket, teamId: TeamId) => (teamId === s.user?.teamId ? m.userLimit : teamId === m.newClub || m.northClubs?.includes(teamId) ? EXPANSION_DEFAULTS.freeAgentSigns : m.limit);
 
 /** Plays the next round: AI clubs bid, raise or pull out, then every player decides. Returns whether anything
@@ -960,6 +966,9 @@ export function signTalk(s: LeagueState, m: FaMarket, t: FaTalk, teamId: TeamId,
   const salary = salaryIn(p, next - 1);
   removeFromRoster(s, p);
   p.teamId = teamId;
+  // (2.0.77: one home from abroad was a free agent outside any club.)
+  p.status = 'active';
+  delete p.service.homeFree;
   s.rosters[teamId]!.futures.push(p.id);
   p.contract = faContract(teamId, next, o, p, reinforce?.kind === 'reinforce' ? reinforce.spot : undefined);
   // 2.0.74: a foreign player's deal counts in dollars against the foreign salary cap too (foreignfa.ts).
@@ -997,9 +1006,14 @@ export function signTalk(s: LeagueState, m: FaMarket, t: FaTalk, teamId: TeamId,
   } else if (u && from === me) (u.log ??= []).push({ year, text: __i18n_k("league.fa.signTalk.text.c617190d", { name: p.name, short: ro(short(s, teamId)), termsText: termsText(o) }) });
   m.news.push({
     day,
-    text: teamId === from ? __i18n_k("league.fa.signTalk.text.5e0e721b", { short: short(s, teamId), grade: t.grade, name: p.name, termsText: termsText(o) }) : __i18n_k("league.fa.signTalk.text.85534c18", { grade: t.grade, name: p.name, short: short(s, from), short2: short(s, teamId), termsText: termsText(o) }),
+    text: t.home ? __i18n_k("league.fa.text.c8dc50f9", { name: p.name, short: short(s, teamId), termsText: termsText(o) }) : teamId === from ? __i18n_k("league.fa.signTalk.text.5e0e721b", { short: short(s, teamId), grade: t.grade, name: p.name, termsText: termsText(o) }) : __i18n_k("league.fa.signTalk.text.85534c18", { grade: t.grade, name: p.name, short: short(s, from), short2: short(s, teamId), termsText: termsText(o) }),
     ...(teamId === me || from === me ? { mine: true } : {}),
   });
+  // 2.0.77: one home from abroad is a returnee's signing (he left his old club years ago).
+  if (t.home) {
+    moveNews(s, { type: 'returnee', teamId, id: p.id, years: o.years, annual: o.annual, abroad: p.mlb ? year - p.mlb.posted : 0, own: teamId === from }, date);
+    return;
+  }
   moveNews(s, { type: 'fa', from, to: teamId, id: p.id, years: o.years, annual: o.annual, bonus: o.bonus, options: o.options, extra: o.extra, grade: t.grade }, date);
   crossing(s, p, from, teamId, __i18n_k("league.fa.signTalk.b30dac4a"), date);
   if (from === me && teamId !== me) farewell(s, p, from, __i18n_k("league.fa.signTalk.1046ffcb", { short: short(s, teamId) }), date);
@@ -1037,7 +1051,7 @@ function closeUnsigned(s: LeagueState, m: FaMarket, t: FaTalk, day: number, next
     if (!toForeignPool(s, p, m.year)) leaveLeague(s, p, 'overseas');
     return;
   }
-  noteMove(s, p, 'unsigned', t.from, null);
+  if (!t.home) noteMove(s, p, 'unsigned', t.from, null);
   removeFromRoster(s, p);
   p.teamId = null;
   p.contract = null;
@@ -1195,7 +1209,7 @@ export function checkRound(s: LeagueState, m: FaMarket, input: RoundInput, next:
   }
   const offers = offersAfter(s, m, input);
   const me = u.teamId;
-  const outsideOffers = Object.keys(offers).filter((id) => m.talks[id]!.from !== me && !m.talks[id]!.foreign).length;
+  const outsideOffers = Object.keys(offers).filter((id) => m.talks[id]!.from !== me && !m.talks[id]!.foreign && !m.talks[id]!.home).length;
   const room = m.userLimit - (m.signedOut[me] ?? 0);
   if (outsideOffers > room) return __i18n_k("league.fa.checkRound.db8686c6", { userLimit: m.userLimit, value: Math.max(0, room) });
   // 2.0.74: foreign free agents of other clubs only into our open foreign places (foreignfa.ts).

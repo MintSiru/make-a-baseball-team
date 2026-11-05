@@ -10472,5 +10472,10 @@
   "ui.clubRecords.text.1658a8d7": "심의위원회: 보류 (징계 이력)",
   "ui.clubRecords.text.a370093f": "심의위원회: 보류",
   "ui.history.text.100b6fa6": "아직 영구결번이 없습니다. 한 구단에서 오래(12시즌 이상) 크게 활약한 선수가 은퇴하면 그 구단 심의위원회가 영구결번을 심의합니다. 징계 이력이 무거우면 보류하고, 우리 구단은 단장이 정합니다.",
-  "league.scandals.text.7dcee789": "구단 자체 징계 (벌금)"
+  "league.scandals.text.7dcee789": "구단 자체 징계 (벌금)",
+  "ui.faMarket.text.eb68fc48": "해외에서 FA로 뛰다 돌아온 선수입니다. 보상이 없고 외부 FA 영입 한도에 들지 않습니다. 옆의 구단은 친정 구단입니다.",
+  "ui.faMarket.text.49a5efe3": "해외 복귀",
+  "ui.faMarket.text.d30d18c1": "해외에서 FA로 뛰다 돌아온 선수입니다. 보상 없이 어느 구단이든 계약할 수 있고, 친정 구단이 가장 적극적입니다. 시장이 끝날 때까지 계약하지 못하면 FA 미아로 남습니다.",
+  "league.fa.text.c8dc50f9": "해외 복귀 FA {name} → {short} · {termsText}",
+  "league.returnees.text.4a1476ce": "보류권이 없는 FA로, 이번 겨울 FA 시장에 보상 없이 나옵니다 (친정 구단이 가장 적극적)."
 }

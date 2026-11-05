@@ -10472,5 +10472,10 @@
   "ui.clubRecords.text.1658a8d7": "Board: hold back (record)",
   "ui.clubRecords.text.a370093f": "Board: hold back",
   "ui.history.text.100b6fa6": "No retired numbers yet. When a player who starred for one club for a long time (12 seasons or more) retires, its board deliberates on a retired number for him: a heavy disciplinary record holds it back, and at our club the general manager decides.",
-  "league.scandals.text.7dcee789": "Club's own penalty (a fine)"
+  "league.scandals.text.7dcee789": "Club's own penalty (a fine)",
+  "ui.faMarket.text.eb68fc48": "Back from abroad, where he played as a free agent: no compensation, and he does not count toward the outside free-agent limit. The club beside him is his old club.",
+  "ui.faMarket.text.49a5efe3": "Back from abroad",
+  "ui.faMarket.text.d30d18c1": "Back from abroad, where he played as a free agent. Any club may sign him with no compensation, and his old club is the keenest. Unsigned when the market closes, he is left an unsigned free agent.",
+  "league.fa.text.c8dc50f9": "Free agent back from abroad {name} → {short} · {termsText}",
+  "league.returnees.text.4a1476ce": "No club holds his rights: he is on this winter's free-agent market with no compensation owed (his old club the keenest)."
 }

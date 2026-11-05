@@ -507,6 +507,15 @@ export function isFreeAgent(p: Player, next: number) {
   return s.lastFreeAgencyAt === undefined ? s.creditedSeasons >= faSeasonsNeeded(p, next) : s.creditedSeasons - s.lastFreeAgencyAt >= KBO_2026.freeAgency.seasonsToRequalify;
 }
 
+/** 2.0.77 (returnees.ts): home from abroad a free agent, on this winter's market. */
+export const homeFreeAgent = (p: Player, next: number) => p.status === 'freeAgent' && !p.teamId && p.service.homeFree === next - 1;
+
+/** His last KBO club (first team) still in the league: a free agent home from abroad's old club in the market. */
+export function lastKboClub(s: LeagueState, p: Player): TeamId | null {
+  const c = [...p.career].reverse().find((x) => !x.level && s.rosters[x.teamId]);
+  return c?.teamId ?? null;
+}
+
 /** A season's pay: salaries and free-agent bonuses spread over their deals (V0.8). */
 export function payroll(s: LeagueState, teamId: TeamId, season: number) {
   return orgIds(s, teamId).reduce((sum, id) => sum + salaryIn(s.players[id]!, season) + budgetBonus(s.players[id]!, season), 0);
@@ -516,8 +525,8 @@ export function payroll(s: LeagueState, teamId: TeamId, season: number) {
 export function freeAgentsFor(s: LeagueState, next: number): Player[] {
   return Object.values(s.players)
     // 2.0.74: and, under the game option, long-serving foreign players (foreignfa.ts).
-    .filter((p) => isFreeAgent(p, next) || isForeignFreeAgent(s, p, next))
-    .filter((p) => p.scouting.current >= O.freeAgency.minGrade || (lastRecord(p, next - 1)?.war ?? 0) >= 1 || p.service.optionFree === next - 1)
+    .filter((p) => isFreeAgent(p, next) || isForeignFreeAgent(s, p, next) || (homeFreeAgent(p, next) && !!lastKboClub(s, p)))
+    .filter((p) => p.scouting.current >= O.freeAgency.minGrade || (lastRecord(p, next - 1)?.war ?? 0) >= 1 || p.service.optionFree === next - 1 || homeFreeAgent(p, next))
     .sort((a, b) => b.scouting.current - a.scouting.current);
 }
 

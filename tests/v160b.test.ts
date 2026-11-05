@@ -47,7 +47,10 @@ describe('살려야 한다', () => {
     const st = s.user!.scenario!;
     expect(st.takeover).toBe(2030);
     expect(st.damage!.length).toBeGreaterThan(3);
-    expect(s.news?.some((n) => n.id.startsWith('rogue-trade-'))).toBe(true);
+    // Youth traded for veterans: in the damage list and in the players' moves (2.0.77: the trades' articles, five
+    // winters old, can be past the news kept).
+    expect(st.damage!.some((x) => x.includes('트레이드'))).toBe(true);
+    expect(Object.values(s.players).some((p) => p.moves?.some((m) => m.kind === 'trade' && m.from === s.user!.teamId))).toBe(true);
     expect(s.user!.trust).toBe(60);
     // Five years of pop-ups are old news; the takeover is the one to read.
     expect((s.alerts ?? []).filter((a) => !a.seen).map((a) => a.id)).toEqual(['rogue-2030']);

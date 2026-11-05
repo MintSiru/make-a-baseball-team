@@ -94090,5 +94090,45 @@
     "line": 454,
     "params": {},
     "locations": []
+  },
+  "ui.faMarket.text.eb68fc48": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 278,
+    "params": {},
+    "locations": []
+  },
+  "ui.faMarket.text.49a5efe3": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 279,
+    "params": {},
+    "locations": []
+  },
+  "ui.faMarket.text.d30d18c1": {
+    "source": "src/ui/FaMarket.tsx",
+    "line": 612,
+    "params": {},
+    "locations": []
+  },
+  "league.fa.text.c8dc50f9": {
+    "source": "src/league/fa.ts",
+    "line": 1009,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      },
+      "short": {
+        "expression": "short(s, teamId)"
+      },
+      "termsText": {
+        "expression": "termsText(o)"
+      }
+    },
+    "locations": []
+  },
+  "league.returnees.text.4a1476ce": {
+    "source": "src/league/returnees.ts",
+    "line": 199,
+    "params": {},
+    "locations": []
   }
 }
