@@ -10477,5 +10477,11 @@
   "ui.faMarket.text.49a5efe3": "海外復帰",
   "ui.faMarket.text.d30d18c1": "海外でFAとしてプレーして戻った選手です。補償なしでどの球団とも契約でき、古巣が最も積極的です。市場が終わるまで契約できなければFA浪人として残ります。",
   "league.fa.text.c8dc50f9": "海外復帰FA {name} → {short} · {termsText}",
-  "league.returnees.text.4a1476ce": "保留権のないFAとして、今冬のFA市場に補償なしで出ます(古巣が最も積極的)。"
+  "league.returnees.text.4a1476ce": "保留権のないFAとして、今冬のFA市場に補償なしで出ます(古巣が最も積極的)。",
+  "ui.decision.text.116733b5": "予算が足りなければ「保留権を維持」でもう1年海外でプレーさせ、来冬に改めて呼び戻せます(1回のみ)。獲得も維持もしない選手は保留権が解除されます。",
+  "ui.decision.text.17295f08": "{name}を呼び戻す",
+  "ui.decision.text.3b423561": "呼び戻す",
+  "ui.decision.text.410848cc": "すでに一度保留権を維持しました。",
+  "ui.decision.text.e1d9b368": "保留権を維持",
+  "league.userclub.text.81dc64ce": "{name}: 保留権を維持 — もう1年海外でプレーし、来冬に改めて復帰を協議"
 }

@@ -39,6 +39,7 @@ import { positionKey, useSort, type SortColumn } from './sort';
 import { RivalForm } from './Twelve';
 import { CampChoices } from './Training';
 import { BudgetAsk } from './BudgetAsk';
+import { canHoldReturnee } from '../league/returnees';
 import { campSuggestion, devSuggestion, devYear, type CampSite } from '../league/development';
 import { developmentOpen } from '../league/features';
 import { FantasyBoard } from './FantasyDraft';
@@ -600,6 +601,9 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
       case 'board':
         // 1.9.9: our vote on each motion (as our interest says until changed) and the motion we put, if any.
         return { kind: 'board', votes: d.motions.map((_, i) => (choices[`m${i}`] ?? d.expected[i]![league.user!.teamId] ?? 'abstain') as BoardVote), own: choices.own && choices.own !== 'none' ? Number(choices.own) : null };
+      case 'returnee':
+        // 2.0.78: and those whose rights we keep another year.
+        return { kind: 'returnee', ids: [...selected], hold: d.rows.map((r) => r.id).filter((id) => !selected.has(id) && choices[`hold:${id}`] === '1') };
       default:
         return { kind: d.kind, ids: [...selected] } as DecisionInput;
     }
@@ -1312,6 +1316,9 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         <>
           <p>{__i18n_t("ui.decision.decision.156e8525")}</p>
           <p class="muted">{__i18n_t("ui.decision.decision.a734d51e", { next: next, money: money(projectedPayroll(league, u.teamId, next)), money2: money(cost), money3: money(u.payrollBudget) })}</p>
+          {/* 2.0.78 (the user's request): the owner may raise the budget here too, and one we cannot pay for now may wait a year. */}
+          <BudgetAsk league={league} onAct={onAct} />
+          <p class="muted small">{__i18n_t("ui.decision.text.116733b5")}</p>
           <PlayerTable
             league={league}
             players={d.rows.map((r) => league.players[r.id]!)}
@@ -1319,6 +1326,18 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
             toggle={toggle}
             onPlayer={onPlayer}
             extra={{ title: __i18n_k("ui.decision.decision.title.98d4ca5a"), value: (p) => __i18n_k("ui.decision.decision.value.49f7c0cd", { years: rows.get(p.id)!.years, money: money(rows.get(p.id)!.annual), abroad: rows.get(p.id)!.abroad }), sort: (p) => rows.get(p.id)!.annual }}
+            control={(p) => (
+              <>
+              <label class="check">
+                <input type="checkbox" checked={selected.has(p.id)} onChange={() => toggle(p.id)} aria-label={__i18n_displayText(__i18n_t("ui.decision.text.17295f08", { name: p.name }))} />{' '}
+                {__i18n_t("ui.decision.text.3b423561")}
+              </label>{' '}
+              <label class="check" title={canHoldReturnee(p) ? undefined : __i18n_t("ui.decision.text.410848cc")}>
+                <input type="checkbox" checked={!selected.has(p.id) && choices[`hold:${p.id}`] === '1'} disabled={selected.has(p.id) || !canHoldReturnee(p)} onChange={(e) => choose(`hold:${p.id}`, (e.currentTarget as HTMLInputElement).checked ? '1' : '0')} />{' '}
+                {__i18n_t("ui.decision.text.e1d9b368")}
+              </label>
+              </>
+            )}
           />
         </>
       );

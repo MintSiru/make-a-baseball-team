@@ -47,7 +47,7 @@ import { defaultYears, signingBonus, yearsFor } from './staffdeals';
 import { alumnusHired, employedAlumni, legendFired } from './alumni';
 import { post, postingCandidates, postingMax, postingNote } from './posting';
 import { toForeignPool } from './foreignpool';
-import { goAbroad, releaseReturnee, signReturnee } from './returnees';
+import { canHoldReturnee, goAbroad, holdReturnee, releaseReturnee, signReturnee } from './returnees';
 import { addAlert, ownerAlert } from './alerts';
 import { splitContract } from './foreign';
 import { KBO_2026, minimumSalaryFor, salaryCapFor } from '../rules/kbo2026';
@@ -110,7 +110,7 @@ export type AnnualInput =
   /** `offers`: a figure (US dollars a season) and years for any of them (1.3.0; his ask for one year when missing). */
   | { kind: 'foreignRenew'; keep: PlayerId[]; offers?: Record<PlayerId, { amount: number; years: 1 | 2 }> }
   | { kind: 'posting'; id: PlayerId | null; /** 2.0.24: several, when the game allows more than one. */ ids?: PlayerId[]; /** 2.0.37: those not posted we try to talk round (abroad.ts). */ persuade?: PlayerId[] }
-  | { kind: 'returnee'; ids: PlayerId[] }
+  | { kind: 'returnee'; ids: PlayerId[]; hold?: PlayerId[] }
   | { kind: 'sponsor'; index: number }
   | { kind: 'staff'; hires: Partial<Record<StaffRole, string>>; /** 1.8.0: contract years for a hire or renewal. */ terms?: Partial<Record<StaffRole, number>> }
   /** Our players who want to retire: the ones the club asks to play on (V0.11). */
@@ -441,6 +441,8 @@ export function checkAnnual(s: LeagueState, d: Decision, input: AnnualInput): st
     case 'returnee': {
       const dd = d as Extract<Decision, { kind: 'returnee' }>;
       if (input.ids.some((id) => !dd.rows.some((r) => r.id === id))) return __i18n_k("league.userclub.checkAnnual.98ce3a2b");
+      // 2.0.78: rights kept another year, once, for one not signed now.
+      if ((input.hold ?? []).some((id) => input.ids.includes(id) || !dd.rows.some((r) => r.id === id) || !canHoldReturnee(s.players[id]!))) return __i18n_k("league.userclub.checkAnnual.98ce3a2b");
       const cost = dd.rows.filter((r) => input.ids.includes(r.id)).reduce((a, r) => a + r.annual, 0);
       if (cost > 0 && projectedPayroll(s, u.teamId, next) + cost > u.payrollBudget) return __i18n_k("league.userclub.checkAnnual.84d90a10");
       return null;
@@ -775,6 +777,10 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
         if (input.ids.includes(row.id)) {
           signReturnee(s, p, u.teamId, row, next);
           note(u, year, __i18n_k("league.userclub.resolveAnnual.52e7d2b7", { name: p.name, abroad: row.abroad, years: row.years, money: money(row.annual) }));
+        } else if ((input.hold ?? []).includes(row.id) && canHoldReturnee(p)) {
+          // 2.0.78: his rights kept; one more season abroad, home to us next winter.
+          holdReturnee(p, year);
+          note(u, year, __i18n_k("league.userclub.text.81dc64ce", { name: p.name }));
         } else {
           note(u, year, __i18n_k("league.userclub.resolveAnnual.4611d034", { name: p.name }));
           releaseReturnee(s, p, row, next);

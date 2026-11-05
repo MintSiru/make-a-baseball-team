@@ -94130,5 +94130,49 @@
     "line": 199,
     "params": {},
     "locations": []
+  },
+  "ui.decision.text.116733b5": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1321,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.17295f08": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1332,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.3b423561": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1333,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.410848cc": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1335,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.e1d9b368": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1337,
+    "params": {},
+    "locations": []
+  },
+  "league.userclub.text.81dc64ce": {
+    "source": "src/league/userclub.ts",
+    "line": 783,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
   }
 }

@@ -10477,5 +10477,11 @@
   "ui.faMarket.text.49a5efe3": "Back from abroad",
   "ui.faMarket.text.d30d18c1": "Back from abroad, where he played as a free agent. Any club may sign him with no compensation, and his old club is the keenest. Unsigned when the market closes, he is left an unsigned free agent.",
   "league.fa.text.c8dc50f9": "Free agent back from abroad {name} → {short} · {termsText}",
-  "league.returnees.text.4a1476ce": "No club holds his rights: he is on this winter's free-agent market with no compensation owed (his old club the keenest)."
+  "league.returnees.text.4a1476ce": "No club holds his rights: he is on this winter's free-agent market with no compensation owed (his old club the keenest).",
+  "ui.decision.text.116733b5": "Short of budget, \"Keep rights\" lets him play one more year abroad and come back to us next winter (once). One neither signed nor kept is released from his rights.",
+  "ui.decision.text.17295f08": "Sign {name}",
+  "ui.decision.text.3b423561": "Sign",
+  "ui.decision.text.410848cc": "His rights have been kept once already.",
+  "ui.decision.text.e1d9b368": "Keep rights",
+  "league.userclub.text.81dc64ce": "{name}: rights kept — one more year abroad, and his return discussed again next winter"
 }

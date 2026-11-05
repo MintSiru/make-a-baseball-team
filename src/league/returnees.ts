@@ -66,6 +66,8 @@ export const postingClub = (p: Player): TeamId | null => p.career.filter((c) => 
 
 /** Whether a posted player comes home this winter (after the season `year`). */
 function comesHome(s: LeagueState, p: Player, year: number): boolean {
+  // 2.0.78: his rights kept last winter, he comes home now.
+  if (p.service.homeHeld === year - 1) return true;
   const abroad = year - p.service.postedIn!;
   if (abroad < 1) return false;
   const deal = dealYears(p);
@@ -102,6 +104,16 @@ export function signReturnee(s: LeagueState, p: Player, teamId: TeamId, o: Retur
   moveNews(s, { type: 'returnee', teamId, id: p.id, years: o.years, annual: o.annual, abroad: o.abroad, own: teamId === postingClub(p) }, `${next - 1}-11-05`);
 }
 
+/** 2.0.78 (the user's request: 연봉 상한에 막혀 보류권이 풀리는 것): his posting club keeps his rights another year
+    rather than sign him now — he plays one more season abroad and comes home to it the next winter (once). */
+export const canHoldReturnee = (p: Player) => p.service.homeHeld === undefined;
+
+export function holdReturnee(p: Player, year: number) {
+  p.status = 'overseas';
+  if (p.mlb) delete p.mlb.back;
+  p.service.homeHeld = year;
+}
+
 /** His rights released: another club with room may sign him, else he ends his career abroad. */
 export function releaseReturnee(s: LeagueState, p: Player, o: ReturnOffer, next: number) {
   const own = postingClub(p);
@@ -132,7 +144,9 @@ export function homecomings(s: LeagueState, next: number): ReturnOffer[] {
     if (!comesHome(s, p, year)) continue;
     leaveMlb(p, year, 'back');
     const before = currentValue(p);
-    ageAbroad(s, p, p.service.postedIn! + 1, year);
+    // (2.0.78: a player whose rights were kept a winter has aged through that one already.)
+    ageAbroad(s, p, Math.max(p.service.postedIn!, p.service.agedAbroad ?? 0) + 1, year);
+    p.service.agedAbroad = year;
     const o = { id: p.id, ...offerFor(p, next, before), abroad: year - p.service.postedIn! };
     const club = postingClub(p);
     p.status = 'freeAgent';
