@@ -94,6 +94,10 @@ export interface Service {
   /** 2.0.77 (the user's request): the winter he came home from abroad a free agent (he signed there as one): that
       winter's market has him, no compensation owed (returnees.ts, fa.ts). */
   homeFree?: number;
+  /** 2.0.78 (the user's request): the winter his posting club kept his rights rather than sign him (budget too
+      tight), and the last season his years abroad have aged him through — he comes home to it the next winter. */
+  homeHeld?: number;
+  agedAbroad?: number;
   /** The latest military medical grade after an operation (V0.7.7, military.ts): 3 active duty, 4 social
       service only, 5 no peacetime service. `surgeries` counts the major operations it looked at. */
   exam?: { year: number; grade: number; reason: string; surgeries: number };

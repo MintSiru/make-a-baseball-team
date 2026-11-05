@@ -10477,5 +10477,11 @@
   "ui.faMarket.text.49a5efe3": "해외 복귀",
   "ui.faMarket.text.d30d18c1": "해외에서 FA로 뛰다 돌아온 선수입니다. 보상 없이 어느 구단이든 계약할 수 있고, 친정 구단이 가장 적극적입니다. 시장이 끝날 때까지 계약하지 못하면 FA 미아로 남습니다.",
   "league.fa.text.c8dc50f9": "해외 복귀 FA {name} → {short} · {termsText}",
-  "league.returnees.text.4a1476ce": "보류권이 없는 FA로, 이번 겨울 FA 시장에 보상 없이 나옵니다 (친정 구단이 가장 적극적)."
+  "league.returnees.text.4a1476ce": "보류권이 없는 FA로, 이번 겨울 FA 시장에 보상 없이 나옵니다 (친정 구단이 가장 적극적).",
+  "ui.decision.text.116733b5": "예산이 모자라면 「보류권 유지」로 1년 더 해외에서 뛰게 하고 다음 겨울에 다시 데려올 수 있습니다(한 번만). 고르지도 유지하지도 않은 선수는 보류권이 풀립니다.",
+  "ui.decision.text.17295f08": "{name} 데려오기",
+  "ui.decision.text.3b423561": "데려오기",
+  "ui.decision.text.410848cc": "이미 한 번 보류권을 유지했습니다.",
+  "ui.decision.text.e1d9b368": "보류권 유지",
+  "league.userclub.text.81dc64ce": "{name}: 보류권 유지 — 1년 더 해외에서 뛰고 다음 겨울 다시 복귀를 논의"
 }
