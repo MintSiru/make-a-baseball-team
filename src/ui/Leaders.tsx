@@ -1,7 +1,9 @@
 import { display as __i18n_display, k as __i18n_k, t as __i18n_t } from '../i18n/index';
 import { BALL, ballOf, corText, seasonBall } from '../league/ball';
 import { today } from '../league/entry';
-import { useState } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
+import { ExportButton } from './ExportButton';
+import { viewSheets } from './panelExport';
 import type { LeagueState } from '../league/state';
 import { leaders, rates, seasonStats } from '../league/views';
 import { positionKey, useSort } from './sort';
@@ -15,6 +17,7 @@ const f2 = (x: number) => x.toFixed(2);
 
 export function Leaders({ league, onPlayer, onBox, onAct }: { league: LeagueState; onPlayer: (id: string) => void; onBox?: (id: string) => void; onAct?: (a: Action) => void }) {
   const [view, setView] = useState<View>('leaders');
+  const root = useRef<HTMLElement>(null);
   const [qualifiedOnly, setQualifiedOnly] = useState(true);
   // 2.0.4: the batters' and pitchers' tables in two, the basic records and the detail (batted balls, fielding).
   const [detail, setDetail] = useState(false);
@@ -43,8 +46,16 @@ export function Leaders({ league, onPlayer, onBox, onAct }: { league: LeagueStat
     </div>
   );
   return (
-    <section aria-labelledby="leaders-title">
-      <h2 id="leaders-title">{__i18n_t("ui.leaders.leaders.880aa107", { year: league.year })}</h2>
+    <section aria-labelledby="leaders-title" ref={root}>
+      <div class="page-title-row">
+        <h2 id="leaders-title">{__i18n_t("ui.leaders.leaders.880aa107", { year: league.year })}</h2>
+        {/* 2.0.78 (the user's request): the season's records as a workbook, a sheet a view (the All-Star vote left out). */}
+        <ExportButton
+          name={`kbo-records-${league.year}`}
+          title={__i18n_t("ui.leaders.text.9191e85a")}
+          make={() => viewSheets(root.current!, '.leader-views', '.leader-detail', (b) => b.dataset.view === 'allstar')}
+        />
+      </div>
       {/* 2.0.70 (ball.ts): the season's official ball, when it is not the usual one. */}
       {ball && Math.abs(seasonCor - BALL.base) > 1e-6 && (
         <p class="muted small ball-line">
@@ -53,7 +64,7 @@ export function Leaders({ league, onPlayer, onBox, onAct }: { league: LeagueStat
           {manual && ` · ${__i18n_t("ui.leaders.text.472b2232")}`}
         </p>
       )}
-      <div class="segmented" role="group" aria-label={__i18n_t("ui.leaders.leaders.58d6978a")}>
+      <div class="segmented leader-views" role="group" aria-label={__i18n_t("ui.leaders.leaders.58d6978a")}>
         {__i18n_display((
           [
             ['leaders', __i18n_k("ui.leaders.leaders.50827b9b")],
@@ -63,7 +74,7 @@ export function Leaders({ league, onPlayer, onBox, onAct }: { league: LeagueStat
             ['allstar', '올스타'],
           ] as [View, string][]
         ).map(([id, label]) => (
-          <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>
+          <button key={id} type="button" data-view={id} aria-pressed={view === id} onClick={() => setView(id)}>
             {__i18n_display(label)}
           </button>
         )))}
@@ -85,7 +96,7 @@ export function Leaders({ league, onPlayer, onBox, onAct }: { league: LeagueStat
         </label>
       ))}
       {(view === 'batters' || view === 'pitchers') && (
-        <div class="segmented small" role="group" aria-label={__i18n_t("ui.leaders.text.2e3d10b9")}>
+        <div class="segmented small leader-detail" role="group" aria-label={__i18n_t("ui.leaders.text.2e3d10b9")}>
           <button type="button" aria-pressed={!detail} onClick={() => setDetail(false)}>
             {__i18n_t("ui.leaders.text.7f1d8c41")}
           </button>

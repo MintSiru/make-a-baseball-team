@@ -10497,5 +10497,12 @@ export const koSource = {
   "ui.next.squad.text.330be145": "백분위",
   "ui.next.squad.text.3aea4ca4": "투수 세이버",
   "ui.next.squad.text.d18f6080": "타자 세이버",
-  "ui.next.squad.text.e505356a": "지금 고른 선수단의 기록(시즌·상세), 능력치, 세이버 지표(Savant 백분위·득점 가치)를 시트 6장으로 내려받습니다."
+  "ui.next.squad.text.e505356a": "지금 고른 선수단의 기록(시즌·상세), 능력치, 세이버 지표(Savant 백분위·득점 가치)를 시트 6장으로 내려받습니다.",
+  "ui.next.squad.text.8198fd54": "타",
+  "ui.playerPanel.text.991b2ed9": "이 선수 창의 탭(능력·기록의 보기마다·리포트·프로필·부상)을 차례로 열어, 보이는 표와 능력치를 탭마다 시트 한 장으로 내려받습니다.",
+  "ui.exportButton.text.14bcb533": "내보내는 중…",
+  "ui.exportButton.text.8c338f8c": "엑셀로 내보내기",
+  "ui.leaders.text.9191e85a": "리더·타자·투수(기본·상세)·포스트시즌 보기를 차례로 열어 보기마다 시트 한 장으로 내려받습니다. 「규정 타석·이닝만」 선택은 지금 그대로 따릅니다.",
+  "ui.standings.text.0bbf8d5f": "순위표·상대 전적·포스트시즌 대진 등 이 화면에 보이는 표를 시트 한 장으로 내려받습니다.",
+  "ui.standings.text.1c6906ad": "{year} 순위"
 } as const;

@@ -934,7 +934,26 @@ try {
       await noOverflow(page, `new ${width} player ${name}`);
       await axeCheck(page, `new ${width} player ${name}`);
     }
+    // 2.0.78: his page as a workbook (every tab opened in turn, the page put back on the tab it was on).
+    if (width === 1440) {
+      const [file] = await Promise.all([page.waitForEvent('download', { timeout: 60_000 }), pp.locator('button.pp-export').click()]);
+      check(file.suggestedFilename().endsWith('.xlsx'), `the player's page exports a workbook (${file.suggestedFilename()})`);
+      await page.waitForFunction(() => !document.querySelector('button.pp-export')?.disabled);
+      check(/^몸 상태/.test((await pp.locator('[role=tab][aria-selected=true]').textContent()) ?? ''), "the player's page is back on its tab after the export");
+    }
     await page.keyboard.press('Escape');
+    // 2.0.78: and the squad's, the standings' and the season's records'.
+    if (width === 1440) {
+      const [file] = await Promise.all([page.waitForEvent('download', { timeout: 60_000 }), page.locator('button.squad-export').click()]);
+      check(file.suggestedFilename().endsWith('.xlsx'), `the squad exports a workbook (${file.suggestedFilename()})`);
+      for (const [menu, kind] of [['순위표', 'standings'], ['리그 기록실', 'records']]) {
+        await page.locator('nav.tabs').getByRole('button', { name: menu, exact: true }).click();
+        const [book] = await Promise.all([page.waitForEvent('download', { timeout: 60_000 }), page.locator('button.export-button').first().click()]);
+        check(book.suggestedFilename().startsWith(`kbo-${kind}-`), `${menu} exports a workbook (${book.suggestedFilename()})`);
+      }
+      check((await page.locator('.leader-views button[aria-pressed=true]').textContent()) === '부문별 순위', 'the records page is back on its view after the export');
+      await page.locator('nav.tabs').getByRole('button', { name: '우리 구단', exact: true }).click();
+    }
   }
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.locator('.sidebar-foot').getByRole('button', { name: '설정', exact: true }).click();
