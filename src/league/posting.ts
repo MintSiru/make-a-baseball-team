@@ -64,8 +64,9 @@ export function postingCandidates(s: LeagueState, teamId: TeamId, next: number):
         !(p.contract?.kind === 'freeAgent' || p.contract?.kind === 'multiYear') &&
         p.scouting.current >= POSTING.minGrade &&
         ageIn(p, next) <= POSTING.maxAge &&
-        // Not everyone dreams of the majors; and one talked round lately does not ask (2.0.37, abroad.ts).
-        hashUnit(`${p.id}-mlb-dream`) < POSTING.wants &&
+        // Not everyone dreams of the majors (2.0.78: the better he is, the likelier); and one talked round lately does
+        // not ask (2.0.37, abroad.ts).
+        hashUnit(`${p.id}-mlb-dream`) < postingWants(p) &&
         !staysHome(s, p.id, next) &&
         // 2.0.67 (the user's request): a free agent this winter does not ask to be posted — he goes abroad as a free
         // agent if he wants to (fa.ts abroadDeal).
@@ -73,6 +74,11 @@ export function postingCandidates(s: LeagueState, teamId: TeamId, next: number):
     )
     .sort((a, b) => b.scouting.current - a.scouting.current);
 }
+
+/** 2.0.78: how likely he is to want the majors, and his (AI) club to let him go — more, the better he is. */
+const over = (p: Player) => Math.max(0, p.scouting.current - POSTING.minGrade);
+export const postingWants = (p: Player) => Math.min(POSTING.wantsMax, POSTING.wants + over(p) * POSTING.wantsPerGrade);
+export const postingAllows = (p: Player) => Math.min(POSTING.allowsMax, POSTING.aiAllows + over(p) * POSTING.allowsPerGrade);
 
 /** What the major leagues make of him: a guaranteed deal, or no taker. */
 export function mlbMarket(p: Player, next: number, r: () => number): { years: number; total: number } | null {
@@ -153,7 +159,7 @@ export function runAiPosting(s: LeagueState, next: number) {
   const r = rng(`${s.seed}|posting-ai|${next}`);
   for (const t of s.teams) {
     if (!s.rosters[t.id] || t.id === s.user?.teamId) continue;
-    for (const p of postingCandidates(s, t.id, next).slice(0, postingMax(s))) if (r() < POSTING.aiAllows) post(s, p.id, next);
+    for (const p of postingCandidates(s, t.id, next).slice(0, postingMax(s))) if (r() < postingAllows(p)) post(s, p.id, next);
   }
 }
 

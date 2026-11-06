@@ -381,7 +381,9 @@ export const SECOND = { minValue: 49 } as const;
     good enough and not too old may leave for Japan before the market opens. Money in US dollars. */
 export const NPB_MOVE = { postMinGrade: 60, postChance: 0.45, faMinGrade: 63, faMaxAge: 33, faChance: 0.12, aavAt60: 1_200_000, aavGrowth: 0.15, fee: 0.2 } as const;
 
-export const POSTING = { minGrade: 62, maxAge: 30, wants: 0.5, baseChance: 0.45, chancePerGrade: 0.07, agePenalty: 0.1, aavAt60: 2_500_000, aavGrowth: 0.22, aiAllows: 0.55 } as const;
+/** 2.0.78 (the user's report: 리그를 씹어먹어도 FA로만 해외): a better player wants the majors more, and his club lets him
+    go more readily — each grade over the bar adds `wantsPerGrade` and `allowsPerGrade`, up to the caps. */
+export const POSTING = { minGrade: 62, maxAge: 30, wants: 0.5, wantsPerGrade: 0.08, wantsMax: 0.92, baseChance: 0.45, chancePerGrade: 0.07, agePenalty: 0.1, aavAt60: 2_500_000, aavGrowth: 0.22, aiAllows: 0.55, allowsPerGrade: 0.06, allowsMax: 0.9 } as const;
 
 /** Fans and attendance (V0.6, fans.ts). Calibrated to 2025: 17,103 a game (CALIBRATION.md §8). */
 export const FANS = {

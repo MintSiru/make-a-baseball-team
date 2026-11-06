@@ -94228,5 +94228,29 @@
     "line": 423,
     "params": {},
     "locations": []
+  },
+  "ui.next.squad.text.330be145": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 337,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.3aea4ca4": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 386,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.d18f6080": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 387,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.e505356a": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 470,
+    "params": {},
+    "locations": []
   }
 }

@@ -32,11 +32,20 @@ function unzip(b: Uint8Array): Map<string, string> {
 }
 
 describe('2.0.78: the squad as an Excel workbook', () => {
-  it('writes a valid .xlsx: four sheets of the first team, records and ratings, numbers as numbers', () => {
-    const s = loadSave('2.0.76');
+  it('writes a valid .xlsx: the first team’s records, ratings and Savant numbers, numbers as numbers', () => {
+    const s = loadSave('2.0.77');
     const rows = rosterView(s, s.user!.teamId).active;
     const sheets = squadWorkbook(s, rows);
-    expect(sheets.map((x) => x.name)).toEqual(['투수 기록', '타자 기록', '투수 능력치', '타자 능력치']);
+    expect(sheets.map((x) => x.name)).toEqual(['투수 기록', '타자 기록', '투수 능력치', '타자 능력치', '투수 세이버', '타자 세이버']);
+    // 2.0.78: the Savant numbers — each measure and its percentile, and the run values.
+    const sab = sheets[5]!;
+    expect(sab.rows[0]).toEqual(expect.arrayContaining(['xwOBA', 'xwOBA 백분위']));
+    expect(sab.rows[0]).toEqual(expect.arrayContaining(['타격 런 밸류', '타격 런 밸류 백분위']));
+    const at = sab.rows[0]!.indexOf('xwOBA 백분위');
+    const pcts = sab.rows.slice(1).map((x) => x[at]).filter((x) => x !== '');
+    expect(pcts.length).toBeGreaterThan(0);
+    for (const v of pcts) expect(v as number).toBeGreaterThanOrEqual(1);
+    expect(sheets[4]!.rows.length).toBe(rows.filter((r) => r.pitcher).length + 1);
     const pit = sheets[0]!, bat = sheets[1]!, rat = sheets[3]!;
     expect(pit.rows.length).toBe(rows.filter((r) => r.pitcher).length + 1);
     expect(bat.rows.length).toBe(rows.filter((r) => !r.pitcher).length + 1);
@@ -53,7 +62,7 @@ describe('2.0.78: the squad as an Excel workbook', () => {
     expect(typeof line[rat.rows[0]!.indexOf('나이')]).toBe('number');
     // The file: a zip with the workbook's parts, each sheet's rows in it.
     const files = unzip(xlsx(sheets));
-    expect([...files.keys()]).toEqual(expect.arrayContaining(['[Content_Types].xml', '_rels/.rels', 'xl/workbook.xml', 'xl/_rels/workbook.xml.rels', 'xl/styles.xml', 'xl/worksheets/sheet1.xml', 'xl/worksheets/sheet4.xml']));
+    expect([...files.keys()]).toEqual(expect.arrayContaining(['[Content_Types].xml', '_rels/.rels', 'xl/workbook.xml', 'xl/_rels/workbook.xml.rels', 'xl/styles.xml', 'xl/worksheets/sheet1.xml', 'xl/worksheets/sheet6.xml']));
     expect(files.get('xl/workbook.xml')).toContain('name="타자 능력치"');
     const sheet2 = files.get('xl/worksheets/sheet2.xml')!;
     expect(sheet2).toContain(h.name);
