@@ -25,7 +25,8 @@ export function blockRows(root: Element, skip: (el: Element) => boolean = () => 
         const cells = [...tr.children].filter((c) => c.tagName === 'TD' || c.tagName === 'TH');
         const row: XlsxCell[] = [];
         for (const c of cells) {
-          row.push(cellValue(text(c)));
+          // (A heading's sort arrow is not part of it.)
+          row.push(cellValue(c.tagName === 'TH' ? text(c).replace(/\s*[▲▼]\s*/g, '') : text(c)));
           // A cell spanning columns keeps the columns under it lined up.
           for (let k = 1; k < Number(c.getAttribute('colspan') ?? 1); k++) row.push('');
         }
@@ -76,6 +77,56 @@ export function blockRows(root: Element, skip: (el: Element) => boolean = () => 
 
 /** A tab's name without the count beside it. */
 const label = (b: Element) => text(b).replace(/\s*\d+$/, '');
+
+/** 2.0.78: a screen whose views are switched by a group of buttons (and, within some, a second group): each view
+    opened in turn, what it shows as a sheet ("view" or "view·sub"); the screen put back as it was. The groups'
+    own buttons, and the check boxes beside them, are not written down. */
+export async function viewSheets(root: Element, main: string, sub: string | null, skipView: (b: HTMLButtonElement) => boolean = () => false): Promise<XlsxSheet[]> {
+  const sheets: XlsxSheet[] = [];
+  const controls = (el: Element) => el.matches(`${main}, ${sub ?? main}, label.check`);
+  const add = (name: string) => {
+    const rows = blockRows(root, controls);
+    if (rows.length) sheets.push({ name, rows, widths: Array.from({ length: Math.max(1, ...rows.map((r) => r.length)) }, (_, i) => (i === 0 ? 16 : 10)) });
+  };
+  const buttons = (sel: string) => [...root.querySelectorAll<HTMLButtonElement>(`${sel} button`)];
+  const pressed = (sel: string) => buttons(sel).findIndex((b) => b.getAttribute('aria-pressed') === 'true');
+  const was = pressed(main);
+  const n = buttons(main).length;
+  for (let i = 0; i < n; i++) {
+    const b = buttons(main)[i];
+    if (!b || skipView(b)) continue;
+    b.click();
+    await tick();
+    const subs = sub ? buttons(sub) : [];
+    if (!subs.length) {
+      add(label(b));
+      continue;
+    }
+    const subWas = pressed(sub!);
+    for (let k = 0; k < subs.length; k++) {
+      const s = buttons(sub!)[k];
+      if (!s) continue;
+      s.click();
+      await tick();
+      add(`${label(b)}·${label(s)}`);
+    }
+    if (subWas >= 0) {
+      buttons(sub!)[subWas]?.click();
+      await tick();
+    }
+  }
+  if (was >= 0) {
+    buttons(main)[was]?.click();
+    await tick();
+  }
+  return sheets;
+}
+
+/** 2.0.78: a screen as one sheet, as it shows now. */
+export function screenSheet(root: Element, name: string): XlsxSheet {
+  const rows = blockRows(root, (el) => el.matches('label.check'));
+  return { name, rows, widths: Array.from({ length: Math.max(1, ...rows.map((r) => r.length)) }, (_, i) => (i === 0 ? 16 : 10)) };
+}
 
 const tick = () => new Promise<void>((done) => setTimeout(() => requestAnimationFrame(() => done()), 30));
 

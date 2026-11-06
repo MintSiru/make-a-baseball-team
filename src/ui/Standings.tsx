@@ -9,7 +9,9 @@ import type { Action } from '../league/actions';
 import { PostseasonBracket } from './Bracket';
 import { HeadToHeadTable } from './Savant';
 import { headToHead, headToHeadAll } from '../league/matchups';
-import { useState } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
+import { ExportButton } from './ExportButton';
+import { screenSheet } from './panelExport';
 import type { ComponentChildren } from 'preact';
 import { Help } from './Help';
 import { useUi } from './useDisplay';
@@ -45,10 +47,13 @@ export function Standings({ league, onTeam, onBox, onAct }: { league: LeagueStat
   // 2.0.43: our former club when we took the twelfth club over (twelve.ts rivalId).
   const rival = league.twelve && twelveClubs(league) ? (league.teams.find((t) => t.id === rivalId(league)) ?? null) : null;
   const next = useUi() === 'new';
+  const root = useRef<HTMLElement>(null);
   return (
-    <section aria-labelledby="standings-title">
+    <section aria-labelledby="standings-title" ref={root}>
       <div class="page-title-row">
         <h2 id="standings-title">{__i18n_t("ui.standings.standings.89ee1808", { year: league.year })}</h2>
+        {/* 2.0.78 (the user's request): the page as a workbook — the tables, head-to-head and the day's scores as shown. */}
+        <ExportButton name={`kbo-standings-${league.year}`} title={__i18n_t("ui.standings.text.0bbf8d5f")} make={() => [screenSheet(root.current!, __i18n_displayText(__i18n_t("ui.standings.text.1c6906ad", { year: league.year })))]} />
         {next && (
           <Help>
             {two

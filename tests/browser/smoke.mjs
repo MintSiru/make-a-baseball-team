@@ -942,10 +942,17 @@ try {
       check(/^몸 상태/.test((await pp.locator('[role=tab][aria-selected=true]').textContent()) ?? ''), "the player's page is back on its tab after the export");
     }
     await page.keyboard.press('Escape');
-    // 2.0.78: and the squad's.
+    // 2.0.78: and the squad's, the standings' and the season's records'.
     if (width === 1440) {
       const [file] = await Promise.all([page.waitForEvent('download', { timeout: 60_000 }), page.locator('button.squad-export').click()]);
       check(file.suggestedFilename().endsWith('.xlsx'), `the squad exports a workbook (${file.suggestedFilename()})`);
+      for (const [menu, kind] of [['순위표', 'standings'], ['리그 기록실', 'records']]) {
+        await page.locator('nav.tabs').getByRole('button', { name: menu, exact: true }).click();
+        const [book] = await Promise.all([page.waitForEvent('download', { timeout: 60_000 }), page.locator('button.export-button').first().click()]);
+        check(book.suggestedFilename().startsWith(`kbo-${kind}-`), `${menu} exports a workbook (${book.suggestedFilename()})`);
+      }
+      check((await page.locator('.leader-views button[aria-pressed=true]').textContent()) === '부문별 순위', 'the records page is back on its view after the export');
+      await page.locator('nav.tabs').getByRole('button', { name: '우리 구단', exact: true }).click();
     }
   }
   await page.setViewportSize({ width: 1440, height: 1000 });

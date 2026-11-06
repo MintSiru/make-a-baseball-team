@@ -94265,16 +94265,38 @@
     "params": {},
     "locations": []
   },
-  "ui.playerPanel.text.14bcb533": {
-    "source": "src/ui/PlayerPanel.tsx",
-    "line": 1449,
+  "ui.exportButton.text.14bcb533": {
+    "source": "src/ui/ExportButton.tsx",
+    "line": 31,
     "params": {},
     "locations": []
   },
-  "ui.playerPanel.text.8c338f8c": {
-    "source": "src/ui/PlayerPanel.tsx",
-    "line": 1449,
+  "ui.exportButton.text.8c338f8c": {
+    "source": "src/ui/ExportButton.tsx",
+    "line": 31,
     "params": {},
+    "locations": []
+  },
+  "ui.leaders.text.9191e85a": {
+    "source": "src/ui/Leaders.tsx",
+    "line": 55,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.0bbf8d5f": {
+    "source": "src/ui/Standings.tsx",
+    "line": 56,
+    "params": {},
+    "locations": []
+  },
+  "ui.standings.text.1c6906ad": {
+    "source": "src/ui/Standings.tsx",
+    "line": 56,
+    "params": {
+      "year": {
+        "expression": "league.year"
+      }
+    },
     "locations": []
   }
 }
