@@ -16,6 +16,7 @@ import { money, toolKeysFor } from '../format';
 import { gradeClass, rowFuture, showsFutureDetail } from '../grades';
 import { positionKey, useSort } from '../sort';
 import type { Row, SquadKey } from '../Squad';
+import { cellValue, xlsx, type XlsxCell, type XlsxSheet } from '../xlsx';
 
 type View = 'season' | 'detail' | 'ratings';
 type Page = 1 | 2;
@@ -281,6 +282,76 @@ function ratingCols(ctx: Ctx, pitchers: boolean): Col[] {
   ];
 }
 
+// ── 2.0.78 (the user's request): the squad as an Excel workbook ─────────────────────────────────────
+
+/** The text a cell shows (its spans and fragments flattened). */
+function textOf(node: ComponentChildren): string {
+  if (node === null || node === undefined || typeof node === 'boolean') return '';
+  if (typeof node === 'number') return String(node);
+  // (In the display locale, as on screen.)
+  if (typeof node === 'string') return __i18n_displayText(node);
+  if (Array.isArray(node)) return node.map(textOf).join('');
+  const props = (node as { props?: { children?: ComponentChildren } }).props;
+  return props ? textOf(props.children) : '';
+}
+
+/** One sheet: number, name, then the columns (each once, by key) as they read on screen. */
+function exportSheet(name: string, rows: Row[], cols: Col[]): XlsxSheet {
+  const seen = new Set<string>();
+  const use = cols.filter((c) => !seen.has(c.key) && seen.add(c.key));
+  const head: XlsxCell[] = [__i18n_displayText(__i18n_t("ui.next.squad.text.7fab4c51")), __i18n_displayText(__i18n_t("ui.next.squad.text.9aa18e50")), ...use.map((c) => textOf(c.label))];
+  const body = rows.map((r): XlsxCell[] => [r.number ?? '', __i18n_displayText(r.name), ...use.map((c) => cellValue(textOf(c.cell(r))))]);
+  return { name, rows: [head, ...body], widths: [7, 12, ...use.map(() => 10)] };
+}
+
+/** Ratings: each tool now and, where the scouts' view is shown, what he becomes. */
+function ratingSheet(ctx: Ctx, name: string, rows: Row[], pitchers: boolean): XlsxSheet {
+  const keys = toolKeysFor(pitchers ? 'SP' : 'C');
+  const head = headCols(ctx, pitchers);
+  const tools = keys.flatMap((k) => [__i18n_displayText(TOOL_LABELS[k]), `${__i18n_displayText(TOOL_LABELS[k])} ${__i18n_displayText(__i18n_t("ui.next.squad.text.6e0caec5"))}`]);
+  const header: XlsxCell[] = [__i18n_displayText(__i18n_t("ui.next.squad.text.7fab4c51")), __i18n_displayText(__i18n_t("ui.next.squad.text.9aa18e50")), ...head.map((c) => textOf(c.label)), ...tools, ...(pitchers ? [textOf(__i18n_t("ui.squad.text.b8c2e079"))] : []), ...moneyCols.map((c) => textOf(c.label))];
+  const body = rows.map((r): XlsxCell[] => {
+    const p = ctx.league.players[r.id]!;
+    const fut = showsFutureDetail(p);
+    return [
+      r.number ?? '',
+      __i18n_displayText(r.name),
+      ...head.map((c) => cellValue(textOf(c.cell(r)))),
+      ...keys.flatMap((k) => [p.scouting.tools[k] ?? '', fut ? (p.scouting.futureTools[k] ?? '') : '']),
+      ...(pitchers ? [p.velocity ?? ''] : []),
+      ...moneyCols.map((c) => cellValue(textOf(c.cell(r)))),
+    ];
+  });
+  return { name, rows: [header, ...body], widths: [7, 12, ...header.slice(2).map(() => 10)] };
+}
+
+/** The squad's workbook: pitchers' and hitters' records (the season and both detail pages) and ratings. */
+export function squadWorkbook(league: LeagueState, rows: Row[]): XlsxSheet[] {
+  const t = seasonTotals(league);
+  const ctx: Ctx = { league, rc: rateContextFor(league, league.year), lg: t.bat.pa ? leagueContext(t.bat, t.pit) : null };
+  const pitchers = rows.filter((r) => r.pitcher),
+    hitters = rows.filter((r) => !r.pitcher);
+  const record = (pit: boolean) => [...headCols(ctx, pit), ...(pit ? pitcherCols : hitterCols)(ctx, 'season', 1), ...(pit ? pitcherCols : hitterCols)(ctx, 'detail', 1), ...(pit ? pitcherCols : hitterCols)(ctx, 'detail', 2)];
+  return [
+    exportSheet(__i18n_displayText(__i18n_t("ui.next.squad.text.fab1018c")), pitchers, record(true)),
+    exportSheet(__i18n_displayText(__i18n_t("ui.next.squad.text.3f5b4170")), hitters, record(false)),
+    ratingSheet(ctx, __i18n_displayText(__i18n_t("ui.next.squad.text.982407a2")), pitchers, true),
+    ratingSheet(ctx, __i18n_displayText(__i18n_t("ui.next.squad.text.d6ffee65")), hitters, false),
+  ];
+}
+
+function downloadSquad(league: LeagueState, teamId: string, squad: SquadKey, rows: Row[]) {
+  const bytes = xlsx(squadWorkbook(league, rows));
+  // (A name in plain letters: some browsers drop a non-ASCII download name for a generic one.)
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([bytes as BlobPart], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  a.download = `kbo-${teamId}-${league.year}-${squad}.xlsx`.replace(/[^A-Za-z0-9._-]+/g, '_');
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
 export function NextSquad({
   league,
   teamId,
@@ -346,6 +417,11 @@ export function NextSquad({
               </button>
             ))}
           </div>
+        )}
+        {rows.length > 0 && (
+          <button type="button" class="small squad-export" title={__i18n_displayText(__i18n_t("ui.next.squad.text.db358dcf"))} onClick={() => downloadSquad(league, teamId, key, rows)}>
+            {__i18n_t("ui.next.squad.text.8c338f8c")}
+          </button>
         )}
         {toolbar && <div class="squad-aside">{toolbar}</div>}
       </div>

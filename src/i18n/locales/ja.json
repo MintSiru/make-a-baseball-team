@@ -10483,5 +10483,14 @@
   "ui.decision.text.3b423561": "呼び戻す",
   "ui.decision.text.410848cc": "すでに一度保留権を維持しました。",
   "ui.decision.text.e1d9b368": "保留権を維持",
-  "league.userclub.text.81dc64ce": "{name}: 保留権を維持 — もう1年海外でプレーし、来冬に改めて復帰を協議"
+  "league.userclub.text.81dc64ce": "{name}: 保留権を維持 — もう1年海外でプレーし、来冬に改めて復帰を協議",
+  "ui.next.squad.text.7fab4c51": "背番号",
+  "ui.next.squad.text.9aa18e50": "名前",
+  "ui.next.squad.text.6e0caec5": "将来",
+  "ui.next.squad.text.fab1018c": "投手成績",
+  "ui.next.squad.text.3f5b4170": "打者成績",
+  "ui.next.squad.text.982407a2": "投手能力",
+  "ui.next.squad.text.d6ffee65": "打者能力",
+  "ui.next.squad.text.db358dcf": "選んでいる選手団の成績(シーズン・詳細)と能力を、4枚のシート(投手・打者成績、投手・打者能力)でダウンロードします。",
+  "ui.next.squad.text.8c338f8c": "Excelに書き出す"
 }

@@ -10484,5 +10484,14 @@ export const koSource = {
   "ui.decision.text.3b423561": "데려오기",
   "ui.decision.text.410848cc": "이미 한 번 보류권을 유지했습니다.",
   "ui.decision.text.e1d9b368": "보류권 유지",
-  "league.userclub.text.81dc64ce": "{name}: 보류권 유지 — 1년 더 해외에서 뛰고 다음 겨울 다시 복귀를 논의"
+  "league.userclub.text.81dc64ce": "{name}: 보류권 유지 — 1년 더 해외에서 뛰고 다음 겨울 다시 복귀를 논의",
+  "ui.next.squad.text.7fab4c51": "등번호",
+  "ui.next.squad.text.9aa18e50": "이름",
+  "ui.next.squad.text.6e0caec5": "미래",
+  "ui.next.squad.text.fab1018c": "투수 기록",
+  "ui.next.squad.text.3f5b4170": "타자 기록",
+  "ui.next.squad.text.982407a2": "투수 능력치",
+  "ui.next.squad.text.d6ffee65": "타자 능력치",
+  "ui.next.squad.text.db358dcf": "지금 고른 선수단의 기록(시즌·상세)과 능력치를 시트 4장(투수·타자 기록, 투수·타자 능력치)으로 내려받습니다.",
+  "ui.next.squad.text.8c338f8c": "엑셀로 내보내기"
 } as const;
