@@ -121,6 +121,8 @@ function Sheet({ title, rows, cols, onPlayer, actions, initial }: { title: strin
 /** Name, role or position, age, the grades now and to come: every view starts with them. */
 function headCols(ctx: Ctx, pitchers: boolean, posControl?: (r: Row) => ComponentChildren): Col[] {
   const hand = (r: Row) => ctx.league.players[r.id]?.throws ?? '';
+  // 2.0.78 (the user's request): a hitter's side of the plate, as a pitcher's arm (좌타·우타·양타).
+  const bats = (r: Row) => ctx.league.players[r.id]?.bats ?? '';
   return [
     {
       key: 'pos',
@@ -140,7 +142,7 @@ function headCols(ctx: Ctx, pitchers: boolean, posControl?: (r: Row) => Componen
           </>
         ) : (
           <>
-            {r.pos}
+            {r.pos} {bats(r) && <span class="muted small">({bats(r)}{__i18n_t("ui.next.squad.text.8198fd54")})</span>}
             {r.also.length > 0 && <span class="muted small"> · {r.also.join(' · ')}</span>}
             {posControl?.(r) ?? (r.platoon && <span class="muted"> ({r.platoon === 'L' ? __i18n_t("ui.squad.hitterTable.67500ef8") : __i18n_t("ui.squad.hitterTable.04afaad8")})</span>)}
           </>
