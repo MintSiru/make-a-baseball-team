@@ -17,6 +17,8 @@ import { gradeClass, rowFuture, showsFutureDetail } from '../grades';
 import { positionKey, useSort } from '../sort';
 import type { Row, SquadKey } from '../Squad';
 import { cellValue, xlsx, type XlsxCell, type XlsxSheet } from '../xlsx';
+import { BAT_LABEL, PIT_LABEL, VALUE_LABEL } from '../Savant';
+import { percentilesOf, valuesOf, type PercentileKey, type ValueKey } from '../../league/savant';
 
 type View = 'season' | 'detail' | 'ratings';
 type Page = 1 | 2;
@@ -325,6 +327,49 @@ function ratingSheet(ctx: Ctx, name: string, rows: Row[], pitchers: boolean): Xl
   return { name, rows: [header, ...body], widths: [7, 12, ...header.slice(2).map(() => 10)] };
 }
 
+/** 2.0.78 (the user's request: 세이버 스탯도): the Savant numbers — each measure as shown and his percentile among the
+    league's regulars, and his run values — for those with a line this season. */
+function saberSheet(ctx: Ctx, name: string, rows: Row[], pitchers: boolean): XlsxSheet {
+  const bat = BAT_LABEL(),
+    pit = PIT_LABEL(),
+    val = VALUE_LABEL();
+  const label = (k: PercentileKey) => __i18n_displayText((pitchers ? pit[k] : undefined) ?? bat[k]);
+  const pct = __i18n_displayText(__i18n_t("ui.next.squad.text.330be145"));
+  const data = rows.map((r) => {
+    const pc = percentilesOf(ctx.league, r.id);
+    return { r, pcs: (pitchers ? pc.pitching : pc.batting) ?? [], values: valuesOf(ctx.league, r.id)?.rows ?? [] };
+  });
+  // The measures any of them has, in the order the page shows them.
+  const keys: PercentileKey[] = [],
+    vkeys: ValueKey[] = [];
+  for (const d of data) {
+    for (const x of d.pcs) if (!keys.includes(x.key)) keys.push(x.key);
+    for (const x of d.values) if (!vkeys.includes(x.key)) vkeys.push(x.key);
+  }
+  const head = headCols(ctx, pitchers);
+  const header: XlsxCell[] = [
+    __i18n_displayText(__i18n_t("ui.next.squad.text.7fab4c51")),
+    __i18n_displayText(__i18n_t("ui.next.squad.text.9aa18e50")),
+    ...head.map((c) => textOf(c.label)),
+    ...keys.flatMap((k) => [label(k), `${label(k)} ${pct}`]),
+    ...vkeys.flatMap((k) => [__i18n_displayText(val[k]), `${__i18n_displayText(val[k])} ${pct}`]),
+  ];
+  const body = data.map(({ r, pcs, values }): XlsxCell[] => [
+    r.number ?? '',
+    __i18n_displayText(r.name),
+    ...head.map((c) => cellValue(textOf(c.cell(r)))),
+    ...keys.flatMap((k): XlsxCell[] => {
+      const x = pcs.find((y) => y.key === k);
+      return x ? [cellValue(x.value), x.pct] : ['', ''];
+    }),
+    ...vkeys.flatMap((k): XlsxCell[] => {
+      const x = values.find((y) => y.key === k);
+      return x ? [x.value, x.pct] : ['', ''];
+    }),
+  ]);
+  return { name, rows: [header, ...body], widths: [7, 12, ...header.slice(2).map(() => 10)] };
+}
+
 /** The squad's workbook: pitchers' and hitters' records (the season and both detail pages) and ratings. */
 export function squadWorkbook(league: LeagueState, rows: Row[]): XlsxSheet[] {
   const t = seasonTotals(league);
@@ -337,6 +382,9 @@ export function squadWorkbook(league: LeagueState, rows: Row[]): XlsxSheet[] {
     exportSheet(__i18n_displayText(__i18n_t("ui.next.squad.text.3f5b4170")), hitters, record(false)),
     ratingSheet(ctx, __i18n_displayText(__i18n_t("ui.next.squad.text.982407a2")), pitchers, true),
     ratingSheet(ctx, __i18n_displayText(__i18n_t("ui.next.squad.text.d6ffee65")), hitters, false),
+    // 2.0.78: and the Savant numbers.
+    saberSheet(ctx, __i18n_displayText(__i18n_t("ui.next.squad.text.3aea4ca4")), pitchers, true),
+    saberSheet(ctx, __i18n_displayText(__i18n_t("ui.next.squad.text.d18f6080")), hitters, false),
   ];
 }
 
@@ -419,7 +467,7 @@ export function NextSquad({
           </div>
         )}
         {rows.length > 0 && (
-          <button type="button" class="small squad-export" title={__i18n_displayText(__i18n_t("ui.next.squad.text.db358dcf"))} onClick={() => downloadSquad(league, teamId, key, rows)}>
+          <button type="button" class="small squad-export" title={__i18n_displayText(__i18n_t("ui.next.squad.text.e505356a"))} onClick={() => downloadSquad(league, teamId, key, rows)}>
             {__i18n_t("ui.next.squad.text.8c338f8c")}
           </button>
         )}

@@ -10492,5 +10492,9 @@
   "ui.next.squad.text.982407a2": "投手能力",
   "ui.next.squad.text.d6ffee65": "打者能力",
   "ui.next.squad.text.db358dcf": "選んでいる選手団の成績(シーズン・詳細)と能力を、4枚のシート(投手・打者成績、投手・打者能力)でダウンロードします。",
-  "ui.next.squad.text.8c338f8c": "Excelに書き出す"
+  "ui.next.squad.text.8c338f8c": "Excelに書き出す",
+  "ui.next.squad.text.330be145": "パーセンタイル",
+  "ui.next.squad.text.3aea4ca4": "投手セイバー",
+  "ui.next.squad.text.d18f6080": "打者セイバー",
+  "ui.next.squad.text.e505356a": "選んでいる選手団の成績(シーズン・詳細)、能力、セイバー指標(Savantパーセンタイル・得点価値)を6枚のシートでダウンロードします。"
 }

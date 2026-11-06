@@ -17,7 +17,7 @@ import type { LeagueState } from '../league/state';
 import { shortName } from '../league/views';
 import { hitterOuterZones, hitterZones, pitcherOuterZones, pitcherZones } from '../league/zones';
 
-const BAT_LABEL = (): Record<PercentileKey, string> => ({
+export const BAT_LABEL = (): Record<PercentileKey, string> => ({
   xwoba: 'xwOBA',
   xba: 'xBA',
   xslg: 'xSLG',
@@ -31,7 +31,7 @@ const BAT_LABEL = (): Record<PercentileKey, string> => ({
   velo: __i18n_t("ui.savant.text.fb9c1e5f"),
   gb: __i18n_t("ui.savant.text.19c79bd9"),
 });
-const PIT_LABEL = (): Partial<Record<PercentileKey, string>> => ({
+export const PIT_LABEL = (): Partial<Record<PercentileKey, string>> => ({
   xwoba: __i18n_t("ui.savant.text.3cf8c92d"),
   xba: __i18n_t("ui.savant.text.ebd18378"),
   ev: __i18n_t("ui.savant.text.71f609ba"),
@@ -159,7 +159,7 @@ function Mix({ league, id }: { league: LeagueState; id: string }) {
   );
 }
 
-const VALUE_LABEL = (): Record<ValueKey, string> => ({
+export const VALUE_LABEL = (): Record<ValueKey, string> => ({
   pitching: __i18n_t("ui.savant.text.8ccdea88"),
   fastball: __i18n_t("ui.savant.text.215f9f1c"),
   breaking: __i18n_t("ui.savant.text.c358998f"),

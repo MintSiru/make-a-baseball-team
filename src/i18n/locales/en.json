@@ -10492,5 +10492,9 @@
   "ui.next.squad.text.982407a2": "Pitcher ratings",
   "ui.next.squad.text.d6ffee65": "Hitter ratings",
   "ui.next.squad.text.db358dcf": "Downloads the squad shown — records (season and detail) and ratings — as four sheets: pitching, batting, pitcher ratings, hitter ratings.",
-  "ui.next.squad.text.8c338f8c": "Export to Excel"
+  "ui.next.squad.text.8c338f8c": "Export to Excel",
+  "ui.next.squad.text.330be145": "pct",
+  "ui.next.squad.text.3aea4ca4": "Pitcher Savant",
+  "ui.next.squad.text.d18f6080": "Hitter Savant",
+  "ui.next.squad.text.e505356a": "Downloads the squad shown — records (season and detail), ratings and Savant numbers (percentiles and run values) — as six sheets."
 }
