@@ -10483,5 +10483,14 @@
   "ui.decision.text.3b423561": "Sign",
   "ui.decision.text.410848cc": "His rights have been kept once already.",
   "ui.decision.text.e1d9b368": "Keep rights",
-  "league.userclub.text.81dc64ce": "{name}: rights kept — one more year abroad, and his return discussed again next winter"
+  "league.userclub.text.81dc64ce": "{name}: rights kept — one more year abroad, and his return discussed again next winter",
+  "ui.next.squad.text.7fab4c51": "No.",
+  "ui.next.squad.text.9aa18e50": "Name",
+  "ui.next.squad.text.6e0caec5": "future",
+  "ui.next.squad.text.fab1018c": "Pitching",
+  "ui.next.squad.text.3f5b4170": "Batting",
+  "ui.next.squad.text.982407a2": "Pitcher ratings",
+  "ui.next.squad.text.d6ffee65": "Hitter ratings",
+  "ui.next.squad.text.db358dcf": "Downloads the squad shown — records (season and detail) and ratings — as four sheets: pitching, batting, pitcher ratings, hitter ratings.",
+  "ui.next.squad.text.8c338f8c": "Export to Excel"
 }

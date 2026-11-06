@@ -94174,5 +94174,59 @@
       }
     },
     "locations": []
+  },
+  "ui.next.squad.text.7fab4c51": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 302,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.9aa18e50": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 302,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.6e0caec5": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 311,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.fab1018c": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 336,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.3f5b4170": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 337,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.982407a2": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 338,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.d6ffee65": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 339,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.db358dcf": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 422,
+    "params": {},
+    "locations": []
+  },
+  "ui.next.squad.text.8c338f8c": {
+    "source": "src/ui/next/Squad.tsx",
+    "line": 423,
+    "params": {},
+    "locations": []
   }
 }

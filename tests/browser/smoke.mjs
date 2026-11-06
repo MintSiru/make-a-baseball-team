@@ -168,8 +168,14 @@ async function playSeason(page, log = []) {
   let stops = 0;
   for (let i = 0; i < 30; i++) {
     // 2.0.27: a slow runner may still be simulating the last days, or a decision may have come up meanwhile (CI once
-    // timed out on the click): wait for the controls, answer what is pending, then go on.
-    await page.waitForFunction(() => !!document.querySelector('#decision-title') || !document.querySelector('fieldset.controls')?.disabled, null, { timeout: 90_000 });
+    // timed out on the click): wait for the controls, answer what is pending, then go on. 2.0.78: the controls there
+    // and enabled, not merely not disabled — a decision's page has neither for a moment before its title renders, and
+    // a loaded runner clicked into that moment.
+    await page.waitForFunction(
+      () => !!document.querySelector('#decision-title') || [...document.querySelectorAll('button')].some((b) => b.textContent === '정규시즌 끝까지' && !b.disabled && !b.closest('fieldset')?.disabled),
+      null,
+      { timeout: 90_000 },
+    );
     if (await page.locator('#decision-title').count()) {
       await decideAll(page, log);
       continue;
