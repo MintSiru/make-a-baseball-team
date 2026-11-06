@@ -33,7 +33,7 @@ function unzip(b: Uint8Array): Map<string, string> {
 
 describe('2.0.78: the squad as an Excel workbook', () => {
   it('writes a valid .xlsx: four sheets of the first team, records and ratings, numbers as numbers', () => {
-    const s = loadSave('2.0.76');
+    const s = loadSave('2.0.77');
     const rows = rosterView(s, s.user!.teamId).active;
     const sheets = squadWorkbook(s, rows);
     expect(sheets.map((x) => x.name)).toEqual(['투수 기록', '타자 기록', '투수 능력치', '타자 능력치']);

@@ -12,13 +12,16 @@ import { loadSave } from './helpers';
 
 describe('2.0.78: a posted player’s rights kept a year', () => {
   it('plays one more season abroad and comes home to us the next winter, once', () => {
-    const s = loadSave('2.0.76');
+    const s = loadSave('2.0.77');
     const me = s.user!.teamId;
     const year = s.year;
     const gone = orgPlayers(s, me)
-      .filter((p) => !isForeign(p) && p.status === 'active' && p.career.at(-1)?.teamId === me && !p.career.at(-1)?.level)
+      .filter((p) => !isForeign(p) && p.status === 'active' && p.career.some((c) => !c.level))
       .slice(0, 8);
+    expect(gone.length).toBeGreaterThan(2);
     for (const p of gone) {
+      // His last first-team season ours (the fixture's club is new), so his rights are ours.
+      p.career.push({ ...p.career.filter((c) => !c.level).at(-1)!, year: year - 8, teamId: me });
       removeFromRoster(s, p);
       p.teamId = null;
       p.contract = null;
@@ -58,5 +61,24 @@ describe('2.0.78: a posted player’s rights kept a year', () => {
     // Once only.
     expect(canHoldReturnee(p)).toBe(false);
     expect(checkAnnual(s, { kind: 'returnee', rows: again }, { kind: 'returnee', ids: [], hold: [p.id] })).not.toBeNull();
+  });
+});
+
+describe('2.0.78: a star wants the majors more, and his club lets him go more readily', () => {
+  it('grows with the grade, up to the caps', async () => {
+    const { postingAllows, postingWants } = await import('../src/league/posting');
+    const { POSTING } = await import('../src/league/tuning');
+    const s = loadSave('2.0.77');
+    const p = Object.values(s.players).find((x) => x.status === 'active' && !isForeign(x))!;
+    const at = (g: number) => {
+      p.scouting.current = g;
+      return { w: postingWants(p), a: postingAllows(p) };
+    };
+    expect(at(62)).toEqual({ w: POSTING.wants, a: POSTING.aiAllows });
+    expect(at(65).w).toBeCloseTo(0.74, 6);
+    expect(at(65).a).toBeCloseTo(0.73, 6);
+    expect(at(70).w).toBe(POSTING.wantsMax);
+    expect(at(80).a).toBe(POSTING.allowsMax);
+    expect(at(66).w).toBeGreaterThan(at(63).w);
   });
 });
