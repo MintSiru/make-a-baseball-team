@@ -71,6 +71,8 @@ import { CareerStages, DevTable } from './CareerStages';
 import { backFrom, canReinstate, canVoluntary } from '../league/voluntary';
 import { checkFuturesOnly } from '../league/season';
 import { PlayerTraining } from './FarmReport';
+import { panelSheets } from './panelExport';
+import { xlsx } from './xlsx';
 
 const POSITION_NAMES: Record<string, string> = { C: __i18n_k("ui.playerPanel.pOSITION_NAMES.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("ui.playerPanel.pOSITION_NAMES.sS.3e24c7f1"), LF: __i18n_k("ui.playerPanel.pOSITION_NAMES.lF.73836db2"), CF: __i18n_k("ui.playerPanel.pOSITION_NAMES.cF.56780b2a"), RF: __i18n_k("ui.playerPanel.pOSITION_NAMES.rF.a28a0ef8") };
 
@@ -914,6 +916,7 @@ export function PlayerPanel({
           {next && (
             <div class="pp-tools">
               {toggles}
+              <PanelExport league={league} id={p.id} box={box} />
               {onInterview && ours && (
                 <button type="button" title={__i18n_t("ui.playerPanel.playerPanel.a1086678")} onClick={() => onInterview(p.id)}>
                   {__i18n_t("ui.playerPanel.playerPanel.7290c766")}
@@ -924,6 +927,11 @@ export function PlayerPanel({
           )}
         </div>
         {next ? <NextSummary card={card} pitcher={pitcher} titles={postSum.titles} /> : <SummaryStrip card={card} pitcher={pitcher} titles={postSum.titles} />}
+        {!next && (
+          <p class="small">
+            <PanelExport league={league} id={p.id} box={box} />
+          </p>
+        )}
         {__i18n_display(card.status && <p class="notice">{__i18n_display(card.status)}</p>)}
         {__i18n_display(league.suspended?.[p.id] && (
           <p class="notice warn">
@@ -1415,6 +1423,34 @@ export function PlayerPanel({
 
 /** 2.0.62 (새 UI): the strip in boxed cells — the grade now and to come in big numbers (the scouts' latest revision
     beside the future one), his latest season, his career. His age is in the line under his name. */
+/** 2.0.78 (the user's request): the player's page as an Excel workbook, a sheet a tab (panelExport.ts). */
+function PanelExport({ league, id, box }: { league: LeagueState; id: string; box: { current: HTMLDivElement | null } }) {
+  const [busy, setBusy] = useState(false);
+  const run = async () => {
+    if (!box.current || busy) return;
+    setBusy(true);
+    try {
+      const p = league.players[id]!;
+      const sheets = await panelSheets(box.current, __i18n_displayText(p.name));
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([xlsx(sheets) as BlobPart], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+      // (A name in plain letters: some browsers drop a non-ASCII download name.)
+      a.download = `kbo-player-${id}-${league.year}.xlsx`.replace(/[^A-Za-z0-9._-]+/g, '_');
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button type="button" class="pp-export" disabled={busy} title={__i18n_t("ui.playerPanel.text.991b2ed9")} onClick={() => void run()}>
+      {busy ? __i18n_t("ui.playerPanel.text.14bcb533") : __i18n_t("ui.playerPanel.text.8c338f8c")}
+    </button>
+  );
+}
+
 function NextSummary({ card, pitcher, titles }: { card: PlayerCard; pitcher: boolean; titles: number }) {
   const p = card.player,
     s = p.scouting;

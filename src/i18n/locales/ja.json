@@ -10497,5 +10497,8 @@
   "ui.next.squad.text.3aea4ca4": "投手セイバー",
   "ui.next.squad.text.d18f6080": "打者セイバー",
   "ui.next.squad.text.e505356a": "選んでいる選手団の成績(シーズン・詳細)、能力、セイバー指標(Savantパーセンタイル・得点価値)を6枚のシートでダウンロードします。",
-  "ui.next.squad.text.8198fd54": "打"
+  "ui.next.squad.text.8198fd54": "打",
+  "ui.playerPanel.text.991b2ed9": "この選手画面のタブ(能力・成績の各表示・レポート・プロフィール・故障)を順に開き、表示される表と能力をタブごとに1枚のシートでダウンロードします。",
+  "ui.playerPanel.text.14bcb533": "書き出し中…",
+  "ui.playerPanel.text.8c338f8c": "Excelに書き出す"
 }

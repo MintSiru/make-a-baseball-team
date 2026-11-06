@@ -10497,5 +10497,8 @@
   "ui.next.squad.text.3aea4ca4": "Pitcher Savant",
   "ui.next.squad.text.d18f6080": "Hitter Savant",
   "ui.next.squad.text.e505356a": "Downloads the squad shown — records (season and detail), ratings and Savant numbers (percentiles and run values) — as six sheets.",
-  "ui.next.squad.text.8198fd54": " bats"
+  "ui.next.squad.text.8198fd54": " bats",
+  "ui.playerPanel.text.991b2ed9": "Opens each tab of this player's page in turn (ratings, every records view, report, profile, injuries) and downloads what it shows — tables and ratings — a sheet a tab.",
+  "ui.playerPanel.text.14bcb533": "Exporting…",
+  "ui.playerPanel.text.8c338f8c": "Export to Excel"
 }

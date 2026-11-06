@@ -94258,5 +94258,23 @@
     "line": 145,
     "params": {},
     "locations": []
+  },
+  "ui.playerPanel.text.991b2ed9": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1448,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.14bcb533": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1449,
+    "params": {},
+    "locations": []
+  },
+  "ui.playerPanel.text.8c338f8c": {
+    "source": "src/ui/PlayerPanel.tsx",
+    "line": 1449,
+    "params": {},
+    "locations": []
   }
 }
