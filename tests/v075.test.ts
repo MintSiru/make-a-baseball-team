@@ -33,6 +33,9 @@ describe('tutorial mode', () => {
 
   it('tells about the rest of the founding year once the tryout is done', () => {
     apply(s, { kind: 'decide', input: autoDecision(s)! });
+    // 2.0.79: then the founding staff, chosen by hand.
+    expect(s.pending?.kind).toBe('staff');
+    apply(s, { kind: 'decide', input: autoDecision(s)! });
     expect(s.pending).toBeFalsy();
     expect(read()).toBe('foundingSeason');
   });

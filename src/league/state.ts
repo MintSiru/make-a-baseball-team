@@ -260,7 +260,7 @@ export type Decision =
   // Coming home (V0.7.3): posted players back from the majors, whose rights the club holds
   | { kind: 'returnee'; rows: { id: PlayerId; years: number; annual: number; abroad: number }[] }
   | { kind: 'sponsor'; offers: SponsorOffer[]; ended?: string }
-  | { kind: 'staff'; rows: { role: StaffRole; current: StaffMember; expiring: boolean; buyout: number; candidates: StaffMember[] }[] }
+  | { kind: 'staff'; rows: { role: StaffRole; current: StaffMember; expiring: boolean; buyout: number; candidates: StaffMember[] }[]; /** 2.0.79: the founding winter's choice. */ founding?: boolean }
   // The twelfth club (V0.9, rival.ts): design it (or, offered by the board, vote it down), then protect our players
   // from its special draft
   | { kind: 'rival'; year: number; event: boolean; suggestion: RivalSettings }

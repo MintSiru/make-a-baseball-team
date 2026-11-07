@@ -52,7 +52,9 @@ describe('a foreign place left open', () => {
     const dead = (u.deadMoney ?? []).length;
     const t = apply(s, { kind: 'foreignSwap', out: OPEN_SLOT, in: pick.id });
     expect(t.players[pick.id]!.teamId).toBe(u.teamId);
-    expect(t.foreignChanges![u.teamId]).toBe(1);
+    // 2.0.79: the club (a new one, four places) had a place never filled this season: the first signing fills it
+    // without a replacement; one into the place let go this season would be one.
+    expect(t.foreignChanges?.[u.teamId] ?? 0).toBe(before > 0 ? 0 : 1);
     expect(openForeign(t, u.teamId).regular).toBe(open.regular - 1);
     expect((t.user!.deadMoney ?? []).length).toBe(dead);
     expect(t.news?.some((n) => n.id === `mv-foreign-${t.schedule[t.next]?.date ?? ''}-${pick.id}` || n.id.endsWith(`-${pick.id}`))).toBe(true);

@@ -111,7 +111,8 @@ describe('expansion after a futures year (NC/KT path)', () => {
       if (d.kind === 'faRound' && m?.userFree) {
         faSeen.add(m.year);
         expect(m.userLimit).toBe(EXPANSION_DEFAULTS.freeAgentSigns);
-        const outside = m.order.filter((id) => m.talks[id]!.from !== EXPANSION_ID).slice(0, m.userLimit + 1);
+        // (2.0.77: a free agent home from abroad, or a foreign one, is outside no club's limit.)
+        const outside = m.order.filter((id) => m.talks[id]!.from !== EXPANSION_ID && !m.talks[id]!.home && !m.talks[id]!.foreign).slice(0, m.userLimit + 1);
         const offers = Object.fromEntries(outside.map((id) => [id, { ...m.talks[id]!.price, annual: 10000, bonus: 0, options: 0 }]));
         expect(checkDecision(st, { kind: 'faRound', offers, run: 'round' })).toMatch(/3명까지/);
       }

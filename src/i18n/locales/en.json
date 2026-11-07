@@ -10503,5 +10503,7 @@
   "ui.exportButton.text.8c338f8c": "Export to Excel",
   "ui.leaders.text.9191e85a": "Opens the leaders, batters and pitchers (basic and detail) and postseason views in turn and downloads a sheet for each. The qualified-only choice is kept as it is now.",
   "ui.standings.text.0bbf8d5f": "Downloads the tables on this page — the standings, head-to-head records, the postseason bracket — as one sheet.",
-  "ui.standings.text.1c6906ad": "{year} standings"
+  "ui.standings.text.1c6906ad": "{year} standings",
+  "ui.decision.text.de5ed260": "Choose the founding season's coaching staff yourself. A post you leave keeps the staff the club was set up with, with no buyout.",
+  "ui.market.text.36c6287d": "An open place not filled at all this season can be signed into without using a replacement (a first registration). Refilling a place emptied during the season is one replacement."
 }
