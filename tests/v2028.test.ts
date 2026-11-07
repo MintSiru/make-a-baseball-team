@@ -216,7 +216,8 @@ describe('the AI clubs offer us trades (2.0.28)', () => {
     expect(offers.length).toBeLessThanOrEqual(OFFERS.open);
     expect(s.alerts?.some((a) => a.id === offers[0]!.id)).toBe(true);
     for (const o of offers) {
-      expect(checkTrade(s, o.teamId, o.give, o.get, o.extras).accepted).toBe(true);
+      // (2.0.79: a club that comes to us asks no premium of its own — eager.)
+      expect(checkTrade(s, o.teamId, o.give, o.get, o.extras, true).accepted).toBe(true);
       const ask = o.give.reduce((a, id) => a + tradeValue(s, s.players[id]!), 0);
       const pay = o.get.reduce((a, id) => a + tradeValue(s, s.players[id]!), 0) + (o.extras.picksIn ?? []).reduce((a, r) => a + pickValue(s, o.teamId, r), 0);
       expect(pay).toBeGreaterThanOrEqual(ask * OFFERS.fair - 0.01);

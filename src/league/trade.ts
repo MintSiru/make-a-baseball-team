@@ -206,8 +206,9 @@ export function extrasText(s: LeagueState, cash: number, picks: number[]) {
   return [cash > 0 ? __i18n_k("league.trade.extrasText.51455c09", { eok: eok(cash) }) : '', picks.length ? pickText(tradeDraftYear(s), picks) : ''].filter(Boolean).join(' + ');
 }
 
-export function makeTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get: PlayerId[], extras: TradeExtras = {}) {
-  const c = checkTrade(s, teamId, give, get, extras);
+export function makeTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get: PlayerId[], extras: TradeExtras = {}, eager = false) {
+  // (2.0.79: an offer the club made us is taken on its own terms — eager, checkTrade.)
+  const c = checkTrade(s, teamId, give, get, extras, eager);
   if (c.problem) throw new Error(c.problem);
   const u = s.user!;
   if (!c.accepted) {
@@ -564,8 +565,13 @@ export function firstForeignSigning(s: LeagueState, teamId: TeamId, asia: boolea
   const slots = foreignSlots(s, teamId, s.year);
   const here = slotForeigners(s, teamId, s.year).filter((p) => !!p.origin.asiaQuota === asia).length;
   const since = `${s.year}-03-01`;
+  // Gone since: let go (a move noted from the club), or with a line of this season at the club (one who retired).
+  const lineHere = (id: PlayerId) => {
+    const l = s.lines[id];
+    return !!l && (l.teamId === teamId || !!l.parts?.some((x) => x.teamId === teamId));
+  };
   const gone = Object.values(s.players).filter(
-    (p) => isForeign(p) && !!p.origin.asiaQuota === asia && p.teamId !== teamId && (p.moves ?? []).some((m) => m.from === teamId && m.date >= since && (m.kind === 'release' || m.kind === 'foreignOut')),
+    (p) => isForeign(p) && !!p.origin.asiaQuota === asia && p.teamId !== teamId && ((p.moves ?? []).some((m) => m.from === teamId && m.date >= since && (m.kind === 'release' || m.kind === 'foreignOut')) || lineHere(p.id)),
   ).length;
   return here + gone < (asia ? slots.asia : slots.regular);
 }

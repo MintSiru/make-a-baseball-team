@@ -238,5 +238,5 @@ export function answerOffer(s: LeagueState, id: string, accept: boolean) {
     (u.log ??= []).push({ year: s.year, text: __i18n_k("league.offers.text.1d55bab7", { club }) });
     return;
   }
-  makeTrade(s, offer.teamId, offer.give, offer.get, offer.extras);
+  makeTrade(s, offer.teamId, offer.give, offer.get, offer.extras, true);
 }
