@@ -1231,7 +1231,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
     case 'staff': {
       body = (
         <>
-          <p>{__i18n_t("ui.decision.decision.26242ff4")}</p>
+          <p>{d.founding ? __i18n_t("ui.decision.text.de5ed260") : __i18n_t("ui.decision.decision.26242ff4")}</p>
           <p class="muted">{__i18n_t("ui.decision.decision.c2eefb9f", { money: money(u.fund) })}</p>
           <div class="table-wrap" tabIndex={0}>
             <table class="record-table staff-table">

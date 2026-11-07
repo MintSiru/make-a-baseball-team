@@ -668,6 +668,13 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
       }
       // Unchosen amateurs leave; unchosen released pros stay retired.
       for (const id of (d as Extract<Decision, { kind: 'tryout' }>).candidates) if (!input.ids.includes(id) && s.players[id]?.status === 'amateur') delete s.players[id];
+      // 2.0.79 (the user's request: 첫해 코칭스태프를 직접): the founding staff are ours to choose — the posts' candidates,
+      // no buyout of the staff the club was set up with (whoever is not replaced stays on a new deal).
+      const staff = foundingStaffDecision(s);
+      if (staff) {
+        s.pending = staff;
+        return;
+      }
       break;
     }
     case 'draftPick': {
@@ -779,6 +786,15 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
   }
   s.pending = null;
   if (s.offseason) advanceOffseason(s);
+}
+
+/** 2.0.79: the founding winter's staff choice (staffDecision), with nothing to buy out. */
+function foundingStaffDecision(s: LeagueState): Decision | null {
+  const u = s.user;
+  if (!u || u.staffSeen) return null;
+  const d = staffDecision(s, s.year);
+  if (!d || d.kind !== 'staff') return null;
+  return { ...d, rows: d.rows.map((r) => ({ ...r, expiring: true, buyout: 0 })), founding: true };
 }
 
 /** The cap on a new foreign signing, transfer fee included (RULES.md §5). */

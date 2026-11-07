@@ -25,6 +25,8 @@ import {
   foreignMarket,
   foreignPriceNow,
   foreignWindow,
+  firstForeignSigning,
+  foreignSeasonWindow,
   asiaReplacements,
   OPEN_SLOT,
   openForeign,
@@ -563,6 +565,8 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
   const problem = chosen && inId ? canReplaceForeign(league, u.teamId, out, inId) : null;
   // 1.7.0: an open place is signed into directly, nobody let go.
   const open = league.phase === 'regular' ? openForeign(league, u.teamId) : { regular: 0, asia: 0 };
+  // 2.0.79: an open place not filled at all this season takes a first signing without a replacement.
+  const firstFree = !foreignSeasonWindow(league) && ((open.regular > 0 && firstForeignSigning(league, u.teamId, false)) || (open.asia > 0 && firstForeignSigning(league, u.teamId, true)));
   const used = league.foreignChanges?.[u.teamId] ?? 0;
   // 2.0.24: the Asia quota on its own count.
   const asiaUsed = league.asiaChanges?.[u.teamId] ?? 0;
@@ -578,7 +582,8 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
       ))}
       <Help title={__i18n_t("ui.market.foreign.2909108b")}>{__i18n_t("ui.market.text.61fa26e8", { regular: foreignReplacements(), asia: asiaReplacements(), used, asiaUsed })}</Help>
       <TempForeign league={league} onPlayer={onPlayer} onAct={onAct} />
-      {__i18n_display(closed && <p class="notice">{__i18n_display(closed)}</p>)}
+      {__i18n_display(closed && !firstFree && <p class="notice">{__i18n_display(closed)}</p>)}
+      {firstFree && <p class="notice good">{__i18n_t("ui.market.text.36c6287d")}</p>}
       <h3>{__i18n_t("ui.market.foreign.58f7280f")}</h3>
       <div class="choice-grid">
         {__i18n_display(mine.map((p) => (
@@ -612,7 +617,7 @@ function Foreign({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
       />
       <div class="trade-bar">
         {__i18n_display(problem && <span class="notice inline">{__i18n_display(problem)}</span>)}
-        <button type="button" class="primary" disabled={!chosen || !inId || !!problem || !!closed} onClick={() => chosen && inId && onAct({ kind: 'foreignSwap', out, in: inId })}>{__i18n_display(out === OPEN_SLOT ? __i18n_t("ui.market.text.7994e59f") : __i18n_k("ui.market.foreign.c49c1d92"))}</button>
+        <button type="button" class="primary" disabled={!chosen || !inId || !!problem || (!!closed && !(out === OPEN_SLOT && firstFree))} onClick={() => chosen && inId && onAct({ kind: 'foreignSwap', out, in: inId })}>{__i18n_display(out === OPEN_SLOT ? __i18n_t("ui.market.text.7994e59f") : __i18n_k("ui.market.foreign.c49c1d92"))}</button>
       </div>
     </>
   );

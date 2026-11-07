@@ -125,7 +125,9 @@ export const cashValue = (manwon: number) => ((Math.min(manwon, TRADES.cash.full
 const pickText = (year: number, rounds: number[]) => rounds.map((r) => __i18n_k("league.trade.pickText.8744d1db", { value: year + 1, r: r })).join('·');
 const eok = (manwon: number) => __i18n_k("league.trade.eok.db0fc332", { value: Math.round(manwon / 1000) / 10 });
 
-export function checkTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get: PlayerId[], extras: TradeExtras = {}): TradeCheck {
+/** 2.0.79: `eager` — the club came to us for him (offers.ts): it asks no premium over what he is worth to it, only not
+    to lose by its own lights. */
+export function checkTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get: PlayerId[], extras: TradeExtras = {}, eager = false): TradeCheck {
   const u = s.user;
   const no = (problem: string): TradeCheck => ({ problem, margin: 0, accepted: false });
   if (!u) return no(__i18n_k("league.trade.checkTrade.272add95"));
@@ -183,7 +185,7 @@ export function checkTrade(s: LeagueState, teamId: TeamId, give: PlayerId[], get
     .reduce((a, v, i) => a + (v > 0 ? v * (depth[i] ?? depth[depth.length - 1]!) : v), 0);
   const inValue = players + cashValue(cashOut) * cashFactor(plan) + picksOut.reduce((a, r) => a + pickValue(s, u.teamId, r) * pickFactor(plan), 0);
   const outValue = gets.reduce((a, p) => a + tradeValue(s, p!), 0) + cashValue(cashIn) + picksIn.reduce((a, r) => a + pickValue(s, teamId, r) * pickFactor(plan), 0);
-  const margin = Math.round((inValue - outValue * TRADES.accept.premium * DIFFICULTY.tradePremium[u.settings.difficulty] - TRADES.accept.fixed) * 10) / 10;
+  const margin = eager ? Math.round((inValue - outValue) * 10) / 10 : Math.round((inValue - outValue * TRADES.accept.premium * DIFFICULTY.tradePremium[u.settings.difficulty] - TRADES.accept.fixed) * 10) / 10;
   return { problem: null, margin, accepted: margin >= 0, reasons };
 }
 
@@ -540,12 +542,32 @@ export const replacementsLeft = (s: LeagueState, teamId: TeamId) => ({
 /** Why the club cannot replace a foreign player now: of the Asia quota (`asia` true), of the others (false), or any
     (left out: closed only when both counts are spent). */
 export function foreignWindow(s: LeagueState, teamId: TeamId, asia?: boolean): string | null {
-  if (s.phase !== 'regular') return __i18n_k("league.trade.foreignWindow.8f1829b0");
-  if (today(s) > `${s.year}-${KBO_2026.foreign.replacementDeadline}`) return __i18n_k("league.trade.foreignWindow.0d58f649");
+  const season = foreignSeasonWindow(s);
+  if (season) return season;
   const left = replacementsLeft(s, teamId);
   if (asia === true && !left.asia) return __i18n_k("league.trade.text.0786eecf", { n: asiaReplacements() });
   if (asia !== true && !left.regular && (asia === false || !left.asia)) return __i18n_k("league.trade.foreignWindow.1f6cbcf8", { replacementsPerSeason: foreignReplacements() });
   return null;
+}
+
+/** The season's window for foreign signings: the regular season, up to the deadline. */
+export function foreignSeasonWindow(s: LeagueState): string | null {
+  if (s.phase !== 'regular') return __i18n_k("league.trade.foreignWindow.8f1829b0");
+  if (today(s) > `${s.year}-${KBO_2026.foreign.replacementDeadline}`) return __i18n_k("league.trade.foreignWindow.0d58f649");
+  return null;
+}
+
+/** 2.0.79 (the user's report: 시즌 중 빈자리 첫 영입이 교체 1회로 소진): whether a foreign place of the club (the Asia
+    quota's or a regular one) has not been filled at all this season — no one in it now, and no one let go from it since
+    the spring. Signing into such a place is a first registration, not a replacement, and uses none of the season's. */
+export function firstForeignSigning(s: LeagueState, teamId: TeamId, asia: boolean): boolean {
+  const slots = foreignSlots(s, teamId, s.year);
+  const here = slotForeigners(s, teamId, s.year).filter((p) => !!p.origin.asiaQuota === asia).length;
+  const since = `${s.year}-03-01`;
+  const gone = Object.values(s.players).filter(
+    (p) => isForeign(p) && !!p.origin.asiaQuota === asia && p.teamId !== teamId && (p.moves ?? []).some((m) => m.from === teamId && m.date >= since && (m.kind === 'release' || m.kind === 'foreignOut')),
+  ).length;
+  return here + gone < (asia ? slots.asia : slots.regular);
 }
 
 /** Counts one replacement against the right count. */
@@ -603,15 +625,18 @@ export function openForeign(s: LeagueState, teamId: TeamId): { regular: number; 
 }
 
 export function canReplaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, inId: string): string | null {
-  const closed = foreignWindow(s, teamId);
+  // (An open place's own counts are checked below: a first signing needs none.)
+  const closed = out === OPEN_SLOT ? foreignSeasonWindow(s) : foreignWindow(s, teamId);
   if (closed) return closed;
   if (out === OPEN_SLOT) {
     const cand = foreignMarket(s, teamId).find((p) => p.id === inId);
     if (!cand) return __i18n_k("league.trade.canReplaceForeign.668bfef3");
-    const spent = foreignWindow(s, teamId, !!cand.origin.asiaQuota);
+    const asia = !!cand.origin.asiaQuota;
+    // 2.0.79: a place not filled at all this season takes a first signing, whatever replacements are left.
+    const spent = firstForeignSigning(s, teamId, asia) ? foreignSeasonWindow(s) : foreignWindow(s, teamId, asia);
     if (spent) return spent;
     const open = openForeign(s, teamId);
-    return (cand.origin.asiaQuota ? open.asia : open.regular) > 0 ? null : cand.origin.asiaQuota ? __i18n_k("league.trade.text.e55cc372") : __i18n_k("league.trade.text.09801599");
+    return (asia ? open.asia : open.regular) > 0 ? null : asia ? __i18n_k("league.trade.text.e55cc372") : __i18n_k("league.trade.text.09801599");
   }
   const old = s.players[out];
   if (!old || old.teamId !== teamId || !isForeign(old)) return __i18n_k("league.trade.canReplaceForeign.e3af4ea8");
@@ -628,6 +653,8 @@ export function replaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, in
   if (problem) throw new Error(problem);
   const old = out === OPEN_SLOT ? null : s.players[out]!;
   const p = foreignMarket(s, teamId).find((x) => x.id === inId)!;
+  // 2.0.79: into a place not filled at all this season, a first signing (no replacement used).
+  const first = !old && firstForeignSigning(s, teamId, !!p.origin.asiaQuota);
   if (old && s.user?.teamId === teamId) {
     const owed = Math.round(salaryIn(old, s.year) * seasonShareLeft(s));
     if (owed) (s.user.deadMoney ??= []).push({ season: s.year, amount: owed, label: __i18n_k("league.trade.replaceForeign.label.9f76e5f8", { name: old.name }), id: old.id });
@@ -643,7 +670,7 @@ export function replaceForeign(s: LeagueState, teamId: TeamId, out: PlayerId, in
   s.players[p.id] = p;
   chargeForeign(s, teamId, p);
   s.rosters[teamId]![wasActive ? 'active' : 'futures'].push(p.id);
-  countReplacement(s, teamId, !!p.origin.asiaQuota);
+  if (!first) countReplacement(s, teamId, !!p.origin.asiaQuota);
   const text = old
     ? __i18n_k("league.trade.replaceForeign.text.979c0f32", { shortOf: shortOf(s, teamId), name: old.name, name2: p.name, text: p.origin.background!.text })
     : __i18n_k("league.trade.text.c476cd4b", { shortOf: shortOf(s, teamId), name: p.name, text: p.origin.background!.text });

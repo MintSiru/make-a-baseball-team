@@ -10504,5 +10504,7 @@ export const koSource = {
   "ui.exportButton.text.8c338f8c": "엑셀로 내보내기",
   "ui.leaders.text.9191e85a": "리더·타자·투수(기본·상세)·포스트시즌 보기를 차례로 열어 보기마다 시트 한 장으로 내려받습니다. 「규정 타석·이닝만」 선택은 지금 그대로 따릅니다.",
   "ui.standings.text.0bbf8d5f": "순위표·상대 전적·포스트시즌 대진 등 이 화면에 보이는 표를 시트 한 장으로 내려받습니다.",
-  "ui.standings.text.1c6906ad": "{year} 순위"
+  "ui.standings.text.1c6906ad": "{year} 순위",
+  "ui.decision.text.de5ed260": "창단 첫해 코칭스태프를 직접 고르세요. 바꾸지 않은 자리는 창단 때 배정된 스태프가 그대로 맡고, 위약금은 없습니다.",
+  "ui.market.text.36c6287d": "이번 시즌 아직 한 번도 채우지 않은 빈자리는 교체 횟수를 쓰지 않고 영입할 수 있습니다(첫 등록). 시즌 중에 내보낸 자리를 다시 채우면 교체 1회입니다."
 } as const;

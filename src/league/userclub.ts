@@ -689,7 +689,8 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           }
           note(u, year, __i18n_k("league.userclub.resolveAnnual.4b2b440d", { value: STAFF_LABELS[row.role], name: hire.name, rating: hire.rating, money: money(hire.salary) }));
           alumnusHired(s, u.teamId, club.staff![row.role]!, `${year}-11-20`);
-        } else if (row.expiring) {
+        } else if (row.expiring && !dd.founding) {
+          // (2.0.79: at the founding, one not replaced simply stays on the deal the club was set up with.)
           const m = club.staff![row.role]!;
           const years = termYears(row.role, input.terms?.[row.role], 2);
           m.until = year + years;
@@ -706,8 +707,8 @@ export function resolveAnnual(s: LeagueState, d: Decision, input: AnnualInput): 
           note(u, year, __i18n_k("league.userclub.resolveAnnual.15d746b1", { value: STAFF_LABELS[row.role], name: m.name, money: money(m.salary) }));
         }
       }
-      // The same winter step: our players who want to retire come next.
-      return retireDecision(s);
+      // The same winter step: our players who want to retire come next (2.0.79: none at the founding).
+      return dd.founding || !s.offseason ? null : retireDecision(s);
     }
     case 'dispute':
       resolveDispute(s, d as Extract<Decision, { kind: 'dispute' }>, input.answer, year);

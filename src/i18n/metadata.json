@@ -94298,5 +94298,17 @@
       }
     },
     "locations": []
+  },
+  "ui.decision.text.de5ed260": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1234,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.36c6287d": {
+    "source": "src/ui/Market.tsx",
+    "line": 586,
+    "params": {},
+    "locations": []
   }
 }

@@ -18,6 +18,7 @@ import { aiNotForSale, notForSale } from './nfs';
 import { firstTeamIds, type LeagueState, type TradeExtras } from './state';
 import { clubStrategy, planFactor, spotOf, SPOT_LABEL } from './strategy';
 import { checkTrade, extrasText, makeTrade, pickValue, tradablePicks, tradableOf, tradeValue, tradeWindow } from './trade';
+import { TRADES } from './tuning';
 
 export interface TradeOffer {
   id: string;
@@ -38,12 +39,15 @@ export const OFFERS = {
   /** When the clubs look (before the July 31 deadline). */
   dates: ['05-10', '06-05', '07-01', '07-24'],
   /** A club's chance to come to us on one of those days, how many may, and how many can stand at once. */
-  chance: 0.3,
+  chance: 0.45,
   perRound: 2,
   open: 3,
   days: 10,
-  /** What they give at least, against what they ask (by trade value): less is not an offer. */
-  fair: 0.8,
+  /** What they give at least, against what they ask (by trade value): less is not an offer. 2.0.79 (the user's report:
+      AI 구단이 내 선수보다 가치가 낮거나 비슷한 것만 제안 — they come to us because they need him): a club that comes
+      to us pays a premium; for one we put on the block, a little under his value will do. */
+  fair: 1.05,
+  blockFair: 0.9,
 };
 
 const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
@@ -106,7 +110,7 @@ export function blockOffers(s: LeagueState, id: PlayerId, date: string): number 
   const standing = standingOffers(s);
   const deals = firstTeamIds(s)
     .filter((teamId) => teamId !== u.teamId && s.rosters[teamId] && !tradeBarred(s, u.teamId, teamId) && !standing.some((o) => o.teamId === teamId && o.give.includes(id)))
-    .map((teamId) => ({ teamId, deal: package_(s, teamId, id) }))
+    .map((teamId) => ({ teamId, deal: package_(s, teamId, id, OFFERS.blockFair) }))
     .filter((x): x is { teamId: TeamId; deal: NonNullable<ReturnType<typeof package_>> } => !!x.deal)
     .sort((a, b) => b.deal.v - a.deal.v || a.teamId.localeCompare(b.teamId))
     .slice(0, Math.max(0, BLOCK.clubs - standing.filter((o) => o.give.includes(id)).length));
@@ -142,8 +146,12 @@ function wanted(s: LeagueState, teamId: TeamId, r: () => number) {
   return { p: pick.p, why };
 }
 
+/** 2.0.79: what players are worth to the club that gets them — the best in full, the next at a share (TRADES.depth):
+    two ordinary players do not add up to a good one, for us as for the AI clubs. */
+const packageValue = (vs: number[]) => [...vs].sort((a, b) => b - a).reduce((a, v, i) => a + v * (TRADES.depth[i] ?? 0.4), 0);
+
 /** The most `teamId` would still give for `target`: one of its players, two, or one and a pick of its own. */
-function package_(s: LeagueState, teamId: TeamId, target: PlayerId) {
+function package_(s: LeagueState, teamId: TeamId, target: PlayerId, fair: number = OFFERS.fair) {
   const vt = tradeValue(s, s.players[target]!);
   const spot = spotOf(s.players[target]!);
   const kept = new Set(aiNotForSale(s, teamId));
@@ -153,21 +161,22 @@ function package_(s: LeagueState, teamId: TeamId, target: PlayerId) {
     .filter((x) => x.v > 0)
     .sort((a, b) => b.v - a.v)
     .slice(0, 12);
-  const ok = (get: PlayerId[], extras: TradeExtras = {}) => checkTrade(s, teamId, [target], get, extras).accepted;
+  // (Coming to us, it asks no premium of its own: eager.)
+  const ok = (get: PlayerId[], extras: TradeExtras = {}) => checkTrade(s, teamId, [target], get, extras, true).accepted;
   const tries: { get: PlayerId[]; extras: TradeExtras; v: number }[] = [];
   for (const x of theirs) tries.push({ get: [x.p.id], extras: {}, v: x.v });
-  for (let i = 0; i < theirs.length; i++) for (let j = i + 1; j < Math.min(theirs.length, 8); j++) tries.push({ get: [theirs[i]!.p.id, theirs[j]!.p.id], extras: {}, v: theirs[i]!.v + theirs[j]!.v });
+  for (let i = 0; i < theirs.length; i++) for (let j = i + 1; j < Math.min(theirs.length, 8); j++) tries.push({ get: [theirs[i]!.p.id, theirs[j]!.p.id], extras: {}, v: packageValue([theirs[i]!.v, theirs[j]!.v]) });
   // A player a little short of fair, with the pick that makes up the rest.
   const picks = tradablePicks(s, teamId)
     .map((round) => ({ round, v: pickValue(s, teamId, round) }))
     .sort((a, b) => a.v - b.v);
   for (const x of theirs) {
-    const gap = vt * OFFERS.fair - x.v;
+    const gap = vt * fair - x.v;
     const pick = gap > 0 ? picks.find((k) => k.v >= gap) : undefined;
     if (pick) tries.push({ get: [x.p.id], extras: { picksIn: [pick.round] }, v: x.v + pick.v });
   }
   // The best for us they would still sign off on, and nothing less than fair.
-  return tries.filter((t) => t.v >= vt * OFFERS.fair).sort((a, b) => b.v - a.v).find((t) => ok(t.get, t.extras)) ?? null;
+  return tries.filter((t) => t.v >= vt * fair).sort((a, b) => b.v - a.v).find((t) => ok(t.get, t.extras)) ?? null;
 }
 
 /** On the offer days, a club or two comes to us. */
@@ -225,7 +234,7 @@ export function answerOffer(s: LeagueState, id: string, accept: boolean) {
     return;
   }
   // Their view may have changed since (an injury, a slump): then the offer is off.
-  if (!checkTrade(s, offer.teamId, offer.give, offer.get, offer.extras).accepted) {
+  if (!checkTrade(s, offer.teamId, offer.give, offer.get, offer.extras, true).accepted) {
     (u.log ??= []).push({ year: s.year, text: __i18n_k("league.offers.text.1d55bab7", { club }) });
     return;
   }
