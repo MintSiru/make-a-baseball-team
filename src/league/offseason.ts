@@ -527,7 +527,38 @@ export function freeAgentsFor(s: LeagueState, next: number): Player[] {
     // 2.0.74: and, under the game option, long-serving foreign players (foreignfa.ts).
     .filter((p) => isFreeAgent(p, next) || isForeignFreeAgent(s, p, next) || (homeFreeAgent(p, next) && !!lastKboClub(s, p)))
     .filter((p) => p.scouting.current >= O.freeAgency.minGrade || (lastRecord(p, next - 1)?.war ?? 0) >= 1 || p.service.optionFree === next - 1 || homeFreeAgent(p, next))
+    // 2.0.80: and who files (FA 신청); the rest stay on a one-year deal, eligible again next winter.
+    .filter((p) => filesForFa(s, p, next))
     .sort((a, b) => b.scouting.current - a.scouting.current);
+}
+
+/** 2.0.80: an eligible player's chance to file for free agency this winter (1: he always does). One whose option was
+    declined, one home from abroad and a foreign player who declared are free agents whatever. */
+export function filingChance(p: Player, next: number): number {
+  if (isForeign(p) || p.service.optionFree === next - 1 || homeFreeAgent(p, next)) return 1;
+  const F = O.faFiling;
+  const recs = p.career.filter((r) => !r.level).slice(-3);
+  // The last three first-team seasons, weighted 1:2:3.
+  const war = recs.length ? recs.reduce((a, r, i) => a + r.war * (i + 1), 0) / ((recs.length * (recs.length + 1)) / 2) : 0;
+  if (war >= F.starWar || p.scouting.current >= F.starGrade) return 1;
+  let c = F.base + F.perWar * Math.max(0, war) + F.perGrade * (p.scouting.current - 50);
+  if (ageIn(p, next) >= 35) c -= F.old;
+  if (p.service.lastFreeAgencyAt !== undefined) c -= F.again;
+  return Math.min(F.max, Math.max(F.min, c));
+}
+
+/** 2.0.80: whether he files this winter (his own draw for the year). */
+export const filesForFa = (s: LeagueState, p: Player, next: number) => {
+  const c = filingChance(p, next);
+  return c >= 1 || hashUnit(`${s.seed}|fa-file|${next - 1}|${p.id}`) < c;
+};
+
+/** 2.0.80: the eligible players who did not file this winter (they stay with their clubs). */
+export function unfiledFor(s: LeagueState, next: number): Player[] {
+  return Object.values(s.players)
+    .filter((p) => isFreeAgent(p, next) && !isForeign(p))
+    .filter((p) => p.scouting.current >= O.freeAgency.minGrade || (lastRecord(p, next - 1)?.war ?? 0) >= 1)
+    .filter((p) => !filesForFa(s, p, next));
 }
 
 

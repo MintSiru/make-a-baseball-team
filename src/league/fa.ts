@@ -22,7 +22,7 @@ import { eulreul, iga, ro, wagwa } from './josa';
 import { clubState } from './fans';
 import { aiCompensation, compensationCash, externalLimit, faGrades, moneyFor, parentGiftFor, projectedPayroll, protectedBy, type FaGrade, type FaQueueItem } from './market';
 import { moveNews } from './movenews';
-import { freeAgentsFor, homeFreeAgent, lastKboClub, leaveLeague, removeFromRoster } from './offseason';
+import { freeAgentsFor, homeFreeAgent, lastKboClub, leaveLeague, removeFromRoster, unfiledFor } from './offseason';
 import { joinMlb, joinNpb } from './mlb';
 import { mlbMarket, npbMarket } from './posting';
 import { usd } from './foreign';
@@ -679,6 +679,7 @@ export function openMarket(s: LeagueState, next: number): FaMarket {
     m.order.push(p.id);
   }
   if (u) {
+    unfiledAlert(s, next);
     markBaseline(s, m);
     const gift = parentGiftFor(s, next, fas, grades);
     if (gift) {
@@ -688,6 +689,25 @@ export function openMarket(s: LeagueState, next: number): FaMarket {
     }
   }
   return m;
+}
+
+/** 2.0.80: our eligible players who did not file for free agency: they stay, on next season's renewed salary. */
+function unfiledAlert(s: LeagueState, next: number) {
+  const u = s.user!;
+  const year = next - 1;
+  const ours = unfiledFor(s, next).filter((p) => p.teamId === u.teamId);
+  if (!ours.length) return;
+  addAlert(s, {
+    id: `fa-unfiled-${next}`,
+    date: `${year}-11-08`,
+    kind: 'fa',
+    title: __i18n_k("league.fa.text.b465cc94", { count: ours.length }),
+    lines: [
+      __i18n_k("league.fa.text.8bbee63a", { names: ours.map((p) => p.name).join(', ') }),
+      __i18n_k("league.fa.text.0c13fecc"),
+    ],
+    players: ours.map((p) => p.id),
+  });
 }
 
 function giftAlert(s: LeagueState, m: FaMarket, next: number) {

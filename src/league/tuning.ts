@@ -181,6 +181,11 @@ export const OFFSEASON = {
     socialInRehab: 0.8,
   },
   freeAgency: { minGrade: 50, stayChance: 0.62 },
+  /** 2.0.80 (the user's request: FA 미신청): an eligible player files for free agency, or stays on a one-year deal and
+      keeps his rights for a later winter. Stars always file (recent WAR `starWar`, or grade `starGrade`); the rest by
+      a chance from `base`, `perWar` a recent WAR and `perGrade` a grade point above 50, less `old` from 35 and
+      `again` for a free agent's second time, between `min` and `max`. */
+  faFiling: { starWar: 2.5, starGrade: 62, base: 0.15, perWar: 0.22, perGrade: 0.03, old: 0.15, again: 0.1, min: 0.05, max: 0.95 },
   /** Development players (육성선수): draft-day signings per club, the AI's target and hard cap, and age limits. */
   development: { signings: 5, aiTarget: 20, cap: 30, perYear: 10, maxAge: 27, convertAge: 25 },
   /** Clubs leave a few roster spots open after the draft. */

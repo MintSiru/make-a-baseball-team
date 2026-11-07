@@ -94310,5 +94310,31 @@
     "line": 586,
     "params": {},
     "locations": []
+  },
+  "league.fa.text.b465cc94": {
+    "source": "src/league/fa.ts",
+    "line": 704,
+    "params": {
+      "count": {
+        "expression": "ours.length"
+      }
+    },
+    "locations": []
+  },
+  "league.fa.text.8bbee63a": {
+    "source": "src/league/fa.ts",
+    "line": 706,
+    "params": {
+      "names": {
+        "expression": "ours.map((p) => p.name).join(', ')"
+      }
+    },
+    "locations": []
+  },
+  "league.fa.text.0c13fecc": {
+    "source": "src/league/fa.ts",
+    "line": 707,
+    "params": {},
+    "locations": []
   }
 }
