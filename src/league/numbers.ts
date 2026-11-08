@@ -177,7 +177,7 @@ export interface RetireCandidate {
   board: 'for' | 'against';
 }
 
-function retireMerit(s: LeagueState, p: Player, teamId: TeamId) {
+export function retireMerit(s: LeagueState, p: Player, teamId: TeamId) {
   const here = p.career.filter((c) => c.teamId === teamId && !c.level);
   const war = here.reduce((a, c) => a + c.war, 0);
   const team = s.teams.find((t) => t.id === teamId);

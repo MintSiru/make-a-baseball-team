@@ -26,7 +26,7 @@ import { cashFactor, clubStrategy, pickFactor, planFactor, planGuard, planReason
 import { capRoom, chargeForeign, slotForeigners } from './foreigncap';
 import { failedToAdapt } from './adapt';
 import { firstTeamSize, foreignSlots } from './manager';
-import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry, toForeignPool } from './foreignpool';
+import { balancedForeign, FOREIGN_KINDS, FOREIGN_LIST, foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry, toForeignPool } from './foreignpool';
 import { developmentClosed, featureOpen } from './features';
 import { rulesFor } from '../rules/history';
 import { allianceAgainst, tradeBarred } from './dynasty';
@@ -587,16 +587,12 @@ export function countReplacement(s: LeagueState, teamId: TeamId, asia: boolean) 
 export function foreignMarket(s: LeagueState, teamId: TeamId): Player[] {
   const used = (s.foreignChanges?.[teamId] ?? 0) + (s.asiaChanges?.[teamId] ?? 0);
   const out: Player[] = [];
-  const specs: ['pitcher' | 'hitter', boolean, number][] = [
-    ['pitcher', false, 5],
-    ['hitter', false, 4],
-    ['pitcher', true, 2],
-    ['hitter', true, 1],
-  ];
-  let k = 0;
-  for (const [kind, asia, n] of specs)
-    for (let i = 0; i < n; i++) {
-      const p = makeForeign(s.seed, `fm${s.year}-${teamId}-${used}-${k++}`, s.year, { kind, asiaQuota: asia });
+  // 2.0.81: balanced by kind (foreignpool.ts); each kind's new faces have ids of their own, so a list that grows or
+  // shrinks as the released players come and go keeps the ones it showed.
+  const { shown, fresh } = balancedForeign(foreignPoolPlayers(s, teamId), FOREIGN_LIST.season);
+  for (const [key, kind, asia] of FOREIGN_KINDS)
+    for (let i = 0; i < fresh[key]; i++) {
+      const p = makeForeign(s.seed, `fm${s.year}-${teamId}-${used}-${key}${i}`, s.year, { kind, asiaQuota: asia });
       p.status = 'amateur';
       out.push(p);
     }
@@ -607,7 +603,7 @@ export function foreignMarket(s: LeagueState, teamId: TeamId): Player[] {
     p.status = 'amateur';
     out.unshift(p);
   }
-  return [...foreignPoolPlayers(s, teamId), ...out];
+  return [...shown, ...out];
 }
 
 /** The prorated asking price now (US dollars): new signings are capped at the full-season cap times the share left. */
