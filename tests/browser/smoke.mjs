@@ -685,7 +685,7 @@ try {
   // 2.0.46: their not-for-sale players are refused with the reason; anyone else gets the club's verdict.
   const theirRows = page.locator('.pick-table').nth(1).locator('tbody tr');
   const kept = theirRows.filter({ has: page.locator('.tag.nfs') }).first();
-  check((await theirRows.filter({ has: page.locator('.tag.nfs') }).count()) === 3, 'the other club keeps three not for sale');
+  check((await theirRows.filter({ has: page.locator('.tag.nfs') }).count()) >= 3, 'the other club keeps three not for sale (2.0.81: and its franchise icons)');
   await kept.locator('input[type=checkbox]').check();
   check((await page.locator('.trade-bar').textContent())?.includes('NFS'), 'a not-for-sale player is refused');
   await kept.locator('input[type=checkbox]').uncheck();
