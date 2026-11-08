@@ -49,7 +49,7 @@ import {
 } from './offseason';
 import { ageIn, currentValue, DRAFT_ROOM_YEAR, isForeign, isPitcher, keepValue, makeForeign, shiftProspect, veteranOnMarket, withEra } from './players';
 import { DIFFICULTY, FOREIGN_TALKS, OFFSEASON, PARENT } from './tuning';
-import { foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './foreignpool';
+import { balancedForeign, FOREIGN_KINDS, FOREIGN_LIST, foreignPoolAsk, foreignPoolPlayers, leavePool, poolEntry } from './foreignpool';
 import { marchEvents, nextNationalDecision, novemberEvents } from './national';
 import { devDecision } from './development';
 import { developmentClosed } from './features';
@@ -328,17 +328,12 @@ export function protectedLists(s: LeagueState, next: number) {
 
 function foreignCandidates(s: LeagueState, next: number): Player[] {
   const out: Player[] = [];
-  const specs: ['pitcher' | 'hitter', boolean, number][] = [
-    ['pitcher', false, 8],
-    ['hitter', false, 6],
-    ['pitcher', true, 4],
-    ['hitter', true, 2],
-  ];
-  let k = 0;
+  // 2.0.81: balanced by kind (foreignpool.ts): at most so many released players of a kind, new faces filling the rest.
+  const { shown, fresh } = balancedForeign(foreignPoolPlayers(s, EXPANSION_ID), FOREIGN_LIST.winter);
   const r = rng(`${s.seed}|foreign-offer|${next}`);
-  for (const [kind, asia, n] of specs)
-    for (let i = 0; i < n; i++) {
-      const p = makeForeign(s.seed, `fc${next}-${k++}`, next, { kind, asiaQuota: asia });
+  for (const [key, kind, asia] of FOREIGN_KINDS)
+    for (let i = 0; i < fresh[key]; i++) {
+      const p = makeForeign(s.seed, `fc${next}-${key}${i}`, next, { kind, asiaQuota: asia });
       p.status = 'amateur';
       // Asking price from the scout's grade and his background; new signings are capped at 100만 달러 (20만 for the Asia quota).
       p.contract = foreignContract(EXPANSION_ID, next, splitContract(p.origin.background!.ask, r), asia);
@@ -355,7 +350,7 @@ function foreignCandidates(s: LeagueState, next: number): Player[] {
     out.unshift(p);
   }
   // Foreign players with KBO experience other clubs let go (V0.7.3): the same cap, priced by their KBO record.
-  for (const p of foreignPoolPlayers(s, EXPANSION_ID)) {
+  for (const p of shown) {
     p.contract = foreignContract(EXPANSION_ID, next, splitContract(foreignPoolAsk(s, p), rng(`${s.seed}|foreign-pool-offer|${next}|${p.id}`)), !!p.origin.asiaQuota);
     out.push(p);
   }

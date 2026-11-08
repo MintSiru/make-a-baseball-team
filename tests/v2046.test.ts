@@ -2,7 +2,7 @@
    other AI clubs. */
 import { describe, expect, it } from 'vitest';
 import { aiOffers, liveOffers } from '../src/league/offers';
-import { AI_NFS, aiNotForSale, clubNotForSale } from '../src/league/nfs';
+import { AI_NFS, aiNotForSale, clubNotForSale, franchiseIcon } from '../src/league/nfs';
 import { ageIn, currentValue, futureValue } from '../src/league/players';
 import { firstTeamIds, type LeagueState } from '../src/league/state';
 import { clubStrategy } from '../src/league/strategy';
@@ -25,11 +25,14 @@ describe('the AI clubs keep players not for sale (2.0.46)', () => {
   it('three a club cannot do without, by its plan', () => {
     const s = may();
     for (const id of aiClubs(s)) {
-      const kept = aiNotForSale(s, id).map((x) => s.players[x]!);
+      // (2.0.81: the three, then its franchise icons.)
+      const all = aiNotForSale(s, id).map((x) => s.players[x]!);
+      const kept = all.slice(0, AI_NFS.count);
       expect(kept.length).toBe(AI_NFS.count);
+      for (const p of all.slice(AI_NFS.count)) expect(franchiseIcon(s, p, id)).toBe(true);
       expect(kept.every((p) => p.teamId === id)).toBe(true);
       const mode = clubStrategy(s, id).mode;
-      const others = tradableOf(s, id).filter((p) => !kept.includes(p));
+      const others = tradableOf(s, id).filter((p) => !all.includes(p));
       // A contender its best now; a rebuilding club its best young players.
       if (mode === 'contend') for (const p of others) expect(currentValue(p)).toBeLessThanOrEqual(Math.min(...kept.map(currentValue)));
       if (mode === 'rebuild') for (const p of kept) expect(ageIn(p, s.year)).toBeLessThanOrEqual(AI_NFS.youngAge);

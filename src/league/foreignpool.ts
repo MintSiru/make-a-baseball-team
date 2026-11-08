@@ -59,6 +59,42 @@ export function foreignPoolPlayers(s: LeagueState, buyer?: TeamId): Player[] {
     .sort((a, b) => b.scouting.current - a.scouting.current);
 }
 
+/** 2.0.81 (the user's report: 외국인 후보가 투수 20명·타자 6명, 아시아쿼터 6명): the market's list, balanced. Released
+    foreign players are mostly pitchers (the clubs sign two pitchers to a hitter and change pitchers more), so the
+    list shows at most `cap` of each kind from them, the best first, and new faces fill each kind up to `target`
+    (at least `min` new ones). */
+export type ForeignKind = 'P' | 'H' | 'AP' | 'AH';
+export interface ForeignListShape {
+  cap: Record<ForeignKind, number>;
+  target: Record<ForeignKind, number>;
+  min: Record<ForeignKind, number>;
+}
+export const FOREIGN_LIST: { winter: ForeignListShape; season: ForeignListShape } = {
+  winter: { cap: { P: 10, H: 8, AP: 4, AH: 3 }, target: { P: 14, H: 12, AP: 6, AH: 5 }, min: { P: 6, H: 6, AP: 3, AH: 2 } },
+  season: { cap: { P: 6, H: 5, AP: 2, AH: 2 }, target: { P: 9, H: 8, AP: 3, AH: 3 }, min: { P: 4, H: 4, AP: 2, AH: 1 } },
+};
+export const foreignKindOf = (p: Player): ForeignKind => ((p.origin.asiaQuota ? 'A' : '') + (isPitcher(p) ? 'P' : 'H')) as ForeignKind;
+export const FOREIGN_KINDS: [ForeignKind, 'pitcher' | 'hitter', boolean][] = [
+  ['P', 'pitcher', false],
+  ['H', 'hitter', false],
+  ['AP', 'pitcher', true],
+  ['AH', 'hitter', true],
+];
+
+/** The released players shown (`pool`, best first, at most `cap` of a kind) and how many new faces of each kind. */
+export function balancedForeign(pool: Player[], shape: ForeignListShape): { shown: Player[]; fresh: Record<ForeignKind, number> } {
+  const shown: Player[] = [];
+  const n: Record<ForeignKind, number> = { P: 0, H: 0, AP: 0, AH: 0 };
+  for (const p of pool) {
+    const k = foreignKindOf(p);
+    if (n[k] >= shape.cap[k]) continue;
+    n[k]++;
+    shown.push(p);
+  }
+  const fresh = Object.fromEntries(FOREIGN_KINDS.map(([k]) => [k, Math.max(shape.min[k], shape.target[k] - n[k])])) as Record<ForeignKind, number>;
+  return { shown, fresh };
+}
+
 export const poolEntry = (s: LeagueState, id: PlayerId): ForeignPoolEntry | undefined => s.foreignPool?.find((e) => e.id === id);
 
 /** What he asks for a full season (US dollars): his grade, scaled by what he did in the KBO (a flop is
