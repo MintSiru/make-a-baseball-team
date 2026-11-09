@@ -17,7 +17,7 @@ import { movePlayer } from './market';
 import { developmentContract, faSeasonsFor, leaveLeague, removeFromRoster, rosterLimit } from './offseason';
 import { ageIn, currentValue, isForeign, isPitcher, keepValue, makeForeign, veteranOnMarket } from './players';
 import { currentStandings } from './season';
-import { developmentIds, firstTeamIds, orgPlayers, registeredIds, type DraftSlot, type LeagueState, type TradeExtras } from './state';
+import { developmentIds, firstTeamIds, hurtOffMarket, orgPlayers, registeredIds, type DraftSlot, type LeagueState, type TradeExtras } from './state';
 import { crossing } from './rivalry';
 import { farewell } from './life';
 import { OFFSEASON, TRADES, DIFFICULTY } from './tuning';
@@ -414,6 +414,8 @@ export function releasePlayer(s: LeagueState, id: PlayerId) {
   for (const x of owed) (u.deadMoney ??= []).push({ season: x.season, amount: x.amount, label: __i18n_k("league.trade.releasePlayer.label.9f76e5f8", { name: p.name }), id });
   removeFromRoster(s, p);
   p.teamId = null;
+  // 2.0.84: his injury stays with him, off the injured list (no registered days unattached).
+  if (s.injuries[id]) s.injuries[id] = { ...s.injuries[id]!, onList: false };
   if (s.phase === 'regular') {
     (s.waivers ??= []).push({ id, from: u.teamId, until: addDays(today(s), KBO_2026.waiver.days) });
     (u.log ??= []).push({ year: s.year, text: __i18n_k("league.trade.releasePlayer.text.3ced2e91", { name: p.name, addDays: addDays(today(s), KBO_2026.waiver.days) }) });
@@ -445,8 +447,9 @@ export function processWaivers(s: LeagueState, date: string) {
   for (const w of due) {
     const p = s.players[w.id];
     if (!p || p.status !== 'active') continue;
+    // 2.0.84: nobody claims a player out for long.
     const claimer = order.find((t) => {
-      if (t === w.from || t === s.user?.teamId) return false;
+      if (t === w.from || t === s.user?.teamId || hurtOffMarket(s, p.id, date)) return false;
       if (registeredIds(s, t).length >= rosterLimit(s.year)) return false;
       const weakest = Math.min(...registeredIds(s, t).map((id) => keepValue(s.players[id]!, s.year)));
       return keepValue(p, s.year) >= weakest + TRADES.waiverMargin;
@@ -493,6 +496,8 @@ export function canSignFromPool(s: LeagueState, id: PlayerId): string | null {
   if (winter && p.life?.unsigned != null && p.life.unsigned === s.offseason?.year) return __i18n_k("league.trade.text.0e5d0da3");
   if ((s.pending && !winter) || s.pending?.kind === 'roster' || s.phase === 'postseason') return __i18n_k("league.trade.canSignFromPool.f547701d");
   if (registeredIds(s, u.teamId).length >= rosterLimit(s.phase === 'regular' ? s.year : s.year + 1)) return __i18n_k("league.trade.canSignFromPool.c4dade95");
+  // 2.0.84: not while a long injury lasts.
+  if (hurtOffMarket(s, id)) return __i18n_k("league.trade.text.764313b5", { until: s.injuries[id]!.until });
   return null;
 }
 

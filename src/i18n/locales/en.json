@@ -10508,5 +10508,6 @@
   "ui.market.text.36c6287d": "An open place not filled at all this season can be signed into without using a replacement (a first registration). Refilling a place emptied during the season is one replacement.",
   "league.fa.text.b465cc94": "{count} did not file for free agency",
   "league.fa.text.8bbee63a": "{names}: eligible for free agency, but stay with the club without filing.",
-  "league.fa.text.0c13fecc": "Their salaries are renewed as usual, and they keep their rights to file next winter."
+  "league.fa.text.0c13fecc": "Their salaries are renewed as usual, and they keep their rights to file next winter.",
+  "league.trade.text.764313b5": "He is injured (back on {until}). He can be signed once he is close to recovering."
 }

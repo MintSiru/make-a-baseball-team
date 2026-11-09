@@ -296,7 +296,8 @@ export function carryOverInjuries(s: LeagueState, opening: string | undefined) {
   if (opening)
     for (const [id, inj] of Object.entries(s.injuries)) {
       const p = s.players[id];
-      if (!inj.dtd && inj.until > opening && p?.teamId && p.status === 'active') kept[id] = { ...inj, onList: false };
+      // 2.0.84: an unattached player's too (released, or on the foreign market): signed, he is still hurt.
+      if (!inj.dtd && inj.until > opening && p && (p.teamId ? p.status === 'active' : p.status === 'active' || p.status === 'freeAgent')) kept[id] = { ...inj, onList: false };
     }
   s.injuries = kept;
 }

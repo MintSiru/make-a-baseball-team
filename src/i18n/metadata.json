@@ -94336,5 +94336,15 @@
     "line": 707,
     "params": {},
     "locations": []
+  },
+  "league.trade.text.764313b5": {
+    "source": "src/league/trade.ts",
+    "line": 500,
+    "params": {
+      "until": {
+        "expression": "s.injuries[id]!.until"
+      }
+    },
+    "locations": []
   }
 }
