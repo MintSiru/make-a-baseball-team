@@ -51,6 +51,8 @@ export interface PitcherIn {
   pitchLimit: number;
   /** Size of his same-side advantage (1 = league norm; his repertoire decides it). */
   platoon?: number;
+  /** 2.0.83: his edge on opposite-side hitters (an arm-side best pitch; 0 or absent: none). */
+  oppo?: number;
   /** 2.0.3: −2 extreme ground-ball pitcher … 2 extreme fly-ball pitcher (battedball.ts pitcherLift). */
   lift?: number;
 }
