@@ -45,7 +45,7 @@ import { dynastyWinter } from './dynasty';
 import { applyForeignPickDrop, asiaCapFor, capPlayers, foreignCap, settleForeignCap, slotExempt, slotForeigners } from './foreigncap';
 import { isSecondDraftYear, openSecondDraft, runSecondDraft, secondProtectDecision } from './seconddraft';
 import { standings } from './standings';
-import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, orgIds, orgPlayers, registeredIds, type Decision, type DraftSlot, type DraftState, type LeagueState, type SeasonSummary } from './state';
+import { addInto, developmentIds, emptyBat, emptyPit, firstTeamIds, hurtOffMarket, orgIds, orgPlayers, registeredIds, type Decision, type DraftSlot, type DraftState, type LeagueState, type SeasonSummary } from './state';
 import { batterWar, leagueContext, pitcherWar } from './stats';
 import { maybeRetireNumber } from './numbers';
 import { balanceDepth, changePosition, learnPositions, positionMove } from './positions';
@@ -839,7 +839,8 @@ export function placeReleased(s: LeagueState, released: Player[], next: number, 
     if (p.teamId) continue; // signed by the user
     const age = ageIn(p, next);
     const room = s.teams.filter((t) => t.id !== s.user?.teamId && registeredIds(s, t.id).length < rosterLimit(next) - O.openSpots);
-    if (room.length && age <= O.release.maxAge && keepValue(p, next) >= O.release.minValue && r() < O.release.signChance) {
+    // 2.0.84: not one out for long into next season.
+    if (room.length && age <= O.release.maxAge && keepValue(p, next) >= O.release.minValue && !hurtOffMarket(s, p.id, `${next}-03-20`) && r() < O.release.signChance) {
       const to = room[Math.floor(r() * room.length)]!;
       p.teamId = to.id;
       noteMove(s, p, 'signReleased', null, to.id);

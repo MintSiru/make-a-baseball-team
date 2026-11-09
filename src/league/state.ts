@@ -889,6 +889,21 @@ export const orgIds = (s: LeagueState, teamId: TeamId): PlayerId[] => {
 export const orgPlayers = (s: LeagueState, teamId: TeamId): Player[] => orgIds(s, teamId).map((id) => s.players[id]!);
 /** Registered players (소속선수), the ones the 68-player limit counts. */
 export const registeredIds = (s: LeagueState, teamId: TeamId) => orgIds(s, teamId).filter((id) => !isDevelopment(s.players[id]!));
+
+/** 2.0.84 (the user's report: 장기 부상 선수가 방출되고 시장에 나와, 다른 팀에 가니 부상이 초기화됨): an unattached
+    player keeps his injury, and no club signs him (he is not on the market) while it has more than `days` to run
+    from `date` (a winter's market: from next opening day). */
+export const MARKET_HURT_DAYS = 14;
+export function marketDate(s: LeagueState): string {
+  return s.phase === 'offseason' ? `${s.year + 1}-03-20` : (s.schedule[s.next]?.date ?? s.schedule.at(-1)?.date ?? `${s.year}-10-01`);
+}
+export function hurtOffMarket(s: LeagueState, id: PlayerId, date = marketDate(s)): boolean {
+  const i = s.injuries[id];
+  if (!i || i.dtd) return false;
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + MARKET_HURT_DAYS);
+  return i.until > d.toISOString().slice(0, 10);
+}
 export const developmentIds = (s: LeagueState, teamId: TeamId) => orgIds(s, teamId).filter((id) => isDevelopment(s.players[id]!));
 
 export function squadOf(s: LeagueState, id: PlayerId): Squad | null {

@@ -10509,5 +10509,6 @@ export const koSource = {
   "ui.market.text.36c6287d": "이번 시즌 아직 한 번도 채우지 않은 빈자리는 교체 횟수를 쓰지 않고 영입할 수 있습니다(첫 등록). 시즌 중에 내보낸 자리를 다시 채우면 교체 1회입니다.",
   "league.fa.text.b465cc94": "FA 미신청 {count}명",
   "league.fa.text.8bbee63a": "{names}: FA 자격을 얻었지만 신청하지 않고 팀에 남습니다.",
-  "league.fa.text.0c13fecc": "연봉은 평소처럼 재계약하고, 자격은 그대로라 다음 겨울에 다시 신청할 수 있습니다."
+  "league.fa.text.0c13fecc": "연봉은 평소처럼 재계약하고, 자격은 그대로라 다음 겨울에 다시 신청할 수 있습니다.",
+  "league.trade.text.764313b5": "부상 중입니다({until} 복귀 예정). 회복이 가까워지면 영입할 수 있습니다."
 } as const;

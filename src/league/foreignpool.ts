@@ -15,7 +15,7 @@ import { foreignNewCapUsd, KBO_2026 } from '../rules/kbo2026';
 import { usdTotal } from './contracts';
 import { leaveLeague, removeFromRoster } from './offseason';
 import { ageIn, isPitcher } from './players';
-import type { ForeignPoolEntry, LeagueState } from './state';
+import { hurtOffMarket, type ForeignPoolEntry, type LeagueState } from './state';
 
 const POOL = {
   maxAge: 35,
@@ -42,7 +42,8 @@ export function toForeignPool(s: LeagueState, p: Player, year: number): boolean 
   p.teamId = null;
   p.contract = null;
   p.status = 'freeAgent';
-  delete s.injuries[p.id];
+  // 2.0.84: his injury goes with him (off the injured list): healed, he is on the market again.
+  if (s.injuries[p.id]) s.injuries[p.id] = { ...s.injuries[p.id]!, onList: false };
   delete s.away?.[p.id];
   s.foreignPool = [...(s.foreignPool ?? []).filter((e) => e.id !== p.id), { id: p.id, since: year, from, usd }];
   return true;
@@ -56,6 +57,8 @@ export function foreignPoolPlayers(s: LeagueState, buyer?: TeamId): Player[] {
     .filter((e) => !buyer || e.from !== buyer)
     .map((e) => s.players[e.id])
     .filter((p): p is Player => !!p && p.status === 'freeAgent' && !p.teamId)
+    // 2.0.84: not while a long injury lasts (state.ts hurtOffMarket).
+    .filter((p) => !hurtOffMarket(s, p.id))
     .sort((a, b) => b.scouting.current - a.scouting.current);
 }
 
