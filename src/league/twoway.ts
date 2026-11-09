@@ -27,6 +27,12 @@ export interface OtherSide {
   velocity: number | null;
 }
 
+/** 2.0.82: a pitcher who bats (two-way, or 30 plate appearances in the season: the league has the designated
+    hitter, so only a two-way pitcher gets them) is among the hitters for the titles, the golden gloves and the
+    leaders; a hitter who pitches (two-way, or 10 innings) among the pitchers. */
+export const batsToo = (p: Player, pa: number) => p.twoWay || pa >= 30;
+export const pitchesToo = (p: Player, outs: number) => p.twoWay || outs >= 30;
+
 export const TWO_WAY = {
   /** Share of the gap to potential closed each winter, two-way or not, until 27. */
   grow: { twoWay: 0.3, other: 0.12 },
