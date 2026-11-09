@@ -89,17 +89,31 @@ export const pitchLabel = (p: Pick<Player, 'id' | 'role' | 'origin' | 'velocity'
 /** 2.0.24: how often a curveballer's curve is a knuckle curve (more among the foreign arms and the young). */
 const KC_SHARE = { domestic: 0.2, foreign: 0.35, young: 0.1 };
 
-/** Same-side platoon advantage by best pitch: >1 a wider split, <1 a pitcher who handles both sides. */
-const PLATOON: Record<PitchType, number> = { SL: 1.25, SW: 1.45, CB: 1.05, CH: 0.65, FRK: 0.7, CUT: 0.9, '2SFB': 1.1, SNK: 1.1, CIR: 0.6, SPL: 0.7, SLV: 1.3, KN: 0.85, SCR: 0.55, PLM: 0.75, SH: 1.15, KC: 1 };
+/** Same-side platoon advantage by best pitch: >1 a wider split, <1 a pitcher who handles both sides.
+    2.0.83 (the user's request: 암사이드로 가는 공은 반대손 타자에게, 글러브사이드로 가는 공은 같은손 타자에게 유리하게):
+    a pitch that breaks to the glove side (the sliders, the sweeper, the slurve, the cutter, the curves) works on
+    same-side hitters; one that runs to the arm side (the changeups, the screwball, the palmball, the splitter and
+    forkball, the shuuto, the two-seamer and sinker) on opposite-side hitters (`OPPOSITE`), at the price of some
+    of the same-side edge. The knuckleball goes neither way. */
+const PLATOON: Record<PitchType, number> = { SL: 1.25, SW: 1.45, CB: 1.05, CH: 0.65, FRK: 0.7, CUT: 1.05, '2SFB': 0.85, SNK: 0.85, CIR: 0.6, SPL: 0.7, SLV: 1.3, KN: 1, SCR: 0.55, PLM: 0.75, SH: 0.8, KC: 1.05 };
+/** 2.0.83: an arm-side pitch's edge on opposite-side hitters (in the same units as the same-side edge; 0: none).
+    Each arm-side pitch's two edges add up to `ARM_SIDE_TOTAL`, so it trades one side for the other. */
+export const ARM_SIDE_TOTAL = 1.25;
+const OPPOSITE: Partial<Record<PitchType, number>> = Object.fromEntries(
+  (['CH', 'CIR', 'SCR', 'PLM', 'FRK', 'SPL', 'SH', '2SFB', 'SNK'] as PitchType[]).map((t) => [t, Math.round((ARM_SIDE_TOTAL - PLATOON[t]) * 100) / 100]),
+);
 /** 2.0.24: the kind changes it — a sweeper-like slider is harder on same-side hitters than one that drops. */
-const VARIANT_PLATOON: Record<PitchVariant, number> = { vertSL: 1.12, sweepSL: 1.35, hardSL: 1.08, drop: 1.02, slow: 0.98, power: 1.12 };
+const VARIANT_PLATOON: Record<PitchVariant, number> = { vertSL: 1.12, sweepSL: 1.35, hardSL: 1.08, drop: 1.05, slow: 1, power: 1.12 };
 
 /** 1.9.3 (from the 1.9 feedback): the fastball he leans on — a four-seamer (most), a two-seamer that runs to his arm
     side and sinks, or a cutter. A two-seam or cutter pitcher does not carry the same pitch again as a secondary. */
 export type FastballType = '4SFB' | '2SFB' | 'CUT';
 export const FASTBALL_LABELS: Record<FastballType, string> = { '4SFB': __i18n_k("league.pitches.text.cccce3d7"), '2SFB': __i18n_k("league.pitches.pITCH_LABELS.sI.c2a8d278"), CUT: __i18n_k("league.pitches.pITCH_LABELS.cT.d348e61c") };
-/** Same-side platoon split by fastball, and how much slower than a four-seamer it comes (km/h, on the average). */
-const FASTBALL_PLATOON: Record<FastballType, number> = { '4SFB': 1, '2SFB': 1.05, CUT: 0.95 };
+/** Same-side platoon split by fastball, and how much slower than a four-seamer it comes (km/h, on the average).
+    2.0.83: a two-seamer runs to the arm side (a little less on same-side hitters, a little on the other side's),
+    a cutter to the glove side. */
+const FASTBALL_PLATOON: Record<FastballType, number> = { '4SFB': 1, '2SFB': 0.95, CUT: 1.05 };
+const FASTBALL_OPPOSITE: Record<FastballType, number> = { '4SFB': 0, '2SFB': 0.05, CUT: 0 };
 const FASTBALL_SLOWER: Record<FastballType, number> = { '4SFB': 0, '2SFB': 1, CUT: 3 };
 
 /** His main fastball, fixed per player (seeded by id): two-seamers for ground-ball arms and foreign pitchers more. */
@@ -328,6 +342,14 @@ export function platoonFactor(p: Player): number {
   const variant = best ? pitchVariant(p, best.type) : null;
   // 2.0.0: a low arm slot widens the split (tracking.ts).
   return (best ? (variant ? VARIANT_PLATOON[variant] : PLATOON[best.type]) : 1) * FASTBALL_PLATOON[fastballOf(p)] * slotPlatoon(p);
+}
+
+/** 2.0.83: his edge on opposite-side hitters (0 for most): his best pitch's when it runs to the arm side, and a
+    two-seamer's. A low arm slot, wide on same-side hitters, gives some of it back (tracking.ts). */
+export function oppositeFactor(p: Player): number {
+  const best = repertoire(p)[0];
+  const edge = (best ? (OPPOSITE[best.type] ?? 0) : 0) + FASTBALL_OPPOSITE[fastballOf(p)];
+  return edge ? Math.round((edge / slotPlatoon(p)) * 1000) / 1000 : 0;
 }
 
 const VELO_PER_STUFF = 0.35;

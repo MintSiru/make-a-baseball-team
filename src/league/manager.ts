@@ -16,7 +16,7 @@ import { ageIn, batValue, currentValue, isForeign, isPitcher, keepValue, starter
 import { staffEdge, staffRating } from './staff';
 import { firstTeamIds, hasBenefits, registeredIds, type LeagueState, type LineupSlot, type ManagerStyle } from './state';
 import { EXPANSION_DEFAULTS, KBO_2026 } from '../rules/kbo2026';
-import { pitchingLift, platoonFactor } from './pitches';
+import { oppositeFactor, pitchingLift, platoonFactor } from './pitches';
 import { ENGINE, STAFF } from './tuning';
 import { formOf } from './life';
 import { adaptPenalty } from './adapt';
@@ -404,7 +404,7 @@ export function benchFor(s: LeagueState, ids: PlayerId[], lineup: BatterIn[]): B
 }
 
 export function armIn(p: Player, pitchLimit: number): PitcherIn {
-  return { id: p.id, throws: p.throws === '좌' ? 'L' : 'R', stuff: t(p, 'stuff'), command: t(p, 'command'), breaking: t(p, 'breaking'), stamina: t(p, 'stamina'), pitchLimit, platoon: platoonFactor(p), lift: pitchingLift(p) };
+  return { id: p.id, throws: p.throws === '좌' ? 'L' : 'R', stuff: t(p, 'stuff'), command: t(p, 'command'), breaking: t(p, 'breaking'), stamina: t(p, 'stamina'), pitchLimit, platoon: platoonFactor(p), oppo: oppositeFactor(p), lift: pitchingLift(p) };
 }
 
 /** Pitchers set as starters come first: a reliever only starts when there are not five starters. */

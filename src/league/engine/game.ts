@@ -451,7 +451,8 @@ export function simulateGame(game: GameIn, r: R, log?: PlayEvent[]): GameOut {
         continue;
       }
 
-      const same = batter.bats !== 'S' && batter.bats === p.throws ? (p.platoon ?? 1) : 0;
+      // 2.0.83: an arm-side pitcher's edge on opposite-side hitters (pitches.ts oppositeFactor).
+      const same = batter.bats === 'S' ? 0 : batter.bats === p.throws ? (p.platoon ?? 1) : (p.oppo ?? 0);
       const hb = isHome ? 1 : 0;
       const b = E.batter,
         q = E.pitcher;

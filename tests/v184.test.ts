@@ -33,7 +33,11 @@ describe('postseason money by the gate', () => {
     }
     const playing = new Set(games.flatMap((g) => [g.home, g.away]));
     expect(Object.keys(takes).sort()).toEqual([...playing].sort());
-    expect(Math.max(...Object.values(takes))).toBe(takes[champ]);
+    // Among the clubs that played no more games than the champion, the champion earns the most (2.0.83: a club up
+    // from the wild card to the final, twice the games at home, may out-earn a champion that swept the final).
+    const played = (id: string) => games.filter((g) => g.home === id || g.away === id).length;
+    const peers = Object.entries(takes).filter(([id]) => played(id) <= played(champ));
+    expect(Math.max(...peers.map(([, v]) => v))).toBe(takes[champ]);
     expect(postseasonGateOf(s, champ).take).toBe(takes[champ]);
   }, 240_000);
 
