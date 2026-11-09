@@ -27,6 +27,7 @@ import { cardFor, lineupFor, managerLean, penRoles, PEN_ROLE_LABELS, rotationFor
 import { isDevelopment, type LeagueState } from './state';
 import { captaincyLift } from './captains';
 import { avg, babip, babipAllowed, batterWar, defensiveWar, era, eraMinus, fip, fipMinus, ip, leagueContext, obp, ops, per9, pitcherWar, rateContext, slg, whip, woba, wrcPlus, type RateContext } from './stats';
+import { batsToo } from './twoway';
 import { playerPark } from './venues';
 import { addInto, emptyBat, emptyPit } from './state';
 import { traitsOf } from './traits';
@@ -470,7 +471,8 @@ export function seasonStats(s: LeagueState) {
     if (!p) continue;
     const base = { id, name: p.name, team: shortName(s, line.teamId), pos: positionLabel(p), age: ageIn(p, s.year) };
     const b = line.bat;
-    if (b && b.pa > 0 && !isPitcher(p))
+    // 2.0.82: a two-way pitcher's bat too (twoway.ts).
+    if (b && b.pa > 0 && (!isPitcher(p) || batsToo(p, b.pa)))
       batters.push({
         ...base,
         g: b.g, pa: b.pa, avg: avg(b), obp: obp(b), slg: slg(b), ops: ops(b), hr: b.hr, rbi: b.rbi, r: b.r, sb: b.sb, bb: b.bb, k: b.k,

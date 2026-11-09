@@ -16,7 +16,9 @@ import { fieldingRuns } from './fielding';
 import type { FieldPos } from './engine/types';
 import type { BatTotals, PitTotals, Player, PlayerId, SeasonRecord, TeamId } from '../model/types';
 import { isForeign, isPitcher, isReliever } from './players';
-import { avg, era, obp, slg } from './stats';
+import { avg, era, leagueContext, obp, pitcherWar, slg } from './stats';
+import { addInto, emptyBat, emptyPit } from './state';
+import { batsToo, pitchesToo } from './twoway';
 import type { LeagueState } from './state';
 import type { StandingRow } from './standings';
 import { milestone, unlock } from './milestones';
@@ -81,8 +83,19 @@ const best = <T,>(xs: T[], key: (x: T) => number, low = false): T | null => {
 export function computeAwards(s: LeagueState, year: number, table: StandingRow[], champion: TeamId | null): SeasonAwards {
   const recs = records(s, year);
   const games = Math.max(1, ...table.map((r) => r.w + r.l + r.t));
-  const hitters = recs.filter((r) => r.c.bat && !isPitcher(r.p));
-  const pitchers = recs.filter((r) => r.c.pit && isPitcher(r.p));
+  // 2.0.82 (the user's question: 투타겸업 투수는 타자 상을 못 받나요): a two-way player is among the hitters and the
+  // pitchers both (`batsToo`/`pitchesToo`); the golden gloves weigh each side's own WAR.
+  const hitters = recs.filter((r) => r.c.bat && (!isPitcher(r.p) || batsToo(r.p, r.c.bat.pa)));
+  const pitchers = recs.filter((r) => r.c.pit && (isPitcher(r.p) || pitchesToo(r.p, r.c.pit.outs)));
+  const bat = emptyBat(),
+    pit = emptyPit();
+  for (const r of recs) {
+    if (r.c.bat) addInto(bat, r.c.bat);
+    if (r.c.pit) addInto(pit, r.c.pit);
+  }
+  const lg = leagueContext(bat, pit);
+  const pitWar = (r: Rec) => (r.c.pit ? pitcherWar(r.c.pit, lg) : 0);
+  const batWar = (r: Rec) => (r.c.pit ? r.c.war - pitWar(r) : r.c.war);
   const qBat = hitters.filter((r) => r.c.bat!.pa >= games * 3.1);
   const qPit = pitchers.filter((r) => r.c.pit!.outs >= games * 3);
   const b = (r: Rec) => r.c.bat as BatTotals;
@@ -124,19 +137,19 @@ export function computeAwards(s: LeagueState, year: number, table: StandingRow[]
   // Golden gloves by position.
   const posGames = (r: Rec, pos: FieldPos) => r.c.bat?.posG?.[pos] ?? 0;
   const goldenGloves: SeasonAwards['goldenGloves'] = [];
-  const pitcherGG = best(pitchers, (r) => r.c.war);
+  const pitcherGG = best(pitchers, (r) => (r.c.bat ? pitWar(r) : r.c.war));
   if (pitcherGG) goldenGloves.push({ pos: '투수', id: pitcherGG.p.id });
   const LABEL: Record<string, string> = { C: __i18n_k("league.awards.lABEL.c.5f31470d"), '1B': '1루수', '2B': '2루수', '3B': '3루수', SS: __i18n_k("league.awards.lABEL.sS.3e24c7f1"), DH: __i18n_k("league.awards.lABEL.dH.8eba4676") };
   for (const pos of ['C', '1B', '2B', '3B', 'SS'] as FieldPos[]) {
-    const top = best(hitters.filter((r) => posGames(r, pos) >= 60), (r) => r.c.war);
+    const top = best(hitters.filter((r) => posGames(r, pos) >= 60), batWar);
     if (top) goldenGloves.push({ pos: LABEL[pos]!, id: top.p.id });
   }
   const outfield = hitters
     .filter((r) => posGames(r, 'LF') + posGames(r, 'CF') + posGames(r, 'RF') >= 60)
-    .sort((a, b2) => b2.c.war - a.c.war)
+    .sort((a, b2) => batWar(b2) - batWar(a))
     .slice(0, 3);
   for (const r of outfield) goldenGloves.push({ pos: __i18n_k("league.awards.computeAwards.pos.7435120b"), id: r.p.id });
-  const dh = best(hitters.filter((r) => posGames(r, 'DH') >= 60), (r) => r.c.war);
+  const dh = best(hitters.filter((r) => posGames(r, 'DH') >= 60), batWar);
   if (dh) goldenGloves.push({ pos: LABEL.DH!, id: dh.p.id });
 
   return { mvp: mvp?.p.id ?? null, rookie: rookie?.p.id ?? null, goldenGloves, titles, defense: defenseAwards(s, hitters, pitchers, games) };
