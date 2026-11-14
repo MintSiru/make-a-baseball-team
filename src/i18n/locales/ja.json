@@ -2417,8 +2417,6 @@
   "league.fa.payIncentives.label.26ea5f59": "{n}試合登板",
   "league.fa.payIncentives.label.f71f60ba": "FAインセンティブ · {name}（{value}）",
   "league.fa.settleClubOptions.text.e324b51a": "{name}の球団オプションを行使（{years}年、年{eok}）",
-  "league.fa.settleClubOptions.text.73bad423": "{name}の球団オプションを放棄、FA市場へ（補償なし）",
-  "league.fa.settlePeriodOptions.text.0c4aa210": "{name}がオプトアウト、FA市場へ（補償なし）",
   "league.fa.settlePeriodOptions.text.ef81981a": "{name}が選手オプションを行使（あと{years}年）",
   "league.fa.judge.what.b2db18ee": "レギュラー保証",
   "league.fa.judge.what.fa44ccd8": "{value}の補強",
@@ -4806,7 +4804,6 @@
   "ui.decision.decision.value.dbb93a2e": "兵役免除の好機",
   "ui.decision.decision.c36dc672": "今シーズン限りでの現役引退を申し入れた選手たちです。慰留したい選手を選択すると、GM自ら面談し現役続行を説得します。若く好成績を残している選手ほど説得に応じやすい傾向があります。未選択の選手および説得失敗者は引退となります。選択{size}名",
   "ui.decision.decision.title.d82979cd": "直近WAR · 慰留成功率",
-  "ui.decision.decision.b9c4b849": "契約期間満了に伴うFA球団オプションです。オプションを行使する選手を選択してください（設定された年俸で契約が延長されます）。行使しなかった選手は補償なしでFA市場へ流出します。選択{value}{size}名",
   "ui.decision.decision.title.e196e6a3": "オプション条件 · 直近WAR",
   "ui.decision.decision.value.a06038b7": "{years}年・年俸{eokText} · {value}",
   "ui.decision.decision.b176e269": "{shortName}から{grade}ランクFAの{name}を獲得しました。プロテクトする選手{protect}名を選択してください（現在{size}名）。{shortName2}側はプロテクト外から人的補償選手1名と金銭補償を受け取るか、金銭補償のみを選択します。外国人選手、今冬加入のFA、今年ドラフト指名選手は自動保護されます。",
@@ -10509,5 +10506,9 @@
   "league.fa.text.b465cc94": "FA未申請 {count}人",
   "league.fa.text.8bbee63a": "{names}：FA資格を得ましたが、申請せずにチームに残ります。",
   "league.fa.text.0c13fecc": "年俸は通常どおり更改し、資格はそのままなので次の冬に再び申請できます。",
-  "league.trade.text.764313b5": "負傷中です（{until}復帰予定）。回復が近づけば獲得できます。"
+  "league.trade.text.764313b5": "負傷中です（{until}復帰予定）。回復が近づけば獲得できます。",
+  "league.fa.text.8301f2c6": "{name} 球団オプション不行使、FA資格で市場へ",
+  "league.fa.text.163ee485": "{name} 球団オプション不行使、FA再資格（4シーズン）前のため年俸契約で残留",
+  "league.fa.text.972e3277": "{name} オプトアウト、FA市場へ",
+  "ui.decision.text.d8c54276": "保証期間が終わるFA契約に球団オプションがあります。行使する選手を選んでください（決めた年俸で契約が延びます）。選ばなかった選手は、FA再資格（前回FAから4シーズン）を満たしていればFA市場へ、まだなら年俸契約で残ります。選択 {size}人"
 }

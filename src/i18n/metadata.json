@@ -22713,30 +22713,6 @@
       55362
     ]
   },
-  "league.fa.settleClubOptions.text.73bad423": {
-    "source": "src/league/fa.ts",
-    "line": 1160,
-    "params": {
-      "name": {
-        "expression": "p.name"
-      }
-    },
-    "locations": [
-      55516
-    ]
-  },
-  "league.fa.settlePeriodOptions.text.0c4aa210": {
-    "source": "src/league/fa.ts",
-    "line": 1180,
-    "params": {
-      "name": {
-        "expression": "p.name"
-      }
-    },
-    "locations": [
-      56442
-    ]
-  },
   "league.fa.settlePeriodOptions.text.ef81981a": {
     "source": "src/league/fa.ts",
     "line": 1180,
@@ -47598,21 +47574,6 @@
     "params": {},
     "locations": [
       50679
-    ]
-  },
-  "ui.decision.decision.b9c4b849": {
-    "source": "src/ui/Decision.tsx",
-    "line": 1209,
-    "params": {
-      "value": {
-        "expression": "' '"
-      },
-      "size": {
-        "expression": "selected.size"
-      }
-    },
-    "locations": [
-      50921
     ]
   },
   "ui.decision.decision.title.e196e6a3": {
@@ -94343,6 +94304,46 @@
     "params": {
       "until": {
         "expression": "s.injuries[id]!.until"
+      }
+    },
+    "locations": []
+  },
+  "league.fa.text.8301f2c6": {
+    "source": "src/league/fa.ts",
+    "line": 1344,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.fa.text.163ee485": {
+    "source": "src/league/fa.ts",
+    "line": 1344,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "league.fa.text.972e3277": {
+    "source": "src/league/fa.ts",
+    "line": 1366,
+    "params": {
+      "name": {
+        "expression": "p.name"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.d8c54276": {
+    "source": "src/ui/Decision.tsx",
+    "line": 1754,
+    "params": {
+      "size": {
+        "expression": "selected.size"
       }
     },
     "locations": []
