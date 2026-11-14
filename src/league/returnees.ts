@@ -37,6 +37,9 @@ const R = {
   /** A star (grade 68+) is more likely to stay in the majors. */
   starStays: 0.6,
   maxAge: 38,
+  /** 2.0.86 (the user's request: 해외 복귀 후 계약을 못 해 20대에 은퇴): a returnee nobody signs ends his career only from
+      this age; younger, he is on the free-agent market (any club, ours too), winter after winter. */
+  retireFrom: 35,
   /** An AI club brings back a returnee worth at least this much (keep value). */
   aiKeep: 40,
   /** A club other than his own signs a returnee whose rights were released, this often. */
@@ -121,8 +124,16 @@ export function releaseReturnee(s: LeagueState, p: Player, o: ReturnOffer, next:
   if (clubs.length && keepValue(p, next) >= R.aiKeep && hashUnit(`${s.seed}-home-other-${p.id}-${next}`) < R.otherClub) {
     const to = clubs[Math.floor(hashUnit(`${s.seed}-home-club-${p.id}-${next}`) * clubs.length)]!;
     signReturnee(s, p, to.id, o, next);
+  } else if (ageIn(p, next) < R.retireFrom) {
+    // 2.0.86: too young to quit: onto this winter's free-agent market (no compensation), any club's to sign.
+    homeToMarket(p, next - 1);
+    if (!lastKboClub(s, p)) (s.pool ??= []).push(p.id);
   } else leaveLeague(s, p, 'retired');
 }
+
+/** 2.0.86: a player home from abroad who went unsigned, still young enough to play: next winter's market again. */
+export const returneeKeepsGoing = (s: LeagueState, p: Player) =>
+  p.status === 'freeAgent' && !isForeign(p) && p.mlb?.back !== undefined && p.career.some((c) => !c.level) && ageIn(p, s.year + 1) < R.retireFrom;
 
 /**
  * The winter's homecomings (called at the posting step with the player's club in the league): AI clubs

@@ -108,8 +108,10 @@ describe('2.0.77: a free agent home from abroad is on the free-agent market', ()
     expect(p.status).toBe('freeAgent');
     expect(p.service.homeFree).toBe(s.year);
     expect(freeAgentsFor(s, s.year + 1).map((x) => x.id)).toContain(p.id);
-    // One who was on a market and still went unsigned retires, as before.
+    // One who was on a market and still went unsigned retires, as before — from 35 (2.0.86: younger, he is on the
+    // next winter's market again).
     const [r] = abroad(s, 1) as [Player];
+    r.birthday = `${s.year - 35}-05-01`;
     r.mlb!.back = s.year - 1;
     r.status = 'freeAgent';
     (r.life ??= {}).unsigned = s.year - 1;
