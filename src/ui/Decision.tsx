@@ -1751,7 +1751,7 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
     case 'faOptions':
       body = (
         <>
-          <p>{__i18n_t("ui.decision.decision.b9c4b849", { value: ' ', size: selected.size })}</p>
+          <p>{__i18n_t("ui.decision.text.d8c54276", { size: selected.size })}</p>
           {__i18n_display(budgetLine)}
           <PlayerTable
             league={league}

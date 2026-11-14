@@ -2417,8 +2417,6 @@
   "league.fa.payIncentives.label.26ea5f59": "{n, plural, one{# appearance} other{# appearances}}",
   "league.fa.payIncentives.label.f71f60ba": "FA Incentive · {name} ({value})",
   "league.fa.settleClubOptions.text.e324b51a": "Club option exercised on {name} ({years, plural, one{# year} other{# years}}, {eok} per year)",
-  "league.fa.settleClubOptions.text.73bad423": "Club option on {name} declined; heads to the FA market (no compensation)",
-  "league.fa.settlePeriodOptions.text.0c4aa210": "{name} opts out and heads to the FA market (no compensation)",
   "league.fa.settlePeriodOptions.text.ef81981a": "{name} exercises player option ({years, plural, one{# more year} other{# more years}})",
   "league.fa.judge.what.b2db18ee": "starting job guarantee",
   "league.fa.judge.what.fa44ccd8": "{value} reinforcement",
@@ -4806,7 +4804,6 @@
   "ui.decision.decision.value.dbb93a2e": "Military Exemption Opportunity",
   "ui.decision.decision.c36dc672": "These players intend to retire at the end of this season. You may meet with them personally to persuade them to play one more season. Younger, higher-performing players are easier to persuade. Unselected players and failed persuadings proceed to retirement. Selected: {size}",
   "ui.decision.decision.title.d82979cd": "Recent WAR · Persuasion Chance",
-  "ui.decision.decision.b9c4b849": "Expiring FA contracts with club options. Select players to exercise options on (extends contract at preset salary). Unexercised players enter free agency without compensation. Selected:{value}{size}",
   "ui.decision.decision.title.e196e6a3": "Option Terms · Recent WAR",
   "ui.decision.decision.value.a06038b7": "{years} yrs, {eokText}/yr · {value}",
   "ui.decision.decision.b176e269": "Signed Grade {grade} FA {name} from {shortName}. Select {protect, plural, one {# player} other {# players}} to protect (currently {size}). {shortName2} may select 1 unprotected player plus compensation, or take compensation only. Foreign players, this winter's FA acquisitions, and this year's draft picks are auto-protected.",
@@ -10509,5 +10506,9 @@
   "league.fa.text.b465cc94": "{count} did not file for free agency",
   "league.fa.text.8bbee63a": "{names}: eligible for free agency, but stay with the club without filing.",
   "league.fa.text.0c13fecc": "Their salaries are renewed as usual, and they keep their rights to file next winter.",
-  "league.trade.text.764313b5": "He is injured (back on {until}). He can be signed once he is close to recovering."
+  "league.trade.text.764313b5": "He is injured (back on {until}). He can be signed once he is close to recovering.",
+  "league.fa.text.8301f2c6": "{name}: club option declined; a free agent, on the market",
+  "league.fa.text.163ee485": "{name}: club option declined; short of the four seasons to be a free agent again, he stays on a renewed salary",
+  "league.fa.text.972e3277": "{name} opts out, onto the free-agent market",
+  "ui.decision.text.d8c54276": "These free-agent deals end their guaranteed years with a club option. Pick the players to keep (the deal runs on at the set salary). One not picked goes to the free-agent market if he has the four seasons since his last free agency; otherwise he stays on a renewed salary. Picked: {size}"
 }

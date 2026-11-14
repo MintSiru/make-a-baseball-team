@@ -31,7 +31,7 @@ import { demotionCut } from '../src/league/finance';
 import { foreignSlots } from '../src/league/manager';
 import { KBO_2026 } from '../src/rules/kbo2026';
 import { createLeague } from '../src/league/history';
-import { freeAgentsFor } from '../src/league/offseason';
+import { freeAgentsFor, isFreeAgent } from '../src/league/offseason';
 import { movePlayer } from '../src/league/market';
 import { ageIn, isForeign } from '../src/league/players';
 import { emptyBat, orgPlayers, type LeagueState } from '../src/league/state';
@@ -263,15 +263,22 @@ describe('the club’s side', () => {
     const n = c.offseason!.year + 1;
     a!.contract = faContract(EXPANSION_ID, n - 2, { years: 2, bonus: 0, annual: 20000, options: 0, extra: { years: 1, holder: 'club' } }, a!);
     b!.contract = faContract(EXPANSION_ID, n - 2, { years: 2, bonus: 0, annual: 20000, options: 0, extra: { years: 1, holder: 'club' } }, b!);
+    // (2.0.85: a free agent again only four seasons after his last free agency, KBO rules.)
+    a!.service.lastFreeAgencyAt = a!.service.creditedSeasons - 2;
+    b!.service.lastFreeAgencyAt = b!.service.creditedSeasons - 4;
     settleClubOptions(c, [a!.id], [a!.id, b!.id], n);
     expect(salaryIn(a!, n)).toBe(20000);
-    expect(b!.service.optionFree).toBe(n - 1);
-    expect(freeAgentsFor(c, n).map((x) => x.id)).toContain(b!.id);
-    // A player option at a salary far under his price: he opts out.
+    // Declined, with the four seasons since his last free agency: a free agent.
+    expect(b!.contract!.fa!.extra).toBeUndefined();
+    // (Eligible; whether he files is his own choice, 2.0.80.)
+    expect(isFreeAgent(b!, n)).toBe(true);
+    // A player option at a salary far under his price: with the seasons for it, he opts out.
     const star = Object.values(c.players).find((x) => x.teamId && x.teamId !== EXPANSION_ID && x.status === 'active' && ageIn(x, n) <= 33 && faPrice(x, n).annual > 30000 && x.origin.kind !== 'foreign')!;
     star.contract = faContract(star.teamId!, n - 2, { years: 2, bonus: 0, annual: 3000, options: 0, extra: { years: 2, holder: 'player' } }, star);
+    star.service.lastFreeAgencyAt = star.service.creditedSeasons - 4;
     settlePeriodOptions(c, n);
-    expect(star.service.optionFree).toBe(n - 1);
+    expect(star.contract!.salaries.some((x) => x.season === n)).toBe(false);
+    expect(isFreeAgent(star, n)).toBe(true);
   });
 
   it('cuts half of 1/300 of a 3억+ salary for each day a player is sent down', () => {

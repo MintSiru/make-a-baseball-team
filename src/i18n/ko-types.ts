@@ -2418,8 +2418,6 @@ export const koSource = {
   "league.fa.payIncentives.label.26ea5f59": "{n}경기 등판",
   "league.fa.payIncentives.label.f71f60ba": "FA 옵션 · {name} ({value})",
   "league.fa.settleClubOptions.text.e324b51a": "{name} 구단 옵션 실행 ({years}년, 연 {eok})",
-  "league.fa.settleClubOptions.text.73bad423": "{name} 구단 옵션 포기, FA 시장으로 (보상 없음)",
-  "league.fa.settlePeriodOptions.text.0c4aa210": "{name} 옵트아웃, FA 시장으로 (보상 없음)",
   "league.fa.settlePeriodOptions.text.ef81981a": "{name} 선수 옵션 실행 ({years}년 더)",
   "league.fa.judge.what.b2db18ee": "주전 보장",
   "league.fa.judge.what.fa44ccd8": "{value} 보강",
@@ -4807,7 +4805,6 @@ export const koSource = {
   "ui.decision.decision.value.dbb93a2e": "병역 특례 기회",
   "ui.decision.decision.c36dc672": "올 시즌을 끝으로 은퇴하겠다는 우리 선수들입니다. 붙잡고 싶은 선수를 고르면 단장이 직접 만나 한 시즌 더 뛰어 달라고 설득합니다. 젊고 아직 잘하는 선수일수록 마음을 돌리기 쉽습니다. 고르지 않은 선수와 설득에 실패한 선수는 은퇴합니다. 선택 {size}명",
   "ui.decision.decision.title.d82979cd": "최근 WAR · 설득 가능성",
-  "ui.decision.decision.b9c4b849": "보장 기간이 끝나는 FA 계약에 구단 옵션이 있습니다. 실행할 선수를 고르세요 (정해 둔 연봉으로 계약이 늘어납니다). 고르지 않은 선수는 보상 없이 FA 시장에 나갑니다. 선택{value}{size}명",
   "ui.decision.decision.title.e196e6a3": "옵션 조건 · 최근 WAR",
   "ui.decision.decision.value.a06038b7": "{years}년 연 {eokText} · {value}",
   "ui.decision.decision.b176e269": "{shortName}에서 {grade}등급 FA {name} 데려왔습니다. 보호할 선수 {protect}명을 고르세요 (지금 {size}명). {shortName2} 쪽은 나머지 선수 중 1명과 보상금을 받거나, 보상금만 받습니다. 외국인, 올겨울 영입한 FA, 올해 뽑은 신인은 저절로 보호됩니다.",
@@ -10510,5 +10507,9 @@ export const koSource = {
   "league.fa.text.b465cc94": "FA 미신청 {count}명",
   "league.fa.text.8bbee63a": "{names}: FA 자격을 얻었지만 신청하지 않고 팀에 남습니다.",
   "league.fa.text.0c13fecc": "연봉은 평소처럼 재계약하고, 자격은 그대로라 다음 겨울에 다시 신청할 수 있습니다.",
-  "league.trade.text.764313b5": "부상 중입니다({until} 복귀 예정). 회복이 가까워지면 영입할 수 있습니다."
+  "league.trade.text.764313b5": "부상 중입니다({until} 복귀 예정). 회복이 가까워지면 영입할 수 있습니다.",
+  "league.fa.text.8301f2c6": "{name} 구단 옵션 포기, FA 자격으로 시장에",
+  "league.fa.text.163ee485": "{name} 구단 옵션 포기, FA 재자격(4시즌) 전이라 연봉 계약으로 남음",
+  "league.fa.text.972e3277": "{name} 옵트아웃, FA 시장으로",
+  "ui.decision.text.d8c54276": "보장 기간이 끝나는 FA 계약에 구단 옵션이 있습니다. 실행할 선수를 고르세요 (정해 둔 연봉으로 계약이 늘어납니다). 고르지 않은 선수는 FA 재자격(지난 FA 뒤 4시즌)을 채웠으면 FA 시장에 나가고, 아직이면 연봉 계약으로 남습니다. 선택 {size}명"
 } as const;

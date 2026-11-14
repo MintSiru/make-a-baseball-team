@@ -22,7 +22,7 @@ import { eulreul, iga, ro, wagwa } from './josa';
 import { clubState } from './fans';
 import { aiCompensation, compensationCash, externalLimit, faGrades, moneyFor, parentGiftFor, projectedPayroll, protectedBy, type FaGrade, type FaQueueItem } from './market';
 import { moveNews } from './movenews';
-import { freeAgentsFor, homeFreeAgent, lastKboClub, leaveLeague, removeFromRoster, unfiledFor } from './offseason';
+import { freeAgentsFor, homeFreeAgent, isFreeAgent, lastKboClub, leaveLeague, removeFromRoster, unfiledFor } from './offseason';
 import { joinMlb, joinNpb } from './mlb';
 import { mlbMarket, npbMarket } from './posting';
 import { usd } from './foreign';
@@ -1324,9 +1324,11 @@ function takeUpOption(s: LeagueState, p: Player, next: number) {
   delete c.fa!.extra;
 }
 
-function dropOption(s: LeagueState, p: Player, next: number) {
+/** 2.0.85 (the user's report: 4년 미만 FA 계약이 끝나자마자 다시 FA): a period option not taken up ends the deal, but
+    he is a free agent again only once he has the seasons for it (four after his last free agency, KBO rules); until
+    then he stays with his club and renews his salary as anyone does. */
+function dropOption(s: LeagueState, p: Player, _next: number) {
   delete p.contract!.fa!.extra;
-  p.service.optionFree = next - 1;
 }
 
 /** The user's club decides on its club options. */
@@ -1339,7 +1341,7 @@ export function settleClubOptions(s: LeagueState, keep: PlayerId[], ids: PlayerI
       (u.log ??= []).push({ year: next - 1, text: __i18n_k("league.fa.settleClubOptions.text.e324b51a", { name: p.name, years: x.years, eok: eok(x.annual) }) });
       takeUpOption(s, p, next);
     } else {
-      (u.log ??= []).push({ year: next - 1, text: __i18n_k("league.fa.settleClubOptions.text.73bad423", { name: p.name }) });
+      (u.log ??= []).push({ year: next - 1, text: isFreeAgent(p, next) ? __i18n_k("league.fa.text.8301f2c6", { name: p.name }) : __i18n_k("league.fa.text.163ee485", { name: p.name }) });
       dropOption(s, p, next);
     }
   }
@@ -1356,10 +1358,12 @@ export function settlePeriodOptions(s: LeagueState, next: number) {
     const price = faPrice(p, next);
     const worth = guaranteed(price) / price.years;
     if (x.holder === 'player') {
-      const leave = worth > x.annual * 1.1 && ageIn(p, next) <= 35;
+      // 2.0.85: an opt-out takes him to the market only when he has the seasons to be a free agent; otherwise he
+      // would only stay on a renewed salary, so he takes the option.
+      const leave = isFreeAgent(p, next) && worth > x.annual * 1.1 && ageIn(p, next) <= 35;
       if (leave) dropOption(s, p, next);
       else takeUpOption(s, p, next);
-      if (me && p.teamId === me) (s.user!.log ??= []).push({ year: next - 1, text: leave ? __i18n_k("league.fa.settlePeriodOptions.text.0c4aa210", { name: p.name }) : __i18n_k("league.fa.settlePeriodOptions.text.ef81981a", { name: p.name, years: x.years }) });
+      if (me && p.teamId === me) (s.user!.log ??= []).push({ year: next - 1, text: leave ? __i18n_k("league.fa.text.972e3277", { name: p.name }) : __i18n_k("league.fa.settlePeriodOptions.text.ef81981a", { name: p.name, years: x.years }) });
     } else if (p.teamId !== me) {
       if (keepValue(p, next) >= 45 && worth >= x.annual * 0.8) takeUpOption(s, p, next);
       else dropOption(s, p, next);
