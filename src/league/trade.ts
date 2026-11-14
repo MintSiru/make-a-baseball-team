@@ -5,7 +5,7 @@ import { k as __i18n_k } from '../i18n/index';
 
    AI clubs judge every move by public grades only: a player is worth his keep value above a
    replacement level, more the longer he is under club control, less the more he is paid. */
-import { homeToMarket, restartFreeAgency } from './returnees';
+import { homeToMarket, restartFreeAgency, returneeKeepsGoing } from './returnees';
 import { iga, ro } from './josa';
 import { rng } from '../draftroom';
 import type { Player, PlayerId, TeamId } from '../model/types';
@@ -529,6 +529,8 @@ export function clearPool(s: LeagueState) {
     const p = s.players[id];
     if (!p || p.teamId) continue;
     if (p.mlb?.via === 'fa' && p.mlb.back === s.year - 1 && p.life?.unsigned !== s.year - 1 && p.status === 'freeAgent') homeToMarket(p, s.year);
+    // 2.0.86: one home from abroad, under 35, does not retire for going unsigned: next winter's market again.
+    else if (returneeKeepsGoing(s, p)) homeToMarket(p, s.year);
     else leaveLeague(s, p, 'retired');
   }
   s.pool = [];
