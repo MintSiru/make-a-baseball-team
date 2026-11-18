@@ -10518,5 +10518,9 @@
   "ui.decision.text.e6807d80": "Pick {regular} foreign and {asia} Asia quota player(s).",
   "ui.market.text.6f38d1c7": "Sign a player to stand in for a foreign player out six weeks or more, until he is back. It uses no replacement, at most $100K a month, outside the foreign salary cap. When he is back only one of the two stays; if he is not back by the season's end, the one you chose stays (keep the stand-in and you can re-sign him in the winter).",
   "ui.market.text.40edf13d": "When he is back or the season ends",
-  "ui.market.text.c19e7cf8": "Keep {name} (release {injured}; one replacement if during the season)"
+  "ui.market.text.c19e7cf8": "Keep {name} (release {injured}; one replacement if during the season)",
+  "league.trade.text.513ee4d5": "A stand-in for an injured foreign player cannot be released: when the injured player is back or the season ends, one of the two stays.",
+  "ui.market.text.5bd804b7": "Foreign",
+  "ui.market.text.d122d418": "Release {names} ({n}). The salary still owed, {money}, will be paid.",
+  "ui.market.text.d2a7c268": "Release the {n} selected"
 }

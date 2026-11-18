@@ -10519,5 +10519,9 @@ export const koSource = {
   "ui.decision.text.e6807d80": "외국인 {regular}명과 아시아쿼터 {asia}명을 골라야 합니다.",
   "ui.market.text.6f38d1c7": "6주 이상 부상인 외국인 선수 대신 복귀할 때까지 뛸 선수를 데려옵니다. 교체 횟수를 쓰지 않고 월 최대 10만 달러, 외국인 샐러리캡 밖입니다. 복귀하면 둘 중 한 명만 남고, 시즌이 끝날 때까지 복귀하지 못해도 고른 쪽이 남습니다(대체 선수를 남기면 겨울에 재계약할 수 있습니다).",
   "ui.market.text.40edf13d": "복귀하거나 시즌이 끝나면",
-  "ui.market.text.c19e7cf8": "{name} 유지 ({injured} 방출; 시즌 중이면 교체 1회)"
+  "ui.market.text.c19e7cf8": "{name} 유지 ({injured} 방출; 시즌 중이면 교체 1회)",
+  "league.trade.text.513ee4d5": "부상 대체 외국인 선수는 방출할 수 없습니다. 부상 선수가 복귀하거나 시즌이 끝날 때 둘 중 한 명이 남습니다.",
+  "ui.market.text.5bd804b7": "외국인",
+  "ui.market.text.d122d418": "{names} {n}명을 방출합니다. 남은 연봉 {money}을 지급합니다.",
+  "ui.market.text.d2a7c268": "선택한 {n}명 방출"
 } as const;
