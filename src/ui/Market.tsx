@@ -638,7 +638,7 @@ function TempForeign({ league, onPlayer, onAct }: { league: LeagueState; onPlaye
   return (
     <section class="temp-foreign">
       <h3>{__i18n_t("ui.market.text.d98daee8")}</h3>
-      <p class="muted small">{__i18n_t("ui.market.text.fcbd7280")}</p>
+      <p class="muted small">{__i18n_t("ui.market.text.6f38d1c7")}</p>
       {temps.map((t) => {
         const temp = league.players[t.id],
           inj = league.players[t.for];
@@ -653,10 +653,10 @@ function TempForeign({ league, onPlayer, onAct }: { league: LeagueState; onPlaye
               {__i18n_display(inj.name)} <span class="muted small">{__i18n_display(league.injuries[inj.id] ? __i18n_t("ui.market.text.5ea34e6b", { date: league.injuries[inj.id]!.until.slice(5) }) : '')}</span>
             </span>
             <label>
-              {__i18n_t("ui.market.text.1b0fe9f1")}{' '}
+              {__i18n_t("ui.market.text.40edf13d")}{' '}
               <select value={t.keep ?? 'injured'} onChange={(e) => onAct({ kind: 'tempKeep', id: t.id, keep: (e.currentTarget as HTMLSelectElement).value as 'injured' | 'temp' })}>
                 <option value="injured">{__i18n_display(__i18n_t("ui.market.text.f38011f6", { name: inj.name }))}</option>
-                <option value="temp">{__i18n_display(__i18n_t("ui.market.text.7f36fa1f", { name: temp.name, injured: inj.name }))}</option>
+                <option value="temp">{__i18n_t("ui.market.text.c19e7cf8", { name: temp.name, injured: inj.name })}</option>
               </select>
             </label>
           </p>

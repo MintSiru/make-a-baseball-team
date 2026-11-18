@@ -138,7 +138,9 @@ function settle(s: LeagueState, t: TempForeign, keepTemp: boolean, seasonOver = 
     delete temp.contract?.temp;
     leaveForeign(s, injured);
     removeFrom(s, t.teamId, injured.id);
-    countReplacement(s, t.teamId, !!injured.origin.asiaQuota);
+    // (2.0.88: at the season's end no replacement is left to count: the stand-in's deal ends with it, his club may
+    // re-sign him in the winter.)
+    if (!seasonOver) countReplacement(s, t.teamId, !!injured.origin.asiaQuota);
     text = __i18n_k("league.tempforeign.text.bc78cf62", { club: short(s, t.teamId), name: wagwa(temp.name), injured: injured.name });
   } else {
     removeFrom(s, t.teamId, temp.id);
@@ -184,7 +186,15 @@ export function tempForeignDay(s: LeagueState, date: string) {
   }
 }
 
-/** The season is over: the stand-ins still standing in leave. */
+/** The season is over, the injured player still out: one of the two stays (2.0.88, the user's request) — ours as the
+    club chose (the injured player unless it said the stand-in), another club the better of the two; the other goes. A
+    stand-in kept is one of the club's foreign players, his deal ending with the season (re-signed in the winter, or not). */
 export function endTemps(s: LeagueState) {
-  for (const t of [...(s.tempForeign ?? [])]) settle(s, t, false, true);
+  for (const t of [...(s.tempForeign ?? [])]) {
+    const injured = s.players[t.for],
+      temp = s.players[t.id];
+    const here = !!injured && injured.teamId === t.teamId;
+    const better = !!temp && !!injured && temp.scouting.current >= injured.scouting.current + TEMP_FOREIGN.keepMargin;
+    settle(s, t, here && (t.teamId === s.user?.teamId ? t.keep === 'temp' : better), true);
+  }
 }

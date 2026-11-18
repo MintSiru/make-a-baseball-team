@@ -1244,13 +1244,24 @@ function trimForeigners(s: LeagueState, next: number) {
       [true, slots.asia],
     ] as const) {
       const list = have.filter((p) => !!p.origin.asiaQuota === asia).sort((a, b) => currentValue(a) - currentValue(b) || a.id.localeCompare(b.id));
-      for (const p of list.slice(0, Math.max(0, list.length - max))) {
-        if (t.id === s.user?.teamId) addNews(s, { id: `foreign-cut-${next}-${p.id}`, date: `${next - 1}-12-01`, kind: 'move', title: __i18n_k("league.offseason.text.19a2581b", { name: p.name }), body: __i18n_k("league.offseason.text.d65e73e3", { name: p.name }), quotes: [], facts: {}, players: [p.id], mine: true });
-        removeFromRoster(s, p);
-        if (!(s.user && !foreignLeaves(s, p, next) && toForeignPool(s, p, next - 1))) leaveLeague(s, p, 'overseas');
-      }
+      for (const p of list.slice(0, Math.max(0, list.length - max))) cutForeigner(s, p, next);
     }
   }
+}
+
+/** 2.0.88: how many of a club's foreign players (regular, Asia quota) are over next season's places. */
+export function foreignOver(s: LeagueState, teamId: TeamId, next: number): { regular: number; asia: number; players: Player[] } {
+  const slots = foreignSlots(s, teamId, next);
+  const have = slotForeigners(s, teamId, next);
+  const n = (asia: boolean) => have.filter((p) => !!p.origin.asiaQuota === asia).length;
+  return { regular: Math.max(0, n(false) - slots.regular), asia: Math.max(0, n(true) - slots.asia), players: have };
+}
+
+/** Lets a foreign player go for want of a place: onto the market of KBO-experienced foreigners, or abroad. */
+export function cutForeigner(s: LeagueState, p: Player, next: number) {
+  if (p.teamId && p.teamId === s.user?.teamId) addNews(s, { id: `foreign-cut-${next}-${p.id}`, date: `${next - 1}-12-01`, kind: 'move', title: __i18n_k("league.offseason.text.19a2581b", { name: p.name }), body: __i18n_k("league.offseason.text.d65e73e3", { name: p.name }), quotes: [], facts: {}, players: [p.id], mine: true });
+  removeFromRoster(s, p);
+  if (!(s.user && !foreignLeaves(s, p, next) && toForeignPool(s, p, next - 1))) leaveLeague(s, p, 'overseas');
 }
 
 /** A whole draft with AI picks only (the history bootstrap). */

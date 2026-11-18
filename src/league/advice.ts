@@ -48,6 +48,8 @@ export function adviceFor(s: LeagueState): Advice | null {
         tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.a9ba8e15"),
       };
     }
+    case 'foreignCut':
+      return { rule: __i18n_k("league.advice.text.8e1dd290"), picks: list(input.ids), tradeoff: __i18n_k("league.advice.text.74d68067") }
     case 'roster':
       return { rule: __i18n_k("league.advice.adviceFor.rule.f96655c0", { kEEP: KEEP }), picks: list(input.ids), tradeoff: __i18n_k("league.advice.adviceFor.tradeoff.8d9e8466") };
     case 'foreign': {

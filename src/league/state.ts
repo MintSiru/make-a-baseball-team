@@ -213,6 +213,9 @@ export type Decision =
   | { kind: 'draftPick'; overall: number; label: string; eligible?: PlayerId[] }
   | { kind: 'specialDraft'; lists: Record<TeamId, PlayerId[]>; protectedCount: number; fee: number }
   | { kind: 'released'; candidates: PlayerId[]; max: number }
+  /** 2.0.88 (the user's request): next season has fewer foreign places (the board cut them): our foreign players, and
+      how many regular and Asia-quota ones we let go. */
+  | { kind: 'foreignCut'; candidates: PlayerId[]; regular: number; asia: number }
   | {
       kind: 'foreign';
       candidates: PlayerId[];
