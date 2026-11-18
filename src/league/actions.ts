@@ -115,6 +115,8 @@ export type Action =
   | { kind: 'trade'; teamId: TeamId; give: PlayerId[]; get: PlayerId[]; extras?: TradeExtras }
   | { kind: 'tradeOffer'; id: string; accept: boolean }
   | { kind: 'release'; id: PlayerId }
+  /** 2.0.89 (the user's request): several at once, picked with check boxes. */
+  | { kind: 'releaseMany'; ids: PlayerId[] }
   /** 2.0.48 (trade.ts): one of ours to a development contract in the winter. */
   | { kind: 'toDevelopment'; id: PlayerId }
   | { kind: 'signPool'; id: PlayerId }
@@ -404,6 +406,9 @@ export function apply(s: LeagueState, action: Action): LeagueState {
       break;
     case 'release':
       releasePlayer(s, action.id);
+      break;
+    case 'releaseMany':
+      for (const id of action.ids) releasePlayer(s, id);
       break;
     case 'toDevelopment':
       makeDevelopment(s, action.id);

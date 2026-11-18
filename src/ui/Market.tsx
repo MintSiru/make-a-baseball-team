@@ -135,6 +135,7 @@ function PickList({
   extra,
   action,
   nfs,
+  canToggle,
 }: {
   league: LeagueState;
   players: Player[];
@@ -145,6 +146,8 @@ function PickList({
   onPlayer: (id: string) => void;
   extra?: { title: string; value: (p: Player) => string; sort: (p: Player) => number };
   action?: (p: Player) => preact.ComponentChildren;
+  /** 2.0.89: whose check box may be ticked (the others' greyed out). */
+  canToggle?: (p: Player) => boolean;
 }) {
   const { sorted, th } = useSort(
     players,
@@ -179,7 +182,7 @@ function PickList({
             <tr key={p.id} class="player-row" aria-selected={selected?.has(p.id)}>
               {__i18n_display(toggle && (
                 <td>
-                  <input type="checkbox" checked={selected?.has(p.id)} onChange={() => toggle(p.id)} aria-label={__i18n_displayText(__i18n_k("ui.market.pickList.23814a70", { name: p.name }))} />
+                  <input type="checkbox" checked={selected?.has(p.id)} disabled={canToggle ? !canToggle(p) : false} onChange={() => toggle(p.id)} aria-label={__i18n_displayText(__i18n_k("ui.market.pickList.23814a70", { name: p.name }))} />
                 </td>
               ))}
               <td>
@@ -188,6 +191,7 @@ function PickList({
                 </button>
                 {__i18n_display(p.contract?.kind === 'development' && <span class="tag">{__i18n_t("ui.market.pickList.818f3b79")}</span>)}
                 {nfs?.has(p.id) && <span class="tag nfs">NFS</span>}
+                {isForeign(p) && <span class="tag">{__i18n_t("ui.market.text.5bd804b7")}</span>}
               </td>
               <td>{__i18n_display(positionLabel(p))}</td>
               <td class="num">{__i18n_display(ageIn(p, league.year))}</td>
@@ -486,8 +490,30 @@ function TradeBlock({ league, onPlayer, onAct, closed }: { league: LeagueState; 
 
 function Release({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (id: string) => void; onAct: (a: Action) => void }) {
   const u = league.user!;
-  const ours = orgPlayers(league, u.teamId).filter((p) => !isForeign(p));
+  // 2.0.89 (the user's request): foreign players too (onto the market of KBO-experienced foreigners; a new one in his
+  // place counts as one of the season's replacements).
+  const ours = orgPlayers(league, u.teamId);
   const pool = (league.pool ?? []).map((id) => league.players[id]!).filter(Boolean);
+  // 2.0.89 (the user's request): several at once, by check boxes.
+  const releasable = (p: Player) => !canRelease(league, p.id) && !(league.phase === 'offseason' && p.contract?.kind !== 'development');
+  const [picked, setPicked] = useState<Set<PlayerId>>(new Set());
+  const chosen = [...picked].map((id) => league.players[id]!).filter((p) => p && p.teamId === u.teamId && releasable(p));
+  const togglePick = (id: PlayerId) =>
+    setPicked((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  const releaseMany = () => {
+    const owed = chosen.reduce((a, p) => {
+      const c = releaseCost(league, p);
+      return a + c.now + c.later.reduce((x, y) => x + y.amount, 0);
+    }, 0);
+    if (!chosen.length || !window.confirm(__i18n_t("ui.market.text.d122d418", { names: chosen.map((p) => p.name).join(', '), n: chosen.length, money: money(owed) }))) return;
+    onAct({ kind: 'releaseMany', ids: chosen.map((p) => p.id) });
+    setPicked(new Set());
+  };
   const release = (p: Player) => {
     const cost = releaseCost(league, p);
     const later = cost.later.reduce((a, x) => a + x.amount, 0);
@@ -524,9 +550,17 @@ function Release({ league, onPlayer, onAct }: { league: LeagueState; onPlayer: (
       {__i18n_display(deadMoneyAhead(league).length > 0 && (
         <p class="muted">{__i18n_t("ui.market.release.6b11fc45", { value: deadMoneyAhead(league).map((x) => `${x.season} ${x.label} ${money(x.amount)}`).join(' · ') })}</p>
       ))}
+      <p class="inline-form">
+        <button type="button" disabled={!chosen.length} onClick={releaseMany}>
+          {__i18n_t("ui.market.text.d2a7c268", { n: chosen.length })}
+        </button>
+      </p>
       <PickList
         league={league}
         players={ours}
+        selected={picked}
+        toggle={togglePick}
+        canToggle={releasable}
         onPlayer={onPlayer}
         extra={{ title: __i18n_k("ui.market.release.title.cbf383ec"), value: (p) => money(p.contract?.salaries.find((x) => x.season === league.year)?.amount ?? 0), sort: (p) => p.contract?.salaries.find((x) => x.season === league.year)?.amount ?? 0 }}
         action={(p) =>

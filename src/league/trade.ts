@@ -364,6 +364,8 @@ export function canRelease(s: LeagueState, id: PlayerId): string | null {
   // 2.0.67 (the user's request): a development player (육성선수) may be let go in the winter too.
   if (s.pending || (s.phase === 'offseason' && p.contract?.kind !== 'development')) return __i18n_k("league.trade.canRelease.d220cb44");
   if (s.phase === 'regular' && s.rosters[u.teamId]!.active.includes(id) && s.rosters[u.teamId]!.active.length <= 26) return __i18n_k("league.trade.canRelease.ca05e46e");
+  // 2.0.89: a stand-in for an injured foreign player goes as the stand-in rule says (tempforeign.ts), not here.
+  if (p.contract?.temp) return __i18n_k("league.trade.text.513ee4d5");
   return null;
 }
 

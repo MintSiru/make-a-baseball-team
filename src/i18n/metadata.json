@@ -94419,5 +94419,43 @@
       }
     },
     "locations": []
+  },
+  "league.trade.text.513ee4d5": {
+    "source": "src/league/trade.ts",
+    "line": 368,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.5bd804b7": {
+    "source": "src/ui/Market.tsx",
+    "line": 194,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.d122d418": {
+    "source": "src/ui/Market.tsx",
+    "line": 513,
+    "params": {
+      "names": {
+        "expression": "chosen.map((p) => p.name).join(', ')"
+      },
+      "n": {
+        "expression": "chosen.length"
+      },
+      "money": {
+        "expression": "money(owed)"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.d2a7c268": {
+    "source": "src/ui/Market.tsx",
+    "line": 555,
+    "params": {
+      "n": {
+        "expression": "chosen.length"
+      }
+    },
+    "locations": []
   }
 }
