@@ -65,6 +65,7 @@ const TITLES: Record<DecisionT['kind'], string> = {
   draftPick: __i18n_k("ui.decision.tITLES.draftPick.7bd24a81"),
   specialDraft: __i18n_k("ui.decision.tITLES.specialDraft.c6ab1579"),
   released: __i18n_k("ui.decision.tITLES.released.9eb3f222"),
+  foreignCut: __i18n_t("ui.decision.text.2f37210b"),
   foreign: __i18n_k("ui.decision.tITLES.foreign.7f403bab"),
   roster: __i18n_k("ui.decision.tITLES.roster.ea826f46"),
   military: __i18n_k("ui.decision.tITLES.military.82af035c"),
@@ -547,6 +548,8 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         return { kind: 'faOptions', keep: [...selected] };
       case 'faProtect':
         return { kind: 'faProtect', ids: [...selected] };
+      case 'foreignCut':
+        return { kind: 'foreignCut', ids: [...selected] };
       case 'salaries':
         return { kind: 'salaries', choices: choices as Record<PlayerId, SalaryChoice> };
       case 'secondProtect':
@@ -714,6 +717,19 @@ export function Decision({ league, onSubmit, onPlayer, onAct }: Props) {
         </>
       );
       break;
+    case 'foreignCut': {
+      // 2.0.88 (the user's request): fewer foreign places next season: we choose whom to let go.
+      const picked = [...selected].map((id) => league.players[id]!).filter(Boolean);
+      const asia = picked.filter((p) => p.origin.asiaQuota).length;
+      body = (
+        <>
+          <p>{__i18n_t("ui.decision.text.42adcf22", { regular: d.regular, asia: d.asia, size: selected.size })}</p>
+          <PlayerTable league={league} players={byValue(d.candidates).reverse()} selected={selected} toggle={toggle} onPlayer={onPlayer} max={d.regular + d.asia} />
+          {(picked.length - asia !== d.regular || asia !== d.asia) && <p class="notice inline">{__i18n_t("ui.decision.text.e6807d80", { regular: d.regular, asia: d.asia })}</p>}
+        </>
+      );
+      break;
+    }
     case 'draftPick': {
       const draft = league.offseason!.draft!;
       const mine = Object.values(league.players).filter((p) => p.teamId === u.teamId && p.origin.draftYear === draft.year && (p.origin.overallPick || p.origin.territorial));

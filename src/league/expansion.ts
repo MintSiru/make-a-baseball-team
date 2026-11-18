@@ -84,7 +84,7 @@ import { autoBoard, boardDecision, LEGACY_BOARD_FROM, resolveBoard, type BoardVo
 import { autoDevForeign, devForeignDecision, resolveDevForeign } from './devforeign';
 import { japanPersuasion, persuadeAbroadChance, staysHome } from './abroad';
 import { abroadDeal } from './fa';
-import { freeAgentsFor } from './offseason';
+import { cutForeigner, foreignOver, freeAgentsFor } from './offseason';
 
 export const EXPANSION_ID = 'new';
 export const FOUNDING_DATE = '2026-07-01';
@@ -418,6 +418,11 @@ export function decide(s: LeagueState, step: OffseasonStep): Decision | null {
       const candidates = others.length >= release ? others : domestic;
       return { kind: 'roster', candidates, release, limit: rosterLimit(next) };
     }
+    case 'limits': {
+      // 2.0.88 (the user's request): fewer foreign places next season (the board cut them): we choose whom to let go.
+      const over = foreignOver(s, u.teamId, next);
+      return over.regular || over.asia ? { kind: 'foreignCut', candidates: over.players.map((p) => p.id), regular: over.regular, asia: over.asia } : null;
+    }
     case 'released': {
       // Every winter the user's club gets the first look at players the other clubs let go.
       if (space <= 0) return null;
@@ -517,6 +522,7 @@ export type DecisionInput =
   | { kind: 'fantasyPick'; id: PlayerId | null; autoUntil?: number }
   | { kind: 'specialDraft'; picks: Record<TeamId, PlayerId> }
   | { kind: 'released'; ids: PlayerId[] }
+  | { kind: 'foreignCut'; ids: PlayerId[] }
   /** `offers`: what we offer each (1.3.0; his ask within the cap when missing). */
   | { kind: 'foreign'; ids: PlayerId[]; offers?: Record<PlayerId, ForeignOffer> }
   | { kind: 'roster'; ids: PlayerId[]; develop?: PlayerId[] }
@@ -590,6 +596,13 @@ export function checkDecision(s: LeagueState, input: DecisionInput): string | nu
       const cost = Object.keys(input.picks).length * dd.fee;
       if (cost > u.fund) return __i18n_k("league.expansion.checkDecision.7fe7aebf", { value: cost / 10000 });
       if (cost > 0 && payrollAfter(Object.values(input.picks)) > u.payrollBudget) return __i18n_k("league.expansion.checkDecision.84d90a10");
+      return null;
+    }
+    case 'foreignCut': {
+      const dd = d as Extract<Decision, { kind: 'foreignCut' }>;
+      if (input.ids.some((id) => !dd.candidates.includes(id))) return __i18n_k("league.expansion.checkDecision.98ce3a2b");
+      const asia = input.ids.filter((id) => s.players[id]?.origin.asiaQuota).length;
+      if (input.ids.length - asia !== dd.regular || asia !== dd.asia) return __i18n_k("league.expansion.text.253163a7", { regular: dd.regular, asia: dd.asia });
       return null;
     }
     case 'roster': {
@@ -722,6 +735,9 @@ export function resolveDecision(s: LeagueState, input: DecisionInput) {
       break;
     case 'rivalProtect':
       resolveRivalProtect(s, d as Extract<Decision, { kind: 'rivalProtect' }>, input.ids);
+      break;
+    case 'foreignCut':
+      for (const id of input.ids) cutForeigner(s, s.players[id]!, next);
       break;
     case 'roster':
       // Released players join the pool other clubs look at; the rest retire. Some stay as development players.
@@ -917,6 +933,15 @@ export function autoDecision(s: LeagueState): DecisionInput | null {
     }
     case 'roster':
       return { kind: 'roster', ids: [...d.candidates].sort((a, b) => keepValue(s.players[a]!, next) - keepValue(s.players[b]!, next)).slice(0, d.release) };
+    case 'foreignCut': {
+      // The least valuable of each kind (as the other clubs choose).
+      const least = (asia: boolean, n: number) =>
+        d.candidates
+          .filter((id) => !!s.players[id]!.origin.asiaQuota === asia)
+          .sort((a, b) => currentValue(s.players[a]!) - currentValue(s.players[b]!) || a.localeCompare(b))
+          .slice(0, n);
+      return { kind: 'foreignCut', ids: [...least(false, d.regular), ...least(true, d.asia)] };
+    }
     case 'rival':
       return { kind: 'rival', settings: d.suggestion };
     case 'rivalProtect':

@@ -78228,12 +78228,6 @@
     "params": {},
     "locations": []
   },
-  "ui.market.text.fcbd7280": {
-    "source": "src/ui/Market.tsx",
-    "line": 468,
-    "params": {},
-    "locations": []
-  },
   "ui.market.text.5ea34e6b": {
     "source": "src/ui/Market.tsx",
     "line": 480,
@@ -78244,30 +78238,11 @@
     },
     "locations": []
   },
-  "ui.market.text.1b0fe9f1": {
-    "source": "src/ui/Market.tsx",
-    "line": 483,
-    "params": {},
-    "locations": []
-  },
   "ui.market.text.f38011f6": {
     "source": "src/ui/Market.tsx",
     "line": 485,
     "params": {
       "name": {
-        "expression": "inj.name"
-      }
-    },
-    "locations": []
-  },
-  "ui.market.text.7f36fa1f": {
-    "source": "src/ui/Market.tsx",
-    "line": 486,
-    "params": {
-      "name": {
-        "expression": "temp.name"
-      },
-      "injured": {
         "expression": "inj.name"
       }
     },
@@ -94358,6 +94333,91 @@
     "source": "src/league/legacy1982.ts",
     "line": 209,
     "params": {},
+    "locations": []
+  },
+  "league.expansion.text.253163a7": {
+    "source": "src/league/expansion.ts",
+    "line": 605,
+    "params": {
+      "regular": {
+        "expression": "dd.regular"
+      },
+      "asia": {
+        "expression": "dd.asia"
+      }
+    },
+    "locations": []
+  },
+  "league.advice.text.8e1dd290": {
+    "source": "src/league/advice.ts",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "league.advice.text.74d68067": {
+    "source": "src/league/advice.ts",
+    "line": 52,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.2f37210b": {
+    "source": "src/ui/Decision.tsx",
+    "line": 68,
+    "params": {},
+    "locations": []
+  },
+  "ui.decision.text.42adcf22": {
+    "source": "src/ui/Decision.tsx",
+    "line": 726,
+    "params": {
+      "regular": {
+        "expression": "d.regular"
+      },
+      "asia": {
+        "expression": "d.asia"
+      },
+      "size": {
+        "expression": "selected.size"
+      }
+    },
+    "locations": []
+  },
+  "ui.decision.text.e6807d80": {
+    "source": "src/ui/Decision.tsx",
+    "line": 728,
+    "params": {
+      "regular": {
+        "expression": "d.regular"
+      },
+      "asia": {
+        "expression": "d.asia"
+      }
+    },
+    "locations": []
+  },
+  "ui.market.text.6f38d1c7": {
+    "source": "src/ui/Market.tsx",
+    "line": 641,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.40edf13d": {
+    "source": "src/ui/Market.tsx",
+    "line": 656,
+    "params": {},
+    "locations": []
+  },
+  "ui.market.text.c19e7cf8": {
+    "source": "src/ui/Market.tsx",
+    "line": 659,
+    "params": {
+      "name": {
+        "expression": "temp.name"
+      },
+      "injured": {
+        "expression": "inj.name"
+      }
+    },
     "locations": []
   }
 }

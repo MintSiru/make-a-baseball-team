@@ -8475,11 +8475,8 @@ export const koSource = {
   "league.tempforeign.text.a23fff60": "{club}, 대체 외국인 {name} 계약 종료",
   "league.trade.text.2a130e0c": "부상 대체 선수는 원래 선수가 돌아올 때 정합니다.",
   "ui.market.text.d98daee8": "부상 대체 외국인",
-  "ui.market.text.fcbd7280": "6주 이상 부상인 외국인 선수 대신 복귀할 때까지 뛸 선수를 데려옵니다. 교체 횟수를 쓰지 않고 월 최대 10만 달러, 외국인 샐러리캡 밖입니다. 복귀하면 둘 중 한 명만 남습니다.",
   "ui.market.text.5ea34e6b": "{date} 복귀 예정",
-  "ui.market.text.1b0fe9f1": "복귀하면",
   "ui.market.text.f38011f6": "{name} 복귀 (대체 선수 계약 종료)",
-  "ui.market.text.7f36fa1f": "{name} 유지 ({injured} 방출, 교체 1회)",
   "ui.market.text.d30bf57d": "{part} · {date} 복귀 예정",
   "ui.market.text.501fb802": "부상",
   "ui.market.text.2a2b8688": "대체 계약",
@@ -10513,5 +10510,14 @@ export const koSource = {
   "league.fa.text.972e3277": "{name} 옵트아웃, FA 시장으로",
   "ui.decision.text.d8c54276": "보장 기간이 끝나는 FA 계약에 구단 옵션이 있습니다. 실행할 선수를 고르세요 (정해 둔 연봉으로 계약이 늘어납니다). 고르지 않은 선수는 FA 재자격(지난 FA 뒤 4시즌)을 채웠으면 FA 시장에 나가고, 아직이면 연봉 계약으로 남습니다. 선택 {size}명",
   "league.postseason.text.7e9a9b40": "6위",
-  "league.legacy1982.text.a8715a16": "가을야구: 정규시즌 상위 여섯 팀 — 3위와 6위, 4위와 5위가 와일드카드 결정전을 치르고, 두 승자가 준플레이오프에서 만납니다."
+  "league.legacy1982.text.a8715a16": "가을야구: 정규시즌 상위 여섯 팀 — 3위와 6위, 4위와 5위가 와일드카드 결정전을 치르고, 두 승자가 준플레이오프에서 만납니다.",
+  "league.expansion.text.253163a7": "외국인 선수 {regular}명과 아시아쿼터 선수 {asia}명을 골라야 합니다.",
+  "league.advice.text.8e1dd290": "외국인과 아시아쿼터 각각 지금 능력(현재 가치)이 가장 낮은 선수를 내보냅니다.",
+  "league.advice.text.74d68067": "잘하는 선수를 남기면 당장의 전력은 지키지만, 젊고 성장할 선수를 내보내게 될 수 있습니다.",
+  "ui.decision.text.2f37210b": "외국인 자리 축소",
+  "ui.decision.text.42adcf22": "다음 시즌 외국인 선수 자리가 줄었습니다(이사회 결정). 내보낼 선수를 고르세요: 외국인 {regular}명, 아시아쿼터 {asia}명. 내보낸 선수는 KBO 경력 외국인 시장에 나가거나 해외로 떠납니다. 선택 {size}명",
+  "ui.decision.text.e6807d80": "외국인 {regular}명과 아시아쿼터 {asia}명을 골라야 합니다.",
+  "ui.market.text.6f38d1c7": "6주 이상 부상인 외국인 선수 대신 복귀할 때까지 뛸 선수를 데려옵니다. 교체 횟수를 쓰지 않고 월 최대 10만 달러, 외국인 샐러리캡 밖입니다. 복귀하면 둘 중 한 명만 남고, 시즌이 끝날 때까지 복귀하지 못해도 고른 쪽이 남습니다(대체 선수를 남기면 겨울에 재계약할 수 있습니다).",
+  "ui.market.text.40edf13d": "복귀하거나 시즌이 끝나면",
+  "ui.market.text.c19e7cf8": "{name} 유지 ({injured} 방출; 시즌 중이면 교체 1회)"
 } as const;

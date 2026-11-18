@@ -8474,11 +8474,8 @@
   "league.tempforeign.text.a23fff60": "{club}: stand-in {name}'s contract ends",
   "league.trade.text.2a130e0c": "A stand-in is settled when the injured player is back.",
   "ui.market.text.d98daee8": "Injury stand-ins",
-  "ui.market.text.fcbd7280": "Sign a stand-in to play while a foreign player is out six weeks or more. It uses no replacement, pays at most $100K a month and sits outside the foreign salary cap. When he is back, only one of the two stays.",
   "ui.market.text.5ea34e6b": "due back {date}",
-  "ui.market.text.1b0fe9f1": "When he is back",
   "ui.market.text.f38011f6": "{name} returns (the stand-in leaves)",
-  "ui.market.text.7f36fa1f": "Keep {name} (release {injured}, one replacement)",
   "ui.market.text.d30bf57d": "{part} · due back {date}",
   "ui.market.text.501fb802": "Injury",
   "ui.market.text.2a2b8688": "Stand-in deal",
@@ -10512,5 +10509,14 @@
   "league.fa.text.972e3277": "{name} opts out, onto the free-agent market",
   "ui.decision.text.d8c54276": "These free-agent deals end their guaranteed years with a club option. Pick the players to keep (the deal runs on at the set salary). One not picked goes to the free-agent market if he has the four seasons since his last free agency; otherwise he stays on a renewed salary. Picked: {size}",
   "league.postseason.text.7e9a9b40": "6th",
-  "league.legacy1982.text.a8715a16": "Postseason: the top six of the regular season — 3rd v 6th and 4th v 5th in the wild card series, their winners in the semi-playoff."
+  "league.legacy1982.text.a8715a16": "Postseason: the top six of the regular season — 3rd v 6th and 4th v 5th in the wild card series, their winners in the semi-playoff.",
+  "league.expansion.text.253163a7": "Pick {regular} foreign player(s) and {asia} Asia quota player(s).",
+  "league.advice.text.8e1dd290": "Of the foreign and the Asia quota players, let go the one with the lowest current value in each.",
+  "league.advice.text.74d68067": "Keeping the best keeps the strength now, but may let a young one who would grow go.",
+  "ui.decision.text.2f37210b": "Fewer foreign places",
+  "ui.decision.text.42adcf22": "Next season has fewer foreign places (the board's decision). Pick whom to let go: {regular} foreign, {asia} Asia quota. Those let go join the market of KBO-experienced foreigners or leave abroad. Picked: {size}",
+  "ui.decision.text.e6807d80": "Pick {regular} foreign and {asia} Asia quota player(s).",
+  "ui.market.text.6f38d1c7": "Sign a player to stand in for a foreign player out six weeks or more, until he is back. It uses no replacement, at most $100K a month, outside the foreign salary cap. When he is back only one of the two stays; if he is not back by the season's end, the one you chose stays (keep the stand-in and you can re-sign him in the winter).",
+  "ui.market.text.40edf13d": "When he is back or the season ends",
+  "ui.market.text.c19e7cf8": "Keep {name} (release {injured}; one replacement if during the season)"
 }
