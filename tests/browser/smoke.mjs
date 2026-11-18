@@ -785,8 +785,9 @@ try {
   check(wanted !== null, 'a free uniform number can be chosen');
   if (wanted) {
     await page.locator('.number-form button').click();
-    await page.waitForFunction((n) => document.querySelector('.jersey-number')?.textContent === n, wanted);
-    check((await page.locator('.jersey-number').textContent()) === wanted, 'the uniform number can be set');
+    // (Any jersey on the page: another player's can come first, the league's seed being random.)
+    await page.waitForFunction((n) => [...document.querySelectorAll('.jersey-number')].some((e) => e.textContent === n), wanted);
+    check((await page.locator('.jersey-number').allTextContents()).includes(wanted), 'the uniform number can be set');
   }
   // 2.0.9: the editor — his hometown changes, his abilities do not.
   await page.locator('.player-editor:not(.ability-editor) summary').click();
