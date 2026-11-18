@@ -27,7 +27,7 @@ export interface LotteryResult {
 /** The draft order of `draftYear` after the draw (`order`: the bottom club first). */
 export function lotteryOrder(s: LeagueState, draftYear: number, order: TeamId[]): LotteryResult {
   const fmt = rulesFor(draftYear).postseason;
-  const places = fmt === 'five' ? 5 : 4;
+  const places = fmt === 'six' ? 6 : fmt === 'five' ? 5 : 4;
   const out = Math.max(0, order.length - places);
   const pool = order.slice(0, Math.max(out, Math.min(2, order.length)));
   const r = rng(`${s.seed}|lottery|${draftYear}`);

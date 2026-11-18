@@ -2,7 +2,7 @@ import { display as __i18n_display, displayText as __i18n_displayText, k as __i1
 import type { LeagueState } from '../league/state';
 import { exhibitionView, halfStandingsView, lastDayScores, shortName, standingsView } from '../league/views';
 import { postseasonNote } from '../league/historic';
-import { rulesFor } from '../rules/history';
+import { postseasonPlaces, rulesFor } from '../rules/history';
 import { LEAGUE_NAMES, leagueTables, playoffsOf, rivalId, seasonSeries, sidesOf, twelveClubs } from '../league/twelve';
 import { postseasonView, roundName } from '../league/postseason';
 import type { Action } from '../league/actions';
@@ -34,7 +34,7 @@ export function Standings({ league, onTeam, onBox, onAct }: { league: LeagueStat
         { title: LEAGUE_NAMES.dream, rows: two.dream, cut: 3 },
         { title: LEAGUE_NAMES.magic, rows: two.magic, cut: 3 },
       ]
-    : [{ title: null, rows, cut: 5 }];
+    : [{ title: null, rows, cut: postseasonPlaces(league.year) }];
   // 1.9.7: a history game's split seasons (1982–1988) and its own postseason format.
   const halves = halfStandingsView(league);
   if (halves) {

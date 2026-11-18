@@ -10510,5 +10510,7 @@
   "league.fa.text.8301f2c6": "{name}: club option declined; a free agent, on the market",
   "league.fa.text.163ee485": "{name}: club option declined; short of the four seasons to be a free agent again, he stays on a renewed salary",
   "league.fa.text.972e3277": "{name} opts out, onto the free-agent market",
-  "ui.decision.text.d8c54276": "These free-agent deals end their guaranteed years with a club option. Pick the players to keep (the deal runs on at the set salary). One not picked goes to the free-agent market if he has the four seasons since his last free agency; otherwise he stays on a renewed salary. Picked: {size}"
+  "ui.decision.text.d8c54276": "These free-agent deals end their guaranteed years with a club option. Pick the players to keep (the deal runs on at the set salary). One not picked goes to the free-agent market if he has the four seasons since his last free agency; otherwise he stays on a renewed salary. Picked: {size}",
+  "league.postseason.text.7e9a9b40": "6th",
+  "league.legacy1982.text.a8715a16": "Postseason: the top six of the regular season — 3rd v 6th and 4th v 5th in the wild card series, their winners in the semi-playoff."
 }

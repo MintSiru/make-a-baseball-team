@@ -206,6 +206,7 @@ export function ruleNoticeLines(from: YearRules, to: YearRules): string[] {
             fourWithin3: __i18n_k("league.legacy1982.text.42c252bf"),
             twoLeagues: __i18n_k("league.legacy1982.text.e424641f"),
             five: __i18n_k("league.legacy1982.text.a1134e68"),
+            six: __i18n_k("league.legacy1982.text.a8715a16"),
           }[to.postseason],
         );
         break;

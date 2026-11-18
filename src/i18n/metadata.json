@@ -94347,5 +94347,17 @@
       }
     },
     "locations": []
+  },
+  "league.postseason.text.7e9a9b40": {
+    "source": "src/league/postseason.ts",
+    "line": 564,
+    "params": {},
+    "locations": []
+  },
+  "league.legacy1982.text.a8715a16": {
+    "source": "src/league/legacy1982.ts",
+    "line": 209,
+    "params": {},
+    "locations": []
   }
 }

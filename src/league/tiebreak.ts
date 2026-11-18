@@ -18,8 +18,10 @@ export const isTiebreaker = (id: string) => id.includes('-tb-');
 /** The places a tie is played off for: first, and the last postseason place (none for a split season). */
 function places(s: LeagueState): number[] {
   if (sidesOf(s)) return [];
-  if (!s.historical) return [1, 5];
   const f = rulesFor(s.year).postseason;
+  // 2.0.87: six places by the board's vote.
+  if (f === 'six') return [1, 6];
+  if (!s.historical) return [1, 5];
   return f === 'five' ? [1, 5] : f === 'four' || f === 'fourWithin3' ? [1, 4] : [];
 }
 

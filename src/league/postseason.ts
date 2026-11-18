@@ -174,6 +174,11 @@ function nextRound(s: LeagueState, b: Bracket, ended: LiveSeries[]): LiveSeries[
   if (b.mode === 'one') {
     const winner = result(ended[0]!).winner;
     const [first, second, third] = b.seeds;
+    // 2.0.87, six places: the two wild card winners meet, the better seed at home.
+    if (b.stage === 0 && ended.length === 2) {
+      const [x, y] = ended.map((z) => result(z).winner).sort((p, q) => b.seeds.indexOf(p) - b.seeds.indexOf(q)) as [TeamId, TeamId];
+      return [live('semipo', x, y, 3, five, addDays(end, 1))];
+    }
     if (b.stage === 0) return [live('semipo', third!, winner, 3, five, addDays(end, 1))];
     if (b.stage === 1) return [live('po', second!, winner, 3, five, addDays(end, 1))];
     if (b.stage === 2) return [live('ks', first!, winner, 4, seven, addDays(end, 2))];
@@ -250,7 +255,8 @@ function drawBracket(s: LeagueState) {
   const date = addDays(last, 3);
   // 1.9.5: a league that plays history draws its year's postseason (historic.ts); 2015 on, today's.
   // 1.9.9: a board's four-club postseason is drawn the same way.
-  if ((s.historical || boardValue('postseason', s.year) !== undefined) && rulesFor(s.year).postseason !== 'five') return void (s.bracket = drawHistoric(s, date));
+  const format = rulesFor(s.year).postseason;
+  if ((s.historical || boardValue('postseason', s.year) !== undefined) && format !== 'five' && format !== 'six') return void (s.bracket = drawHistoric(s, date));
   const sides = sidesOf(s);
   if (sides) {
     const t = leagueTables(currentStandings(s), sides);
@@ -278,11 +284,18 @@ function drawBracket(s: LeagueState) {
     }
     return;
   }
+  // 2.0.87: six places by the board's vote — two wild card series (3rd v 6th, 4th v 5th), the better club a win up and
+  // at home, as the five's.
+  const places = format === 'six' ? 6 : 5;
   const seeds = currentStandings(s)
-    .slice(0, 5)
+    .slice(0, places)
     .map((r) => r.teamId);
-  if (seeds.length < 5) return void (s.bracket = { year: s.year, mode: 'one', stage: 3, live: [], seeds, done: true });
-  s.bracket = { year: s.year, mode: 'one', stage: 0, live: [live('wildcard', seeds[3]!, seeds[4]!, 2, [true, true], date, 1)], seeds, done: false };
+  if (seeds.length < places) return void (s.bracket = { year: s.year, mode: 'one', stage: 3, live: [], seeds, done: true });
+  const wild =
+    places === 6
+      ? [live('wildcard', seeds[2]!, seeds[5]!, 2, [true, true], date, 1), live('wildcard', seeds[3]!, seeds[4]!, 2, [true, true], date, 1)]
+      : [live('wildcard', seeds[3]!, seeds[4]!, 2, [true, true], date, 1)];
+  s.bracket = { year: s.year, mode: 'one', stage: 0, live: wild, seeds, done: false };
 }
 
 /** Plays the postseason's next game day (every series with a game that day). Returns false when it is over.
@@ -544,7 +557,15 @@ export function bracketView(s: LeagueState): BracketView | null {
     // 1.9.5: a historic bracket shows the rounds as they are played (historic.ts).
     if (!series.length && b && b.style !== 'ladder' && b.style !== 'halves') {
       const [s0, s1, s2, s3, s4, s5] = b.seeds;
-      if (b.mode === 'one') {
+      if (b.mode === 'one' && b.seeds.length >= 6) {
+        // 2.0.87, six places: 3rd v 6th and 4th v 5th, then their winners.
+        const wc = done.filter((x) => x.round === 'wildcard');
+        const side = (i: number) => (wc[i] ? seedLabel(wc[i]!.winner, '') : { teamId: null, label: __i18n_k("league.postseason.bracketView.label.cb698be3") });
+        if (round === 'wildcard') series = [waiting(round, seedLabel(s2, __i18n_k("league.postseason.bracketView.7948ecf9")), seedLabel(s5, __i18n_k("league.postseason.text.7e9a9b40")), 2), waiting(round, seedLabel(s3, __i18n_k("league.postseason.bracketView.49a435d8")), seedLabel(s4, __i18n_k("league.postseason.bracketView.c8c0358f")), 2)];
+        if (round === 'semipo') series = [waiting(round, side(0), side(1), 3)];
+        if (round === 'po') series = [waiting(round, seedLabel(s1, __i18n_k("league.postseason.bracketView.442411ad")), winnerOf('semipo') ? seedLabel(winnerOf('semipo'), '') : { teamId: null, label: __i18n_k("league.postseason.bracketView.label.de953763") }, 3)];
+        if (round === 'ks') series = [waiting(round, seedLabel(s0, '1위'), winnerOf('po') ? seedLabel(winnerOf('po'), '') : { teamId: null, label: __i18n_k("league.postseason.bracketView.label.05a7144b") }, 4)];
+      } else if (b.mode === 'one') {
         if (round === 'wildcard') series = [waiting(round, seedLabel(s3, __i18n_k("league.postseason.bracketView.49a435d8")), seedLabel(s4, __i18n_k("league.postseason.bracketView.c8c0358f")), 2)];
         if (round === 'semipo') series = [waiting(round, seedLabel(s2, __i18n_k("league.postseason.bracketView.7948ecf9")), winnerOf('wildcard') ? seedLabel(winnerOf('wildcard'), '') : { teamId: null, label: __i18n_k("league.postseason.bracketView.label.cb698be3") }, 3)];
         if (round === 'po') series = [waiting(round, seedLabel(s1, __i18n_k("league.postseason.bracketView.442411ad")), winnerOf('semipo') ? seedLabel(winnerOf('semipo'), '') : { teamId: null, label: __i18n_k("league.postseason.bracketView.label.de953763") }, 3)];
