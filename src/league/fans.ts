@@ -1,3 +1,4 @@
+import { postseasonPlaces } from '../rules/history';
 import { k as __i18n_k } from '../i18n/index';
 /* Fans and attendance (V0.6, RULES.md §13). Every club has a fan base (`popularity`: how many would
    come to an ordinary home game at the league's average price in 2025, before the ballpark fills) and
@@ -178,7 +179,7 @@ export function seasonFans(s: LeagueState, year: number, table: { teamId: TeamId
   const pull = ids.map((teamId) => {
     const row = table.find((x) => x.teamId === teamId);
     // In the postseason: the five seeds, or with two leagues the clubs that played a series (V0.9).
-    const playoff = row && (s.postseason.length ? s.postseason.some((x) => x.high === teamId || x.low === teamId) : row.rank <= 5) ? FANS.playoff : 0;
+    const playoff = row && (s.postseason.length ? s.postseason.some((x) => x.high === teamId || x.low === teamId) : row.rank <= postseasonPlaces(year)) ? FANS.playoff : 0;
     const title = champion === teamId ? FANS.champion : 0;
     return ((row?.pct ?? 0.5) - 0.5) * FANS.seasonWin + playoff + title + draw(s, teamId, year);
   });

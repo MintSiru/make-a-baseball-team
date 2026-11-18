@@ -1,3 +1,4 @@
+import { postseasonPlaces } from '../rules/history';
 import { k as __i18n_k } from '../i18n/index';
 /* Event alerts (V0.7.4): the moments the general manager should hear about right away — national team
    picks and results, how the free-agent market went, awards, the hall of fame, the season's end, the
@@ -138,7 +139,7 @@ export function seasonAlert(s: LeagueState, year: number) {
     kind: 'season',
     title: champ ? __i18n_k("league.alerts.seasonAlert.title.6d2cc1c8", { year: year }) : __i18n_k("league.alerts.seasonAlert.title.bbec6400", { year: year, rank: row.rank }),
     lines: [__i18n_k("league.alerts.seasonAlert.lines.a0aa0b54", { w: row.w, l: row.l, value: row.t, rank: row.rank }), post, ...(h.champion && !champ ? [__i18n_k("league.alerts.seasonAlert.lines.abf1791a", { short: short(s, h.champion) })] : [])],
-    tone: champ || ours.length || (!h.series.length && row.rank <= 5) ? 'good' : 'bad',
+    tone: champ || ours.length || (!h.series.length && row.rank <= postseasonPlaces(year)) ? 'good' : 'bad',
   });
 }
 

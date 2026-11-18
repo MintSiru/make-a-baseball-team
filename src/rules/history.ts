@@ -37,7 +37,10 @@ export type PostseasonFormat =
   /** 1999–2000: two leagues, the first two of each across, a third over the other league's second. */
   | 'twoLeagues'
   /** 2015~: the top five, a wild card round. */
-  | 'five';
+  | 'five'
+  /** 2.0.87 (the board, the user's request): the top six — two wild card series (3rd v 6th, 4th v 5th), their winners
+      in the semi-playoff, then the 2nd and the 1st as now. */
+  | 'six';
 
 /** Games to win in each round (a best-of-n is n / 2 rounded up); null: no such round. */
 export interface SeriesLengths {
@@ -227,6 +230,12 @@ export function rulesOfYear(year: number, history = true): YearRules {
 /** The rules in force in a calendar year of this game (a game started in 2016 reads 2026's in 2016: era.ts). A league
     that plays history (1.9.5, the 1982 legacy start) reads the KBO's own year: its era shift keeps only the money in
     today's terms. */
+/** 2.0.87: the clubs of one league's postseason in `year` (six by the board's vote; two leagues: their own). */
+export function postseasonPlaces(year: number): number {
+  const f = rulesFor(year).postseason;
+  return f === 'six' ? 6 : f === 'five' ? 5 : 4;
+}
+
 export const rulesFor = (calendarYear: number) => withBoard(playsHistory() ? rulesOfYear(calendarYear, true) : rulesOfYear(ruleYear(calendarYear), false), calendarYear);
 
 /** 1.9.9 (board.ts): the rules the board changed, over the year's own (none: the year's rules as they are). Two
@@ -239,7 +248,7 @@ function withBoard(r: YearRules, year: number): YearRules {
   if (foreign !== undefined) out.foreign = { ...out.foreign, hold: foreign, play: foreign };
   if (team !== undefined) out.firstTeam = { registered: team, active: team - 1 };
   if (games !== undefined) out.gamesPerClub = games;
-  if (post !== undefined) out.postseason = post === 4 ? 'four' : 'five';
+  if (post !== undefined) out.postseason = post === 4 ? 'four' : post === 6 ? 'six' : 'five';
   if (extras !== undefined) out.extraInnings = extras;
   if (fa !== undefined) out.freeAgencySeasons = fa;
   if (asia !== undefined) out.foreign = { ...out.foreign, asia };

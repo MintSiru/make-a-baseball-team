@@ -113,7 +113,7 @@ export const BOARD_ITEMS: Record<BoardItem, { min: number; max: number; step: nu
   secondDraft: { min: 0, max: 1, step: 1 },
   territorial: { min: 0, max: 1, step: 1 },
   games: { min: 128, max: 152, step: 8 },
-  postseason: { min: 4, max: 5, step: 1 },
+  postseason: { min: 4, max: 6, step: 1 },
   extras: { min: 11, max: 12, step: 1 },
   cap: { min: 80, max: 130, step: 10 },
   faSeasons: { min: 7, max: 9, step: 1 },
@@ -138,7 +138,7 @@ export function currentValue(s: LeagueState, item: BoardItem, season: number): n
     case 'games':
       return r.gamesPerClub;
     case 'postseason':
-      return r.postseason === 'four' ? 4 : 5;
+      return r.postseason === 'four' ? 4 : r.postseason === 'six' ? 6 : 5;
     case 'extras':
       return r.extraInnings ?? 12;
     case 'cap':
@@ -372,7 +372,8 @@ export function committeeMotions(s: LeagueState, year: number): BoardMotion[] {
     share > 0.28 ? { item: 'foreign', up: false, weight: 2, push: 0.2 } : share < 0.18 ? { item: 'foreign', up: true, weight: 2, push: 0.2 } : { item: 'foreign', up: r() < 0.5, weight: 0.6, push: 0.05 },
     over >= 3 ? { item: 'cap', up: true, weight: 1.5, push: 0.15 } : { item: 'cap', up: false, weight: over ? 0.3 : 0.6, push: 0.05 },
     { item: 'games', up: r() < 0.5, weight: 0.5, push: 0.05 },
-    { item: 'postseason', up: currentValue(s, 'postseason', next) === 4, weight: 0.6, push: 0.1 },
+    // 2.0.87: from five, a sixth place (more often) or back to four.
+    { item: 'postseason', up: currentValue(s, 'postseason', next) === 4 || (currentValue(s, 'postseason', next) === 5 && r() < 0.7), weight: 0.6, push: 0.1 },
     { item: 'extras', up: currentValue(s, 'extras', next) === 11, weight: 0.4, push: 0.1 },
     { item: 'faSeasons', up: r() < 0.4, weight: 0.5, push: 0.05 },
     { item: 'firstTeam', up: r() < 0.6, weight: 0.5, push: 0.1 },

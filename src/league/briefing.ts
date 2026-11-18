@@ -1,3 +1,4 @@
+import { postseasonPlaces } from '../rules/history';
 import { k as __i18n_k } from '../i18n/index';
 /* The general manager's briefing (1.5.0, from the 1.4 review): the few things that matter most right now, each with
    what was seen, why it matters, what could be done about it at what cost, and a button to the screen that does
@@ -223,8 +224,10 @@ export function briefing(s: LeagueState): BriefItem[] {
   // The trade deadline in July: chase or build.
   if (inSeason && date.slice(5, 7) === '07' && row) {
     const table = standingsView(s);
-    const fifth = table[Math.min(4, table.length - 1)]!;
-    const chase = row.rank <= 5 || row.pct >= fifth.pct - 0.03;
+    // 2.0.87: the last postseason place (five, or six by the board's vote).
+    const places = postseasonPlaces(s.year);
+    const fifth = table[Math.min(places - 1, table.length - 1)]!;
+    const chase = row.rank <= places || row.pct >= fifth.pct - 0.03;
     const left = Math.round((Date.parse(`${s.year}-${KBO_2026.trade.deadline}`) - Date.parse(date)) / 86_400_000);
     if (left >= 0)
       items.push({
