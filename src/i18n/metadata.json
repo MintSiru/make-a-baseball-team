@@ -77017,16 +77017,6 @@
     },
     "locations": []
   },
-  "ui.payroll.text.9f794f1d": {
-    "source": "src/ui/Payroll.tsx",
-    "line": 87,
-    "params": {
-      "n": {
-        "expression": "book.rows.length"
-      }
-    },
-    "locations": []
-  },
   "ui.myClub.text.5d364b3d": {
     "source": "src/ui/MyClub.tsx",
     "line": 82,
@@ -94454,6 +94444,22 @@
     "params": {
       "n": {
         "expression": "chosen.length"
+      }
+    },
+    "locations": []
+  },
+  "ui.payroll.text.fcc30202": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 37,
+    "params": {},
+    "locations": []
+  },
+  "ui.payroll.text.a0f76436": {
+    "source": "src/ui/Payroll.tsx",
+    "line": 92,
+    "params": {
+      "n": {
+        "expression": "book.rows.length"
       }
     },
     "locations": []

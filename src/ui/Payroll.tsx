@@ -33,6 +33,8 @@ export function Payroll({ league, onPlayer }: { league: LeagueState; onPlayer: (
   return (
     <div class="payroll">
       <p class="muted">{__i18n_t('ui.payroll.text.e528b78e')}</p>
+      {/* 2.0.90: the table's total is everyone's; the cap counts fewer. */}
+      <p class="muted small">{__i18n_t("ui.payroll.text.fcc30202")}</p>
       {book.cap && (
         <p>
           {__i18n_t('ui.payroll.text.2a7e1be8', { season: book.seasons[0]!, total: money(book.cap.total, book.seasons[0]), cap: money(book.cap.cap, book.seasons[0]) })}
@@ -87,7 +89,7 @@ export function Payroll({ league, onPlayer }: { league: LeagueState; onPlayer: (
           <tfoot>
             <tr>
               <td colSpan={5}>
-                <strong>{__i18n_t('ui.payroll.text.9f794f1d', { n: book.rows.length })}</strong>
+                <strong>{__i18n_t("ui.payroll.text.a0f76436", { n: book.rows.length })}</strong>
               </td>
               {book.totals.map((x, i) => (
                 <td key={i} class="num strong">
