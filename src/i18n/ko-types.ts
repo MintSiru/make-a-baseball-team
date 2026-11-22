@@ -8297,7 +8297,6 @@ export const koSource = {
   "ui.payroll.text.f64694ca": "등록 시즌",
   "ui.payroll.text.eb55a24f": "FA 시기",
   "ui.payroll.text.ed5fa245": "{seasons}시즌 {days}일",
-  "ui.payroll.text.9f794f1d": "합계 ({n}명)",
   "ui.myClub.text.5d364b3d": "연봉표",
   "ui.training.text.ef2caeba": "1군",
   "ui.training.text.e6607847": "퓨처스",
@@ -10523,5 +10522,7 @@ export const koSource = {
   "league.trade.text.513ee4d5": "부상 대체 외국인 선수는 방출할 수 없습니다. 부상 선수가 복귀하거나 시즌이 끝날 때 둘 중 한 명이 남습니다.",
   "ui.market.text.5bd804b7": "외국인",
   "ui.market.text.d122d418": "{names} {n}명을 방출합니다. 남은 연봉 {money}을 지급합니다.",
-  "ui.market.text.d2a7c268": "선택한 {n}명 방출"
+  "ui.market.text.d2a7c268": "선택한 {n}명 방출",
+  "ui.payroll.text.fcc30202": "경쟁균형세는 외국인을 뺀 연봉 상위 40명만 세고, 래리 버드 선수는 절반만 셉니다. 그래서 아래 표의 전체 합계와 다르고, 프런트 요약의 경쟁균형세 금액은 바로 아래 줄의 상위 40명 합계와 같습니다.",
+  "ui.payroll.text.a0f76436": "전체 합계 ({n}명, 외국인 포함)"
 } as const;

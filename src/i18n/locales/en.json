@@ -8296,7 +8296,6 @@
   "ui.payroll.text.f64694ca": "Service",
   "ui.payroll.text.eb55a24f": "FA",
   "ui.payroll.text.ed5fa245": "{seasons}y {days}d",
-  "ui.payroll.text.9f794f1d": "Total (players: {n})",
   "ui.myClub.text.5d364b3d": "Payroll",
   "ui.training.text.ef2caeba": "1st Team",
   "ui.training.text.e6607847": "Futures",
@@ -10522,5 +10521,7 @@
   "league.trade.text.513ee4d5": "A stand-in for an injured foreign player cannot be released: when the injured player is back or the season ends, one of the two stays.",
   "ui.market.text.5bd804b7": "Foreign",
   "ui.market.text.d122d418": "Release {names} ({n}). The salary still owed, {money}, will be paid.",
-  "ui.market.text.d2a7c268": "Release the {n} selected"
+  "ui.market.text.d2a7c268": "Release the {n} selected",
+  "ui.payroll.text.fcc30202": "The competitive balance tax counts only the top 40 salaries, foreign players left out, and the Larry Bird player at half. So it differs from the table's total for everyone; the front office summary's figure is the top-40 total on the line below.",
+  "ui.payroll.text.a0f76436": "Everyone ({n}, foreign players included)"
 }

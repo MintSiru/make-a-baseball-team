@@ -201,7 +201,9 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
   const gauges: Gauge[] = [
     { label: __i18n_t("ui.office.office.4f7776dd"), value: u.fund < 0 ? `−${eok(-u.fund)}` : eok(u.fund) },
     { label: __i18n_t("ui.office.office.26719725", { payYear }), value: `${eok(projectedPayroll(league, u.teamId, payYear))} / ${eok(u.payrollBudget)}`, n: projectedPayroll(league, u.teamId, payYear), of: u.payrollBudget },
-    ...(salaryCapOn(league.year) ? [{ label: __i18n_t("ui.office.office.b2f10443", { year: league.year }), value: `${eok(capTotal(league, u.teamId, league.year))} / ${eok(salaryCapFor(league.year))}`, n: capTotal(league, u.teamId, league.year), of: salaryCapFor(league.year) }] : []),
+    // 2.0.90 (the user's report: 프런트 요약과 연봉표의 경쟁균형세 금액이 다름): the season being paid, as the payroll
+    // screen shows it (in the winter, next season: last season's tax was settled when it ended).
+    ...(salaryCapOn(payYear) ? [{ label: __i18n_t("ui.office.office.b2f10443", { year: payYear }), value: `${eok(capTotal(league, u.teamId, payYear))} / ${eok(salaryCapFor(payYear))}`, n: capTotal(league, u.teamId, payYear), of: salaryCapFor(payYear) }] : []),
     ...(foreignBooks ? [{ label: __i18n_t("ui.office.office.2f4e295b"), value: `${usd(foreignBooks.spent)} / ${usd(foreignBooks.cap)}`, n: foreignBooks.spent, of: foreignBooks.cap }] : []),
   ];
   const trust = Math.round(u.trust ?? 60);
@@ -321,11 +323,11 @@ export function Office({ league, onAct, setMsg, onPlayer }: { league: LeagueStat
             <p class="card-sub">{__i18n_t("ui.office.office.4f849627")}</p>
           </div>
           {/* 2.0.50: the salary cap (2023) and the foreign players' cap (2023) only in their years in a league that plays history. */}
-          {__i18n_display(salaryCapOn(league.year) && (
+          {__i18n_display(salaryCapOn(payYear) && (
             <div class="card">
-              <p class="card-label">{__i18n_t("ui.office.office.b2f10443", { year: league.year })}</p>
-              <p class="card-value">{__i18n_display(money(capTotal(league, u.teamId, league.year)))}</p>
-              <p class="card-sub">{__i18n_t("ui.office.office.a5785887", { money: money(salaryCapFor(league.year)), value: capFloorFor(league.year) ? __i18n_k("ui.office.office.75c3db8c", { money: money(capFloorFor(league.year)!) }) : '' })}</p>
+              <p class="card-label">{__i18n_t("ui.office.office.b2f10443", { year: payYear })}</p>
+              <p class="card-value">{__i18n_display(money(capTotal(league, u.teamId, payYear)))}</p>
+              <p class="card-sub">{__i18n_t("ui.office.office.a5785887", { money: money(salaryCapFor(payYear)), value: capFloorFor(payYear) ? __i18n_k("ui.office.office.75c3db8c", { money: money(capFloorFor(payYear)!) }) : '' })}</p>
             </div>
           ))}
           {/* 2.0.73: our Larry Bird player (bird.ts). */}

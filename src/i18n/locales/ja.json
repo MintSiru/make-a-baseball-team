@@ -8296,7 +8296,6 @@
   "ui.payroll.text.f64694ca": "登録シーズン",
   "ui.payroll.text.eb55a24f": "FA時期",
   "ui.payroll.text.ed5fa245": "{seasons}季 {days}日",
-  "ui.payroll.text.9f794f1d": "合計（{n}人）",
   "ui.myClub.text.5d364b3d": "年俸表",
   "ui.training.text.ef2caeba": "一軍",
   "ui.training.text.e6607847": "フューチャーズ",
@@ -10522,5 +10521,7 @@
   "league.trade.text.513ee4d5": "負傷代替外国人選手は放出できません。負傷選手の復帰時またはシーズン終了時に、2人のうち1人が残ります。",
   "ui.market.text.5bd804b7": "外国人",
   "ui.market.text.d122d418": "{names}の{n}人を放出します。残りの年俸{money}を支払います。",
-  "ui.market.text.d2a7c268": "選択した{n}人を放出"
+  "ui.market.text.d2a7c268": "選択した{n}人を放出",
+  "ui.payroll.text.fcc30202": "戦力均衡税は外国人を除いた年俸上位40人だけを数え、ラリー・バード選手は半額で数えます。そのため下の表の全体合計とは異なり、フロント要約の戦力均衡税の金額はすぐ下の行の上位40人合計と同じです。",
+  "ui.payroll.text.a0f76436": "全体合計（{n}人、外国人含む）"
 }
